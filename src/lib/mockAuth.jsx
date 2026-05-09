@@ -14,12 +14,16 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  const login = (email, password) => {
+  const login = (email, password, profileData = {}) => {
     const userData = {
       id: Math.random().toString(36).substr(2, 9),
       email,
-      name: email.split('@')[0],
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`
+      name: profileData.name || email.split('@')[0],
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
+      category: profileData.category || null,
+      role: profileData.role || null,
+      specialties: profileData.specialties || [],
+      createdAt: new Date().toISOString()
     };
     setUser(userData);
     localStorage.setItem('auth_user', JSON.stringify(userData));
