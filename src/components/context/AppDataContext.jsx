@@ -4,6 +4,7 @@ import { DailyWork } from '@/api/entities';
 import { Client } from '@/api/entities';
 import { User } from '@/api/entities';
 import { Expense } from '@/api/entities';
+import { useAuth } from '@/lib/mockAuth';
 
 const AppDataContext = createContext(null);
 
@@ -99,12 +100,13 @@ const loadAllUserData = async (Entity, user) => {
 };
 
 export const AppDataProvider = ({ children }) => {
+  const { user: authUser } = useAuth();
   const [data, setData] = useState({
     events: [],
     dailyWork: [],
     clients: [],
     expenses: [],
-    user: null,
+    user: authUser || null,
   });
   
   const [loading, setLoading] = useState({
@@ -166,28 +168,14 @@ export const AppDataProvider = ({ children }) => {
     }
   }, [data.user, loading]);
 
-  // Carregar usuário na inicialização
+  // Sincronizar usuário do auth
   useEffect(() => {
-    if (userLoadAttempted.current) return;
-    userLoadAttempted.current = true;
-
-    const loadUser = async () => {
-      setLoading(prev => ({ ...prev, user: true }));
-      try {
-        const user = await retryWithBackoff(() => User.me());
-        if (!user?.id) throw new Error('Usuário não autenticado.');
-        setData(prev => ({ ...prev, user }));
-        console.log(`👤 Usuário autenticado: ${user.email}`);
-      } catch (err) {
-        console.error('🔴 Erro ao carregar usuário:', err);
-        setError(prev => ({ ...prev, user: err.message || 'Falha ao carregar usuário.' }));
-        setData(prev => ({ ...prev, user: null }));
-      } finally {
-        setLoading(prev => ({ ...prev, user: false }));
-      }
-    };
-    loadUser();
-  }, []);
+    if (authUser) {
+      setData(prev => ({ ...prev, user: authUser }));
+      setLoading(prev => ({ ...prev, user: false }));
+      console.log(`👤 Usuário autenticado: ${authUser.email}`);
+    }
+  }, [authUser]);
 
   // Refresh de dados
   const refreshData = useCallback(async (entityKey = null) => {
