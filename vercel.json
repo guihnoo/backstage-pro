@@ -1,0 +1,57 @@
+{
+  "projectId": "backstage-pro",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "env": {
+    "VITE_SUPABASE_URL": "@supabase_url",
+    "VITE_SUPABASE_ANON_KEY": "@supabase_anon_key"
+  },
+  "envs": {
+    "production": {
+      "VITE_SUPABASE_URL": {
+        "value": "",
+        "link": "https://supabase.com/dashboard"
+      },
+      "VITE_SUPABASE_ANON_KEY": {
+        "value": "",
+        "link": "https://supabase.com/dashboard"
+      }
+    },
+    "preview": {
+      "VITE_SUPABASE_URL": {
+        "value": "",
+        "link": "https://supabase.com/dashboard"
+      },
+      "VITE_SUPABASE_ANON_KEY": {
+        "value": "",
+        "link": "https://supabase.com/dashboard"
+      }
+    },
+    "development": {
+      "VITE_SUPABASE_URL": {
+        "value": "",
+        "link": "https://supabase.com/dashboard"
+      },
+      "VITE_SUPABASE_ANON_KEY": {
+        "value": "",
+        "link": "https://supabase.com/dashboard"
+      }
+    }
+  },
+  "git": {
+    "repo": "https://github.com/seu-usuario/backstage-pro",
+    "branch": "main"
+  },
+  "regions": [
+    "sfo1"
+  ],
+  "functions": {
+    "api/**/*.js": {
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  }
+}
