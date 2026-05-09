@@ -9,7 +9,10 @@
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\monte\\\\OneDrive\\\\Documentos\\\\backstage-pro\" -Force)",
       "Bash(Select-Object Name, PSIsContainer)",
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\monte\\\\OneDrive\\\\Documentos\\\\backstage-pro\\\\src\" -Recurse -Force | Select-Object -First 50 FullName | ForEach-Object { $_.FullName.Replace\\(\"C:\\\\Users\\\\monte\\\\OneDrive\\\\Documentos\\\\backstage-pro\\\\\", \"\"\\) })",
-      "Bash(pkill -f \"vite\")"
+      "Bash(pkill -f \"vite\")",
+      "WebFetch(domain:vercel.com)",
+      "WebFetch(domain:localhost)",
+      "Bash(npm ls *)"
     ]
   }
 }
