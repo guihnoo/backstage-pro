@@ -15,13 +15,16 @@ import { defaultNavItems } from '@/components/layout/navConfig'; // Importando a
 
 function AuthGuard({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
     const checkUser = async () => {
       try {
-        const currentUser = await User.me();
+        const currentUser = await Promise.race([
+          User.me(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+        ]);
         setUser(currentUser);
       } catch (error) {
         setUser(null);
@@ -31,7 +34,7 @@ function AuthGuard({ children }) {
       }
     };
     checkUser();
-  }, [location.pathname]);
+  }, []);
 
   const handleLogout = () => {
     User.logout().then(() => {
