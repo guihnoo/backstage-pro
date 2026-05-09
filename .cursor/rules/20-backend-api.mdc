@@ -1,9 +1,0 @@
----
-description: Fastify API em server/
-globs:
-  - server/**/*
----
-
-# Backend
-
-Fastify + `@fastify/cors`. Segredos só em `.env` (não commitar). Validar auth em rotas futuras.

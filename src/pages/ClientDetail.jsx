@@ -20,7 +20,7 @@ import EmptyState from '@/components/layout/EmptyState';
 import ClientForm from '@/components/clients/ClientForm';
 import EventForm from '@/components/calendar/EventForm';
 import EventDetailModal from '@/components/reports/EventDetailModal';
-import ReportEventList from '@/components/reports/ReportEventList';
+import { ReportEventList } from '@/components/reports/ReportEventList';
 import ReportsChart from '@/components/reports/ReportsChart';
 
 function useQuery() {

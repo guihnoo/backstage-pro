@@ -18,13 +18,11 @@ import {
 } from 'lucide-react';
 import { UserSettings } from '@/api/entities';
 import { User } from '@/api/entities';
-import {
-  googleAuthStart,
-  googleDisconnect,
-  googleSyncNow,
-  googleListCalendars,
-  googleImportEvents,
-} from '@/api/functions';
+import { googleAuthStart } from '@/api/functions';
+import { googleDisconnect } from '@/api/functions/google/googleDisconnect'; // Updated import path
+import { googleSyncNow } from '@/api/functions/google/googleSyncNow'; // Updated import path
+import { googleListCalendars } from '@/api/functions/google/googleListCalendars'; // Updated import path
+import { googleImportEvents } from '@/api/functions/google/googleImportEvents'; // Updated import path
 import { toast } from 'sonner';
 
 export default function GoogleCalendarSync() {

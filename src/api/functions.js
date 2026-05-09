@@ -53,6 +53,16 @@ export const restoreFromBackup = base44.functions.restoreFromBackup;
 
 export const exportUserSnapshot = base44.functions.exportUserSnapshot;
 
+export const createMy/Client = base44.functions.createMy/Client;
+
+export const getMy/Events = base44.functions.getMy/Events;
+
+export const getMy/Clients = base44.functions.getMy/Clients;
+
+export const getMy/DailyWork = base44.functions.getMy/DailyWork;
+
+export const getMy/Expenses = base44.functions.getMy/Expenses;
+
 export const extractExpenseData = base44.functions.extractExpenseData;
 
 export const createMyDailyWork = base44.functions.createMyDailyWork;

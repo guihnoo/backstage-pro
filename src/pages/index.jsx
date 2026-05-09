@@ -7,10 +7,10 @@ const Calendar = React.lazy(() => import('./Calendar'));
 const Dashboard = React.lazy(() => import('./Dashboard'));
 const Clients = React.lazy(() => import('./Clients'));
 const Expenses = React.lazy(() => import('./Expenses'));
-const ReportsPage = React.lazy(() => import('./reports'));
+const Reports = React.lazy(() => import('./Reports'));
 const ClientDetail = React.lazy(() => import('./ClientDetail'));
 const Profile = React.lazy(() => import('./Profile'));
-const AIMentorPage = React.lazy(() => import('./AI_Mentor'));
+const AIReports = React.lazy(() => import('./AIReports'));
 const PrivacyPolicy = React.lazy(() => import('./PrivacyPolicy'));
 
 const PAGES = {
@@ -18,12 +18,10 @@ const PAGES = {
   Dashboard,
   Clients,
   Expenses,
-  Reports: ReportsPage,
-  reports: ReportsPage,
+  Reports,
   ClientDetail,
   Profile,
-  AI_Mentor: AIMentorPage,
-  AIReports: AIMentorPage,
+  AIReports,
   PrivacyPolicy
 };
 
