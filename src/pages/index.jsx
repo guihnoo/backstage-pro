@@ -1,6 +1,9 @@
 import React, { Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/lib/mockAuth';
+import { useNavigate } from 'react-router-dom';
+import Login from './Login';
 
 // Lazy loading das páginas para code-splitting
 const Calendar = React.lazy(() => import('./Calendar'));
@@ -40,10 +43,26 @@ const PageLoader = () => (
 );
 
 export default function PagesRouter() {
-  // Lógica de roteamento (mantendo a existente)
+  const { isAuthenticated } = useAuth();
   const path = window.location.pathname;
+
+  // Mostrar login se não autenticado
+  if (!isAuthenticated && path !== '/login') {
+    return <Login />;
+  }
+
+  // Se estiver na rota /login e autenticado, redireciona para dashboard
+  if (isAuthenticated && path === '/login') {
+    window.location.pathname = '/';
+    return null;
+  }
+
+  if (path === '/login') {
+    return <Login />;
+  }
+
   const pageName = path === '/' ? 'Dashboard' : path.slice(1);
-  
+
   // Tratar rotas com parâmetros
   let resolvedPageName = pageName;
   if (path.startsWith('/clients/') && path !== '/clients') {
