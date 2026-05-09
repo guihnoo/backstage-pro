@@ -1,0 +1,821 @@
+
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { useAppData } from '@/components/context/AppDataContext';
+import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import {
+  Calendar,
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  Users,
+  Clock,
+  BarChart3,
+  Download,
+  FileText,
+  AlertCircle,
+  Loader2,
+  ArrowUp,
+  ArrowDown,
+  Minus,
+  XCircle // Ícone para limpar filtro
+} from 'lucide-react';
+import { format, startOfMonth, endOfMonth, subMonths, isWithinInterval, parseISO, startOfYear, endOfYear, addMonths } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
+import { toast } from 'sonner';
+import { getEventStatus, getEventStatusLabel, getEventStatusConfig } from '@/components/utils/dateUtils';
+
+// Component imports
+import ReportsChart from '@/components/reports/ReportsChart';
+import ReportEventList from '@/components/reports/ReportEventList';
+import FinancialSummary from '@/components/reports/FinancialSummary';
+import ClientDetailedTable from '@/components/reports/ClientDetailedTable';
+import ExpenseAnalysis from '@/components/reports/ExpenseAnalysis';
+import ExportManager from '@/components/reports/ExportManager';
+import EventDetailModal from '@/components/reports/EventDetailModal'; // IMPORTANTE: Importar o modal
+import { Skeleton } from '@/components/ui/skeleton';
+import EmptyState from '@/components/layout/EmptyState';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+
+const ReportsSkeleton = () => (
+  <div className="p-4 md:p-6 space-y-6">
+    <div className="flex justify-between items-center">
+      <Skeleton className="h-10 w-64" />
+      <div className="flex gap-2">
+        <Skeleton className="h-10 w-32" />
+        <Skeleton className="h-10 w-40" />
+      </div>
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <Skeleton className="h-32 rounded-lg" />
+      <Skeleton className="h-32 rounded-lg" />
+      <Skeleton className="h-32 rounded-lg" />
+      <Skeleton className="h-32 rounded-lg" />
+    </div>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <Skeleton className="h-64 rounded-lg" />
+      <Skeleton className="h-64 rounded-lg" />
+    </div>
+    <Skeleton className="h-96 rounded-lg" />
+  </div>
+);
+
+// Period options for reports
+const PERIOD_OPTIONS = [
+  { value: 'this_month', label: 'Este Mês' },
+  { value: 'last_month', label: 'Mês Passado' },
+  { value: 'last_3_months', label: 'Últimos 3 Meses' },
+  { value: 'last_6_months', label: 'Últimos 6 Meses' },
+  { value: 'this_year', label: 'Este Ano' },
+  { value: 'all_time', label: 'Todo o Período' }
+];
+
+// Enhanced StatCard with comparison indicators
+const StatCard = ({ title, value, subtitle, icon: Icon, color, trend, onClick, isClickable = true }) => {
+  const getTrendIcon = () => {
+    if (!trend) return null;
+    if (trend.change > 0) return <ArrowUp className="w-3 h-3 text-green-400" />;
+    if (trend.change < 0) return <ArrowDown className="w-3 h-3 text-red-400" />;
+    return <Minus className="w-3 h-3 text-slate-400" />;
+  };
+
+  const getTrendColor = () => {
+    if (!trend) return 'text-slate-400';
+    if (trend.change > 0) return 'text-green-400';
+    if (trend.change < 0) return 'text-red-400';
+    return 'text-slate-400';
+  };
+
+  return (
+    <Card
+      className={`bg-slate-900/50 border-slate-800 transition-all ${
+        isClickable && onClick ? 'hover:border-cyan-400/50 cursor-pointer hover:shadow-lg' : ''
+      }`}
+      onClick={onClick}
+    >
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between mb-3">
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-slate-400">{title}</p>
+            <p className={`text-2xl font-bold ${color}`}>{value}</p>
+          </div>
+          <Icon className={`w-8 h-8 ${color} opacity-60`} />
+        </div>
+        <div className="flex items-center justify-between">
+          {subtitle && <p className="text-xs text-slate-500 truncate flex-1">{subtitle}</p>}
+          {trend && (
+            <div className={`flex items-center gap-1 text-xs ${getTrendColor()}`}>
+              {getTrendIcon()}
+              <span>{Math.abs(trend.change).toFixed(1)}%</span>
+            </div>
+          )}
+        </div>
+        {isClickable && onClick && (
+          <div className="mt-2 text-xs text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity">
+            Clique para ver detalhes →
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+// Modal para exibir detalhes dos KPIs
+const KPIDetailModal = ({ isOpen, onClose, title, data, type }) => {
+  const { formatCurrency } = useFinancialVisibility();
+
+  const getModalContent = () => {
+    if (!data || data.length === 0) {
+      return <p className="text-slate-400">Nenhum registro encontrado para este período.</p>;
+    }
+
+    return (
+      <div className="space-y-4 max-h-96 overflow-y-auto">
+        {data.map((item, index) => (
+          <div key={index} className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
+            <div>
+              <p className="font-medium text-white">{item.title}</p>
+              <p className="text-sm text-slate-400">{item.subtitle}</p>
+            </div>
+            <div className="text-right">
+              <p className="font-bold text-green-400">{formatCurrency(item.value)}</p>
+              {item.date && <p className="text-xs text-slate-500">{item.date}</p>}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold text-cyan-300">{title}</DialogTitle>
+          <DialogDescription className="text-slate-400">
+            Detalhamento dos registros que compõem esta métrica
+          </DialogDescription>
+        </DialogHeader>
+        {getModalContent()}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default function ReportsPage() {
+  const { data, loading, error, loadEvents, loadClients, loadDailyWork, loadExpenses, refreshData } = useAppData();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
+
+  const [selectedPeriod, setSelectedPeriod] = useState('this_month');
+  const [selectedView, setSelectedView] = useState('overview');
+
+  // Modal states
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalData, setModalData] = useState([]);
+  const [modalType, setModalType] = useState('');
+  const [chartFilter, setChartFilter] = useState(null);
+
+  // NOVO: State para o EventDetailModal
+  const [selectedEvent, setSelectedEvent] = useState(null);
+
+  // Load all necessary data on mount
+  useEffect(() => {
+    loadEvents();
+    loadClients();
+    loadDailyWork();
+    loadExpenses();
+  }, [loadEvents, loadClients, loadDailyWork, loadExpenses]);
+
+  // Define isDataReady and hasError here
+  const isDataReady = !loading.events && !loading.clients && !loading.dailyWork && !loading.expenses;
+  const hasError = error.events || error.clients || error.dailyWork || error.expenses;
+
+  // Calculate date ranges for current and previous periods
+  const { currentRange, previousRange, nextRange } = useMemo(() => {
+    const now = new Date();
+    let currentStart, currentEnd, previousStart, previousEnd, nextStart, nextEnd;
+
+    switch (selectedPeriod) {
+      case 'this_month':
+        currentStart = startOfMonth(now);
+        currentEnd = endOfMonth(now);
+        previousStart = startOfMonth(subMonths(now, 1));
+        previousEnd = endOfMonth(subMonths(now, 1));
+        nextStart = startOfMonth(addMonths(now, 1));
+        nextEnd = endOfMonth(addMonths(now, 1));
+        break;
+      case 'last_month':
+        const lastMonth = subMonths(now, 1);
+        currentStart = startOfMonth(lastMonth);
+        currentEnd = endOfMonth(lastMonth);
+        previousStart = startOfMonth(subMonths(now, 2));
+        previousEnd = endOfMonth(subMonths(now, 2));
+        nextStart = startOfMonth(now);
+        nextEnd = endOfMonth(now);
+        break;
+      case 'last_3_months':
+        currentStart = startOfMonth(subMonths(now, 2));
+        currentEnd = endOfMonth(now);
+        previousStart = startOfMonth(subMonths(now, 5));
+        previousEnd = endOfMonth(subMonths(now, 3));
+        nextStart = startOfMonth(addMonths(now, 1));
+        nextEnd = endOfMonth(addMonths(now, 3));
+        break;
+      case 'last_6_months':
+        currentStart = startOfMonth(subMonths(now, 5));
+        currentEnd = endOfMonth(now);
+        previousStart = startOfMonth(subMonths(now, 11));
+        previousEnd = endOfMonth(subMonths(now, 6));
+        nextStart = startOfMonth(addMonths(now, 1));
+        nextEnd = endOfMonth(addMonths(now, 6));
+        break;
+      case 'this_year':
+        currentStart = startOfYear(now);
+        currentEnd = endOfYear(now);
+        previousStart = startOfYear(subMonths(now, 12));
+        previousEnd = endOfYear(subMonths(now, 12));
+        nextStart = startOfYear(addMonths(now, 12));
+        nextEnd = endOfYear(addMonths(now, 12));
+        break;
+      case 'all_time':
+      default:
+        currentStart = null;
+        currentEnd = null;
+        previousStart = null;
+        previousEnd = null;
+        nextStart = null;
+        nextEnd = null;
+        break;
+    }
+
+    return {
+      currentRange: { start: currentStart, end: currentEnd },
+      previousRange: { start: previousStart, end: previousEnd },
+      nextRange: { start: nextStart, end: nextEnd }
+    };
+  }, [selectedPeriod]);
+
+  // **LÓGICA REVISADA**: Faturamento baseado na data de pagamento
+  const processedData = useMemo(() => {
+    console.log('🔄 Processando dados com faturamento por data de pagamento...');
+    const { events = [], dailyWork = [], expenses = [], clients = [] } = data;
+
+    // APLICAR STATUS CORRETO A TODOS OS EVENTOS ANTES DE PROCESSAR
+    const eventsWithCorrectStatus = events.map((event) => ({
+      ...event,
+      calculatedStatus: getEventStatus(event)
+    }));
+
+    // Função auxiliar para verificar se uma data está no intervalo
+    const isInRange = (dateStr, range) => {
+      if (!range.start || !range.end || !dateStr) return selectedPeriod === 'all_time';
+      try {
+        const date = parseISO(dateStr);
+        return isWithinInterval(date, { start: range.start, end: range.end });
+      } catch (error) {
+        console.warn('Erro ao parsear data:', dateStr, error);
+        return false;
+      }
+    };
+
+    // Função para calcular o valor real de um evento
+    const calculateRealEventValue = (event) => {
+      // 1. Se foi pago, usar o valor pago
+      if (event.payment_status === 'paid' && event.paid_amount > 0) {
+        return event.paid_amount;
+      }
+
+      // 2. Se há trabalho registrado, usar a soma dos cachês diários
+      const eventDailyWork = dailyWork.filter((work) => work.event_id === event.id);
+      if (eventDailyWork.length > 0) {
+        const totalFromWork = eventDailyWork.reduce((sum, work) => sum + (work.daily_cache || 0), 0);
+        if (totalFromWork > 0) return totalFromWork;
+      }
+
+      // 3. Calcular baseado no valor diário e duração do evento
+      try {
+        const startDate = parseISO(event.start_date);
+        const endDate = parseISO(event.end_date);
+        const days = Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1);
+        return (event.daily_cache_value || 0) * days;
+      } catch (error) {
+        console.warn('Erro ao calcular duração do evento:', event, error);
+        return event.daily_cache_value || 0;
+      }
+    };
+
+    // Processar dados do período atual
+    const processForPeriod = (range) => {
+      // **MUDANÇA CRÍTICA**: Faturamento baseado em paid_date, não em start_date
+      const paidEventsInPeriod = eventsWithCorrectStatus.filter((e) =>
+        e.payment_status === 'paid' &&
+        e.paid_date &&
+        isInRange(e.paid_date, range)
+      );
+
+      // Eventos do período para outras métricas (baseado em start_date)
+      const periodEvents = eventsWithCorrectStatus.filter((e) => e.start_date && isInRange(e.start_date, range));
+      const periodWork = dailyWork.filter((w) => w.date && isInRange(w.date, range));
+      const periodExpenses = expenses.filter((e) => e.date && isInRange(e.date, range));
+
+      // **RECEITA REALIZADA**: Baseada na data de pagamento
+      const realizedRevenue = paidEventsInPeriod.reduce((sum, e) => sum + (e.paid_amount || 0), 0);
+
+      // A receber (eventos concluídos mas não pagos) - USANDO STATUS CALCULADO
+      const receivableRevenue = eventsWithCorrectStatus.
+        filter((e) => e.calculatedStatus === 'completed' && e.payment_status === 'unpaid').
+        reduce((sum, e) => sum + calculateRealEventValue(e), 0);
+
+      // Projetado (eventos agendados) - USANDO STATUS CALCULADO
+      const projectedRevenue = eventsWithCorrectStatus.
+        filter((e) => e.calculatedStatus === 'scheduled').
+        reduce((sum, e) => sum + calculateRealEventValue(e), 0);
+
+      // Total de despesas
+      const totalExpenses = periodExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+
+      // Receita total (realizada + a receber)
+      const totalRevenue = realizedRevenue + receivableRevenue;
+
+      // Lucro líquido
+      const netProfit = totalRevenue - totalExpenses;
+
+      // Horas trabalhadas
+      const totalHours = periodWork.reduce((sum, w) => sum + (w.total_hours || 0), 0);
+
+      // Clientes ativos no período
+      const activeClientIds = new Set(periodEvents.map((e) => e.client_id));
+
+      // Cliente com maior faturamento no período (baseado em pagamentos)
+      const clientRevenueMap = {};
+      paidEventsInPeriod.forEach((event) => {
+        if (event.client_id) {
+          clientRevenueMap[event.client_id] = (clientRevenueMap[event.client_id] || 0) + (event.paid_amount || 0);
+        }
+      });
+
+      const topClientId = Object.keys(clientRevenueMap).reduce((a, b) =>
+        clientRevenueMap[a] > clientRevenueMap[b] ? a : b, null);
+      const topClient = topClientId ? clients.find((c) => c.id === topClientId) : null;
+
+      return {
+        totalRevenue,
+        realizedRevenue,
+        receivableRevenue,
+        projectedRevenue,
+        totalExpenses,
+        netProfit,
+        totalHours,
+        activeClientsCount: activeClientIds.size,
+        topClient,
+        completedEventsCount: periodEvents.filter((e) => e.calculatedStatus === 'completed').length,
+        scheduledEventsCount: periodEvents.filter((e) => e.calculatedStatus === 'scheduled').length,
+        inProgressEventsCount: periodEvents.filter((e) => e.calculatedStatus === 'in_progress').length,
+        events: periodEvents,
+        paidEvents: paidEventsInPeriod, // Eventos pagos no período
+        work: periodWork,
+        expenses: periodExpenses
+      };
+    };
+
+    const currentData = processForPeriod(currentRange);
+    const previousData = processForPeriod(previousRange);
+    const nextData = processForPeriod(nextRange);
+
+    // Calcular tendências (comparação com período anterior)
+    const calculateTrend = (current, previous) => {
+      if (previous === 0) return { change: current > 0 ? 100 : 0 };
+      return { change: (current - previous) / previous * 100 };
+    };
+
+    console.log('✅ Dados processados com faturamento por data de pagamento:', {
+      current: currentData,
+      paidInPeriod: currentData.paidEvents.length,
+      realizedRevenue: currentData.realizedRevenue
+    });
+
+    return {
+      current: currentData,
+      previous: previousData,
+      next: nextData,
+      trends: {
+        revenue: calculateTrend(currentData.totalRevenue, previousData.totalRevenue),
+        receivable: calculateTrend(currentData.receivableRevenue, previousData.receivableRevenue),
+        profit: calculateTrend(currentData.netProfit, previousData.netProfit),
+        clients: calculateTrend(currentData.activeClientsCount, previousData.activeClientsCount)
+      },
+      // Dados para componentes filhos
+      chartInput: {
+        realized: currentData.paidEvents.map((e) => ({ ...e, calculated_value: e.paid_amount })),
+        receivable: eventsWithCorrectStatus.filter((e) => e.calculatedStatus === 'completed' && e.payment_status === 'unpaid').map((e) => ({ ...e, calculated_value: calculateRealEventValue(e) })),
+        projected: eventsWithCorrectStatus.filter((e) => e.calculatedStatus === 'scheduled').map((e) => ({ ...e, calculated_value: calculateRealEventValue(e) })),
+        expenses: currentData.expenses
+      }
+    };
+  }, [data, currentRange, previousRange, nextRange, selectedPeriod]);
+
+  // Handlers para KPIs clicáveis
+  const handleKPIClick = useCallback((type) => {
+    const { current } = processedData;
+
+    switch (type) {
+      case 'faturamento':
+        setModalTitle('Faturamento Realizado');
+        setModalData(current.paidEvents.map((event) => {
+          const client = data.clients.find((c) => c.id === event.client_id);
+          return {
+            title: event.title,
+            subtitle: `${client?.name || 'Cliente'} • ${format(parseISO(event.paid_date), 'dd/MM/yyyy')}`,
+            value: event.paid_amount,
+            date: format(parseISO(event.paid_date), 'dd/MM/yyyy')
+          };
+        }));
+        break;
+      case 'a_receber':
+        setModalTitle('Valores a Receber');
+        const receivableEvents = data.events.filter((e) =>
+          getEventStatus(e) === 'completed' && e.payment_status === 'unpaid'
+        );
+        setModalData(receivableEvents.map((event) => {
+          const client = data.clients.find((c) => c.id === event.client_id);
+          const workValue = data.dailyWork.filter((w) => w.event_id === event.id).reduce((sum, w) => sum + (w.daily_cache || 0), 0);
+          return {
+            title: event.title,
+            subtitle: `${client?.name || 'Cliente'} • Concluído em ${format(parseISO(event.end_date), 'dd/MM/yyyy')}`,
+            value: workValue || event.daily_cache_value || 0
+          };
+        }));
+        break;
+      case 'lucro':
+        setModalTitle('Composição do Lucro Líquido');
+        setModalData([
+          { title: 'Receita Total', subtitle: 'Faturamento + A Receber', value: current.totalRevenue },
+          { title: 'Despesas Totais', subtitle: 'Gastos do período', value: -current.totalExpenses },
+          { title: 'Lucro Líquido', subtitle: 'Receita - Despesas', value: current.netProfit }]
+        );
+        break;
+      case 'clientes':
+        setModalTitle('Clientes Ativos');
+        const activeClients = [...new Set(current.events.map((e) => e.client_id))].
+          map((clientId) => data.clients.find((c) => c.id === clientId)).
+          filter(Boolean);
+        setModalData(activeClients.map((client) => ({
+          title: client.name,
+          subtitle: `${current.events.filter((e) => e.client_id === client.id).length} eventos no período`,
+          value: current.paidEvents.filter((e) => e.client_id === client.id).reduce((sum, e) => sum + e.paid_amount, 0)
+        })));
+        break;
+      default:
+        return;
+    }
+
+    setModalType(type);
+    setModalOpen(true);
+  }, [processedData, data]);
+
+  // Handler para o clique no gráfico
+  const handleChartClick = useCallback((payload) => {
+    if (payload && payload.date) {
+      console.log('Filtrando por data do gráfico:', payload.date);
+      setChartFilter({ date: payload.date, view: payload.view });
+    }
+  }, []);
+
+  const clearChartFilter = () => {
+    setChartFilter(null);
+  };
+
+  // Memo para filtrar a lista de eventos com base no clique do gráfico
+  const filteredEventList = useMemo(() => {
+    if (!chartFilter || !chartFilter.date) {
+      return processedData.current.events;
+    }
+
+    return processedData.current.events.filter(event => {
+      const eventStartDate = event.start_date ? event.start_date.split('T')[0] : null;
+      const eventPaidDate = event.paid_date ? event.paid_date.split('T')[0] : null;
+
+      const chartView = chartFilter.view;
+
+      if (chartView === 'realized' || chartView === 'overview_receita') {
+        return eventPaidDate === chartFilter.date;
+      }
+      if (chartView === 'receivable') {
+        // A receber é baseado na data de finalização do evento
+        const eventEndDate = event.end_date ? event.end_date.split('T')[0] : null;
+        return eventEndDate === chartFilter.date && getEventStatus(event) === 'completed' && event.payment_status === 'unpaid';
+      }
+      if (chartView === 'projected') {
+        return eventStartDate === chartFilter.date && getEventStatus(event) === 'scheduled';
+      }
+
+      // Fallback para despesas no modo geral e outras visualizações
+      return eventStartDate === chartFilter.date;
+    });
+  }, [processedData, chartFilter]);
+
+  // NOVO: Handlers para o EventDetailModal
+  const handleEventEdit = (event) => {
+    toast.info('Edição de eventos será implementada em breve!');
+  };
+
+  const handleEventDelete = async (eventId) => {
+    if (window.confirm('Tem certeza que deseja excluir este evento? Esta ação não pode ser desfeita.')) {
+      try {
+        // Aqui você chamaria a função de deleção
+        // await deleteEvent(eventId);
+        toast.success('Evento excluído com sucesso!');
+        setSelectedEvent(null);
+        refreshData();
+      } catch (error) {
+        toast.error('Erro ao excluir evento');
+      }
+    }
+  };
+
+  const handleWorkEdit = (workRecord, eventRecord) => {
+    toast.info('Edição de trabalho será implementada em breve!');
+  };
+
+  const handleWorkDelete = async (workId) => {
+    if (window.confirm('Tem certeza que deseja excluir este registro de trabalho?')) {
+      try {
+        // Aqui você chamaria a função de deleção
+        // await deleteWork(workId);
+        toast.success('Registro de trabalho excluído!');
+        refreshData();
+      } catch (error) {
+        toast.error('Erro ao excluir registro');
+      }
+    }
+  };
+
+  const handleExpenseEdit = (expenseRecord, eventRecord) => {
+    toast.info('Edição de despesas será implementada em breve!');
+  };
+
+  const handleExpenseDelete = async (expenseId) => {
+    if (window.confirm('Tem certeza que deseja excluir esta despesa?')) {
+      try {
+        // Aqui você chamaria a função de deleção
+        // await deleteExpense(expenseId);
+        toast.success('Despesa excluída!');
+        refreshData();
+      } catch (error) {
+        toast.error('Erro ao excluir despesa');
+      }
+    }
+  };
+
+  // Handler para navegar para detalhes do cliente
+  const handleClientDetail = (clientId) => {
+    // Navegar para página de detalhes do cliente
+    window.location.href = `/ClientDetail?id=${clientId}`;
+  };
+
+  // Loading and Error States
+  if (!isDataReady) {
+    return <ReportsSkeleton />;
+  }
+
+  if (hasError) {
+    return (
+      <div className="h-[60vh] flex items-center justify-center p-4">
+        <EmptyState
+          icon={AlertCircle}
+          title="Erro ao Carregar Dados"
+          description="Não foi possível carregar os dados para o relatório."
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="p-4 md:p-6 space-y-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-white font-display">Relatórios</h1>
+            <p className="text-slate-400">Análise completa do seu desempenho financeiro e operacional.</p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+              <SelectTrigger className="bg-slate-800 text-slate-50 px-3 py-2 text-sm flex h-10 items-center justify-between rounded-md border ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 w-48 border-slate-700">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-slate-800">
+                {PERIOD_OPTIONS.map((option) =>
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+
+            <ExportManager
+              data={{
+                events: processedData.current.events,
+                work: processedData.current.work,
+                expenses: processedData.current.expenses,
+                clients: data.clients
+              }}
+              period={currentRange} />
+
+          </div>
+        </div>
+
+        {/* Enhanced KPI Cards with Click Handlers */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 group">
+          <StatCard
+            title="Faturamento"
+            value={isVisible ? formatCurrency(processedData.current.realizedRevenue) : '•••••'}
+            subtitle={`${processedData.current.paidEvents.length} pagamentos recebidos`}
+            icon={DollarSign}
+            color="text-green-400"
+            trend={processedData.trends.revenue}
+            onClick={() => handleKPIClick('faturamento')} />
+
+          <StatCard
+            title="A Receber"
+            value={isVisible ? formatCurrency(processedData.current.receivableRevenue) : '•••••'}
+            subtitle={`${data.events?.filter((e) => getEventStatus(e) === 'completed' && e.payment_status === 'unpaid').length || 0} pendentes`}
+            icon={Clock}
+            color="text-amber-400"
+            trend={processedData.trends.receivable}
+            onClick={() => handleKPIClick('a_receber')} />
+
+          <StatCard
+            title="Lucro Líquido"
+            value={isVisible ? formatCurrency(processedData.current.netProfit) : '•••••'}
+            subtitle="Receita - Despesas"
+            icon={TrendingUp}
+            color={processedData.current.netProfit >= 0 ? "text-green-400" : "text-red-400"}
+            trend={processedData.trends.profit}
+            onClick={() => handleKPIClick('lucro')} />
+
+          <StatCard
+            title="Clientes Ativos"
+            value={processedData.current.activeClientsCount}
+            subtitle={processedData.current.topClient ? `Top: ${processedData.current.topClient.name}` : 'Nenhum cliente'}
+            icon={Users}
+            color="text-cyan-400"
+            trend={processedData.trends.clients}
+            onClick={() => handleKPIClick('clientes')} />
+
+        </div>
+
+        {/* Projeção para o Próximo Período */}
+        {processedData.next.projectedRevenue > 0 &&
+          <Card
+            className="bg-gradient-to-r from-cyan-900/20 to-blue-900/20 border-cyan-500/30 cursor-pointer hover:border-cyan-400/50 transition-all"
+            onClick={() => {
+              toast.info('Funcionalidade de projeções detalhadas em desenvolvimento!');
+            }}>
+
+            <CardContent className="bg-emerald-950 p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-cyan-300 mb-1">Projeção do Próximo Período</h3>
+                  <p className="text-3xl font-bold text-white">
+                    {isVisible ? formatCurrency(processedData.next.projectedRevenue) : '•••••'}
+                  </p>
+                  <p className="text-sm text-slate-400 mt-1">
+                    {processedData.next.scheduledEventsCount} eventos agendados
+                  </p>
+                </div>
+                <BarChart3 className="w-12 h-12 text-cyan-400 opacity-60" />
+              </div>
+            </CardContent>
+          </Card>
+        }
+
+        {/* View Selector */}
+        <div className="flex items-center gap-2 border-b border-slate-800">
+          {[
+            { id: 'overview', label: 'Visão Geral', icon: BarChart3 },
+            { id: 'clients', label: 'Clientes', icon: Users },
+            { id: 'expenses', label: 'Despesas', icon: DollarSign }].
+            map((view) =>
+              <Button
+                key={view.id}
+                variant={selectedView === view.id ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setSelectedView(view.id)}
+                className={selectedView === view.id ? "bg-cyan-600 text-white" : "text-slate-400 hover:text-white"}>
+
+                <view.icon className="w-4 h-4 mr-2" />
+                {view.label}
+              </Button>
+            )}
+        </div>
+
+        {/* Content based on selected view */}
+        {selectedView === 'overview' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ReportsChart
+              chartInput={processedData.chartInput}
+              period={selectedPeriod}
+              onDataClick={handleChartClick} // NOVO: Passando handler para o gráfico
+            />
+            <FinancialSummary
+              stats={processedData.current} />
+
+          </div>
+        )}
+
+        {selectedView === 'clients' && (
+          <ClientDetailedTable
+            data={{
+              clients: data.clients,
+              events: processedData.current.events,
+              work: processedData.current.work,
+              expenses: processedData.current.expenses
+            }}
+            onClientClick={handleClientDetail}
+          />
+        )}
+
+        {selectedView === 'expenses' &&
+          <ExpenseAnalysis
+            expenses={processedData.current.expenses}
+            period={selectedPeriod}
+            onSliceClick={(category) => {
+              toast.info(`Visualizando despesas da categoria: ${category}`);
+              // Aqui poderia abrir um modal ou filtrar a lista
+            }} />
+
+        }
+
+        {/* Events List - AGORA FILTRÁVEL e com MODAL */}
+        <div className="space-y-2">
+          {chartFilter && (
+            <div className="flex items-center justify-between bg-slate-800/50 p-2 rounded-lg">
+              <p className="text-sm text-cyan-300">
+                Filtro ativo: Mostrando eventos para <strong>{format(parseISO(chartFilter.date), 'dd/MM/yyyy')}</strong>
+              </p>
+              <Button variant="ghost" size="sm" onClick={clearChartFilter} className="text-slate-400 hover:text-white">
+                <XCircle className="w-4 h-4 mr-2" />
+                Limpar Filtro
+              </Button>
+            </div>
+          )}
+          <ReportEventList
+            events={filteredEventList} // USANDO A LISTA FILTRADA
+            clients={data.clients}
+            dailyWork={data.dailyWork} // Passando todo o dailyWork
+            title={`Eventos do Período (${filteredEventList.length})`}
+            onEventClick={(event) => setSelectedEvent(event)} // NOVO: handler para abrir modal
+          />
+        </div>
+
+        {/* Empty State */}
+        {processedData.current.events.length === 0 && !chartFilter &&
+          <EmptyState
+            icon={FileText}
+            title="Nenhum dado encontrado"
+            description="Não há eventos registrados para o período selecionado." />
+
+        }
+        {processedData.current.events.length > 0 && chartFilter && filteredEventList.length === 0 &&
+          <EmptyState
+            icon={FileText}
+            title="Nenhum evento encontrado para o filtro"
+            description="Não há eventos correspondentes à data selecionada no gráfico." />
+
+        }
+      </div>
+
+      {/* Modal de detalhes dos KPIs */}
+      <KPIDetailModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalTitle}
+        data={modalData}
+        type={modalType} />
+
+      {/* NOVO: Modal de detalhes do evento */}
+      {selectedEvent && (
+        <EventDetailModal
+          event={selectedEvent}
+          dailyWork={data.dailyWork.filter(w => w.event_id === selectedEvent.id)}
+          expenses={data.expenses.filter(e => e.event_id === selectedEvent.id)}
+          onClose={() => setSelectedEvent(null)}
+          onEdit={handleEventEdit}
+          onDelete={handleEventDelete}
+          onPaymentUpdate={() => refreshData()}
+          onWorkEdit={handleWorkEdit}
+          onWorkDelete={handleWorkDelete}
+          onExpenseEdit={handleExpenseEdit}
+          onExpenseDelete={handleExpenseDelete}
+        />
+      )}
+    </div>
+  );
+}

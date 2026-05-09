@@ -1,0 +1,10 @@
+---
+description: Núcleo Backstage Pro — idioma, PWA, saída Base44, mudanças focadas
+alwaysApply: true
+---
+
+# Núcleo
+
+- Respostas ao utilizador em **pt-BR**.
+- Não expandir integrações **novas** em Base44; migrar para API em `server/`.
+- Alterações mínimas ao pedido; rotas → `src/pages/index.jsx` + `navConfig.jsx`.

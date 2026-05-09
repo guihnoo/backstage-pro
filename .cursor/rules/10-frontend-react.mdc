@@ -1,0 +1,12 @@
+---
+description: React/Vite front — Tailwind, Radix, rotas
+globs:
+  - src/**/*.jsx
+  - src/**/*.tsx
+  - vite.config.*
+  - index.html
+---
+
+# Frontend
+
+Vite + React + Tailwind + Radix. Cliente API via `apiUrl()` em `src/lib/apiBase.js` e `VITE_API_URL`.

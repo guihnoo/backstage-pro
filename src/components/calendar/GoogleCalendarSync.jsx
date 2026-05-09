@@ -1,0 +1,324 @@
+
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { 
+  Calendar, 
+  RefreshCw, 
+  CheckCircle, 
+  AlertTriangle, 
+  ExternalLink, 
+  Loader2,
+  Download,
+  Upload,
+  Settings
+} from 'lucide-react';
+import { UserSettings } from '@/api/entities';
+import { User } from '@/api/entities';
+import {
+  googleAuthStart,
+  googleDisconnect,
+  googleSyncNow,
+  googleListCalendars,
+  googleImportEvents,
+} from '@/api/functions';
+import { toast } from 'sonner';
+
+export default function GoogleCalendarSync() {
+  const [settings, setSettings] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [calendars, setCalendars] = useState([]);
+  const [lastSyncStatus, setLastSyncStatus] = useState(null);
+
+  useEffect(() => {
+    loadSettings();
+    checkUrlForError();
+  }, []);
+
+  const checkUrlForError = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    if (error) {
+      toast.error(`Erro na conexão com Google: ${decodeURIComponent(error)}`);
+      // Limpar a URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  };
+
+  const loadSettings = async () => {
+    setIsLoading(true);
+    try {
+      const user = await User.me();
+      const userSettings = await UserSettings.filter({ user_id: user.id });
+      
+      if (userSettings && userSettings.length > 0) {
+        setSettings(userSettings[0]);
+        if (userSettings[0].google_calendar_connected) {
+          await loadCalendars();
+        }
+      } else {
+        setSettings(null);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar configurações:', error);
+      setSettings(null);
+    }
+    setIsLoading(false);
+  };
+
+  const loadCalendars = async () => {
+    try {
+      const { data } = await googleListCalendars();
+      if (data.success) {
+        setCalendars(data.calendars || []);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar calendários:', error);
+      setCalendars([]);
+    }
+  };
+
+  const handleConnect = async () => {
+    try {
+      toast.info("Redirecionando para autenticação do Google...");
+      const { data } = await googleAuthStart();
+      
+      if (data.success && data.authUrl) {
+        // Redirecionar o usuário para a URL de autorização do Google
+        window.location.href = data.authUrl;
+      } else {
+        throw new Error(data.error || 'Erro desconhecido ao obter URL de autorização');
+      }
+    } catch (error) {
+      console.error('Erro ao iniciar conexão:', error);
+      toast.error("Erro ao conectar com Google Calendar. Tente novamente.");
+    }
+  };
+
+  const handleDisconnect = async () => {
+    if (!confirm("Tem certeza que deseja desconectar do Google Calendar?")) return;
+    
+    try {
+      toast.info("Desconectando do Google Calendar...");
+      await googleDisconnect();
+      await loadSettings();
+      setCalendars([]);
+      toast.success("Desconectado com sucesso!");
+    } catch (error) {
+      console.error('Erro ao desconectar:', error);
+      toast.error("Erro ao desconectar. Tente novamente.");
+    }
+  };
+
+  const handleSyncNow = async () => {
+    setIsSyncing(true);
+    setLastSyncStatus(null);
+    
+    try {
+      toast.info("Sincronizando eventos com Google Calendar...");
+      const { data } = await googleSyncNow();
+      
+      if (data.success) {
+        setLastSyncStatus({
+          success: true,
+          message: `Sincronização concluída! ${data.synced_events || 0} eventos sincronizados.`,
+          timestamp: new Date()
+        });
+        toast.success("Sincronização concluída com sucesso!");
+      } else {
+        throw new Error(data.error || 'Erro desconhecido na sincronização');
+      }
+    } catch (error) {
+      console.error('Erro na sincronização:', error);
+      setLastSyncStatus({
+        success: false,
+        message: error.message || 'Erro na sincronização',
+        timestamp: new Date()
+      });
+      toast.error("Erro na sincronização. Verifique sua conexão.");
+    }
+    setIsSyncing(false);
+  };
+
+  const handleImportEvents = async () => {
+    if (!confirm("Importar eventos do Google Calendar? Isso pode criar eventos duplicados.")) return;
+    
+    setIsSyncing(true);
+    try {
+      toast.info("Importando eventos do Google Calendar...");
+      const { data } = await googleImportEvents({ days_back: 30, days_forward: 90 });
+      
+      if (data.success) {
+        toast.success(`${data.imported_count || 0} eventos importados com sucesso!`);
+      } else {
+        throw new Error(data.error || 'Erro na importação');
+      }
+    } catch (error) {
+      console.error('Erro na importação:', error);
+      toast.error("Erro ao importar eventos. Tente novamente.");
+    }
+    setIsSyncing(false);
+  };
+
+  if (isLoading) {
+    return (
+      <Card className="bg-slate-800/50 border-slate-700">
+        <CardContent className="p-6 text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-cyan-400 mx-auto mb-4" />
+          <p className="text-slate-400">Carregando configurações...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const isConnected = settings?.google_calendar_connected;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
+      <Card className="bg-slate-800/50 border-slate-700">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center gap-3">
+            <Calendar className="w-6 h-6 text-blue-400" />
+            Sincronização com Google Calendar
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Status da Conexão */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
+              <span className="text-white font-medium">
+                {isConnected ? 'Conectado' : 'Desconectado'}
+              </span>
+              {isConnected && settings?.google_account_email && (
+                <Badge variant="outline" className="bg-blue-500/20 text-blue-300 border-blue-400/50">
+                  {settings.google_account_email}
+                </Badge>
+              )}
+            </div>
+            
+            {isConnected ? (
+              <Button variant="destructive" onClick={handleDisconnect} size="sm">
+                Desconectar
+              </Button>
+            ) : (
+              <Button onClick={handleConnect} className="bg-blue-600 hover:bg-blue-700">
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Conectar ao Google
+              </Button>
+            )}
+          </div>
+
+          {/* Informações da Conta Conectada */}
+          {isConnected && (
+            <div className="space-y-4">
+              <div className="bg-slate-900/50 rounded-lg p-4 space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400">Última Sincronização:</span>
+                  <span className="text-white">
+                    {settings.last_sync_date ? 
+                      new Date(settings.last_sync_date).toLocaleString('pt-BR') : 
+                      'Nunca'
+                    }
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400">Calendários Disponíveis:</span>
+                  <span className="text-white">{calendars.length}</span>
+                </div>
+              </div>
+
+              {/* Lista de Calendários */}
+              {calendars.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-white font-medium flex items-center gap-2">
+                    <Settings className="w-4 h-4" />
+                    Seus Calendários do Google
+                  </h4>
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {calendars.map((calendar, index) => (
+                      <div key={index} className="flex items-center justify-between bg-slate-900/30 rounded p-2">
+                        <span className="text-slate-300 text-sm">{calendar.summary}</span>
+                        <Badge variant="outline" className={calendar.primary ? 'border-blue-400 text-blue-300' : 'border-slate-600 text-slate-400'}>
+                          {calendar.primary ? 'Principal' : 'Secundário'}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Ações de Sincronização */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button 
+                  onClick={handleSyncNow} 
+                  disabled={isSyncing}
+                  className="bg-green-600 hover:bg-green-700 flex-1"
+                >
+                  {isSyncing ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                  )}
+                  Sincronizar Agora
+                </Button>
+                
+                <Button 
+                  onClick={handleImportEvents}
+                  disabled={isSyncing}
+                  variant="outline"
+                  className="bg-slate-700 border-slate-600 hover:bg-slate-600 flex-1"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Importar Eventos
+                </Button>
+              </div>
+
+              {/* Status da Última Sincronização */}
+              {lastSyncStatus && (
+                <Alert className={lastSyncStatus.success ? 'border-green-500 bg-green-500/10' : 'border-red-500 bg-red-500/10'}>
+                  {lastSyncStatus.success ? (
+                    <CheckCircle className="w-4 h-4 text-green-400" />
+                  ) : (
+                    <AlertTriangle className="w-4 h-4 text-red-400" />
+                  )}
+                  <AlertDescription className={lastSyncStatus.success ? 'text-green-300' : 'text-red-300'}>
+                    {lastSyncStatus.message}
+                    <br />
+                    <span className="text-xs opacity-75">
+                      {lastSyncStatus.timestamp.toLocaleString('pt-BR')}
+                    </span>
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+          )}
+
+          {/* Informações sobre a Sincronização */}
+          {!isConnected && (
+            <Alert className="border-blue-500 bg-blue-500/10">
+              <Calendar className="w-4 h-4 text-blue-400" />
+              <AlertDescription className="text-blue-300">
+                <strong>Benefícios da Sincronização:</strong>
+                <ul className="mt-2 space-y-1 text-sm">
+                  <li>• Seus eventos do Backstage Pro aparecem no Google Calendar</li>
+                  <li>• Importação automática de eventos existentes</li>
+                  <li>• Sincronização bidirecional em tempo real</li>
+                  <li>• Notificações unificadas em todos os dispositivos</li>
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
