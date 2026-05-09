@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Zap, Eye, EyeOff } from 'lucide-react';
+import { Zap, Eye, EyeOff, Chrome, Github } from 'lucide-react';
 import { useAuth } from '@/lib/mockAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,16 @@ export default function Login() {
     setLoading(true);
     setTimeout(() => {
       login(email, password);
+      navigate('/');
+      setLoading(false);
+    }, 600);
+  };
+
+  const handleSocialLogin = (provider) => {
+    setLoading(true);
+    setTimeout(() => {
+      const socialEmail = `user_${provider}@${provider}.com`;
+      login(socialEmail, 'social_auth');
       navigate('/');
       setLoading(false);
     }, 600);
@@ -111,6 +121,38 @@ export default function Login() {
             >
               {loading ? 'Entrando...' : 'Entrar'}
             </Button>
+
+            {/* Divisor */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-800" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-gray-950 text-gray-500">ou</span>
+              </div>
+            </div>
+
+            {/* Login Social */}
+            <div className="space-y-3">
+              <Button
+                type="button"
+                onClick={() => handleSocialLogin('google')}
+                disabled={loading}
+                className="w-full bg-gray-800 hover:bg-gray-700 text-white border border-gray-700 gap-2"
+              >
+                <Chrome className="w-4 h-4" />
+                Entrar com Google
+              </Button>
+              <Button
+                type="button"
+                onClick={() => handleSocialLogin('github')}
+                disabled={loading}
+                className="w-full bg-gray-800 hover:bg-gray-700 text-white border border-gray-700 gap-2"
+              >
+                <Github className="w-4 h-4" />
+                Entrar com GitHub
+              </Button>
+            </div>
           </motion.form>
 
           {/* Dica de login */}
