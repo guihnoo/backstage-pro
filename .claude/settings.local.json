@@ -1,7 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\monte\\\\OneDrive\\\\Documentos\\\\backstage-pro\" -Name)"
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\monte\\\\OneDrive\\\\Documentos\\\\backstage-pro\" -Name)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(npm run *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\monte\\\\OneDrive\\\\Documentos\\\\backstage-pro\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\monte\\\\OneDrive\\\\Documentos\\\\backstage-pro\\\\src\" -Recurse -Force | Select-Object -First 50 FullName | ForEach-Object { $_.FullName.Replace\\(\"C:\\\\Users\\\\monte\\\\OneDrive\\\\Documentos\\\\backstage-pro\\\\\", \"\"\\) })",
+      "Bash(pkill -f \"vite\")"
     ]
   }
 }
