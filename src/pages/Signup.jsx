@@ -9,6 +9,9 @@ import { CATEGORIES } from '@/lib/eventCategories';
 import StepIndicator from '@/components/auth/StepIndicator';
 import CategoryPicker from '@/components/auth/CategoryPicker';
 import SpecialtyPicker from '@/components/auth/SpecialtyPicker';
+import StageBackdrop from '@/components/auth/StageBackdrop';
+import SpotlightRays from '@/components/auth/SpotlightRays';
+import FloatingEquipment from '@/components/auth/FloatingEquipment';
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -54,7 +57,16 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white overflow-hidden relative">
+    <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 text-white overflow-hidden relative">
+      {/* Backdrop animado */}
+      <StageBackdrop />
+
+      {/* Raios de holofote */}
+      <SpotlightRays />
+
+      {/* Equipamentos flutuantes */}
+      <FloatingEquipment />
+
       {/* Fundo com spotlight */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
