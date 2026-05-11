@@ -1,25 +1,22 @@
 import { motion } from 'framer-motion';
 import { Chrome, MessageSquare, Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { useAuth } from '@/lib/mockAuth';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/lib/authContext';
 
 export default function SocialLoginButtons() {
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const { signInWithOAuth } = useAuth();
   const [loading, setLoading] = useState(null);
+  const [error, setError] = useState(null);
 
-  const handleSocialLogin = (provider) => {
-    setLoading(provider);
-    setTimeout(() => {
-      const socialEmail = `user_${provider}@${provider}.com`;
-      login(socialEmail, 'social_auth', {
-        name: `Usuário ${provider}`,
-        role: provider
-      });
-      navigate('/');
+  const handleSocialLogin = async (provider) => {
+    try {
+      setLoading(provider);
+      setError(null);
+      await signInWithOAuth(provider);
+    } catch (err) {
+      setError(err.message);
       setLoading(null);
-    }, 800);
+    }
   };
 
   const socials = [

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Zap, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '@/lib/mockAuth';
+import { Zap, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { useAuth } from '@/lib/authContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import StageBackdrop from '@/components/auth/StageBackdrop';
@@ -15,19 +15,30 @@ export default function LoginNew() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const [error, setError] = useState(null);
+  const { signInWithPassword, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  // Redireciona se já autenticado
+  if (isAuthenticated) {
+    navigate('/onboarding');
+    return null;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) return;
 
-    setLoading(true);
-    setTimeout(() => {
-      login(email, password);
+    try {
+      setLoading(true);
+      setError(null);
+      await signInWithPassword(email, password);
       navigate('/');
+    } catch (err) {
+      setError(err.message);
+    } finally {
       setLoading(false);
-    }, 600);
+    }
   };
 
   return (
@@ -93,6 +104,14 @@ export default function LoginNew() {
               </h1>
               <p className="text-gray-400 text-sm">Volte aos bastidores do seu melhor trabalho</p>
             </div>
+
+            {/* Error message */}
+            {error && (
+              <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                <p className="text-sm text-red-300">{error}</p>
+              </div>
+            )}
 
             {/* Form */}
             <motion.form

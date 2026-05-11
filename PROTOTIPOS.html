@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backstage Pro — Protótipos Visuais</title>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif;
+            background: #0A1428;
+            color: #E5E7EB;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* TOP NAV */
+        .top-nav {
+            background: rgba(15, 61, 86, 0.4);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 217, 255, 0.2);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-title {
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00D9FF, #A64AFF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        button.active {
+            background: rgba(0, 217, 255, 0.2);
+            border: 1px solid #00D9FF;
+            color: #00D9FF;
+        }
+
+        button:not(.active) {
+            background: transparent;
+            color: #9CA3AF;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        button:not(.active):hover {
+            border-color: rgba(0, 217, 255, 0.5);
+            color: #E5E7EB;
+        }
+
+        /* MAIN DISPLAY */
+        .main-content {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* ===== SPLASH SCREEN ===== */
+        .splash {
+            background: url('https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=1600&h=900&fit=crop') center/cover;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Background decoration */
+        .splash::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(10, 20, 40, 0.85), rgba(15, 61, 86, 0.8));
+            z-index: 1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, -30px); }
+        }
+
+        .splash-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+        }
+
+        .splash-logo {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #00D9FF, #A64AFF);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            margin: 0 auto;
+            box-shadow: 0 0 40px rgba(0, 217, 255, 0.5), 0 0 80px rgba(166, 74, 255, 0.3);
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 40px rgba(0, 217, 255, 0.5), 0 0 80px rgba(166, 74, 255, 0.3); }
+            50% { box-shadow: 0 0 60px rgba(0, 217, 255, 0.8), 0 0 120px rgba(166, 74, 255, 0.5); }
+        }
+
+        .splash-title {
+            font-size: 48px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #00D9FF, #A64AFF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .splash-subtitle {
+            font-size: 18px;
+            color: #00D9FF;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        /* Equalizer */
+        .equalizer {
+            display: flex;
+            gap: 6px;
+            align-items: flex-end;
+            height: 60px;
+            margin: 20px 0;
+        }
+
+        .bar {
+            width: 8px;
+            background: linear-gradient(180deg, #00D9FF, #A64AFF, #FFB700);
+            border-radius: 4px;
+            animation: eq-jump 0.8s ease-in-out infinite;
+        }
+
+        @keyframes eq-jump {
+            0%, 100% { height: 15%; }
+            50% { height: 80%; }
+        }
+
+        .bar:nth-child(2) { animation-delay: 0.1s; }
+        .bar:nth-child(3) { animation-delay: 0.2s; }
+        .bar:nth-child(4) { animation-delay: 0.3s; }
+        .bar:nth-child(5) { animation-delay: 0.4s; }
+        .bar:nth-child(6) { animation-delay: 0.5s; }
+
+        /* Progress bar */
+        .progress-bar {
+            width: 200px;
+            height: 3px;
+            background: rgba(107, 114, 128, 0.3);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00D9FF, #A64AFF, #FFB700);
+            width: 0%;
+            animation: progress 2.5s ease-in-out forwards;
+        }
+
+        @keyframes progress {
+            to { width: 100%; }
+        }
+
+        /* ===== LOGIN SCREEN ===== */
+        .login {
+            background: url('https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=1600&h=900&fit=crop') center/cover;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Background with spots */
+        .login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(15, 61, 86, 0.85), rgba(27, 42, 62, 0.8));
+            z-index: 1;
+        }
+
+        .login-card {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 420px;
+            background: rgba(27, 42, 62, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 217, 255, 0.1);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #00D9FF, #A64AFF);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin: 0 auto 15px;
+            box-shadow: 0 0 25px rgba(0, 217, 255, 0.4);
+        }
+
+        .login-title {
+            font-size: 28px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #00D9FF, #A64AFF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+        }
+
+        .login-subtitle {
+            font-size: 13px;
+            color: #9CA3AF;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #9CA3AF;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(15, 61, 86, 0.4);
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            border-radius: 8px;
+            padding: 12px 14px;
+            color: #E5E7EB;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #00D9FF;
+            box-shadow: 0 0 15px rgba(0, 217, 255, 0.3);
+            background: rgba(15, 61, 86, 0.6);
+        }
+
+        input::placeholder {
+            color: #6B7280;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, #00D9FF, #A64AFF);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 0 30px rgba(0, 217, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 45%;
+            height: 1px;
+            background: rgba(107, 114, 128, 0.3);
+        }
+
+        .divider::before {
+            left: 0;
+        }
+
+        .divider::after {
+            right: 0;
+        }
+
+        .divider-text {
+            display: inline-block;
+            background: rgba(27, 42, 62, 0.7);
+            padding: 0 10px;
+            font-size: 12px;
+            color: #6B7280;
+        }
+
+        .social-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-social {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            padding: 12px;
+            color: #E5E7EB;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-social:hover {
+            background: rgba(0, 217, 255, 0.1);
+            border-color: rgba(0, 217, 255, 0.3);
+        }
+
+        .btn-secondary {
+            width: 100%;
+            background: transparent;
+            border: 2px solid #00D9FF;
+            color: #00D9FF;
+            padding: 11px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 217, 255, 0.1);
+        }
+
+        .login-footer {
+            text-align: center;
+            font-size: 12px;
+            color: #6B7280;
+        }
+
+        /* ===== ONBOARDING SCREEN ===== */
+        .onboarding {
+            background: url('https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=1600&h=900&fit=crop') center/cover;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .onboarding::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(10, 20, 40, 0.85), rgba(15, 61, 86, 0.8));
+            z-index: 1;
+        }
+
+        .onboarding-card {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 520px;
+            background: rgba(27, 42, 62, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .onboarding-header {
+            margin-bottom: 30px;
+        }
+
+        .onboarding-title {
+            font-size: 26px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #00D9FF, #A64AFF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .onboarding-subtitle {
+            font-size: 13px;
+            color: #9CA3AF;
+        }
+
+        /* Step Indicator */
+        .step-indicator {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 30px;
+        }
+
+        .step-dot {
+            height: 4px;
+            flex: 1;
+            background: rgba(107, 114, 128, 0.3);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .step-dot.active {
+            background: linear-gradient(90deg, #00D9FF, #A64AFF);
+            box-shadow: 0 0 15px rgba(0, 217, 255, 0.5);
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .category-card {
+            background: rgba(15, 61, 86, 0.4);
+            border: 2px solid rgba(0, 217, 255, 0.2);
+            border-radius: 10px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .category-card:hover {
+            border-color: rgba(0, 217, 255, 0.5);
+            background: rgba(15, 61, 86, 0.6);
+        }
+
+        .category-card.selected {
+            background: rgba(0, 217, 255, 0.2);
+            border-color: #00D9FF;
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+        }
+
+        .category-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 217, 255, 0.1);
+            border-radius: 8px;
+            color: #00D9FF;
+        }
+
+        .category-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .category-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #E5E7EB;
+        }
+
+        /* ===== DASHBOARD SCREEN ===== */
+        .dashboard {
+            background:
+                repeating-linear-gradient(0deg,
+                    rgba(0, 217, 255, 0.04) 0px,
+                    rgba(0, 217, 255, 0.04) 1px,
+                    transparent 1px,
+                    transparent 50px),
+                repeating-linear-gradient(90deg,
+                    rgba(0, 217, 255, 0.04) 0px,
+                    rgba(0, 217, 255, 0.04) 1px,
+                    transparent 1px,
+                    transparent 50px),
+                linear-gradient(135deg, #0A1428 0%, #1B2A3E 50%, #0F3D56 100%);
+            padding: 0;
+            position: relative;
+        }
+
+        .dashboard::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 10% 20%, rgba(0, 217, 255, 0.08) 0%, transparent 30%),
+                radial-gradient(circle at 90% 80%, rgba(166, 74, 255, 0.08) 0%, transparent 30%);
+            pointer-events: none;
+        }
+
+        .dashboard-header {
+            background: rgba(15, 61, 86, 0.4);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 217, 255, 0.2);
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dashboard-title {
+            font-size: 24px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #00D9FF, #A64AFF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .dashboard-content {
+            padding: 30px;
+            height: calc(100% - 70px);
+            overflow-y: auto;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .dashboard-card {
+            background: rgba(27, 42, 62, 0.6);
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .dashboard-card-title {
+            font-size: 13px;
+            color: #9CA3AF;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .dashboard-card-value {
+            font-size: 32px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #00D9FF, #A64AFF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .dashboard-card-subtitle {
+            font-size: 12px;
+            color: #6B7280;
+            margin-top: 8px;
+        }
+
+        /* Scrollbar */
+        .dashboard-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .dashboard-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .dashboard-content::-webkit-scrollbar-thumb {
+            background: rgba(0, 217, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .dashboard-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 217, 255, 0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .splash-title { font-size: 36px; }
+            .login-card { max-width: 90%; padding: 30px; }
+            .social-buttons { grid-template-columns: 1fr; }
+            .category-grid { grid-template-columns: 1fr; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="top-nav">
+            <div class="nav-title">⚡ Backstage Pro — Protótipos</div>
+            <div class="nav-buttons">
+                <button class="active" onclick="showScreen('splash')">Splash</button>
+                <button onclick="showScreen('login')">Login</button>
+                <button onclick="showScreen('onboarding')">Onboarding</button>
+                <button onclick="showScreen('dashboard')">Dashboard</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- SPLASH SCREEN -->
+            <div class="screen active splash" id="splash">
+                <div class="splash-content">
+                    <div class="splash-logo">⚡</div>
+                    <h1 class="splash-title">Backstage Pro</h1>
+                    <p class="splash-subtitle">SEU BACKSTAGE DIGITAL</p>
+                    <div class="equalizer">
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LOGIN SCREEN -->
+            <div class="screen login" id="login">
+                <div class="login-card">
+                    <div class="login-header">
+                        <div class="login-logo">⚡</div>
+                        <h2 class="login-title">Bem-vindo</h2>
+                        <p class="login-subtitle">Volte aos bastidores do seu melhor trabalho</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" placeholder="você@email.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Senha</label>
+                        <input type="password" id="password" placeholder="••••••••">
+                    </div>
+
+                    <button class="btn-primary">Entrar no Backstage</button>
+
+                    <div class="divider">
+                        <span class="divider-text">ou entre com</span>
+                    </div>
+
+                    <div class="social-buttons">
+                        <button class="btn-social">🔵 Google</button>
+                        <button class="btn-social">🟣 Discord</button>
+                        <button class="btn-social">🔵 Facebook</button>
+                        <button class="btn-social">🍎 Apple</button>
+                    </div>
+
+                    <div class="divider" style="margin-bottom: 20px;">
+                        <span class="divider-text">novo por aqui?</span>
+                    </div>
+
+                    <button class="btn-secondary">Criar sua conta</button>
+
+                    <div class="login-footer">Use qualquer email/senha para demo</div>
+                </div>
+            </div>
+
+            <!-- ONBOARDING SCREEN -->
+            <div class="screen onboarding" id="onboarding">
+                <div class="onboarding-card">
+                    <div class="onboarding-header">
+                        <h2 class="onboarding-title">Complete seu perfil</h2>
+                        <p class="onboarding-subtitle">Vamos conhecer você melhor</p>
+                    </div>
+
+                    <div class="step-indicator">
+                        <div class="step-dot active"></div>
+                        <div class="step-dot active"></div>
+                        <div class="step-dot"></div>
+                        <div class="step-dot"></div>
+                        <div class="step-dot"></div>
+                    </div>
+
+                    <h3 style="font-size: 16px; margin-bottom: 20px; color: #E5E7EB;">Qual é sua área?</h3>
+
+                    <div class="category-grid">
+                        <div class="category-card selected">
+                            <div class="category-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v6m0 6v4m-8-4h4m8 0h4M7.5 6a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3h9a3 3 0 0 0 3-3v-6a3 3 0 0 0-3-3"/></svg></div>
+                            <div class="category-name">Técnico de Som</div>
+                        </div>
+                        <div class="category-card">
+                            <div class="category-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="5" r="1"/><circle cx="5" cy="19" r="1"/><circle cx="5" cy="5" r="1"/><circle cx="19" cy="19" r="1"/><line x1="5" y1="19" x2="19" y2="5"/></svg></div>
+                            <div class="category-name">Iluminação</div>
+                        </div>
+                        <div class="category-card">
+                            <div class="category-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+                            <div class="category-name">Fotografia</div>
+                        </div>
+                        <div class="category-card">
+                            <div class="category-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div>
+                            <div class="category-name">Vídeo</div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 30px;">
+                        <button class="btn-secondary" style="flex: 1; margin: 0;">← Voltar</button>
+                        <button class="btn-primary" style="flex: 1; margin: 0;">Continuar →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DASHBOARD SCREEN -->
+            <div class="screen dashboard" id="dashboard">
+                <div class="dashboard-header">
+                    <div class="dashboard-title">Meu Backstage</div>
+                    <button class="btn-secondary" style="width: auto; margin: 0;">← Sair</button>
+                </div>
+
+                <div class="dashboard-content">
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                                <svg style="width: 16px; height: 16px; color: #00D9FF;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                <div class="dashboard-card-title" style="margin: 0;">Eventos este mês</div>
+                            </div>
+                            <div class="dashboard-card-value">5</div>
+                            <div class="dashboard-card-subtitle">Meta: 10 eventos</div>
+                        </div>
+
+                        <div class="dashboard-card">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                                <svg style="width: 16px; height: 16px; color: #FFB700;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                <div class="dashboard-card-title" style="margin: 0;">Faturado</div>
+                            </div>
+                            <div class="dashboard-card-value">R$ 2.5k</div>
+                            <div class="dashboard-card-subtitle">Meta: R$ 5k</div>
+                        </div>
+
+                        <div class="dashboard-card">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                                <svg style="width: 16px; height: 16px; color: #A64AFF;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                <div class="dashboard-card-title" style="margin: 0;">Horas de trabalho</div>
+                            </div>
+                            <div class="dashboard-card-value">48h</div>
+                            <div class="dashboard-card-subtitle">Este mês</div>
+                        </div>
+
+                        <div class="dashboard-card">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                                <svg style="width: 16px; height: 16px; color: #39FF14;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 10"/><line x1="1" y1="1" x2="23" y2="1"/><polyline points="10 5 14 9 18 5"/></svg>
+                                <div class="dashboard-card-title" style="margin: 0;">Taxa de sucesso</div>
+                            </div>
+                            <div class="dashboard-card-value">92%</div>
+                            <div class="dashboard-card-subtitle">Eventos confirmados</div>
+                        </div>
+
+                        <div class="dashboard-card">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                                <svg style="width: 16px; height: 16px; color: #FF006E;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                <div class="dashboard-card-title" style="margin: 0;">Clientes</div>
+                            </div>
+                            <div class="dashboard-card-value">12</div>
+                            <div class="dashboard-card-subtitle">Clientes ativos</div>
+                        </div>
+
+                        <div class="dashboard-card">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                                <svg style="width: 16px; height: 16px; color: #00D9FF;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8"/></svg>
+                                <div class="dashboard-card-title" style="margin: 0;">Próximo evento</div>
+                            </div>
+                            <div class="dashboard-card-value">2 dias</div>
+                            <div class="dashboard-card-subtitle">Wedding - Teatro Municipal</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showScreen(screenId) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+
+            // Remove active button
+            document.querySelectorAll('button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected screen
+            document.getElementById(screenId).classList.add('active');
+
+            // Highlight button
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

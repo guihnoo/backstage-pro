@@ -12,7 +12,14 @@
       "Bash(pkill -f \"vite\")",
       "WebFetch(domain:vercel.com)",
       "WebFetch(domain:localhost)",
-      "Bash(npm ls *)"
+      "Bash(npm ls *)",
+      "PowerShell(New-Item *)",
+      "Bash(timeout 30 tail -f \"C:\\\\Users\\\\monte\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-monte-OneDrive-Documentos-backstage-pro\\\\0ae23861-bd68-4fdc-a37f-9308872d967d\\\\tasks\\\\becxy0jxz.output\")",
+      "PowerShell(Start-Process \"C:\\\\Users\\\\monte\\\\OneDrive\\\\Documentos\\\\backstage-pro\\\\PROTOTIPOS_REAL.html\")",
+      "WebFetch(domain:ai.studio)",
+      "WebFetch(domain:aistudio.google.com)",
+      "WebFetch(domain:stitch.withgoogle.com)",
+      "Bash(Get-ChildItem \"C:\\\\Users\\\\monte\\\\OneDrive\\\\Documentos\\\\backstage-pro\\\\src\\\\lib\\\\\" | Select-Object Name *)"
     ]
   }
 }

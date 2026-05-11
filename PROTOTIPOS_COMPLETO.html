@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backstage Pro — 12 Páginas</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-primary: #00D9FF;
+            --color-accent: #A64AFF;
+            --color-success: #39FF14;
+            --color-warning: #FF6B35;
+            --color-dark: #0A1428;
+            --color-card: #1B2A3E;
+            --color-text: #E5E7EB;
+            --color-muted: #6B7280;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif;
+            background: var(--color-dark);
+            color: var(--color-text);
+            overflow: hidden;
+        }
+
+        .app-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER */
+        .header {
+            background: rgba(15, 61, 86, 0.4);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 217, 255, 0.2);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #00D9FF, #A64AFF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .category-selector {
+            padding: 8px 16px;
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            border-radius: 6px;
+            color: var(--color-text);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .category-selector:hover {
+            background: rgba(0, 217, 255, 0.2);
+            border-color: var(--color-primary);
+        }
+
+        .nav-pages {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            flex: 1;
+        }
+
+        .nav-btn {
+            padding: 8px 14px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: transparent;
+            color: var(--color-muted);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .nav-btn:hover {
+            border-color: rgba(0, 217, 255, 0.3);
+            color: var(--color-text);
+        }
+
+        .nav-btn.active {
+            background: rgba(0, 217, 255, 0.2);
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+
+        /* MAIN */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--color-muted);
+            margin-bottom: 30px;
+        }
+
+        /* CARDS */
+        .card {
+            background: rgba(27, 42, 62, 0.6);
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(15px);
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            color: var(--color-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .card-value {
+            font-size: 36px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: var(--color-muted);
+            margin-top: 8px;
+        }
+
+        /* GRID */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+            color: white;
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 0 30px rgba(0, 217, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--color-primary);
+            color: var(--color-primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 217, 255, 0.1);
+        }
+
+        /* PROGRESS */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(107, 114, 128, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+            width: 60%;
+        }
+
+        /* BADGES */
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            background: rgba(0, 217, 255, 0.2);
+            border: 1px solid rgba(0, 217, 255, 0.5);
+            color: var(--color-primary);
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        /* CHART MOCK */
+        .chart-mock {
+            height: 200px;
+            background: linear-gradient(180deg, rgba(0, 217, 255, 0.1), transparent);
+            border-radius: 8px;
+            border: 1px dashed rgba(0, 217, 255, 0.2);
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 20px;
+            gap: 10px;
+        }
+
+        .bar {
+            width: 20px;
+            background: linear-gradient(180deg, var(--color-primary), var(--color-accent));
+            border-radius: 4px;
+            min-height: 40px;
+        }
+
+        .bar:nth-child(1) { height: 60%; }
+        .bar:nth-child(2) { height: 80%; }
+        .bar:nth-child(3) { height: 50%; }
+        .bar:nth-child(4) { height: 90%; }
+        .bar:nth-child(5) { height: 70%; }
+
+        /* LIST */
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(0, 217, 255, 0.1);
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-left {
+            flex: 1;
+        }
+
+        .list-title {
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: 4px;
+        }
+
+        .list-subtitle {
+            font-size: 12px;
+            color: var(--color-muted);
+        }
+
+        .list-value {
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1200px) {
+            .nav-pages {
+                width: 100%;
+                order: 3;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 12px 15px;
+            }
+
+            .nav-btn {
+                padding: 6px 10px;
+                font-size: 10px;
+            }
+
+            .page-title {
+                font-size: 24px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <div class="header-left">
+                <div class="logo">⚡ Backstage Pro</div>
+                <select class="category-selector" id="categorySelector" onchange="changeCategory(this.value)">
+                    <option value="audio">🎙️ Som</option>
+                    <option value="lighting">💡 Iluminação</option>
+                    <option value="photo">📷 Fotografia</option>
+                    <option value="video">🎬 Vídeo</option>
+                    <option value="dj">🎧 DJ</option>
+                    <option value="production">📍 Produção</option>
+                </select>
+            </div>
+
+            <div class="nav-pages">
+                <button class="nav-btn active" onclick="showPage('home')">🏠 Home</button>
+                <button class="nav-btn" onclick="showPage('agenda')">📅 Agenda</button>
+                <button class="nav-btn" onclick="showPage('clientes')">👥 Clientes</button>
+                <button class="nav-btn" onclick="showPage('financeiro')">💰 Financeiro</button>
+                <button class="nav-btn" onclick="showPage('relatorios')">📊 Relatórios</button>
+                <button class="nav-btn" onclick="showPage('mentor')">🤖 IA Mentor</button>
+                <button class="nav-btn" onclick="showPage('metas')">🎯 Metas</button>
+                <button class="nav-btn" onclick="showPage('templates')">🎭 Templates</button>
+                <button class="nav-btn" onclick="showPage('notificacoes')">🔔 Notificações</button>
+                <button class="nav-btn" onclick="showPage('settings')">⚙️ Settings</button>
+                <button class="nav-btn" onclick="showPage('perfil')">👤 Perfil</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- HOME -->
+            <div class="page active" id="home">
+                <h1 class="page-title">Bem-vindo, Monte! 👋</h1>
+                <p class="page-subtitle">Sexta-feira, 9 de maio de 2025</p>
+
+                <div class="grid">
+                    <div class="card">
+                        <div class="card-title">📅 Próximo Evento</div>
+                        <div class="card-value">2 dias</div>
+                        <div class="card-subtitle">Wedding - Teatro Municipal</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">💰 Pagamentos Pendentes</div>
+                        <div class="card-value">R$ 2.5k</div>
+                        <div class="card-subtitle">De 3 clientes</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">🔥 Streak</div>
+                        <div class="card-value">12 dias</div>
+                        <div class="card-subtitle">Trabalhando consecutivamente</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">⚡ Quick Actions</div>
+                    <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                        <button class="btn btn-primary">+ Novo Evento</button>
+                        <button class="btn btn-secondary">+ Despesa</button>
+                        <button class="btn btn-secondary">📅 Ver Agenda</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AGENDA -->
+            <div class="page" id="agenda">
+                <h1 class="page-title">📅 Agenda</h1>
+                <p class="page-subtitle">Visualize e gerencie todos os seus eventos</p>
+
+                <div class="card">
+                    <div class="card-title">Próximos Eventos</div>
+                    <div style="margin-top: 15px;">
+                        <div class="list-item">
+                            <div class="list-left">
+                                <div class="list-title">Wedding - Teatro Municipal</div>
+                                <div class="list-subtitle">Sexta-feira, 11 de maio • 19:00</div>
+                            </div>
+                            <div class="list-value">Confirmado ✓</div>
+                        </div>
+                        <div class="list-item">
+                            <div class="list-left">
+                                <div class="list-title">Festival de Verão - Parque</div>
+                                <div class="list-subtitle">Sábado, 12 de maio • 10:00</div>
+                            </div>
+                            <div class="list-value">Pendente</div>
+                        </div>
+                        <div class="list-item">
+                            <div class="list-left">
+                                <div class="list-title">Corporate Event - Hilton</div>
+                                <div class="list-subtitle">Segunda-feira, 14 de maio • 14:00</div>
+                            </div>
+                            <div class="list-value">Confirmado ✓</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Visão Geral do Mês</div>
+                    <div class="chart-mock">
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CLIENTES -->
+            <div class="page" id="clientes">
+                <h1 class="page-title">👥 Clientes</h1>
+                <p class="page-subtitle">Gerencie seus relacionamentos e histórico de eventos</p>
+
+                <div class="grid">
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <div class="card-title">Festival de Verão</div>
+                                <div class="card-value" style="font-size: 24px;">⭐ 4.8</div>
+                                <div class="card-subtitle">8 eventos • Último: 30 dias atrás</div>
+                            </div>
+                            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">Contatar</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <div class="card-title">Eventos Corporativos XYZ</div>
+                                <div class="card-value" style="font-size: 24px;">⭐ 5.0</div>
+                                <div class="card-subtitle">5 eventos • Último: 10 dias atrás</div>
+                            </div>
+                            <span class="badge" style="margin-right: 0;">VIP</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <div class="card-title">Casamentos & Eventos</div>
+                                <div class="card-value" style="font-size: 24px;">⭐ 4.5</div>
+                                <div class="card-subtitle">3 eventos • Último: 60 dias atrás</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Dica: Adicione clientes para rastrear histórico e pagamentos</div>
+                    <button class="btn btn-primary" style="margin-top: 15px;">+ Novo Cliente</button>
+                </div>
+            </div>
+
+            <!-- FINANCEIRO -->
+            <div class="page" id="financeiro">
+                <h1 class="page-title">💰 Financeiro</h1>
+                <p class="page-subtitle">Controle completo de receitas e despesas</p>
+
+                <div class="grid">
+                    <div class="card">
+                        <div class="card-title">Receita Bruta (Maio)</div>
+                        <div class="card-value">R$ 8.5k</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 85%;"></div>
+                        </div>
+                        <div class="card-subtitle">Meta: R$ 10k (85%)</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Despesas (Maio)</div>
+                        <div class="card-value">R$ 1.2k</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 40%;"></div>
+                        </div>
+                        <div class="card-subtitle">Equipamento, transporte, locação</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Receita Líquida</div>
+                        <div class="card-value">R$ 7.3k</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 73%;"></div>
+                        </div>
+                        <div class="card-subtitle">Após despesas</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Simulador: E se eu fizer X eventos?</div>
+                    <div style="margin-top: 15px;">
+                        <input type="number" placeholder="Quantos eventos?" style="padding: 10px; border-radius: 6px; background: rgba(0, 217, 255, 0.1); border: 1px solid rgba(0, 217, 255, 0.3); color: white; width: 150px;">
+                        <div style="margin-top: 15px; color: var(--color-primary); font-weight: bold;">
+                            5 eventos = R$ 2.5k de receita
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RELATÓRIOS -->
+            <div class="page" id="relatorios">
+                <h1 class="page-title">📊 Relatórios</h1>
+                <p class="page-subtitle">Analytics e insights do seu negócio</p>
+
+                <div class="grid">
+                    <div class="card">
+                        <div class="card-title">Comparativo Mês a Mês</div>
+                        <div class="chart-mock">
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Top 5 Clientes</div>
+                        <div style="margin-top: 15px;">
+                            <div class="list-item">
+                                <div class="list-title">Festival de Verão</div>
+                                <div class="list-value">R$ 15k</div>
+                            </div>
+                            <div class="list-item">
+                                <div class="list-title">Corporativo XYZ</div>
+                                <div class="list-value">R$ 8.5k</div>
+                            </div>
+                            <div class="list-item">
+                                <div class="list-title">Casamentos Premium</div>
+                                <div class="list-value">R$ 6.2k</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Score de Produtividade</div>
+                    <div class="card-value" style="font-size: 48px; margin: 20px 0;">92%</div>
+                    <div class="card-subtitle">Você trabalhou 120h com receita de R$ 12k (R$ 100/h médio)</div>
+                </div>
+            </div>
+
+            <!-- AI MENTOR -->
+            <div class="page" id="mentor">
+                <h1 class="page-title">🤖 IA Mentor</h1>
+                <p class="page-subtitle">Seu assistente especializado em sua área</p>
+
+                <div class="card">
+                    <div class="card-title">Mentor: Especialista em Técnico de Som</div>
+                    <div style="margin-top: 20px; padding: 15px; background: rgba(0, 217, 255, 0.1); border-radius: 8px; border-left: 3px solid var(--color-primary);">
+                        <p style="margin-bottom: 15px; color: var(--color-text);">
+                            "Olá! Analisando seu histórico, vejo que você fez 8 eventos com receita média de R$ 1.2k cada. Para esta sexta-feira (wedding), sugiro cobrar R$ 1.5k baseado no tipo de evento e sua experiência."
+                        </p>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn btn-secondary" style="padding: 8px 14px;">Checklist de Setup</button>
+                            <button class="btn btn-secondary" style="padding: 8px 14px;">Analisar Contrato</button>
+                            <button class="btn btn-secondary" style="padding: 8px 14px;">Dicas de Crescimento</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Resumo do Mês</div>
+                    <div style="margin-top: 15px; font-size: 14px; line-height: 1.8;">
+                        ✅ Você atingiu 85% da meta de faturamento<br>
+                        ✅ 8 eventos realizados (meta: 10)<br>
+                        ⚠️ Tempo médio de setup: 1.5h (considere otimizar)<br>
+                        💡 Próximo passo: Aumente para R$ 1.5k/evento
+                    </div>
+                </div>
+            </div>
+
+            <!-- METAS -->
+            <div class="page" id="metas">
+                <h1 class="page-title">🎯 Metas & Gamificação</h1>
+                <p class="page-subtitle">Acompanhe seu progresso e conquiste badges</p>
+
+                <div class="grid">
+                    <div class="card">
+                        <div class="card-title">Meta de Diárias (Maio)</div>
+                        <div style="margin-top: 15px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <span>8 de 10 eventos</span>
+                                <span style="color: var(--color-primary); font-weight: bold;">80%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 80%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Meta de Faturamento</div>
+                        <div style="margin-top: 15px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <span>R$ 8.5k de R$ 10k</span>
+                                <span style="color: var(--color-primary); font-weight: bold;">85%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 85%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Streak Atual</div>
+                        <div class="card-value">12 dias</div>
+                        <div class="card-subtitle">Continue trabalhando para manter!</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">🏆 Badges Conquistados</div>
+                    <div style="margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px;">
+                        <span class="badge">⭐ 10 Eventos</span>
+                        <span class="badge">🤝 1º Cliente VIP</span>
+                        <span class="badge">💰 R$ 5k Mensais</span>
+                        <span class="badge">🔥 7 Dias Streak</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TEMPLATES -->
+            <div class="page" id="templates">
+                <h1 class="page-title">🎭 Templates por Categoria</h1>
+                <p class="page-subtitle">Reutilize setups, checklists e riders técnicos</p>
+
+                <div class="grid">
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <div class="card-title">Setup Básico</div>
+                                <div style="margin-top: 10px; color: var(--color-muted); font-size: 13px;">
+                                    ✓ Mixer<br>
+                                    ✓ 2 Speakers<br>
+                                    ✓ Microfone
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" style="padding: 8px 12px; font-size: 11px;">Usar</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <div class="card-title">Setup Profissional</div>
+                                <div style="margin-top: 10px; color: var(--color-muted); font-size: 13px;">
+                                    ✓ Mixer Console<br>
+                                    ✓ 4 Speakers + Subs<br>
+                                    ✓ Wireless + Efeitos
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" style="padding: 8px 12px; font-size: 11px;">Usar</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <div class="card-title">Checklist Wedding</div>
+                                <div style="margin-top: 10px; color: var(--color-muted); font-size: 13px;">
+                                    ✓ Hora cerimônia<br>
+                                    ✓ Música entrada<br>
+                                    ✓ Dança dos noivos
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" style="padding: 8px 12px; font-size: 11px;">Usar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Criar Novo Template</div>
+                    <button class="btn btn-primary" style="margin-top: 15px;">+ Salvar Template Personalizado</button>
+                </div>
+            </div>
+
+            <!-- NOTIFICAÇÕES -->
+            <div class="page" id="notificacoes">
+                <h1 class="page-title">🔔 Notificações</h1>
+                <p class="page-subtitle">Alertas e lembretes relevantes</p>
+
+                <div class="card">
+                    <div class="list-item">
+                        <div class="list-left">
+                            <div class="list-title">⚠️ Wedding em 2 dias!</div>
+                            <div class="list-subtitle">Lembrete: Theatre Municipal, 19:00</div>
+                        </div>
+                        <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 11px;">Ver</button>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-left">
+                            <div class="list-title">💰 Pagamento pendente</div>
+                            <div class="list-subtitle">Festival de Verão — 30 dias vencido</div>
+                        </div>
+                        <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 11px;">Cobrar</button>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-left">
+                            <div class="list-title">🎂 Aniversário do cliente</div>
+                            <div class="list-subtitle">Corporativo XYZ faz 5 anos hoje</div>
+                        </div>
+                        <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 11px;">Enviar</button>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-left">
+                            <div class="list-title">🎯 Meta em Risco</div>
+                            <div class="list-subtitle">Faltam 3 dias e você está 85% da meta</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SETTINGS -->
+            <div class="page" id="settings">
+                <h1 class="page-title">⚙️ Configurações</h1>
+                <p class="page-subtitle">Personalize o app conforme suas preferências</p>
+
+                <div class="card">
+                    <div class="card-title">Aparência</div>
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button class="btn btn-primary">🌙 Dark Mode</button>
+                        <button class="btn btn-secondary">☀️ Light Mode</button>
+                        <button class="btn btn-secondary">⚙️ Auto</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Preferências</div>
+                    <div style="margin-top: 15px;">
+                        <div class="list-item">
+                            <div class="list-title">Moeda</div>
+                            <div class="list-value">BRL (Real)</div>
+                        </div>
+                        <div class="list-item">
+                            <div class="list-title">Timezone</div>
+                            <div class="list-value">America/Sao_Paulo</div>
+                        </div>
+                        <div class="list-item">
+                            <div class="list-title">Idioma</div>
+                            <div class="list-value">Português (Brasil)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Dados & Privacidade</div>
+                    <div style="margin-top: 15px; display: flex; gap: 10px; flex-direction: column;">
+                        <button class="btn btn-secondary">📥 Exportar Todos os Dados</button>
+                        <button class="btn btn-secondary">🗑️ Deletar Conta</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PERFIL -->
+            <div class="page" id="perfil">
+                <h1 class="page-title">👤 Seu Perfil</h1>
+                <p class="page-subtitle">Sua identidade profissional</p>
+
+                <div class="card">
+                    <div style="text-align: center; padding: 20px;">
+                        <div style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--color-primary), var(--color-accent)); border-radius: 50%; margin: 0 auto 15px;"></div>
+                        <div class="card-value" style="font-size: 24px; margin-bottom: 5px;">Monte Monteiro</div>
+                        <div class="card-subtitle">Técnico de Som • São Paulo, SP</div>
+                        <div style="margin-top: 15px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                            <span class="badge">PA/FOH</span>
+                            <span class="badge">Monitor IEM</span>
+                            <span class="badge">RF Wireless</span>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <button class="btn btn-primary">📤 Compartilhar Perfil</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Bio Profissional</div>
+                    <div style="margin-top: 15px; color: var(--color-text); font-size: 14px; line-height: 1.6;">
+                        Técnico de som com 8 anos de experiência em eventos corporativos, casamentos e festivais. Especializado em PA e sistemas de monitoramento wireless.
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Link Público</div>
+                    <div style="margin-top: 15px;">
+                        <code style="background: rgba(0, 217, 255, 0.1); padding: 10px; border-radius: 6px; display: block; word-break: break-all;">
+                            backstage.pro/monte-monteiro
+                        </code>
+                        <button class="btn btn-secondary" style="margin-top: 10px;">📋 Copiar Link</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function changeCategory(category) {
+            const categories = {
+                audio: { primary: '#39FF14', accent: '#00D9FF' },
+                lighting: { primary: '#A64AFF', accent: '#FFB700' },
+                photo: { primary: '#FF6B35', accent: '#00D9FF' },
+                video: { primary: '#FF006E', accent: '#00D9FF' },
+                dj: { primary: '#00D9FF', accent: '#A64AFF' },
+                production: { primary: '#FFB700', accent: '#00D9FF' }
+            };
+
+            const colors = categories[category] || categories.audio;
+            document.documentElement.style.setProperty('--color-primary', colors.primary);
+            document.documentElement.style.setProperty('--color-accent', colors.accent);
+        }
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
