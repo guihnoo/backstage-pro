@@ -10,7 +10,25 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    // Verifica sesão atual
+    let mounted = true;
+
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      if (!mounted) return;
+      setSession(initialSession);
+      setUser(initialSession?.user ?? null);
+      if (initialSession?.user) {
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', initialSession.user.id)
+          .single()
+          .then(({ data: profileData }) => {
+            if (mounted) setProfile(profileData);
+          });
+      }
+      setLoading(false);
+    });
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         setSession(newSession);
@@ -33,6 +51,7 @@ export function AuthProvider({ children }) {
     );
 
     return () => {
+      mounted = false;
       subscription?.unsubscribe();
     };
   }, []);

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Zap, Eye, EyeOff, AlertCircle } from 'lucide-react';
@@ -16,13 +16,24 @@ export default function LoginNew() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { signInWithPassword, isAuthenticated } = useAuth();
+  const { signInWithPassword, isAuthenticated, isOnboardingComplete, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  // Redireciona se já autenticado
-  if (isAuthenticated) {
-    navigate('/onboarding');
-    return null;
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    navigate(isOnboardingComplete ? '/' : '/onboarding', { replace: true });
+  }, [isAuthenticated, isOnboardingComplete, navigate]);
+
+  if (authLoading || isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+          className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full"
+        />
+      </div>
+    );
   }
 
   const handleSubmit = async (e) => {

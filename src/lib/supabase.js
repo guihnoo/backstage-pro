@@ -3,8 +3,23 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Supabase URL ou Anon Key não configurados no .env.local');
-}
+export const isSupabaseConfigured = Boolean(
+  supabaseUrl &&
+    supabaseAnonKey &&
+    supabaseUrl !== 'https://your-project.supabase.co' &&
+    supabaseAnonKey !== 'your-anon-key-here'
+);
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const placeholderUrl = 'https://placeholder.supabase.co';
+const placeholderKey = 'placeholder-anon-key';
+
+export const supabase = createClient(
+  isSupabaseConfigured ? supabaseUrl : placeholderUrl,
+  isSupabaseConfigured ? supabaseAnonKey : placeholderKey
+);
+
+if (!isSupabaseConfigured && import.meta.env.DEV) {
+  console.warn(
+    '[Backstage Pro] Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY em .env.local (ou na Vercel → Settings → Environment Variables).'
+  );
+}

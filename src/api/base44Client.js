@@ -1,8 +1,7 @@
 import { createClient } from '@base44/sdk';
-// import { getAccessToken } from '@base44/sdk/utils/auth-utils';
 
-// Create a client with authentication required
+/** @deprecated Migração para Supabase. requiresAuth:false evita redirect para base44.app no boot. */
 export const base44 = createClient({
-  appId: "6876d7e2075f2bcac1883323",
-  requiresAuth: true // Ensure authentication is required for all operations
+  appId: '6876d7e2075f2bcac1883323',
+  requiresAuth: false,
 });

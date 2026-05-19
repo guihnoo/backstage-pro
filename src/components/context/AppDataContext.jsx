@@ -2,9 +2,8 @@ import React, { createContext, useContext, useState, useCallback, useRef, useEff
 import { Event } from '@/api/entities';
 import { DailyWork } from '@/api/entities';
 import { Client } from '@/api/entities';
-import { User } from '@/api/entities';
 import { Expense } from '@/api/entities';
-import { useAuth } from '@/lib/mockAuth';
+import { useAuth } from '@/lib/authContext';
 
 const AppDataContext = createContext(null);
 
@@ -99,8 +98,22 @@ const loadAllUserData = async (Entity, user) => {
   }
 };
 
+function mapSupabaseUser(sessionUser, profile) {
+  if (!sessionUser) return null;
+  return {
+    id: sessionUser.id,
+    email: sessionUser.email,
+    name: profile?.full_name || sessionUser.email?.split('@')[0] || 'Usuário',
+    avatar: profile?.avatar_url,
+    category: profile?.category,
+    role: profile?.role,
+    specialties: profile?.specialties || [],
+  };
+}
+
 export const AppDataProvider = ({ children }) => {
-  const { user: authUser } = useAuth();
+  const { user: sessionUser, profile, loading: authLoading } = useAuth();
+  const authUser = mapSupabaseUser(sessionUser, profile);
   const [data, setData] = useState({
     events: [],
     dailyWork: [],
@@ -168,14 +181,16 @@ export const AppDataProvider = ({ children }) => {
     }
   }, [data.user, loading]);
 
-  // Sincronizar usuário do auth
   useEffect(() => {
+    if (authLoading) return;
     if (authUser) {
       setData(prev => ({ ...prev, user: authUser }));
       setLoading(prev => ({ ...prev, user: false }));
-      console.log(`👤 Usuário autenticado: ${authUser.email}`);
+    } else {
+      setData(prev => ({ ...prev, user: null }));
+      setLoading(prev => ({ ...prev, user: false }));
     }
-  }, [authUser]);
+  }, [authUser, authLoading]);
 
   // Refresh de dados
   const refreshData = useCallback(async (entityKey = null) => {

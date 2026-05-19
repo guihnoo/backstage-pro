@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { UserSettings } from '@/api/entities';
-import { User } from '@/api/entities';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@/lib/authContext';
+
+const STORAGE_KEY_PREFIX = 'backstage:financial_visibility:';
 
 const FinancialVisibilityContext = createContext();
 
@@ -12,63 +13,49 @@ export const useFinancialVisibility = () => {
   return context;
 };
 
+function readStoredVisibility(userId) {
+  if (!userId || typeof window === 'undefined') return true;
+  const raw = localStorage.getItem(`${STORAGE_KEY_PREFIX}${userId}`);
+  if (raw === null) return true;
+  return raw !== 'false';
+}
+
+function writeStoredVisibility(userId, visible) {
+  if (!userId || typeof window === 'undefined') return;
+  localStorage.setItem(`${STORAGE_KEY_PREFIX}${userId}`, visible ? 'true' : 'false');
+}
+
 export const FinancialVisibilityProvider = ({ children }) => {
+  const { user, loading: authLoading } = useAuth();
   const [isVisible, setIsVisible] = useState(true);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadVisibilitySettings();
-  }, []);
-
-  const loadVisibilitySettings = async () => {
-    try {
-      const user = await User.me();
-      if (!user?.id) return;
-
-      const settings = await UserSettings.filter({ owner_id: user.id });
-      if (settings && settings.length > 0) {
-        setIsVisible(settings[0].financial_visibility !== false);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar configurações de visibilidade:', error);
-    } finally {
+    if (authLoading) return;
+    if (!user?.id) {
+      setIsVisible(true);
       setLoading(false);
+      return;
     }
-  };
+    setIsVisible(readStoredVisibility(user.id));
+    setLoading(false);
+  }, [user?.id, authLoading]);
 
-  const toggleVisibility = async () => {
-    try {
-      const user = await User.me();
-      if (!user?.id) return;
-
-      const newVisibility = !isVisible;
-      setIsVisible(newVisibility);
-
-      const existingSettings = await UserSettings.filter({ owner_id: user.id });
-      if (existingSettings && existingSettings.length > 0) {
-        await UserSettings.update(existingSettings[0].id, { 
-          financial_visibility: newVisibility 
-        });
-      } else {
-        await UserSettings.create({ 
-          owner_id: user.id,
-          financial_visibility: newVisibility,
-          created_by_email: user.email
-        });
-      }
-    } catch (error) {
-      console.error('Erro ao atualizar visibilidade financeira:', error);
-      // Reverter em caso de erro
-      setIsVisible(!isVisible);
-    }
-  };
+  const toggleVisibility = useCallback(() => {
+    if (!user?.id) return;
+    setIsVisible((prev) => {
+      const next = !prev;
+      writeStoredVisibility(user.id, next);
+      return next;
+    });
+  }, [user?.id]);
 
   const formatCurrency = (value) => {
     if (!isVisible) return '•••••';
     if (typeof value !== 'number') return 'R$ 0,00';
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
-      currency: 'BRL'
+      currency: 'BRL',
     }).format(value);
   };
 
@@ -84,7 +71,7 @@ export const FinancialVisibilityProvider = ({ children }) => {
         loading,
         toggleVisibility,
         formatCurrency,
-        formatValue
+        formatValue,
       }}
     >
       {children}
