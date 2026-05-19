@@ -28,3 +28,4 @@ dist-ssr
 # Mídia temporária para análise por agentes (não versionar uploads)
 agent-review/incoming/*
 !agent-review/incoming/.gitkeep
+.vercel
