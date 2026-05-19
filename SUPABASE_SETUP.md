@@ -1,5 +1,22 @@
 # Configuração do Supabase
 
+## URLs de Auth (Vercel + local)
+
+No [Auth → URL Configuration](https://supabase.com/dashboard/project/cwtallnetgodoacuoaow/auth/url-configuration):
+
+| Campo | Valor |
+|-------|--------|
+| **Site URL** | `https://backstage-pro-beta.vercel.app` |
+| **Redirect URLs** | `http://127.0.0.1:5173/**` |
+| | `http://localhost:5173/**` |
+| | `https://backstage-pro-beta.vercel.app/**` |
+
+**Via CLI** (após `npx supabase login` uma vez): `npm run supabase:auth-push`
+
+**Via API** (PAT em [Account Tokens](https://supabase.com/dashboard/account/tokens)): `node scripts/push-supabase-auth-api.mjs`
+
+---
+
 Este guia explica como configurar o Supabase para o Backstage Pro.
 
 ## Passo 1: Criar Projeto Supabase
