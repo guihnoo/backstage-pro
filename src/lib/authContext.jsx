@@ -57,11 +57,13 @@ export function AuthProvider({ children }) {
   }, []);
 
   const signInWithOAuth = async (provider) => {
+    const origin = window.location.origin;
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/`,
-      }
+        redirectTo: `${origin}/`,
+        skipBrowserRedirect: false,
+      },
     });
     if (error) throw error;
   };
