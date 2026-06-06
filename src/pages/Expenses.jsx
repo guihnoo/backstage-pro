@@ -1,9 +1,10 @@
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Plus, Camera, AlertCircle, Search } from 'lucide-react';
-import { useAppData } from '@/components/context/AppDataContext';
+import { useExpenses } from '@/lib/useExpenses';
+import { useEvents } from '@/lib/useEvents';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
@@ -15,7 +16,6 @@ import ExpenseListItem from '@/components/expenses/ExpenseListItem';
 import ReceiptAnalyzer from '@/components/expenses/ReceiptAnalyzer';
 import EmptyState from '@/components/layout/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Expense } from '@/api/entities';
 
 const ExpensesSkeleton = () => (
     <div className="p-4 md:p-6 space-y-6">
@@ -32,7 +32,7 @@ const ExpensesSkeleton = () => (
 );
 
 const StatCard = ({ title, value, onClick, active }) => (
-    <Card 
+    <Card
         className={`cursor-pointer transition-all duration-300 ${active ? 'bg-slate-700/80 border-cyan-400/50 scale-105' : 'bg-slate-800/50 border-slate-700 hover:bg-slate-700/50'}`}
         onClick={onClick}
     >
@@ -44,7 +44,8 @@ const StatCard = ({ title, value, onClick, active }) => (
 );
 
 export default function ExpensesPage() {
-    const { data, loading, error, refreshData, loadExpenses, loadEvents } = useAppData();
+    const { expenses, loading: expensesLoading, error: expensesError, refetch: refetchExpenses, delete: deleteExpenseById } = useExpenses();
+    const { events } = useEvents();
     const { isVisible, formatCurrency } = useFinancialVisibility();
 
     const [showForm, setShowForm] = useState(false);
@@ -54,19 +55,14 @@ export default function ExpensesPage() {
 
     const [searchTerm, setSearchTerm] = useState("");
     const [categoryFilter, setCategoryFilter] = useState("all");
-    const [statusFilter, setStatusFilter] = useState("all"); // 'all', 'reimbursable', 'reimbursed'
-
-    useEffect(() => {
-        loadExpenses();
-        loadEvents();
-    }, [loadExpenses, loadEvents]);
+    const [statusFilter, setStatusFilter] = useState("all");
 
     const handleFormSuccess = useCallback(() => {
         setShowForm(false);
         setEditingExpense(null);
         toast.success(editingExpense ? "Despesa atualizada!" : "Despesa criada!");
-        refreshData('expenses');
-    }, [editingExpense, refreshData]);
+        refetchExpenses();
+    }, [editingExpense, refetchExpenses]);
 
     const handleEdit = (expense) => {
         setEditingExpense(expense);
@@ -76,9 +72,8 @@ export default function ExpensesPage() {
     const handleDelete = async (expenseId) => {
         if (window.confirm("Tem certeza que deseja excluir esta despesa?")) {
             try {
-                await Expense.delete(expenseId);
+                await deleteExpenseById(expenseId);
                 toast.success("Despesa excluída com sucesso!");
-                refreshData('expenses');
             } catch (err) {
                 toast.error("Erro ao excluir despesa.");
                 console.error(err);
@@ -96,19 +91,19 @@ export default function ExpensesPage() {
         setShowForm(true);
     };
 
-    const allExpenses = useMemo(() => Array.isArray(data.expenses) ? data.expenses : [], [data.expenses]);
+    const allExpenses = useMemo(() => Array.isArray(expenses) ? expenses : [], [expenses]);
 
     const filteredExpenses = useMemo(() => {
         return allExpenses
             .filter(exp => {
-                const searchMatch = searchTerm ? exp.title.toLowerCase().includes(searchTerm.toLowerCase()) || exp.description?.toLowerCase().includes(searchTerm.toLowerCase()) : true;
+                const searchMatch = searchTerm ? exp.title.toLowerCase().includes(searchTerm.toLowerCase()) || exp.notes?.toLowerCase().includes(searchTerm.toLowerCase()) : true;
                 const categoryMatch = categoryFilter === 'all' ? true : exp.category === categoryFilter;
                 const statusMatch = statusFilter === 'all' ? true :
                                     statusFilter === 'reimbursable' ? exp.is_reimbursable && !exp.reimbursed :
                                     statusFilter === 'reimbursed' ? exp.reimbursed : false;
                 return searchMatch && categoryMatch && statusMatch;
             })
-            .sort((a, b) => new Date(b.date) - new Date(a.date));
+            .sort((a, b) => new Date(b.expense_date) - new Date(a.expense_date));
     }, [allExpenses, searchTerm, categoryFilter, statusFilter]);
 
     const expenseStats = useMemo(() => {
@@ -119,15 +114,15 @@ export default function ExpensesPage() {
     }, [allExpenses]);
 
     const expenseCategories = useMemo(() => {
-        const categories = new Set(allExpenses.map(exp => exp.category));
+        const categories = new Set(allExpenses.map(exp => exp.category).filter(Boolean));
         return Array.from(categories).sort();
     }, [allExpenses]);
 
-    if (loading.expenses && !allExpenses.length) {
+    if (expensesLoading && !allExpenses.length) {
         return <ExpensesSkeleton />;
     }
 
-    if (error.expenses) {
+    if (expensesError) {
         return (
             <div className="h-full flex items-center justify-center p-4">
                 <EmptyState
@@ -142,11 +137,7 @@ export default function ExpensesPage() {
     return (
         <>
             <div className="flex flex-col h-full">
-                <div 
-                    // motion.div removed as per outline, replaced with plain div with its content.
-                    // If animations are critical, motion.div should be re-added here.
-                    className="p-4 md:p-6 space-y-6 flex-1"
-                >
+                <div className="p-4 md:p-6 space-y-6 flex-1">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                         <div>
                             <h1 className="text-3xl font-bold text-white font-display">Gerenciador de Despesas</h1>
@@ -173,8 +164,8 @@ export default function ExpensesPage() {
                     <div className="flex flex-col md:flex-row gap-4">
                         <div className="relative flex-grow">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                            <Input 
-                                placeholder="Buscar por título ou descrição..."
+                            <Input
+                                placeholder="Buscar por título ou notas..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="bg-slate-800 border-slate-700 pl-10"
@@ -192,20 +183,20 @@ export default function ExpensesPage() {
                             </SelectContent>
                         </Select>
                     </div>
-                    
+
                     <div className="space-y-3">
                         {filteredExpenses.length > 0 ? (
                             filteredExpenses.map(expense => (
                                 <ExpenseListItem
                                     key={expense.id}
                                     expense={expense}
-                                    event={data.events?.find(e => e.id === expense.event_id)}
+                                    event={events.find(e => e.id === expense.event_id)}
                                     onEdit={handleEdit}
                                     onDelete={handleDelete}
                                 />
                             ))
                         ) : (
-                            <EmptyState 
+                            <EmptyState
                                 icon={Search}
                                 title="Nenhuma despesa encontrada"
                                 description="Tente ajustar seus filtros ou adicione uma nova despesa."
@@ -220,7 +211,7 @@ export default function ExpensesPage() {
                     open={showForm}
                     onOpenChange={setShowForm}
                     expense={editingExpense}
-                    events={data.events || []}
+                    events={events}
                     onSuccess={handleFormSuccess}
                     prefillData={prefillFromScan}
                 />

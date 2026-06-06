@@ -1,8 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
-import { Event } from '@/api/entities';
-import { DailyWork } from '@/api/entities';
-import { Client } from '@/api/entities';
-import { Expense } from '@/api/entities';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/authContext';
 
 const AppDataContext = createContext(null);
@@ -15,88 +12,22 @@ export const useAppData = () => {
   return context;
 };
 
-// Função de retry otimizada com backoff exponencial
-const retryWithBackoff = async (fn, maxRetries = 3) => {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      return await fn();
-    } catch (error) {
-      const isRateLimit = error.response?.status === 429;
-      const isNetworkError = !error.response;
-
-      if ((isRateLimit || isNetworkError) && attempt < maxRetries) {
-        const delay = Math.min(1000 * Math.pow(2, attempt), 10000);
-        console.warn(`🔄 Tentativa ${attempt}/${maxRetries} falhou. Aguardando ${delay}ms...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-        continue;
-      }
-      throw error;
-    }
-  }
+const TABLE_MAP = {
+  events: 'events',
+  dailyWork: 'daily_work',
+  clients: 'clients',
+  expenses: 'expenses',
 };
 
-// Função crítica para carregar dados do usuário com múltiplas estratégias
-const loadAllUserData = async (Entity, user) => {
-  try {
-    console.log(`🔍 Carregando ${Entity.name} para ${user.email}...`);
-    
-    const searchStrategies = [
-      { filter: { owner_id: user.id }, name: 'owner_id' },
-      { filter: { created_by: user.email }, name: 'created_by' },
-      { filter: { created_by_email: user.email }, name: 'created_by_email' }
-    ];
-
-    let allFoundData = [];
-    
-    for (const strategy of searchStrategies) {
-      try {
-        const data = await retryWithBackoff(() => Entity.filter(strategy.filter));
-        const validData = Array.isArray(data) ? data : [];
-        if (validData.length > 0) {
-          console.log(`  ✅ ${Entity.name} por ${strategy.name}: ${validData.length} registros`);
-        }
-        allFoundData = [...allFoundData, ...validData];
-      } catch (error) {
-        console.warn(`  ⚠️ Erro ao buscar ${Entity.name} por ${strategy.name}:`, error.message);
-      }
-    }
-
-    // Remover duplicatas
-    const uniqueDataMap = new Map();
-    allFoundData.forEach(item => {
-      if (item?.id) {
-        uniqueDataMap.set(item.id, item);
-      }
-    });
-
-    const finalData = Array.from(uniqueDataMap.values());
-    console.log(`  📊 ${Entity.name} - Total: ${finalData.length} registros únicos`);
-
-    // Migração automática para owner_id
-    const recordsToMigrate = finalData.filter(item => !item.owner_id);
-    if (recordsToMigrate.length > 0) {
-      console.log(`  🔄 Migrando ${recordsToMigrate.length} registros de ${Entity.name}...`);
-      try {
-        for (const item of recordsToMigrate) {
-          await Entity.update(item.id, { owner_id: user.id });
-        }
-        console.log(`  ✅ Migração de ${Entity.name} concluída`);
-        finalData.forEach(item => {
-          if (!item.owner_id) {
-            item.owner_id = user.id;
-          }
-        });
-      } catch (migrationError) {
-        console.error(`  ❌ Erro na migração de ${Entity.name}:`, migrationError);
-      }
-    }
-
-    return finalData;
-  } catch (error) {
-    console.error(`❌ Erro crítico ao carregar ${Entity.name}:`, error);
-    return [];
-  }
-};
+async function fetchFromSupabase(tableName, userId) {
+  const { data, error } = await supabase
+    .from(tableName)
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
 
 function mapSupabaseUser(sessionUser, profile) {
   if (!sessionUser) return null;
@@ -114,6 +45,7 @@ function mapSupabaseUser(sessionUser, profile) {
 export const AppDataProvider = ({ children }) => {
   const { user: sessionUser, profile, loading: authLoading } = useAuth();
   const authUser = mapSupabaseUser(sessionUser, profile);
+
   const [data, setData] = useState({
     events: [],
     dailyWork: [],
@@ -121,7 +53,7 @@ export const AppDataProvider = ({ children }) => {
     expenses: [],
     user: authUser || null,
   });
-  
+
   const [loading, setLoading] = useState({
     events: false,
     dailyWork: false,
@@ -129,93 +61,64 @@ export const AppDataProvider = ({ children }) => {
     expenses: false,
     user: true,
   });
-  
+
   const [error, setError] = useState({});
-  
+
   const dataLoaded = useRef({
     events: false,
     dailyWork: false,
     clients: false,
     expenses: false,
   });
-  
-  const userLoadAttempted = useRef(false);
 
-  // Função genérica para carregar entidade
-  const loadEntity = useCallback(async (entityKey, Entity, forceRefresh = false) => {
-    if (dataLoaded.current[entityKey] && !forceRefresh) {
-      return;
-    }
-    if (loading[entityKey]) {
+  // Sync auth user into data
+  useEffect(() => {
+    if (authLoading) return;
+    setData(prev => ({ ...prev, user: authUser || null }));
+    setLoading(prev => ({ ...prev, user: false }));
+  }, [authUser, authLoading]);
+
+  const loadEntity = useCallback(async (entityKey, _unused, forceRefresh = false) => {
+    if (dataLoaded.current[entityKey] && !forceRefresh) return;
+
+    const userId = authUser?.id;
+    if (!userId) {
+      if (!authLoading) {
+        setError(prev => ({ ...prev, [entityKey]: 'Usuário não autenticado.' }));
+      }
       return;
     }
 
     setLoading(prev => ({ ...prev, [entityKey]: true }));
     setError(prev => {
-      const newErrors = { ...prev };
-      delete newErrors[entityKey];
-      return newErrors;
+      const e = { ...prev };
+      delete e[entityKey];
+      return e;
     });
 
     try {
-      if (!data.user?.id) {
-        if (loading.user) {
-          console.warn(`⏳ Aguardando carregamento do usuário para ${entityKey}...`);
-          setLoading(prev => ({ ...prev, [entityKey]: false }));
-          return;
-        } else {
-          throw new Error("Usuário não autenticado.");
-        }
-      }
-      
-      const entityData = await loadAllUserData(Entity, data.user);
-      
-      setData(prev => ({ ...prev, [entityKey]: entityData }));
+      const tableName = TABLE_MAP[entityKey];
+      const result = await fetchFromSupabase(tableName, userId);
+      setData(prev => ({ ...prev, [entityKey]: result }));
       dataLoaded.current[entityKey] = true;
-      console.log(`✅ ${entityKey} carregado: ${entityData.length} registros`);
     } catch (err) {
-      console.error(`🔴 Erro ao carregar ${entityKey}:`, err);
+      console.error(`Erro ao carregar ${entityKey}:`, err);
       setError(prev => ({ ...prev, [entityKey]: err.message || `Falha ao carregar ${entityKey}` }));
     } finally {
       setLoading(prev => ({ ...prev, [entityKey]: false }));
     }
-  }, [data.user, loading]);
-
-  useEffect(() => {
-    if (authLoading) return;
-    if (authUser) {
-      setData(prev => ({ ...prev, user: authUser }));
-      setLoading(prev => ({ ...prev, user: false }));
-    } else {
-      setData(prev => ({ ...prev, user: null }));
-      setLoading(prev => ({ ...prev, user: false }));
-    }
   }, [authUser, authLoading]);
 
-  // Refresh de dados
   const refreshData = useCallback(async (entityKey = null) => {
-    const force = true;
-    const refreshTasks = {
-      events: () => loadEntity('events', Event, force),
-      dailyWork: () => loadEntity('dailyWork', DailyWork, force),
-      clients: () => loadEntity('clients', Client, force),
-      expenses: () => loadEntity('expenses', Expense, force),
-    };
-
-    if (entityKey && refreshTasks[entityKey]) {
-      console.log(`🔄 Refresh de ${entityKey}...`);
-      await refreshTasks[entityKey]();
-    } else {
-      console.log('🔄 Refresh de todos os dados...');
-      await Promise.all(Object.values(refreshTasks).map(task => task()));
-    }
+    const keys = entityKey ? [entityKey] : Object.keys(TABLE_MAP);
+    keys.forEach(k => { dataLoaded.current[k] = false; });
+    await Promise.all(keys.map(k => loadEntity(k, null, true)));
   }, [loadEntity]);
 
-  // Funções individuais de carregamento (memoizadas)
-  const loadEvents = useCallback((force = false) => loadEntity('events', Event, force), [loadEntity]);
-  const loadDailyWork = useCallback((force = false) => loadEntity('dailyWork', DailyWork, force), [loadEntity]);
-  const loadClients = useCallback((force = false) => loadEntity('clients', Client, force), [loadEntity]);
-  const loadExpenses = useCallback((force = false) => loadEntity('expenses', Expense, force), [loadEntity]);
+  const loadEvents = useCallback((force = false) => loadEntity('events', null, force), [loadEntity]);
+  const loadDailyWork = useCallback((force = false) => loadEntity('dailyWork', null, force), [loadEntity]);
+  const loadClients = useCallback((force = false) => loadEntity('clients', null, force), [loadEntity]);
+  const loadExpenses = useCallback((force = false) => loadEntity('expenses', null, force), [loadEntity]);
 
   const value = {
     data,

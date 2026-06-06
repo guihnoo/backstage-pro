@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, AlertCircle, X, Calendar as CalendarIcon, Clock, DollarSign, Palette, Building2 } from 'lucide-react';
 import { Event } from '@/api/entities';
-import { Client } from '@/api/entities';
+import { useAuth } from '@/lib/authContext';
 import { normalizeDateString } from '@/components/utils/dateUtils';
 import { toast } from 'sonner';
 
@@ -31,6 +31,7 @@ const PAYMENT_MODELS = [
 ];
 
 export default function EventForm({ event, clients = [], onClose, onSuccess, initialData = {} }) {
+  const { user: authUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -144,11 +145,9 @@ export default function EventForm({ event, clients = [], onClose, onSuccess, ini
     setLoading(true);
 
     try {
-      const user = await import('@/api/entities').then(m => m.User.me());
-      
       const eventData = {
         ...formData,
-        owner_id: user.id,
+        owner_id: authUser?.id,
         daily_cache_value: parseFloat(formData.daily_cache_value) || 0,
         cache_valor_base: formData.payment_model === 'MEIO_CACHE_E_DOBRA' 
           ? parseFloat(formData.cache_valor_base) || 0 

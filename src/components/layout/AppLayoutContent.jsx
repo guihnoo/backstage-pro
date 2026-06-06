@@ -8,12 +8,12 @@ import Logo from './Logo';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
 import { Notification } from '@/api/entities';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
-import { useAuth } from '@/lib/mockAuth';
+import { useAuth } from '@/lib/authContext';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 export default function AppLayoutContent({ user, currentPageName, navItems, children }) {
-  const { logout } = useAuth();
+  const { signOut } = useAuth();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -23,8 +23,8 @@ export default function AppLayoutContent({ user, currentPageName, navItems, chil
   const { isVisible, toggleVisibility } = useFinancialVisibility();
   const location = useLocation();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await signOut();
     navigate('/login');
   };
 

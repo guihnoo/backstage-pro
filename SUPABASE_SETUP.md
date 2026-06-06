@@ -10,6 +10,21 @@ No [Auth → URL Configuration](https://supabase.com/dashboard/project/cwtallnet
 | **Redirect URLs** | `http://127.0.0.1:5173/**` |
 | | `http://localhost:5173/**` |
 | | `https://backstage-pro-beta.vercel.app/**` |
+| | `https://backstage-pro-beta.vercel.app/auth/callback` |
+
+## Provedores OAuth (login premium)
+
+No [Auth → Providers](https://supabase.com/dashboard/project/cwtallnetgodoacuoaow/auth/providers), habilite e configure:
+
+| Provedor | Onde obter credenciais |
+|----------|------------------------|
+| **Google** | [Google Cloud Console](https://console.cloud.google.com/) → OAuth 2.0 Client ID |
+| **Apple** | [Apple Developer](https://developer.apple.com/) → Sign in with Apple |
+| **Discord** | [Discord Developer Portal](https://discord.com/developers/applications) |
+| **Facebook** | [Meta for Developers](https://developers.facebook.com/) |
+
+Redirect URI em todos os provedores (copie do painel Supabase):
+`https://cwtallnetgodoacuoaow.supabase.co/auth/v1/callback`
 
 **Via CLI** (após `npx supabase login` uma vez): `npm run supabase:auth-push`
 

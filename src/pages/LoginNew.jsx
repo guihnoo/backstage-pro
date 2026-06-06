@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Zap, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
@@ -46,7 +46,9 @@ export default function LoginNew() {
       await signInWithPassword(email, password);
       navigate('/');
     } catch (err) {
-      setError(err.message);
+      setError(err.message === 'Invalid login credentials'
+        ? 'Email ou senha incorretos. Verifique seus dados ou crie uma conta.'
+        : err.message);
     } finally {
       setLoading(false);
     }
@@ -54,30 +56,21 @@ export default function LoginNew() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 text-white overflow-hidden relative">
-      {/* Backdrop animado */}
       <StageBackdrop />
-
-      {/* Raios de holofote */}
       <SpotlightRays />
-
-      {/* Equipamentos flutuantes */}
       <FloatingEquipment />
 
-      {/* Fundo com grade de palco e holofotes */}
       <div className="absolute inset-0">
-        {/* Grade de pontos em perspectiva */}
         <div className="absolute inset-0 opacity-10">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="perspective(500px) rotateX(70deg)">
+              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
                 <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(34,211,238,0.5)" strokeWidth="0.5"/>
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#grid)" />
           </svg>
         </div>
-
-        {/* Holofotes laterais */}
         <motion.div
           animate={{ opacity: [0.1, 0.3, 0.1] }}
           transition={{ duration: 4, repeat: Infinity }}
@@ -90,17 +83,14 @@ export default function LoginNew() {
         />
       </div>
 
-      {/* Conteúdo */}
-      <div className="relative z-10 min-h-screen flex items-center justify-center px-4">
+      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="w-full max-w-md"
         >
-          {/* Card com blur */}
           <div className="bg-gray-900/40 backdrop-blur-xl border border-gray-800/50 rounded-2xl p-8 shadow-2xl">
-            {/* Header */}
             <div className="text-center mb-8">
               <motion.div
                 animate={{ scale: [1, 1.05, 1] }}
@@ -109,42 +99,49 @@ export default function LoginNew() {
               >
                 <Zap className="w-7 h-7 text-white" />
               </motion.div>
-
               <h1 className="text-3xl font-black mb-2 bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
-                Bem-vindo
+                Backstage Pro
               </h1>
-              <p className="text-gray-400 text-sm">Volte aos bastidores do seu melhor trabalho</p>
+              <p className="text-gray-400 text-sm">Gestão profissional para quem vive os bastidores</p>
             </div>
 
-            {/* Error message */}
+            <SocialLoginButtons mode="login" />
+
+            <div className="my-6 relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-800" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-gray-900/40 text-gray-400">ou entre com email</span>
+              </div>
+            </div>
+
             {error && (
-              <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 flex items-center gap-2">
+              <div className="mb-4 bg-red-500/20 border border-red-500/50 rounded-lg p-3 flex items-center gap-2">
                 <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
                 <p className="text-sm text-red-300">{error}</p>
               </div>
             )}
 
-            {/* Form */}
             <motion.form
               onSubmit={handleSubmit}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="space-y-5"
+              className="space-y-4"
             >
-              {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
                 <Input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="você@email.com"
-                  className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-600 focus:border-cyan-500 focus:ring-cyan-500/20"
+                  placeholder="você@empresa.com"
+                  className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-600 focus:border-cyan-500"
+                  autoComplete="email"
                 />
               </div>
 
-              {/* Senha */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Senha</label>
                 <div className="relative">
@@ -153,63 +150,38 @@ export default function LoginNew() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-600 focus:border-cyan-500 focus:ring-cyan-500/20 pr-10"
+                    className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-600 focus:border-cyan-500 pr-10"
+                    autoComplete="current-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-400"
+                    aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
 
-              {/* Botão entrar */}
               <Button
                 type="submit"
                 disabled={loading || !email || !password}
-                className="w-full h-10 bg-gradient-to-r from-cyan-500 via-violet-500 to-amber-500 hover:from-cyan-600 hover:via-violet-600 hover:to-amber-600 text-white font-bold disabled:opacity-50 shadow-lg shadow-cyan-500/30"
+                className="w-full h-10 bg-gradient-to-r from-cyan-500 via-violet-500 to-amber-500 hover:from-cyan-600 hover:via-violet-600 hover:to-amber-600 text-white font-bold disabled:opacity-50 shadow-lg shadow-cyan-500/20"
               >
                 {loading ? 'Entrando...' : 'Entrar no Backstage'}
               </Button>
             </motion.form>
 
-            {/* Divider */}
-            <div className="my-6 relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-800" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-gray-900/40 text-gray-400">ou entre com</span>
-              </div>
-            </div>
+            <p className="text-center text-gray-500 text-sm mt-6">
+              Novo por aqui?{' '}
+              <Link to="/signup" className="text-cyan-400 hover:text-cyan-300 font-medium">
+                Criar conta gratuita
+              </Link>
+            </p>
 
-            {/* Social Login Buttons */}
-            <SocialLoginButtons />
-
-            {/* Divider 2 */}
-            <div className="my-6 relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-800" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-gray-900/40 text-gray-400">novo por aqui?</span>
-              </div>
-            </div>
-
-            {/* Link Signup */}
-            <Button
-              onClick={() => navigate('/signup')}
-              variant="outline"
-              className="w-full h-10 border-gray-700 text-cyan-400 hover:bg-gray-800/50 hover:text-cyan-300"
-            >
-              Criar sua conta
-            </Button>
-
-            {/* Demo hint */}
-            <p className="text-center text-gray-500 text-xs mt-6">
-              Use qualquer email/senha para demo
+            <p className="text-center text-[11px] text-gray-600 mt-4 leading-relaxed">
+              Ao continuar, você concorda com nossos termos de uso e política de privacidade.
             </p>
           </div>
         </motion.div>

@@ -5,13 +5,15 @@ create table clients (
   name text not null,
   email text,
   phone text,
+  contact_person text,
+  logo_url text,
   company text,
   city text,
   state text,
+  policy_default_payment_model text, -- HORAS_EXTRAS, MEIO_CACHE_E_DOBRA
+  policy_allows_meio_e_dobra_juntos boolean default false,
   notes text,
   is_favorite boolean default false,
-  total_events integer default 0,
-  total_spent numeric default 0,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );

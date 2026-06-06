@@ -1,7 +1,17 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase } from './supabase';
+import { ensureUserProfile } from './ensureUserProfile';
 
 const AuthContext = createContext();
+
+async function fetchProfile(userId) {
+  const { data } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .maybeSingle();
+  return data;
+}
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -9,23 +19,37 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
 
+  const hydrateUser = useCallback(async (nextSession) => {
+    if (!nextSession?.user) {
+      setProfile(null);
+      return;
+    }
+
+    let profileData = await fetchProfile(nextSession.user.id);
+
+    if (!profileData) {
+      profileData = await ensureUserProfile(nextSession.user);
+    }
+
+    setProfile(profileData);
+  }, []);
+
   useEffect(() => {
     let mounted = true;
 
-    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+    supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
       if (!mounted) return;
       setSession(initialSession);
       setUser(initialSession?.user ?? null);
+
       if (initialSession?.user) {
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', initialSession.user.id)
-          .single()
-          .then(({ data: profileData }) => {
-            if (mounted) setProfile(profileData);
-          });
+        try {
+          await hydrateUser(initialSession);
+        } catch (err) {
+          console.error('[AuthProvider] hydrateUser', err);
+        }
       }
+
       setLoading(false);
     });
 
@@ -35,13 +59,16 @@ export function AuthProvider({ children }) {
         setUser(newSession?.user ?? null);
 
         if (newSession?.user) {
-          // Carrega perfil do usuário
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', newSession.user.id)
-            .single();
-          setProfile(profileData);
+          try {
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+              await hydrateUser(newSession);
+            } else {
+              const profileData = await fetchProfile(newSession.user.id);
+              setProfile(profileData);
+            }
+          } catch (err) {
+            console.error('[AuthProvider] onAuthStateChange', err);
+          }
         } else {
           setProfile(null);
         }
@@ -54,32 +81,47 @@ export function AuthProvider({ children }) {
       mounted = false;
       subscription?.unsubscribe();
     };
-  }, []);
+  }, [hydrateUser]);
 
   const signInWithOAuth = async (provider) => {
     const origin = window.location.origin;
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${origin}/`,
-        skipBrowserRedirect: false,
-      },
-    });
+    const options = {
+      redirectTo: `${origin}/auth/callback`,
+      skipBrowserRedirect: false,
+    };
+
+    if (provider === 'google') {
+      options.queryParams = {
+        access_type: 'offline',
+        prompt: 'select_account',
+      };
+    }
+
+    const { error } = await supabase.auth.signInWithOAuth({ provider, options });
     if (error) throw error;
   };
 
   const signInWithPassword = async (email, password) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     if (error) throw error;
+
+    if (data.user) {
+      await ensureUserProfile(data.user);
+      const profileData = await fetchProfile(data.user.id);
+      setProfile(profileData);
+    }
   };
 
   const signUp = async (email, password) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
     if (error) throw error;
   };
@@ -91,6 +133,8 @@ export function AuthProvider({ children }) {
 
   const updateProfile = async (updates) => {
     if (!user) throw new Error('Usuário não autenticado');
+
+    await ensureUserProfile(user);
 
     const { error } = await supabase
       .from('profiles')
@@ -104,12 +148,7 @@ export function AuthProvider({ children }) {
 
     if (error) throw error;
 
-    // Atualiza estado local
-    const { data: updatedProfile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
+    const updatedProfile = await fetchProfile(user.id);
     setProfile(updatedProfile);
   };
 

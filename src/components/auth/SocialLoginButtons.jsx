@@ -1,9 +1,45 @@
 import { motion } from 'framer-motion';
-import { Chrome, MessageSquare, Loader2 } from 'lucide-react';
+import { Loader2, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/lib/authContext';
+import { GoogleIcon, AppleIcon, DiscordIcon, FacebookIcon } from './ProviderIcons';
 
-export default function SocialLoginButtons() {
+const PROVIDERS = [
+  {
+    id: 'google',
+    label: 'Continuar com Google',
+    Icon: GoogleIcon,
+    className:
+      'bg-white text-gray-900 border-white/90 hover:bg-gray-100 shadow-sm shadow-white/10',
+    iconClassName: 'w-5 h-5',
+  },
+  {
+    id: 'apple',
+    label: 'Continuar com Apple',
+    Icon: AppleIcon,
+    className:
+      'bg-black text-white border-gray-700 hover:bg-gray-900',
+    iconClassName: 'w-5 h-5 text-white',
+  },
+  {
+    id: 'discord',
+    label: 'Continuar com Discord',
+    Icon: DiscordIcon,
+    className:
+      'bg-[#5865F2]/15 text-[#b8bcff] border-[#5865F2]/40 hover:bg-[#5865F2]/25',
+    iconClassName: 'w-5 h-5',
+  },
+  {
+    id: 'facebook',
+    label: 'Continuar com Facebook',
+    Icon: FacebookIcon,
+    className:
+      'bg-[#1877F2]/15 text-[#93c5fd] border-[#1877F2]/40 hover:bg-[#1877F2]/25',
+    iconClassName: 'w-5 h-5',
+  },
+];
+
+export default function SocialLoginButtons({ mode = 'login' }) {
   const { signInWithOAuth } = useAuth();
   const [loading, setLoading] = useState(null);
   const [error, setError] = useState(null);
@@ -14,76 +50,56 @@ export default function SocialLoginButtons() {
       setError(null);
       await signInWithOAuth(provider);
     } catch (err) {
-      setError(err.message);
+      const message =
+        err?.message?.includes('provider is not enabled')
+          ? 'Este provedor ainda não está ativo. Use email/senha ou Google.'
+          : err?.message || 'Não foi possível iniciar o login social.';
+      setError(message);
       setLoading(null);
     }
   };
 
-  const socials = [
-    {
-      id: 'google',
-      name: 'Google',
-      icon: Chrome,
-      bgColor: 'bg-white/10 hover:bg-white/20',
-      textColor: 'text-white',
-      borderColor: 'border-white/30'
-    },
-    {
-      id: 'discord',
-      name: 'Discord',
-      icon: MessageSquare,
-      bgColor: 'bg-indigo-600/20 hover:bg-indigo-600/30',
-      textColor: 'text-indigo-400',
-      borderColor: 'border-indigo-500/50'
-    },
-    {
-      id: 'facebook',
-      name: 'Facebook',
-      icon: () => <span className="text-lg font-bold">f</span>,
-      bgColor: 'bg-blue-600/20 hover:bg-blue-600/30',
-      textColor: 'text-blue-400',
-      borderColor: 'border-blue-500/50'
-    },
-    {
-      id: 'apple',
-      name: 'Apple',
-      icon: () => <span className="text-lg">🍎</span>,
-      bgColor: 'bg-gray-700/20 hover:bg-gray-700/30',
-      textColor: 'text-gray-300',
-      borderColor: 'border-gray-600/50'
-    }
-  ];
+  const verb = mode === 'signup' ? 'Cadastrar' : 'Continuar';
 
   return (
-    <div className="grid grid-cols-2 gap-3">
-      {socials.map((social, idx) => {
-        const Icon = social.icon;
+    <div className="space-y-3">
+      {PROVIDERS.map((provider, idx) => {
+        const { Icon } = provider;
+        const label = provider.label.replace('Continuar', verb);
+
         return (
           <motion.button
-            key={social.id}
-            initial={{ opacity: 0, y: 10 }}
+            key={provider.id}
+            type="button"
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.1 }}
-            onClick={() => handleSocialLogin(social.id)}
+            transition={{ delay: idx * 0.06 }}
+            onClick={() => handleSocialLogin(provider.id)}
             disabled={loading !== null}
-            className={`relative p-3 rounded-lg border-2 transition-all ${social.bgColor} ${social.borderColor} group disabled:opacity-50 disabled:cursor-not-allowed`}
+            className={`relative w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border font-medium text-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed ${provider.className}`}
           >
-            {loading === social.id ? (
-              <Loader2 className={`w-5 h-5 ${social.textColor} animate-spin mx-auto`} />
+            {loading === provider.id ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              <div className="flex flex-col items-center gap-2">
-                <Icon className={`w-5 h-5 ${social.textColor}`} />
-                <span className={`text-xs font-medium ${social.textColor}`}>
-                  {social.name}
+              <>
+                <span className="absolute left-4 flex items-center justify-center w-6">
+                  <Icon className={provider.iconClassName} />
                 </span>
-              </div>
+                <span>{label}</span>
+              </>
             )}
-
-            {/* Glow effect on hover */}
-            <div className={`absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity blur-lg ${social.bgColor.split(' ')[1]}`} />
           </motion.button>
         );
       })}
+
+      {error && (
+        <p className="text-xs text-amber-300/90 text-center px-2 leading-relaxed">{error}</p>
+      )}
+
+      <div className="flex items-center justify-center gap-1.5 pt-1 text-[11px] text-gray-500">
+        <ShieldCheck className="w-3.5 h-3.5 text-emerald-500/80" />
+        <span>Autenticação segura · OAuth 2.0 · Supabase</span>
+      </div>
     </div>
   );
 }

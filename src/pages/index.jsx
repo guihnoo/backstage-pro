@@ -1,10 +1,12 @@
-import React, { lazy } from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/lib/authContext';
 import LoadingSpinner from '@/components/layout/LoadingSpinner';
-import LegacyRoute from '@/components/layout/LegacyRoute';
+import { FinancialVisibilityProvider } from '@/components/context/FinancialVisibilityContext';
 
 import LoginNew from './LoginNew';
+import SignupNew from './SignupNew';
+import AuthCallback from './AuthCallback';
 import Onboarding from './Onboarding';
 import Home from './Home';
 import Goals from './Goals';
@@ -13,6 +15,9 @@ import AppLayout from '@/components/layout/AppLayout';
 
 const CalendarPage = lazy(() => import('./Calendar'));
 const ClientsPage = lazy(() => import('./Clients'));
+const ExpensesPage = lazy(() => import('./Expenses'));
+const ReportsPage = lazy(() => import('./reports'));
+const ClientDetailPage = lazy(() => import('./ClientDetail'));
 
 function RouteLoading() {
   return <LoadingSpinner fullScreen text="Carregando..." />;
@@ -41,6 +46,16 @@ function OnboardingRoute({ children }) {
   return children;
 }
 
+function MigratedModuleRoute({ children }) {
+  return (
+    <FinancialVisibilityProvider>
+      <Suspense fallback={<RouteLoading />}>
+        {children}
+      </Suspense>
+    </FinancialVisibilityProvider>
+  );
+}
+
 export default function PagesRouter() {
   return (
     <Routes>
@@ -52,6 +67,17 @@ export default function PagesRouter() {
           </PublicRoute>
         }
       />
+
+      <Route
+        path="/signup"
+        element={
+          <PublicRoute>
+            <SignupNew />
+          </PublicRoute>
+        }
+      />
+
+      <Route path="/auth/callback" element={<AuthCallback />} />
 
       <Route
         path="/onboarding"
@@ -74,17 +100,41 @@ export default function PagesRouter() {
         <Route
           path="calendar"
           element={
-            <LegacyRoute>
+            <MigratedModuleRoute>
               <CalendarPage />
-            </LegacyRoute>
+            </MigratedModuleRoute>
           }
         />
         <Route
           path="clients"
           element={
-            <LegacyRoute>
+            <MigratedModuleRoute>
               <ClientsPage />
-            </LegacyRoute>
+            </MigratedModuleRoute>
+          }
+        />
+        <Route
+          path="expenses"
+          element={
+            <MigratedModuleRoute>
+              <ExpensesPage />
+            </MigratedModuleRoute>
+          }
+        />
+        <Route
+          path="reports"
+          element={
+            <MigratedModuleRoute>
+              <ReportsPage />
+            </MigratedModuleRoute>
+          }
+        />
+        <Route
+          path="client-detail"
+          element={
+            <MigratedModuleRoute>
+              <ClientDetailPage />
+            </MigratedModuleRoute>
           }
         />
         <Route path="goals" element={<Goals />} />

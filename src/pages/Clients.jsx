@@ -1,6 +1,8 @@
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { useAppData } from '@/components/context/AppDataContext';
+import React, { useState, useMemo, useCallback } from 'react';
+import { useClients } from '@/lib/useClients';
+import { useEvents } from '@/lib/useEvents';
+import { useDailyWork } from '@/lib/useDailyWork';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,7 +24,6 @@ import { format, parseISO, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { getEventStatus } from '@/components/utils/dateUtils';
-import { createPageUrl } from '@/utils';
 import { useMediaQuery } from '@/components/hooks/useMediaQuery';
 
 // Components
@@ -32,8 +33,6 @@ import EmptyState from '@/components/layout/EmptyState';
 import ClientActionSheet from '@/components/mobile/ClientActionSheet';
 import ClientInsightsModal from '@/components/clients/ClientInsightsModal';
 
-// NOVO: Adicionado para o checkup de saúde
-import { Client } from '@/api/entities';
 import { toast } from 'sonner';
 
 const ClientsSkeleton = () => (
@@ -68,30 +67,17 @@ const ClientsSkeleton = () => (
 );
 
 export default function ClientsPage() {
-  const { data, loading, refreshData, error, loadEvents, loadClients, loadDailyWork, loadExpenses } = useAppData();
+  const { clients, loading: clientsLoading, error: clientsError, refetch: refetchClients, delete: deleteClient } = useClients();
+  const { events, loading: eventsLoading } = useEvents();
+  const { dailyWork, loading: dailyWorkLoading } = useDailyWork();
   const { formatCurrency } = useFinancialVisibility();
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterActive, setFilterActive] = useState('all');
 
-  const [showClientForm, setShowClientForm] = useState(false);
-  const [editingClient, setEditingClient] = useState(null);
-  const [selectedClient, setSelectedClient] = useState(null);
-  const [actionSheetClient, setActionSheetClient] = useState(null);
-  const [insightsClient, setInsightsClient] = useState(null);
-
-  useEffect(() => {
-    loadClients();
-    loadEvents();
-    loadDailyWork();
-    loadExpenses();
-  }, [loadClients, loadEvents, loadDailyWork, loadExpenses]);
-
   const clientsWithStats = useMemo(() => {
-    const clients = data.clients || [];
-    const events = data.events || [];
-    const work = data.dailyWork || [];
+    const work = dailyWork;
 
     return clients.map(client => {
       const clientEvents = events.filter(e => e.client_id === client.id);
@@ -139,7 +125,7 @@ export default function ClientsPage() {
         }
       };
     });
-  }, [data.clients, data.events, data.dailyWork]);
+  }, [clients, events, dailyWork]);
 
   const filteredAndSortedClients = useMemo(() => {
     let filtered = clientsWithStats;
@@ -190,26 +176,24 @@ export default function ClientsPage() {
   const handleFormSuccess = useCallback(() => {
     setShowClientForm(false);
     setEditingClient(null);
-    refreshData('clients');
-  }, [refreshData]);
-  
+    refetchClients();
+  }, [refetchClients]);
+
   const handleDeleteClient = useCallback(async (clientId) => {
-    // Adicionar confirmação
     if (!window.confirm("Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.")) {
       return;
     }
     try {
-      await Client.delete(clientId);
+      await deleteClient(clientId);
       toast.success("Cliente excluído com sucesso.");
-      setSelectedClient(null); // Fechar modal de detalhes
-      refreshData('clients');
+      setSelectedClient(null);
     } catch (err) {
       console.error("Erro ao excluir cliente:", err);
       toast.error("Não foi possível excluir o cliente.", {
         description: "Verifique se ele não possui eventos associados e tente novamente."
       });
     }
-  }, [refreshData]);
+  }, [deleteClient]);
 
   const handleActionSheetViewDetails = useCallback((client) => {
     setActionSheetClient(null);
@@ -238,7 +222,7 @@ export default function ClientsPage() {
     return name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '??';
   };
 
-  if (loading.clients && !data.clients?.length) {
+  if (clientsLoading && !clients.length) {
     return (
       <div className="p-4 md:p-6">
         <ClientsSkeleton />
@@ -246,14 +230,14 @@ export default function ClientsPage() {
     );
   }
 
-  if (error.clients) {
+  if (clientsError) {
     return (
       <div className="h-full flex flex-col items-center justify-center p-4">
         <EmptyState
           icon={AlertCircle}
           title="Erro ao Carregar Clientes"
           description="Não foi possível buscar sua lista de clientes. Por favor, verifique sua conexão e tente novamente."
-          action={() => refreshData('clients')}
+          action={refetchClients}
           actionLabel="Tentar Novamente"
         />
       </div>

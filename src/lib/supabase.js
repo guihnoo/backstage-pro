@@ -15,7 +15,15 @@ const placeholderKey = 'placeholder-anon-key';
 
 export const supabase = createClient(
   isSupabaseConfigured ? supabaseUrl : placeholderUrl,
-  isSupabaseConfigured ? supabaseAnonKey : placeholderKey
+  isSupabaseConfigured ? supabaseAnonKey : placeholderKey,
+  {
+    auth: {
+      flowType: 'pkce',
+      detectSessionInUrl: false,
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+  }
 );
 
 if (!isSupabaseConfigured && import.meta.env.DEV) {

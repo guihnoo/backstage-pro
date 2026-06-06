@@ -1,6 +1,10 @@
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { useAppData } from '@/components/context/AppDataContext';
+import { useAuth } from '@/lib/authContext';
+import { useEvents } from '@/lib/useEvents';
+import { useClients } from '@/lib/useClients';
+import { useDailyWork } from '@/lib/useDailyWork';
+import { useExpenses } from '@/lib/useExpenses';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -25,8 +29,6 @@ import DailyWorkModal from '@/components/calendar/DailyWorkModal';
 import EventDetailModal from '@/components/reports/EventDetailModal';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { normalizeDateString } from '@/components/utils/dateUtils';
-import { Event } from '@/api/entities';
-import { DailyWork } from '@/api/entities';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import ExpenseForm from '@/components/expenses/ExpenseForm';
@@ -99,12 +101,15 @@ const StatCard = ({ title, value, subtext, icon: Icon, color, onClick, loading =
 );
 
 export default function CalendarPage() {
-  const { data, loading, refreshData, error, loadEvents, loadClients, loadDailyWork, loadExpenses } = useAppData();
+  const { user, loading: authLoading } = useAuth();
+  const { events, loading: eventsLoading, error: eventsError, refetch: refetchEvents, update: updateEvent, delete: deleteEvent } = useEvents();
+  const { clients, loading: clientsLoading } = useClients();
+  const { dailyWork, loading: dailyWorkLoading, refetch: refetchDailyWork, create: createDailyWork, update: updateDailyWork, delete: deleteDailyWorkEntry } = useDailyWork();
+  const { expenses, loading: expensesLoading, refetch: refetchExpenses } = useExpenses();
   const { formatCurrency } = useFinancialVisibility();
 
-  const isLoading = loading.events || loading.clients || loading.dailyWork || loading.expenses;
-  const isDataReady =
-    data && Array.isArray(data.events) && Array.isArray(data.clients) && Array.isArray(data.dailyWork) && Array.isArray(data.expenses);
+  const isLoading = eventsLoading || clientsLoading || dailyWorkLoading || expensesLoading;
+  const isDataReady = Array.isArray(events) && Array.isArray(clients) && Array.isArray(dailyWork) && Array.isArray(expenses);
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
@@ -138,20 +143,8 @@ export default function CalendarPage() {
 
   const isMobile = useMediaQuery('(max-width: 768px)');
 
-  useEffect(() => {
-    loadEvents();
-    loadClients();
-    loadDailyWork();
-    loadExpenses();
-  }, [loadEvents, loadClients, loadDailyWork, loadExpenses]);
-
-  const clientMap = useMemo(() => {
-    return new Map((data.clients || []).map((client) => [client.id, client]));
-  }, [data.clients]);
-
-  const eventMap = useMemo(() => {
-    return new Map((data.events || []).map((event) => [event.id, event]));
-  }, [data.events]);
+  const clientMap = useMemo(() => new Map(clients.map(c => [c.id, c])), [clients]);
+  const eventMap = useMemo(() => new Map(events.map(e => [e.id, e])), [events]);
 
   const closeModals = useCallback(() => {
     setSelectedEvent(null);
@@ -216,7 +209,7 @@ export default function CalendarPage() {
       closeModals();
 
       const dateStr = normalizeDateString(targetDate);
-      const eventsForDate = (data.events || []).filter((event) => {
+      const eventsForDate = events.filter((event) => {
         if (!event?.start_date || !event?.end_date) return false;
         const startDate = normalizeDateString(event.start_date);
         const endDate = normalizeDateString(event.end_date);
@@ -244,7 +237,7 @@ export default function CalendarPage() {
         setMultipleEventsModal(true);
       }
     },
-    [closeModals, data.events, handleNewEvent]
+    [closeModals, events, handleNewEvent]
   );
 
   const handleQuickWorkEntry = useCallback(
@@ -359,8 +352,10 @@ export default function CalendarPage() {
   const handleFormSuccess = useCallback(() => {
     closeModals();
     closeActionSheets();
-    refreshData();
-  }, [refreshData, closeModals, closeActionSheets]);
+    refetchEvents();
+    refetchDailyWork();
+    refetchExpenses();
+  }, [closeModals, closeActionSheets, refetchEvents, refetchDailyWork, refetchExpenses]);
 
   const handleWorkDelete = useCallback(
     async (workId) => {
@@ -368,7 +363,7 @@ export default function CalendarPage() {
 
       if (window.confirm('Tem certeza que deseja excluir este registro de horas? Esta ação não pode ser desfeita.')) {
         try {
-          await DailyWork.delete(workId);
+          await deleteDailyWorkEntry(workId);
           toast.success('Registro de horas excluído com sucesso!');
           handleFormSuccess();
         } catch (err) {
@@ -405,7 +400,7 @@ export default function CalendarPage() {
     async (eventId) => {
       if (!eventId) return;
 
-      const eventToDelete = (data?.events || []).find((e) => e.id === eventId);
+      const eventToDelete = events.find((e) => e.id === eventId);
       if (!eventToDelete) {
         toast.error('Evento não encontrado para exclusão.');
         return;
@@ -415,7 +410,7 @@ export default function CalendarPage() {
 
       if (window.confirm(confirmationMessage)) {
         try {
-          await Event.delete(eventId);
+          await deleteEvent(eventId);
           toast.success(`Evento "${eventToDelete.title}" foi excluído com sucesso!`);
           handleFormSuccess();
         } catch (err) {
@@ -424,14 +419,14 @@ export default function CalendarPage() {
         }
       }
     },
-    [data?.events, handleFormSuccess]
+    [events, handleFormSuccess, deleteEvent]
   );
 
   const handleMarkPaid = useCallback(
     async (eventToUpdate) => {
       if (!eventToUpdate) return;
       try {
-        await Event.update(eventToUpdate.id, { paid: !eventToUpdate.paid });
+        await updateEvent(eventToUpdate.id, { paid: !eventToUpdate.paid });
         toast.success(`Evento "${eventToUpdate.title}" marcado como ${eventToUpdate.paid ? 'não pago' : 'pago'}!`);
         handleFormSuccess();
       } catch (err) {
@@ -441,7 +436,7 @@ export default function CalendarPage() {
         });
       }
     },
-    [handleFormSuccess]
+    [handleFormSuccess, updateEvent]
   );
 
   // New action sheet handlers
@@ -455,7 +450,7 @@ export default function CalendarPage() {
   const handleActionSheetOpenHours = useCallback(() => {
     if (selectedActionSheetEvent) {
       const dateStr = selectedActionSheetEvent.start_date; // Use event start date for initial hours date
-      const work = (data.dailyWork || []).find(
+      const work = dailyWork.find(
         (w) => w.event_id === selectedActionSheetEvent.id && normalizeDateString(w.date) === normalizeDateString(dateStr)
       );
 
@@ -467,7 +462,7 @@ export default function CalendarPage() {
       setSelectedActionSheetEvent(null); // Close the event action sheet
       setShowMobileHoursSheet(true); // Open the hours sheet
     }
-  }, [selectedActionSheetEvent, data.dailyWork]);
+  }, [selectedActionSheetEvent, dailyWork]);
 
   const handleActionSheetOpenNotes = useCallback(() => {
     if (selectedActionSheetEvent) {
@@ -514,13 +509,14 @@ export default function CalendarPage() {
           ...workData,
           event_id: mobileHoursEventData.event.id,
           date: normalizeDateString(workData.date || new Date()),
+          user_id: user?.id,
         };
 
         if (mobileHoursEventData.existingWork?.id) {
-          await DailyWork.update(mobileHoursEventData.existingWork.id, payload);
+          await updateDailyWork(mobileHoursEventData.existingWork.id, payload);
           toast.success('Horas atualizadas com sucesso!');
         } else {
-          await DailyWork.create(payload);
+          await createDailyWork(payload);
           toast.success('Horas registradas com sucesso!');
         }
 
@@ -530,7 +526,7 @@ export default function CalendarPage() {
         toast.error('Erro ao registrar horas');
       }
     },
-    [mobileHoursEventData, handleFormSuccess]
+    [mobileHoursEventData, handleFormSuccess, user, updateDailyWork, createDailyWork]
   );
 
   const handleNotesSheetSave = useCallback(
@@ -540,7 +536,7 @@ export default function CalendarPage() {
           toast.error('Nenhum evento selecionado para salvar observações.');
           return;
         }
-        await Event.update(activeNotesEvent.id, notesData);
+        await updateEvent(activeNotesEvent.id, notesData);
         toast.success('Observações salvas!');
         handleFormSuccess();
       } catch (error) {
@@ -569,7 +565,7 @@ export default function CalendarPage() {
     const monthStart = startOfMonth(currentDate);
     const monthEnd = endOfMonth(currentDate);
 
-    const monthEvents = data.events.filter((event) => {
+    const monthEvents = events.filter((event) => {
       if (!event?.start_date || !event?.end_date) return false;
       try {
         const eventStart = parseISO(event.start_date);
@@ -588,7 +584,7 @@ export default function CalendarPage() {
 
     const monthEventIds = new Set(monthEvents.map((e) => e.id));
 
-    const monthWork = data.dailyWork.filter((work) => {
+    const monthWork = dailyWork.filter((work) => {
       if (!work?.date) return false;
       try {
         const workDate = parseISO(work.date);
@@ -617,7 +613,7 @@ export default function CalendarPage() {
       monthEventIds,
       monthClientIds,
     };
-  }, [currentDate, isDataReady, data.events, data.dailyWork]);
+  }, [currentDate, isDataReady, events, dailyWork]);
 
   const handleEventsClick = useCallback(() => {
     closeModals();
@@ -741,7 +737,7 @@ export default function CalendarPage() {
     setQuickActions({ open: false, date: null, target: null });
   }, [quickActions.date, handleQuickWorkEntry]);
 
-  if (loading.user || (!isDataReady && isLoading)) {
+  if (authLoading || (!isDataReady && isLoading)) {
     return (
       <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 md:p-6">
         <CalendarSkeleton />
@@ -749,7 +745,7 @@ export default function CalendarPage() {
     );
   }
 
-  const hasError = Boolean(error.events || error.clients || error.dailyWork || error.expenses);
+  const hasError = Boolean(eventsError);
 
   if (hasError) {
     return (
@@ -757,7 +753,7 @@ export default function CalendarPage() {
         <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
         <h2 className="text-xl font-semibold text-red-400">Erro ao carregar agenda</h2>
         <p className="text-red-300 mt-2 max-w-md">Não foi possível carregar sua agenda. Por favor, tente novamente.</p>
-        <Button onClick={() => refreshData()} className="mt-4 bg-red-600 hover:bg-red-700">
+        <Button onClick={() => { refetchEvents(); refetchDailyWork(); refetchExpenses(); }} className="mt-4 bg-red-600 hover:bg-red-700">
           Tentar Novamente
         </Button>
       </div>
@@ -847,7 +843,7 @@ export default function CalendarPage() {
           <Alert className="border-red-500 bg-red-500/10">
             <AlertCircle className="w-4 h-4 text-red-400" />
             <AlertDescription className="text-red-300 text-sm">
-              <strong>Erro:</strong> {error?.events || error?.clients || error?.dailyWork || error?.expenses}
+              <strong>Erro:</strong> {eventsError}
             </AlertDescription>
           </Alert>
         )}
@@ -900,9 +896,9 @@ export default function CalendarPage() {
           <CardContent className="p-0">
             <BackstageCalendarGrid
               currentDate={currentDate}
-              events={data.events || []}
-              clients={data.clients || []}
-              dailyWork={data.dailyWork || []}
+              events={events}
+              clients={clients}
+              dailyWork={dailyWork}
               selectedDate={selectedDate}
               onDateSelect={handleDayClick}
               onEventClick={handleEventClick}
@@ -938,7 +934,7 @@ export default function CalendarPage() {
               setPrefillEventData(null);
             }}
             event={editingEvent}
-            clients={data.clients || []}
+            clients={clients}
             prefillData={prefillEventData}
             onSuccess={handleFormSuccess}
           />
@@ -969,8 +965,8 @@ export default function CalendarPage() {
             onExpenseDelete={handleFormSuccess}
             onApply12h={handleEventActionSheetApplyManual12h}
             onMarkPaid={handleMarkPaid}
-            dailyWork={(data.dailyWork || []).filter((w) => w?.event_id === selectedEvent?.id)}
-            expenses={(data.expenses || []).filter((e) => e?.event_id === selectedEvent?.id)}
+            dailyWork={dailyWork.filter((w) => w?.event_id === selectedEvent?.id)}
+            expenses={expenses.filter((e) => e?.event_id === selectedEvent?.id)}
             client={clientMap.get(selectedEvent.client_id)}
           />
         )}
@@ -980,7 +976,7 @@ export default function CalendarPage() {
             open={showExpenseForm}
             onOpenChange={setShowExpenseForm}
             expense={editingExpense}
-            events={data.events || []}
+            events={events}
             prefillEventId={prefilledEventIdForExpense}
             onSuccess={handleFormSuccess}
           />
@@ -1011,7 +1007,7 @@ export default function CalendarPage() {
 
               <div className="space-y-2 sm:space-y-3 mb-6 max-h-80 overflow-y-auto pr-2">
                 {(eventsForSelectedDate || []).map((event) => {
-                  const client = (data.clients || []).find((c) => c.id === event.client_id);
+                  const client = clients.find((c) => c.id === event.client_id);
                   return (
                     <button
                       key={event.id}
