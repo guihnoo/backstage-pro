@@ -25,8 +25,7 @@ export async function ensureUserProfile(user) {
     .from('profiles')
     .insert({
       id: user.id,
-      email: user.email,
-      full_name: name,
+      name,
       avatar_url: avatar,
       onboarding_complete: false,
     })
