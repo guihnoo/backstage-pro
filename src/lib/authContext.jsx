@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase } from './supabase';
 import { ensureUserProfile } from './ensureUserProfile';
+import { assertSupabaseReachable } from './checkSupabaseReachable';
 
 const AuthContext = createContext();
 
@@ -84,6 +85,8 @@ export function AuthProvider({ children }) {
   }, [hydrateUser]);
 
   const signInWithOAuth = async (provider) => {
+    await assertSupabaseReachable();
+
     const origin = window.location.origin;
     const options = {
       redirectTo: `${origin}/auth/callback`,

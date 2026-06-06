@@ -48,7 +48,7 @@ export default function AuthCallback() {
         navigate(profile?.onboarding_complete ? '/' : '/onboarding', { replace: true });
       } catch (err) {
         if (!cancelled) {
-          setError(err.message || 'Falha ao concluir login com Google.');
+          setError(err.message || 'Falha ao concluir login social.');
         }
       }
     }

@@ -19,35 +19,20 @@ export async function ensureUserProfile(user) {
     user.email?.split('@')[0] ||
     'Profissional';
 
-  const avatar =
-    meta.avatar_url ||
-    meta.picture ||
-    null;
+  const avatar = meta.avatar_url || meta.picture || null;
 
   const { data: created, error } = await supabase
     .from('profiles')
     .insert({
       id: user.id,
-      name,
+      email: user.email,
+      full_name: name,
       avatar_url: avatar,
       onboarding_complete: false,
     })
     .select()
     .single();
 
-  if (error) {
-    // Concorrência: outro request já criou o perfil
-    if (error.code === '23505') {
-      const { data: retry } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
-      return retry;
-    }
-    console.error('[ensureUserProfile]', error);
-    throw error;
-  }
-
+  if (error) throw error;
   return created;
 }
