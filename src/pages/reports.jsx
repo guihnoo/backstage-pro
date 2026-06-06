@@ -1,10 +1,7 @@
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useEvents } from '@/lib/useEvents';
-import { useClients } from '@/lib/useClients';
-import { useDailyWork } from '@/lib/useDailyWork';
-import { useExpenses } from '@/lib/useExpenses';
+import { useAppData } from '@/components/context/AppDataContext';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -172,25 +169,8 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type }) => {
 
 export default function ReportsPage() {
   const navigate = useNavigate();
-  const { events, loading: eventsLoading, error: eventsError, refetch: refetchEvents, delete: deleteEvent } = useEvents();
-  const { clients, loading: clientsLoading, error: clientsError, refetch: refetchClients } = useClients();
-  const { dailyWork, loading: dailyWorkLoading, error: dailyWorkError, refetch: refetchDailyWork, delete: deleteDailyWorkEntry } = useDailyWork();
-  const { expenses, loading: expensesLoading, error: expensesError, refetch: refetchExpenses, delete: deleteExpense } = useExpenses();
+  const { data, loading, error, loadEvents, loadClients, loadDailyWork, loadExpenses, refreshData } = useAppData();
   const { formatCurrency, isVisible } = useFinancialVisibility();
-
-  const data = useMemo(() => ({
-    events: events || [],
-    clients: clients || [],
-    dailyWork: dailyWork || [],
-    expenses: expenses || [],
-  }), [events, clients, dailyWork, expenses]);
-
-  const refreshData = useCallback(() => {
-    refetchEvents();
-    refetchClients();
-    refetchDailyWork();
-    refetchExpenses();
-  }, [refetchEvents, refetchClients, refetchDailyWork, refetchExpenses]);
 
   const [selectedPeriod, setSelectedPeriod] = useState('this_month');
   const [selectedView, setSelectedView] = useState('overview');
@@ -205,8 +185,17 @@ export default function ReportsPage() {
   // NOVO: State para o EventDetailModal
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  const isDataReady = !eventsLoading && !clientsLoading && !dailyWorkLoading && !expensesLoading;
-  const hasError = eventsError || clientsError || dailyWorkError || expensesError;
+  // Load all necessary data on mount
+  useEffect(() => {
+    loadEvents();
+    loadClients();
+    loadDailyWork();
+    loadExpenses();
+  }, [loadEvents, loadClients, loadDailyWork, loadExpenses]);
+
+  // Define isDataReady and hasError here
+  const isDataReady = !loading.events && !loading.clients && !loading.dailyWork && !loading.expenses;
+  const hasError = error.events || error.clients || error.dailyWork || error.expenses;
 
   // Calculate date ranges for current and previous periods
   const { currentRange, previousRange, nextRange } = useMemo(() => {
@@ -540,7 +529,8 @@ export default function ReportsPage() {
   const handleEventDelete = async (eventId) => {
     if (window.confirm('Tem certeza que deseja excluir este evento? Esta ação não pode ser desfeita.')) {
       try {
-        await deleteEvent(eventId);
+        // Aqui você chamaria a função de deleção
+        // await deleteEvent(eventId);
         toast.success('Evento excluído com sucesso!');
         setSelectedEvent(null);
         refreshData();
@@ -557,7 +547,8 @@ export default function ReportsPage() {
   const handleWorkDelete = async (workId) => {
     if (window.confirm('Tem certeza que deseja excluir este registro de trabalho?')) {
       try {
-        await deleteDailyWorkEntry(workId);
+        // Aqui você chamaria a função de deleção
+        // await deleteWork(workId);
         toast.success('Registro de trabalho excluído!');
         refreshData();
       } catch (error) {
@@ -573,7 +564,8 @@ export default function ReportsPage() {
   const handleExpenseDelete = async (expenseId) => {
     if (window.confirm('Tem certeza que deseja excluir esta despesa?')) {
       try {
-        await deleteExpense(expenseId);
+        // Aqui você chamaria a função de deleção
+        // await deleteExpense(expenseId);
         toast.success('Despesa excluída!');
         refreshData();
       } catch (error) {

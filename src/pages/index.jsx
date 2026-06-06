@@ -5,8 +5,6 @@ import LoadingSpinner from '@/components/layout/LoadingSpinner';
 import { FinancialVisibilityProvider } from '@/components/context/FinancialVisibilityContext';
 
 import LoginNew from './LoginNew';
-import SignupNew from './SignupNew';
-import AuthCallback from './AuthCallback';
 import Onboarding from './Onboarding';
 import Home from './Home';
 import Goals from './Goals';
@@ -67,17 +65,6 @@ export default function PagesRouter() {
           </PublicRoute>
         }
       />
-
-      <Route
-        path="/signup"
-        element={
-          <PublicRoute>
-            <SignupNew />
-          </PublicRoute>
-        }
-      />
-
-      <Route path="/auth/callback" element={<AuthCallback />} />
 
       <Route
         path="/onboarding"
