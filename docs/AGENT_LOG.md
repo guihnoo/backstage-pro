@@ -6,6 +6,14 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-07
 
+### BASE44-CLEANUP-2 — Remoção de Base44 restante em componentes ativos ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **ExportManager.jsx** — `exportReportPdf` + `exportReportXlsx` substituídos por toast "em breve"; botões com opacity 60 indicam feature pendente
+- **ReceiptAnalyzer.jsx** — `UploadFile` + `extractExpenseData` substituídos por toast "em breve"; formulário manual permanece funcional
+- **AppLayout.jsx** — nav expandido de 5→6 itens: adicionado Despesas (Receipt) e Relatório (BarChart2); Metas removida do nav (acessível via /goals); ícones 18px, texto 9px com truncate
+- **Build**: ✅ 0 erros
+- **Deploy**: push main → Vercel 3a2f694
+
 ### AUDIT-PAGES — Audit completo página a página + fixes ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Audit completo**:
