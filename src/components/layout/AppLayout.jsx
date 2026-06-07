@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Calendar, Users, Target, User } from 'lucide-react';
+import { Home, Calendar, Users, User, Receipt, BarChart2 } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 
@@ -8,7 +8,8 @@ const navItems = [
   { path: '/', label: 'Home', icon: Home },
   { path: '/calendar', label: 'Agenda', icon: Calendar },
   { path: '/clients', label: 'Clientes', icon: Users },
-  { path: '/goals', label: 'Metas', icon: Target },
+  { path: '/expenses', label: 'Despesas', icon: Receipt },
+  { path: '/reports', label: 'Relatório', icon: BarChart2 },
   { path: '/profile', label: 'Perfil', icon: User },
 ];
 
@@ -27,8 +28,8 @@ export default function AppLayout() {
             <NavLink key={path} to={path} end={path === '/'} className="flex-1">
               {({ isActive }) => (
                 <motion.div whileTap={{ scale: 0.88 }} className="relative flex flex-col items-center gap-1 py-1">
-                  <Icon className="w-5 h-5" style={{ color: isActive ? config.primaryHex : '#5f6678' }} />
-                  <span className="text-[10px] font-mono uppercase" style={{ color: isActive ? config.primaryHex : '#5f6678' }}>{label}</span>
+                  <Icon className="w-[18px] h-[18px]" style={{ color: isActive ? config.primaryHex : '#5f6678' }} />
+                  <span className="text-[9px] font-mono uppercase leading-none truncate max-w-full" style={{ color: isActive ? config.primaryHex : '#5f6678' }}>{label}</span>
                 </motion.div>
               )}
             </NavLink>
