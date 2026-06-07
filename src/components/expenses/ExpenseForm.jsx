@@ -38,6 +38,7 @@ const defaultState = {
   date: normalizeDateString(new Date()),
   description: '',
   notes: '',
+  receipt_url: '',
 };
 
 export default function ExpenseForm({
@@ -71,6 +72,7 @@ export default function ExpenseForm({
       date: normalizeDateString(seed.expense_date || seed.date || new Date()),
       description: seed.description || '',
       notes: seed.notes || '',
+      receipt_url: seed.receipt_url || '',
     });
   }, [open, expense, prefillData, initialEvent]);
 
@@ -98,6 +100,7 @@ export default function ExpenseForm({
         expense_date: normalizeDateString(formData.date),
         description: formData.description || null,
         notes: formData.notes || null,
+        receipt_url: formData.receipt_url || null,
       };
 
       if (expense?.id) {
