@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/authContext';
 import { useNavigate } from 'react-router-dom';
-import { getCategoryConfig, getCategoryLabel, getAllCategories } from '@/lib/categoryConfig';
+import { getCategoryConfig } from '@/lib/categoryConfig';
+import { NeonPageShell } from '@/components/design/NeonPageShell';
+import { NeonGlass } from '@/components/design/NeonGlass';
 import {
   User, Phone, MapPin, Mail, LogOut, Save, ChevronRight, Loader2, CheckCircle
 } from 'lucide-react';
@@ -10,9 +12,8 @@ import {
 export default function ProfileSimple() {
   const { user, profile, signOut, updateProfile } = useAuth();
   const navigate = useNavigate();
-  const categoryId = profile?.category || 'audio';
+  const categoryId = profile?.category || 'lighting';
   const config = getCategoryConfig(categoryId);
-  const allCategories = getAllCategories();
 
   const [form, setForm] = useState({
     name: profile?.name || '',
@@ -43,7 +44,7 @@ export default function ProfileSimple() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white pb-28">
+    <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-screen pb-28">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -90,13 +91,9 @@ export default function ProfileSimple() {
       <div className="px-4 max-w-2xl mx-auto space-y-4">
 
         {/* Dados pessoais */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="bg-gray-900/50 border border-gray-800/50 rounded-2xl p-5 space-y-4"
-        >
-          <h2 className="text-sm font-bold text-gray-300 uppercase tracking-wider">Dados Pessoais</h2>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+        <NeonGlass primary={config.primaryHex} glow className="p-5 space-y-4">
+          <h2 className="text-sm font-bold text-gray-300 uppercase tracking-wider font-mono">Dados Pessoais</h2>
 
           {[
             { key: 'name', label: 'Nome completo', icon: User, placeholder: 'Seu nome' },
@@ -154,16 +151,13 @@ export default function ProfileSimple() {
               <><Save className="w-4 h-4" /> Salvar alterações</>
             )}
           </motion.button>
+        </NeonGlass>
         </motion.div>
 
         {/* Categoria */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-gray-900/50 border border-gray-800/50 rounded-2xl p-5"
-        >
-          <h2 className="text-sm font-bold text-gray-300 uppercase tracking-wider mb-4">Sua Categoria</h2>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+        <NeonGlass primary={config.primaryHex} className="p-5">
+          <h2 className="text-sm font-bold text-gray-300 uppercase tracking-wider mb-4 font-mono">Sua Categoria</h2>
           <div
             className="flex items-center gap-3 p-4 rounded-xl border"
             style={{
@@ -181,17 +175,14 @@ export default function ProfileSimple() {
           <p className="text-xs text-gray-600 mt-3 text-center">
             Para mudar sua categoria, refaça o onboarding no próximo update.
           </p>
+        </NeonGlass>
         </motion.div>
 
         {/* Especialidades */}
         {profile?.specialties?.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
-            className="bg-gray-900/50 border border-gray-800/50 rounded-2xl p-5"
-          >
-            <h2 className="text-sm font-bold text-gray-300 uppercase tracking-wider mb-3">Especialidades</h2>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+          <NeonGlass primary={config.primaryHex} className="p-5">
+            <h2 className="text-sm font-bold text-gray-300 uppercase tracking-wider mb-3 font-mono">Especialidades</h2>
             <div className="flex flex-wrap gap-2">
               {profile.specialties.map(spec => (
                 <span
@@ -207,18 +198,15 @@ export default function ProfileSimple() {
                 </span>
               ))}
             </div>
+          </NeonGlass>
           </motion.div>
         )}
 
         {/* Metas (readonly info) */}
         {(profile?.monthly_goal_revenue || profile?.monthly_goal_events) && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-gray-900/50 border border-gray-800/50 rounded-2xl p-5"
-          >
-            <h2 className="text-sm font-bold text-gray-300 uppercase tracking-wider mb-3">Metas Mensais</h2>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <NeonGlass primary={config.primaryHex} className="p-5">
+            <h2 className="text-sm font-bold text-gray-300 uppercase tracking-wider mb-3 font-mono">Metas Mensais</h2>
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-gray-800/40 rounded-xl p-3 text-center">
                 <p className="text-xs text-gray-500">Receita</p>
@@ -233,16 +221,13 @@ export default function ProfileSimple() {
                 </p>
               </div>
             </div>
+          </NeonGlass>
           </motion.div>
         )}
 
         {/* Logout */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          className="bg-gray-900/30 border border-gray-800/30 rounded-2xl p-4"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+        <NeonGlass primary={config.primaryHex} className="p-4">
           {showLogoutConfirm ? (
             <div className="text-center space-y-3">
               <p className="text-sm text-gray-300">Tem certeza que quer sair?</p>
@@ -270,10 +255,11 @@ export default function ProfileSimple() {
               Sair da conta
             </button>
           )}
+        </NeonGlass>
         </motion.div>
 
-        <p className="text-center text-gray-700 text-xs pb-2">Backstage Pro v1.0 MVP</p>
+        <p className="text-center text-gray-700 text-xs pb-2 font-mono">Backstage Pro v1.0 MVP</p>
       </div>
-    </div>
+    </NeonPageShell>
   );
 }

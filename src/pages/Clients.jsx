@@ -1,5 +1,6 @@
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useClients } from '@/lib/useClients';
 import { useEvents } from '@/lib/useEvents';
 import { useDailyWork } from '@/lib/useDailyWork';
@@ -25,6 +26,8 @@ import { ptBR } from 'date-fns/locale';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { getEventStatus } from '@/components/utils/dateUtils';
 import { useMediaQuery } from '@/components/hooks/useMediaQuery';
+import { useAuth } from '@/lib/authContext';
+import { getCategoryConfig } from '@/lib/categoryConfig';
 
 // Components
 import ClientForm from '@/components/clients/ClientForm';
@@ -71,10 +74,27 @@ export default function ClientsPage() {
   const { events, loading: eventsLoading } = useEvents();
   const { dailyWork, loading: dailyWorkLoading } = useDailyWork();
   const { formatCurrency } = useFinancialVisibility();
+  const { profile } = useAuth();
+  const config = getCategoryConfig(profile?.category || 'lighting');
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterActive, setFilterActive] = useState('all');
+  const [showClientForm, setShowClientForm] = useState(false);
+  const [editingClient, setEditingClient] = useState(null);
+  const [selectedClient, setSelectedClient] = useState(null);
+  const [actionSheetClient, setActionSheetClient] = useState(null);
+  const [insightsClient, setInsightsClient] = useState(null);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get('action') === 'new-client') {
+      setShowClientForm(true);
+      setEditingClient(null);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const clientsWithStats = useMemo(() => {
     const work = dailyWork;
@@ -258,7 +278,8 @@ export default function ClientsPage() {
           </div>
           <Button
             onClick={handleNewClient}
-            className="bg-cyan-600 hover:bg-cyan-700"
+            className="border-0 text-[#06070a] font-bold"
+            style={{ background: `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})` }}
           >
             <Plus className="w-4 h-4 mr-2" />
             Novo Cliente

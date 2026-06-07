@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/authContext';
 import { useStats, useEvents } from '@/lib/useBackstageData';
 import { getCategoryConfig } from '@/lib/categoryConfig';
+import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { Trophy, Target, Zap, Star, TrendingUp, Award, Flame, Calendar } from 'lucide-react';
 
 
@@ -83,7 +84,7 @@ function getLevelInfo(eventsCount) {
 export default function Goals() {
   const { user, profile } = useAuth();
   const userId = user?.id;
-  const categoryId = profile?.category || 'audio';
+  const categoryId = profile?.category || 'lighting';
   const config = getCategoryConfig(categoryId);
   const [activeTab, setActiveTab] = useState('metas');
 
@@ -160,7 +161,7 @@ export default function Goals() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white pb-24">
+    <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-screen pb-24">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -421,6 +422,6 @@ export default function Goals() {
           )}
         </AnimatePresence>
       </div>
-    </div>
+    </NeonPageShell>
   );
 }

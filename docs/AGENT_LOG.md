@@ -43,4 +43,8 @@ Registro cronológico de tarefas executadas por agentes.
 - **Agente**: Cursor (Auto)
 - **Escopo**: Sistema de design Neon Bastidor (`NeonAtmosphere`, `NeonGlass`, `LightingBeams`, `NeonLevelBars`, `NeonPageShell`, `NeonSectionFrame`), `AUTH_HERO_CATEGORY=lighting`, Splash/Login/Signup/Home/AppLayout com paleta `#A64AFF` + `#FFB700` e fundo `#050609`, molduras neon nos cards LOCKED da Home via `NeonSectionFrame`.
 - **Build**: ✅ `npm run build` sem erros
-- **Deploy**: Vercel production
+- **Deploy**: https://backstage-pro-beta.vercel.app (production)
+
+### NEON-BASTIDOR-2 — Perfil, Metas e Clientes ✅
+- **Arquivos**: `ProfileSimple.jsx` (NeonPageShell + NeonGlass), `Goals.jsx` (NeonPageShell + fallback lighting), `Clients.jsx` (CTA gradiente categoria)
+- **Build**: ✅
