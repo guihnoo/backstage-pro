@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/authContext';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
@@ -29,6 +29,17 @@ export default function ProfileSimple() {
   const [saved, setSaved] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [exporting, setExporting] = useState(false);
+
+  useEffect(() => {
+    if (profile) {
+      setForm({
+        name: profile.name || '',
+        phone: profile.phone || '',
+        city: profile.city || '',
+        state: profile.state || '',
+      });
+    }
+  }, [profile]);
 
   const handleExportData = async () => {
     setExporting(true);
