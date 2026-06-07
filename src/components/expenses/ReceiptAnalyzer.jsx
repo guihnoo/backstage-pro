@@ -5,9 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UploadFile } from "@/api/integrations";
-import { extractExpenseData } from "@/api/functions";
-import { Camera, Upload, Loader2 } from "lucide-react";
+import { Camera, Upload } from "lucide-react";
+import { toast } from "sonner";
 
 const CATEGORY_OPTIONS = [
   { value: "transporte", label: "Transporte" },
@@ -22,7 +21,6 @@ const CATEGORY_OPTIONS = [
 export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
-  const [isExtracting, setIsExtracting] = useState(false);
   const [data, setData] = useState({ title: "", amount: "", date: "", category: "outros", notes: "" });
   const [fileUrl, setFileUrl] = useState("");
 
@@ -34,28 +32,10 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
     setPreviewUrl(url);
   };
 
-  const runExtraction = async () => {
-    if (!file) return;
-    setIsExtracting(true);
-    try {
-      const { file_url } = await UploadFile({ file });
-      setFileUrl(file_url);
-
-      const res = await extractExpenseData({ file_url });
-      let output = res?.data;
-      if (Array.isArray(output)) {
-        output = output[0] || {};
-      }
-      const suggested = {
-        title: output?.title || "",
-        amount: output?.amount || "",
-        date: output?.date || "",
-        category: output?.category || "outros",
-      };
-      setData((d) => ({ ...d, ...suggested }));
-    } finally {
-      setIsExtracting(false);
-    }
+  const runExtraction = () => {
+    toast.info('Análise automática de recibo em breve.', {
+      description: 'Preencha os dados manualmente por enquanto.',
+    });
   };
 
   const confirm = () => {
@@ -96,8 +76,8 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
                 Tirar Foto / Upload
               </Button>
             </label>
-            <Button onClick={runExtraction} disabled={!file || isExtracting} className="w-40">
-              {isExtracting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+            <Button onClick={runExtraction} disabled={!file} className="w-40 opacity-60">
+              <Upload className="w-4 h-4 mr-2" />
               Analisar
             </Button>
           </div>
