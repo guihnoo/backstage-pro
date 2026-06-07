@@ -162,6 +162,7 @@ additional_redirect_urls = [
   "http://localhost:5173/**",
   "https://backstage-pro-beta.vercel.app",
   "https://backstage-pro-beta.vercel.app/**",
+  "https://backstage-pro-beta.vercel.app/auth/callback",
 ]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600

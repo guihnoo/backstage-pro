@@ -2,9 +2,11 @@ import { createContext, useContext, useEffect, useState, useCallback } from 'rea
 import { supabase } from './supabase';
 import { ensureUserProfile } from './ensureUserProfile';
 import { assertSupabaseReachable } from './checkSupabaseReachable';
+import { withTimeout } from './withTimeout';
 
 const AuthContext = createContext();
 const PROFILE_TIMEOUT_MS = 12_000;
+const SESSION_BOOT_TIMEOUT_MS = 8_000;
 
 async function fetchProfile(userId) {
   const { data, error } = await supabase
@@ -15,15 +17,6 @@ async function fetchProfile(userId) {
 
   if (error) throw error;
   return data;
-}
-
-function withTimeout(promise, ms, label) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => {
-      setTimeout(() => reject(new Error(`${label} demorou demais. Tente novamente.`)), ms);
-    }),
-  ]);
 }
 
 export function AuthProvider({ children }) {
@@ -64,6 +57,21 @@ export function AuthProvider({ children }) {
     [hydrateUser]
   );
 
+  const applySession = useCallback(
+    (nextSession) => {
+      setSession(nextSession);
+      setUser(nextSession?.user ?? null);
+      setLoading(false);
+
+      if (nextSession?.user) {
+        hydrateUserSafe(nextSession);
+      } else {
+        setProfile(null);
+      }
+    },
+    [hydrateUserSafe]
+  );
+
   useEffect(() => {
     let mounted = true;
 
@@ -73,8 +81,7 @@ export function AuthProvider({ children }) {
 
     const bootTimeout = setTimeout(finishBoot, PROFILE_TIMEOUT_MS);
 
-    supabase.auth
-      .getSession()
+    withTimeout(supabase.auth.getSession(), SESSION_BOOT_TIMEOUT_MS, 'Inicializar sessão')
       .then(({ data: { session: initialSession } }) => {
         if (!mounted) return;
         setSession(initialSession);
@@ -195,6 +202,7 @@ export function AuthProvider({ children }) {
     loading,
     isAuthenticated: !!session,
     isOnboardingComplete: profile?.onboarding_complete ?? false,
+    applySession,
     signInWithOAuth,
     signInWithPassword,
     signUp,

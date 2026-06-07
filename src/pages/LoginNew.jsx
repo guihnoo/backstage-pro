@@ -26,9 +26,35 @@ export default function LoginNew() {
   const { signInWithPassword, isAuthenticated, isOnboardingComplete, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => { if (isAuthenticated) navigate(isOnboardingComplete ? '/' : '/onboarding', { replace: true }); }, [isAuthenticated, isOnboardingComplete, navigate]);
+  const [authBootTimedOut, setAuthBootTimedOut] = useState(false);
 
-  if (authLoading || isAuthenticated) return <div className="min-h-screen bg-[#050609] flex items-center justify-center"><motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }} className="w-8 h-8 border-2 border-t-transparent rounded-full" style={{ borderColor: hero.primaryHex, borderTopColor: 'transparent' }} /></div>;
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(isOnboardingComplete ? '/' : '/onboarding', { replace: true });
+    }
+  }, [isAuthenticated, isOnboardingComplete, navigate]);
+
+  useEffect(() => {
+    if (!authLoading) {
+      setAuthBootTimedOut(false);
+      return undefined;
+    }
+    const id = setTimeout(() => setAuthBootTimedOut(true), 10_000);
+    return () => clearTimeout(id);
+  }, [authLoading]);
+
+  if ((authLoading && !authBootTimedOut) || isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#050609] flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+          className="w-8 h-8 border-2 border-t-transparent rounded-full"
+          style={{ borderColor: hero.primaryHex, borderTopColor: 'transparent' }}
+        />
+      </div>
+    );
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -1,15 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Zap, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { ensureUserProfile } from '@/lib/ensureUserProfile';
+import { useAuth } from '@/lib/authContext';
+import { withTimeout } from '@/lib/withTimeout';
 import { Button } from '@/components/ui/button';
 import { NeonAtmosphere } from '@/components/design/NeonAtmosphere';
 import { AUTH_HERO_CATEGORY } from '@/lib/categoryGear';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 
 const hero = getCategoryConfig(AUTH_HERO_CATEGORY);
+const EXCHANGE_TIMEOUT_MS = 8_000;
+const PROFILE_TIMEOUT_MS = 6_000;
+const OVERALL_TIMEOUT_MS = 12_000;
 
 function humanizeAuthError(err) {
   const message = err?.message || '';
@@ -30,31 +35,50 @@ function humanizeAuthError(err) {
   if (message.includes('provider is not enabled')) {
     return 'Login com Google ainda não está ativo. Use email e senha ou contate o suporte.';
   }
+  if (message.includes('demorou demais')) {
+    return 'A conexão está demorando. Verifique sua internet e tente entrar novamente.';
+  }
 
   return message || 'Falha ao concluir login social.';
 }
 
 export default function AuthCallback() {
   const navigate = useNavigate();
+  const navigateRef = useRef(navigate);
+  const { applySession } = useAuth();
   const [error, setError] = useState(null);
+  const finishedRef = useRef(false);
+
+  useEffect(() => {
+    navigateRef.current = navigate;
+  }, [navigate]);
 
   useEffect(() => {
     let cancelled = false;
 
+    const fail = (message) => {
+      if (cancelled || finishedRef.current) return;
+      finishedRef.current = true;
+      setError(message);
+    };
+
+    const succeed = (profile) => {
+      if (cancelled || finishedRef.current) return;
+      finishedRef.current = true;
+      window.history.replaceState({}, document.title, '/auth/callback');
+      navigateRef.current(profile?.onboarding_complete ? '/' : '/onboarding', { replace: true });
+    };
+
     const timeoutId = setTimeout(() => {
-      if (!cancelled) {
-        setError('A conexão está demorando. Verifique sua internet e tente entrar novamente.');
-      }
-    }, 15_000);
+      fail('A conexão está demorando. Verifique sua internet e tente entrar novamente.');
+    }, OVERALL_TIMEOUT_MS);
 
     async function finishOAuth() {
       const params = new URLSearchParams(window.location.search);
       const oauthError = params.get('error_description') || params.get('error');
 
       if (oauthError) {
-        if (!cancelled) {
-          setError(decodeURIComponent(oauthError.replace(/\+/g, ' ')));
-        }
+        fail(decodeURIComponent(oauthError.replace(/\+/g, ' ')));
         return;
       }
 
@@ -62,29 +86,45 @@ export default function AuthCallback() {
 
       try {
         if (code) {
-          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          const { error: exchangeError } = await withTimeout(
+            supabase.auth.exchangeCodeForSession(code),
+            EXCHANGE_TIMEOUT_MS,
+            'Confirmar login'
+          );
           if (exchangeError) throw exchangeError;
         }
 
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await withTimeout(
+          supabase.auth.getSession(),
+          EXCHANGE_TIMEOUT_MS,
+          'Carregar sessão'
+        );
         if (sessionError) throw sessionError;
 
         if (!session?.user) {
+          if (!code) {
+            navigateRef.current('/login', { replace: true });
+            finishedRef.current = true;
+            return;
+          }
           throw new Error('Não foi possível confirmar sua sessão. Tente entrar novamente.');
         }
 
-        const profile = await ensureUserProfile(session.user);
+        applySession(session);
 
-        window.history.replaceState({}, document.title, '/auth/callback');
+        const profile = await withTimeout(
+          ensureUserProfile(session.user),
+          PROFILE_TIMEOUT_MS,
+          'Preparar perfil'
+        );
 
         if (cancelled) return;
-
         clearTimeout(timeoutId);
-        navigate(profile?.onboarding_complete ? '/' : '/onboarding', { replace: true });
+        succeed(profile);
       } catch (err) {
         if (!cancelled) {
           clearTimeout(timeoutId);
-          setError(humanizeAuthError(err));
+          fail(humanizeAuthError(err));
         }
       }
     }
@@ -95,7 +135,7 @@ export default function AuthCallback() {
       cancelled = true;
       clearTimeout(timeoutId);
     };
-  }, [navigate]);
+  }, [applySession]);
 
   if (error) {
     return (
