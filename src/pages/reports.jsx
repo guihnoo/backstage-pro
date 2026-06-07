@@ -842,6 +842,7 @@ export default function ReportsPage() {
       {selectedEvent && (
         <EventDetailModal
           event={selectedEvent}
+          client={data.clients.find(c => c.id === selectedEvent.client_id)}
           dailyWork={data.dailyWork.filter(w => w.event_id === selectedEvent.id)}
           expenses={data.expenses.filter(e => e.event_id === selectedEvent.id)}
           onClose={() => setSelectedEvent(null)}
@@ -852,6 +853,7 @@ export default function ReportsPage() {
           onWorkDelete={handleWorkDelete}
           onExpenseEdit={handleExpenseEdit}
           onExpenseDelete={handleExpenseDelete}
+          onApply12h={() => toast.info('Aplicar 12h automáticas em breve.')}
         />
       )}
     </NeonPageShell>

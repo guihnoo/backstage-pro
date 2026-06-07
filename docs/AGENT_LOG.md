@@ -6,11 +6,13 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-07
 
-### S3-HOME — A Receber + Modo Palco + Meta Mensal na Home ✅
-- **Agente**: Cursor (Composer)
-- **Novos**: `whatsapp.js`, `eventFinance.js`, `useReceivable.js`, `AReceber.jsx`, `ModoPalcoActions.jsx`, `MetaMensalBar.jsx`
-- **Alterados**: `Home.jsx`, `ProximoShow.jsx`, `useBackstageData.js`
-- **Deploy**: push main → Vercel (pendente)
+### FULL-FUNCTIONAL-AUDIT — Audit e correções de funcionalidade completa ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Fix crítico**: `useClients.js` — `invoice_portal_url` deletado do payload em `create` e `update` (coluna ausente na tabela até migration 009 ser aplicada). Clientes podem ser criados sem erro 400.
+- **Fix**: `reports.jsx` `EventDetailModal` — props `client` e `onApply12h` estavam faltando.
+- **Auditoria completa**: Home (LOCKED ✅), Agenda ✅, Clientes ✅, Despesas ✅, Relatórios ✅, Perfil ✅ — todos os modais e cards clicáveis verificados.
+- **Pendente (ação manual)**: `ALTER TABLE clients ADD COLUMN IF NOT EXISTS invoice_portal_url text;` no Supabase SQL Editor.
+- **Build**: ✅ 0 erros
 
 ### BASE44-CLEANUP-2 — Remoção de Base44 restante em componentes ativos ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)

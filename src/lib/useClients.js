@@ -37,6 +37,7 @@ export function useClients() {
   const create = useCallback(async (data) => {
     const payload = { ...data, user_id: userId };
     delete payload.owner_id;
+    delete payload.invoice_portal_url; // coluna pendente de migration 009
     const { data: result, error: err } = await supabase
       .from('clients')
       .insert(payload)
@@ -52,6 +53,7 @@ export function useClients() {
     delete payload.id;
     delete payload.user_id;
     delete payload.owner_id;
+    delete payload.invoice_portal_url; // coluna pendente de migration 009
     const { data: result, error: err } = await supabase
       .from('clients')
       .update(payload)
