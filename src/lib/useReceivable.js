@@ -34,7 +34,7 @@ export function useReceivableByClient(userId) {
             .order('start_date', { ascending: true }),
           supabase
             .from('daily_work')
-            .select('event_id, daily_cache, daily_rate')
+            .select('event_id, daily_cache')
             .eq('user_id', userId),
         ]);
 

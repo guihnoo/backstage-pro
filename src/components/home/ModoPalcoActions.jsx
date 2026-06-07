@@ -61,7 +61,7 @@ export default function ModoPalcoActions({ event, accentColor = '#00D9FF' }) {
         .select('*')
         .eq('user_id', user.id)
         .eq('event_id', event.id)
-        .or(`work_date.eq.${today},date.eq.${today}`)
+        .eq('date', today)
         .maybeSingle();
 
       if (error) throw error;
@@ -87,11 +87,9 @@ export default function ModoPalcoActions({ event, accentColor = '#00D9FF' }) {
         .insert({
           user_id: user.id,
           event_id: event.id,
-          work_date: today,
           date: today,
           entry_time: entryTime,
           status: 'pending',
-          hours_worked: 0,
           total_hours: 0,
         })
         .select()
@@ -120,7 +118,6 @@ export default function ModoPalcoActions({ event, accentColor = '#00D9FF' }) {
         .from('daily_work')
         .update({
           exit_time: exitTime,
-          hours_worked: worked.total,
           total_hours: worked.total,
           overtime_hours: worked.overtime,
           daily_cache: cache,

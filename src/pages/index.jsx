@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/lib/authContext';
 import LoadingSpinner from '@/components/layout/LoadingSpinner';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import { FinancialVisibilityProvider } from '@/components/context/FinancialVisibilityContext';
 
 import LoginNew from './LoginNew';
@@ -30,6 +31,12 @@ function PrivateRoute({ children }) {
   return children;
 }
 
+function NotFoundRedirect() {
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) return <RouteLoading />;
+  return <Navigate to={isAuthenticated ? '/' : '/login'} replace />;
+}
+
 function PublicRoute({ children }) {
   const { isAuthenticated, isOnboardingComplete, loading } = useAuth();
   if (loading) return <RouteLoading />;
@@ -48,9 +55,9 @@ function OnboardingRoute({ children }) {
 
 function MigratedModuleRoute({ children }) {
   return (
-    <Suspense fallback={<RouteLoading />}>
-      {children}
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback={<RouteLoading />}>{children}</Suspense>
+    </ErrorBoundary>
   );
 }
 
@@ -141,7 +148,7 @@ export default function PagesRouter() {
         <Route path="profile" element={<ProfileSimple />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<NotFoundRedirect />} />
     </Routes>
   );
 }

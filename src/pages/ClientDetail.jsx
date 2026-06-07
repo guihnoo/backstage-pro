@@ -157,7 +157,7 @@ export default function ClientDetailPage() {
               <img src={client.logo_url} alt="Logo" className="w-16 h-16 rounded-lg object-contain bg-white/10 p-1" />
             ) : (
               <div className="w-16 h-16 rounded-lg flex items-center justify-center font-bold text-3xl text-[#06070a]" style={{ background: `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})` }}>
-                {client.name.charAt(0)}
+                {(client.name?.charAt(0) || '?').toUpperCase()}
               </div>
             )}
             <div>

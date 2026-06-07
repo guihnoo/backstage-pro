@@ -1,5 +1,6 @@
 import { eachDayOfInterval, format, parseISO } from 'date-fns';
 import { supabase } from './supabase';
+import { mapPayloadToDb } from './useDailyWork';
 import { getEventStatus } from '@/components/utils/dateUtils';
 
 const DEFAULT_ENTRY = '08:00';
@@ -77,21 +78,20 @@ export async function applyAuto12Hours({ eventId, userId, origin = 'manual_12h' 
     const dailyCache = calculateDailyCache(event);
     const note = origin === 'manual_12h' ? '12h automáticas (manual)' : '12h automáticas';
 
-    const rows = days.map((day) => {
-      const workDate = format(day, 'yyyy-MM-dd');
-      return {
+    const rows = days.map((day) =>
+      mapPayloadToDb({
         user_id: resolvedUserId,
         event_id: eventId,
-        work_date: workDate,
+        date: format(day, 'yyyy-MM-dd'),
         entry_time: DEFAULT_ENTRY,
         exit_time: DEFAULT_EXIT,
-        hours_worked: AUTO_HOURS,
+        total_hours: AUTO_HOURS,
         overtime_hours: 0,
         daily_cache: dailyCache,
         status: 'completed',
-        description: note,
-      };
-    });
+        notes: note,
+      })
+    );
 
     const { error: insertErr } = await supabase.from('daily_work').insert(rows);
     if (insertErr) throw insertErr;

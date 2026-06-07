@@ -14,7 +14,10 @@ export function useStats(userId) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
 
     async function fetchStats() {
       try {
@@ -76,7 +79,10 @@ export function useUpcomingEvent(userId) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
 
     async function fetchEvent() {
       try {
@@ -132,7 +138,10 @@ export function useEvents(userId, options = {}) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
 
     async function fetchEvents() {
       try {
@@ -170,7 +179,10 @@ export function useClients(userId) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
 
     async function fetchClients() {
       try {
@@ -200,7 +212,10 @@ export function usePaymentAlerts(userId) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
 
     async function fetchAlerts() {
       try {

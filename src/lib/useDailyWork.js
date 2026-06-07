@@ -2,28 +2,39 @@
 import { supabase } from './supabase';
 import { useAuth } from './authContext';
 
-const mapPayloadToDb = (payload = {}) => {
+/** Mapeia payload da UI para colunas reais do Supabase (date, total_hours, notes). */
+export function mapPayloadToDb(payload = {}) {
+  const workDate = payload.work_date || payload.date || null;
+  const hours =
+    payload.hours_worked != null
+      ? Number(payload.hours_worked)
+      : Number(payload.total_hours ?? 0);
+
   const mapped = {
-    ...payload,
-    work_date: payload.work_date || payload.date || null,
-    hours_worked: payload.hours_worked != null ? Number(payload.hours_worked) : Number(payload.total_hours || 0),
-    description: payload.description ?? payload.notes ?? null,
-    status: payload.status || 'completed',
+    user_id: payload.user_id,
     event_id: payload.event_id || null,
+    date: workDate,
+    entry_time: payload.entry_time ?? null,
+    exit_time: payload.exit_time ?? null,
+    total_hours: hours,
+    overtime_hours:
+      payload.overtime_hours != null ? Number(payload.overtime_hours) : null,
+    daily_cache: payload.daily_cache != null ? Number(payload.daily_cache) : null,
+    notes: payload.description ?? payload.notes ?? null,
+    photo_url: payload.photo_url ?? null,
+    status: payload.status || 'completed',
   };
 
-  delete mapped.id;
-  delete mapped.owner_id;
-  delete mapped.date;
-  delete mapped.total_hours;
-  delete mapped.notes;
+  Object.keys(mapped).forEach((key) => {
+    if (mapped[key] === null || mapped[key] === undefined) delete mapped[key];
+  });
 
   return mapped;
-};
+}
 
-const mapRowFromDb = (row = {}) => {
-  const workDate = row.work_date || row.date || null;
-  const hoursWorked = Number(row.hours_worked ?? row.total_hours ?? 0);
+export function mapRowFromDb(row = {}) {
+  const workDate = row.date || row.work_date || null;
+  const hoursWorked = Number(row.total_hours ?? row.hours_worked ?? 0);
 
   return {
     ...row,
@@ -31,11 +42,11 @@ const mapRowFromDb = (row = {}) => {
     date: workDate,
     hours_worked: hoursWorked,
     total_hours: hoursWorked,
-    description: row.description ?? row.notes ?? '',
-    notes: row.description ?? row.notes ?? '',
+    description: row.notes ?? row.description ?? '',
+    notes: row.notes ?? row.description ?? '',
     status: row.status || 'completed',
   };
-};
+}
 
 export function useDailyWork() {
   const { user } = useAuth();
@@ -59,7 +70,7 @@ export function useDailyWork() {
         .from('daily_work')
         .select('*')
         .eq('user_id', userId)
-        .order('work_date', { ascending: false });
+        .order('date', { ascending: false });
 
       if (err) throw err;
       setDailyWork((data || []).map(mapRowFromDb));
@@ -119,5 +130,3 @@ export function useDailyWork() {
 
   return { dailyWork, loading, error, refetch, create, update, delete: remove };
 }
-
-export { mapPayloadToDb, mapRowFromDb };
