@@ -47,6 +47,7 @@ export default function AuthCallback() {
   const navigateRef = useRef(navigate);
   const { applySession } = useAuth();
   const [error, setError] = useState(null);
+  const [showEscape, setShowEscape] = useState(false);
   const finishedRef = useRef(false);
 
   useEffect(() => {
@@ -68,6 +69,10 @@ export default function AuthCallback() {
       window.history.replaceState({}, document.title, '/auth/callback');
       navigateRef.current(profile?.onboarding_complete ? '/' : '/onboarding', { replace: true });
     };
+
+    const escapeId = setTimeout(() => {
+      if (!finishedRef.current) setShowEscape(true);
+    }, 4_000);
 
     const timeoutId = setTimeout(() => {
       fail('A conexão está demorando. Verifique sua internet e tente entrar novamente.');
@@ -133,6 +138,7 @@ export default function AuthCallback() {
 
     return () => {
       cancelled = true;
+      clearTimeout(escapeId);
       clearTimeout(timeoutId);
     };
   }, [applySession]);
@@ -173,6 +179,20 @@ export default function AuthCallback() {
         <Zap className="w-6 h-6 text-white" />
       </motion.div>
       <p className="relative z-10 text-slate-400 text-sm font-mono tracking-wide">Conectando sua conta…</p>
+      {showEscape && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative z-10 mt-2"
+        >
+          <Link
+            to="/login"
+            className="text-xs text-slate-500 underline underline-offset-2 hover:text-slate-300 transition-colors"
+          >
+            Demorou demais? Voltar ao login
+          </Link>
+        </motion.div>
+      )}
     </div>
   );
 }
