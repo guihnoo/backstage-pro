@@ -13,6 +13,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
+import { useAuth } from '@/lib/authContext';
+import { getCategoryConfig } from '@/lib/categoryConfig';
+import { NeonPageShell } from '@/components/design/NeonPageShell';
+import { NeonGlass } from '@/components/design/NeonGlass';
 
 import LoadingSpinner from '@/components/layout/LoadingSpinner';
 import EmptyState from '@/components/layout/EmptyState';
@@ -26,10 +30,10 @@ function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
 
-const StatCard = ({ icon: Icon, title, value, color }) => (
-  <Card className="bg-slate-800/50 border-slate-700">
+const StatCard = ({ icon: Icon, title, value, iconStyle }) => (
+  <Card className="bg-[#161923]/60 border-[#23262f]">
     <CardContent className="p-4 flex items-center gap-4">
-      <div className={`p-3 rounded-lg bg-gradient-to-tr ${color}`}>
+      <div className="p-3 rounded-lg" style={iconStyle}>
         <Icon className="w-6 h-6 text-white" />
       </div>
       <div>
@@ -49,6 +53,8 @@ export default function ClientDetailPage() {
   const { dailyWork, loading: dailyWorkLoading, refetch: refetchDailyWork } = useDailyWork();
   const { expenses, loading: expensesLoading, refetch: refetchExpenses } = useExpenses();
   const { formatCurrency } = useFinancialVisibility();
+  const { profile } = useAuth();
+  const config = getCategoryConfig(profile?.category || 'lighting');
 
   const [showClientForm, setShowClientForm] = useState(false);
   const [showEventForm, setShowEventForm] = useState(false);
@@ -137,9 +143,10 @@ export default function ClientDetailPage() {
   }
 
   return (
+  <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-full pb-24">
     <>
-      <div className="space-y-6">
-        <Link to="/clients" className="inline-flex items-center text-sm text-slate-300 hover:text-cyan-400 transition-colors">
+      <div className="space-y-6 p-4 md:p-6">
+        <Link to="/clients" className="inline-flex items-center text-sm text-[#8a91a1] hover:opacity-80 transition-colors font-mono" style={{ color: config.primaryHex }}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar para todos os clientes
         </Link>
@@ -149,7 +156,7 @@ export default function ClientDetailPage() {
             {client.logo_url ? (
               <img src={client.logo_url} alt="Logo" className="w-16 h-16 rounded-lg object-contain bg-white/10 p-1" />
             ) : (
-              <div className="w-16 h-16 rounded-lg bg-slate-700 flex items-center justify-center text-cyan-400 font-bold text-3xl">
+              <div className="w-16 h-16 rounded-lg flex items-center justify-center font-bold text-3xl text-[#06070a]" style={{ background: `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})` }}>
                 {client.name.charAt(0)}
               </div>
             )}
@@ -163,7 +170,11 @@ export default function ClientDetailPage() {
               <Edit className="w-4 h-4 mr-2" />
               Editar Cliente
             </Button>
-            <Button onClick={() => setShowEventForm(true)}>
+            <Button
+              className="border-0 text-[#06070a] font-bold"
+              style={{ background: `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})` }}
+              onClick={() => setShowEventForm(true)}
+            >
               <Plus className="w-4 h-4 mr-2" />
               Novo Evento
             </Button>
@@ -171,19 +182,19 @@ export default function ClientDetailPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-slate-900/50 text-slate-50 rounded-lg border shadow-sm md:col-span-1 border-slate-800">
-            <CardHeader><CardTitle className="text-2xl font-semibold underline leading-none tracking-tight">Informações de Contato</CardTitle></CardHeader>
-            <CardContent className="space-y-3 text-sm">
+          <NeonGlass primary={config.primaryHex} glow className="md:col-span-1 p-5">
+            <h2 className="text-sm font-mono uppercase tracking-wider mb-4" style={{ color: config.primaryHex }}>Informações de Contato</h2>
+            <div className="space-y-3 text-sm">
               {client.email && <div className="flex items-center gap-3"><Mail className="w-4 h-4 text-slate-400" /> <span className="text-white break-all">{client.email}</span></div>}
               {client.phone && <div className="flex items-center gap-3"><Phone className="w-4 h-4 text-slate-400" /> <span className="text-white">{client.phone}</span></div>}
-              {client.notes && <p className="text-slate-300 pt-3 border-t border-slate-700 whitespace-pre-wrap">{client.notes}</p>}
-            </CardContent>
-          </Card>
+              {client.notes && <p className="text-slate-300 pt-3 border-t border-[#23262f] whitespace-pre-wrap">{client.notes}</p>}
+            </div>
+          </NeonGlass>
           <div className="md:col-span-2 grid grid-cols-2 gap-4">
-            <StatCard icon={Briefcase} title="Total de Eventos" value={stats.totalEvents} color="from-cyan-500 to-blue-500" />
-            <StatCard icon={DollarSign} title="Receita Total" value={formatCurrency(stats.totalRevenue)} color="from-green-500 to-emerald-500" />
-            <StatCard icon={Clock} title="Total de Horas" value={`${stats.totalHours}h`} color="from-amber-500 to-orange-500" />
-            <StatCard icon={PieChart} title="Receita Média / Evento" value={formatCurrency(stats.avgRevenuePerEvent)} color="from-purple-500 to-violet-500" />
+            <StatCard icon={Briefcase} title="Total de Eventos" value={stats.totalEvents} iconStyle={{ background: `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})` }} />
+            <StatCard icon={DollarSign} title="Receita Total" value={formatCurrency(stats.totalRevenue)} iconStyle={{ background: 'linear-gradient(135deg, #10b981, #34d399)' }} />
+            <StatCard icon={Clock} title="Total de Horas" value={`${stats.totalHours}h`} iconStyle={{ background: 'linear-gradient(135deg, #f59e0b, #fbbf24)' }} />
+            <StatCard icon={PieChart} title="Receita Média / Evento" value={formatCurrency(stats.avgRevenuePerEvent)} iconStyle={{ background: `linear-gradient(135deg, ${config.primaryHex}99, ${config.accentHex})` }} />
           </div>
         </div>
 
@@ -253,5 +264,6 @@ export default function ClientDetailPage() {
         )}
       </AnimatePresence>
     </>
+  </NeonPageShell>
   );
 }

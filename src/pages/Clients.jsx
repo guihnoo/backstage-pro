@@ -28,6 +28,8 @@ import { getEventStatus } from '@/components/utils/dateUtils';
 import { useMediaQuery } from '@/components/hooks/useMediaQuery';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
+import { NeonPageShell } from '@/components/design/NeonPageShell';
+import { NeonGlass } from '@/components/design/NeonGlass';
 
 // Components
 import ClientForm from '@/components/clients/ClientForm';
@@ -265,7 +267,7 @@ export default function ClientsPage() {
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-full pb-24">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -273,8 +275,8 @@ export default function ClientsPage() {
       >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-white font-display">Clientes</h1>
-            <p className="text-slate-400">Gerencie sua base de clientes e acompanhe o relacionamento.</p>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Clientes</h1>
+            <p className="text-[#8a91a1] text-sm font-mono mt-1">Base de clientes e relacionamento.</p>
           </div>
           <Button
             onClick={handleNewClient}
@@ -286,8 +288,7 @@ export default function ClientsPage() {
           </Button>
         </div>
 
-        <Card className="bg-slate-900/50 border-slate-800">
-          <CardContent className="p-4">
+        <NeonGlass primary={config.primaryHex} className="p-4">
             <div className="flex flex-col lg:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
@@ -325,8 +326,7 @@ export default function ClientsPage() {
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+        </NeonGlass>
 
         {filteredAndSortedClients.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -339,7 +339,10 @@ export default function ClientsPage() {
                 whileTap={{ scale: 0.98 }}
               >
                 <Card
-                  className="bg-slate-900/50 border-slate-800 hover:border-cyan-400/50 cursor-pointer transition-all duration-300 hover:shadow-lg flex flex-col h-full"
+                  className="bg-[#161923]/60 border-[#23262f] cursor-pointer transition-all duration-300 hover:shadow-lg flex flex-col h-full"
+                  style={{ ['--hover-border']: config.primaryHex }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${config.primaryHex}66`; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = ''; }}
                   onClick={() => handleClientClick(client)}
                 >
                   <CardHeader className="flex flex-row items-center gap-4">
@@ -402,7 +405,7 @@ export default function ClientsPage() {
                             className="text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 h-9 px-2 group"
                             aria-label="Enviar email"
                           >
-                            <Mail className="w-4 h-4 group-hover:text-cyan-400 transition-colors" />
+                            <Mail className="w-4 h-4 transition-colors group-hover:opacity-100 opacity-70" style={{ color: config.primaryHex }} />
                           </Button>
                         )}
                         {client.phone && (
@@ -414,7 +417,7 @@ export default function ClientsPage() {
                             className="text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 h-9 px-2 group"
                             aria-label="Ligar"
                           >
-                            <Phone className="w-4 h-4 group-hover:text-cyan-400 transition-colors" />
+                            <Phone className="w-4 h-4 transition-colors group-hover:opacity-100 opacity-70" style={{ color: config.primaryHex }} />
                           </Button>
                           <Button
                             variant="ghost"
@@ -484,6 +487,6 @@ export default function ClientsPage() {
             />
         )}
       </AnimatePresence>
-    </div>
+    </NeonPageShell>
   );
 }
