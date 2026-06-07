@@ -6,6 +6,9 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Receipt, Calendar, Tag, Edit, Trash2, CheckCircle, AlertTriangle, Link as LinkIcon, Building } from 'lucide-react';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
+import { useAuth } from '@/lib/authContext';
+import { getCategoryConfig } from '@/lib/categoryConfig';
+import { NeonGlass } from '@/components/design/NeonGlass';
 
 const categoryColors = {
   transporte: 'bg-blue-500/20 text-blue-300 border-blue-400/30',
@@ -19,6 +22,8 @@ const categoryColors = {
 
 export default function ExpenseListItem({ expense, event, onEdit, onDelete }) {
   const { isVisible, formatCurrency } = useFinancialVisibility();
+  const { profile } = useAuth();
+  const config = getCategoryConfig(profile?.category || 'lighting');
 
   const statusBadge = expense.reimbursed 
     ? <Badge className="bg-green-500/20 text-green-300 border-green-400/30"><CheckCircle className="w-3 h-3 mr-1"/>Reembolsado</Badge>
@@ -27,13 +32,8 @@ export default function ExpenseListItem({ expense, event, onEdit, onDelete }) {
       : null;
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 hover:border-slate-600 transition-colors"
-    >
+    <motion.div layout initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+    <NeonGlass primary={config.primaryHex} className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div className="flex-1 min-w-0">
         <div className="flex flex-col sm:flex-row sm:items-center gap-x-4 gap-y-2 mb-2">
           <p className="text-lg font-bold text-white truncate">{expense.title}</p>
@@ -73,6 +73,7 @@ export default function ExpenseListItem({ expense, event, onEdit, onDelete }) {
           </Button>
         </div>
       </div>
+    </NeonGlass>
     </motion.div>
   );
 }

@@ -33,9 +33,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { formatDisplayDate, getEventStatusLabel } from '@/components/utils/dateUtils';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
+import { useAuth } from '@/lib/authContext';
+import { getCategoryConfig } from '@/lib/categoryConfig';
 import { format } from 'date-fns';
 
-const ClientCard = ({ client, onCardClick, onEdit, onDelete, onNewEvent, isVisible, formatCurrency, searchTerm }) => {
+const ClientCard = ({ client, onCardClick, onEdit, onDelete, onNewEvent, isVisible, formatCurrency, searchTerm, primaryHex = '#A64AFF', accentHex = '#FFB700' }) => {
   const [showConfirm, setShowConfirm] = useState(false);
 
   // Usando a função de status para o próximo evento
@@ -109,7 +111,10 @@ const ClientCard = ({ client, onCardClick, onEdit, onDelete, onNewEvent, isVisib
       className="group"
     >
       <Card 
-        className="bg-slate-900/50 border-slate-800 hover:border-cyan-400/20 transition-all duration-300 cursor-pointer h-full flex flex-col"
+        className="bg-[#161923]/60 border-[#23262f] transition-all duration-300 cursor-pointer h-full flex flex-col"
+        style={{ borderColor: undefined }}
+        onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${primaryHex}44`; }}
+        onMouseLeave={(e) => { e.currentTarget.style.borderColor = ''; }}
         onClick={() => onCardClick(client)}
       >
         <div className="p-4 flex flex-col h-full">
@@ -126,6 +131,11 @@ const ClientCard = ({ client, onCardClick, onEdit, onDelete, onNewEvent, isVisib
                 <h3 className="font-bold text-white text-lg truncate">
                   {highlight(client.name || 'Cliente sem nome')}
                 </h3>
+                {client.default_daily_cache > 0 && (
+                  <Badge className="mt-1 text-xs font-medium px-2 py-0.5 font-mono" style={{ background: `${primaryHex}22`, color: accentHex, border: `1px solid ${primaryHex}44` }}>
+                    {formatCurrency(client.default_daily_cache)}/dia
+                  </Badge>
+                )}
               </div>
             </div>
             
@@ -155,7 +165,7 @@ const ClientCard = ({ client, onCardClick, onEdit, onDelete, onNewEvent, isVisib
                   onClick={(e) => handleQuickAction('newEvent', e)}
                   className="hover:bg-slate-700"
                 >
-                  <CalendarPlus className="w-4 h-4 mr-2 text-cyan-400" />
+                  <CalendarPlus className="w-4 h-4 mr-2" style={{ color: primaryHex }} />
                   Novo Evento
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-slate-700" />
@@ -262,7 +272,7 @@ const ClientCard = ({ client, onCardClick, onEdit, onDelete, onNewEvent, isVisib
             {client.nextEvent ? (
               <div className="flex justify-between items-center text-sm">
                 <span className="text-slate-400">Próximo Evento</span>
-                <Badge variant="outline" className="text-cyan-300 border-cyan-300/30">
+                <Badge variant="outline" className="font-mono" style={{ color: accentHex, borderColor: `${primaryHex}44` }}>
                   {format(new Date(client.nextEvent.start_date + 'T00:00:00'), 'dd/MM/yy')}
                 </Badge>
               </div>
@@ -288,6 +298,8 @@ export default function ClientList({
   searchTerm 
 }) {
   const { formatCurrency } = useFinancialVisibility();
+  const { profile } = useAuth();
+  const config = getCategoryConfig(profile?.category || 'lighting');
 
   if (clients.length === 0) {
     return (
@@ -324,9 +336,10 @@ export default function ClientList({
               onEdit={onEdit}
               onDelete={onDelete}
               onNewEvent={onNewEvent}
-              formatCurrency={formatCurrency} // Pass formatCurrency as prop
-              searchTerm={searchTerm} // Pass searchTerm as prop
-              // isVisible prop is not used in the outline, so not explicitly passed
+              formatCurrency={formatCurrency}
+              searchTerm={searchTerm}
+              primaryHex={config.primaryHex}
+              accentHex={config.accentHex}
             />
           </motion.div>
         ))}
