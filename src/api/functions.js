@@ -73,7 +73,7 @@ export const getDashboardData = base44.functions.getDashboardData;
 
 export { applyAuto12Hours } from '@/lib/applyAuto12Hours';
 
-export const checkCompletedEventsForAutoHours = base44.functions.checkCompletedEventsForAutoHours;
+export { checkCompletedEventsForAutoHours } from '@/lib/checkCompletedEventsForAutoHours';
 
 export const saveEventDefaults = base44.functions.saveEventDefaults;
 

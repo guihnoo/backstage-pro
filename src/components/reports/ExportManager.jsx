@@ -1,15 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { FileText, Table } from 'lucide-react';
+import { FileText, Table, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { exportReportCsv, exportReportPdf } from '@/lib/exportReport';
 
 const ExportManager = ({ data, period }) => {
-  if (!period || !period.from || !period.to) return null;
+  const [exporting, setExporting] = useState(null);
 
-  const handleExport = (type) => {
-    toast.info(`Exportação ${type.toUpperCase()} em breve.`, {
-      description: 'Função disponível no próximo update.',
-    });
+  if (!data) return null;
+
+  const handleExport = async (type) => {
+    setExporting(type);
+    try {
+      if (type === 'pdf') {
+        exportReportPdf(data, period);
+        toast.success('PDF aberto para impressão.', {
+          description: 'Use "Salvar como PDF" na janela de impressão.',
+        });
+      } else {
+        exportReportCsv(data, period);
+        toast.success('Planilha exportada!', {
+          description: 'Arquivo CSV compatível com Excel.',
+        });
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Erro ao exportar relatório', {
+        description: error.message || 'Tente novamente.',
+      });
+    } finally {
+      setExporting(null);
+    }
   };
 
   return (
@@ -17,18 +38,28 @@ const ExportManager = ({ data, period }) => {
       <Button
         onClick={() => handleExport('pdf')}
         variant="outline"
-        className="border-red-400/50 text-red-400 hover:bg-red-400/10 flex items-center gap-2 justify-center w-full sm:w-auto opacity-60"
+        disabled={!!exporting}
+        className="border-red-400/50 text-red-400 hover:bg-red-400/10 flex items-center gap-2 justify-center w-full sm:w-auto"
       >
-        <FileText className="w-4 h-4" />
-        PDF (em breve)
+        {exporting === 'pdf' ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <FileText className="w-4 h-4" />
+        )}
+        PDF
       </Button>
       <Button
         onClick={() => handleExport('xlsx')}
         variant="outline"
-        className="border-green-400/50 text-green-400 hover:bg-green-400/10 flex items-center gap-2 justify-center w-full sm:w-auto opacity-60"
+        disabled={!!exporting}
+        className="border-green-400/50 text-green-400 hover:bg-green-400/10 flex items-center gap-2 justify-center w-full sm:w-auto"
       >
-        <Table className="w-4 h-4" />
-        Excel (em breve)
+        {exporting === 'xlsx' ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <Table className="w-4 h-4" />
+        )}
+        Excel
       </Button>
     </div>
   );
