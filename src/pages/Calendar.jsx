@@ -40,6 +40,7 @@ import EventHoursSheet from '@/components/mobile/EventHoursSheet';
 import NotesSheet from '@/components/mobile/NotesSheet';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
+import { applyAuto12Hours } from '@/lib/applyAuto12Hours';
 
 const useMediaQuery = (query) => {
   const [matches, setMatches] = useState(false);
@@ -477,12 +478,36 @@ export default function CalendarPage() {
 
 
   const handleEventActionSheetApplyManual12h = useCallback(
-    (event) => {
-      toast.info('Aplicar 12h automáticas em breve.', {
-        description: 'Use "Registrar Horas" manualmente por enquanto.',
-      });
+    async (event) => {
+      if (!event?.id || !user?.id) {
+        toast.error('Nenhum evento selecionado para aplicar horas.');
+        return;
+      }
+      try {
+        const result = await applyAuto12Hours({
+          eventId: event.id,
+          userId: user.id,
+          origin: 'manual_12h',
+        });
+        if (result.data?.success) {
+          toast.success('12 horas aplicadas automaticamente!', {
+            description: `${result.data.daysCreated || 1} dia(s) registrado(s). Você pode editar depois.`,
+          });
+          setSelectedActionSheetEvent(null);
+          handleFormSuccess();
+        } else {
+          toast.error('Erro ao aplicar horas', {
+            description: result.data?.error || 'Tente novamente.',
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao aplicar 12h automáticas:', error);
+        toast.error('Erro ao aplicar horas automáticas', {
+          description: error.message || 'Tente novamente.',
+        });
+      }
     },
-    []
+    [user?.id, handleFormSuccess]
   );
 
   const handleHoursSheetSave = useCallback(

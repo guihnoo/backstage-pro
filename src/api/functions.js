@@ -71,7 +71,7 @@ export const generateComprehensiveReport = base44.functions.generateComprehensiv
 
 export const getDashboardData = base44.functions.getDashboardData;
 
-export const applyAuto12Hours = base44.functions.applyAuto12Hours;
+export { applyAuto12Hours } from '@/lib/applyAuto12Hours';
 
 export const checkCompletedEventsForAutoHours = base44.functions.checkCompletedEventsForAutoHours;
 

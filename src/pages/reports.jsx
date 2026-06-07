@@ -45,6 +45,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import EmptyState from '@/components/layout/EmptyState';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useAuth } from '@/lib/authContext';
+import { applyAuto12Hours } from '@/lib/applyAuto12Hours';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 
@@ -180,7 +181,7 @@ export default function ReportsPage() {
   const { dailyWork, loading: dailyWorkLoading, error: dailyWorkError, refetch: refetchDailyWork, delete: deleteWork } = useDailyWork();
   const { expenses, loading: expensesLoading, error: expensesError, refetch: refetchExpenses, delete: deleteExpense } = useExpenses();
   const { formatCurrency, isVisible } = useFinancialVisibility();
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const config = getCategoryConfig(profile?.category || 'lighting');
 
   const data = useMemo(
@@ -611,6 +612,39 @@ export default function ReportsPage() {
     }
   };
 
+  const handleApply12h = useCallback(
+    async (event) => {
+      if (!event?.id || !user?.id) {
+        toast.error('Não foi possível aplicar 12h automáticas.');
+        return;
+      }
+      try {
+        const result = await applyAuto12Hours({
+          eventId: event.id,
+          userId: user.id,
+          origin: 'manual_12h',
+        });
+        if (result.data?.success) {
+          toast.success('12 horas aplicadas automaticamente!', {
+            description: `${result.data.daysCreated || 1} dia(s) registrado(s).`,
+          });
+          setSelectedEvent(null);
+          await refreshData();
+        } else {
+          toast.error('Erro ao aplicar horas', {
+            description: result.data?.error || 'Tente novamente.',
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao aplicar 12h:', error);
+        toast.error('Erro ao aplicar horas automáticas', {
+          description: error.message || 'Tente novamente.',
+        });
+      }
+    },
+    [user?.id, refreshData]
+  );
+
   const handleClientDetail = (clientId) => {
     navigate(`/client-detail?id=${clientId}`);
   };
@@ -853,7 +887,7 @@ export default function ReportsPage() {
           onWorkDelete={handleWorkDelete}
           onExpenseEdit={handleExpenseEdit}
           onExpenseDelete={handleExpenseDelete}
-          onApply12h={() => toast.info('Aplicar 12h automáticas em breve.')}
+          onApply12h={handleApply12h}
         />
       )}
     </NeonPageShell>
