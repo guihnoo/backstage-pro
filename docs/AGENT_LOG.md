@@ -182,3 +182,12 @@ Registro cronológico de tarefas executadas por agentes.
 - **Sintoma**: Home carregava mas sem interatividade; outras páginas "não carregavam" porque cliques no nav eram bloqueados.
 - **Fix**: Adicionado `pointer-events-none` a `ToastProvider` e `ToastViewport`. Toasts individuais já tinham `pointer-events-auto` (classe `group pointer-events-auto` no `toastVariants`) — fix é segura, interação com toasts preservada.
 - **Build**: ✅ sem erros
+
+---
+## AUTH-TIMEOUT-FIX — 2026-06-07
+**Commits:** d8eb1c5, 4776796
+**Problema:** AuthCallback travava por até 18s sem feedback visual de escape
+**Fixes:**
+- EXCHANGE_TIMEOUT_MS: 12s → 8s, PROFILE_TIMEOUT_MS: 10s → 6s, OVERALL_TIMEOUT_MS: 18s → 12s
+- Link "Demorou demais? Voltar ao login" aparece após 4s de loading (showEscape state)
+- ProfileSimple: useEffect para sincronizar form quando profile carrega depois do mount
