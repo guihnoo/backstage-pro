@@ -1,6 +1,7 @@
 import './App.css';
 import Pages from '@/pages/index.jsx';
 import { Toaster } from '@/components/ui/toaster';
+import { Toaster as SonnerToaster } from 'sonner';
 import { AuthProvider } from '@/lib/authContext';
 import { AppDataProvider } from '@/components/context/AppDataContext';
 import { BrowserRouter } from 'react-router-dom';
@@ -33,6 +34,7 @@ function App() {
         <AppDataProvider>
           <Pages />
           <Toaster />
+          <SonnerToaster position="top-center" richColors closeButton />
         </AppDataProvider>
       </AuthProvider>
     </BrowserRouter>

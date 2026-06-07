@@ -667,7 +667,7 @@ export default function ReportsPage() {
   }
 
   return (
-    <NeonPageShell primary={config.primaryHex} accent={config.accentHex}>
+    <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="pb-24">
       <div className="p-4 md:p-6 space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

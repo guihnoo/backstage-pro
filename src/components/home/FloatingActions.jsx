@@ -41,7 +41,7 @@ export function FloatingActions() {
   };
 
   return (
-    <div className="fixed bottom-8 right-6 z-40">
+    <div className="fixed bottom-[88px] right-5 z-40">
       <AnimatePresence>
         {isOpen && (
           <motion.div

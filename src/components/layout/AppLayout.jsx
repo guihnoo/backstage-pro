@@ -29,16 +29,16 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-screen bg-[#050609] text-white flex flex-col">
-      <main className="flex-1 overflow-y-auto"><Outlet /></main>
+      <main className="flex-1 overflow-y-auto pb-20"><Outlet /></main>
       <nav className="fixed bottom-0 left-0 right-0 z-50">
-        <div className="absolute inset-0 bg-[#050609]/92 backdrop-blur-xl border-t border-[#23262f]" />
+        <div className="absolute inset-0 bg-[#050609]/95 backdrop-blur-xl border-t border-[#23262f]" />
         <motion.div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent 10%, ${config.primaryHex}50 50%, transparent 90%)` }} />
-        <div className="relative z-10 flex items-center justify-around px-2 py-2 max-w-2xl mx-auto">
+        <div className="relative z-10 flex items-stretch justify-around px-1 max-w-2xl mx-auto">
           {navItems.map(({ path, label, icon: Icon }) => (
-            <NavLink key={path} to={path} end={path === '/'} className="flex-1">
+            <NavLink key={path} to={path} end={path === '/'} className="flex-1 flex justify-center">
               {({ isActive }) => (
-                <motion.div whileTap={{ scale: 0.88 }} className="relative flex flex-col items-center gap-1 py-1">
-                  <Icon className="w-[18px] h-[18px]" style={{ color: isActive ? config.primaryHex : '#5f6678' }} />
+                <motion.div whileTap={{ scale: 0.88 }} className="flex flex-col items-center gap-0.5 py-3 px-1 w-full">
+                  <Icon className="w-5 h-5" style={{ color: isActive ? config.primaryHex : '#5f6678' }} />
                   <span className="text-[9px] font-mono uppercase leading-none truncate max-w-full" style={{ color: isActive ? config.primaryHex : '#5f6678' }}>{label}</span>
                 </motion.div>
               )}
