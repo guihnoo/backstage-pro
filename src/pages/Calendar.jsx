@@ -1,5 +1,6 @@
-
+﻿
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/lib/authContext';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
@@ -37,6 +38,8 @@ import DayQuickActions from '@/components/calendar/DayQuickActions';
 import EventActionSheet from '@/components/mobile/EventActionSheet';
 import EventHoursSheet from '@/components/mobile/EventHoursSheet';
 import NotesSheet from '@/components/mobile/NotesSheet';
+import { getCategoryConfig } from '@/lib/categoryConfig';
+import { NeonPageShell } from '@/components/design/NeonPageShell';
 
 const useMediaQuery = (query) => {
   const [matches, setMatches] = useState(false);
@@ -101,7 +104,8 @@ const StatCard = ({ title, value, subtext, icon: Icon, color, onClick, loading =
 );
 
 export default function CalendarPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
+  const config = getCategoryConfig(profile?.category || 'lighting');
   const { events, loading: eventsLoading, error: eventsError, refetch: refetchEvents, update: updateEvent, delete: deleteEvent } = useEvents();
   const { clients, loading: clientsLoading } = useClients();
   const { dailyWork, loading: dailyWorkLoading, refetch: refetchDailyWork, create: createDailyWork, update: updateDailyWork, delete: deleteDailyWorkEntry } = useDailyWork();
@@ -142,6 +146,15 @@ export default function CalendarPage() {
   const [activeNotesEvent, setActiveNotesEvent] = useState(null); // Event for Notes Sheet
 
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get('action') === 'new-event') {
+      setShowEventForm(true);
+      setEditingEvent(null);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const clientMap = useMemo(() => new Map(clients.map(c => [c.id, c])), [clients]);
   const eventMap = useMemo(() => new Map(events.map(e => [e.id, e])), [events]);
@@ -217,8 +230,8 @@ export default function CalendarPage() {
       });
 
       if (eventsForDate.length === 0) {
-        toast.info(`Não há eventos para ${format(targetDate, "dd 'de' MMMM", { locale: ptBR })}`, {
-          description: 'Para registrar horas, você precisa primeiro criar um evento nesta data.',
+        toast.info(`NÃ£o hÃ¡ eventos para ${format(targetDate, "dd 'de' MMMM", { locale: ptBR })}`, {
+          description: 'Para registrar horas, vocÃª precisa primeiro criar um evento nesta data.',
           action: {
             label: 'Criar Evento',
             onClick: () => handleNewEvent(targetDate),
@@ -300,7 +313,7 @@ export default function CalendarPage() {
   const handleEventClick = useCallback(
     (event) => {
       if (!event) {
-        console.warn('⚠️ Evento é null ou undefined');
+        console.warn('âš ï¸ Evento Ã© null ou undefined');
         return;
       }
 
@@ -361,10 +374,10 @@ export default function CalendarPage() {
     async (workId) => {
       if (!workId) return;
 
-      if (window.confirm('Tem certeza que deseja excluir este registro de horas? Esta ação não pode ser desfeita.')) {
+      if (window.confirm('Tem certeza que deseja excluir este registro de horas? Esta aÃ§Ã£o nÃ£o pode ser desfeita.')) {
         try {
           await deleteDailyWorkEntry(workId);
-          toast.success('Registro de horas excluído com sucesso!');
+          toast.success('Registro de horas excluÃ­do com sucesso!');
           handleFormSuccess();
         } catch (err) {
           console.error('Erro ao excluir registro de trabalho:', err);
@@ -402,7 +415,7 @@ export default function CalendarPage() {
 
       const eventToDelete = events.find((e) => e.id === eventId);
       if (!eventToDelete) {
-        toast.error('Evento não encontrado para exclusão.');
+        toast.error('Evento nÃ£o encontrado para exclusÃ£o.');
         return;
       }
 
@@ -411,7 +424,7 @@ export default function CalendarPage() {
       if (window.confirm(confirmationMessage)) {
         try {
           await deleteEvent(eventId);
-          toast.success(`Evento "${eventToDelete.title}" foi excluído com sucesso!`);
+          toast.success(`Evento "${eventToDelete.title}" foi excluÃ­do com sucesso!`);
           handleFormSuccess();
         } catch (err) {
           console.error('Erro ao excluir evento:', err);
@@ -427,7 +440,7 @@ export default function CalendarPage() {
       if (!eventToUpdate) return;
       try {
         await updateEvent(eventToUpdate.id, { paid: !eventToUpdate.paid });
-        toast.success(`Evento "${eventToUpdate.title}" marcado como ${eventToUpdate.paid ? 'não pago' : 'pago'}!`);
+        toast.success(`Evento "${eventToUpdate.title}" marcado como ${eventToUpdate.paid ? 'nÃ£o pago' : 'pago'}!`);
         handleFormSuccess();
       } catch (err) {
         console.error('Erro ao atualizar status de pagamento:', err);
@@ -491,8 +504,8 @@ export default function CalendarPage() {
           throw new Error(result.error || 'Falha ao aplicar horas.');
         }
       } catch (error) {
-        console.error('Erro ao aplicar 12h automáticas:', error);
-        toast.error('Erro ao aplicar horas automáticas', { description: error.message });
+        console.error('Erro ao aplicar 12h automÃ¡ticas:', error);
+        toast.error('Erro ao aplicar horas automÃ¡ticas', { description: error.message });
       }
     },
     [handleFormSuccess]
@@ -508,9 +521,14 @@ export default function CalendarPage() {
         const payload = {
           ...workData,
           event_id: mobileHoursEventData.event.id,
-          date: normalizeDateString(workData.date || new Date()),
+          work_date: normalizeDateString(workData.work_date || workData.date || new Date()),
+          hours_worked: Number(workData.hours_worked ?? workData.total_hours ?? 0),
+          status: workData.status || 'completed',
           user_id: user?.id,
         };
+
+        delete payload.date;
+        delete payload.total_hours;
 
         if (mobileHoursEventData.existingWork?.id) {
           await updateDailyWork(mobileHoursEventData.existingWork.id, payload);
@@ -533,15 +551,15 @@ export default function CalendarPage() {
     async (notesData) => {
       try {
         if (!activeNotesEvent) {
-          toast.error('Nenhum evento selecionado para salvar observações.');
+          toast.error('Nenhum evento selecionado para salvar observaÃ§Ãµes.');
           return;
         }
         await updateEvent(activeNotesEvent.id, notesData);
-        toast.success('Observações salvas!');
+        toast.success('ObservaÃ§Ãµes salvas!');
         handleFormSuccess();
       } catch (error) {
-        console.error('Erro ao salvar observações:', error);
-        toast.error('Erro ao salvar observações');
+        console.error('Erro ao salvar observaÃ§Ãµes:', error);
+        toast.error('Erro ao salvar observaÃ§Ãµes');
       }
     },
     [activeNotesEvent, handleFormSuccess]
@@ -623,7 +641,7 @@ export default function CalendarPage() {
         const startDate = parseISO(event.start_date);
         const endDate = parseISO(event.end_date);
         return {
-          title: `${client?.name || 'Cliente'} — ${event.title}`,
+          title: `${client?.name || 'Cliente'} â€” ${event.title}`,
           subtitle: `${isValid(startDate) ? format(startDate, 'dd/MM/yyyy', { locale: ptBR }) : ''} - ${
             isValid(endDate) ? format(endDate, 'dd/MM/yyyy', { locale: ptBR }) : ''
           }`,
@@ -647,8 +665,8 @@ export default function CalendarPage() {
         const workDate = parseISO(work.date);
 
         return {
-          title: `${client?.name || 'Cliente'} — ${event?.title || 'Evento'}`,
-          subtitle: `${isValid(workDate) ? format(workDate, 'dd/MM/yy', { locale: ptBR }) : ''} • ${
+          title: `${client?.name || 'Cliente'} â€” ${event?.title || 'Evento'}`,
+          subtitle: `${isValid(workDate) ? format(workDate, 'dd/MM/yy', { locale: ptBR }) : ''} â€¢ ${
             work.total_hours || 0
           }h trabalhadas`,
           amount: work.daily_cache || 0,
@@ -673,10 +691,10 @@ export default function CalendarPage() {
         const workDate = parseISO(work.date);
 
         return {
-          title: `${client?.name || 'Cliente'} — ${event?.title || 'Evento'}`,
-          subtitle: `${isValid(workDate) ? format(workDate, 'dd/MM/yy', { locale: ptBR }) : ''} • ${
+          title: `${client?.name || 'Cliente'} â€” ${event?.title || 'Evento'}`,
+          subtitle: `${isValid(workDate) ? format(workDate, 'dd/MM/yy', { locale: ptBR }) : ''} â€¢ ${
             work.entry_time || ''
-          }–${work.exit_time || ''}`,
+          }â€“${work.exit_time || ''}`,
           amount: Number(work.total_hours) || 0,
           amountFormatted: `${(Number(work.total_hours) || 0).toFixed(1)}h`,
           event_id: work.event_id,
@@ -699,7 +717,7 @@ export default function CalendarPage() {
 
       clientItems.push({
         title: client?.name || 'Cliente Desconhecido',
-        subtitle: `${clientEvents.length} evento(s) no mês`,
+        subtitle: `${clientEvents.length} evento(s) no mÃªs`,
         client_id: clientId,
         dateSort: 0,
       });
@@ -752,7 +770,7 @@ export default function CalendarPage() {
       <div className="flex flex-col items-center justify-center h-[60vh] text-center p-4">
         <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
         <h2 className="text-xl font-semibold text-red-400">Erro ao carregar agenda</h2>
-        <p className="text-red-300 mt-2 max-w-md">Não foi possível carregar sua agenda. Por favor, tente novamente.</p>
+        <p className="text-red-300 mt-2 max-w-md">NÃ£o foi possÃ­vel carregar sua agenda. Por favor, tente novamente.</p>
         <Button onClick={() => { refetchEvents(); refetchDailyWork(); refetchExpenses(); }} className="mt-4 bg-red-600 hover:bg-red-700">
           Tentar Novamente
         </Button>
@@ -761,9 +779,9 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-screen">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3 sm:space-y-4 md:space-y-6 p-3 sm:p-4 md:p-6">
-        {/* Header do Calendário */}
+        {/* Header do CalendÃ¡rio */}
         <div className="flex flex-col gap-3">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
@@ -772,7 +790,7 @@ export default function CalendarPage() {
             </div>
           </div>
 
-          {/* Controles de Navegação e Ações */}
+          {/* Controles de NavegaÃ§Ã£o e AÃ§Ãµes */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center justify-between sm:justify-start gap-2">
               <Button
@@ -812,7 +830,7 @@ export default function CalendarPage() {
               </Button>
             </div>
 
-            {/* Botões de Ação */}
+            {/* BotÃµes de AÃ§Ã£o */}
             <div className="flex items-center gap-2">
               <Button
                 onClick={() => handleQuickWorkEntry()}
@@ -828,7 +846,8 @@ export default function CalendarPage() {
               <Button
                 onClick={() => handleNewEvent()}
                 size="sm"
-                className="bg-cyan-600 hover:bg-cyan-700 flex-1 sm:flex-none h-10 text-sm active:scale-95"
+                className="flex-1 sm:flex-none h-10 text-sm active:scale-95 text-white border-0"
+                style={{ backgroundColor: config.primaryHex }}
               >
                 <Plus className="w-4 h-4 mr-2" />
                 <span className="hidden xs:inline">Novo Evento</span>
@@ -855,7 +874,7 @@ export default function CalendarPage() {
             value={monthStats.totalEvents}
             subtext={monthStats.totalEvents === 1 ? 'evento' : 'eventos'}
             icon={Calendar}
-            color="text-cyan-400"
+            color="text-purple-400"
             onClick={handleEventsClick}
             loading={isLoading}
           />
@@ -891,7 +910,7 @@ export default function CalendarPage() {
           />
         </div>
 
-        {/* Grid do Calendário */}
+        {/* Grid do CalendÃ¡rio */}
         <Card className="bg-slate-900/50 border-slate-800 overflow-hidden">
           <CardContent className="p-0">
             <BackstageCalendarGrid
@@ -909,7 +928,7 @@ export default function CalendarPage() {
         </Card>
       </motion.div>
 
-      {/* Ações Rápidas Desktop */}
+      {/* AÃ§Ãµes RÃ¡pidas Desktop */}
       <DayQuickActions
         open={quickActions.open}
         date={quickActions.date}
@@ -1001,7 +1020,7 @@ export default function CalendarPage() {
               </h3>
               <p className="text-sm sm:text-base text-slate-300 mb-6">
                 Encontramos {eventsForSelectedDate.length} eventos para{' '}
-                {selectedDate && format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}. Para qual evento você deseja
+                {selectedDate && format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}. Para qual evento vocÃª deseja
                 registrar as horas?
               </p>
 
@@ -1020,7 +1039,7 @@ export default function CalendarPage() {
                         <div className="min-w-0 flex-1">
                           <p className="font-medium text-white truncate text-sm sm:text-base">{event.title}</p>
                           <p className="text-xs sm:text-sm text-slate-400 truncate">
-                            {client?.name || 'Cliente não encontrado'}
+                            {client?.name || 'Cliente nÃ£o encontrado'}
                           </p>
                         </div>
                       </div>
@@ -1107,6 +1126,8 @@ export default function CalendarPage() {
           />
         )}
       </AnimatePresence>
-    </div>
+    </NeonPageShell>
   );
 }
+
+

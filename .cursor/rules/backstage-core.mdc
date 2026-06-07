@@ -1,0 +1,58 @@
+---
+description: Regras principais do Backstage Pro — sempre aplicadas
+globs: ["src/**/*.jsx", "src/**/*.js", "src/**/*.tsx", "src/**/*.ts"]
+alwaysApply: true
+---
+
+# Backstage Pro — Regras Core
+
+## Stack obrigatória
+- React 18, Vite 6, JavaScript (sem TypeScript por enquanto)
+- Tailwind CSS + shadcn/ui — verificar registry MCP antes de criar componente novo
+- Framer Motion para TODAS as animações — proibido CSS animations/transitions manuais
+- react-router-dom v7 — useNavigate, useSearchParams, Link
+- Supabase JS v2 — auth via useAuth(), dados via hooks em src/lib/
+
+## Hooks de dados — padrão obrigatório
+Usar SEMPRE os hooks em `src/lib/`, NUNCA chamar supabase diretamente em componentes:
+- Clientes → `useClients()` → `{ clients, loading, error, create, update, delete }`
+- Eventos → `useEvents()` → `{ events, loading, error, create, update, delete }`
+- Despesas → `useExpenses()` → `{ expenses, loading, error, create, update, delete }`
+- Horas → `useDailyWork()` → `{ dailyWork, loading, error, create, update, delete }`
+- Settings → `useUserSettings()` → `{ settings, loading, upsert }`
+- Auth → `useAuth()` → `{ user, profile, session, loading, signOut, updateProfile }`
+
+## Arquivos LOCKED — NUNCA editar
+- src/lib/authContext.jsx, safeFetch.js, supabase.js
+- src/lib/useEvents.js, useDailyWork.js, useExpenses.js
+- src/components/calendar/EventForm.jsx, DailyWorkModal.jsx
+- src/components/expenses/ExpenseForm.jsx
+- src/components/clients/ClientForm.jsx
+- src/pages/AI_Mentor.jsx
+- e2e/**, playwright.config.js
+- vite.config.js, package.json
+
+## Padrões de código
+- Componentes funcionais com named export (NÃO default export)
+- Props desestruturadas com valores padrão
+- Loading states com Skeleton (shadcn), NUNCA spinner em listas
+- Toast (sonner) para feedback de ações — success/error
+- formatCurrency() do useFinancialVisibility() para valores monetários
+- normalizeDateString() do dateUtils para datas
+
+## Design — padrão visual (Neon Bastidor)
+- Fundo `#050609`, atmosfera via `NeonPageShell` / `NeonAtmosphere`
+- Iluminação (default): roxo `#A64AFF` + âmbar `#FFB700` — `getCategoryConfig(profile?.category || 'lighting')`
+- Emerald = dinheiro positivo / Amber = alertas / Red = erro / Violet = AI
+- Padding de card: p-5 (20px) — sempre consistente
+- Mobile first: classes sem prefixo → sm: → md: → lg:
+- Animações de entrada: opacity 0→1 + y 20→0, 200ms ease-out
+- Animações de saída: opacity 1→0, 150ms
+
+## Proibido
+- import { algo } from '@/api/entities' — NUNCA usar Base44
+- import { useAppData } from '@/components/context/AppDataContext' — NUNCA em código novo
+- console.log em produção (apenas console.error para erros reais)
+- Criar migration SQL sem confirmar com o usuário primeiro
+- Commits sem instrução explícita do usuário
+- Editar AGENT_LOG.md exceto para APPEND ao final

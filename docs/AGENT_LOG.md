@@ -48,3 +48,9 @@ Registro cronológico de tarefas executadas por agentes.
 ### NEON-BASTIDOR-2 — Perfil, Metas e Clientes ✅
 - **Arquivos**: `ProfileSimple.jsx` (NeonPageShell + NeonGlass), `Goals.jsx` (NeonPageShell + fallback lighting), `Clients.jsx` (CTA gradiente categoria)
 - **Build**: ✅
+
+### NEON-BASTIDOR-3 — Agenda, Relatórios e fluxos desbloqueados ✅
+- **Agente**: Cursor (Auto)
+- **Desbloqueio**: `AGENTS.md` + `.cursor/rules/backstage-core.mdc` — Calendar, reports, Onboarding, AuthCallback, FloatingActions liberados para Neon (hooks/forms permanecem LOCKED)
+- **Arquivos**: `Calendar.jsx`, `reports.jsx`, `Onboarding.jsx`, `AuthCallback.jsx`, `FloatingActions.jsx`, `ClientDetailModal.jsx`, `ClientInsightsModal.jsx`
+- **Build**: ✅ `npm run build` sem erros

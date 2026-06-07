@@ -18,9 +18,12 @@ import {
 } from
 'lucide-react';
 import { toast } from 'sonner';
-import { useAppData } from '@/components/context/AppDataContext';
+import { useEvents } from '@/lib/useEvents';
+import { useDailyWork } from '@/lib/useDailyWork';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { formatDisplayDate, formatDateWithWeekday, getEventStatus, getEventStatusLabel, getEventStatusConfig } from '@/components/utils/dateUtils';
+import { useAuth } from '@/lib/authContext';
+import { getCategoryConfig } from '@/lib/categoryConfig';
 
 const EventTimelineItem = ({ event, isLast, workData, onClick }) => {
   const { formatCurrency } = useFinancialVisibility();
@@ -72,7 +75,7 @@ const EventTimelineItem = ({ event, isLast, workData, onClick }) => {
           {/* Métricas do Evento */}
           {event.daily_cache_value && event.daily_cache_value > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-              <div className="flex items-center gap-1 text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded">
+              <div className="flex items-center gap-1 text-purple-400 bg-purple-400/10 px-2 py-1 rounded">
                 <DollarSign className="w-3 h-3" />
                 {formatCurrency(event.daily_cache_value)}/dia
               </div>
@@ -155,11 +158,12 @@ export default function ClientDetailModal({
   onEdit,
   onDelete
 }) {
-  const { data } = useAppData();
+  const { events } = useEvents();
+  const { dailyWork } = useDailyWork();
   const { isVisible, formatCurrency } = useFinancialVisibility();
+  const { profile } = useAuth();
+  const config = getCategoryConfig(profile?.category || 'lighting');
   const [activeTab, setActiveTab] = useState('overview');
-
-  const { events, dailyWork } = data;
 
   // Dados enriquecidos do cliente com cálculos financeiros corretos
   const clientData = useMemo(() => {
@@ -309,7 +313,7 @@ export default function ClientDetailModal({
                 <div className="flex items-center gap-4 min-w-0">
                   <Avatar className="h-16 w-16 border-2 border-slate-700">
                     <AvatarImage src={client.logo_url} alt={client.name} />
-                    <AvatarFallback className="bg-cyan-900/50 text-cyan-300 text-2xl font-bold">
+                    <AvatarFallback className="bg-purple-900/50 text-purple-300 text-2xl font-bold">
                       {client.name?.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -379,7 +383,7 @@ export default function ClientDetailModal({
                           value={clientData.totalEvents}
                           subtitle={`${clientData.completedEventsCount} concluídos`}
                           icon={Calendar}
-                          color="cyan" />
+                          color="purple" />
 
                         <MetricCard
                           title="Faturamento Real"
@@ -408,7 +412,7 @@ export default function ClientDetailModal({
                       {clientData.upcomingEvents.length > 0 &&
                         <Card className="bg-slate-800/50 border-slate-700">
                           <CardHeader>
-                            <CardTitle className="text-lg text-cyan-300 flex items-center gap-2">
+                            <CardTitle className="text-lg text-purple-300 flex items-center gap-2">
                               <Calendar className="w-5 h-5" />
                               Próximos Eventos ({clientData.upcomingEvents.length})
                             </CardTitle>
@@ -491,7 +495,7 @@ export default function ClientDetailModal({
 
                       <Card className="bg-slate-800/50 border-slate-700">
                         <CardHeader>
-                          <CardTitle className="text-lg text-cyan-300 flex items-center gap-2">
+                          <CardTitle className="text-lg text-purple-300 flex items-center gap-2">
                             <Activity className="w-5 h-5" />
                             Linha do Tempo Completa
                           </CardTitle>
@@ -550,7 +554,7 @@ export default function ClientDetailModal({
                             </div>
                             <div>
                               <p className="text-slate-400 text-sm">Taxa de Conversão de Pagamento</p>
-                              <p className="text-2xl font-bold text-cyan-400">
+                              <p className="text-2xl font-bold text-purple-400">
                                 {clientData.paymentConversionRate.toFixed(1)}%
                               </p>
                             </div>
@@ -586,7 +590,7 @@ export default function ClientDetailModal({
                           value={clientData.upcomingEventsCount}
                           subtitle="Próximos agendamentos"
                           icon={Calendar}
-                          color="cyan" />
+                          color="purple" />
 
                         <MetricCard
                           title="Pagamentos Pendentes"
@@ -615,7 +619,11 @@ export default function ClientDetailModal({
                 <Button variant="outline" onClick={onClose} className="flex-1 sm:flex-none bg-transparent border-slate-600 hover:bg-slate-800">
                   Fechar
                 </Button>
-                <Button onClick={() => onEdit(client)} className="flex-1 sm:flex-none bg-cyan-600 hover:bg-cyan-700">
+                <Button
+                  onClick={() => onEdit(client)}
+                  className="flex-1 sm:flex-none text-white border-0"
+                  style={{ backgroundColor: config.primaryHex }}
+                >
                   <Edit className="w-4 h-4 mr-2" />
                   Editar Cliente
                 </Button>

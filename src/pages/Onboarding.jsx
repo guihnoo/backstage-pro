@@ -96,7 +96,7 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 text-white overflow-hidden relative">
+    <div className="min-h-screen bg-[#050609] text-white overflow-hidden relative">
       <StageBackdrop />
       <SpotlightRays />
       <FloatingEquipment />
@@ -110,7 +110,7 @@ export default function Onboarding() {
         <motion.div
           animate={{ opacity: [0.1, 0.2, 0.1] }}
           transition={{ duration: 4, delay: 1 }}
-          className="absolute top-0 right-1/4 w-96 h-96 bg-cyan-500 rounded-full blur-3xl opacity-15"
+          className="absolute top-0 right-1/4 w-96 h-96 bg-purple-500 rounded-full blur-3xl opacity-15"
         />
       </div>
 
@@ -124,7 +124,7 @@ export default function Onboarding() {
           <div className="bg-gray-900/40 backdrop-blur-xl border border-gray-800/50 rounded-2xl p-8 shadow-2xl">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h1 className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                <h1 className="text-3xl font-black bg-gradient-to-r from-purple-400 to-amber-400 bg-clip-text text-transparent">
                   Complete seu perfil
                 </h1>
                 <p className="text-gray-400 text-sm mt-1">Vamos conhecer você melhor</p>
@@ -209,7 +209,7 @@ export default function Onboarding() {
                   <Button
                     onClick={handleNextStep}
                     disabled={!name}
-                    className="w-full bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 disabled:opacity-50"
+                    className="w-full bg-gradient-to-r from-purple-500 to-amber-500 hover:from-purple-600 hover:to-amber-600 disabled:opacity-50"
                   >
                     Continuar
                   </Button>
@@ -233,7 +233,7 @@ export default function Onboarding() {
                   <Button
                     onClick={handleNextStep}
                     disabled={!selectedCategory}
-                    className="w-full bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 disabled:opacity-50"
+                    className="w-full bg-gradient-to-r from-purple-500 to-amber-500 hover:from-purple-600 hover:to-amber-600 disabled:opacity-50"
                   >
                     Continuar
                   </Button>
@@ -261,7 +261,7 @@ export default function Onboarding() {
                   <Button
                     onClick={handleNextStep}
                     disabled={selectedSpecialties.length === 0}
-                    className="w-full bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 disabled:opacity-50"
+                    className="w-full bg-gradient-to-r from-purple-500 to-amber-500 hover:from-purple-600 hover:to-amber-600 disabled:opacity-50"
                   >
                     Continuar
                   </Button>
@@ -330,7 +330,7 @@ export default function Onboarding() {
                   <Button
                     onClick={handleNextStep}
                     disabled={!dailyRate || !monthlyGoalRevenue}
-                    className="w-full bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 disabled:opacity-50"
+                    className="w-full bg-gradient-to-r from-purple-500 to-amber-500 hover:from-purple-600 hover:to-amber-600 disabled:opacity-50"
                   >
                     Continuar
                   </Button>
@@ -353,7 +353,7 @@ export default function Onboarding() {
                     }}
                     transition={{ duration: 0.6 }}
                   >
-                    <CheckCircle2 className="w-16 h-16 text-cyan-400 mx-auto mb-4" />
+                    <CheckCircle2 className="w-16 h-16 text-purple-400 mx-auto mb-4" />
                   </motion.div>
 
                   <div>
@@ -370,7 +370,7 @@ export default function Onboarding() {
                       <p className="text-gray-400 text-sm">Especialidades</p>
                       <div className="flex flex-wrap gap-2 mt-2">
                         {selectedSpecialties.map((spec) => (
-                          <span key={spec} className="bg-cyan-500/20 border border-cyan-500/50 text-cyan-300 px-3 py-1 rounded-full text-sm">
+                          <span key={spec} className="bg-purple-500/20 border border-purple-500/50 text-purple-300 px-3 py-1 rounded-full text-sm">
                             {spec}
                           </span>
                         ))}
@@ -392,7 +392,7 @@ export default function Onboarding() {
                   <Button
                     onClick={handleSubmit}
                     disabled={loading}
-                    className="w-full h-11 bg-gradient-to-r from-cyan-500 via-violet-500 to-amber-500 hover:from-cyan-600 hover:via-violet-600 hover:to-amber-600 text-white font-bold shadow-lg shadow-cyan-500/30"
+                    className="w-full h-11 bg-gradient-to-r from-purple-500 via-purple-600 to-amber-500 hover:from-purple-600 hover:via-purple-700 hover:to-amber-600 text-white font-bold shadow-lg shadow-purple-500/30"
                   >
                     {loading ? 'Criando perfil...' : 'Entrar no Backstage'}
                   </Button>

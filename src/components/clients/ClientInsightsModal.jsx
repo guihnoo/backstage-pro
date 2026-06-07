@@ -15,21 +15,27 @@ import {
   CheckCircle2,
   BarChart3
 } from 'lucide-react';
-import { useAppData } from '../context/AppDataContext';
+import { useEvents } from '@/lib/useEvents';
+import { useDailyWork } from '@/lib/useDailyWork';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { getEventStatus, formatDisplayDate } from '../utils/dateUtils';
 import { parseISO, differenceInDays, isValid } from 'date-fns';
+import { useAuth } from '@/lib/authContext';
+import { getCategoryConfig } from '@/lib/categoryConfig';
 
 export default function ClientInsightsModal({ client, isOpen, onClose }) {
-  const { data } = useAppData();
+  const { events } = useEvents();
+  const { dailyWork } = useDailyWork();
   const { formatCurrency } = useFinancialVisibility();
+  const { profile } = useAuth();
+  const config = getCategoryConfig(profile?.category || 'lighting');
 
   const insights = useMemo(() => {
-    if (!client || !data.events || !data.dailyWork) return null;
+    if (!client || !events || !dailyWork) return null;
 
-    const clientEvents = data.events.filter(e => e.client_id === client.id);
+    const clientEvents = events.filter(e => e.client_id === client.id);
     const clientEventIds = new Set(clientEvents.map(e => e.id));
-    const clientWork = data.dailyWork.filter(w => clientEventIds.has(w.event_id));
+    const clientWork = dailyWork.filter(w => clientEventIds.has(w.event_id));
 
     // Receita total
     const totalRevenue = clientWork.reduce((sum, w) => sum + (w.daily_cache || 0), 0);
@@ -100,7 +106,7 @@ export default function ClientInsightsModal({ client, isOpen, onClose }) {
       avgEventsPerMonth: avgEventsPerMonth.toFixed(1),
       totalEvents: clientEvents.length,
     };
-  }, [client, data.events, data.dailyWork]);
+  }, [client, events, dailyWork]);
 
   if (!client || !insights) return null;
 
@@ -137,7 +143,7 @@ export default function ClientInsightsModal({ client, isOpen, onClose }) {
                   </div>
                   <div>
                     <p className="text-xs text-slate-400 mb-1">Média/Evento</p>
-                    <p className="text-xl font-bold text-cyan-400">
+                    <p className="text-xl font-bold text-purple-400">
                       {formatCurrency(insights.avgRevenuePerEvent)}
                     </p>
                   </div>
@@ -173,7 +179,7 @@ export default function ClientInsightsModal({ client, isOpen, onClose }) {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-400">Agendados</span>
-                    <Badge className="bg-cyan-600/80">{insights.eventsByStatus.scheduled}</Badge>
+                    <Badge style={{ backgroundColor: `${config.primaryHex}cc` }}>{insights.eventsByStatus.scheduled}</Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-400">Em Andamento</span>
@@ -232,7 +238,7 @@ export default function ClientInsightsModal({ client, isOpen, onClose }) {
                     )}
                     <div>
                       <p className="text-xs text-slate-400 mb-1">Total de Horas Trabalhadas</p>
-                      <p className="text-lg font-bold text-cyan-400">
+                      <p className="text-lg font-bold text-purple-400">
                         {insights.totalHours.toFixed(1)}h
                       </p>
                     </div>

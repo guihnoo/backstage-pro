@@ -5,6 +5,11 @@ import { Zap, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { ensureUserProfile } from '@/lib/ensureUserProfile';
 import { Button } from '@/components/ui/button';
+import { NeonAtmosphere } from '@/components/design/NeonAtmosphere';
+import { AUTH_HERO_CATEGORY } from '@/lib/categoryGear';
+import { getCategoryConfig } from '@/lib/categoryConfig';
+
+const hero = getCategoryConfig(AUTH_HERO_CATEGORY);
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -62,12 +67,19 @@ export default function AuthCallback() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center p-6">
-        <div className="max-w-md w-full bg-gray-900/60 border border-red-500/30 rounded-2xl p-8 text-center space-y-4">
+      <div className="min-h-screen bg-[#050609] text-white flex items-center justify-center p-6 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <NeonAtmosphere primary={hero.primaryHex} accent={hero.accentHex} />
+        </div>
+        <div className="relative z-10 max-w-md w-full bg-[#0a0c12]/80 border border-red-500/30 rounded-2xl p-8 text-center space-y-4 backdrop-blur-xl">
           <AlertCircle className="w-12 h-12 text-red-400 mx-auto" />
           <h1 className="text-xl font-bold">Não foi possível entrar</h1>
-          <p className="text-sm text-gray-400 leading-relaxed">{error}</p>
-          <Button asChild className="w-full bg-cyan-600 hover:bg-cyan-700">
+          <p className="text-sm text-slate-400 leading-relaxed">{error}</p>
+          <Button
+            asChild
+            className="w-full text-white"
+            style={{ backgroundColor: hero.primaryHex }}
+          >
             <Link to="/login">Voltar ao login</Link>
           </Button>
         </div>
@@ -76,15 +88,19 @@ export default function AuthCallback() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center gap-4">
+    <div className="min-h-screen bg-[#050609] text-white flex flex-col items-center justify-center gap-4 relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none">
+        <NeonAtmosphere primary={hero.primaryHex} accent={hero.accentHex} />
+      </div>
       <motion.div
         animate={{ rotate: 360 }}
         transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-        className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-violet-600 flex items-center justify-center"
+        className="relative z-10 w-12 h-12 rounded-full flex items-center justify-center"
+        style={{ background: `linear-gradient(135deg, ${hero.primaryHex}, ${hero.accentHex})` }}
       >
         <Zap className="w-6 h-6 text-white" />
       </motion.div>
-      <p className="text-gray-400 text-sm">Conectando sua conta…</p>
+      <p className="relative z-10 text-slate-400 text-sm font-mono tracking-wide">Conectando sua conta…</p>
     </div>
   );
 }
