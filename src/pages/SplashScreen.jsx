@@ -1,103 +1,31 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Zap } from 'lucide-react';
-import StageBackdrop from '@/components/auth/StageBackdrop';
-import SpotlightRays from '@/components/auth/SpotlightRays';
-import AudioWave from '@/components/auth/AudioWave';
-import FloatingEquipment from '@/components/auth/FloatingEquipment';
+import { getCategoryConfig } from '@/lib/categoryConfig';
+import { AUTH_HERO_CATEGORY } from '@/lib/categoryGear';
+import { NeonAtmosphere } from '@/components/design/NeonAtmosphere';
+import { NeonLevelBars } from '@/components/design/NeonLevelBars';
+
+const hero = getCategoryConfig(AUTH_HERO_CATEGORY);
 
 export default function SplashScreen() {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      navigate('/login');
-    }, 2500);
-
-    return () => clearTimeout(timer);
-  }, [navigate]);
+  useEffect(() => { const t = setTimeout(() => navigate('/login'), 2500); return () => clearTimeout(t); }, [navigate]);
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 flex items-center justify-center overflow-hidden">
-      {/* Backdrop animado */}
-      <StageBackdrop />
-
-      {/* Raios de holofote */}
-      <SpotlightRays />
-
-      {/* Equipamentos flutuantes */}
-      <FloatingEquipment />
-
-      {/* Spotlight gradients */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          animate={{ opacity: [0.1, 0.3, 0.1] }}
-          transition={{ duration: 3, repeat: Infinity }}
-          className="absolute top-0 left-1/4 w-96 h-96 bg-amber-500 rounded-full blur-3xl opacity-20"
-        />
-        <motion.div
-          animate={{ opacity: [0.1, 0.2, 0.1] }}
-          transition={{ duration: 3, delay: 0.5, repeat: Infinity }}
-          className="absolute top-0 right-1/4 w-96 h-96 bg-cyan-500 rounded-full blur-3xl opacity-15"
-        />
-        <motion.div
-          animate={{ opacity: [0.1, 0.25, 0.1] }}
-          transition={{ duration: 3, delay: 1, repeat: Infinity }}
-          className="absolute -bottom-32 left-1/2 w-80 h-80 bg-violet-500 rounded-full blur-3xl opacity-15"
-        />
-      </div>
-
-      {/* Conteúdo */}
-      <div className="relative z-20 text-center">
-        {/* Logo com glow */}
-        <motion.div
-          animate={{
-            scale: [1, 1.1, 1],
-            boxShadow: [
-              '0 0 20px rgba(34, 211, 238, 0.3)',
-              '0 0 40px rgba(34, 211, 238, 0.6)',
-              '0 0 20px rgba(34, 211, 238, 0.3)'
-            ]
-          }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-cyan-500 to-violet-600 mb-8 shadow-2xl shadow-cyan-500/50"
-        >
-          <Zap className="w-12 h-12 text-white" />
+    <div className="fixed inset-0 bg-[#050609] flex items-center justify-center overflow-hidden">
+      <NeonAtmosphere primary={hero.primaryHex} accent={hero.accentHex} stage />
+      <div className="relative z-20 text-center px-6">
+        <motion.div animate={{ scale: [1, 1.04, 1] }} transition={{ duration: 2.4, repeat: Infinity }} className="w-[104px] h-[104px] mx-auto mb-7 rounded-[28px] grid place-items-center" style={{ background: `conic-gradient(from 210deg, ${hero.primaryHex}, ${hero.accentHex}, ${hero.primaryHex})`, boxShadow: `0 0 50px ${hero.primaryHex}66` }}>
+          <span className="text-[54px] font-black text-[#06070a] leading-none">B</span>
         </motion.div>
-
-        {/* Título */}
-        <motion.h1 className="text-5xl font-black mb-2">
-          {'Backstage Pro'.split('').map((char, i) => (
-            <motion.span
-              key={i}
-              animate={{ opacity: [0, 1], y: [10, 0] }}
-              transition={{ duration: 0.5, delay: 0.1 * i }}
-              className="bg-gradient-to-r from-cyan-400 via-violet-400 to-amber-400 bg-clip-text text-transparent"
-            >
-              {char}
-            </motion.span>
-          ))}
-        </motion.h1>
-
-        {/* Tagline */}
-        <motion.p
-          animate={{ opacity: [0, 1] }}
-          transition={{ duration: 0.8, delay: 1.2 }}
-          className="text-cyan-300 text-xl font-light tracking-wider mb-8"
-        >
-          Seu backstage digital
-        </motion.p>
-
-        {/* Equalizador */}
-        <AudioWave />
-
-        {/* Barra de progresso */}
-        <motion.div
-          animate={{ width: ['0%', '100%'] }}
-          transition={{ duration: 2.5, ease: 'linear' }}
-          className="h-1 bg-gradient-to-r from-cyan-500 via-violet-500 to-amber-500 mt-8 rounded-full"
-        />
+        <div className="text-[42px] font-black text-white leading-[0.92]">BACKSTAGE</div>
+        <div className="text-[42px] font-black tracking-[0.34em] ml-[0.34em]" style={{ background: `linear-gradient(90deg, ${hero.primaryHex}, ${hero.accentHex})`, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>PRO</div>
+        <p className="font-mono text-[11.5px] text-[#7c8494] tracking-[0.32em] mt-3.5 uppercase">Seu backstage digital</p>
+        <div className="mt-8 flex justify-center"><NeonLevelBars primary={hero.primaryHex} accent={hero.accentHex} count={16} className="max-w-[180px]" /></div>
+        <div className="w-[180px] h-[3px] rounded-sm bg-[#1a1d27] mx-auto mt-6 overflow-hidden">
+          <motion.div className="h-full" style={{ background: `linear-gradient(90deg, ${hero.primaryHex}, ${hero.accentHex})`, boxShadow: `0 0 12px ${hero.primaryHex}` }} animate={{ width: ['0%', '100%'] }} transition={{ duration: 2.2 }} />
+        </div>
       </div>
     </div>
   );

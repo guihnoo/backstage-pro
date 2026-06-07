@@ -1,14 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Zap, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
+import { getCategoryConfig } from '@/lib/categoryConfig';
+import { AUTH_HERO_CATEGORY } from '@/lib/categoryGear';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import StageBackdrop from '@/components/auth/StageBackdrop';
-import SpotlightRays from '@/components/auth/SpotlightRays';
-import FloatingEquipment from '@/components/auth/FloatingEquipment';
+import { SpotlightRays } from '@/components/auth/SpotlightRays';
+import { FloatingEquipment } from '@/components/auth/FloatingEquipment';
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
+import { NeonAtmosphere } from '@/components/design/NeonAtmosphere';
+import { NeonGlass } from '@/components/design/NeonGlass';
+import { LightingBeams } from '@/components/design/LightingBeams';
+
+const hero = getCategoryConfig(AUTH_HERO_CATEGORY);
 
 export default function LoginNew() {
   const [email, setEmail] = useState('');
@@ -19,149 +26,37 @@ export default function LoginNew() {
   const { signInWithPassword, isAuthenticated, isOnboardingComplete, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    navigate(isOnboardingComplete ? '/' : '/onboarding', { replace: true });
-  }, [isAuthenticated, isOnboardingComplete, navigate]);
+  useEffect(() => { if (isAuthenticated) navigate(isOnboardingComplete ? '/' : '/onboarding', { replace: true }); }, [isAuthenticated, isOnboardingComplete, navigate]);
 
-  if (authLoading || isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 flex items-center justify-center">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-          className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full"
-        />
-      </div>
-    );
-  }
+  if (authLoading || isAuthenticated) return <div className="min-h-screen bg-[#050609] flex items-center justify-center"><motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }} className="w-8 h-8 border-2 border-t-transparent rounded-full" style={{ borderColor: hero.primaryHex, borderTopColor: 'transparent' }} /></div>;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) return;
-
-    try {
-      setLoading(true);
-      setError(null);
-      await signInWithPassword(email, password);
-      navigate('/');
-    } catch (err) {
-      setError(
-        err.message === 'Invalid login credentials'
-          ? 'Email ou senha incorretos. Verifique seus dados ou crie uma conta.'
-          : err.message
-      );
-    } finally {
-      setLoading(false);
-    }
+    try { setLoading(true); setError(null); await signInWithPassword(email, password); navigate('/'); }
+    catch (err) { setError(err.message === 'Invalid login credentials' ? 'Email ou senha incorretos.' : err.message); }
+    finally { setLoading(false); }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 text-white overflow-hidden relative">
-      <StageBackdrop />
-      <SpotlightRays />
-      <FloatingEquipment />
-
-      <div className="absolute inset-0 opacity-10">
-        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(34,211,238,0.5)" strokeWidth="0.5" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#grid)" />
-        </svg>
-      </div>
-
-      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-10">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="w-full max-w-md"
-        >
-          <div className="bg-gray-900/40 backdrop-blur-xl border border-gray-800/50 rounded-2xl p-8 shadow-2xl space-y-6">
-            <div className="text-center">
-              <motion.div
-                animate={{ scale: [1, 1.05, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-cyan-500 to-violet-600 mb-4"
-              >
-                <Zap className="w-7 h-7 text-white" />
-              </motion.div>
-              <h1 className="text-3xl font-black mb-2 bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
-                Backstage Pro
-              </h1>
-              <p className="text-gray-400 text-sm">Gestão profissional para quem vive os bastidores</p>
-            </div>
-
-            <SocialLoginButtons />
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-800" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-gray-900/40 text-gray-400">ou entre com email</span>
-              </div>
-            </div>
-
-            {error && (
-              <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-                <p className="text-sm text-red-300">{error}</p>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="você@empresa.com"
-                  className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-600 focus:border-cyan-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Senha</label>
-                <div className="relative">
-                  <Input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-600 pr-10 focus:border-cyan-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-400"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                disabled={loading || !email || !password}
-                className="w-full h-10 bg-gradient-to-r from-cyan-500 via-violet-500 to-amber-500 hover:from-cyan-600 hover:via-violet-600 hover:to-amber-600 text-white font-bold disabled:opacity-50"
-              >
-                {loading ? 'Entrando...' : 'Entrar'}
-              </Button>
-            </form>
-
-            <p className="text-center text-sm text-gray-500">
-              Novo por aqui?{' '}
-              <Link to="/signup" className="text-cyan-400 hover:text-cyan-300 font-medium">
-                Criar conta
-              </Link>
-            </p>
-          </div>
-        </motion.div>
+    <div className="min-h-screen bg-[#050609] text-white overflow-hidden relative">
+      <NeonAtmosphere primary={hero.primaryHex} accent={hero.accentHex} />
+      <StageBackdrop /><SpotlightRays primary={hero.primaryHex} accent={hero.accentHex} /><LightingBeams primary={hero.primaryHex} accent={hero.accentHex} />
+      <FloatingEquipment categoryId={AUTH_HERO_CATEGORY} primary={hero.primaryHex} />
+      <div className="relative z-10 min-h-screen flex flex-col justify-end px-5 pb-10 pt-16 max-w-lg mx-auto">
+        <div className="w-[62px] h-[62px] rounded-[18px] grid place-items-center mb-4" style={{ background: `conic-gradient(from 210deg, ${hero.primaryHex}, ${hero.accentHex})`, boxShadow: `0 0 34px ${hero.primaryHex}66` }}><span className="text-[32px] font-black text-[#06070a]">B</span></div>
+        <h1 className="text-3xl font-extrabold leading-tight">Bem-vindo<br />de volta.</h1>
+        <p className="font-mono text-xs text-[#8a91a1] mt-2.5">O palco está esperando por você.</p>
+        <NeonGlass primary={hero.primaryHex} glow className="mt-6 p-5 space-y-4">
+          {error && <div className="bg-red-500/15 border border-red-500/40 rounded-xl p-3 flex gap-2"><AlertCircle className="w-5 h-5 text-red-400 shrink-0" /><p className="text-sm text-red-300">{error}</p></div>}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div><label className="block text-[10px] font-mono tracking-widest text-[#6b7283] mb-2 uppercase">E-mail</label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="você@empresa.com" className="bg-[#080a10]/80 border-0 text-white h-12 font-mono" style={{ boxShadow: `inset 0 0 0 1px ${hero.primaryHex}33` }} /></div>
+            <div><label className="block text-[10px] font-mono tracking-widest text-[#6b7283] mb-2 uppercase">Senha</label><div className="relative"><Input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="bg-[#080a10]/80 border-0 text-white pr-10 h-12 font-mono" style={{ boxShadow: `inset 0 0 0 1px ${hero.primaryHex}33` }} /><button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b7283]">{showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button></div></div>
+            <Button type="submit" disabled={loading || !email || !password} className="w-full h-12 border-0 font-bold uppercase text-[#06070a]" style={{ background: `linear-gradient(135deg, ${hero.primaryHex}, ${hero.accentHex})`, boxShadow: `0 0 26px ${hero.primaryHex}55` }}>{loading ? 'Entrando...' : 'Entrar no Backstage'}</Button>
+          </form>
+          <SocialLoginButtons />
+          <p className="text-center text-sm text-[#8a91a1] font-mono">Novo por aqui? <Link to="/signup" style={{ color: hero.primaryHex }} className="font-semibold">Criar conta</Link></p>
+        </NeonGlass>
       </div>
     </div>
   );

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Backstage Pro — 3 Direções</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700;800;900&family=Chakra+Petch:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&family=Unbounded:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; background:#0a0b0e; color:#fff; }
+  body{ font-family:'Archivo',sans-serif; -webkit-font-smoothing:antialiased; }
+  #root{ min-height:100vh; }
+  .bp-catrow::-webkit-scrollbar{ height:0; display:none; }
+  .bp-catrow{ scrollbar-width:none; }
+  .bp-screen::-webkit-scrollbar{ width:0; display:none; }
+  .bp-screen{ scrollbar-width:none; }
+  .bp-stage::-webkit-scrollbar{ height:10px; }
+  .bp-stage::-webkit-scrollbar-thumb{ background:#23262f; border-radius:8px; }
+
+  @keyframes bpPulse{ 0%,100%{opacity:1} 50%{opacity:.3} }
+  @keyframes bpBreath{ 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+  @keyframes bpLoad{ 0%{transform:translateX(-90%)} 100%{transform:translateX(380%)} }
+  @keyframes bpFloat{ 0%{transform:translateY(0);opacity:0} 12%{opacity:1} 88%{opacity:1} 100%{transform:translateY(-600px);opacity:0} }
+  @keyframes bpFoil{ 0%{background-position:0% 50%} 100%{background-position:220% 50%} }
+  @keyframes bpSpin{ to{transform:rotate(360deg)} }
+  .bp-smoke{ animation:bpSmoke 16s ease-in-out infinite; }
+  .bp-smoke2{ animation:bpSmoke2 21s ease-in-out infinite; }
+  @keyframes bpSmoke{ 0%,100%{transform:translate(0,0)} 50%{transform:translate(46px,-34px)} }
+  @keyframes bpSmoke2{ 0%,100%{transform:translate(0,0)} 50%{transform:translate(-52px,22px)} }
+  .bp-aurora{ animation:bpAur 18s ease-in-out infinite; }
+  .bp-aurora2{ animation:bpAur2 23s ease-in-out infinite; }
+  @keyframes bpAur{ 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(34px,30px) scale(1.16)} }
+  @keyframes bpAur2{ 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-42px,22px) scale(1.1)} }
+  .bp-holospot{ transform-origin:50% 0; animation:bpSweep 12s ease-in-out infinite; }
+  @keyframes bpSweep{ 0%,100%{transform:rotate(-15deg)} 50%{transform:rotate(15deg)} }
+
+  @media (prefers-reduced-motion: reduce){
+    .bp-smoke,.bp-smoke2,.bp-aurora,.bp-aurora2,.bp-holospot{ animation:none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="lib/image-slot.js"></script>
+
+<script type="text/babel" src="lib/data.jsx"></script>
+<script type="text/babel" src="directions/neon.jsx"></script>
+<script type="text/babel" src="directions/console.jsx"></script>
+<script type="text/babel" src="directions/holo.jsx"></script>
+
+<script type="text/babel">
+const { ControlBar, PhoneShell, CATEGORIES } = window;
+
+const DIRECTIONS = [
+  { key:'neon',    name:'Neon Bastidor',        tagline:'palco neon · vidro de console',
+    comps:{ splash:window.NeonSplash, login:window.NeonLogin, home:window.NeonHome } },
+  { key:'console', name:'Console Analógico',     tagline:'mesa física · faders & VU',
+    comps:{ splash:window.ConsoleSplash, login:window.ConsoleLogin, home:window.ConsoleHome } },
+  { key:'holo',    name:'Festival Holográfico',  tagline:'névoa volumétrica · foil iridescente',
+    comps:{ splash:window.HoloSplash, login:window.HoloLogin, home:window.HoloHome } },
+];
+const SCREENS = [{id:'splash',label:'Splash'},{id:'login',label:'Login'},{id:'home',label:'Home'}];
+
+function Column({ dir, cat, stage }){
+  const [active, setActive] = React.useState('home');
+  const Comp = dir.comps[active];
+  return (
+    <PhoneShell accent={cat.primary} name={dir.name} tagline={dir.tagline}
+      screens={SCREENS} active={active} onChange={setActive}>
+      <Comp c={cat} stage={stage}/>
+    </PhoneShell>
+  );
+}
+
+function App(){
+  const [categoryId, setCategoryId] = React.useState('dj');
+  const [stage, setStage] = React.useState(false);
+  const cat = CATEGORIES[categoryId];
+  return (
+    <div>
+      <ControlBar categoryId={categoryId} setCategoryId={setCategoryId} stage={stage} setStage={setStage}/>
+      <div className="bp-stage" style={{ overflowX:'auto', padding:'40px 32px 56px' }}>
+        <div style={{ display:'flex', gap:44, justifyContent:'center', minWidth:'min-content', margin:'0 auto' }}>
+          {DIRECTIONS.map(d=> <Column key={d.key} dir={d} cat={cat} stage={stage}/> )}
+        </div>
+      </div>
+      <div style={{ textAlign:'center', padding:'0 24px 50px' }}>
+        <p style={{ fontFamily:'JetBrains Mono, monospace', fontSize:12, color:'#5f6678', maxWidth:680, margin:'0 auto', lineHeight:1.7 }}>
+          Troque a <b style={{color:'#9aa1b1'}}>categoria</b> no topo — a UI inteira se infecta com a cor do profissional.
+          Alterne <b style={{color:'#9aa1b1'}}>Bastidores ↔ Modo Palco</b> para ver as luzes acenderem.
+          Cada telefone troca entre <b style={{color:'#9aa1b1'}}>Splash · Login · Home</b>.
+          Os campos de foto aceitam arrastar suas imagens de palco.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

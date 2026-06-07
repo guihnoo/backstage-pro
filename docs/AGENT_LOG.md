@@ -1,0 +1,46 @@
+# AGENT_LOG.md — Backstage Pro
+
+Registro cronológico de tarefas executadas por agentes.
+
+---
+
+## 2026-06-06
+
+### C-BADGE — Badge de cachê padrão no ClientCard ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivo**: `src/components/clients/ClientList.jsx`
+- **O que fez**: Badge `R$ X/dia` abaixo do nome no `ClientCard` quando `client.default_daily_cache > 0`; usa `formatCurrency` já existente; build ✅ sem erros
+- **Resultado**: ✅ Concluído
+
+### S1-MODALS-HOOKS — Modais migrados de useAppData → hooks Supabase ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos**:
+  - `src/components/clients/ClientDetailModal.jsx` — `useAppData` → `useEvents + useDailyWork`
+  - `src/components/calendar/EventDetailModal.jsx` — `useAppData` → `useDailyWork`
+  - `src/components/clients/ClientInsightsModal.jsx` — `useAppData` → `useEvents + useDailyWork`
+  - `src/lib/useUserSettings.js` — **criado** (hook novo: `refetch` + `upsert`, RLS por `user_id`)
+- **Build**: ✅ sem erros
+- **E2E**: ✅ exit 0
+
+### S2-BASE44-CLEANUP — Remoção de Base44 + migration 008 ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos alterados**:
+  - `supabase/migrations/008_user_settings_extras.sql` — **criado**: adiciona `financial_visibility` e `google_calendar_connected` ao `user_settings`
+  - `src/pages/Profile.jsx` — **migrado**: removeu `useAppData` + `User` + `UserSettings` Base44 → `useAuth()` + `useUserSettings()` (arquivo órfão, não está na rota ativa)
+  - `src/components/mobile/EventHoursSheet.jsx` — **migrado**: `useAppData` → `useAuth()`, `DailyWork` entity → `useDailyWork()`, removeu console.logs de produção
+  - `src/components/reports/ForecastSummary.jsx` — **deletado** (orphan, não importado em nenhum arquivo)
+  - `src/components/calendar/SyncStatusIndicator.jsx` — **deletado** (orphan, não importado em nenhum arquivo)
+- **Build**: ✅ 0 erros — chunk principal: 702KB (antes 760KB)
+- **Base44 restante**: AI_Mentor (LOCKED), BackupManager (cloud functions sem equivalente Supabase), GoogleCalendarSync (OAuth), NotificationCenter (tabela `notifications` não existe), ClientForm (LOCKED)
+
+### S1-RESTABILIZATION - hooks Supabase + guards E2E
+- **Agente**: Codex (GPT-5)
+- **Escopo**: Reaplicacao do Sprint 1 com migracao para hooks `useEvents`/`useDailyWork`/`useExpenses`, ajuste de mapeamentos legados (`event_date`, `work_date`, `hours_worked`, `expense_date`) e remocao de dependencias `@/api/entities` nos modais/formularios alvo.
+- **Qualidade**: Recriados `playwright.config.js`, `playwright.prod.config.js` e suites em `e2e/smoke` e `e2e/regression` para validar guards de `calendar`, `event-form`, `expense-form` e `reports`.
+- **Status**: Build e E2E executados ao final deste ciclo.
+
+### NEON-BASTIDOR — Identidade visual iluminação (roxo/âmbar) ✅
+- **Agente**: Cursor (Auto)
+- **Escopo**: Sistema de design Neon Bastidor (`NeonAtmosphere`, `NeonGlass`, `LightingBeams`, `NeonLevelBars`, `NeonPageShell`, `NeonSectionFrame`), `AUTH_HERO_CATEGORY=lighting`, Splash/Login/Signup/Home/AppLayout com paleta `#A64AFF` + `#FFB700` e fundo `#050609`, molduras neon nos cards LOCKED da Home via `NeonSectionFrame`.
+- **Build**: ✅ `npm run build` sem erros
+- **Deploy**: Vercel production

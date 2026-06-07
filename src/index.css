@@ -156,5 +156,22 @@ button:focus-visible {
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Archivo', system-ui, sans-serif;
+    background-color: #050609;
   }
+
+  .font-mono {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+  }
+}
+
+@keyframes bp-breath {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.04); opacity: 0.92; }
+}
+
+@keyframes bp-load {
+  0% { width: 8%; margin-left: 0; }
+  50% { width: 55%; margin-left: 22%; }
+  100% { width: 8%; margin-left: 92%; }
 }
