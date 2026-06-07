@@ -81,6 +81,24 @@ export function useUpcomingEvent(userId) {
     async function fetchEvent() {
       try {
         const today = new Date().toISOString().split('T')[0];
+
+        const { data: onStage, error: stageErr } = await supabase
+          .from('events')
+          .select('*, clients (name, email, phone)')
+          .eq('user_id', userId)
+          .lte('start_date', today)
+          .gte('end_date', today)
+          .in('status', ['pending', 'confirmed'])
+          .order('start_date', { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (stageErr) throw stageErr;
+        if (onStage) {
+          setEvent(onStage);
+          return;
+        }
+
         const { data, error: err } = await supabase
           .from('events')
           .select('*, clients (name, email, phone)')
@@ -89,9 +107,9 @@ export function useUpcomingEvent(userId) {
           .in('status', ['pending', 'confirmed'])
           .order('start_date', { ascending: true })
           .limit(1)
-          .single();
+          .maybeSingle();
 
-        if (err && err.code !== 'PGRST116') throw err;
+        if (err) throw err;
         setEvent(data || null);
       } catch (err) {
         setError(err.message);
@@ -190,7 +208,7 @@ export function usePaymentAlerts(userId) {
           .from('events')
           .select('id, title, start_date, payment_status, status, actual_revenue, estimated_revenue, clients (name)')
           .eq('user_id', userId)
-          .eq('payment_status', 'pending')
+          .in('payment_status', ['pending', 'unpaid', 'partial'])
           .eq('status', 'completed')
           .order('start_date', { ascending: true });
 

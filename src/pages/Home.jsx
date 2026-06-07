@@ -8,8 +8,11 @@ import { useNavigate } from 'react-router-dom';
 import { getCategoryConfig, getCategoryMotivation } from '@/lib/categoryConfig';
 import { useStats, useUpcomingEvent, usePaymentAlerts, useEvents } from '@/lib/useBackstageData';
 import ProximoShow from '@/components/home/ProximoShow';
+import MetaMensalBar from '@/components/home/MetaMensalBar';
 import QuickStats from '@/components/home/QuickStats';
+import AReceber from '@/components/home/AReceber';
 import AlertasBastidao from '@/components/home/AlertasBastidao';
+import { useReceivableByClient } from '@/lib/useReceivable';
 import PipelineFinanceiro from '@/components/home/PipelineFinanceiro';
 import ProximosEventos from '@/components/home/ProximosEventos';
 import FloatingActions from '@/components/home/FloatingActions';
@@ -28,11 +31,19 @@ export default function Home() {
   const motivation = getCategoryMotivation(categoryId);
   const firstName = profile?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'Profissional';
   const { stats, loading: statsLoading } = useStats(userId);
-  const { event: proximoEvento, loading: eventLoading } = useUpcomingEvent(userId);
+  const { event: proximoEvento } = useUpcomingEvent(userId);
   const { alerts, loading: alertsLoading } = usePaymentAlerts(userId);
+  const {
+    rows: receivableRows,
+    totalReceivable,
+    loading: receivableLoading,
+  } = useReceivableByClient(userId);
   const today = new Date().toISOString().split('T')[0];
   const { events: proximosEventos } = useEvents(userId, { from: today, limit: 5, ascending: true });
-  const isOnStage = proximoEvento ? proximoEvento.event_date === today : false;
+  const isOnStage = proximoEvento
+    ? today >= (proximoEvento.start_date || proximoEvento.event_date || '') &&
+      today <= (proximoEvento.end_date || proximoEvento.start_date || proximoEvento.event_date || '')
+    : false;
   const formattedDay = format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR });
 
   const handleLogout = async () => {
@@ -76,9 +87,20 @@ export default function Home() {
       </motion.header>
       <div className="px-4 py-6 max-w-2xl mx-auto pb-28">
         <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Próximo show">
-          <ProximoShow event={proximoEvento} userCategory={categoryId} isOnStage={isOnStage} loading={eventLoading} />
+          <ProximoShow event={proximoEvento} userCategory={categoryId} isOnStage={isOnStage} />
         </NeonSectionFrame>
+        <MetaMensalBar
+          profile={profile}
+          stats={stats}
+          isLoading={statsLoading}
+          accentColor={config.primaryHex}
+        />
         <QuickStats stats={stats} isLoading={statsLoading} primaryHex={config.primaryHex} accentHex={config.accentHex} />
+        <AReceber
+          rows={receivableRows}
+          totalReceivable={totalReceivable}
+          isLoading={receivableLoading}
+        />
         <AlertasBastidao alerts={alerts} isLoading={alertsLoading} primaryHex={config.primaryHex} accentHex={config.accentHex} />
         <PipelineFinanceiro stats={stats} isLoading={statsLoading} primaryHex={config.primaryHex} accentHex={config.accentHex} />
         <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Agenda">

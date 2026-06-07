@@ -6,6 +6,12 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-07
 
+### S3-HOME — A Receber + Modo Palco + Meta Mensal na Home ✅
+- **Agente**: Cursor (Composer)
+- **Novos**: `whatsapp.js`, `eventFinance.js`, `useReceivable.js`, `AReceber.jsx`, `ModoPalcoActions.jsx`, `MetaMensalBar.jsx`
+- **Alterados**: `Home.jsx`, `ProximoShow.jsx`, `useBackstageData.js`
+- **Deploy**: push main → Vercel (pendente)
+
 ### BASE44-CLEANUP-2 — Remoção de Base44 restante em componentes ativos ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **ExportManager.jsx** — `exportReportPdf` + `exportReportXlsx` substituídos por toast "em breve"; botões com opacity 60 indicam feature pendente

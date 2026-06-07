@@ -4,9 +4,15 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
 import { useCountdown } from '@/lib/useBackstageData';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import ModoPalcoActions from '@/components/home/ModoPalcoActions';
+
+function getEventDateStr(event) {
+  return event?.start_date || event?.event_date || null;
+}
 
 export default function ProximoShow({ event, userCategory, isOnStage }) {
-  const { countdown } = useCountdown(event?.event_date);
+  const eventDateStr = getEventDateStr(event);
+  const { countdown } = useCountdown(eventDateStr);
   const config = getCategoryConfig(userCategory);
 
   if (!event) {
@@ -27,7 +33,7 @@ export default function ProximoShow({ event, userCategory, isOnStage }) {
     );
   }
 
-  const eventDate = parseISO(event.event_date);
+  const eventDate = parseISO(eventDateStr);
   const formattedDate = format(eventDate, "EEEE, d 'de' MMMM", { locale: ptBR });
   const formattedTime = event.start_time
     ? format(parseISO(`2000-01-01T${event.start_time}`), 'HH:mm', { locale: ptBR })
@@ -111,8 +117,12 @@ export default function ProximoShow({ event, userCategory, isOnStage }) {
           </div>
         </div>
 
+        {isOnStage && (
+          <ModoPalcoActions event={event} accentColor={config.primaryHex} />
+        )}
+
         {/* Countdown */}
-        {countdown && (
+        {countdown && !isOnStage && (
           <motion.div className="bg-gray-900/50 border border-gray-700/50 rounded-xl p-4 mb-6">
             <div className="text-center">
               <p className="text-xs text-gray-400 mb-2">ACONTECE EM</p>
