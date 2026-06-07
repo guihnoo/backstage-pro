@@ -1,6 +1,7 @@
 ﻿
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useQueryAction } from '@/lib/useQueryAction';
 import { useAuth } from '@/lib/authContext';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
@@ -148,15 +149,10 @@ export default function CalendarPage() {
   const [activeNotesEvent, setActiveNotesEvent] = useState(null); // Event for Notes Sheet
 
   const isMobile = useMediaQuery('(max-width: 768px)');
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  useEffect(() => {
-    if (searchParams.get('action') === 'new-event') {
-      setShowEventForm(true);
-      setEditingEvent(null);
-      setSearchParams({}, { replace: true });
-    }
-  }, [searchParams, setSearchParams]);
+  useQueryAction('new-event', useCallback(() => {
+    setShowEventForm(true);
+    setEditingEvent(null);
+  }, []));
 
   const clientMap = useMemo(() => new Map(clients.map(c => [c.id, c])), [clients]);
   const eventMap = useMemo(() => new Map(events.map(e => [e.id, e])), [events]);

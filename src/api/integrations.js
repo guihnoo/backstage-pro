@@ -1,21 +1,24 @@
-import { base44 } from './base44Client';
 import { uploadUserFile } from '@/lib/uploadFile';
 
-export const Core = base44.integrations.Core;
-
-export const InvokeLLM = base44.integrations.Core.InvokeLLM;
-
-export const SendEmail = base44.integrations.Core.SendEmail;
-
-/** Upload via Supabase Storage (substitui Base44). */
+/** Upload via Supabase Storage — contrato compatível com o legado Base44. */
 export async function UploadFile({ file, folder } = {}) {
   return uploadUserFile(file, { folder });
 }
 
-export const GenerateImage = base44.integrations.Core.GenerateImage;
+// Stubs para features LLM/OAuth não implementadas nesta versão
+const notAvailable = (name) => async () => {
+  throw new Error(`${name} não está disponível nesta versão.`);
+};
 
-export const ExtractDataFromUploadedFile = base44.integrations.Core.ExtractDataFromUploadedFile;
+export const InvokeLLM = notAvailable('InvokeLLM');
+export const SendEmail = notAvailable('SendEmail');
+export const GenerateImage = notAvailable('GenerateImage');
+export const ExtractDataFromUploadedFile = notAvailable('ExtractDataFromUploadedFile');
+export const CreateFileSignedUrl = notAvailable('CreateFileSignedUrl');
+export const UploadPrivateFile = notAvailable('UploadPrivateFile');
 
-export const CreateFileSignedUrl = base44.integrations.Core.CreateFileSignedUrl;
-
-export const UploadPrivateFile = base44.integrations.Core.UploadPrivateFile;
+export const Core = {
+  InvokeLLM: notAvailable('InvokeLLM'),
+  SendEmail: notAvailable('SendEmail'),
+  GenerateImage: notAvailable('GenerateImage'),
+};

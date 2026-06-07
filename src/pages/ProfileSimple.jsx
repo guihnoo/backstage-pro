@@ -7,8 +7,10 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import {
-  User, Phone, MapPin, Mail, LogOut, Save, ChevronRight, Loader2, CheckCircle, Eye, EyeOff
+  User, Phone, MapPin, Mail, LogOut, Save, ChevronRight, Loader2, CheckCircle, Eye, EyeOff, Download
 } from 'lucide-react';
+import { createBackup } from '@/api/functions';
+import { toast } from 'sonner';
 
 export default function ProfileSimple() {
   const { user, profile, signOut, updateProfile } = useAuth();
@@ -26,6 +28,23 @@ export default function ProfileSimple() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  const handleExportData = async () => {
+    setExporting(true);
+    try {
+      const result = await createBackup({});
+      if (result?.data?.success) {
+        toast.success('Dados exportados!', { description: 'Arquivo JSON salvo no seu dispositivo.' });
+      } else {
+        toast.error('Erro ao exportar', { description: result?.data?.error || 'Tente novamente.' });
+      }
+    } catch (err) {
+      toast.error('Erro ao exportar', { description: err.message });
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -293,6 +312,14 @@ export default function ProfileSimple() {
         </NeonGlass>
         </motion.div>
 
+        <button
+          onClick={handleExportData}
+          disabled={exporting}
+          className="w-full flex items-center justify-center gap-2 py-2 text-slate-500 hover:text-slate-300 text-xs font-mono transition-all disabled:opacity-50"
+        >
+          {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+          {exporting ? 'Exportando...' : 'Exportar meus dados'}
+        </button>
         <p className="text-center text-gray-700 text-xs pb-2 font-mono">Backstage Pro v1.0 MVP</p>
       </div>
     </NeonPageShell>

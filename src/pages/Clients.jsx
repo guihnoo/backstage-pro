@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useQueryAction } from '@/lib/useQueryAction';
 import { useClients } from '@/lib/useClients';
 import { useEvents } from '@/lib/useEvents';
 import { useDailyWork } from '@/lib/useDailyWork';
@@ -88,15 +88,10 @@ export default function ClientsPage() {
   const [actionSheetClient, setActionSheetClient] = useState(null);
   const [insightsClient, setInsightsClient] = useState(null);
 
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  useEffect(() => {
-    if (searchParams.get('action') === 'new-client') {
-      setShowClientForm(true);
-      setEditingClient(null);
-      setSearchParams({}, { replace: true });
-    }
-  }, [searchParams, setSearchParams]);
+  useQueryAction('new-client', useCallback(() => {
+    setShowClientForm(true);
+    setEditingClient(null);
+  }, []));
 
   const clientsWithStats = useMemo(() => {
     const work = dailyWork;

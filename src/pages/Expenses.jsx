@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useQueryAction } from '@/lib/useQueryAction';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Plus, Camera, AlertCircle, Search } from 'lucide-react';
@@ -60,15 +60,10 @@ export default function ExpensesPage() {
     const [categoryFilter, setCategoryFilter] = useState("all");
     const [statusFilter, setStatusFilter] = useState("all");
 
-    const [searchParams, setSearchParams] = useSearchParams();
-
-    useEffect(() => {
-        if (searchParams.get('action') === 'new') {
-            setShowForm(true);
-            setEditingExpense(null);
-            setSearchParams({}, { replace: true });
-        }
-    }, [searchParams, setSearchParams]);
+    useQueryAction('new', useCallback(() => {
+        setShowForm(true);
+        setEditingExpense(null);
+    }, []));
 
     const handleFormSuccess = useCallback(() => {
         setShowForm(false);

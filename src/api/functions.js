@@ -1,93 +1,50 @@
-import { base44 } from './base44Client';
-
-
-export const googleAuthStart = base44.functions.googleAuthStart;
-
-export const googleAuthCallback = base44.functions.googleAuthCallback;
-
-export const googleDisconnect = base44.functions.googleDisconnect;
-
-export const googleListCalendars = base44.functions.googleListCalendars;
-
-export const googleSyncNow = base44.functions.googleSyncNow;
-
-export const generateMonthlyReport = base44.functions.generateMonthlyReport;
-
-export const exportReportCsv = base44.functions.exportReportCsv;
-
-export const exportReportXlsx = base44.functions.exportReportXlsx;
-
-export const exportReportPdf = base44.functions.exportReportPdf;
-
-export const exportExpenseReport = base44.functions.exportExpenseReport;
-
-export const generateNotifications = base44.functions.generateNotifications;
-
-export const createBackup = base44.functions.createBackup;
-
-export const generateAdvancedStats = base44.functions.generateAdvancedStats;
-
-export const googleImportEvents = base44.functions.googleImportEvents;
-
-export const getMyEvents = base44.functions.getMyEvents;
-
-export const getMyClients = base44.functions.getMyClients;
-
-export const createMyEvent = base44.functions.createMyEvent;
-
-export const createMyClient = base44.functions.createMyClient;
-
-export const getMyExpenses = base44.functions.getMyExpenses;
-
-export const generateRecurringEvents = base44.functions.generateRecurringEvents;
-
-export const sendPushNotification = base44.functions.sendPushNotification;
-
-export const scheduleNotifications = base44.functions.scheduleNotifications;
-
-export const seedMyDemoData = base44.functions.seedMyDemoData;
-
-export const ping = base44.functions.ping;
-
-export const restoreFromBackup = base44.functions.restoreFromBackup;
-
-export const exportUserSnapshot = base44.functions.exportUserSnapshot;
-
-export const extractExpenseData = base44.functions.extractExpenseData;
-
-export const createMyDailyWork = base44.functions.createMyDailyWork;
-
-export const createMyExpense = base44.functions.createMyExpense;
-
-export const ownerIdRepairForCurrentUser = base44.functions.ownerIdRepairForCurrentUser;
-
-export const emergencySnapshotAllMyData = base44.functions.emergencySnapshotAllMyData;
-
-export const deduplicateMyData = base44.functions.deduplicateMyData;
-
-export const diagnoseAndFixUserData = base44.functions.diagnoseAndFixUserData;
-
-export const generateComprehensiveReport = base44.functions.generateComprehensiveReport;
-
-export const getDashboardData = base44.functions.getDashboardData;
-
+// Implementações Supabase reais
 export { applyAuto12Hours } from '@/lib/applyAuto12Hours';
-
 export { checkCompletedEventsForAutoHours } from '@/lib/checkCompletedEventsForAutoHours';
+export { exportReportCsv, exportReportPdf } from '@/lib/exportReport';
+export { createBackup, exportUserSnapshot } from '@/lib/userDataBackup';
 
-export const saveEventDefaults = base44.functions.saveEventDefaults;
+// Stubs para features não implementadas (Google Calendar, AI, etc.)
+const notAvailable = (name) => async (_args) => ({
+  data: { success: false, error: `${name}: funcionalidade não disponível nesta versão.` },
+});
 
-export const getEventDefaults = base44.functions.getEventDefaults;
-
-export const getOrCreateMentorConfig = base44.functions.getOrCreateMentorConfig;
-
-export const manageMentorSources = base44.functions.manageMentorSources;
-
-export const getMentorConfig = base44.functions.getMentorConfig;
-
-export const updateMentorSources = base44.functions.updateMentorSources;
-
-export const getFinancialInsights = base44.functions.getFinancialInsights;
-
-export const analyzeClientPerformance = base44.functions.analyzeClientPerformance;
-
+export const googleAuthStart = notAvailable('googleAuthStart');
+export const googleAuthCallback = notAvailable('googleAuthCallback');
+export const googleDisconnect = notAvailable('googleDisconnect');
+export const googleListCalendars = notAvailable('googleListCalendars');
+export const googleSyncNow = notAvailable('googleSyncNow');
+export const googleImportEvents = notAvailable('googleImportEvents');
+export const generateMonthlyReport = notAvailable('generateMonthlyReport');
+export const exportReportXlsx = notAvailable('exportReportXlsx');
+export const exportExpenseReport = notAvailable('exportExpenseReport');
+export const generateNotifications = notAvailable('generateNotifications');
+export const generateAdvancedStats = notAvailable('generateAdvancedStats');
+export const getMyEvents = notAvailable('getMyEvents');
+export const getMyClients = notAvailable('getMyClients');
+export const createMyEvent = notAvailable('createMyEvent');
+export const createMyClient = notAvailable('createMyClient');
+export const getMyExpenses = notAvailable('getMyExpenses');
+export const generateRecurringEvents = notAvailable('generateRecurringEvents');
+export const sendPushNotification = notAvailable('sendPushNotification');
+export const scheduleNotifications = notAvailable('scheduleNotifications');
+export const seedMyDemoData = notAvailable('seedMyDemoData');
+export const ping = notAvailable('ping');
+export const restoreFromBackup = notAvailable('restoreFromBackup');
+export const extractExpenseData = notAvailable('extractExpenseData');
+export const createMyDailyWork = notAvailable('createMyDailyWork');
+export const createMyExpense = notAvailable('createMyExpense');
+export const ownerIdRepairForCurrentUser = notAvailable('ownerIdRepairForCurrentUser');
+export const emergencySnapshotAllMyData = notAvailable('emergencySnapshotAllMyData');
+export const deduplicateMyData = notAvailable('deduplicateMyData');
+export const diagnoseAndFixUserData = notAvailable('diagnoseAndFixUserData');
+export const generateComprehensiveReport = notAvailable('generateComprehensiveReport');
+export const getDashboardData = notAvailable('getDashboardData');
+export const saveEventDefaults = notAvailable('saveEventDefaults');
+export const getEventDefaults = notAvailable('getEventDefaults');
+export const getOrCreateMentorConfig = notAvailable('getOrCreateMentorConfig');
+export const manageMentorSources = notAvailable('manageMentorSources');
+export const getMentorConfig = notAvailable('getMentorConfig');
+export const updateMentorSources = notAvailable('updateMentorSources');
+export const getFinancialInsights = notAvailable('getFinancialInsights');
+export const analyzeClientPerformance = notAvailable('analyzeClientPerformance');
