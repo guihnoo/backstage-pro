@@ -6,6 +6,25 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-07
 
+### AUDIT-PAGES — Audit completo página a página + fixes ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Audit completo**:
+  - **Home** ✅ DO NOT TOUCH — hooks Supabase via useBackstageData.js
+  - **Agenda** ⚠️→✅ — EventForm+DailyWorkModal funcionam (DB confirmado); fix: handleQuickWorkEntry delegando para handleOpenWorkModalForDate
+  - **Clientes** ✅ — Cursor migrou ClientForm; create/edit/delete funcionam
+  - **Metas** ✅ — useStats + useEvents de useBackstageData.js, full Supabase
+  - **Perfil** ✅ — ProfileSimple, toggle visibilidade financeira Supabase
+  - **Despesas** ⚠️ — funciona; ReceiptAnalyzer usa Base44 (botão Escanear falha)
+  - **Relatórios** ⚠️ (LOCKED) — display funciona; export PDF/XLSX usa Base44
+  - **AppLayoutContent.jsx** — ÓRFÃO (não importado em nada); Base44 Notifications não afeta o app ativo
+  - **AppLayout ativo** = bottom-nav simples (Home/Agenda/Clientes/Metas/Perfil)
+- **Fixes**:
+  - `Calendar.jsx` — `handleQuickWorkEntry` agora chama `handleOpenWorkModalForDate` em vez de abrir DailyWorkModal sem evento
+  - `Calendar.jsx` — `handleEventActionSheetApplyManual12h` → toast informativo (Base44 removida)
+  - `EventActionSheet.jsx` — import direto `applyAuto12Hours` removido; usa prop `onApplyManual12h`; prop `canApplyAuto12h` adicionada
+- **Build**: ✅ 0 erros
+- **Deploy**: push main → Vercel 9406016
+
 ### HOTFIX-AGENDA — Cliente + Evento na Agenda ✅
 - **Agente**: Cursor (Composer)
 - **Causa raiz**: `ClientForm` usava `useAppData()` sem `AppDataProvider` → crash ao cadastrar cliente → `EventForm` sem cliente no select
