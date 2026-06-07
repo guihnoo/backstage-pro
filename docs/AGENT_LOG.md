@@ -148,3 +148,37 @@ Registro cronológico de tarefas executadas por agentes.
 - **Deploy**: push `main` → Vercel production
 - **Smoke test**: token PKCE responde sem erro ISO-8859-1; bundle prod com URL + `sb_publishable_*` ✅
 - **Follow-up**: mensagens de erro amigáveis em `AuthCallback.jsx` (PKCE expirado, flow inválido)
+
+### LAYOUT-FIX — Layout global, Sonner, FAB e receipt_url ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Commits**: `427da45`, `1e44d47`
+- **Problemas corrigidos**:
+  - `ExpenseForm.jsx`: `receipt_url` retornado pelo `ReceiptAnalyzer` era descartado — adicionado a `defaultState`, `setFormData` e payload do `handleSubmit`
+  - `AppLayout.jsx`: `<main>` sem `pb-20` → conteúdo ficava atrás do nav fixo; adicionado
+  - `App.jsx`: `toast()` de sonner chamado em várias páginas, mas só o shadcn `<Toaster>` estava no tree; adicionado `<SonnerToaster position="top-center" richColors closeButton />`
+  - `FloatingActions.jsx`: FAB em `bottom-8 z-40`, nav em `z-50 ~56px` → 24px de sobreposição; corrigido para `bottom-[88px]`
+  - `Calendar.jsx`, `reports.jsx`: `NeonPageShell` sem `pb-24` → conteúdo cortado atrás do nav; adicionados
+  - `DayQuickActionsMobile.jsx`: filtro `getEventStatus(e) !== 'paid'` (função nunca retorna `'paid'`) → mostrava todos os eventos na seção de registro manual; corrigido para `!== 'completed'`
+- **Build**: ✅ sem erros
+
+### BASE44-REMOVE — Remoção total do @base44/sdk ✅
+- **Agente**: Cursor (Auto) + Claude Code
+- **Commits**: `f7c14b1`, `68b3a75`
+- **Arquivos**:
+  - `src/api/base44Client.js` — **deletado**
+  - `src/api/integrations.js` — **reescrito**: `UploadFile` usa `uploadUserFile` (Supabase Storage); demais funções são stubs seguros
+  - `src/api/functions.js` — **reescrito**: re-exporta implementações reais (`applyAuto12Hours`, `checkCompletedEventsForAutoHours`, `exportReportCsv`, `exportReportPdf`, `createBackup`, `exportUserSnapshot`); ~35 funções Base44 → stubs `notAvailable`
+  - `src/lib/featureUnavailable.js` — **criado**: helper stub compatível com contrato Base44
+  - `src/lib/userDataBackup.js` — **criado**: `createBackup` exporta snapshot JSON via download do browser
+  - `src/pages/ProfileSimple.jsx` — adicionado botão "Exportar meus dados" com `createBackup`
+  - `src/pages/Clients.jsx`, `src/pages/Expenses.jsx` — `useEffect` orfão removido após migração para `useQueryAction`
+- **Stubs ativos**: `GoogleCalendarSync`, `AI_Mentor`, `ChatInterface`, `BackupManager`, `NotificationCenter`, `AppLayoutContent`, `FeedbackModal`, `DashboardCustomizer`, `EventTemplateModal` (todos órfãos, fora do roteamento ativo)
+- **Build**: ✅ 3736 módulos, sem erros de importação Base44
+
+### TOASTER-POINTER-FIX — ToastProvider bloqueava cliques globais ✅ CRÍTICO
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Commit**: `995193c`
+- **Bug**: `ToastProvider` e `ToastViewport` em `src/components/ui/toast.jsx` tinham `fixed top-0 z-[100] w-full max-h-screen` SEM `pointer-events-none`. Isso criava dois overlays invisíveis cobrindo a tela inteira em z-100 (acima do nav em z-50), capturando todos os eventos de clique/toque.
+- **Sintoma**: Home carregava mas sem interatividade; outras páginas "não carregavam" porque cliques no nav eram bloqueados.
+- **Fix**: Adicionado `pointer-events-none` a `ToastProvider` e `ToastViewport`. Toasts individuais já tinham `pointer-events-auto` (classe `group pointer-events-auto` no `toastVariants`) — fix é segura, interação com toasts preservada.
+- **Build**: ✅ sem erros
