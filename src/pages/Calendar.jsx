@@ -256,14 +256,10 @@ export default function CalendarPage() {
 
   const handleQuickWorkEntry = useCallback(
     (date = null) => {
-      closeModals();
       const targetDate = date || new Date();
-      setSelectedDate(targetDate);
-      setEditingWork(null);
-      setFormPrefilledData({ date: normalizeDateString(targetDate) });
-      setShowDailyWorkModal(true); // Renamed state
+      handleOpenWorkModalForDate(targetDate);
     },
-    [closeModals]
+    [handleOpenWorkModalForDate]
   );
 
   const handleQuickLogForEvent = useCallback(
@@ -481,29 +477,12 @@ export default function CalendarPage() {
 
 
   const handleEventActionSheetApplyManual12h = useCallback(
-    async (event) => {
-      if (!event) {
-        toast.error('Nenhum evento selecionado para aplicar horas.');
-        return;
-      }
-      try {
-        const { applyAuto12Hours } = await import('@/api/functions');
-        const { data: result } = await applyAuto12Hours({ eventId: event.id, origin: 'manual_12h' });
-
-        if (result.success) {
-          toast.success('12 horas aplicadas automaticamente!', {
-            description: 'Um registro de 12 horas foi criado para este evento.',
-          });
-          handleFormSuccess();
-        } else {
-          throw new Error(result.error || 'Falha ao aplicar horas.');
-        }
-      } catch (error) {
-        console.error('Erro ao aplicar 12h automÃ¡ticas:', error);
-        toast.error('Erro ao aplicar horas automÃ¡ticas', { description: error.message });
-      }
+    (event) => {
+      toast.info('Aplicar 12h automáticas em breve.', {
+        description: 'Use "Registrar Horas" manualmente por enquanto.',
+      });
     },
-    [handleFormSuccess]
+    []
   );
 
   const handleHoursSheetSave = useCallback(

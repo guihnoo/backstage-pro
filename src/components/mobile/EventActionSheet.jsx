@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,11 +13,9 @@ import {
   CheckCircle2,
   Calendar,
   Zap,
-  Loader2
 } from 'lucide-react';
 import { formatDisplayDate, getEventStatus, getEventStatusConfig } from '../utils/dateUtils';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
-import { applyAuto12Hours } from '@/api/functions';
 import { toast } from 'sonner';
 
 export default function EventActionSheet({
@@ -29,10 +27,11 @@ export default function EventActionSheet({
   onEdit,
   onDelete,
   onOpenHours,
-  onMarkPaid
+  onMarkPaid,
+  onApplyManual12h,
+  canApplyAuto12h,
 }) {
   const { formatCurrency } = useFinancialVisibility();
-  const [applying12h, setApplying12h] = useState(false);
 
   if (!event) return null;
 
@@ -40,31 +39,15 @@ export default function EventActionSheet({
   const statusConfig = getEventStatusConfig(event);
   const StatusIcon = statusConfig.icon;
 
-  const handleApply12Hours = async () => {
-    setApplying12h(true);
-    try {
-      const result = await applyAuto12Hours({ eventId: event.id, origin: 'manual_12h' });
-      
-      if (result.data.success) {
-        toast.success('12 horas aplicadas automaticamente!', {
-          description: 'Você pode editar depois se necessário.'
-        });
-        onClose();
-        // Refresh the page data
-        window.location.reload();
-      } else {
-        toast.error('Erro ao aplicar horas', {
-          description: result.data.error || 'Tente novamente.'
-        });
-      }
-    } catch (error) {
-      console.error('Erro ao aplicar 12h:', error);
-      toast.error('Erro ao aplicar horas automáticas', {
-        description: error.message || 'Tente novamente.'
+  const handleApply12Hours = () => {
+    if (onApplyManual12h) {
+      onApplyManual12h(event);
+    } else {
+      toast.info('Aplicar 12h automáticas em breve.', {
+        description: 'Use "Registrar Horas" manualmente por enquanto.',
       });
-    } finally {
-      setApplying12h(false);
     }
+    onClose();
   };
 
   return (
@@ -150,26 +133,16 @@ export default function EventActionSheet({
               <div className="space-y-2">
                 
                 {/* Aplicar 12h Automáticas */}
-                {status === 'completed' && !event.auto_hours_applied && (
+                {canApplyAuto12h && (
                   <Button
                     onClick={handleApply12Hours}
-                    disabled={applying12h}
                     className="w-full h-14 min-h-[44px] bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-medium text-base justify-start px-4"
                   >
-                    {applying12h ? (
-                      <>
-                        <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-                        Aplicando...
-                      </>
-                    ) : (
-                      <>
-                        <Zap className="w-5 h-5 mr-3" />
-                        <div className="text-left">
-                          <div className="font-bold">Aplicar 12h Automáticas</div>
-                          <div className="text-xs opacity-80">Mais rápido - sem registro manual</div>
-                        </div>
-                      </>
-                    )}
+                    <Zap className="w-5 h-5 mr-3" />
+                    <div className="text-left">
+                      <div className="font-bold">Aplicar 12h Automáticas</div>
+                      <div className="text-xs opacity-80">Em breve</div>
+                    </div>
                   </Button>
                 )}
 
