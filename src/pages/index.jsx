@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from 'react';
+import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/lib/authContext';
 import LoadingSpinner from '@/components/layout/LoadingSpinner';
@@ -13,12 +13,11 @@ import Home from './Home';
 import Goals from './Goals';
 import ProfileSimple from './ProfileSimple';
 import AppLayout from '@/components/layout/AppLayout';
-
-const CalendarPage = lazy(() => import('./Calendar'));
-const ClientsPage = lazy(() => import('./Clients'));
-const ExpensesPage = lazy(() => import('./Expenses'));
-const ReportsPage = lazy(() => import('./reports'));
-const ClientDetailPage = lazy(() => import('./ClientDetail'));
+import CalendarPage from './Calendar';
+import ClientsPage from './Clients';
+import ExpensesPage from './Expenses';
+import ReportsPage from './reports';
+import ClientDetailPage from './ClientDetail';
 
 function RouteLoading() {
   return <LoadingSpinner fullScreen text="Carregando..." />;
@@ -54,11 +53,7 @@ function OnboardingRoute({ children }) {
 }
 
 function MigratedModuleRoute({ children }) {
-  return (
-    <ErrorBoundary>
-      <Suspense fallback={<RouteLoading />}>{children}</Suspense>
-    </ErrorBoundary>
-  );
+  return <ErrorBoundary>{children}</ErrorBoundary>;
 }
 
 export default function PagesRouter() {

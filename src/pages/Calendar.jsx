@@ -750,7 +750,15 @@ export default function CalendarPage() {
     setQuickActions({ open: false, date: null, target: null });
   }, [quickActions.date, handleQuickWorkEntry]);
 
-  if (authLoading || (!isDataReady && isLoading)) {
+  if (authLoading) {
+    return (
+      <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 md:p-6">
+        <CalendarSkeleton />
+      </div>
+    );
+  }
+
+  if (!isDataReady && isLoading) {
     return (
       <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 md:p-6">
         <CalendarSkeleton />
