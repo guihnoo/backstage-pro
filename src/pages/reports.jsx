@@ -25,7 +25,7 @@ import {
   ArrowUp,
   ArrowDown,
   Minus,
-  XCircle // Ãcone para limpar filtro
+  XCircle // Ícone para limpar filtro
 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, subMonths, isWithinInterval, parseISO, startOfYear, endOfYear, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -74,12 +74,12 @@ const ReportsSkeleton = () => (
 
 // Period options for reports
 const PERIOD_OPTIONS = [
-  { value: 'this_month', label: 'Este MÃªs' },
-  { value: 'last_month', label: 'MÃªs Passado' },
-  { value: 'last_3_months', label: 'Ãšltimos 3 Meses' },
-  { value: 'last_6_months', label: 'Ãšltimos 6 Meses' },
+  { value: 'this_month', label: 'Este Mês' },
+  { value: 'last_month', label: 'Mês Passado' },
+  { value: 'last_3_months', label: 'Últimos 3 Meses' },
+  { value: 'last_6_months', label: 'Últimos 6 Meses' },
   { value: 'this_year', label: 'Este Ano' },
-  { value: 'all_time', label: 'Todo o PerÃ­odo' }
+  { value: 'all_time', label: 'Todo o Período' }
 ];
 
 // Enhanced StatCard with comparison indicators
@@ -138,7 +138,7 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type }) => {
 
   const getModalContent = () => {
     if (!data || data.length === 0) {
-      return <p className="text-slate-400">Nenhum registro encontrado para este perÃ­odo.</p>;
+      return <p className="text-slate-400">Nenhum registro encontrado para este período.</p>;
     }
 
     return (
@@ -165,7 +165,7 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type }) => {
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-purple-300">{title}</DialogTitle>
           <DialogDescription className="text-slate-400">
-            Detalhamento dos registros que compÃµem esta mÃ©trica
+            Detalhamento dos registros que compõem esta métrica
           </DialogDescription>
         </DialogHeader>
         {getModalContent()}
@@ -249,7 +249,7 @@ export default function ReportsPage() {
         nextStart = startOfMonth(addMonths(now, 1));
         nextEnd = endOfMonth(addMonths(now, 1));
         break;
-      case 'last_month':
+      case 'last_month': {
         const lastMonth = subMonths(now, 1);
         currentStart = startOfMonth(lastMonth);
         currentEnd = endOfMonth(lastMonth);
@@ -258,6 +258,7 @@ export default function ReportsPage() {
         nextStart = startOfMonth(now);
         nextEnd = endOfMonth(now);
         break;
+      }
       case 'last_3_months':
         currentStart = startOfMonth(subMonths(now, 2));
         currentEnd = endOfMonth(now);
@@ -300,7 +301,7 @@ export default function ReportsPage() {
     };
   }, [selectedPeriod]);
 
-  // **LÃ“GICA REVISADA**: Faturamento baseado na data de pagamento
+  // **LÓGICA REVISADA**: Faturamento baseado na data de pagamento
   const processedData = useMemo(() => {
     console.log('ðŸ”„ Processando dados com faturamento por data de pagamento...');
     const { events = [], dailyWork = [], expenses = [], clients = [] } = data;
@@ -311,7 +312,7 @@ export default function ReportsPage() {
       calculatedStatus: getEventStatus(event)
     }));
 
-    // FunÃ§Ã£o auxiliar para verificar se uma data estÃ¡ no intervalo
+    // Função auxiliar para verificar se uma data está no intervalo
     const isInRange = (dateStr, range) => {
       if (!range.start || !range.end || !dateStr) return selectedPeriod === 'all_time';
       try {
@@ -323,42 +324,42 @@ export default function ReportsPage() {
       }
     };
 
-    // FunÃ§Ã£o para calcular o valor real de um evento
+    // Função para calcular o valor real de um evento
     const calculateRealEventValue = (event) => {
       // 1. Se foi pago, usar o valor pago
       if (event.payment_status === 'paid' && event.paid_amount > 0) {
         return event.paid_amount;
       }
 
-      // 2. Se hÃ¡ trabalho registrado, usar a soma dos cachÃªs diÃ¡rios
+      // 2. Se há trabalho registrado, usar a soma dos cachês diários
       const eventDailyWork = dailyWork.filter((work) => work.event_id === event.id);
       if (eventDailyWork.length > 0) {
         const totalFromWork = eventDailyWork.reduce((sum, work) => sum + (work.daily_cache || 0), 0);
         if (totalFromWork > 0) return totalFromWork;
       }
 
-      // 3. Calcular baseado no valor diÃ¡rio e duraÃ§Ã£o do evento
+      // 3. Calcular baseado no valor diário e duração do evento
       try {
         const startDate = parseISO(event.start_date);
         const endDate = parseISO(event.end_date);
         const days = Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1);
         return (event.daily_cache_value || 0) * days;
       } catch (error) {
-        console.warn('Erro ao calcular duraÃ§Ã£o do evento:', event, error);
+        console.warn('Erro ao calcular duração do evento:', event, error);
         return event.daily_cache_value || 0;
       }
     };
 
-    // Processar dados do perÃ­odo atual
+    // Processar dados do período atual
     const processForPeriod = (range) => {
-      // **MUDANÃ‡A CRÃTICA**: Faturamento baseado em paid_date, nÃ£o em start_date
+      // **MUDANÃ‡A CRÍTICA**: Faturamento baseado em paid_date, não em start_date
       const paidEventsInPeriod = eventsWithCorrectStatus.filter((e) =>
         e.payment_status === 'paid' &&
         e.paid_date &&
         isInRange(e.paid_date, range)
       );
 
-      // Eventos do perÃ­odo para outras mÃ©tricas (baseado em start_date)
+      // Eventos do período para outras métricas (baseado em start_date)
       const periodEvents = eventsWithCorrectStatus.filter((e) => e.start_date && isInRange(e.start_date, range));
       const periodWork = dailyWork.filter((w) => w.date && isInRange(w.date, range));
       const periodExpenses = expenses.filter((e) => e.date && isInRange(e.date, range));
@@ -366,7 +367,7 @@ export default function ReportsPage() {
       // **RECEITA REALIZADA**: Baseada na data de pagamento
       const realizedRevenue = paidEventsInPeriod.reduce((sum, e) => sum + (e.paid_amount || 0), 0);
 
-      // A receber (eventos concluÃ­dos mas nÃ£o pagos) - USANDO STATUS CALCULADO
+      // A receber (eventos concluídos mas não pagos) - USANDO STATUS CALCULADO
       const receivableRevenue = eventsWithCorrectStatus.
         filter((e) => e.calculatedStatus === 'completed' && e.payment_status === 'unpaid').
         reduce((sum, e) => sum + calculateRealEventValue(e), 0);
@@ -382,16 +383,16 @@ export default function ReportsPage() {
       // Receita total (realizada + a receber)
       const totalRevenue = realizedRevenue + receivableRevenue;
 
-      // Lucro lÃ­quido
+      // Lucro líquido
       const netProfit = totalRevenue - totalExpenses;
 
       // Horas trabalhadas
       const totalHours = periodWork.reduce((sum, w) => sum + (w.total_hours || 0), 0);
 
-      // Clientes ativos no perÃ­odo
+      // Clientes ativos no período
       const activeClientIds = new Set(periodEvents.map((e) => e.client_id));
 
-      // Cliente com maior faturamento no perÃ­odo (baseado em pagamentos)
+      // Cliente com maior faturamento no período (baseado em pagamentos)
       const clientRevenueMap = {};
       paidEventsInPeriod.forEach((event) => {
         if (event.client_id) {
@@ -417,7 +418,7 @@ export default function ReportsPage() {
         scheduledEventsCount: periodEvents.filter((e) => e.calculatedStatus === 'scheduled').length,
         inProgressEventsCount: periodEvents.filter((e) => e.calculatedStatus === 'in_progress').length,
         events: periodEvents,
-        paidEvents: paidEventsInPeriod, // Eventos pagos no perÃ­odo
+        paidEvents: paidEventsInPeriod, // Eventos pagos no período
         work: periodWork,
         expenses: periodExpenses
       };
@@ -427,7 +428,7 @@ export default function ReportsPage() {
     const previousData = processForPeriod(previousRange);
     const nextData = processForPeriod(nextRange);
 
-    // Calcular tendÃªncias (comparaÃ§Ã£o com perÃ­odo anterior)
+    // Calcular tendências (comparação com período anterior)
     const calculateTrend = (current, previous) => {
       if (previous === 0) return { change: current > 0 ? 100 : 0 };
       return { change: (current - previous) / previous * 100 };
@@ -459,7 +460,7 @@ export default function ReportsPage() {
     };
   }, [data, currentRange, previousRange, nextRange, selectedPeriod]);
 
-  // Handlers para KPIs clicÃ¡veis
+  // Handlers para KPIs clicáveis
   const handleKPIClick = useCallback((type) => {
     const { current } = processedData;
 
@@ -470,13 +471,13 @@ export default function ReportsPage() {
           const client = data.clients.find((c) => c.id === event.client_id);
           return {
             title: event.title,
-            subtitle: `${client?.name || 'Cliente'} â€¢ ${format(parseISO(event.paid_date), 'dd/MM/yyyy')}`,
+            subtitle: `${client?.name || 'Cliente'} • ${format(parseISO(event.paid_date), 'dd/MM/yyyy')}`,
             value: event.paid_amount,
             date: format(parseISO(event.paid_date), 'dd/MM/yyyy')
           };
         }));
         break;
-      case 'a_receber':
+      case 'a_receber': {
         setModalTitle('Valores a Receber');
         const receivableEvents = data.events.filter((e) =>
           getEventStatus(e) === 'completed' && e.payment_status === 'unpaid'
@@ -486,30 +487,32 @@ export default function ReportsPage() {
           const workValue = data.dailyWork.filter((w) => w.event_id === event.id).reduce((sum, w) => sum + (w.daily_cache || 0), 0);
           return {
             title: event.title,
-            subtitle: `${client?.name || 'Cliente'} â€¢ ConcluÃ­do em ${format(parseISO(event.end_date), 'dd/MM/yyyy')}`,
+            subtitle: `${client?.name || 'Cliente'} • Concluído em ${format(parseISO(event.end_date), 'dd/MM/yyyy')}`,
             value: workValue || event.daily_cache_value || 0
           };
         }));
         break;
+      }
       case 'lucro':
-        setModalTitle('ComposiÃ§Ã£o do Lucro LÃ­quido');
+        setModalTitle('Composição do Lucro Líquido');
         setModalData([
           { title: 'Receita Total', subtitle: 'Faturamento + A Receber', value: current.totalRevenue },
-          { title: 'Despesas Totais', subtitle: 'Gastos do perÃ­odo', value: -current.totalExpenses },
-          { title: 'Lucro LÃ­quido', subtitle: 'Receita - Despesas', value: current.netProfit }]
+          { title: 'Despesas Totais', subtitle: 'Gastos do período', value: -current.totalExpenses },
+          { title: 'Lucro Líquido', subtitle: 'Receita - Despesas', value: current.netProfit }]
         );
         break;
-      case 'clientes':
+      case 'clientes': {
         setModalTitle('Clientes Ativos');
         const activeClients = [...new Set(current.events.map((e) => e.client_id))].
           map((clientId) => data.clients.find((c) => c.id === clientId)).
           filter(Boolean);
         setModalData(activeClients.map((client) => ({
           title: client.name,
-          subtitle: `${current.events.filter((e) => e.client_id === client.id).length} eventos no perÃ­odo`,
+          subtitle: `${current.events.filter((e) => e.client_id === client.id).length} eventos no período`,
           value: current.paidEvents.filter((e) => e.client_id === client.id).reduce((sum, e) => sum + e.paid_amount, 0)
         })));
         break;
+      }
       default:
         return;
     }
@@ -518,10 +521,10 @@ export default function ReportsPage() {
     setModalOpen(true);
   }, [processedData, data]);
 
-  // Handler para o clique no grÃ¡fico
+  // Handler para o clique no gráfico
   const handleChartClick = useCallback((payload) => {
     if (payload && payload.date) {
-      console.log('Filtrando por data do grÃ¡fico:', payload.date);
+      console.log('Filtrando por data do gráfico:', payload.date);
       setChartFilter({ date: payload.date, view: payload.view });
     }
   }, []);
@@ -530,7 +533,7 @@ export default function ReportsPage() {
     setChartFilter(null);
   };
 
-  // Memo para filtrar a lista de eventos com base no clique do grÃ¡fico
+  // Memo para filtrar a lista de eventos com base no clique do gráfico
   const filteredEventList = useMemo(() => {
     if (!chartFilter || !chartFilter.date) {
       return processedData.current.events;
@@ -546,7 +549,7 @@ export default function ReportsPage() {
         return eventPaidDate === chartFilter.date;
       }
       if (chartView === 'receivable') {
-        // A receber Ã© baseado na data de finalizaÃ§Ã£o do evento
+        // A receber é baseado na data de finalização do evento
         const eventEndDate = event.end_date ? event.end_date.split('T')[0] : null;
         return eventEndDate === chartFilter.date && getEventStatus(event) === 'completed' && event.payment_status === 'unpaid';
       }
@@ -554,22 +557,22 @@ export default function ReportsPage() {
         return eventStartDate === chartFilter.date && getEventStatus(event) === 'scheduled';
       }
 
-      // Fallback para despesas no modo geral e outras visualizaÃ§Ãµes
+      // Fallback para despesas no modo geral e outras visualizações
       return eventStartDate === chartFilter.date;
     });
   }, [processedData, chartFilter]);
 
   // NOVO: Handlers para o EventDetailModal
   const handleEventEdit = (event) => {
-    toast.info('EdiÃ§Ã£o de eventos serÃ¡ implementada em breve!');
+    toast.info('Edição de eventos será implementada em breve!');
   };
 
   const handleEventDelete = async (eventId) => {
-    if (window.confirm('Tem certeza que deseja excluir este evento? Esta aÃ§Ã£o nÃ£o pode ser desfeita.')) {
+    if (window.confirm('Tem certeza que deseja excluir este evento? Esta ação não pode ser desfeita.')) {
       try {
-        // Aqui vocÃª chamaria a funÃ§Ã£o de deleÃ§Ã£o
+        // Aqui você chamaria a função de deleção
         await deleteEvent(eventId);
-        toast.success('Evento excluÃ­do com sucesso!');
+        toast.success('Evento excluído com sucesso!');
         setSelectedEvent(null);
         refreshData();
       } catch (error) {
@@ -579,15 +582,15 @@ export default function ReportsPage() {
   };
 
   const handleWorkEdit = (workRecord, eventRecord) => {
-    toast.info('EdiÃ§Ã£o de trabalho serÃ¡ implementada em breve!');
+    toast.info('Edição de trabalho será implementada em breve!');
   };
 
   const handleWorkDelete = async (workId) => {
     if (window.confirm('Tem certeza que deseja excluir este registro de trabalho?')) {
       try {
-        // Aqui vocÃª chamaria a funÃ§Ã£o de deleÃ§Ã£o
+        // Aqui você chamaria a função de deleção
         await deleteWork(workId);
-        toast.success('Registro de trabalho excluÃ­do!');
+        toast.success('Registro de trabalho excluído!');
         refreshData();
       } catch (error) {
         toast.error('Erro ao excluir registro');
@@ -596,15 +599,15 @@ export default function ReportsPage() {
   };
 
   const handleExpenseEdit = (expenseRecord, eventRecord) => {
-    toast.info('EdiÃ§Ã£o de despesas serÃ¡ implementada em breve!');
+    toast.info('Edição de despesas será implementada em breve!');
   };
 
   const handleExpenseDelete = async (expenseId) => {
     if (window.confirm('Tem certeza que deseja excluir esta despesa?')) {
       try {
-        // Aqui vocÃª chamaria a funÃ§Ã£o de deleÃ§Ã£o
+        // Aqui você chamaria a função de deleção
         await deleteExpense(expenseId);
-        toast.success('Despesa excluÃ­da!');
+        toast.success('Despesa excluída!');
         refreshData();
       } catch (error) {
         toast.error('Erro ao excluir despesa');
@@ -660,7 +663,7 @@ export default function ReportsPage() {
         <EmptyState
           icon={AlertCircle}
           title="Erro ao Carregar Dados"
-          description="NÃ£o foi possÃ­vel carregar os dados para o relatÃ³rio."
+          description="Não foi possível carregar os dados para o relatório."
         />
       </div>
     );
@@ -672,8 +675,8 @@ export default function ReportsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-white font-display">RelatÃ³rios</h1>
-            <p className="text-slate-400">AnÃ¡lise completa do seu desempenho financeiro e operacional.</p>
+            <h1 className="text-3xl font-bold text-white font-display">Relatórios</h1>
+            <p className="text-slate-400">Análise completa do seu desempenho financeiro e operacional.</p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -706,7 +709,7 @@ export default function ReportsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 group">
           <StatCard
             title="Faturamento"
-            value={isVisible ? formatCurrency(processedData.current.realizedRevenue) : 'â€¢â€¢â€¢â€¢â€¢'}
+            value={isVisible ? formatCurrency(processedData.current.realizedRevenue) : '•••••'}
             subtitle={`${processedData.current.paidEvents.length} pagamentos recebidos`}
             icon={DollarSign}
             color="text-green-400"
@@ -715,7 +718,7 @@ export default function ReportsPage() {
 
           <StatCard
             title="A Receber"
-            value={isVisible ? formatCurrency(processedData.current.receivableRevenue) : 'â€¢â€¢â€¢â€¢â€¢'}
+            value={isVisible ? formatCurrency(processedData.current.receivableRevenue) : '•••••'}
             subtitle={`${data.events?.filter((e) => getEventStatus(e) === 'completed' && e.payment_status === 'unpaid').length || 0} pendentes`}
             icon={Clock}
             color="text-amber-400"
@@ -723,8 +726,8 @@ export default function ReportsPage() {
             onClick={() => handleKPIClick('a_receber')} />
 
           <StatCard
-            title="Lucro LÃ­quido"
-            value={isVisible ? formatCurrency(processedData.current.netProfit) : 'â€¢â€¢â€¢â€¢â€¢'}
+            title="Lucro Líquido"
+            value={isVisible ? formatCurrency(processedData.current.netProfit) : '•••••'}
             subtitle="Receita - Despesas"
             icon={TrendingUp}
             color={processedData.current.netProfit >= 0 ? "text-green-400" : "text-red-400"}
@@ -742,20 +745,20 @@ export default function ReportsPage() {
 
         </div>
 
-        {/* ProjeÃ§Ã£o para o PrÃ³ximo PerÃ­odo */}
+        {/* Projeção para o Próximo Período */}
         {processedData.next.projectedRevenue > 0 &&
           <Card
             className="bg-gradient-to-r from-purple-900/20 to-amber-900/20 border-purple-500/30 cursor-pointer hover:border-purple-400/50 transition-all"
             onClick={() => {
-              toast.info('Funcionalidade de projeÃ§Ãµes detalhadas em desenvolvimento!');
+              toast.info('Funcionalidade de projeções detalhadas em desenvolvimento!');
             }}>
 
             <CardContent className="bg-emerald-950 p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-purple-300 mb-1">ProjeÃ§Ã£o do PrÃ³ximo PerÃ­odo</h3>
+                  <h3 className="text-lg font-semibold text-purple-300 mb-1">Projeção do Próximo Período</h3>
                   <p className="text-3xl font-bold text-white">
-                    {isVisible ? formatCurrency(processedData.next.projectedRevenue) : 'â€¢â€¢â€¢â€¢â€¢'}
+                    {isVisible ? formatCurrency(processedData.next.projectedRevenue) : '•••••'}
                   </p>
                   <p className="text-sm text-slate-400 mt-1">
                     {processedData.next.scheduledEventsCount} eventos agendados
@@ -770,7 +773,7 @@ export default function ReportsPage() {
         {/* View Selector */}
         <div className="flex items-center gap-2 border-b border-slate-800">
           {[
-            { id: 'overview', label: 'VisÃ£o Geral', icon: BarChart3 },
+            { id: 'overview', label: 'Visão Geral', icon: BarChart3 },
             { id: 'clients', label: 'Clientes', icon: Users },
             { id: 'expenses', label: 'Despesas', icon: DollarSign }].
             map((view) =>
@@ -794,7 +797,7 @@ export default function ReportsPage() {
             <ReportsChart
               chartInput={processedData.chartInput}
               period={selectedPeriod}
-              onDataClick={handleChartClick} // NOVO: Passando handler para o grÃ¡fico
+              onDataClick={handleChartClick} // NOVO: Passando handler para o gráfico
             />
             <FinancialSummary
               stats={processedData.current} />
@@ -825,7 +828,7 @@ export default function ReportsPage() {
 
         }
 
-        {/* Events List - AGORA FILTRÃVEL e com MODAL */}
+        {/* Events List - AGORA FILTRÁVEL e com MODAL */}
         <div className="space-y-2">
           {chartFilter && (
             <div className="flex items-center justify-between bg-slate-800/50 p-2 rounded-lg">
@@ -842,7 +845,7 @@ export default function ReportsPage() {
             events={filteredEventList} // USANDO A LISTA FILTRADA
             clients={data.clients}
             dailyWork={data.dailyWork} // Passando todo o dailyWork
-            title={`Eventos do PerÃ­odo (${filteredEventList.length})`}
+            title={`Eventos do Período (${filteredEventList.length})`}
             onEventClick={(event) => setSelectedEvent(event)} // NOVO: handler para abrir modal
           />
         </div>
@@ -852,14 +855,14 @@ export default function ReportsPage() {
           <EmptyState
             icon={FileText}
             title="Nenhum dado encontrado"
-            description="NÃ£o hÃ¡ eventos registrados para o perÃ­odo selecionado." />
+            description="Não há eventos registrados para o período selecionado." />
 
         }
         {processedData.current.events.length > 0 && chartFilter && filteredEventList.length === 0 &&
           <EmptyState
             icon={FileText}
             title="Nenhum evento encontrado para o filtro"
-            description="NÃ£o hÃ¡ eventos correspondentes Ã  data selecionada no grÃ¡fico." />
+            description="Não há eventos correspondentes à data selecionada no gráfico." />
 
         }
       </div>

@@ -191,3 +191,17 @@ Registro cronológico de tarefas executadas por agentes.
 - EXCHANGE_TIMEOUT_MS: 12s → 8s, PROFILE_TIMEOUT_MS: 10s → 6s, OVERALL_TIMEOUT_MS: 18s → 12s
 - Link "Demorou demais? Voltar ao login" aparece após 4s de loading (showEscape state)
 - ProfileSimple: useEffect para sincronizar form quando profile carrega depois do mount
+
+---
+## ESLINT-ENCODING-FIX — 2026-06-07
+**Arquivos:** src/components/clients/ClientInsightsModal.jsx, src/pages/reports.jsx, src/components/layout/AppLayout.jsx, src/pages/index.jsx
+**Problema:** ESLint errors + mojibake (duplo-encoding UTF-8) em reports.jsx
+
+### Fixes aplicados:
+1. **ClientInsightsModal.jsx** — `no-empty`: catch blocks vazios nas linhas 80 e 94 → `/* ignore invalid date */`
+2. **reports.jsx** — `no-case-declarations`: case bodies com const sem `{}` (linhas 253, 481, 504) → envoltos em blocos `{}`
+3. **reports.jsx** — mojibake: 133 sequências duplo-codificadas (C3 83 C2 XX → C3 XX). Afetava acentos em strings como "Mês", "Período", "Últimos", "Concluído". Corrigido via script Python de substituição binária.
+4. **AppLayout.jsx** — `min-h-0` no `<main>` para scroll correto em flexbox nas páginas internas.
+5. **index.jsx** — Mantida versão estática (sem lazy) do Cursor; `MigratedModuleRoute` em `ErrorBoundary`.
+
+**Build:** ✅ 3737 módulos, sem erros

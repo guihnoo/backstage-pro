@@ -29,7 +29,7 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-screen bg-[#050609] text-white flex flex-col">
-      <main className="flex-1 overflow-y-auto pb-20"><Outlet /></main>
+      <main className="flex-1 overflow-y-auto pb-20 min-h-0"><Outlet /></main>
       <nav className="fixed bottom-0 left-0 right-0 z-50">
         <div className="absolute inset-0 bg-[#050609]/95 backdrop-blur-xl border-t border-[#23262f]" />
         <motion.div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent 10%, ${config.primaryHex}50 50%, transparent 90%)` }} />

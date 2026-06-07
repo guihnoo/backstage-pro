@@ -77,7 +77,7 @@ export default function ClientInsightsModal({ client, isOpen, onClose }) {
         if (isValid(eventDate)) {
           daysSinceLastEvent = differenceInDays(new Date(), eventDate);
         }
-      } catch {}
+      } catch { /* ignore invalid date */ }
     }
 
     // Frequência média (eventos por mês)
@@ -91,7 +91,7 @@ export default function ClientInsightsModal({ client, isOpen, onClose }) {
           const monthsDiff = Math.max(1, differenceInDays(lastDate, firstDate) / 30);
           avgEventsPerMonth = clientEvents.length / monthsDiff;
         }
-      } catch {}
+      } catch { /* ignore invalid date */ }
     }
 
     return {
