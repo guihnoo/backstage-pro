@@ -42,7 +42,7 @@ export async function uploadUserFile(file, { folder = 'uploads' } = {}) {
   if (error) {
     if (error.message?.includes('Bucket not found')) {
       throw new Error(
-        'Storage não configurado no Supabase. Crie o bucket "backstage" (público) ou aplique a migration 010.'
+        'Bucket "backstage" não encontrado no Supabase Storage. Verifique o projeto ou contate o suporte.'
       );
     }
     throw error;
