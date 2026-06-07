@@ -11,6 +11,29 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
 
 const hero = getCategoryConfig(AUTH_HERO_CATEGORY);
 
+function humanizeAuthError(err) {
+  const message = err?.message || '';
+  const code = err?.code || err?.error_code || '';
+
+  if (message.includes('non-ISO-8859-1')) {
+    return 'Erro temporário de conexão com o servidor. Aguarde alguns segundos e tente entrar novamente.';
+  }
+  if (
+    code === 'pkce_code_verifier_not_found' ||
+    message.toLowerCase().includes('code verifier')
+  ) {
+    return 'A sessão de login expirou. Volte ao login e clique em Google novamente.';
+  }
+  if (code === 'flow_state_not_found' || message.includes('flow state')) {
+    return 'Este link de login não é mais válido. Inicie o login novamente.';
+  }
+  if (message.includes('provider is not enabled')) {
+    return 'Login com Google ainda não está ativo. Use email e senha ou contate o suporte.';
+  }
+
+  return message || 'Falha ao concluir login social.';
+}
+
 export default function AuthCallback() {
   const navigate = useNavigate();
   const [error, setError] = useState(null);
@@ -61,7 +84,7 @@ export default function AuthCallback() {
       } catch (err) {
         if (!cancelled) {
           clearTimeout(timeoutId);
-          setError(err.message || 'Falha ao concluir login social.');
+          setError(humanizeAuthError(err));
         }
       }
     }

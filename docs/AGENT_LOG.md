@@ -66,3 +66,5 @@ Registro cronológico de tarefas executadas por agentes.
 - **Correção**: `src/lib/supabase.js` — sanitização Latin-1 das env vars + `global.fetch` que limpa headers antes do `fetch` nativo.
 - **Build**: ✅ `npm run build`
 - **Deploy**: push `main` → Vercel production
+- **Smoke test**: token PKCE responde sem erro ISO-8859-1; bundle prod com URL + `sb_publishable_*` ✅
+- **Follow-up**: mensagens de erro amigáveis em `AuthCallback.jsx` (PKCE expirado, flow inválido)
