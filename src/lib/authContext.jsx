@@ -4,14 +4,26 @@ import { ensureUserProfile } from './ensureUserProfile';
 import { assertSupabaseReachable } from './checkSupabaseReachable';
 
 const AuthContext = createContext();
+const PROFILE_TIMEOUT_MS = 12_000;
 
 async function fetchProfile(userId) {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', userId)
     .maybeSingle();
+
+  if (error) throw error;
   return data;
+}
+
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error(`${label} demorou demais. Tente novamente.`)), ms);
+    }),
+  ]);
 }
 
 export function AuthProvider({ children }) {
@@ -26,63 +38,83 @@ export function AuthProvider({ children }) {
       return;
     }
 
-    let profileData = await fetchProfile(nextSession.user.id);
+    let profileData = await withTimeout(
+      fetchProfile(nextSession.user.id),
+      PROFILE_TIMEOUT_MS,
+      'Carregar perfil'
+    );
 
     if (!profileData) {
-      profileData = await ensureUserProfile(nextSession.user);
+      profileData = await withTimeout(
+        ensureUserProfile(nextSession.user),
+        PROFILE_TIMEOUT_MS,
+        'Criar perfil'
+      );
     }
 
     setProfile(profileData);
   }, []);
 
+  const hydrateUserSafe = useCallback(
+    (nextSession) => {
+      hydrateUser(nextSession).catch((err) => {
+        console.error('[AuthProvider] hydrateUser', err);
+      });
+    },
+    [hydrateUser]
+  );
+
   useEffect(() => {
     let mounted = true;
 
-    supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
-      if (!mounted) return;
-      setSession(initialSession);
-      setUser(initialSession?.user ?? null);
+    const finishBoot = () => {
+      if (mounted) setLoading(false);
+    };
 
-      if (initialSession?.user) {
-        try {
-          await hydrateUser(initialSession);
-        } catch (err) {
-          console.error('[AuthProvider] hydrateUser', err);
+    const bootTimeout = setTimeout(finishBoot, PROFILE_TIMEOUT_MS);
+
+    supabase.auth
+      .getSession()
+      .then(({ data: { session: initialSession } }) => {
+        if (!mounted) return;
+        setSession(initialSession);
+        setUser(initialSession?.user ?? null);
+        finishBoot();
+        if (initialSession?.user) {
+          hydrateUserSafe(initialSession);
         }
-      }
-
-      setLoading(false);
-    });
+      })
+      .catch((err) => {
+        console.error('[AuthProvider] getSession', err);
+        finishBoot();
+      });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
+      (event, newSession) => {
         setSession(newSession);
         setUser(newSession?.user ?? null);
+        finishBoot();
 
         if (newSession?.user) {
-          try {
-            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
-              await hydrateUser(newSession);
-            } else {
-              const profileData = await fetchProfile(newSession.user.id);
-              setProfile(profileData);
-            }
-          } catch (err) {
-            console.error('[AuthProvider] onAuthStateChange', err);
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+            hydrateUserSafe(newSession);
+          } else {
+            fetchProfile(newSession.user.id)
+              .then(setProfile)
+              .catch((err) => console.error('[AuthProvider] fetchProfile', err));
           }
         } else {
           setProfile(null);
         }
-
-        setLoading(false);
       }
     );
 
     return () => {
       mounted = false;
+      clearTimeout(bootTimeout);
       subscription?.unsubscribe();
     };
-  }, [hydrateUser]);
+  }, [hydrateUserSafe]);
 
   const signInWithOAuth = async (provider) => {
     await assertSupabaseReachable();
@@ -111,10 +143,11 @@ export function AuthProvider({ children }) {
     });
     if (error) throw error;
 
-    if (data.user) {
-      await ensureUserProfile(data.user);
-      const profileData = await fetchProfile(data.user.id);
-      setProfile(profileData);
+    if (data.session) {
+      setSession(data.session);
+      setUser(data.session.user);
+      setLoading(false);
+      hydrateUserSafe(data.session);
     }
   };
 

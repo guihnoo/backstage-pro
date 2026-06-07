@@ -33,7 +33,7 @@ export default function LoginNew() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) return;
-    try { setLoading(true); setError(null); await signInWithPassword(email, password); navigate('/'); }
+    try { setLoading(true); setError(null); await signInWithPassword(email, password); }
     catch (err) { setError(err.message === 'Invalid login credentials' ? 'Email ou senha incorretos.' : err.message); }
     finally { setLoading(false); }
   };

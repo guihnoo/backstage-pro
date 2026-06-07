@@ -18,6 +18,12 @@ export default function AuthCallback() {
   useEffect(() => {
     let cancelled = false;
 
+    const timeoutId = setTimeout(() => {
+      if (!cancelled) {
+        setError('A conexão está demorando. Verifique sua internet e tente entrar novamente.');
+      }
+    }, 15_000);
+
     async function finishOAuth() {
       const params = new URLSearchParams(window.location.search);
       const oauthError = params.get('error_description') || params.get('error');
@@ -50,9 +56,11 @@ export default function AuthCallback() {
 
         if (cancelled) return;
 
+        clearTimeout(timeoutId);
         navigate(profile?.onboarding_complete ? '/' : '/onboarding', { replace: true });
       } catch (err) {
         if (!cancelled) {
+          clearTimeout(timeoutId);
           setError(err.message || 'Falha ao concluir login social.');
         }
       }
@@ -62,6 +70,7 @@ export default function AuthCallback() {
 
     return () => {
       cancelled = true;
+      clearTimeout(timeoutId);
     };
   }, [navigate]);
 
