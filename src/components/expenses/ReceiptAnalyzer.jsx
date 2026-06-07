@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Camera, Upload } from "lucide-react";
+import { Camera, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { UploadFile } from "@/api/integrations";
 
 const CATEGORY_OPTIONS = [
   { value: "transporte", label: "Transporte" },
@@ -18,24 +19,38 @@ const CATEGORY_OPTIONS = [
   { value: "outros", label: "Outros" },
 ];
 
+const todayIso = () => new Date().toISOString().split("T")[0];
+
 export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
-  const [data, setData] = useState({ title: "", amount: "", date: "", category: "outros", notes: "" });
+  const [data, setData] = useState({ title: "", amount: "", date: todayIso(), category: "outros", notes: "" });
   const [fileUrl, setFileUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
 
-  const handleFileChange = (e) => {
+  const uploadReceipt = async (selectedFile) => {
+    setUploading(true);
+    try {
+      const { file_url } = await UploadFile({ file: selectedFile, folder: "receipts" });
+      setFileUrl(file_url);
+      toast.success("Recibo enviado!", { description: "Preencha os dados e confirme." });
+      if (!data.date) {
+        setData((prev) => ({ ...prev, date: todayIso() }));
+      }
+    } catch (error) {
+      console.error("Upload recibo:", error);
+      toast.error("Erro ao enviar recibo", { description: error.message || "Tente novamente." });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleFileChange = async (e) => {
     const f = e.target.files?.[0];
     if (!f) return;
     setFile(f);
-    const url = URL.createObjectURL(f);
-    setPreviewUrl(url);
-  };
-
-  const runExtraction = () => {
-    toast.info('Análise automática de recibo em breve.', {
-      description: 'Preencha os dados manualmente por enquanto.',
-    });
+    setPreviewUrl(URL.createObjectURL(f));
+    await uploadReceipt(f);
   };
 
   const confirm = () => {
@@ -45,11 +60,10 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
       receipt_url: fileUrl || "",
       amount: data.amount ? Number(data.amount) : 0,
     });
-    // reset soft
     setFile(null);
     setPreviewUrl("");
     setFileUrl("");
-    setData({ title: "", amount: "", date: "", category: "outros", notes: "" });
+    setData({ title: "", amount: "", date: todayIso(), category: "outros", notes: "" });
     onOpenChange(false);
   };
 
@@ -58,7 +72,9 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
       <DialogContent className="sm:max-w-lg bg-slate-900/95 border-slate-800 text-slate-100">
         <DialogHeader>
           <DialogTitle>Digitalizar Recibo</DialogTitle>
-          <DialogDescription>Faça upload ou tire uma foto para preencher a despesa automaticamente.</DialogDescription>
+          <DialogDescription>
+            Envie a foto do recibo e preencha os dados. A leitura automática por IA chega em breve.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -69,17 +85,29 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
                 accept="image/*"
                 capture="environment"
                 className="hidden"
+                disabled={uploading}
                 onChange={handleFileChange}
               />
-              <Button variant="outline" className="w-full bg-slate-800 border-slate-700">
-                <Camera className="w-4 h-4 mr-2" />
-                Tirar Foto / Upload
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full bg-slate-800 border-slate-700 pointer-events-none"
+                disabled={uploading}
+              >
+                {uploading ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Camera className="w-4 h-4 mr-2" />
+                )}
+                {uploading ? "Enviando..." : "Tirar Foto / Upload"}
               </Button>
             </label>
-            <Button onClick={runExtraction} disabled={!file} className="w-40 opacity-60">
-              <Upload className="w-4 h-4 mr-2" />
-              Analisar
-            </Button>
+            {fileUrl && (
+              <Button variant="outline" className="w-40 border-green-500/50 text-green-400" disabled>
+                <Upload className="w-4 h-4 mr-2" />
+                Salvo
+              </Button>
+            )}
           </div>
 
           {previewUrl && (
