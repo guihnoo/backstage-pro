@@ -1,5 +1,3 @@
-import { supabase } from './supabase';
-
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 
 export function getSupabaseProjectRef(url) {
@@ -13,12 +11,18 @@ export function getSupabaseProjectRef(url) {
 }
 
 export async function checkSupabaseReachable() {
+  const configured =
+    supabaseUrl &&
+    supabaseUrl !== 'https://your-project.supabase.co' &&
+    supabaseUrl.includes('.supabase.co');
+
+  if (!configured) {
+    return { ok: false, url: supabaseUrl };
+  }
+
   try {
-    const { error } = await supabase.from('profiles').select('id').limit(1);
-    if (error && error.code !== 'PGRST116' && error.message?.includes('fetch')) {
-      return { ok: false, url: supabaseUrl };
-    }
-    return { ok: true, url: supabaseUrl };
+    const res = await fetch(`${supabaseUrl}/rest/v1/`, { method: 'HEAD', signal: AbortSignal.timeout(5000) });
+    return { ok: res.ok || res.status === 401, url: supabaseUrl };
   } catch {
     return { ok: false, url: supabaseUrl };
   }
@@ -28,7 +32,7 @@ export async function assertSupabaseReachable() {
   const result = await checkSupabaseReachable();
   if (!result.ok) {
     throw new Error(
-      `Não foi possível conectar ao Supabase (${supabaseUrl}). Verifique sua conexão.`
+      `Não foi possível conectar ao Supabase. Verifique sua conexão.`
     );
   }
 }

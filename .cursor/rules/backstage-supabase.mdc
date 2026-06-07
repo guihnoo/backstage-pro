@@ -1,0 +1,60 @@
+---
+description: Padrões Supabase para o Backstage Pro
+globs: ["src/lib/**", "supabase/**"]
+alwaysApply: false
+---
+
+# Backstage Pro — Supabase Rules
+
+## Schema das tabelas principais
+```
+profiles:    id(uuid PK), name, phone, city, state, category, category_label,
+             specialties(text[]), years_experience, daily_rate,
+             monthly_goal_events, monthly_goal_revenue, onboarding_complete
+
+clients:     id, user_id(FK), name, email, phone, contact_person,
+             logo_url, company, city, state, notes, is_favorite,
+             default_daily_cache, policy_default_payment_model
+
+events:      id, user_id(FK), client_id(FK), title, start_date, end_date,
+             daily_cache_value, cache_valor_base, payment_model,
+             status, payment_status, paid_amount, paid_date,
+             auto_hours_applied, description, location
+
+expenses:    id, user_id(FK), event_id(FK), title, category, amount,
+             expense_date, payment_method, notes, receipt_url
+
+daily_work:  id, user_id(FK), event_id(FK), work_date, entry_time, exit_time,
+             hours_worked, overtime_hours, daily_cache, notes, photo_url, status
+
+user_settings: id, user_id(FK UNIQUE), theme, notifications_enabled,
+               email_notifications, currency, language, timezone
+```
+
+## Mapeamentos legados (useDailyWork)
+- DB usa `work_date` e `hours_worked` — hook expõe como `date` e `total_hours`
+- DB usa `description` — hook expõe como `notes`
+- Sempre usar os campos do hook, nunca acessar DB diretamente
+
+## Criação de hooks — padrão
+```js
+export function useEntidade() {
+  const { user } = useAuth();
+  const userId = user?.id;
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  // refetch, create (injeta user_id, deleta owner_id), update, remove
+  return { items, loading, error, refetch, create, update, delete: remove };
+}
+```
+
+## RLS — regra universal
+TODA tabela deve ter RLS com `auth.uid() = user_id`.
+NUNCA criar tabela sem habilitar RLS e adicionar policy.
+
+## Migrations — formato
+```sql
+-- NNN_descricao.sql
+ALTER TABLE tabela ADD COLUMN IF NOT EXISTS campo tipo DEFAULT valor;
+```
+Usar `IF NOT EXISTS` para idempotência.

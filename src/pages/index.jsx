@@ -48,11 +48,9 @@ function OnboardingRoute({ children }) {
 
 function MigratedModuleRoute({ children }) {
   return (
-    <FinancialVisibilityProvider>
-      <Suspense fallback={<RouteLoading />}>
-        {children}
-      </Suspense>
-    </FinancialVisibilityProvider>
+    <Suspense fallback={<RouteLoading />}>
+      {children}
+    </Suspense>
   );
 }
 
@@ -92,7 +90,9 @@ export default function PagesRouter() {
         path="/"
         element={
           <PrivateRoute>
-            <AppLayout />
+            <FinancialVisibilityProvider>
+              <AppLayout />
+            </FinancialVisibilityProvider>
           </PrivateRoute>
         }
       >

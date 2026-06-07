@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,17 +8,17 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CalendarIcon, DollarSign, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Event } from '@/api/entities';
 import { toast } from 'sonner';
+import { useEvents } from '@/lib/useEvents';
 
 export default function PaymentConfirmModal({ event, isOpen, onClose, onSuccess }) {
+  const { update: updateEvent } = useEvents();
   const [paidAmount, setPaidAmount] = useState('');
   const [paidDate, setPaidDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (event && isOpen) {
-      // Preencher com o valor calculado do evento se disponível
       const estimatedValue = event.paid_amount || event.calculatedValue || 0;
       setPaidAmount(estimatedValue.toString());
       setPaidDate(new Date());
@@ -26,22 +26,22 @@ export default function PaymentConfirmModal({ event, isOpen, onClose, onSuccess 
   }, [event, isOpen]);
 
   const handleConfirm = async () => {
-    if (!paidAmount || parseFloat(paidAmount) <= 0) {
-      toast.error('Informe um valor válido para o pagamento.');
+    if (!paidAmount || Number(paidAmount) <= 0) {
+      toast.error('Informe um valor valido para o pagamento.');
       return;
     }
 
     setLoading(true);
     try {
-      await Event.update(event.id, {
+      await updateEvent(event.id, {
         payment_status: 'paid',
-        paid_amount: parseFloat(paidAmount),
-        paid_date: format(paidDate, 'yyyy-MM-dd')
+        paid_amount: Number(paidAmount),
+        paid_date: format(paidDate, 'yyyy-MM-dd'),
       });
 
       toast.success('Pagamento confirmado com sucesso!');
-      onSuccess();
-      onClose();
+      onSuccess?.();
+      onClose?.();
     } catch (error) {
       console.error('Erro ao confirmar pagamento:', error);
       toast.error('Erro ao confirmar pagamento. Tente novamente.');

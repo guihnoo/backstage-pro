@@ -5,9 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { DailyWork } from '@/api/entities';
 import { UploadFile } from '@/api/integrations';
-import { useAppData } from '@/components/context/AppDataContext';
+import { useAuth } from '@/lib/authContext';
+import { useDailyWork } from '@/lib/useDailyWork';
 import { X, Clock, Camera, Loader2, AlertCircle, Save, Info, Calendar as CalendarIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { normalizeDateString, formatDisplayDate } from '../utils/dateUtils';
@@ -20,7 +20,8 @@ export default function EventHoursSheet({
   existingWork,
   onSave 
 }) {
-  const { data: { user } } = useAppData();
+  const { user } = useAuth();
+  const { create, update } = useDailyWork();
   
   const [formData, setFormData] = useState({
     date: '',
@@ -38,16 +39,11 @@ export default function EventHoursSheet({
 
   // CRÍTICO: Inicializar formulário corretamente
   useEffect(() => {
-    console.log('📱 EventHoursSheet opened with:', { initialDate, existingWork, event });
-    
     if (isOpen) {
       let dateToUse;
-      
+
       if (existingWork?.id) {
-        // EDITANDO trabalho existente
         dateToUse = existingWork.date ? normalizeDateString(existingWork.date) : normalizeDateString(new Date());
-        console.log('✏️ [Mobile] Editando trabalho, data:', dateToUse);
-        
         setFormData({
           date: dateToUse,
           entry_time: existingWork.entry_time || '',
@@ -59,13 +55,10 @@ export default function EventHoursSheet({
         // NOVO registro
         if (initialDate) {
           dateToUse = normalizeDateString(initialDate);
-          console.log('📆 [Mobile] Nova entrada para data específica:', dateToUse);
         } else if (event?.start_date) {
           dateToUse = normalizeDateString(event.start_date);
-          console.log('🎯 [Mobile] Nova entrada para evento, data:', dateToUse);
         } else {
           dateToUse = normalizeDateString(new Date());
-          console.log('📅 [Mobile] Nova entrada, data padrão:', dateToUse);
         }
         
         setFormData({
@@ -127,7 +120,6 @@ export default function EventHoursSheet({
 
   const validateField = (name, value) => {
     const newErrors = { ...errors };
-
     switch (name) {
       case 'date':
         if (!value) newErrors.date = 'Data é obrigatória';
@@ -152,7 +144,6 @@ export default function EventHoursSheet({
   };
 
   const handleChange = (name, value) => {
-    console.log(`🔄 [Mobile] Mudando ${name} para:`, value);
     setFormData(prev => ({ ...prev, [name]: value }));
     if (touched[name]) {
       validateField(name, value);
@@ -216,10 +207,8 @@ export default function EventHoursSheet({
       const dailyCache = calculateCache(total, overtime);
 
       const normalizedDate = normalizeDateString(formData.date);
-      console.log('💾 [Mobile] Salvando trabalho com data:', normalizedDate);
 
       const workData = {
-        owner_id: user.id,
         event_id: event.id,
         date: normalizedDate,
         entry_time: formData.entry_time,
@@ -232,10 +221,10 @@ export default function EventHoursSheet({
       };
 
       if (existingWork?.id) {
-        await DailyWork.update(existingWork.id, workData);
+        await update(existingWork.id, workData);
         toast.success('Registro atualizado!');
       } else {
-        await DailyWork.create(workData);
+        await create(workData);
         toast.success('Registro criado!');
       }
 

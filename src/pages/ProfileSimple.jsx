@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/authContext';
+import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { useNavigate } from 'react-router-dom';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import {
-  User, Phone, MapPin, Mail, LogOut, Save, ChevronRight, Loader2, CheckCircle
+  User, Phone, MapPin, Mail, LogOut, Save, ChevronRight, Loader2, CheckCircle, Eye, EyeOff
 } from 'lucide-react';
 
 export default function ProfileSimple() {
   const { user, profile, signOut, updateProfile } = useAuth();
+  const { isVisible, toggleVisibility } = useFinancialVisibility();
   const navigate = useNavigate();
   const categoryId = profile?.category || 'lighting';
   const config = getCategoryConfig(categoryId);
@@ -224,6 +226,39 @@ export default function ProfileSimple() {
           </NeonGlass>
           </motion.div>
         )}
+
+        {/* Configurações */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.33 }}>
+        <NeonGlass primary={config.primaryHex} className="p-5">
+          <h2 className="text-sm font-bold text-gray-300 uppercase tracking-wider mb-4 font-mono">Configurações</h2>
+          <button
+            onClick={toggleVisibility}
+            className="w-full flex items-center justify-between py-3 px-1 rounded-xl transition-all hover:bg-gray-800/30"
+          >
+            <div className="flex items-center gap-3">
+              {isVisible
+                ? <Eye className="w-4 h-4 text-cyan-400" />
+                : <EyeOff className="w-4 h-4 text-gray-500" />
+              }
+              <div className="text-left">
+                <p className="text-sm font-semibold text-white">Visibilidade Financeira</p>
+                <p className="text-xs text-gray-500">
+                  {isVisible ? 'Valores visíveis em todo o app' : 'Valores ocultos — modo privado'}
+                </p>
+              </div>
+            </div>
+            <div
+              className="relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0"
+              style={{ background: isVisible ? config.primaryHex : 'rgb(55,65,81)' }}
+            >
+              <div
+                className="absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-200"
+                style={{ left: isVisible ? '24px' : '4px' }}
+              />
+            </div>
+          </button>
+        </NeonGlass>
+        </motion.div>
 
         {/* Logout */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>

@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { formatDisplayDate, getEventStatus, getEventStatusConfig, normalizeDateString } from '../utils/dateUtils';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
-import { useAppData } from '../context/AppDataContext';
+import { useDailyWork } from '@/lib/useDailyWork';
 import { applyAuto12Hours } from '@/api/functions';
 import { toast } from 'sonner';
 import { format, parseISO, differenceInDays } from 'date-fns';
@@ -37,7 +37,7 @@ export default function EventDetailModal({
   onMarkPaid
 }) {
   const { formatCurrency } = useFinancialVisibility();
-  const { data } = useAppData();
+  const { dailyWork } = useDailyWork();
   const [applying12h, setApplying12h] = useState(false);
 
   if (!event) return null;
@@ -48,8 +48,8 @@ export default function EventDetailModal({
 
   // Calcular trabalhos relacionados
   const eventWork = useMemo(() => {
-    return (data.dailyWork || []).filter(w => w.event_id === event.id);
-  }, [data.dailyWork, event.id]);
+    return (dailyWork || []).filter(w => w.event_id === event.id);
+  }, [dailyWork, event.id]);
 
   // Calcular totais
   const totals = useMemo(() => {

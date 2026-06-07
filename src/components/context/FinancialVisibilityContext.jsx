@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/lib/authContext';
+import { useUserSettings } from '@/lib/useUserSettings';
 
 const STORAGE_KEY_PREFIX = 'backstage:financial_visibility:';
 
@@ -27,9 +28,15 @@ function writeStoredVisibility(userId, visible) {
 
 export const FinancialVisibilityProvider = ({ children }) => {
   const { user, loading: authLoading } = useAuth();
-  const [isVisible, setIsVisible] = useState(true);
+  const { settings, upsert } = useUserSettings();
+
+  // Initialize from localStorage immediately (fast), then override from Supabase
+  const [isVisible, setIsVisible] = useState(() =>
+    typeof window !== 'undefined' ? readStoredVisibility(null) : true
+  );
   const [loading, setLoading] = useState(true);
 
+  // Phase 1: set from localStorage as soon as we know the user
   useEffect(() => {
     if (authLoading) return;
     if (!user?.id) {
@@ -41,14 +48,27 @@ export const FinancialVisibilityProvider = ({ children }) => {
     setLoading(false);
   }, [user?.id, authLoading]);
 
-  const toggleVisibility = useCallback(() => {
+  // Phase 2: override with Supabase value once settings load
+  useEffect(() => {
+    if (!settings || !user?.id) return;
+    const supabaseValue = settings.financial_visibility ?? true;
+    setIsVisible(supabaseValue);
+    writeStoredVisibility(user.id, supabaseValue);
+  }, [settings?.financial_visibility, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const toggleVisibility = useCallback(async () => {
     if (!user?.id) return;
-    setIsVisible((prev) => {
-      const next = !prev;
-      writeStoredVisibility(user.id, next);
-      return next;
-    });
-  }, [user?.id]);
+    const next = !isVisible;
+    setIsVisible(next);
+    writeStoredVisibility(user.id, next);
+    try {
+      await upsert({ financial_visibility: next });
+    } catch {
+      // revert optimistic update on error
+      setIsVisible(!next);
+      writeStoredVisibility(user.id, !next);
+    }
+  }, [user?.id, isVisible, upsert]);
 
   const formatCurrency = (value) => {
     if (!isVisible) return '•••••';

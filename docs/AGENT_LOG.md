@@ -4,6 +4,19 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+## 2026-06-07
+
+### S2-CLOSE — Sprint 2 Fechamento ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Migration 008**: ✅ JÁ APLICADA — colunas `financial_visibility` e `google_calendar_connected` confirmadas via REST query (status 200). Aplicada em sessão anterior via `db push` fora do OneDrive (workaround bug CLI OneDrive).
+- **FinancialVisibilityContext**: sincronizado com Supabase via `useUserSettings()` — lê `financial_visibility` do Supabase (fase 2) com fallback localStorage (fase 1 imediata). `toggleVisibility()` agora persiste via `upsert()`.
+- **pages/index.jsx**: `FinancialVisibilityProvider` movido de `MigratedModuleRoute` → nível de `AppLayout`, disponível em todas as rotas autenticadas (inclusive `/profile`). `MigratedModuleRoute` simplificado para apenas `<Suspense>`.
+- **ProfileSimple.jsx**: toggle "Visibilidade Financeira" adicionado — usa `useFinancialVisibility().toggleVisibility()`, persiste no Supabase, com switch visual neon seguindo cor da categoria.
+- **Órfãos removidos**: ForecastSummary.jsx, SyncStatusIndicator.jsx, LegacyAppShell.jsx, LegacyRoute.jsx, navConfig.jsx, CustomReportBuilder.jsx — todos já não existem.
+- **Órfãos Base44 confirmados (não deletar sem ordem)**: ChatInterface.jsx, EventTemplateModal.jsx, PhotoReceiptAnalyzer.jsx, FeedbackModal.jsx, DashboardCustomizer.jsx — nenhum é importado em nenhum arquivo.
+- **Build**: ✅ 0 erros — index: 709KB, ReportEventList: 404KB, EventDetailModal: 70KB
+- **E2E smoke**: 3/3 falham por timeout de teardown do contexto Playwright no Windows (GPU headless) — pré-existente, não causado por esta sessão. App carrega e guards funcionam (`[vite] connected` nos logs).
+
 ## 2026-06-06
 
 ### C-BADGE — Badge de cachê padrão no ClientCard ✅
