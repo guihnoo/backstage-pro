@@ -1,6 +1,6 @@
 ﻿
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/authContext';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
@@ -104,6 +104,7 @@ const StatCard = ({ title, value, subtext, icon: Icon, color, onClick, loading =
 );
 
 export default function CalendarPage() {
+  const navigate = useNavigate();
   const { user, profile, loading: authLoading } = useAuth();
   const config = getCategoryConfig(profile?.category || 'lighting');
   const { events, loading: eventsLoading, error: eventsError, refetch: refetchEvents, update: updateEvent, delete: deleteEvent } = useEvents();
@@ -283,12 +284,6 @@ export default function CalendarPage() {
       closeModals();
       closeActionSheets();
 
-      if (isMobile) {
-        setSelectedDate(dateObj); // Keep selectedDate for context in mobile actions
-        handleOpenWorkModalForDate(dateObj);
-        return;
-      }
-
       if (quickActions.open && quickActions.date && format(quickActions.date, 'yyyy-MM-dd') === format(dateObj, 'yyyy-MM-dd')) {
         setQuickActions({ open: false, date: null, target: null });
       } else {
@@ -296,7 +291,7 @@ export default function CalendarPage() {
         setQuickActions({ open: true, date: dateObj, target });
       }
     },
-    [isMobile, quickActions, closeModals, closeActionSheets, handleOpenWorkModalForDate]
+    [quickActions, closeModals, closeActionSheets]
   );
 
   const handleSelectEventFromMultiple = useCallback(
@@ -856,6 +851,23 @@ export default function CalendarPage() {
             </div>
           </div>
         </div>
+
+        {!clientsLoading && clients.length === 0 && (
+          <Alert className="border-amber-500/40 bg-amber-500/10">
+            <AlertCircle className="w-4 h-4 text-amber-400" />
+            <AlertDescription className="text-amber-100 text-sm">
+              <strong>Primeiro passo:</strong> cadastre um cliente em{' '}
+              <button
+                type="button"
+                className="underline font-semibold"
+                onClick={() => navigate('/clients?action=new-client')}
+              >
+                Clientes
+              </button>{' '}
+              antes de agendar shows.
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Alertas */}
         {hasError && (

@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 import { normalizeDateString } from '@/components/utils/dateUtils';
 import { useEvents } from '@/lib/useEvents';
 
@@ -40,6 +41,7 @@ export default function EventForm({
   initialData,
   onSuccess,
 }) {
+  const navigate = useNavigate();
   const { create: createEvent, update: updateEvent } = useEvents();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState(defaultState);
@@ -89,7 +91,8 @@ export default function EventForm({
         start_time: formData.start_time || null,
         end_time: formData.end_time || null,
         payment_due_date: formData.payment_due_date ? normalizeDateString(formData.payment_due_date) : null,
-        payment_status: formData.payment_status || 'unpaid',
+        payment_status: formData.payment_status || 'pending',
+        status: 'pending',
         payment_model: formData.payment_model || 'HORAS_EXTRAS',
         daily_cache_value: formData.daily_cache_value === '' ? 0 : Number(formData.daily_cache_value),
         cache_valor_base: formData.cache_valor_base === '' ? null : Number(formData.cache_valor_base),
@@ -109,7 +112,9 @@ export default function EventForm({
       onClose?.(false);
     } catch (error) {
       console.error('Erro ao salvar evento:', error);
-      toast.error('Nao foi possivel salvar o evento.');
+      toast.error('Nao foi possivel salvar o evento.', {
+        description: error?.message || 'Verifique cliente, datas e conexao.',
+      });
     } finally {
       setLoading(false);
     }
@@ -125,18 +130,37 @@ export default function EventForm({
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label>Cliente</Label>
-            <Select value={formData.client_id} onValueChange={(value) => setField('client_id', value)}>
-              <SelectTrigger className="bg-slate-800 border-slate-700">
-                <SelectValue placeholder="Selecione o cliente" />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700">
-                {clients.map((client) => (
-                  <SelectItem key={client.id} value={client.id}>
-                    {client.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {clients.length === 0 ? (
+              <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 space-y-3">
+                <p className="text-sm text-amber-100">
+                  Cadastre um cliente antes de criar um evento na agenda.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-amber-500/50 text-amber-200 hover:bg-amber-500/20"
+                  onClick={() => {
+                    onClose?.(false);
+                    navigate('/clients?action=new-client');
+                  }}
+                >
+                  Cadastrar primeiro cliente
+                </Button>
+              </div>
+            ) : (
+              <Select value={formData.client_id} onValueChange={(value) => setField('client_id', value)}>
+                <SelectTrigger className="bg-slate-800 border-slate-700">
+                  <SelectValue placeholder="Selecione o cliente" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-700">
+                  {clients.map((client) => (
+                    <SelectItem key={client.id} value={client.id}>
+                      {client.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           <div className="space-y-2">

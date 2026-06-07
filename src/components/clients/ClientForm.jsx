@@ -8,12 +8,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Building2, DollarSign, X, AlertCircle, Phone, Mail, Globe, FileText } from 'lucide-react';
 import { toast } from 'sonner';
-import { Client } from '@/api/entities';
-import { useAppData } from '@/components/context/AppDataContext';
+import { useAuth } from '@/lib/authContext';
+import { useClients } from '@/lib/useClients';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ClientForm({ client, onSuccess, onCancel }) {
-  const { data: { user } } = useAppData();
+  const { user } = useAuth();
+  const { create: createClient, update: updateClient } = useClients();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -142,19 +143,28 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
     setLoading(true);
 
     try {
+      if (!user?.id) {
+        toast.error('Sessao expirada. Faca login novamente.');
+        return;
+      }
+
       const clientData = {
-        ...formData,
-        owner_id: user.id,
+        name: formData.name.trim(),
+        contact_person: formData.contact_person || null,
+        email: formData.email || null,
+        phone: formData.phone || null,
+        logo_url: formData.logo_url || null,
+        notes: formData.notes || null,
         policy_default_payment_model: formData.policy_default_payment_model || null,
         policy_allows_meio_e_dobra_juntos: formData.policy_allows_meio_e_dobra_juntos || false,
       };
 
       let result;
-      if (client) {
-        result = await Client.update(client.id, clientData);
+      if (client?.id) {
+        result = await updateClient(client.id, clientData);
         toast.success('Cliente atualizado com sucesso!');
       } else {
-        result = await Client.create(clientData);
+        result = await createClient(clientData);
         toast.success('Cliente criado com sucesso!');
       }
 
@@ -163,8 +173,8 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
       }
     } catch (error) {
       console.error("Erro ao salvar cliente:", error);
-      toast.error("Erro ao salvar cliente.", {
-        description: error.response?.data?.error || "Ocorreu um problema. Por favor, tente novamente.",
+      toast.error('Erro ao salvar cliente.', {
+        description: error?.message || 'Ocorreu um problema. Por favor, tente novamente.',
       });
     } finally {
       setLoading(false);

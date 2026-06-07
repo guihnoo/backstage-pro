@@ -6,6 +6,16 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-07
 
+### HOTFIX-AGENDA — Cliente + Evento na Agenda ✅
+- **Agente**: Cursor (Composer)
+- **Causa raiz**: `ClientForm` usava `useAppData()` sem `AppDataProvider` → crash ao cadastrar cliente → `EventForm` sem cliente no select
+- **Arquivos**:
+  - `src/App.jsx` — `AppDataProvider` na árvore
+  - `src/components/clients/ClientForm.jsx` — migrado para `useAuth` + `useClients` (sem Base44)
+  - `src/pages/Calendar.jsx` — alerta sem clientes; mobile usa menu Evento/Horas no toque do dia
+  - `src/components/calendar/EventForm.jsx` — empty state cliente; `status: pending`; erros Supabase visíveis
+- **Build**: ✅
+
 ### S2-CLOSE — Sprint 2 Fechamento ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Migration 008**: ✅ JÁ APLICADA — colunas `financial_visibility` e `google_calendar_connected` confirmadas via REST query (status 200). Aplicada em sessão anterior via `db push` fora do OneDrive (workaround bug CLI OneDrive).

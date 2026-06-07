@@ -2,6 +2,7 @@ import './App.css';
 import Pages from '@/pages/index.jsx';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/lib/authContext';
+import { AppDataProvider } from '@/components/context/AppDataContext';
 import { BrowserRouter } from 'react-router-dom';
 import { isSupabaseConfigured } from '@/lib/supabase';
 
@@ -29,8 +30,10 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Pages />
-        <Toaster />
+        <AppDataProvider>
+          <Pages />
+          <Toaster />
+        </AppDataProvider>
       </AuthProvider>
     </BrowserRouter>
   );
