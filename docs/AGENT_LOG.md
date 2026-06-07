@@ -6,6 +6,28 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-07
 
+### DAYQUICK-FIX — Bug filter eventsToRegister em DayQuickActionsMobile ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivo**: `src/components/calendar/DayQuickActionsMobile.jsx`
+- **Bug**: `eventsToRegister` filtrava `getEventStatus(e) !== 'paid'` — mas `getEventStatus` nunca retorna `'paid'`, então TODOS os eventos apareciam na seção "Registrar horas manualmente"
+- **Fix**: mudado para `getEventStatus(e) !== 'completed'`, exibindo apenas eventos ativos/agendados na seção de registro manual
+- **Build**: ✅
+
+### CURSOR-STORAGE-AUTO12H — Migrations 009+010, Storage, applyAuto12Hours, export ✅
+- **Agente**: Cursor (Composer)
+- **Migration 009** (`supabase/migrations/009_clients_invoice_url.sql`): `ALTER TABLE clients ADD COLUMN IF NOT EXISTS invoice_portal_url text` — aplicada via CLI de `C:\temp\backstage-sb-push` (fora do OneDrive, workaround bug CLI)
+- **Migration 010** (`supabase/migrations/010_storage_backstage_bucket.sql`): cria bucket `backstage` (public=true) com RLS policies `SELECT/INSERT/UPDATE/DELETE` por `user_id`
+- **`src/lib/uploadFile.js`** — criado: `uploadUserFile(file, {folder})` via Supabase Storage, bucket `backstage`, max 5MB images, retorna `{file_url, path}` (contrato compatível com Base44)
+- **`src/api/integrations.js`** — `UploadFile` shim delegando para `uploadUserFile` (Supabase Storage substitui Base44 permanentemente)
+- **`src/lib/applyAuto12Hours.js`** — criado: lógica Supabase pura (event lookup → insert `daily_work` por dia → update `auto_hours_applied=true`); retorna `{data:{success, daysCreated}}`
+- **`src/lib/checkCompletedEventsForAutoHours.js`** — criado: batch version para aplicar 12h em todos os eventos completados sem horas
+- **`src/api/functions.js`** — re-exports de `applyAuto12Hours` e `checkCompletedEventsForAutoHours` das libs Supabase (shims)
+- **`src/lib/exportReport.js`** — criado: `exportReportCsv` (CSV semicolon-delimited + download) e `exportReportPdf` (print dialog)
+- **`src/components/reports/ExportManager.jsx`** — reescrito com exports reais (substituiu toasts "em breve")
+- **`src/lib/useClients.js`** — removidos `delete payload.invoice_portal_url` temporários (cleanup pós-migration 009)
+- **Commit**: `c58bebf` ("fix: habilitar invoice_portal_url e Storage pós-migration 009/010")
+- **Deploy**: ✅ Vercel
+
 ### FULL-FUNCTIONAL-AUDIT — Audit e correções de funcionalidade completa ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Fix crítico**: `useClients.js` — `invoice_portal_url` deletado do payload em `create` e `update` (coluna ausente na tabela até migration 009 ser aplicada). Clientes podem ser criados sem erro 400.

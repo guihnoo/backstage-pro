@@ -24,8 +24,8 @@ export default function DayQuickActionsMobile({
     getEventStatus(e) === 'completed' && !e.auto_hours_applied
   );
 
-  const eventsToRegister = events.filter(e => 
-    getEventStatus(e) !== 'paid'
+  const eventsToRegister = events.filter(e =>
+    getEventStatus(e) !== 'completed'
   );
 
   const handleNewEvent = () => {

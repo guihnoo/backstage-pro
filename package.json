@@ -16,7 +16,12 @@
     "supabase:status": "npx --yes supabase@latest status",
     "db:reset": "npx --yes supabase@latest db reset",
     "db:push": "npx --yes supabase@latest db push",
-    "supabase:auth-push": "powershell -ExecutionPolicy Bypass -File ./scripts/push-supabase-auth-config.ps1"
+    "supabase:auth-push": "powershell -ExecutionPolicy Bypass -File ./scripts/push-supabase-auth-config.ps1",
+    "db:seed-demo": "node scripts/seed-demo-user.mjs",
+    "test:e2e": "playwright test",
+    "test:e2e:smoke": "playwright test e2e/smoke",
+    "test:e2e:regression": "playwright test e2e/regression",
+    "test:e2e:prod": "playwright test -c playwright.prod.config.js"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.81",
@@ -82,6 +87,7 @@
   "devDependencies": {
     "@eslint/js": "^9.19.0",
     "@flydotio/dockerfile": "^0.7.8",
+    "@playwright/test": "^1.60.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^22.13.5",
@@ -98,6 +104,7 @@
     "globals": "^15.14.0",
     "jsdom": "^29.1.1",
     "postcss": "^8.5.3",
+    "rollup-plugin-visualizer": "^7.0.1",
     "tailwindcss": "^3.4.17",
     "vite": "^6.1.0",
     "vite-plugin-pwa": "^1.2.0",

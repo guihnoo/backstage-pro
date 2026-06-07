@@ -1,8 +1,10 @@
+import { useEffect, useRef } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Home, Calendar, Users, User, Receipt, BarChart2 } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
+import { checkCompletedEventsForAutoHours } from '@/lib/checkCompletedEventsForAutoHours';
 
 const navItems = [
   { path: '/', label: 'Home', icon: Home },
@@ -14,8 +16,16 @@ const navItems = [
 ];
 
 export default function AppLayout() {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const config = getCategoryConfig(profile?.category || 'lighting');
+  const autoHoursChecked = useRef(false);
+
+  useEffect(() => {
+    const userId = user?.id;
+    if (!userId || autoHoursChecked.current) return;
+    autoHoursChecked.current = true;
+    checkCompletedEventsForAutoHours({ userId }).catch(() => {});
+  }, [user?.id]);
 
   return (
     <div className="min-h-screen bg-[#050609] text-white flex flex-col">
