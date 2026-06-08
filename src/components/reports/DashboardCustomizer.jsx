@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { UserDashboardSettings, User } from '@/api/entities';
 import { Settings, Eye, EyeOff, Move, Save, RotateCcw } from 'lucide-react';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@hello-pangea/dnd';
+import { DndContext, closestCenter } from '@hello-pangea/dnd';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 
 const DEFAULT_WIDGETS = [

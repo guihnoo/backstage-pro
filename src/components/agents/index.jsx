@@ -9,11 +9,11 @@ function emit(conversationId, data) {
 
 export const agentSDK = {
   // Criar nova conversa
-  async createConversation({ agent_name, metadata = {} }) {
+  async createConversation({ _agent_name, metadata = {} }) {
     const id = crypto.randomUUID();
     const conversation = {
       id,
-      agent_name,
+      _agent_name,
       metadata: {
         name: metadata.name || 'Nova Conversa',
         description: metadata.description || '',
@@ -30,7 +30,7 @@ export const agentSDK = {
   },
 
   // Listar conversas (mock - em produção viria do backend)
-  async listConversations({ agent_name }) {
+  async listConversations({ _agent_name }) {
     return [];
   },
 
@@ -38,7 +38,7 @@ export const agentSDK = {
   async getConversation(conversationId) {
     return {
       id: conversationId,
-      agent_name: 'RelatorioInteligente',
+      _agent_name: 'RelatorioInteligente',
       metadata: { name: 'Conversa', description: '' },
       messages: [],
       status: 'idle'

@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import { usePWA } from '@/hooks/usePWA';
 import { Button } from '@/components/ui/button';
-import { Download, X, Wifi, WifiOff } from 'lucide-react';
+import {
+  Download,
+  X,
+  WifiOff
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function PWAInstallBanner() {

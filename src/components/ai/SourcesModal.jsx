@@ -21,7 +21,7 @@ export default function SourcesModal({ isOpen, onClose }) {
           const { data } = await getMentorConfig();
           const sourcesData = data?.sources || [];
           setSources(sourcesData.join('\n'));
-        } catch (error) {
+        } catch (_error) {
           toast.error("Erro ao buscar fontes personalizadas.");
         } finally {
           setIsLoading(false);
@@ -38,7 +38,7 @@ export default function SourcesModal({ isOpen, onClose }) {
       await updateMentorSources({ sources: sourcesArray });
       toast.success("Fontes personalizadas salvas com sucesso!");
       onClose();
-    } catch (error) {
+    } catch (_error) {
       toast.error("Não foi possível salvar as fontes.");
     } finally {
       setIsSaving(false);

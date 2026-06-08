@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import {
   TrendingUp,
   Calendar,
-  DollarSign,
   Users,
   Receipt,
   BarChart3,

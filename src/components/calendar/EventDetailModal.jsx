@@ -18,7 +18,11 @@ import {
   Zap,
   Loader2
 } from 'lucide-react';
-import { formatDisplayDate, getEventStatus, getEventStatusConfig, normalizeDateString } from '../utils/dateUtils';
+import {
+  formatDisplayDate,
+  getEventStatus,
+  getEventStatusConfig
+} from '../utils/dateUtils';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { applyAuto12Hours } from '@/api/functions';

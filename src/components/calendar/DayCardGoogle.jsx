@@ -2,8 +2,7 @@ import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { 
   normalizeDateString, 
-  isDateBetween, 
-  isToday 
+  isDateBetween 
 } from '../utils/dateUtils';
 
 const THEME = {

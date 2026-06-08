@@ -1,5 +1,11 @@
 import { normalizeDateString, isSameDay } from './dateUtils';
-import { startOfWeek, endOfWeek, addDays, max, min, startOfDay } from 'date-fns';
+import {
+  startOfWeek,
+  addDays,
+  max,
+  min,
+  startOfDay
+} from 'date-fns';
 
 /**
  * Normaliza um evento para usar datas locais precisas.

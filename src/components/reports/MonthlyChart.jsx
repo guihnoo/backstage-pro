@@ -5,7 +5,7 @@ import ReportsChart from './ReportsChart';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { parseISO, isValid } from 'date-fns';
 
-export default function MonthlyChart({ events = [], dailyWork = [], expenses = [], periodStart }) {
+export default function MonthlyChart({ events = [], dailyWork = [], expenses = [], _periodStart }) {
   const { isVisible, formatCurrency } = useFinancialVisibility();
 
   // LÓGICA ALINHADA: Calcular dados para o gráfico (memoizado para performance)

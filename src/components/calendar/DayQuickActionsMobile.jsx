@@ -13,7 +13,7 @@ const getEventStatus = (event) => {
 };
 
 export default function DayQuickActionsMobile({ 
-  day, 
+  _day, 
   events = [], 
   onNewEvent, 
   onRegisterWork 

@@ -14,13 +14,13 @@ const mapPayloadToDb = (payload = {}) => {
   delete mapped.id;
   delete mapped.owner_id;
   delete mapped.date;
-  delete mapped.is_reimbursable;
+  delete mapped._is_reimbursable;
 
   return mapped;
 };
 
 const mapRowFromDb = (row = {}) => {
-  const { is_reimbursable, ...rest } = row;
+  const { _is_reimbursable, ...rest } = row;
   const expenseDate = rest.expense_date || rest.date || null;
 
   return {

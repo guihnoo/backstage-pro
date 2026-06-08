@@ -14,7 +14,7 @@ export function useMediaQuery(query) {
     // Adiciona o listener
     try {
       media.addEventListener('change', listener);
-    } catch (e) {
+    } catch (_e) {
       // Fallback para navegadores mais antigos
       media.addListener(listener);
     }
@@ -23,7 +23,7 @@ export function useMediaQuery(query) {
     return () => {
       try {
         media.removeEventListener('change', listener);
-      } catch(e) {
+      } catch(_e) {
         media.removeListener(listener);
       }
     };

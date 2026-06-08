@@ -10,7 +10,10 @@ import {
 import { Bell, Clock, Calendar, CheckCircle2, X } from 'lucide-react';
 import { Notification } from '@/api/entities';
 import { User } from '@/api/entities';
-import { format, parseISO, isValid } from 'date-fns';
+import {
+  format,
+  parseISO
+} from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';

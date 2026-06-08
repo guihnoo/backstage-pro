@@ -3,7 +3,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Database, AlertTriangle, ShieldCheck, Download, Upload, Trash2 } from 'lucide-react';
+import {
+  Loader2,
+  Database,
+  ShieldCheck,
+  Upload
+} from 'lucide-react';
 import { SystemBackup } from '@/api/entities';
 import { createBackup } from '@/api/functions';
 import { restoreFromBackup } from '@/api/functions';

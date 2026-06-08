@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase';
 
 // Mapa de nomes de tabela por entity
-const TABLE_MAP = {
+const _TABLE_MAP = {
   events: 'events',
   daily_work: 'daily_work',
   clients: 'clients',

@@ -22,10 +22,9 @@ import {
   Receipt
 } from 'lucide-react';
 
-import { 
-  normalizeDateString, 
-  stringToLocalDate, 
-  isSameDay, 
+import {
+  normalizeDateString,
+  isSameDay,
   isToday,
   formatDisplayDate,
   getEventsForDate,

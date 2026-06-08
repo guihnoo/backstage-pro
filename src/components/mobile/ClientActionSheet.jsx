@@ -10,9 +10,7 @@ import {
   Phone,
   MessageCircle,
   Calendar,
-  DollarSign,
-  TrendingUp,
-  Building2
+  TrendingUp
 } from 'lucide-react';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 

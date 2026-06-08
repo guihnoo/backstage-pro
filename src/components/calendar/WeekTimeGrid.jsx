@@ -66,7 +66,7 @@ export default function WeekTimeGrid({ currentDate, events = [], onEventClick })
               const dayEvents = getEventsForTimeSlot(day, hour);
               return (
                 <div key={`${normalizeDateString(day)}-${hour}`} className="p-1 border-r border-slate-800/50 relative">
-                  {dayEvents.map((event, index) => (
+                  {dayEvents.map((event, _index) => (
                     <motion.div
                       key={event.id}
                       initial={{ opacity: 0, scale: 0.9 }}

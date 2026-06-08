@@ -3,7 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, Clock, Building2, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { getEventStatusConfig, formatDisplayDate, formatShortDate } from '../utils/dateUtils';
+import {
+  getEventStatusConfig,
+  formatShortDate
+} from '../utils/dateUtils';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function EventsInPeriod({ events = [], clients = [], onEventClick, loading = false }) {

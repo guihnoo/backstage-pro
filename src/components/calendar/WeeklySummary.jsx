@@ -2,9 +2,15 @@
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Calendar, Clock, DollarSign, TrendingUp, Users, Zap, CheckCircle, AlertCircle } from 'lucide-react';
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, isToday, differenceInDays } from 'date-fns';
+import {
+  format,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  isSameDay,
+  isToday
+} from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 
@@ -22,7 +28,7 @@ export default function WeeklySummary({ currentDate, events, dailyWork, clients 
       const eventStart = new Date(event.start_date + 'T00:00:00');
       const eventEnd = new Date(event.end_date + 'T00:00:00');
       return eventStart <= weekEnd && eventEnd >= weekStart;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   });
@@ -33,7 +39,7 @@ export default function WeeklySummary({ currentDate, events, dailyWork, clients 
     try {
       const workDate = new Date(work.date + 'T00:00:00');
       return workDate >= weekStart && workDate <= weekEnd;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   });
@@ -57,7 +63,7 @@ export default function WeeklySummary({ currentDate, events, dailyWork, clients 
         const eventStart = new Date(event.start_date + 'T00:00:00');
         const eventEnd = new Date(event.end_date + 'T00:00:00');
         return day >= eventStart && day <= eventEnd;
-      } catch (error) {
+      } catch (_error) {
         return false;
       }
     });
@@ -65,7 +71,7 @@ export default function WeeklySummary({ currentDate, events, dailyWork, clients 
     const dayWork = weekWork.filter(work => {
       try {
         return isSameDay(new Date(work.date + 'T00:00:00'), day);
-      } catch (error) {
+      } catch (_error) {
         return false;
       }
     });

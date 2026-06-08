@@ -4,7 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Send, Bot, User, Paperclip, X } from 'lucide-react';
+import {
+  Loader2,
+  Send,
+  Bot,
+  Paperclip,
+  X
+} from 'lucide-react';
 import { UploadFile } from '@/api/integrations';
 import { agentSDK } from '@/agents';
 import MessageBubble from './MessageBubble';

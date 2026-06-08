@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Send, Star, X } from 'lucide-react';
+import {
+  Loader2,
+  Send,
+  Star
+} from 'lucide-react';
 import { Feedback } from '@/api/entities';
 import { User } from '@/api/entities';
 import { toast } from 'sonner';

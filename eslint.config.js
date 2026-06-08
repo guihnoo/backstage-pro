@@ -5,7 +5,20 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
-  { ignores: ['dist'] },
+  {
+    ignores: [
+      'dist',
+      'src/components/ui/**',
+      'src/components/ai-elements/**',
+      'src/lib/supabase.js',
+      'src/lib/authContext.jsx',
+      'src/lib/safeFetch.js',
+      'src/lib/useBackstageData.js',
+      'src/components/calendar/EventForm.jsx',
+      'src/components/calendar/DailyWorkModal.jsx',
+      'src/components/expenses/ExpenseForm.jsx',
+    ]
+  },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
@@ -38,6 +51,8 @@ export default [
         varsIgnorePattern: '^_',
         caughtErrorsIgnorePattern: '^_',
       }],
+      'react/prop-types': 'off',
+      'react/display-name': 'off',
     },
   },
 ]

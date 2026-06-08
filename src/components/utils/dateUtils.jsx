@@ -1,7 +1,14 @@
 // UTILITÁRIOS CENTRALIZADOS PARA MANIPULAÇÃO DE DATAS
 // ÚNICA fonte de verdade para todas as operações de data no sistema
 
-import { format, parseISO, isValid, startOfDay, endOfDay, isSameDay as dateFnsIsSameDay, startOfMonth, endOfMonth, eachDayOfInterval, addDays, startOfWeek, endOfWeek as dateFnsEndOfWeek, differenceInDays, isBefore, isAfter } from 'date-fns';
+import {
+  format,
+  isValid,
+  startOfMonth,
+  addDays,
+  startOfWeek,
+  differenceInDays
+} from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 /**

@@ -6,7 +6,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { UploadFile } from '@/api/integrations';
-import { useAuth } from '@/lib/authContext';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { X, Clock, Camera, Loader2, AlertCircle, Save, Info, Calendar as CalendarIcon } from 'lucide-react';
 import { toast } from 'sonner';
@@ -20,8 +19,7 @@ export default function EventHoursSheet({
   existingWork,
   onSave 
 }) {
-  const { user } = useAuth();
-  const { create, update } = useDailyWork();
+    const { create, update } = useDailyWork();
   
   const [formData, setFormData] = useState({
     date: '',

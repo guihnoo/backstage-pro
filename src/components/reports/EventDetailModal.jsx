@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Dialog,
@@ -76,7 +76,7 @@ const WorkItem = ({ work, onEdit }) => {
   );
 };
 
-const ExpenseItem = ({ expense, onEdit }) => {
+const ExpenseItem = ({ expense, onEdit: _onEdit }) => {
   const { formatCurrency } = useFinancialVisibility();
   return (
     <motion.div
@@ -109,10 +109,10 @@ const EventDetailModal = React.memo(function EventDetailModal({
   onDelete,
   onPaymentUpdate,
   onWorkEdit,
-  onWorkDelete,
-  onAddExpense,
+  _onWorkDelete,
+  _onAddExpense,
   onExpenseEdit,
-  onExpenseDelete,
+  _onExpenseDelete,
   onApply12h
 }) {
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);

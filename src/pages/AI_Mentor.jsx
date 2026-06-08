@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Sparkles, Loader2, TrendingUp, AlertCircle, Send, Mic, MicOff, Volume2, VolumeX, Upload, X } from 'lucide-react';
+import { Sparkles, Loader2, Send, Volume2, VolumeX, Upload, X } from 'lucide-react';
 import { agentSDK } from '@/components/agents';
 import { useAppData } from '@/components/context/AppDataContext';
 import { User } from '@/api/entities';
@@ -13,7 +12,7 @@ import { UploadFile } from '@/api/integrations';
 
 export default function AIMentorPage() {
   const { data } = useAppData();
-  const [conversations, setConversations] = useState([]);
+  const [_conversations, setConversations] = useState([]);
   const [currentConversation, setCurrentConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -27,7 +26,7 @@ export default function AIMentorPage() {
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const unsubscribeRef = useRef(null);
-  const audioRef = useRef(null);
+  const _audioRef = useRef(null);
 
   // Scroll to bottom quando novas mensagens chegam
   const scrollToBottom = () => {

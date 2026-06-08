@@ -88,7 +88,7 @@ export default function ClientDetailPage() {
     [dailyWork, clientEventIds]
   );
 
-  const clientExpenses = useMemo(() =>
+  const _clientExpenses = useMemo(() =>
     expenses.filter(e => clientEventIds.includes(e.event_id)),
     [expenses, clientEventIds]
   );

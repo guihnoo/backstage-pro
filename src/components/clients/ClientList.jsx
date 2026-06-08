@@ -9,14 +9,12 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
   Building2,
-  DollarSign,
   Phone,
   Mail,
   MoreHorizontal,
   Eye,
   Edit,
   Trash2,
-  Plus,
   MessageCircle,
   CalendarPlus,
   User // Ícone adicionado que estava faltando
@@ -28,13 +26,12 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { formatDisplayDate } from '@/components/utils/dateUtils';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { format } from 'date-fns';
 
-const ClientCard = ({ client, onCardClick, onEdit, onDelete, onNewEvent, isVisible, formatCurrency, searchTerm, primaryHex = '#A64AFF', accentHex = '#FFB700' }) => {
+const ClientCard = ({ client, onCardClick, onEdit, onDelete, onNewEvent, formatCurrency, searchTerm, primaryHex = '#A64AFF', accentHex = '#FFB700' }) => {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const getInitials = (name) => {

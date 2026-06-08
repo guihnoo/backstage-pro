@@ -7,7 +7,6 @@ import { toast } from "sonner";
 
 const FunctionDisplay = ({ toolCall }) => {
     const [expanded, setExpanded] = useState(false);
-    const name = toolCall?.name || 'Function';
     const status = toolCall?.status || 'pending';
     const results = toolCall?.results;
     
@@ -40,7 +39,6 @@ const FunctionDisplay = ({ toolCall }) => {
     }[status] || { icon: Zap, color: 'text-slate-500', text: '' };
     
     const Icon = statusConfig.icon;
-    const formattedName = name.split('.').reverse().join(' ').toLowerCase();
     
     return (
         <div className="mt-2 text-xs">

@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Building2, Calendar, DollarSign, Clock, X } from 'lucide-react';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
-import { formatDisplayDate, formatShortDate, getEventStatusConfig } from '@/components/utils/dateUtils';
+import { formatShortDate, getEventStatusConfig } from '@/components/utils/dateUtils';
 
 const EventItem = ({ event, client, value, onClick, valueType = 'currency' }) => {
   const { formatCurrency } = useFinancialVisibility();

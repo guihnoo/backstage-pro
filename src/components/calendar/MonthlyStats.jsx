@@ -4,11 +4,13 @@ import { CalendarDays, Clock, DollarSign, Timer } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { normalizeDateString, stringToLocalDate } from "../utils/dateUtils";
+import {
+  normalizeDateString
+} from "../utils/dateUtils";
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 
 // Otimização: Memoização do componente
-const MonthlyStats = React.memo(function MonthlyStats({ events, dailyWork, currentDate, isLoading }) {
+const MonthlyStats = React.memo(function MonthlyStats({ _events, dailyWork, currentDate, isLoading }) {
   const { formatCurrency } = useFinancialVisibility();
 
   // Memoização do cálculo de estatísticas mensais

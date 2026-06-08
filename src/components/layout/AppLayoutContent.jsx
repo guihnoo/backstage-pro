@@ -3,7 +3,15 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Menu, X, Bell, LogOut, Eye, EyeOff, User as UserIcon, ChevronDown } from 'lucide-react';
+import {
+  Menu,
+  X,
+  Bell,
+  LogOut,
+  Eye,
+  EyeOff,
+  User as UserIcon
+} from 'lucide-react';
 import Logo from './Logo';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
 import { Notification } from '@/api/entities';
@@ -17,7 +25,6 @@ export default function AppLayoutContent({ user, currentPageName, navItems, chil
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const { isVisible, toggleVisibility } = useFinancialVisibility();

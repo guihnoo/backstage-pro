@@ -11,7 +11,10 @@ import {
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
-import { daysDifference, getEventStatus, normalizeDateString } from '../utils/dateUtils';
+import {
+  daysDifference,
+  getEventStatus
+} from '../utils/dateUtils';
 
 export default function PaymentAlerts({ events = [], work = [], clients = [], onEventClick }) {
   const { formatCurrency, isVisible } = useFinancialVisibility();
@@ -64,7 +67,7 @@ export default function PaymentAlerts({ events = [], work = [], clients = [], on
               message = `Vence em ${Math.abs(daysOverdue)} dia(s)`;
               urgency = 2;
             }
-        } catch(e) {
+        } catch(_e) {
             console.warn("Data de vencimento inválida:", event.payment_due_date);
         }
       }

@@ -1,7 +1,12 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Loader2, Camera, Upload, Sparkles, AlertCircle } from 'lucide-react';
+import {
+  Loader2,
+  Camera,
+  Sparkles,
+  AlertCircle
+} from 'lucide-react';
 import { UploadFile } from '@/api/integrations';
 import { extractExpenseData } from '@/api/functions';
 import { toast } from 'sonner';
