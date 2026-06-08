@@ -21,7 +21,7 @@ export default function PushNotifications() {
         // Notification de teste
         new Notification('Backstage Pro', {
           body: 'Notificações ativadas com sucesso!',
-          icon: '/icons/icon-192.png',
+          icon: '/icon-192x192.png',
           badge: '/icons/icon-72.png'
         });
         
@@ -75,7 +75,7 @@ export default function PushNotifications() {
       if (Notification.permission === 'granted') {
         new Notification(options.title, {
           body: options.body,
-          icon: '/icons/icon-192.png',
+          icon: '/icon-192x192.png',
           badge: '/icons/icon-72.png',
           tag: id, // Evita duplicatas
           requireInteraction: true
