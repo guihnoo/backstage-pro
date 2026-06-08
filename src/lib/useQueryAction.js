@@ -1,12 +1,13 @@
 import { useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 /**
- * Abre fluxos via ?action= sem useSearchParams (evita suspend infinito em rotas lazy).
- * Limpa a query com history.replaceState — navigate() remontava rotas lazy e travava o Suspense.
+ * Abre fluxos via ?action= sem useSearchParams.
+ * Limpa a query com navigate(replace) para manter o React Router sincronizado com a URL.
  */
 export function useQueryAction(actionKey, onMatch) {
   const location = useLocation();
+  const navigate = useNavigate();
   const onMatchRef = useRef(onMatch);
   const handledRef = useRef(false);
   onMatchRef.current = onMatch;
@@ -21,6 +22,6 @@ export function useQueryAction(actionKey, onMatch) {
 
     handledRef.current = true;
     onMatchRef.current();
-    window.history.replaceState(window.history.state, '', location.pathname);
-  }, [location.search, location.pathname, actionKey]);
+    navigate({ pathname: location.pathname, search: '' }, { replace: true });
+  }, [location.search, location.pathname, actionKey, navigate]);
 }

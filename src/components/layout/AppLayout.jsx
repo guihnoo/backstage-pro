@@ -40,7 +40,7 @@ export default function AppLayout() {
   return (
     <div className="h-full bg-[#050609] text-white flex flex-col overflow-hidden">
       <main ref={mainRef} className="flex-1 overflow-y-auto overscroll-contain" style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }}>
-        <Outlet />
+        <Outlet key={location.pathname} />
       </main>
       <nav className="fixed bottom-0 left-0 right-0 z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         <div className="absolute inset-0 bg-[#050609]/95 backdrop-blur-xl border-t border-[#23262f]" />
