@@ -1,6 +1,6 @@
 
 import { useState, useMemo, useCallback } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useClients } from '@/lib/useClients';
 import { useEvents } from '@/lib/useEvents';
 import { useDailyWork } from '@/lib/useDailyWork';
@@ -23,6 +23,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
+import { hardNavigate } from '@/lib/hardNavigate';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { NeonGlass } from '@/components/design/NeonGlass';
 
@@ -94,16 +96,20 @@ export default function ClientDetailPage() {
   );
 
   const stats = useMemo(() => {
-    const totalRevenue = clientWork.reduce((sum, work) => sum + (work.daily_cache || 0), 0);
+    const getEventRevenue = (event) => {
+      const fromWork = clientWork
+        .filter(w => w.event_id === event.id)
+        .reduce((sum, w) => sum + (w.daily_cache || 0), 0);
+      return fromWork > 0 ? fromWork : getEventCacheAmount(event);
+    };
+
+    const totalRevenue = clientEvents.reduce((sum, e) => sum + getEventRevenue(e), 0);
     const totalHours = clientWork.reduce((sum, work) => sum + (work.total_hours || 0), 0);
     const paidEvents = clientEvents.filter(e => e.payment_status === 'paid');
     const unpaidEvents = clientEvents.filter(e => e.payment_status !== 'paid');
 
-    const calculateEventRevenue = (event) =>
-      clientWork.filter(w => w.event_id === event.id).reduce((sum, w) => sum + (w.daily_cache || 0), 0);
-
-    const paidAmount = paidEvents.reduce((sum, e) => sum + (e.paid_amount || calculateEventRevenue(e)), 0);
-    const unpaidAmount = unpaidEvents.reduce((sum, e) => sum + calculateEventRevenue(e), 0);
+    const paidAmount = paidEvents.reduce((sum, e) => sum + (e.paid_amount || getEventRevenue(e)), 0);
+    const unpaidAmount = unpaidEvents.reduce((sum, e) => sum + getEventRevenue(e), 0);
 
     return {
       totalEvents: clientEvents.length,
@@ -142,9 +148,7 @@ export default function ClientDetailPage() {
           title="Cliente não encontrado"
           description="Não foi possível encontrar o cliente. Ele pode ter sido excluído ou o link está incorreto."
         >
-          <Link to="/clients">
-            <Button variant="outline"><ArrowLeft className="mr-2 h-4 w-4" /> Voltar para Clientes</Button>
-          </Link>
+          <Button variant="outline" onClick={() => hardNavigate('/clients')}><ArrowLeft className="mr-2 h-4 w-4" /> Voltar para Clientes</Button>
         </EmptyState>
       </div>
     );
@@ -154,10 +158,10 @@ export default function ClientDetailPage() {
   <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-full pb-24">
     <>
       <div className="space-y-6 p-4 md:p-6">
-        <Link to="/clients" className="inline-flex items-center text-sm text-[#8a91a1] hover:opacity-80 transition-colors font-mono" style={{ color: config.primaryHex }}>
+        <button onClick={() => hardNavigate('/clients')} className="inline-flex items-center text-sm hover:opacity-80 transition-colors font-mono" style={{ color: config.primaryHex }}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar para todos os clientes
-        </Link>
+        </button>
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-4">

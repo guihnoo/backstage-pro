@@ -27,6 +27,7 @@ import {
 } from 'date-fns';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { getEventStatus } from '@/components/utils/dateUtils';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 import { useMediaQuery } from '@/components/hooks/useMediaQuery';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
@@ -103,16 +104,19 @@ export default function ClientsPage() {
       const clientEventIds = new Set(clientEvents.map(e => e.id));
       const clientWork = work.filter(w => clientEventIds.has(w.event_id));
 
-      const generatedRevenue = clientWork.reduce((sum, w) => sum + (w.daily_cache || 0), 0);
-      
-      const completedUnpaidEvents = clientEvents.filter(e => 
+      const getEventRevenue = (event) => {
+        const fromWork = clientWork
+          .filter(w => w.event_id === event.id)
+          .reduce((sum, w) => sum + (w.daily_cache || 0), 0);
+        return fromWork > 0 ? fromWork : getEventCacheAmount(event);
+      };
+
+      const generatedRevenue = clientEvents.reduce((sum, e) => sum + getEventRevenue(e), 0);
+
+      const completedUnpaidEvents = clientEvents.filter(e =>
         getEventStatus(e) === 'completed' && e.payment_status === 'unpaid'
       );
-      const pendingRevenue = completedUnpaidEvents.reduce((sum, e) => {
-        const eventWork = clientWork.filter(w => w.event_id === e.id);
-        const eventRevenue = eventWork.reduce((workSum, w) => workSum + (w.daily_cache || 0), 0);
-        return sum + (eventRevenue > 0 ? eventRevenue : (e.daily_cache_value || 0));
-      }, 0);
+      const pendingRevenue = completedUnpaidEvents.reduce((sum, e) => sum + getEventRevenue(e), 0);
 
       const sixMonthsAgo = new Date();
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);

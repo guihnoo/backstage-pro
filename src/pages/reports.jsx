@@ -1,5 +1,6 @@
 ﻿import { useState, useMemo, useCallback } from 'react';
 import { hardNavigate } from '@/lib/hardNavigate';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
 import { useDailyWork } from '@/lib/useDailyWork';
@@ -298,7 +299,6 @@ export default function ReportsPage() {
 
   // **LÓGICA REVISADA**: Faturamento baseado na data de pagamento
   const processedData = useMemo(() => {
-    console.log('ðŸ”„ Processando dados com faturamento por data de pagamento...');
     const { events = [], dailyWork = [], expenses = [], clients = [] } = data;
 
     // APLICAR STATUS CORRETO A TODOS OS EVENTOS ANTES DE PROCESSAR
@@ -319,30 +319,16 @@ export default function ReportsPage() {
       }
     };
 
-    // Função para calcular o valor real de um evento
     const calculateRealEventValue = (event) => {
-      // 1. Se foi pago, usar o valor pago
-      if (event.payment_status === 'paid' && event.paid_amount > 0) {
-        return event.paid_amount;
-      }
+      if (event.payment_status === 'paid' && event.paid_amount > 0) return event.paid_amount;
 
-      // 2. Se há trabalho registrado, usar a soma dos cachês diários
       const eventDailyWork = dailyWork.filter((work) => work.event_id === event.id);
       if (eventDailyWork.length > 0) {
         const totalFromWork = eventDailyWork.reduce((sum, work) => sum + (work.daily_cache || 0), 0);
         if (totalFromWork > 0) return totalFromWork;
       }
 
-      // 3. Calcular baseado no valor diário e duração do evento
-      try {
-        const startDate = parseISO(event.start_date);
-        const endDate = parseISO(event.end_date);
-        const days = Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1);
-        return (event.daily_cache_value || 0) * days;
-      } catch (error) {
-        console.warn('Erro ao calcular duração do evento:', event, error);
-        return event.daily_cache_value || 0;
-      }
+      return getEventCacheAmount(event);
     };
 
     // Processar dados do período atual
@@ -359,8 +345,7 @@ export default function ReportsPage() {
       const periodWork = dailyWork.filter((w) => w.date && isInRange(w.date, range));
       const periodExpenses = expenses.filter((e) => e.date && isInRange(e.date, range));
 
-      // **RECEITA REALIZADA**: Baseada na data de pagamento
-      const realizedRevenue = paidEventsInPeriod.reduce((sum, e) => sum + (e.paid_amount || 0), 0);
+      const realizedRevenue = paidEventsInPeriod.reduce((sum, e) => sum + (e.paid_amount || calculateRealEventValue(e)), 0);
 
       // A receber (eventos concluídos mas não pagos) - USANDO STATUS CALCULADO
       const receivableRevenue = eventsWithCorrectStatus.
@@ -391,7 +376,7 @@ export default function ReportsPage() {
       const clientRevenueMap = {};
       paidEventsInPeriod.forEach((event) => {
         if (event.client_id) {
-          clientRevenueMap[event.client_id] = (clientRevenueMap[event.client_id] || 0) + (event.paid_amount || 0);
+          clientRevenueMap[event.client_id] = (clientRevenueMap[event.client_id] || 0) + (event.paid_amount || calculateRealEventValue(event));
         }
       });
 
@@ -429,12 +414,6 @@ export default function ReportsPage() {
       return { change: (current - previous) / previous * 100 };
     };
 
-    console.log('âœ… Dados processados com faturamento por data de pagamento:', {
-      current: currentData,
-      paidInPeriod: currentData.paidEvents.length,
-      realizedRevenue: currentData.realizedRevenue
-    });
-
     return {
       current: currentData,
       previous: previousData,
@@ -447,7 +426,7 @@ export default function ReportsPage() {
       },
       // Dados para componentes filhos
       chartInput: {
-        realized: currentData.paidEvents.map((e) => ({ ...e, calculated_value: e.paid_amount })),
+        realized: currentData.paidEvents.map((e) => ({ ...e, calculated_value: e.paid_amount || calculateRealEventValue(e) })),
         receivable: eventsWithCorrectStatus.filter((e) => e.calculatedStatus === 'completed' && e.payment_status === 'unpaid').map((e) => ({ ...e, calculated_value: calculateRealEventValue(e) })),
         projected: eventsWithCorrectStatus.filter((e) => e.calculatedStatus === 'scheduled').map((e) => ({ ...e, calculated_value: calculateRealEventValue(e) })),
         expenses: currentData.expenses
@@ -519,7 +498,6 @@ export default function ReportsPage() {
   // Handler para o clique no gráfico
   const handleChartClick = useCallback((payload) => {
     if (payload && payload.date) {
-      console.log('Filtrando por data do gráfico:', payload.date);
       setChartFilter({ date: payload.date, view: payload.view });
     }
   }, []);
