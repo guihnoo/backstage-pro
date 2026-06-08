@@ -3,11 +3,11 @@ import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/authContext';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { hardNavigate } from '@/lib/hardNavigate';
-import { getCategoryConfig } from '@/lib/categoryConfig';
+import { getCategoryConfig, CATEGORIES } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import {
-  User, Phone, MapPin, Mail, LogOut, Save, ChevronRight, Loader2, CheckCircle, Eye, EyeOff, Download,
+  User, Phone, MapPin, Mail, LogOut, Save, Loader2, CheckCircle, Eye, EyeOff, Download,
   DollarSign, Target, Calendar, Camera
 } from 'lucide-react';
 import { createBackup } from '@/api/functions';
@@ -18,17 +18,20 @@ export default function ProfileSimple() {
   const { user, profile, signOut, updateProfile } = useAuth();
   const { isVisible, toggleVisibility } = useFinancialVisibility();
   const categoryId = profile?.category || 'lighting';
-  const config = getCategoryConfig(categoryId);
 
   const [form, setForm] = useState({
     name: profile?.name || '',
     phone: profile?.phone || '',
     city: profile?.city || '',
     state: profile?.state || '',
+    years_experience: profile?.years_experience != null ? String(profile.years_experience) : '',
     daily_rate: profile?.daily_rate || '',
     monthly_goal_revenue: profile?.monthly_goal_revenue || '',
     monthly_goal_events: profile?.monthly_goal_events || '',
+    category: profile?.category || '',
   });
+
+  const config = getCategoryConfig(form.category || categoryId);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -43,9 +46,11 @@ export default function ProfileSimple() {
         phone: profile.phone || '',
         city: profile.city || '',
         state: profile.state || '',
+        years_experience: profile.years_experience != null ? String(profile.years_experience) : '',
         daily_rate: profile.daily_rate || '',
         monthly_goal_revenue: profile.monthly_goal_revenue || '',
         monthly_goal_events: profile.monthly_goal_events || '',
+        category: profile.category || '',
       });
     }
   }, [profile]);
@@ -69,7 +74,13 @@ export default function ProfileSimple() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await updateProfile(form);
+      await updateProfile({
+        ...form,
+        years_experience: form.years_experience !== '' ? Number(form.years_experience) : null,
+        daily_rate: form.daily_rate !== '' ? Number(form.daily_rate) : null,
+        monthly_goal_revenue: form.monthly_goal_revenue !== '' ? Number(form.monthly_goal_revenue) : null,
+        monthly_goal_events: form.monthly_goal_events !== '' ? Number(form.monthly_goal_events) : null,
+      });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (err) {
@@ -196,6 +207,7 @@ export default function ProfileSimple() {
             { key: 'phone', label: 'Telefone / WhatsApp', icon: Phone, placeholder: '(11) 99999-9999', type: 'tel' },
             { key: 'city', label: 'Cidade', icon: MapPin, placeholder: 'São Paulo' },
             { key: 'state', label: 'Estado', icon: MapPin, placeholder: 'SP' },
+            { key: 'years_experience', label: 'Anos de experiência', icon: Calendar, placeholder: '5', type: 'number' },
           ].map(({ key, label, icon: Icon, placeholder, type = 'text' }) => (
             <div key={key}>
               <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-wide">{label}</label>
@@ -253,24 +265,29 @@ export default function ProfileSimple() {
         {/* Categoria */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
         <NeonGlass primary={config.primaryHex} className="p-5">
-          <h2 className="text-sm font-bold text-gray-300 uppercase tracking-wider mb-4 font-mono">Sua Categoria</h2>
-          <div
-            className="flex items-center gap-3 p-4 rounded-xl border"
-            style={{
-              background: `${config.primaryHex}10`,
-              borderColor: `${config.primaryHex}30`
-            }}
-          >
-            <span className="text-2xl">{config.emoji}</span>
-            <div className="flex-1">
-              <p className="font-bold text-white">{config.label}</p>
-              <p className="text-xs text-gray-400">{config.description}</p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-gray-600" />
+          <h2 className="text-sm font-bold text-gray-300 uppercase tracking-wider mb-4 font-mono">Área de Atuação</h2>
+          <div className="grid grid-cols-2 gap-2">
+            {Object.values(CATEGORIES).map(cat => (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setForm(f => ({ ...f, category: cat.id }))}
+                className="flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all"
+                style={form.category === cat.id ? {
+                  background: `${cat.primaryHex}20`,
+                  borderColor: `${cat.primaryHex}60`,
+                  color: cat.primaryHex,
+                } : {
+                  background: 'rgba(255,255,255,0.03)',
+                  borderColor: 'rgba(255,255,255,0.06)',
+                  color: '#6b7280',
+                }}
+              >
+                <span>{cat.emoji}</span>
+                <span className="truncate text-xs">{cat.label}</span>
+              </button>
+            ))}
           </div>
-          <p className="text-xs text-gray-600 mt-3 text-center">
-            Para mudar sua categoria, refaça o onboarding no próximo update.
-          </p>
         </NeonGlass>
         </motion.div>
 

@@ -347,12 +347,10 @@ export default function ReportsPage() {
 
       const realizedRevenue = paidEventsInPeriod.reduce((sum, e) => sum + (e.paid_amount || calculateRealEventValue(e)), 0);
 
-      // A receber (eventos concluídos mas não pagos) - USANDO STATUS CALCULADO
-      const receivableRevenue = eventsWithCorrectStatus.
-        filter((e) => e.calculatedStatus === 'completed' && e.payment_status === 'unpaid').
-        reduce((sum, e) => sum + calculateRealEventValue(e), 0);
+      const receivableRevenue = eventsWithCorrectStatus
+        .filter((e) => e.calculatedStatus === 'completed' && ['unpaid', 'pending', 'partial'].includes(e.payment_status))
+        .reduce((sum, e) => sum + calculateRealEventValue(e), 0);
 
-      // Projetado (eventos agendados) - USANDO STATUS CALCULADO
       const projectedRevenue = eventsWithCorrectStatus.
         filter((e) => e.calculatedStatus === 'scheduled').
         reduce((sum, e) => sum + calculateRealEventValue(e), 0);
@@ -427,7 +425,7 @@ export default function ReportsPage() {
       // Dados para componentes filhos
       chartInput: {
         realized: currentData.paidEvents.map((e) => ({ ...e, calculated_value: e.paid_amount || calculateRealEventValue(e) })),
-        receivable: eventsWithCorrectStatus.filter((e) => e.calculatedStatus === 'completed' && e.payment_status === 'unpaid').map((e) => ({ ...e, calculated_value: calculateRealEventValue(e) })),
+        receivable: eventsWithCorrectStatus.filter((e) => e.calculatedStatus === 'completed' && ['unpaid', 'pending', 'partial'].includes(e.payment_status)).map((e) => ({ ...e, calculated_value: calculateRealEventValue(e) })),
         projected: eventsWithCorrectStatus.filter((e) => e.calculatedStatus === 'scheduled').map((e) => ({ ...e, calculated_value: calculateRealEventValue(e) })),
         expenses: currentData.expenses
       }
@@ -454,7 +452,7 @@ export default function ReportsPage() {
       case 'a_receber': {
         setModalTitle('Valores a Receber');
         const receivableEvents = data.events.filter((e) =>
-          getEventStatus(e) === 'completed' && e.payment_status === 'unpaid'
+          getEventStatus(e) === 'completed' && ['unpaid', 'pending', 'partial'].includes(e.payment_status)
         );
         setModalData(receivableEvents.map((event) => {
           const client = data.clients.find((c) => c.id === event.client_id);
@@ -524,7 +522,7 @@ export default function ReportsPage() {
       if (chartView === 'receivable') {
         // A receber é baseado na data de finalização do evento
         const eventEndDate = event.end_date ? event.end_date.split('T')[0] : null;
-        return eventEndDate === chartFilter.date && getEventStatus(event) === 'completed' && event.payment_status === 'unpaid';
+        return eventEndDate === chartFilter.date && getEventStatus(event) === 'completed' && ['unpaid', 'pending', 'partial'].includes(event.payment_status);
       }
       if (chartView === 'projected') {
         return eventStartDate === chartFilter.date && getEventStatus(event) === 'scheduled';
@@ -708,7 +706,7 @@ export default function ReportsPage() {
           <StatCard
             title="A Receber"
             value={isVisible ? formatCurrency(processedData.current.receivableRevenue) : '•••••'}
-            subtitle={`${data.events?.filter((e) => getEventStatus(e) === 'completed' && e.payment_status === 'unpaid').length || 0} pendentes`}
+            subtitle={`${data.events?.filter((e) => getEventStatus(e) === 'completed' && ['unpaid', 'pending', 'partial'].includes(e.payment_status)).length || 0} pendentes`}
             icon={Clock}
             color="text-amber-400"
             trend={processedData.trends.receivable}
