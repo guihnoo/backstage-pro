@@ -294,7 +294,7 @@ export default function AIMentorPage() {
                 <div className="absolute inset-0 bg-cyan-400 blur-2xl opacity-20 rounded-full"></div>
               </div>
               <h2 className="text-2xl font-bold text-white mb-3">
-                Olá, {profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Profissional'}! 👋
+                Olá, {profile?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'Profissional'}! 👋
               </h2>
               <p className="text-slate-400 mb-8 max-w-md">
                 Sou seu consultor financeiro pessoal. Posso te ajudar com análises, relatórios, insights e muito mais!

@@ -7,7 +7,8 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import {
-  User, Phone, MapPin, Mail, LogOut, Save, ChevronRight, Loader2, CheckCircle, Eye, EyeOff, Download
+  User, Phone, MapPin, Mail, LogOut, Save, ChevronRight, Loader2, CheckCircle, Eye, EyeOff, Download,
+  DollarSign, Target, Calendar
 } from 'lucide-react';
 import { createBackup } from '@/api/functions';
 import { toast } from 'sonner';
@@ -24,6 +25,9 @@ export default function ProfileSimple() {
     phone: profile?.phone || '',
     city: profile?.city || '',
     state: profile?.state || '',
+    daily_rate: profile?.daily_rate || '',
+    monthly_goal_revenue: profile?.monthly_goal_revenue || '',
+    monthly_goal_events: profile?.monthly_goal_events || '',
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -37,6 +41,9 @@ export default function ProfileSimple() {
         phone: profile.phone || '',
         city: profile.city || '',
         state: profile.state || '',
+        daily_rate: profile.daily_rate || '',
+        monthly_goal_revenue: profile.monthly_goal_revenue || '',
+        monthly_goal_events: profile.monthly_goal_events || '',
       });
     }
   }, [profile]);
@@ -234,28 +241,55 @@ export default function ProfileSimple() {
           </motion.div>
         )}
 
-        {/* Metas (readonly info) */}
-        {(profile?.monthly_goal_revenue || profile?.monthly_goal_events) && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <NeonGlass primary={config.primaryHex} className="p-5">
-            <h2 className="text-sm font-bold text-gray-300 uppercase tracking-wider mb-3 font-mono">Metas Mensais</h2>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-gray-800/40 rounded-xl p-3 text-center">
-                <p className="text-xs text-gray-500">Receita</p>
-                <p className="text-lg font-black text-white mt-1">
-                  R${(profile.monthly_goal_revenue || 0).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}
-                </p>
-              </div>
-              <div className="bg-gray-800/40 rounded-xl p-3 text-center">
-                <p className="text-xs text-gray-500">Eventos</p>
-                <p className="text-lg font-black text-white mt-1">
-                  {profile.monthly_goal_events || 0} shows
-                </p>
+        {/* Metas e diária */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+        <NeonGlass primary={config.primaryHex} glow className="p-5 space-y-4">
+          <h2 className="text-sm font-bold text-gray-300 uppercase tracking-wider font-mono">Metas & Precificação</h2>
+
+          {[
+            { key: 'daily_rate', label: 'Valor da diária (R$)', icon: DollarSign, placeholder: '800', type: 'number' },
+            { key: 'monthly_goal_revenue', label: 'Meta de receita mensal (R$)', icon: Target, placeholder: '5000', type: 'number' },
+            { key: 'monthly_goal_events', label: 'Meta de shows por mês', icon: Calendar, placeholder: '6', type: 'number' },
+          ].map(({ key, label, icon: Icon, placeholder, type }) => (
+            <div key={key}>
+              <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-wide">{label}</label>
+              <div className="relative">
+                <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
+                <input
+                  type={type}
+                  min="0"
+                  value={form[key]}
+                  onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+                  placeholder={placeholder}
+                  className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-gray-600 transition-colors"
+                />
               </div>
             </div>
-          </NeonGlass>
-          </motion.div>
-        )}
+          ))}
+
+          <motion.button
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleSave}
+            disabled={saving}
+            className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
+            style={{
+              background: saved
+                ? 'linear-gradient(135deg, #10b981, #059669)'
+                : `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})`,
+              opacity: saving ? 0.7 : 1,
+            }}
+          >
+            {saving ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Salvando...</>
+            ) : saved ? (
+              <><CheckCircle className="w-4 h-4" /> Salvo!</>
+            ) : (
+              <><Save className="w-4 h-4" /> Salvar metas</>
+            )}
+          </motion.button>
+        </NeonGlass>
+        </motion.div>
 
         {/* Configurações */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.33 }}>
