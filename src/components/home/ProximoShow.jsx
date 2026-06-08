@@ -69,12 +69,12 @@ export default function ProximoShow({ event, userCategory, isOnStage }) {
         />
       )}
 
-      <div className="p-8">
+      <div className="p-5 sm:p-8">
         {/* Header com Badge */}
-        <div className="flex items-start justify-between mb-6">
+        <div className="flex items-start justify-between mb-5 sm:mb-6">
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-3xl">{config.emoji}</span>
+            <div className="flex items-center gap-2 mb-2 sm:mb-3">
+              <span className="text-2xl sm:text-3xl">{config.emoji}</span>
               {isOnStage && (
                 <motion.span
                   animate={{ scale: [1, 1.1, 1] }}
@@ -86,7 +86,7 @@ export default function ProximoShow({ event, userCategory, isOnStage }) {
                 </motion.span>
               )}
             </div>
-            <h3 className="text-3xl font-black text-white mb-1">{event.title}</h3>
+            <h3 className="text-xl sm:text-3xl font-black text-white mb-1 leading-tight">{event.title}</h3>
             <p className="text-sm text-gray-400">{event.clients?.name || 'Cliente sem nome'}</p>
           </div>
         </div>

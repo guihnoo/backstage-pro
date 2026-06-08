@@ -275,7 +275,7 @@ export default function EventForm({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Cachê diario</Label>
+              <Label>Cachê do evento</Label>
               <Input type="number" step="0.01" min="0" value={formData.daily_cache_value} onChange={(e) => setField('daily_cache_value', e.target.value)} className="bg-slate-800 border-slate-700" />
             </div>
             <div className="space-y-2">

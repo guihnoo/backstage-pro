@@ -95,7 +95,7 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050609] text-white overflow-hidden relative">
+    <div className="min-h-screen bg-[#050609] text-white overflow-x-hidden relative">
       <StageBackdrop />
       <SpotlightRays />
       <FloatingEquipment />
@@ -113,17 +113,17 @@ export default function Onboarding() {
         />
       </div>
 
-      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-8">
+      <div className="relative z-10 min-h-screen flex items-start sm:items-center justify-center px-4 py-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="w-full max-w-2xl"
         >
-          <div className="bg-gray-900/40 backdrop-blur-xl border border-gray-800/50 rounded-2xl p-8 shadow-2xl">
-            <div className="flex items-center justify-between mb-8">
+          <div className="bg-gray-900/40 backdrop-blur-xl border border-gray-800/50 rounded-2xl p-5 sm:p-8 shadow-2xl">
+            <div className="flex items-center justify-between mb-6 sm:mb-8">
               <div>
-                <h1 className="text-3xl font-black bg-gradient-to-r from-purple-400 to-amber-400 bg-clip-text text-transparent">
+                <h1 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-purple-400 to-amber-400 bg-clip-text text-transparent">
                   Complete seu perfil
                 </h1>
                 <p className="text-gray-400 text-sm mt-1">Vamos conhecer você melhor</p>
