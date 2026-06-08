@@ -44,7 +44,7 @@ export default function EventForm({
   initialData,
   onSuccess,
 }) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { create: createEvent, update: updateEvent } = useEvents();
   const [loading, setLoading] = useState(false);
   const [savingTemplate, setSavingTemplate] = useState(false);
@@ -75,6 +75,26 @@ export default function EventForm({
 
   const setField = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleClientChange = (clientId) => {
+    const client = clients.find((c) => c.id === clientId);
+    setFormData((prev) => {
+      const next = { ...prev, client_id: clientId };
+      if (event || !client) return next;
+
+      const cacheEmpty = prev.daily_cache_value === '' || prev.daily_cache_value == null;
+      if (cacheEmpty) {
+        const fromClient = Number(client.default_daily_cache) || 0;
+        const fromProfile = Number(profile?.daily_rate) || 0;
+        const value = fromClient > 0 ? fromClient : fromProfile;
+        if (value > 0) next.daily_cache_value = value;
+      }
+      if (client.policy_default_payment_model) {
+        next.payment_model = client.policy_default_payment_model;
+      }
+      return next;
+    });
   };
 
   const handleSelectTemplate = (template) => {
@@ -208,7 +228,7 @@ export default function EventForm({
                 </Button>
               </div>
             ) : (
-              <Select value={formData.client_id} onValueChange={(value) => setField('client_id', value)}>
+              <Select value={formData.client_id} onValueChange={handleClientChange}>
                 <SelectTrigger className="bg-slate-800 border-slate-700">
                   <SelectValue placeholder="Selecione o cliente" />
                 </SelectTrigger>

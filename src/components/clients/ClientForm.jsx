@@ -35,6 +35,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
     notes: '',
     policy_default_payment_model: null,
     policy_allows_meio_e_dobra_juntos: false,
+    default_daily_cache: '',
   });
 
   useEffect(() => {
@@ -49,6 +50,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
         notes: client.notes || '',
         policy_default_payment_model: client.policy_default_payment_model || null,
         policy_allows_meio_e_dobra_juntos: client.policy_allows_meio_e_dobra_juntos || false,
+        default_daily_cache: client.default_daily_cache > 0 ? String(client.default_daily_cache) : '',
       });
     } else {
       setFormData({
@@ -61,6 +63,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
         notes: '',
         policy_default_payment_model: null,
         policy_allows_meio_e_dobra_juntos: false,
+        default_daily_cache: '',
       });
     }
     setErrors({});
@@ -176,9 +179,13 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
         email: formData.email || null,
         phone: formData.phone || null,
         logo_url: formData.logo_url || null,
+        invoice_portal_url: formData.invoice_portal_url || null,
         notes: formData.notes || null,
         policy_default_payment_model: formData.policy_default_payment_model || null,
         policy_allows_meio_e_dobra_juntos: formData.policy_allows_meio_e_dobra_juntos || false,
+        default_daily_cache: formData.default_daily_cache === ''
+          ? 0
+          : Number(formData.default_daily_cache),
       };
 
       let result;
@@ -381,6 +388,25 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                     </div>
                   </Button>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="default_daily_cache" className="text-slate-300 text-sm font-medium">
+                  Cachê diário padrão (R$)
+                </Label>
+                <p className="text-xs text-slate-500">
+                  Preenchido automaticamente ao criar eventos para este cliente.
+                </p>
+                <Input
+                  id="default_daily_cache"
+                  type="number"
+                  min="0"
+                  step="50"
+                  value={formData.default_daily_cache}
+                  onChange={(e) => handleChange('default_daily_cache', e.target.value)}
+                  className="bg-slate-800 border-slate-700 text-white h-12 text-base touch-manipulation"
+                  placeholder="Ex: 800"
+                />
               </div>
 
               {formData.policy_default_payment_model === 'MEIO_CACHE_E_DOBRA' && (

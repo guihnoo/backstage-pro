@@ -70,6 +70,8 @@ alter table clients add column if not exists contact_person text;
 alter table clients add column if not exists logo_url text;
 alter table clients add column if not exists policy_default_payment_model text;
 alter table clients add column if not exists policy_allows_meio_e_dobra_juntos boolean default false;
+alter table clients add column if not exists invoice_portal_url text;
+alter table clients add column if not exists default_daily_cache numeric default 0;
 
 alter table clients enable row level security;
 

@@ -290,6 +290,9 @@ export default function Onboarding() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Valor por diária (R$)</label>
+                    <p className="text-xs text-gray-500 mb-2">
+                      Usado como padrão ao criar eventos quando o cliente não tiver cachê próprio.
+                    </p>
                     <Input
                       type="number"
                       min="0"
