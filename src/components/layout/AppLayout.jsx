@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { checkCompletedEventsForAutoHours } from '@/lib/checkCompletedEventsForAutoHours';
 import { generateUserNotifications } from '@/lib/generateNotifications';
+import NotificationCenter from '@/components/notifications/NotificationCenter';
 
 const navItems = [
   { path: '/', label: 'Home', icon: Home, end: true },
@@ -53,6 +54,10 @@ export default function AppLayout() {
 
   return (
     <div className="h-full bg-[#050609] text-white flex flex-col overflow-hidden" data-router-path={location.pathname}>
+      {/* Notificações — fixo no canto superior direito */}
+      <div className="fixed top-3 right-3 z-40" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+        <NotificationCenter />
+      </div>
       <main ref={mainRef} className="flex-1 overflow-y-auto overscroll-contain" style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }}>
         <Outlet key={location.pathname} />
       </main>

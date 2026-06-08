@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Settings, LogOut, Bell } from 'lucide-react';
+import { Settings, LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
 import { useNavigate } from 'react-router-dom';
 import { getCategoryConfig, getCategoryMotivation } from '@/lib/categoryConfig';
@@ -64,7 +64,6 @@ export default function Home() {
               <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: config.primaryHex }}>{config.emoji} {config.label}</p>
             </div>
             <div className="flex items-center gap-2">
-              <motion.button whileTap={{ scale: 0.9 }} onClick={() => navigate('/profile')} className="w-9 h-9 rounded-full bg-[#0c0e14]/80 border border-[#23262f] flex items-center justify-center"><Bell className="w-4 h-4 text-[#8a91a1]" /></motion.button>
               <motion.button whileTap={{ scale: 0.9 }} onClick={() => navigate('/profile')} className="w-9 h-9 rounded-full bg-[#0c0e14]/80 border border-[#23262f] flex items-center justify-center"><Settings className="w-4 h-4 text-[#8a91a1]" /></motion.button>
             </div>
           </div>
