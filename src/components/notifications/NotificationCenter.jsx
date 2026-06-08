@@ -11,6 +11,8 @@ import { Bell, Clock, Calendar, DollarSign, Target, X, Zap } from 'lucide-react'
 import { useAuth } from '@/lib/authContext';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
+import { getEventCacheAmount } from '@/lib/eventFinance';
+import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { hardNavigate } from '@/lib/hardNavigate';
 import {
   differenceInDays,
@@ -37,7 +39,7 @@ function saveDismissed(set) {
 }
 
 // Gera lista estável de notificações a partir dos dados do usuário
-function buildNotifications({ events, clients, profile, today }) {
+function buildNotifications({ events, clients, profile, today, formatCurrency }) {
   const todayStr = today.toISOString().split('T')[0];
   const tomorrow = addDays(today, 1);
   const tomorrowStr = tomorrow.toISOString().split('T')[0];
@@ -84,12 +86,14 @@ function buildNotifications({ events, clients, profile, today }) {
     if (isPast && unpaid) {
       const daysLate = differenceInDays(today, endDate);
       const isUrgent = daysLate > 7;
+      const amount = getEventCacheAmount(ev);
+      const amountLabel = formatCurrency ? formatCurrency(amount) : `R$ ${amount.toLocaleString('pt-BR')}`;
       notes.push({
         id: `payment:${ev.id}`,
         type: 'payment_reminder',
         priority: isUrgent ? 'urgent' : 'high',
         title: `💰 Pagamento pendente: ${ev.title}`,
-        message: `${clientName} · encerrado há ${daysLate} dia${daysLate !== 1 ? 's' : ''}.`,
+        message: `${clientName} · ${amountLabel} · ${daysLate} dia${daysLate !== 1 ? 's' : ''} em atraso.`,
         action_url: '/reports',
         created_date: todayStr,
       });
@@ -185,6 +189,7 @@ export default function NotificationCenter() {
   const { user, profile } = useAuth();
   const { events } = useEvents();
   const { clients } = useClients();
+  const { formatCurrency } = useFinancialVisibility();
   const [dismissed, setDismissed] = useState(() => getDismissed());
   const [isOpen, setIsOpen] = useState(false);
 
@@ -209,8 +214,8 @@ export default function NotificationCenter() {
   }, [isOpen]);
 
   const allNotifications = useMemo(() =>
-    buildNotifications({ events, clients, profile, today: new Date() }),
-    [events, clients, profile]
+    buildNotifications({ events, clients, profile, today: new Date(), formatCurrency }),
+    [events, clients, profile, formatCurrency]
   );
 
   const visible = useMemo(() =>

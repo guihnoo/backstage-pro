@@ -10,6 +10,15 @@ export function isReceivableEvent(event) {
   return UNPAID_STATUSES.has(event.payment_status);
 }
 
+/** Valor de cachê do evento sem depender de daily_work (fallback para relatórios/listas). */
+export function getEventCacheAmount(event) {
+  if (!event) return 0;
+  if (event.daily_cache_value > 0) return Number(event.daily_cache_value);
+  if (event.actual_revenue > 0) return Number(event.actual_revenue);
+  if (event.estimated_revenue > 0) return Number(event.estimated_revenue);
+  return Number(event.daily_cache) || 0;
+}
+
 export function calculateEventReceivableAmount(event, dailyWorkForEvent = []) {
   if (dailyWorkForEvent.length > 0) {
     const fromWork = dailyWorkForEvent.reduce(
@@ -19,11 +28,7 @@ export function calculateEventReceivableAmount(event, dailyWorkForEvent = []) {
     if (fromWork > 0) return fromWork;
   }
 
-  // Prioridade: daily_cache_value (campo atual) → actual_revenue → estimated_revenue
-  if (event.daily_cache_value > 0) return Number(event.daily_cache_value);
-  if (event.actual_revenue > 0) return event.actual_revenue;
-  if (event.estimated_revenue > 0) return event.estimated_revenue;
-  return event.daily_cache || 0;
+  return getEventCacheAmount(event);
 }
 
 export function daysSinceEventEnd(event) {

@@ -10,7 +10,7 @@ import AuthCallback from './pages/AuthCallback';
 import Onboarding from './pages/Onboarding';
 import Home from './pages/Home';
 import Goals from './pages/Goals';
-import ProfileSimple from './pages/ProfileSimple';
+import ProfilePage from './pages/Profile';
 import AIMentorPage from './pages/AI_Mentor';
 import AppLayout from '@/components/layout/AppLayout';
 import CalendarPage from './pages/Calendar';
@@ -154,7 +154,7 @@ export const router = createBrowserRouter([
             ),
           },
           { path: 'goals', element: <Goals /> },
-          { path: 'profile', element: <ProfileSimple /> },
+          { path: 'profile', element: <ProfilePage /> },
           {
             path: 'ai-mentor',
             element: (
