@@ -185,6 +185,16 @@ button:focus-visible {
   }
 }
 
+/* Elimina delay de 300ms em toques mobile (iOS/Android) */
+a, button, [role="button"], input, label, select, textarea {
+  touch-action: manipulation;
+}
+
+/* Remove highlight azul ao tocar em elementos no iOS */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 @keyframes bp-breath {
   0%, 100% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.04); opacity: 0.92; }
