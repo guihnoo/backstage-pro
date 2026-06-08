@@ -1,5 +1,6 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -143,54 +144,58 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-xl bg-slate-900 border-slate-700 text-white">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+      <DialogContent className="sm:max-w-xl bg-slate-900 border-slate-700 text-white p-0 flex flex-col overflow-hidden max-h-[90dvh]">
+        <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 border-b border-slate-700 flex-shrink-0">
+          <DialogTitle className="flex items-center gap-2 text-white">
             <Clock className="w-5 h-5 text-cyan-400" />
             {existingWork?.id ? 'Editar Registro de Trabalho' : 'Novo Registro de Trabalho'}
           </DialogTitle>
         </DialogHeader>
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-2">
-            <Label>Data do trabalho</Label>
-            <Input type="date" value={formData.date} onChange={(e) => setField('date', e.target.value)} className="bg-slate-800 border-slate-700" />
-            <p className="text-xs text-slate-400">{formData.date ? `Trabalho em ${formatDisplayDate(formData.date)}` : 'Selecione a data'}</p>
-          </div>
+        <form className="flex flex-col flex-1 min-h-0" onSubmit={handleSubmit}>
+          <ScrollArea className="flex-1">
+            <div className="space-y-4 p-4 sm:p-6 pb-2">
+              <div className="space-y-2">
+                <Label>Data do trabalho</Label>
+                <Input type="date" value={formData.date} onChange={(e) => setField('date', e.target.value)} className="bg-slate-800 border-slate-700 h-12 text-base" />
+                <p className="text-xs text-slate-400">{formData.date ? `Trabalho em ${formatDisplayDate(formData.date)}` : 'Selecione a data'}</p>
+              </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Entrada</Label>
-              <Input type="time" value={formData.entry_time} onChange={(e) => setField('entry_time', e.target.value)} className="bg-slate-800 border-slate-700" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Entrada</Label>
+                  <Input type="time" value={formData.entry_time} onChange={(e) => setField('entry_time', e.target.value)} className="bg-slate-800 border-slate-700 h-12 text-base" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Saída</Label>
+                  <Input type="time" value={formData.exit_time} onChange={(e) => setField('exit_time', e.target.value)} className="bg-slate-800 border-slate-700 h-12 text-base" />
+                </div>
+              </div>
+
+              {summary.total > 0 && (
+                <Alert className="bg-cyan-900/20 border-cyan-700/40">
+                  <Info className="h-4 w-4 text-cyan-400" />
+                  <AlertDescription className="text-cyan-200 text-sm">
+                    Total: <strong>{summary.total.toFixed(1)}h</strong> · Extras: <strong>{summary.overtime.toFixed(1)}h</strong> · Cachê: <strong>R$ {summary.cache.toFixed(2)}</strong>
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <div className="space-y-2">
+                <Label>Observações</Label>
+                <Textarea value={formData.notes} onChange={(e) => setField('notes', e.target.value)} className="bg-slate-800 border-slate-700" placeholder="Detalhes do turno..." rows={3} />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label>Saida</Label>
-              <Input type="time" value={formData.exit_time} onChange={(e) => setField('exit_time', e.target.value)} className="bg-slate-800 border-slate-700" />
-            </div>
-          </div>
+          </ScrollArea>
 
-          {summary.total > 0 && (
-            <Alert className="bg-cyan-900/20 border-cyan-700/40">
-              <Info className="h-4 w-4 text-cyan-400" />
-              <AlertDescription className="text-cyan-200 text-sm">
-                Total: <strong>{summary.total.toFixed(1)}h</strong> | Extras: <strong>{summary.overtime.toFixed(1)}h</strong> | Cachê estimado: <strong>R$ {summary.cache.toFixed(2)}</strong>
-              </AlertDescription>
-            </Alert>
-          )}
-
-          <div className="space-y-2">
-            <Label>Observacoes</Label>
-            <Textarea value={formData.notes} onChange={(e) => setField('notes', e.target.value)} className="bg-slate-800 border-slate-700" placeholder="Detalhes do turno..." />
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onClose?.(false)} disabled={loading}>
+          <div className="flex gap-3 px-4 py-3 sm:px-6 border-t border-slate-700 flex-shrink-0 pb-safe">
+            <Button type="button" variant="outline" onClick={() => onClose?.(false)} disabled={loading} className="flex-1 h-11">
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading} className="bg-cyan-600 hover:bg-cyan-700 text-white">
+            <Button type="submit" disabled={loading} className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white h-11">
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Salvar'}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

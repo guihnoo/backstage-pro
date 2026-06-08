@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { UploadFile } from '@/api/integrations';
+import { uploadUserFile } from '@/lib/uploadFile';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { X, Clock, Camera, Loader2, AlertCircle, Save, Info, Calendar as CalendarIcon } from 'lucide-react';
 import { toast } from 'sonner';
@@ -169,7 +169,7 @@ export default function EventHoursSheet({
 
     setUploading(true);
     try {
-      const { file_url } = await UploadFile({ file });
+      const { file_url } = await uploadUserFile(file, { folder: 'work-photos' });
       setFormData(prev => ({ ...prev, photo_url: file_url }));
       toast.success('Foto enviada!');
     } catch (error) {

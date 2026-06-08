@@ -32,6 +32,7 @@ import {
   getEventStatus,
   daysDifference
 } from '../utils/dateUtils';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 
 export default function AgendaView({ 
   currentDate, 
@@ -220,7 +221,7 @@ export default function AgendaView({
                                   </div>
                                   <div className="flex items-center gap-2 text-slate-400">
                                     <DollarSign className="w-4 h-4" />
-                                    <span>R$ {(event.daily_cache_value || 0).toFixed(0)}/dia</span>
+                                    <span>R$ {getEventCacheAmount(event).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</span>
                                   </div>
                                   {eventWork && (
                                     <div className="flex items-center gap-2 text-green-400">

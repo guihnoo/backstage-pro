@@ -1,10 +1,11 @@
 ﻿import React, { useEffect, useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Sparkles, BookmarkPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { hardNavigate } from '@/lib/hardNavigate';
@@ -188,10 +189,10 @@ export default function EventForm({
       onSelectTemplate={handleSelectTemplate}
     />
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl bg-slate-900 border-slate-700 text-white">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-2xl bg-slate-900 border-slate-700 text-white p-0 flex flex-col overflow-hidden max-h-[90dvh]">
+        <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 sm:pt-5 border-b border-slate-700 flex-shrink-0">
           <div className="flex items-center justify-between">
-            <DialogTitle>{event?.id ? 'Editar Evento' : 'Novo Evento'}</DialogTitle>
+            <DialogTitle className="text-white">{event?.id ? 'Editar Evento' : 'Novo Evento'}</DialogTitle>
             {!event?.id && (
               <Button
                 type="button"
@@ -207,7 +208,9 @@ export default function EventForm({
           </div>
         </DialogHeader>
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <form className="flex flex-col flex-1 min-h-0" onSubmit={handleSubmit}>
+          <ScrollArea className="flex-1">
+          <div className="space-y-4 p-4 sm:p-6 pb-2">
           <div className="space-y-2">
             <Label>Cliente</Label>
             {clients.length === 0 ? (
@@ -296,25 +299,27 @@ export default function EventForm({
             <Label>Observacoes</Label>
             <Textarea value={formData.observacoes_md} onChange={(e) => setField('observacoes_md', e.target.value)} className="bg-slate-800 border-slate-700" />
           </div>
+          </div>
+          </ScrollArea>
 
-          <DialogFooter className="flex-col sm:flex-row gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 px-4 py-3 sm:px-6 border-t border-slate-700 flex-shrink-0 pb-safe">
             <Button
               type="button"
               variant="outline"
               onClick={handleSaveTemplate}
               disabled={savingTemplate || loading}
-              className="sm:mr-auto border-slate-600 text-slate-400 hover:text-slate-200 gap-1.5"
+              className="sm:mr-auto border-slate-600 text-slate-400 hover:text-slate-200 gap-1.5 h-11"
             >
               {savingTemplate ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BookmarkPlus className="w-3.5 h-3.5" />}
               Salvar como template
             </Button>
-            <Button type="button" variant="outline" onClick={() => onClose?.(false)} disabled={loading}>
+            <Button type="button" variant="outline" onClick={() => onClose?.(false)} disabled={loading} className="h-11">
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading} className="bg-cyan-600 hover:bg-cyan-700 text-white">
+            <Button type="submit" disabled={loading} className="bg-cyan-600 hover:bg-cyan-700 text-white h-11">
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : event?.id ? 'Atualizar' : 'Criar'}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

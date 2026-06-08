@@ -72,11 +72,11 @@ const EventTimelineItem = ({ event, isLast, workData, onClick }) => {
           </div>
 
           {/* Métricas do Evento */}
-          {event.daily_cache_value && event.daily_cache_value > 0 && (
+          {getEventCacheAmount(event) > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
               <div className="flex items-center gap-1 text-purple-400 bg-purple-400/10 px-2 py-1 rounded">
                 <DollarSign className="w-3 h-3" />
-                {formatCurrency(event.daily_cache_value)}/dia
+                {formatCurrency(getEventCacheAmount(event))}
               </div>
 
               {event.status === 'completed' && eventWork.length > 0 && (
@@ -425,9 +425,9 @@ export default function ClientDetailModal({
                                   </p>
                                 </div>
                                 <div className="text-right">
-                                  {event.daily_cache_value && event.daily_cache_value > 0 && (
+                                  {getEventCacheAmount(event) > 0 && (
                                     <p className="text-sm font-medium text-green-400">
-                                      {formatCurrency(event.daily_cache_value)}/dia
+                                      {formatCurrency(getEventCacheAmount(event))}
                                     </p>
                                   )}
                                   <ArrowRight className="w-4 h-4 text-slate-400 ml-auto mt-1" />

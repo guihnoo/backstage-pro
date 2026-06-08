@@ -12,6 +12,7 @@ import {
   Clock
 } from 'lucide-react';
 import { formatDisplayDate, getEventStatus } from '../utils/dateUtils';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 
 export default function DayBottomSheet({ 
   isOpen, 
@@ -136,10 +137,12 @@ export default function DayBottomSheet({
                               {event.start_time}
                             </div>
                           )}
+                          {getEventCacheAmount(event) > 0 && (
                           <div className="flex items-center gap-1">
                             <DollarSign className="w-3 h-3" />
-                            R$ {(event.daily_cache_value || 0).toFixed(0)}
+                            R$ {getEventCacheAmount(event).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}
                           </div>
+                          )}
                           <Badge 
                             variant="outline" 
                             className={`text-xs ${

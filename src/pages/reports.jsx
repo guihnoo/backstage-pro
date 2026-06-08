@@ -460,7 +460,7 @@ export default function ReportsPage() {
           return {
             title: event.title,
             subtitle: `${client?.name || 'Cliente'} • Concluído em ${format(parseISO(event.end_date), 'dd/MM/yyyy')}`,
-            value: workValue || event.daily_cache_value || 0
+            value: workValue || getEventCacheAmount(event)
           };
         }));
         break;

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { formatDisplayDate, getEventStatus, getEventStatusConfig } from '../utils/dateUtils';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 import { toast } from 'sonner';
 
 export default function EventActionSheet({
@@ -120,10 +121,10 @@ export default function EventActionSheet({
                     {formatDisplayDate(event.start_date)} - {formatDisplayDate(event.end_date)}
                   </span>
                 </div>
-                {event.daily_cache_value > 0 && (
+                {getEventCacheAmount(event) > 0 && (
                   <div className="flex items-center gap-2 text-slate-300">
                     <DollarSign className="w-4 h-4 text-slate-500" />
-                    <span>{formatCurrency(event.daily_cache_value)}/dia</span>
+                    <span>{formatCurrency(getEventCacheAmount(event))}</span>
                   </div>
                 )}
               </div>

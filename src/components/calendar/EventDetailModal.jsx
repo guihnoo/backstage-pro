@@ -215,9 +215,9 @@ export default function EventDetailModal({
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <p className="text-sm text-slate-400 mb-1">Cachê Diário</p>
+                  <p className="text-sm text-slate-400 mb-1">Cachê do Evento</p>
                   <p className="text-2xl font-bold text-green-400">
-                    {formatCurrency(event.daily_cache_value || 0)}
+                    {formatCurrency(getEventCacheAmount(event))}
                   </p>
                 </div>
 

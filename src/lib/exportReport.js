@@ -1,5 +1,6 @@
 import { format, parseISO } from 'date-fns';
 import { getEventStatus, getEventStatusLabel } from '@/components/utils/dateUtils';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 
 function periodBounds(period) {
   const start = period?.start ?? period?.from ?? null;
@@ -67,7 +68,7 @@ function buildSummaryRows(data) {
     .reduce((sum, e) => sum + Number(e.paid_amount || 0), 0);
   const receivable = events
     .filter((e) => getEventStatus(e) === 'completed' && e.payment_status === 'unpaid')
-    .reduce((sum, e) => sum + Number(e.daily_cache_value || e.estimated_revenue || 0), 0);
+    .reduce((sum, e) => sum + getEventCacheAmount(e), 0);
   const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
   const totalHours = work.reduce((sum, w) => sum + Number(w.total_hours || w.hours_worked || 0), 0);
 
@@ -85,7 +86,7 @@ function buildSummaryRows(data) {
 
 function buildEventRows(data) {
   const rows = [
-    ['Evento', 'Cliente', 'Início', 'Fim', 'Status', 'Pagamento', 'Valor pago', 'Cachê/dia'],
+    ['Evento', 'Cliente', 'Início', 'Fim', 'Status', 'Pagamento', 'Valor pago', 'Cachê'],
   ];
   for (const event of data.events || []) {
     rows.push([
@@ -96,7 +97,7 @@ function buildEventRows(data) {
       getEventStatusLabel(event),
       event.payment_status || '',
       formatMoney(event.paid_amount),
-      formatMoney(event.daily_cache_value),
+      formatMoney(getEventCacheAmount(event)),
     ]);
   }
   return rows;

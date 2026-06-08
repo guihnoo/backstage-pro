@@ -13,6 +13,7 @@ import SmartSuggestions from '@/components/ai/SmartSuggestions';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { getCategoryConfig } from '@/lib/categoryConfig';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 
 const STORAGE_KEY = 'backstage_ai_conversations';
@@ -123,7 +124,7 @@ export default function AIMentorPage() {
       titulo: e.title,
       data: e.start_date,
       cliente: e.clients?.name || 'Sem cliente',
-      valor: e.daily_cache_value || 0,
+      valor: getEventCacheAmount(e),
     })) ?? [],
     total_clientes: clients?.length ?? 0,
     categoria: profile?.category_label || profile?.category || 'técnico de eventos',
