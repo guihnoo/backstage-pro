@@ -459,7 +459,9 @@ export default function CalendarPage() {
       if (!eventToUpdate) return;
       const newStatus = eventToUpdate.payment_status === 'paid' ? 'unpaid' : 'paid';
       try {
-        await updateEvent(eventToUpdate.id, { payment_status: newStatus });
+        const updateData = { payment_status: newStatus };
+        if (newStatus === 'paid') updateData.paid_date = new Date().toISOString().split('T')[0];
+        await updateEvent(eventToUpdate.id, updateData);
         toast.success(
           newStatus === 'paid'
             ? `"${eventToUpdate.title}" marcado como pago!`

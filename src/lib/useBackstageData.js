@@ -35,7 +35,7 @@ export function useStats(userId) {
         const [eventsRes, dailyWorkRes] = await Promise.all([
           supabase
             .from('events')
-            .select('id, payment_status, status, client_id, daily_cache_value, actual_revenue, estimated_revenue')
+            .select('id, payment_status, status, client_id, daily_cache_value, actual_revenue, estimated_revenue, paid_amount')
             .eq('user_id', userId)
             .gte('start_date', monthStart)
             .lte('start_date', monthEnd),
@@ -52,7 +52,7 @@ export function useStats(userId) {
 
         const faturamento_pago = events
           .filter(e => e.payment_status === 'paid')
-          .reduce((sum, e) => sum + eventValue(e), 0);
+          .reduce((sum, e) => sum + (e.paid_amount || eventValue(e)), 0);
 
         const a_receber = events
           .filter(e => ['pending', 'unpaid', 'partial'].includes(e.payment_status))
@@ -234,7 +234,7 @@ export function usePaymentAlerts(userId) {
       try {
         const { data, error: err } = await supabase
           .from('events')
-          .select('id, title, start_date, payment_status, status, daily_cache_value, actual_revenue, estimated_revenue, clients (name)')
+          .select('id, title, start_date, end_date, payment_status, status, daily_cache_value, actual_revenue, estimated_revenue, clients (name)')
           .eq('user_id', userId)
           .in('payment_status', ['pending', 'unpaid', 'partial'])
           .eq('status', 'completed')
@@ -243,7 +243,8 @@ export function usePaymentAlerts(userId) {
         if (err) throw err;
 
         const alertsList = (data || []).map(event => {
-          const daysOverdue = differenceInDays(new Date(), parseISO(event.start_date));
+          const refDate = event.end_date || event.start_date;
+          const daysOverdue = differenceInDays(new Date(), parseISO(refDate));
           const value = eventValue(event);
           return {
             id: event.id,

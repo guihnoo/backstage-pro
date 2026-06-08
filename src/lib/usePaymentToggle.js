@@ -10,9 +10,11 @@ export function usePaymentToggle() {
     const newStatus = event.payment_status === 'paid' ? 'unpaid' : 'paid';
     setToggling(event.id);
     try {
+      const updateData = { payment_status: newStatus };
+      if (newStatus === 'paid') updateData.paid_date = new Date().toISOString().split('T')[0];
       const { error } = await supabase
         .from('events')
-        .update({ payment_status: newStatus })
+        .update(updateData)
         .eq('id', event.id);
       if (error) throw error;
       toast.success(

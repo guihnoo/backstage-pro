@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { parseISO, isValid } from 'date-fns';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -221,16 +222,10 @@ export default function ClientDetailModal({
     const totalPending = unpaidCompletedEventsList.reduce((sum, event) => {
       const eventWork = workDataFilteredByClientEvents.filter((work) => work.event_id === event.id);
       if (eventWork.length > 0) {
-        return sum + eventWork.reduce((workSum, work) => workSum + (work.daily_cache || 0), 0);
+        const fromWork = eventWork.reduce((workSum, work) => workSum + (work.daily_cache || 0), 0);
+        if (fromWork > 0) return sum + fromWork;
       }
-      const startDate = parseISO(event.start_date);
-      const endDate = parseISO(event.end_date);
-      if (isValid(startDate) && isValid(endDate)) {
-        const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
-        const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-        return sum + (event.daily_cache_value || 0) * days;
-      }
-      return sum;
+      return sum + getEventCacheAmount(event);
     }, 0);
 
     const completedEventsCount = completedEventsList.length;

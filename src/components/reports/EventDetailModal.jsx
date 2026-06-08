@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { getEventStatusLabel, getEventStatusConfig, getEventStatus, formatDisplayDate, formatFullDate, timeRangeLabel } from '../utils/dateUtils';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import PaymentConfirmModal from './PaymentConfirmModal';
 import {
@@ -127,7 +128,8 @@ const EventDetailModal = React.memo(function EventDetailModal({
 
     const totalHours = dailyWork.reduce((sum, work) => sum + (work.total_hours || 0), 0);
     const totalOvertime = dailyWork.reduce((sum, work) => sum + (work.overtime_hours || 0), 0);
-    const totalRevenue = dailyWork.reduce((sum, work) => sum + (work.daily_cache || 0), 0);
+    const fromWork = dailyWork.reduce((sum, work) => sum + (work.daily_cache || 0), 0);
+    const totalRevenue = fromWork > 0 ? fromWork : getEventCacheAmount(event);
     const totalExpenses = expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
     const netRevenue = totalRevenue - totalExpenses;
 

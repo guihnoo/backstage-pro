@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -60,14 +61,7 @@ export default function EventDetailModal({
 
   const estimatedValue = useMemo(() => {
     if (!event || eventWork.length > 0) return null;
-    try {
-      const start = parseISO(event.start_date);
-      const end = parseISO(event.end_date);
-      const days = differenceInDays(end, start) + 1;
-      return (event.daily_cache_value || 0) * days;
-    } catch {
-      return 0;
-    }
+    return getEventCacheAmount(event);
   }, [event, eventWork.length]);
 
   if (!event) return null;

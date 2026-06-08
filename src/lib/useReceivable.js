@@ -108,7 +108,7 @@ export function useReceivableByClient(userId) {
     setRows(prev => prev.filter(r => r.clientId !== clientId));
     const { error: updateError } = await supabase
       .from('events')
-      .update({ payment_status: 'paid' })
+      .update({ payment_status: 'paid', paid_date: new Date().toISOString().split('T')[0] })
       .in('id', eventIds)
       .eq('user_id', userId);
     if (updateError) {

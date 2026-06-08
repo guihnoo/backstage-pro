@@ -7,6 +7,7 @@ import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import ModoPalcoActions from '@/components/home/ModoPalcoActions';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 
 function getEventDateStr(event) {
   return event?.start_date || event?.event_date || null;
@@ -123,7 +124,7 @@ export default function ProximoShow({ event, userCategory, isOnStage }) {
               <p className="text-gray-500 text-xs">Cachê</p>
               <p className="font-semibold">
                 {isVisible
-                  ? formatCurrency(event.daily_cache_value || event.actual_revenue || event.estimated_revenue || 0)
+                  ? formatCurrency(getEventCacheAmount(event))
                   : '•••••'}
               </p>
             </div>

@@ -6,6 +6,7 @@ import { Clock, MapPin, User, CheckCircle2, Loader2, ChevronRight, Plus } from '
 import { hardNavigate } from '@/lib/hardNavigate';
 import { usePaymentToggle } from '@/lib/usePaymentToggle';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 
 function getTimeGroup(daysFromToday) {
   if (daysFromToday === 0) return 'Hoje';
@@ -119,7 +120,7 @@ export default function ProximosEventos({ events, isLoading, onRefresh }) {
             : '';
           const isPaid = event.payment_status === 'paid';
           const isToggling = toggling === event.id;
-          const cacheValue = event.daily_cache_value || event.actual_revenue || event.estimated_revenue || 0;
+          const cacheValue = getEventCacheAmount(event);
 
           return (
             <motion.div

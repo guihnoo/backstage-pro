@@ -5,6 +5,7 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { parseISO, addDays, isValid, differenceInCalendarDays, format } from 'date-fns';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 import { ptBR } from 'date-fns/locale';
 
 function getWeekLabel(daysFromNow) {
@@ -27,7 +28,7 @@ export default function ForecastWidget({ events = [], isLoading, primaryHex = '#
       .map(ev => {
         const d = parseISO(ev.start_date);
         const days = differenceInCalendarDays(d, today);
-        const value = Number(ev.daily_cache_value) || 0;
+        const value = getEventCacheAmount(ev);
         return { ...ev, days, value };
       })
       .sort((a, b) => a.days - b.days);

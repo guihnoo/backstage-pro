@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, AlertTriangle, Calendar } from 'lucide-react';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 import {
   format,
   differenceInDays,
@@ -36,14 +37,11 @@ export default function PaymentAlerts({ events = [], work = [], clients = [], on
       const eventWork = Array.isArray(work) ? work.filter(w => w.event_id === event.id) : [];
       let amountDue = 0;
 
-      // Prioridade 1: Usar a soma dos cachês do trabalho registrado
       if (eventWork.length > 0) {
-        amountDue = eventWork.reduce((sum, w) => sum + (w.daily_cache || 0), 0);
-      } 
-      // Prioridade 2: Usar o valor projetado do evento
-      else {
-        const eventDays = daysDifference(event.start_date, event.end_date);
-        amountDue = (event.daily_cache_value || 0) * (eventDays > 0 ? eventDays : 1);
+        const fromWork = eventWork.reduce((sum, w) => sum + (w.daily_cache || 0), 0);
+        amountDue = fromWork > 0 ? fromWork : getEventCacheAmount(event);
+      } else {
+        amountDue = getEventCacheAmount(event);
       }
 
       // Só adicionar se há valor a receber

@@ -203,10 +203,8 @@ export default function Goals() {
   // Stats reais
   const { stats, loading: statsLoading } = useStats(userId);
 
-  // Total de eventos histórico (para nível)
-  const today = new Date();
-  const yearStart = new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0];
-  const { events: allEvents } = useEvents(userId, { from: yearStart });
+  // Total de eventos histórico (para nível) — todos os tempos, só completados
+  const { events: allEvents } = useEvents(userId, { status: 'completed' });
 
   const totalEvents = allEvents.length;
   const levelInfo = getLevelInfo(totalEvents);
@@ -340,7 +338,7 @@ export default function Goals() {
               <h2 className="text-lg font-black" style={{ color: levelInfo.color }}>
                 {levelInfo.emoji} {levelInfo.title}
               </h2>
-              <p className="text-xs text-gray-400 mt-0.5">{totalEvents} eventos concluídos no ano</p>
+              <p className="text-xs text-gray-400 mt-0.5">{totalEvents} evento{totalEvents !== 1 ? 's' : ''} concluído{totalEvents !== 1 ? 's' : ''} no total</p>
             </div>
             {levelInfo.next && (
               <div className="text-right">

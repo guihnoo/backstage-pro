@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -108,9 +109,9 @@ export default function EventCardLarge({ event, client, work, onView, onEdit, cl
       <div className="bg-slate-900/50 rounded-xl p-3 mb-4">
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div>
-            <span className="text-slate-400 block">Cachê/dia:</span>
+            <span className="text-slate-400 block">Cachê:</span>
             <p className="font-bold text-base text-green-300 leading-tight">
-              {formatCurrency(event.daily_cache_value || 0)}
+              {formatCurrency(getEventCacheAmount(event))}
             </p>
           </div>
           {hasWork && (

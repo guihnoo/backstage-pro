@@ -4,6 +4,7 @@ import { BarChart, TrendingUp } from 'lucide-react';
 import ReportsChart from './ReportsChart';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { parseISO, isValid } from 'date-fns';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 
 export default function MonthlyChart({ events = [], dailyWork = [], expenses = [], _periodStart }) {
   const { isVisible, formatCurrency } = useFinancialVisibility();
@@ -35,16 +36,7 @@ export default function MonthlyChart({ events = [], dailyWork = [], expenses = [
         if (eventWork.length > 0) {
           calculated_value = eventWork.reduce((sum, w) => sum + (w.daily_cache || 0), 0);
         } else {
-          try {
-            const startDate = parseISO(e.start_date);
-            const endDate = parseISO(e.end_date);
-            if (isValid(startDate) && isValid(endDate)) {
-              const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-              calculated_value = (e.daily_cache_value || 0) * days;
-            }
-          } catch {
-            calculated_value = 0;
-          }
+          calculated_value = getEventCacheAmount(e);
         }
 
         return {
@@ -65,26 +57,10 @@ export default function MonthlyChart({ events = [], dailyWork = [], expenses = [
         }
       })
       .map(e => {
-        try {
-          const startDate = parseISO(e.start_date);
-          const endDate = parseISO(e.end_date);
-          let calculated_value = 0;
-          
-          if (isValid(startDate) && isValid(endDate)) {
-            const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-            calculated_value = (e.daily_cache_value || 0) * days;
-          }
-
-          return {
-            start_date: e.start_date,
-            calculated_value
-          };
-        } catch {
-          return {
-            start_date: e.start_date,
-            calculated_value: 0
-          };
-        }
+        return {
+          start_date: e.start_date,
+          calculated_value: getEventCacheAmount(e)
+        };
       });
 
     return { realized, receivable, projected, expenses };
