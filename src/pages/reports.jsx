@@ -1,37 +1,29 @@
-﻿
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+﻿import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { useExpenses } from '@/lib/useExpenses';
-import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import {
-  Calendar,
   DollarSign,
   TrendingUp,
-  TrendingDown,
   Users,
   Clock,
   BarChart3,
-  Download,
   FileText,
   AlertCircle,
-  Loader2,
   ArrowUp,
   ArrowDown,
   Minus,
-  XCircle // Ícone para limpar filtro
+  XCircle
 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, subMonths, isWithinInterval, parseISO, startOfYear, endOfYear, addMonths } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { toast } from 'sonner';
-import { getEventStatus, getEventStatusLabel, getEventStatusConfig } from '@/components/utils/dateUtils';
+import { getEventStatus } from '@/components/utils/dateUtils';
 
 // Component imports
 import ReportsChart from '@/components/reports/ReportsChart';
@@ -133,7 +125,7 @@ const StatCard = ({ title, value, subtitle, icon: Icon, color, trend, onClick, i
 };
 
 // Modal para exibir detalhes dos KPIs
-const KPIDetailModal = ({ isOpen, onClose, title, data, type }) => {
+const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type }) => {
   const { formatCurrency } = useFinancialVisibility();
 
   const getModalContent = () => {
@@ -563,7 +555,7 @@ export default function ReportsPage() {
   }, [processedData, chartFilter]);
 
   // NOVO: Handlers para o EventDetailModal
-  const handleEventEdit = (event) => {
+  const handleEventEdit = () => {
     toast.info('Edição de eventos será implementada em breve!');
   };
 
@@ -575,13 +567,13 @@ export default function ReportsPage() {
         toast.success('Evento excluído com sucesso!');
         setSelectedEvent(null);
         refreshData();
-      } catch (error) {
+      } catch (_e) {
         toast.error('Erro ao excluir evento');
       }
     }
   };
 
-  const handleWorkEdit = (workRecord, eventRecord) => {
+  const handleWorkEdit = () => {
     toast.info('Edição de trabalho será implementada em breve!');
   };
 
@@ -592,13 +584,13 @@ export default function ReportsPage() {
         await deleteWork(workId);
         toast.success('Registro de trabalho excluído!');
         refreshData();
-      } catch (error) {
+      } catch (_e) {
         toast.error('Erro ao excluir registro');
       }
     }
   };
 
-  const handleExpenseEdit = (expenseRecord, eventRecord) => {
+  const handleExpenseEdit = () => {
     toast.info('Edição de despesas será implementada em breve!');
   };
 
@@ -609,7 +601,7 @@ export default function ReportsPage() {
         await deleteExpense(expenseId);
         toast.success('Despesa excluída!');
         refreshData();
-      } catch (error) {
+      } catch (_e) {
         toast.error('Erro ao excluir despesa');
       }
     }

@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/authContext';
 import { useStats, useEvents } from '@/lib/useBackstageData';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
-import { Trophy, Target, Zap, Star, TrendingUp, Award, Flame, Calendar } from 'lucide-react';
+import { Trophy, Zap, Star, TrendingUp, Award, Flame, Calendar } from 'lucide-react';
 
 
 // ─── Círculo de progresso animado ───────────────────────────

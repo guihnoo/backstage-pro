@@ -1,5 +1,4 @@
-
-import React, { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQueryAction } from '@/lib/useQueryAction';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
