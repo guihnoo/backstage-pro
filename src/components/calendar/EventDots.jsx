@@ -1,4 +1,3 @@
-import React from 'react';
 
 const EventDots = ({ events = [], max = 3 }) => {
   if (!events || events.length === 0) {

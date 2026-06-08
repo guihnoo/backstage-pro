@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, Eye, Database, Lock, UserCheck, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';

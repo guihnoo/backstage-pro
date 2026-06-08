@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 
 const SWIPE_CONFIDENCE_THRESHOLD = 10000;

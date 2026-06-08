@@ -1,4 +1,3 @@
-import React from 'react';
 
 const WEEKDAY_LABELS = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
 

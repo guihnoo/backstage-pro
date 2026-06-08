@@ -40,18 +40,12 @@ export default function EventDetailModal({
   const { dailyWork } = useDailyWork();
   const [applying12h, setApplying12h] = useState(false);
 
-  if (!event) return null;
-
-  const status = getEventStatus(event);
-  const statusConfig = getEventStatusConfig(event);
-  const StatusIcon = statusConfig.icon;
-
-  // Calcular trabalhos relacionados
+  // Hooks must be called before any conditional return
   const eventWork = useMemo(() => {
+    if (!event) return [];
     return (dailyWork || []).filter(w => w.event_id === event.id);
-  }, [dailyWork, event.id]);
+  }, [dailyWork, event]);
 
-  // Calcular totais
   const totals = useMemo(() => {
     const totalHours = eventWork.reduce((sum, w) => sum + (w.total_hours || 0), 0);
     const totalOvertime = eventWork.reduce((sum, w) => sum + (w.overtime_hours || 0), 0);
@@ -59,10 +53,8 @@ export default function EventDetailModal({
     return { totalHours, totalOvertime, totalEarned };
   }, [eventWork]);
 
-  // Calcular estimativa se não houver trabalho registrado
   const estimatedValue = useMemo(() => {
-    if (eventWork.length > 0) return null;
-    
+    if (!event || eventWork.length > 0) return null;
     try {
       const start = parseISO(event.start_date);
       const end = parseISO(event.end_date);
@@ -72,6 +64,12 @@ export default function EventDetailModal({
       return 0;
     }
   }, [event, eventWork.length]);
+
+  if (!event) return null;
+
+  const status = getEventStatus(event);
+  const statusConfig = getEventStatusConfig(event);
+  const StatusIcon = statusConfig.icon;
 
   const handleApply12Hours = async () => {
     setApplying12h(true);

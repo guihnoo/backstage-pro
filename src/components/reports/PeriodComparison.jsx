@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { ArrowUpRight, ArrowDownRight, Minus, TrendingUp, HelpCircle } from 'lucide-react';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
