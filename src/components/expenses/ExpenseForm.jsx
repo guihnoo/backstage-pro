@@ -1,5 +1,6 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -123,96 +124,100 @@ export default function ExpenseForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl bg-slate-900 border-slate-700 text-white">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-2xl bg-slate-900 border-slate-700 text-white p-0 flex flex-col overflow-hidden max-h-[90dvh]">
+        <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 sm:pt-5 border-b border-slate-700 flex-shrink-0">
           <DialogTitle>{expense?.id ? 'Editar Despesa' : 'Nova Despesa'}</DialogTitle>
         </DialogHeader>
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-2">
-            <Label>Título</Label>
-            <Input value={formData.title} onChange={(e) => setField('title', e.target.value)} className="bg-slate-800 border-slate-700" />
-          </div>
+        <form className="flex flex-col flex-1 min-h-0" onSubmit={handleSubmit}>
+          <ScrollArea className="flex-1">
+            <div className="space-y-4 p-4 sm:p-6 pb-2">
+              <div className="space-y-2">
+                <Label>Título</Label>
+                <Input value={formData.title} onChange={(e) => setField('title', e.target.value)} className="bg-slate-800 border-slate-700 h-12 text-base" />
+              </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Valor</Label>
-              <Input type="number" step="0.01" min="0" value={formData.amount} onChange={(e) => setField('amount', e.target.value)} className="bg-slate-800 border-slate-700" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Valor</Label>
+                  <Input type="number" step="0.01" min="0" value={formData.amount} onChange={(e) => setField('amount', e.target.value)} className="bg-slate-800 border-slate-700 h-12 text-base" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Data</Label>
+                  <Input type="date" value={formData.date} onChange={(e) => setField('date', e.target.value)} className="bg-slate-800 border-slate-700 h-12 text-base" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Categoria</Label>
+                  <Select value={formData.category} onValueChange={(value) => setField('category', value)}>
+                    <SelectTrigger className="bg-slate-800 border-slate-700">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700">
+                      {CATEGORIES.map((category) => (
+                        <SelectItem key={category.value} value={category.value}>
+                          {category.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Forma de pagamento</Label>
+                  <Select value={formData.payment_method} onValueChange={(value) => setField('payment_method', value)}>
+                    <SelectTrigger className="bg-slate-800 border-slate-700">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700">
+                      {PAYMENT_METHODS.map((method) => (
+                        <SelectItem key={method.value} value={method.value}>
+                          {method.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Evento (opcional)</Label>
+                <Select value={formData.event_id || ''} onValueChange={(value) => setField('event_id', value)}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700">
+                    <SelectValue placeholder="Sem vinculo" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    {events.map((evt) => (
+                      <SelectItem key={evt.id} value={evt.id}>
+                        {evt.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Descrição</Label>
+                <Textarea value={formData.description} onChange={(e) => setField('description', e.target.value)} className="bg-slate-800 border-slate-700" />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Notas</Label>
+                <Textarea value={formData.notes} onChange={(e) => setField('notes', e.target.value)} className="bg-slate-800 border-slate-700" />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label>Data</Label>
-              <Input type="date" value={formData.date} onChange={(e) => setField('date', e.target.value)} className="bg-slate-800 border-slate-700" />
-            </div>
-          </div>
+          </ScrollArea>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Categoria</Label>
-              <Select value={formData.category} onValueChange={(value) => setField('category', value)}>
-                <SelectTrigger className="bg-slate-800 border-slate-700">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
-                  {CATEGORIES.map((category) => (
-                    <SelectItem key={category.value} value={category.value}>
-                      {category.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Forma de pagamento</Label>
-              <Select value={formData.payment_method} onValueChange={(value) => setField('payment_method', value)}>
-                <SelectTrigger className="bg-slate-800 border-slate-700">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
-                  {PAYMENT_METHODS.map((method) => (
-                    <SelectItem key={method.value} value={method.value}>
-                      {method.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Evento (opcional)</Label>
-            <Select value={formData.event_id || ''} onValueChange={(value) => setField('event_id', value)}>
-              <SelectTrigger className="bg-slate-800 border-slate-700">
-                <SelectValue placeholder="Sem vinculo" />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700">
-                {events.map((evt) => (
-                  <SelectItem key={evt.id} value={evt.id}>
-                    {evt.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Descrição</Label>
-            <Textarea value={formData.description} onChange={(e) => setField('description', e.target.value)} className="bg-slate-800 border-slate-700" />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Notas</Label>
-            <Textarea value={formData.notes} onChange={(e) => setField('notes', e.target.value)} className="bg-slate-800 border-slate-700" />
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange?.(false)} disabled={loading}>
+          <div className="flex gap-3 px-4 py-3 sm:px-6 border-t border-slate-700 flex-shrink-0 pb-safe">
+            <Button type="button" variant="outline" onClick={() => onOpenChange?.(false)} disabled={loading} className="flex-1 h-11">
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading} className="bg-amber-600 hover:bg-amber-700 text-white">
+            <Button type="submit" disabled={loading} className="flex-1 bg-amber-600 hover:bg-amber-700 text-white h-11">
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Salvar'}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
