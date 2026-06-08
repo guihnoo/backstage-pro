@@ -73,8 +73,8 @@ const ClientsSkeleton = () => (
 
 export default function ClientsPage() {
   const { clients, loading: clientsLoading, error: clientsError, refetch: refetchClients, delete: deleteClient } = useClients();
-  const { events, loading: eventsLoading } = useEvents();
-  const { dailyWork, loading: dailyWorkLoading } = useDailyWork();
+  const { events } = useEvents();
+  const { dailyWork } = useDailyWork();
   const { formatCurrency } = useFinancialVisibility();
   const { profile } = useAuth();
   const config = getCategoryConfig(profile?.category || 'lighting');
@@ -112,7 +112,6 @@ export default function ClientsPage() {
         return sum + (eventRevenue > 0 ? eventRevenue : (e.daily_cache_value || 0));
       }, 0);
 
-      const now = new Date();
       const sixMonthsAgo = new Date();
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
       

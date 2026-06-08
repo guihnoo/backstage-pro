@@ -15,14 +15,6 @@ const THEME = {
   overlay: "rgba(9,14,24,0.70)"
 };
 
-const softColor = (hex, alpha = 0.18) => {
-  if (!hex || hex.length < 7) return `rgba(34, 211, 238, ${alpha})`;
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-};
-
 const eventSpansDay = (event, day) => {
   if (!event?.start_date || !event?.end_date) return false;
   const dayStr = normalizeDateString(day);

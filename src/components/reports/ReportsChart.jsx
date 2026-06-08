@@ -28,7 +28,7 @@ const CustomTooltip = ({ active, payload, label, chartView }) => {
 };
 
 export default function ReportsChart({ chartInput, onDataClick }) {
-  const { isVisible, formatCurrency } = useFinancialVisibility();
+  const { isVisible } = useFinancialVisibility();
   const [chartView, setChartView] = useState('overview');
 
   const chartData = useMemo(() => {

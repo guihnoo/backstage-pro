@@ -31,7 +31,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { formatDisplayDate, getEventStatusLabel } from '@/components/utils/dateUtils';
+import { formatDisplayDate } from '@/components/utils/dateUtils';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
@@ -39,9 +39,6 @@ import { format } from 'date-fns';
 
 const ClientCard = ({ client, onCardClick, onEdit, onDelete, onNewEvent, isVisible, formatCurrency, searchTerm, primaryHex = '#A64AFF', accentHex = '#FFB700' }) => {
   const [showConfirm, setShowConfirm] = useState(false);
-
-  // Usando a função de status para o próximo evento
-  const nextEventStatus = client.nextEvent ? getEventStatusLabel(client.nextEvent) : null;
 
   const getInitials = (name) => {
     return name

@@ -22,7 +22,6 @@ const CATEGORY_OPTIONS = [
 const todayIso = () => new Date().toISOString().split("T")[0];
 
 export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
-  const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [data, setData] = useState({ title: "", amount: "", date: todayIso(), category: "outros", notes: "" });
   const [fileUrl, setFileUrl] = useState("");
@@ -48,7 +47,6 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
   const handleFileChange = async (e) => {
     const f = e.target.files?.[0];
     if (!f) return;
-    setFile(f);
     setPreviewUrl(URL.createObjectURL(f));
     await uploadReceipt(f);
   };
@@ -60,7 +58,6 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
       receipt_url: fileUrl || "",
       amount: data.amount ? Number(data.amount) : 0,
     });
-    setFile(null);
     setPreviewUrl("");
     setFileUrl("");
     setData({ title: "", amount: "", date: todayIso(), category: "outros", notes: "" });

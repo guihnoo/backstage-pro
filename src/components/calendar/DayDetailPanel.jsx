@@ -1,9 +1,8 @@
-import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { format, isToday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarPlus, DollarSign, Plus, Timer, Zap, Calendar } from 'lucide-react';
+import { CalendarPlus, DollarSign, Timer, Zap, Calendar } from 'lucide-react';
 import EventCardLarge from './EventCardLarge';
 import { getEventsForDate, getWorkForDate } from '../utils/dateUtils';
 import { Badge } from '@/components/ui/badge';
@@ -48,10 +47,6 @@ const DayDetailPanel = ({ day, allEvents, allWork, allClients, onEventClick, onA
   const dayEvents = getEventsForDate(allEvents, day);
   const dayWork = getWorkForDate(allWork, day);
   const today = isToday(day);
-
-  const totalHours = dayWork ? dayWork.total_hours || 0 : 0;
-  const totalCache = dayWork ? dayWork.daily_cache || 0 : 0;
-  const overtimeHours = dayWork ? dayWork.overtime_hours || 0 : 0;
 
   return (
     <motion.div

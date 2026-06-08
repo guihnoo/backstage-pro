@@ -46,7 +46,6 @@ const InfoItem = ({ icon: Icon, label, value, color = 'text-slate-300', isCurren
 };
 
 const WorkItem = ({ work, onEdit }) => {
-  const { formatCurrency, isVisible } = useFinancialVisibility();
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -113,7 +112,6 @@ const EventDetailModal = React.memo(function EventDetailModal({
   onExpenseDelete,
   onApply12h
 }) {
-  const { formatCurrency, isVisible } = useFinancialVisibility();
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
 
   const statusConfig = useMemo(() => event ? getEventStatusConfig(event) : {}, [event]);

@@ -160,7 +160,7 @@ export default function ClientDetailModal({
 }) {
   const { events } = useEvents();
   const { dailyWork } = useDailyWork();
-  const { isVisible, formatCurrency } = useFinancialVisibility();
+  const { formatCurrency } = useFinancialVisibility();
   const { profile } = useAuth();
   const config = getCategoryConfig(profile?.category || 'lighting');
   const [activeTab, setActiveTab] = useState('overview');
@@ -298,10 +298,6 @@ export default function ClientDetailModal({
   };
 
   if (!clientData) return null;
-
-  const getInitials = (name) => {
-    return name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || '??';
-  };
 
   return (
     <AnimatePresence>

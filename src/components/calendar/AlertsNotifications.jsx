@@ -19,11 +19,6 @@ const alertColors = {
 };
 
 export default function AlertsNotifications({ alerts, onAction, onDismiss, onClose }) {
-  const getClientName = (clientId, clients = []) => {
-    const client = clients.find(c => c.id === clientId);
-    return client ? client.name : 'Cliente';
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0 }}

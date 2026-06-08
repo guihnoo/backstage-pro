@@ -1,21 +1,17 @@
 import React, { useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { format, isSameMonth, isToday } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { Loader2 } from 'lucide-react';
 import {
   normalizeDateString,
   stringToLocalDate,
   isSameDay,
-  formatDisplayDate,
   getEventStatus,
 } from '../utils/dateUtils';
-import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 
 const weekDays = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'];
 
 const EventBadge = React.memo(({ event, clientName, onRegisterWork, isFirstDay }) => {
-  const { formatCurrency } = useFinancialVisibility();
   const eventStatus = getEventStatus(event);
 
   let statusColor = event.color || '#22d3ee';
@@ -42,7 +38,6 @@ const EventBadge = React.memo(({ event, clientName, onRegisterWork, isFirstDay }
 });
 
 const DayCell = React.memo(({ day, isCurrentMonth, dayEvents, work, onDateClick, getClientName, onRegisterWork }) => {
-  const { formatCurrency } = useFinancialVisibility();
   const isCurrentDay = isToday(day);
 
   return (
