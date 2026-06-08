@@ -758,7 +758,7 @@ export default function ReportsPage() {
         }
 
         {/* View Selector */}
-        <div className="flex items-center gap-2 border-b border-slate-800">
+        <div className="flex items-center gap-2 border-b border-slate-800 overflow-x-auto pb-px scrollbar-none">
           {[
             { id: 'overview', label: 'Visão Geral', icon: BarChart3 },
             { id: 'clients', label: 'Clientes', icon: Users },
