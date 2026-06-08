@@ -19,7 +19,8 @@ import {
   Users,
   Clock,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  TrendingUp
 } from 'lucide-react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, parseISO, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -40,6 +41,7 @@ import NotesSheet from '@/components/mobile/NotesSheet';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { applyAuto12Hours } from '@/lib/applyAuto12Hours';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 
 const useMediaQuery = (query) => {
   const [matches, setMatches] = useState(false);
@@ -642,7 +644,14 @@ export default function CalendarPage() {
     const totalEvents = monthEvents.length;
     const workDays = monthWork.length;
     const totalHours = monthWork.reduce((sum, work) => sum + (Number(work.total_hours) || 0), 0);
-    const totalRevenue = monthWork.reduce((sum, work) => sum + (Number(work.daily_cache) || 0), 0);
+
+    // Receita: soma getEventCacheAmount por evento (usa daily_cache_value como campo primário)
+    const totalRevenue = monthEvents.reduce((sum, event) => {
+      const fromWork = dailyWork
+        .filter(w => w.event_id === event.id)
+        .reduce((s, w) => s + (Number(w.daily_cache) || 0), 0);
+      return sum + (fromWork > 0 ? fromWork : getEventCacheAmount(event));
+    }, 0);
 
     const monthClientIds = new Set(monthEvents.map((e) => e.client_id).filter(Boolean));
     const uniqueClients = monthClientIds.size;
@@ -667,11 +676,19 @@ export default function CalendarPage() {
         const client = clientMap.get(event.client_id);
         const startDate = parseISO(event.start_date);
         const endDate = parseISO(event.end_date);
+        const fromWork = dailyWork
+          .filter(w => w.event_id === event.id)
+          .reduce((s, w) => s + (Number(w.daily_cache) || 0), 0);
+        const value = fromWork > 0 ? fromWork : getEventCacheAmount(event);
         return {
-          title: `${client?.name || 'Cliente'} â€” ${event.title}`,
-          subtitle: `${isValid(startDate) ? format(startDate, 'dd/MM/yyyy', { locale: ptBR }) : ''} - ${
-            isValid(endDate) ? format(endDate, 'dd/MM/yyyy', { locale: ptBR }) : ''
+          title: event.title,
+          subtitle: `${client?.name || 'Cliente'} · ${isValid(startDate) ? format(startDate, 'dd/MM', { locale: ptBR }) : ''}${
+            isValid(endDate) && endDate.getTime() !== startDate.getTime()
+              ? `–${format(endDate, 'dd/MM', { locale: ptBR })}`
+              : ''
           }`,
+          amount: value,
+          amountFormatted: value > 0 ? formatCurrency(value) : null,
           event_id: event.id,
           dateSort: isValid(startDate) ? startDate.getTime() : 0,
         };
@@ -681,7 +698,7 @@ export default function CalendarPage() {
     setDrilldownTitle(`Eventos de ${format(currentDate, 'MMMM yyyy', { locale: ptBR })}`);
     setDrilldownItems(items);
     setDrilldownOpen(true);
-  }, [monthStats.monthEvents, clientMap, currentDate, closeModals]);
+  }, [monthStats.monthEvents, clientMap, currentDate, closeModals, dailyWork, formatCurrency]);
 
   const handleWorkDaysClick = useCallback(() => {
     closeModals();
@@ -754,6 +771,34 @@ export default function CalendarPage() {
     setDrilldownItems(clientItems.sort((a, b) => a.title.localeCompare(b.title)));
     setDrilldownOpen(true);
   }, [monthStats.monthClientIds, monthStats.monthEvents, clientMap, currentDate, closeModals]);
+
+  const handleRevenueClick = useCallback(() => {
+    closeModals();
+    const items = monthStats.monthEvents
+      .filter(event => getEventCacheAmount(event) > 0 || dailyWork.some(w => w.event_id === event.id))
+      .map((event) => {
+        const client = clientMap.get(event.client_id);
+        const startDate = parseISO(event.start_date);
+        const fromWork = dailyWork
+          .filter(w => w.event_id === event.id)
+          .reduce((s, w) => s + (Number(w.daily_cache) || 0), 0);
+        const value = fromWork > 0 ? fromWork : getEventCacheAmount(event);
+        const statusLabel = event.payment_status === 'paid' ? 'Pago' : event.payment_status === 'partial' ? 'Parcial' : 'Pendente';
+        return {
+          title: event.title,
+          subtitle: `${client?.name || 'Cliente'} · ${statusLabel}`,
+          amount: value,
+          amountFormatted: formatCurrency(value),
+          event_id: event.id,
+          dateSort: isValid(startDate) ? startDate.getTime() : 0,
+        };
+      })
+      .sort((a, b) => b.dateSort - a.dateSort);
+
+    setDrilldownTitle(`Receita de ${format(currentDate, 'MMMM yyyy', { locale: ptBR })}`);
+    setDrilldownItems(items);
+    setDrilldownOpen(true);
+  }, [monthStats.monthEvents, clientMap, currentDate, closeModals, dailyWork, formatCurrency]);
 
   const handleDrilldownItemClick = useCallback(
     (item) => {
@@ -920,7 +965,7 @@ export default function CalendarPage() {
         )}
 
         {/* Monthly Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
           <StatCard
             title="Eventos"
             value={monthStats.totalEvents}
@@ -948,6 +993,16 @@ export default function CalendarPage() {
             icon={Clock}
             color="text-amber-400"
             onClick={handleHoursClick}
+            loading={isLoading}
+          />
+
+          <StatCard
+            title="Receita"
+            value={formatCurrency(monthStats.totalRevenue)}
+            subtext="estimada no mês"
+            icon={TrendingUp}
+            color="text-emerald-400"
+            onClick={handleRevenueClick}
             loading={isLoading}
           />
 
