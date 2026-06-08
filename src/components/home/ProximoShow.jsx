@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
-import { MapPin, Clock, User, ChevronRight } from 'lucide-react';
+import { MapPin, Clock, User, ChevronRight, Navigation } from 'lucide-react';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { useCountdown } from '@/lib/useBackstageData';
+import { useNavigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import ModoPalcoActions from '@/components/home/ModoPalcoActions';
@@ -11,6 +12,7 @@ function getEventDateStr(event) {
 }
 
 export default function ProximoShow({ event, userCategory, isOnStage }) {
+  const navigate = useNavigate();
   const eventDateStr = getEventDateStr(event);
   const { countdown } = useCountdown(eventDateStr);
   const config = getCategoryConfig(userCategory);
@@ -26,9 +28,17 @@ export default function ProximoShow({ event, userCategory, isOnStage }) {
         <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
           Palco Limpo
         </h2>
-        <p className="text-gray-400">
+        <p className="text-gray-400 mb-5">
           Desfrute da calma antes da tormenta. Seus próximos eventos aparecem aqui.
         </p>
+        <motion.button
+          whileTap={{ scale: 0.96 }}
+          onClick={() => navigate('/calendar')}
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-violet-600 text-white text-sm font-semibold hover:shadow-lg hover:shadow-cyan-500/30 transition-all"
+        >
+          <Navigation className="w-4 h-4" />
+          Criar próximo show
+        </motion.button>
       </motion.div>
     );
   }
@@ -175,6 +185,7 @@ export default function ProximoShow({ event, userCategory, isOnStage }) {
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
+            onClick={() => navigate('/calendar')}
             className="flex-1 px-4 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-600 text-white font-semibold hover:shadow-lg hover:shadow-cyan-500/50 transition-all flex items-center justify-center gap-2"
           >
             <span>Ver Detalhes</span>
@@ -185,9 +196,11 @@ export default function ProximoShow({ event, userCategory, isOnStage }) {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="px-4 py-3 rounded-lg border border-gray-700 text-gray-300 font-semibold hover:border-cyan-500/50 hover:bg-cyan-500/10 transition-all"
+              onClick={() => window.open(`https://maps.google.com/?q=${encodeURIComponent(event.location)}`, '_blank')}
+              className="px-4 py-3 rounded-lg border border-gray-700 text-gray-300 font-semibold hover:border-cyan-500/50 hover:bg-cyan-500/10 transition-all flex items-center gap-2"
             >
-              📍 Rota
+              <Navigation className="w-4 h-4 text-amber-400" />
+              Rota
             </motion.button>
           )}
         </div>

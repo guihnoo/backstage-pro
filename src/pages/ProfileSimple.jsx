@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/authContext';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
@@ -8,9 +8,10 @@ import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import {
   User, Phone, MapPin, Mail, LogOut, Save, ChevronRight, Loader2, CheckCircle, Eye, EyeOff, Download,
-  DollarSign, Target, Calendar
+  DollarSign, Target, Calendar, Camera
 } from 'lucide-react';
 import { createBackup } from '@/api/functions';
+import { uploadUserFile } from '@/lib/uploadFile';
 import { toast } from 'sonner';
 
 export default function ProfileSimple() {
@@ -33,6 +34,8 @@ export default function ProfileSimple() {
   const [saved, setSaved] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const photoInputRef = useRef(null);
 
   useEffect(() => {
     if (profile) {
@@ -77,6 +80,22 @@ export default function ProfileSimple() {
     }
   };
 
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPhoto(true);
+    try {
+      const { file_url } = await uploadUserFile(file, { folder: 'avatars' });
+      await updateProfile({ avatar_url: file_url });
+      toast.success('Foto de perfil atualizada!');
+    } catch (err) {
+      toast.error('Erro ao enviar foto', { description: err.message });
+    } finally {
+      setUploadingPhoto(false);
+      if (photoInputRef.current) photoInputRef.current.value = '';
+    }
+  };
+
   const handleLogout = async () => {
     await signOut();
     navigate('/login');
@@ -98,24 +117,63 @@ export default function ProfileSimple() {
           transition={{ duration: 3, repeat: Infinity }}
         />
 
-        {/* Avatar */}
+        {/* Avatar com upload */}
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.1 }}
           className="relative inline-block mb-4"
         >
-          <div
-            className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-black mx-auto"
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handlePhotoUpload}
+          />
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => photoInputRef.current?.click()}
+            disabled={uploadingPhoto}
+            className="relative w-20 h-20 rounded-full mx-auto block overflow-hidden focus:outline-none"
             style={{
-              background: `linear-gradient(135deg, ${config.primaryHex}30, ${config.accentHex}20)`,
               border: `2px solid ${config.primaryHex}40`,
               boxShadow: `0 0 30px ${config.primaryHex}20`
             }}
           >
-            {profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}
-          </div>
+            {profile?.avatar_url ? (
+              <img
+                src={profile.avatar_url}
+                alt="Foto de perfil"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div
+                className="w-full h-full flex items-center justify-center text-3xl font-black"
+                style={{ background: `linear-gradient(135deg, ${config.primaryHex}30, ${config.accentHex}20)` }}
+              >
+                {profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}
+              </div>
+            )}
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity">
+              {uploadingPhoto
+                ? <Loader2 className="w-6 h-6 text-white animate-spin" />
+                : <Camera className="w-6 h-6 text-white" />
+              }
+            </div>
+            {uploadingPhoto && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+                <Loader2 className="w-6 h-6 text-white animate-spin" />
+              </div>
+            )}
+          </motion.button>
           <span className="absolute -bottom-1 -right-1 text-base">{config.emoji}</span>
+          <div
+            className="absolute bottom-0 right-6 w-6 h-6 rounded-full flex items-center justify-center"
+            style={{ background: config.primaryHex }}
+          >
+            <Camera className="w-3 h-3 text-white" />
+          </div>
         </motion.div>
 
         <h1 className="text-xl font-black text-white">

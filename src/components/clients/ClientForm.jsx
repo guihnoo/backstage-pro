@@ -1,6 +1,7 @@
 import {
   useState,
-  useEffect
+  useEffect,
+  useRef
 } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -8,10 +9,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Building2, DollarSign, X, AlertCircle, Phone, Mail, Globe, FileText } from 'lucide-react';
+import { Loader2, Building2, DollarSign, X, AlertCircle, Phone, Mail, Globe, FileText, Camera, ImagePlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/authContext';
 import { useClients } from '@/lib/useClients';
+import { uploadUserFile } from '@/lib/uploadFile';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ClientForm({ client, onSuccess, onCancel }) {
@@ -20,6 +22,8 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const logoInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -118,6 +122,22 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
     validateField(name, formData[name]);
   };
 
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingLogo(true);
+    try {
+      const { file_url } = await uploadUserFile(file, { folder: 'logos' });
+      handleChange('logo_url', file_url);
+      toast.success('Logo enviada com sucesso!');
+    } catch (err) {
+      toast.error('Erro ao enviar logo', { description: err.message });
+    } finally {
+      setUploadingLogo(false);
+      if (logoInputRef.current) logoInputRef.current.value = '';
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -129,7 +149,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
     }
 
     // Validar outros campos se preenchidos
-    const fieldsToValidate = ['email', 'phone', 'logo_url', 'invoice_portal_url'];
+    const fieldsToValidate = ['email', 'phone', 'invoice_portal_url'];
     let isValid = true;
     fieldsToValidate.forEach(field => {
       if (formData[field] && !validateField(field, formData[field])) {
@@ -393,36 +413,52 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
             <div className="space-y-4">
               <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="logo_url" className="text-slate-300 text-sm font-medium">
-                    URL da Logo
+                  <Label className="text-slate-300 text-sm font-medium">
+                    Logo do Cliente
                   </Label>
-                  <div className="relative">
-                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input
-                      id="logo_url"
-                      type="url"
-                      value={formData.logo_url}
-                      onChange={(e) => handleChange('logo_url', e.target.value)}
-                      onBlur={() => handleBlur('logo_url')}
-                      className={`bg-slate-800 border-slate-700 text-white h-12 text-base touch-manipulation pl-10 ${
-                        errors.logo_url && touched.logo_url ? 'border-red-500' : ''
-                      }`}
-                      placeholder="https://exemplo.com/logo.png"
-                    />
-                  </div>
-                  <AnimatePresence>
-                    {errors.logo_url && touched.logo_url && (
-                      <motion.p 
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        className="text-red-400 text-sm flex items-center gap-1"
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleLogoUpload}
+                  />
+                  <div className="flex items-center gap-3">
+                    {formData.logo_url ? (
+                      <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-700 flex-shrink-0 bg-slate-800">
+                        <img src={formData.logo_url} alt="Logo" className="w-full h-full object-contain p-1" />
+                        <button
+                          type="button"
+                          onClick={() => handleChange('logo_url', '')}
+                          className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-slate-900/80 flex items-center justify-center hover:bg-red-900/80 transition-colors"
+                        >
+                          <X className="w-3 h-3 text-white" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div
+                        className="w-16 h-16 rounded-xl border-2 border-dashed border-slate-700 flex items-center justify-center flex-shrink-0 bg-slate-800/50"
                       >
-                        <AlertCircle className="w-3 h-3" />
-                        {errors.logo_url}
-                      </motion.p>
+                        <ImagePlus className="w-6 h-6 text-slate-600" />
+                      </div>
                     )}
-                  </AnimatePresence>
+                    <div className="flex-1 space-y-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => logoInputRef.current?.click()}
+                        disabled={uploadingLogo}
+                        className="w-full h-10 bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-300 text-sm"
+                      >
+                        {uploadingLogo ? (
+                          <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Enviando...</>
+                        ) : (
+                          <><Camera className="w-4 h-4 mr-2" /> {formData.logo_url ? 'Trocar logo' : 'Enviar logo'}</>
+                        )}
+                      </Button>
+                      <p className="text-xs text-slate-500">PNG, JPG ou SVG • máx. 5MB</p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
