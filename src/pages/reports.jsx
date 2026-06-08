@@ -564,6 +564,20 @@ export default function ReportsPage() {
     setSelectedEvent(null);
   };
 
+  const handleEventDuplicate = (event) => {
+    setSelectedEvent(null);
+    setEditingEvent({
+      ...event,
+      id: undefined,
+      title: `Cópia — ${event.title}`,
+      start_date: '',
+      end_date: '',
+      payment_status: 'unpaid',
+      auto_hours_applied: false,
+    });
+    toast.info('Preencha as novas datas para o evento duplicado');
+  };
+
   const handleEventDelete = async (eventId) => {
     if (window.confirm('Tem certeza que deseja excluir este evento? Esta ação não pode ser desfeita.')) {
       try {
@@ -883,6 +897,7 @@ export default function ReportsPage() {
           onClose={() => setSelectedEvent(null)}
           onEdit={handleEventEdit}
           onDelete={handleEventDelete}
+          onDuplicate={handleEventDuplicate}
           onPaymentUpdate={() => refreshData()}
           onWorkEdit={handleWorkEdit}
           onWorkDelete={handleWorkDelete}

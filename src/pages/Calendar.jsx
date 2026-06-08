@@ -134,6 +134,8 @@ export default function CalendarPage() {
   const [editingExpense, setEditingExpense] = useState(null);
   const [prefilledEventIdForExpense, setPrefilledEventIdForExpense] = useState(null);
 
+  const [statusFilter, setStatusFilter] = useState('all');
+
   const [drilldownOpen, setDrilldownOpen] = useState(false);
   const [drilldownTitle, setDrilldownTitle] = useState('');
   const [drilldownItems, setDrilldownItems] = useState([]);
@@ -147,6 +149,12 @@ export default function CalendarPage() {
   const [activeNotesEvent, setActiveNotesEvent] = useState(null); // Event for Notes Sheet
 
   const isMobile = useMediaQuery('(max-width: 768px)');
+
+  const filteredEvents = useMemo(() => {
+    if (statusFilter === 'all') return events;
+    if (statusFilter === 'paid') return events.filter(e => e.payment_status === 'paid');
+    return events.filter(e => e.status === statusFilter);
+  }, [events, statusFilter]);
   useQueryAction('new-event', useCallback(() => {
     setShowEventForm(true);
     setEditingEvent(null);
@@ -327,6 +335,30 @@ export default function CalendarPage() {
     [closeModals]
   );
 
+  const handleDuplicateEvent = useCallback(
+    (event) => {
+      closeModals();
+      setEditingEvent(null);
+      setPrefillEventData({
+        client_id: event.client_id,
+        title: `Cópia — ${event.title}`,
+        start_date: '',
+        end_date: '',
+        start_time: event.start_time,
+        end_time: event.end_time,
+        payment_status: 'unpaid',
+        payment_model: event.payment_model,
+        daily_cache_value: event.daily_cache_value,
+        cache_valor_base: event.cache_valor_base,
+        color: event.color,
+        observacoes_md: event.observacoes_md,
+      });
+      setShowEventForm(true);
+      toast.info('Preencha as novas datas para o evento duplicado');
+    },
+    [closeModals]
+  );
+
   const handleEditWork = useCallback(
     (work) => {
       closeModals();
@@ -424,15 +456,18 @@ export default function CalendarPage() {
   const handleMarkPaid = useCallback(
     async (eventToUpdate) => {
       if (!eventToUpdate) return;
+      const newStatus = eventToUpdate.payment_status === 'paid' ? 'unpaid' : 'paid';
       try {
-        await updateEvent(eventToUpdate.id, { paid: !eventToUpdate.paid });
-        toast.success(`Evento "${eventToUpdate.title}" marcado como ${eventToUpdate.paid ? 'não pago' : 'pago'}!`);
+        await updateEvent(eventToUpdate.id, { payment_status: newStatus });
+        toast.success(
+          newStatus === 'paid'
+            ? `"${eventToUpdate.title}" marcado como pago!`
+            : `"${eventToUpdate.title}" desmarcado — pagamento pendente`
+        );
         handleFormSuccess();
       } catch (err) {
         console.error('Erro ao atualizar status de pagamento:', err);
-        toast.error('Erro ao atualizar status de pagamento.', {
-          description: 'Por favor, tente novamente.',
-        });
+        toast.error('Erro ao atualizar status de pagamento.');
       }
     },
     [handleFormSuccess, updateEvent]
@@ -928,12 +963,39 @@ export default function CalendarPage() {
           />
         </div>
 
+        {/* Filtros de status */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {[
+            { key: 'all', label: 'Todos', count: events.length },
+            { key: 'pending', label: 'Pendentes', count: events.filter(e => e.status === 'pending').length },
+            { key: 'confirmed', label: 'Confirmados', count: events.filter(e => e.status === 'confirmed').length },
+            { key: 'completed', label: 'Concluídos', count: events.filter(e => e.status === 'completed').length },
+            { key: 'paid', label: 'Pagos', count: events.filter(e => e.payment_status === 'paid').length },
+          ].map(({ key, label, count }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setStatusFilter(key)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                statusFilter === key
+                  ? 'bg-cyan-600/20 border-cyan-500/60 text-cyan-300'
+                  : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:border-slate-600 hover:text-slate-300'
+              }`}
+            >
+              {label}
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${statusFilter === key ? 'bg-cyan-500/20 text-cyan-300' : 'bg-slate-700 text-slate-500'}`}>
+                {count}
+              </span>
+            </button>
+          ))}
+        </div>
+
         {/* Grid do Calendário */}
         <Card className="bg-slate-900/50 border-slate-800 overflow-hidden">
           <CardContent className="p-0">
             <BackstageCalendarGrid
               currentDate={currentDate}
-              events={events}
+              events={filteredEvents}
               clients={clients}
               dailyWork={dailyWork}
               selectedDate={selectedDate}
@@ -994,6 +1056,7 @@ export default function CalendarPage() {
             onClose={closeModals}
             onEdit={handleEditEvent}
             onDelete={handleDeleteEvent}
+            onDuplicate={handleDuplicateEvent}
             onPaymentUpdate={handleFormSuccess}
             onWorkEdit={handleEditWork}
             onWorkDelete={handleWorkDelete}
@@ -1104,6 +1167,12 @@ export default function CalendarPage() {
             setEditingEvent(selectedActionSheetEvent);
             setSelectedActionSheetEvent(null);
             setShowEventForm(true);
+          }}
+          onDuplicate={() => {
+            if (selectedActionSheetEvent) {
+              handleDuplicateEvent(selectedActionSheetEvent);
+              setSelectedActionSheetEvent(null);
+            }
           }}
           onDelete={() => {
             if (selectedActionSheetEvent) {

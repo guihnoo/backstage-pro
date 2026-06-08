@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Calendar,
   Zap,
+  Copy,
 } from 'lucide-react';
 import { formatDisplayDate, getEventStatus, getEventStatusConfig } from '../utils/dateUtils';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
@@ -25,6 +26,7 @@ export default function EventActionSheet({
   onViewDetails,
   onEdit,
   onDelete,
+  onDuplicate,
   onOpenHours,
   onMarkPaid,
   onApplyManual12h,
@@ -179,8 +181,20 @@ export default function EventActionSheet({
                   Editar Evento
                 </Button>
 
-                {/* Marcar como Pago */}
-                {status === 'completed' && event.payment_status !== 'paid' && (
+                {/* Duplicar */}
+                {onDuplicate && (
+                  <Button
+                    variant="outline"
+                    onClick={onDuplicate}
+                    className="w-full h-12 min-h-[44px] bg-slate-800 border-slate-700 hover:bg-slate-700 text-cyan-300 justify-start"
+                  >
+                    <Copy className="w-5 h-5 mr-3" />
+                    Duplicar Evento
+                  </Button>
+                )}
+
+                {/* Toggle pagamento */}
+                {event.payment_status !== 'paid' ? (
                   <Button
                     variant="outline"
                     onClick={onMarkPaid}
@@ -188,6 +202,15 @@ export default function EventActionSheet({
                   >
                     <CheckCircle2 className="w-5 h-5 mr-3" />
                     Marcar como Pago
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    onClick={onMarkPaid}
+                    className="w-full h-12 min-h-[44px] bg-amber-900/20 border-amber-700/50 hover:bg-amber-900/30 text-amber-400 justify-start"
+                  >
+                    <CheckCircle2 className="w-5 h-5 mr-3" />
+                    Desmarcar pagamento
                   </Button>
                 )}
 

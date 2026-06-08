@@ -39,7 +39,7 @@ export default function Home() {
     loading: receivableLoading,
   } = useReceivableByClient(userId);
   const today = new Date().toISOString().split('T')[0];
-  const { events: proximosEventos } = useEvents(userId, { from: today, limit: 5, ascending: true });
+  const { events: proximosEventos, refetch: refetchProximos } = useEvents(userId, { from: today, limit: 5, ascending: true });
   const isOnStage = proximoEvento
     ? today >= (proximoEvento.start_date || proximoEvento.event_date || '') &&
       today <= (proximoEvento.end_date || proximoEvento.start_date || proximoEvento.event_date || '')
@@ -103,7 +103,7 @@ export default function Home() {
         <AlertasBastidao alerts={alerts} isLoading={alertsLoading} primaryHex={config.primaryHex} accentHex={config.accentHex} />
         <PipelineFinanceiro stats={stats} isLoading={statsLoading} primaryHex={config.primaryHex} accentHex={config.accentHex} />
         <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Agenda">
-          <ProximosEventos events={proximosEventos} userCategory={categoryId} />
+          <ProximosEventos events={proximosEventos} userCategory={categoryId} onRefresh={refetchProximos} />
         </NeonSectionFrame>
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="mt-6 flex justify-center">
           {showLogoutConfirm ? (

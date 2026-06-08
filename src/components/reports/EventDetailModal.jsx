@@ -28,7 +28,8 @@ import {
   AlertTriangle,
   FileText,
   Zap,
-  Building2
+  Building2,
+  Copy
 } from 'lucide-react';
 
 const InfoItem = ({ icon: Icon, label, value, color = 'text-slate-300', isCurrency = false, formatFn }) => {
@@ -107,6 +108,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
   onClose,
   onEdit,
   onDelete,
+  onDuplicate,
   onPaymentUpdate,
   onWorkEdit,
   _onWorkDelete,
@@ -263,6 +265,16 @@ const EventDetailModal = React.memo(function EventDetailModal({
               >
                 <Edit className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Editar
               </Button>
+              {onDuplicate && (
+                <Button
+                  variant="outline"
+                  onClick={() => { onDuplicate(event); onClose(); }}
+                  className="flex-1 sm:flex-none bg-slate-800 border-slate-700 hover:bg-slate-700 text-cyan-300 px-3 py-2 text-xs sm:text-sm h-10 min-h-[44px]"
+                  title="Criar cópia deste evento"
+                >
+                  <Copy className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Duplicar
+                </Button>
+              )}
               <Button
                 variant="destructive"
                 onClick={() => onDelete(event.id)}

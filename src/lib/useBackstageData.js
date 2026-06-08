@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { supabase } from './supabase';
 import { differenceInDays, parseISO } from 'date-fns';
 
@@ -136,6 +136,9 @@ export function useEvents(userId, options = {}) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [version, setVersion] = useState(0);
+
+  const refetch = useCallback(() => setVersion(v => v + 1), []);
 
   useEffect(() => {
     if (!userId) {
@@ -168,9 +171,9 @@ export function useEvents(userId, options = {}) {
     }
 
     fetchEvents();
-  }, [userId, JSON.stringify(options)]);
+  }, [userId, JSON.stringify(options), version]);
 
-  return { events, loading, error };
+  return { events, loading, error, refetch };
 }
 
 export function useClients(userId) {
