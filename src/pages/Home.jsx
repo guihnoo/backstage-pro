@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -30,7 +30,7 @@ export default function Home() {
   const config = getCategoryConfig(categoryId);
   const motivation = getCategoryMotivation(categoryId);
   const firstName = profile?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'Profissional';
-  const { stats, loading: statsLoading } = useStats(userId);
+  const { stats, loading: statsLoading, refetch: refetchStats } = useStats(userId);
   const { event: proximoEvento } = useUpcomingEvent(userId);
   const { alerts, loading: alertsLoading } = usePaymentAlerts(userId);
   const {
@@ -40,7 +40,11 @@ export default function Home() {
     markClientPaid,
   } = useReceivableByClient(userId);
   const today = new Date().toISOString().split('T')[0];
-  const { events: proximosEventos, refetch: refetchProximos } = useEvents(userId, { from: today, limit: 5, ascending: true });
+  const {
+    events: proximosEventos,
+    loading: proximosLoading,
+    refetch: refetchProximos,
+  } = useEvents(userId, { from: today, limit: 5, ascending: true });
   const { events: forecastEvents, loading: forecastLoading } = useEvents(userId, { from: today, limit: 30, ascending: true });
   const isOnStage = proximoEvento
     ? today >= (proximoEvento.start_date || proximoEvento.event_date || '') &&
@@ -52,6 +56,14 @@ export default function Home() {
     await signOut();
     hardNavigate('/login');
   };
+
+  const handleMarkPaid = useCallback(
+    async (clientId) => {
+      await markClientPaid(clientId);
+      refetchStats();
+    },
+    [markClientPaid, refetchStats]
+  );
 
   return (
     <div className="min-h-screen bg-[#050609] text-white">
@@ -107,12 +119,17 @@ export default function Home() {
           rows={receivableRows}
           totalReceivable={totalReceivable}
           isLoading={receivableLoading}
-          onMarkPaid={markClientPaid}
+          onMarkPaid={handleMarkPaid}
         />
         <AlertasBastidao alerts={alerts} isLoading={alertsLoading} primaryHex={config.primaryHex} accentHex={config.accentHex} />
         <PipelineFinanceiro stats={stats} isLoading={statsLoading} primaryHex={config.primaryHex} accentHex={config.accentHex} />
         <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Agenda">
-          <ProximosEventos events={proximosEventos} userCategory={categoryId} onRefresh={refetchProximos} />
+          <ProximosEventos
+            events={proximosEventos}
+            isLoading={proximosLoading}
+            userCategory={categoryId}
+            onRefresh={refetchProximos}
+          />
         </NeonSectionFrame>
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="mt-6 flex justify-center">
           {showLogoutConfirm ? (
