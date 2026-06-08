@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Settings, LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
-import { useNavigate } from 'react-router-dom';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { getCategoryConfig, getCategoryMotivation } from '@/lib/categoryConfig';
 import { useStats, useUpcomingEvent, usePaymentAlerts, useEvents } from '@/lib/useBackstageData';
 import ProximoShow from '@/components/home/ProximoShow';
@@ -23,7 +23,6 @@ import { NeonSectionFrame } from '@/components/design/NeonSectionFrame';
 
 export default function Home() {
   const { user, profile, signOut } = useAuth();
-  const navigate = useNavigate();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const userId = user?.id;
   const categoryId = profile?.category || 'lighting';
@@ -48,7 +47,7 @@ export default function Home() {
 
   const handleLogout = async () => {
     await signOut();
-    navigate('/login');
+    hardNavigate('/login');
   };
 
   return (
@@ -64,7 +63,7 @@ export default function Home() {
               <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: config.primaryHex }}>{config.emoji} {config.label}</p>
             </div>
             <div className="flex items-center gap-2">
-              <motion.button whileTap={{ scale: 0.9 }} onClick={() => navigate('/profile')} className="w-9 h-9 rounded-full bg-[#0c0e14]/80 border border-[#23262f] flex items-center justify-center"><Settings className="w-4 h-4 text-[#8a91a1]" /></motion.button>
+              <motion.button whileTap={{ scale: 0.9 }} onClick={() => hardNavigate('/profile')} className="w-9 h-9 rounded-full bg-[#0c0e14]/80 border border-[#23262f] flex items-center justify-center"><Settings className="w-4 h-4 text-[#8a91a1]" /></motion.button>
             </div>
           </div>
           <motion.h1 initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="text-3xl font-extrabold leading-tight tracking-tight">

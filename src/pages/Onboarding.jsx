@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, CheckCircle2, Sparkles, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
@@ -14,7 +14,6 @@ import SpotlightRays from '@/components/auth/SpotlightRays';
 import FloatingEquipment from '@/components/auth/FloatingEquipment';
 
 export default function Onboarding() {
-  const navigate = useNavigate();
   const { user, profile, updateProfile, isOnboardingComplete } = useAuth();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -23,9 +22,9 @@ export default function Onboarding() {
   // Se onboarding já foi completo, redireciona ao dashboard
   useEffect(() => {
     if (isOnboardingComplete) {
-      navigate('/');
+      hardNavigate('/');
     }
-  }, [isOnboardingComplete, navigate]);
+  }, [isOnboardingComplete]);
 
   // Step 1: Identidade
   const [name, setName] = useState(() => profile?.name || user?.email?.split('@')[0] || '');
@@ -88,7 +87,7 @@ export default function Onboarding() {
         onboarding_complete: true,
       });
 
-      navigate('/');
+      hardNavigate('/');
     } catch (err) {
       setError(err.message);
       setLoading(false);

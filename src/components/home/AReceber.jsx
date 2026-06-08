@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { MessageCircle, Wallet, ChevronRight, AlertTriangle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { buildChargeMessage, openWhatsAppCharge } from '@/lib/whatsapp';
 import { toast } from 'sonner';
@@ -17,7 +17,6 @@ function ReceivableSkeleton() {
 }
 
 export default function AReceber({ rows, totalReceivable, isLoading }) {
-  const navigate = useNavigate();
   const { formatCurrency } = useFinancialVisibility();
 
   if (isLoading) return <ReceivableSkeleton />;
@@ -45,7 +44,7 @@ export default function AReceber({ rows, totalReceivable, isLoading }) {
   const handleCharge = (row) => {
     if (!row.phone) {
       toast.error('Cliente sem telefone cadastrado. Adicione no perfil do cliente.');
-      navigate('/clients');
+      hardNavigate('/clients');
       return;
     }
     const message = buildChargeMessage({
@@ -72,7 +71,7 @@ export default function AReceber({ rows, totalReceivable, isLoading }) {
         </div>
         <button
           type="button"
-          onClick={() => navigate('/reports')}
+          onClick={() => hardNavigate('/reports')}
           className="text-xs text-gray-500 hover:text-cyan-400 flex items-center gap-1 transition-colors"
         >
           Ver relatório
@@ -132,7 +131,7 @@ export default function AReceber({ rows, totalReceivable, isLoading }) {
       {rows.length > 5 && (
         <button
           type="button"
-          onClick={() => navigate('/reports')}
+          onClick={() => hardNavigate('/reports')}
           className="w-full mt-3 text-center text-xs text-gray-500 hover:text-cyan-400 py-2"
         >
           + {rows.length - 5} cliente{rows.length - 5 !== 1 ? 's' : ''} — ver todos

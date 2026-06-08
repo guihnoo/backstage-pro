@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Target, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 
 function ProgressBar({ value, max, color }) {
@@ -24,7 +24,6 @@ function formatMoney(value, hidden) {
 }
 
 export default function MetaMensalBar({ profile, stats, isLoading, accentColor = '#EAB308' }) {
-  const navigate = useNavigate();
   const { isVisible } = useFinancialVisibility();
 
   const metaReceita = Number(profile?.monthly_goal_revenue) || 0;
@@ -43,7 +42,7 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
       type="button"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      onClick={() => navigate('/goals')}
+      onClick={() => hardNavigate('/goals')}
       className="mb-8 w-full text-left p-5 rounded-2xl border border-gray-700/50 bg-gradient-to-br from-gray-900/80 to-gray-800/40 hover:border-gray-600/60 transition-all group"
     >
       <div className="flex items-center justify-between mb-4">

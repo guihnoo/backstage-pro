@@ -1,13 +1,12 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Calendar, Users, DollarSign } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 
 export function FloatingActions() {
   const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate();
   const { profile } = useAuth();
   const config = getCategoryConfig(profile?.category || 'lighting');
 
@@ -37,7 +36,7 @@ export function FloatingActions() {
 
   const handleAction = (to) => {
     setIsOpen(false);
-    navigate(to);
+    hardNavigate(to);
   };
 
   return (

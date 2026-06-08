@@ -16,7 +16,7 @@ import {
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { hardNavigate } from '@/lib/hardNavigate';
 
 const NotificationItem = ({ notification, onMarkAsRead, onNavigate }) => {
   const getPriorityColor = (priority) => {
@@ -93,8 +93,6 @@ export default function NotificationCenter() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate();
-
   const loadNotifications = useCallback(async () => {
     if (!user?.id) {
       setNotifications([]);
@@ -155,31 +153,23 @@ export default function NotificationCenter() {
       
       // Mapeia explicitamente as URLs conhecidas para evitar problemas
       if (actionUrl.toLowerCase().includes('calendar')) {
-        targetPath = '/Calendar';
-        if (actionUrl.includes('?')) {
-          const queryPart = actionUrl.split('?')[1];
-          targetPath += `?${queryPart}`;
-        }
+        targetPath = '/calendar';
       } else if (actionUrl.toLowerCase().includes('reports')) {
-        targetPath = '/Reports';
-        if (actionUrl.includes('?')) {
-          const queryPart = actionUrl.split('?')[1];
-          targetPath += `?${queryPart}`;
-        }
+        targetPath = '/reports';
+      } else if (actionUrl.toLowerCase().includes('clients')) {
+        targetPath = '/clients';
       } else {
-        // Fallback genérico
         const parts = actionUrl.split('?');
-        const pageName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
-        targetPath = `/${pageName}`;
-        if (parts[1]) {
-          targetPath += `?${parts[1]}`;
-        }
+        targetPath = `/${parts[0].toLowerCase()}`;
       }
-      
-      navigate(targetPath);
+      if (actionUrl.includes('?')) {
+        targetPath += `?${actionUrl.split('?')[1]}`;
+      }
+
+      hardNavigate(targetPath);
       setIsOpen(false);
     }
-  }, [navigate]);
+  }, []);
 
   const unreadCount = notifications.length;
 
