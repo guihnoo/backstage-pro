@@ -4,6 +4,8 @@ import { useAuth } from '@/lib/authContext';
 import { useStats, useEvents } from '@/lib/useBackstageData';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
+import { useNavigate } from 'react-router-dom';
+import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { Trophy, Zap, Star, TrendingUp, Award, Flame, Calendar } from 'lucide-react';
 
 
@@ -83,6 +85,8 @@ function getLevelInfo(eventsCount) {
 
 export default function Goals() {
   const { user, profile } = useAuth();
+  const navigate = useNavigate();
+  const { formatCurrency } = useFinancialVisibility();
   const userId = user?.id;
   const categoryId = profile?.category || 'lighting';
   const config = getCategoryConfig(categoryId);
@@ -270,7 +274,7 @@ export default function Goals() {
                       size={130}
                       color={config.primaryHex}
                       label="Receita"
-                      sublabel={`R$${(stats.faturamento_pago / 1000).toFixed(1)}k / R$${(metaReceita / 1000).toFixed(1)}k`}
+                      sublabel={`${formatCurrency(stats.faturamento_pago)} / ${formatCurrency(metaReceita)}`}
                     />
                     <CircularProgress
                       value={stats.eventos_count}
@@ -287,24 +291,27 @@ export default function Goals() {
               {/* Resumo financeiro */}
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { label: 'Recebido', value: `R$${stats.faturamento_pago.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}`, icon: '✅', color: '#39FF14' },
-                  { label: 'A Receber', value: `R$${stats.a_receber.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}`, icon: '⏳', color: '#FFB700' },
-                  { label: 'Eventos', value: `${stats.eventos_count} shows`, icon: '🎤', color: config.primaryHex },
-                  { label: 'Clientes Ativos', value: `${stats.clientes_ativos}`, icon: '👥', color: config.accentHex },
+                  { label: 'Recebido', value: formatCurrency(stats.faturamento_pago), icon: '✅', color: '#39FF14', route: '/reports' },
+                  { label: 'A Receber', value: formatCurrency(stats.a_receber), icon: '⏳', color: '#FFB700', route: '/reports' },
+                  { label: 'Eventos', value: `${stats.eventos_count} shows`, icon: '🎤', color: config.primaryHex, route: '/calendar' },
+                  { label: 'Clientes Ativos', value: `${stats.clientes_ativos}`, icon: '👥', color: config.accentHex, route: '/clients' },
                 ].map((item, i) => (
-                  <motion.div
+                  <motion.button
                     key={i}
+                    type="button"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    className="bg-gray-900/40 border border-gray-800/40 rounded-xl p-4"
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => navigate(item.route)}
+                    className="bg-gray-900/40 border border-gray-800/40 rounded-xl p-4 text-left hover:border-gray-700/60 transition-colors cursor-pointer"
                   >
                     <span className="text-xl">{item.icon}</span>
                     <p className="text-xs text-gray-500 mt-2">{item.label}</p>
                     <p className="text-lg font-black mt-0.5" style={{ color: item.color }}>
                       {item.value}
                     </p>
-                  </motion.div>
+                  </motion.button>
                 ))}
               </div>
 

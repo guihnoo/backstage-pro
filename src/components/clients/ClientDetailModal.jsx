@@ -12,9 +12,10 @@ import {
   X, Edit, Trash2, Phone, Mail, Calendar, TrendingUp,
   Clock, DollarSign, User, MessageCircle,
   CheckCircle2, AlertCircle, ArrowRight, BarChart3,
-  Activity, Target
+  Activity, Target, Globe
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 import { useEvents } from '@/lib/useEvents';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
@@ -155,6 +156,7 @@ export default function ClientDetailModal({
   onEdit,
   onDelete
 }) {
+  const navigate = useNavigate();
   const { events } = useEvents();
   const { dailyWork } = useDailyWork();
   const { formatCurrency } = useFinancialVisibility();
@@ -284,8 +286,9 @@ export default function ClientDetailModal({
   }, [client]);
 
   const handleEventClick = useCallback(() => {
-    toast.info('Abrindo detalhes do evento...');
-  }, []);
+    onClose();
+    navigate('/calendar');
+  }, [navigate, onClose]);
 
   const modalAnimation = {
     hidden: { opacity: 0, y: 20 },
@@ -338,6 +341,11 @@ export default function ClientDetailModal({
                       <MessageCircle className="w-4 h-4 mr-2" /> WhatsApp
                     </Button>
                   </>
+                )}
+                {client.invoice_portal_url && (
+                  <Button variant="outline" size="sm" onClick={() => window.open(client.invoice_portal_url, '_blank')} className="bg-slate-800/50 border-slate-700 hover:bg-slate-700 text-cyan-300 hover:text-cyan-200 flex-1 min-w-[120px]">
+                    <Globe className="w-4 h-4 mr-2" /> Portal NF-e
+                  </Button>
                 )}
               </div>
             </DialogHeader>
