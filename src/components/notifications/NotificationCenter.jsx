@@ -268,7 +268,7 @@ export default function NotificationCenter() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-80 md:w-96 bg-slate-900 border-slate-700 text-white mr-4 mt-2"
+        className="w-80 md:w-96 max-w-[calc(100vw-2rem)] bg-slate-900 border-slate-700 text-white mr-4 mt-2"
         align="end"
       >
         <div className="p-3 border-b border-slate-700">
@@ -289,7 +289,7 @@ export default function NotificationCenter() {
             {count > 0 ? `${count} alerta${count !== 1 ? 's' : ''}` : 'Tudo em dia'}
           </p>
         </div>
-        <ScrollArea className="h-[400px]">
+        <ScrollArea className="max-h-[60vh]">
           <div className="p-2 space-y-2">
             {count > 0 ? (
               visible.map(n => (
