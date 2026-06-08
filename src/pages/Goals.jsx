@@ -128,27 +128,53 @@ function CircularProgress({ value, max, size = 120, color, label, sublabel }) {
 }
 
 // ─── Badge de conquista ──────────────────────────────────────
-function BadgeCard({ icon: Icon, title, description, unlocked, color }) {
+function BadgeCard({ icon: Icon, title, description, unlocked, color, progress }) {
+  const showProgress = !unlocked && progress != null && progress.max > 0;
+  const pct = showProgress ? Math.min((progress.value / progress.max) * 100, 100) : 0;
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      whileHover={{ scale: 1.04 }}
+      whileHover={{ scale: unlocked ? 1.04 : 1.02 }}
       className={`p-4 rounded-xl border transition-all ${
         unlocked
           ? 'bg-gray-800/60 border-gray-700/50'
-          : 'bg-gray-900/30 border-gray-800/30 opacity-50 grayscale'
+          : 'bg-gray-900/30 border-gray-800/30'
       }`}
+      style={unlocked ? { boxShadow: `0 0 20px ${color}20` } : { opacity: 0.7 }}
     >
       <div
         className="w-10 h-10 rounded-full flex items-center justify-center mb-3"
-        style={{ background: unlocked ? `${color}22` : 'transparent', border: unlocked ? `1px solid ${color}44` : '1px solid #1f2937' }}
+        style={{
+          background: unlocked ? `${color}22` : 'transparent',
+          border: unlocked ? `1px solid ${color}44` : '1px solid #1f2937',
+          filter: unlocked ? 'none' : 'grayscale(1)',
+        }}
       >
         <Icon className="w-5 h-5" style={{ color: unlocked ? color : '#4b5563' }} />
       </div>
       <p className="text-sm font-bold text-white leading-tight">{title}</p>
       <p className="text-xs text-gray-500 mt-0.5">{description}</p>
-      {!unlocked && (
+      {unlocked ? (
+        <p className="text-xs font-bold mt-2" style={{ color }}>✓ Desbloqueado</p>
+      ) : showProgress ? (
+        <div className="mt-2">
+          <div className="flex justify-between text-[9px] font-mono text-gray-600 mb-1">
+            <span>{progress.value} / {progress.max}</span>
+            <span>{Math.round(pct)}%</span>
+          </div>
+          <div className="h-1 rounded-full bg-gray-800 overflow-hidden">
+            <motion.div
+              className="h-full rounded-full"
+              style={{ background: color }}
+              initial={{ width: 0 }}
+              animate={{ width: `${pct}%` }}
+              transition={{ duration: 1, ease: 'easeOut', delay: 0.2 }}
+            />
+          </div>
+        </div>
+      ) : (
         <p className="text-xs text-gray-600 mt-1">🔒 Bloqueado</p>
       )}
     </motion.div>
@@ -196,48 +222,55 @@ export default function Goals() {
 
   // Conquistas
   const badges = useMemo(() => [
+    // progress: { value, max } — mostrado quando não desbloqueado
     {
       icon: Star,
       title: 'Primeira Diária',
       description: 'Complete seu primeiro evento',
       unlocked: totalEvents >= 1,
-      color: '#FFB700'
+      color: '#FFB700',
+      progress: { value: Math.min(totalEvents, 1), max: 1 },
     },
     {
       icon: Zap,
       title: '5 Shows',
-      description: 'Acumule 5 eventos concluídos',
+      description: 'Acumule 5 eventos no ano',
       unlocked: totalEvents >= 5,
-      color: '#00D9FF'
+      color: '#00D9FF',
+      progress: { value: Math.min(totalEvents, 5), max: 5 },
     },
     {
       icon: Flame,
       title: 'Em Chamas',
       description: 'Complete 20 eventos no ano',
       unlocked: totalEvents >= 20,
-      color: '#FF6B35'
+      color: '#FF6B35',
+      progress: { value: Math.min(totalEvents, 20), max: 20 },
     },
     {
       icon: Trophy,
       title: 'Pro do Palco',
       description: '50 eventos concluídos',
       unlocked: totalEvents >= 50,
-      color: '#A64AFF'
+      color: '#A64AFF',
+      progress: { value: Math.min(totalEvents, 50), max: 50 },
     },
     {
       icon: Award,
       title: 'Meta Financeira',
       description: 'Atinja sua meta de receita mensal',
-      unlocked: stats.faturamento_pago >= metaReceita,
-      color: '#39FF14'
+      unlocked: metaReceita > 0 && stats.faturamento_pago >= metaReceita,
+      color: '#39FF14',
+      progress: metaReceita > 0 ? { value: Math.min(stats.faturamento_pago, metaReceita), max: metaReceita } : null,
     },
     {
       icon: Calendar,
       title: 'Agenda Cheia',
       description: 'Bata sua meta de eventos no mês',
-      unlocked: stats.eventos_count >= metaEventos,
-      color: config.primaryHex
-    }
+      unlocked: metaEventos > 0 && stats.eventos_count >= metaEventos,
+      color: config.primaryHex,
+      progress: metaEventos > 0 ? { value: Math.min(stats.eventos_count, metaEventos), max: metaEventos } : null,
+    },
   ], [totalEvents, stats, metaEventos, metaReceita, config]);
 
   // Detecta badges recém-desbloqueados

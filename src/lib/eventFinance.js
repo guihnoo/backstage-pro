@@ -19,20 +19,11 @@ export function calculateEventReceivableAmount(event, dailyWorkForEvent = []) {
     if (fromWork > 0) return fromWork;
   }
 
+  // Prioridade: daily_cache_value (campo atual) → actual_revenue → estimated_revenue
+  if (event.daily_cache_value > 0) return Number(event.daily_cache_value);
   if (event.actual_revenue > 0) return event.actual_revenue;
   if (event.estimated_revenue > 0) return event.estimated_revenue;
-
-  try {
-    const start = parseISO(event.start_date);
-    const end = parseISO(event.end_date || event.start_date);
-    const days = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1);
-    const daily = event.daily_cache_value || event.daily_cache || 0;
-    if (daily > 0) return daily * days;
-  } catch {
-    // fall through
-  }
-
-  return event.daily_cache_value || event.daily_cache || 0;
+  return event.daily_cache || 0;
 }
 
 export function daysSinceEventEnd(event) {

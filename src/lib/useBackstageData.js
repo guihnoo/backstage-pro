@@ -2,6 +2,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from './supabase';
 import { differenceInDays, parseISO } from 'date-fns';
 
+const eventValue = (e) =>
+  Number(e.daily_cache_value || e.actual_revenue || e.estimated_revenue || 0);
+
 export function useStats(userId) {
   const [stats, setStats] = useState({
     faturamento_pago: 0,
@@ -12,12 +15,16 @@ export function useStats(userId) {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [version, setVersion] = useState(0);
+  const refetch = useCallback(() => setVersion(v => v + 1), []);
 
   useEffect(() => {
     if (!userId) {
       setLoading(false);
       return;
     }
+
+    let cancelled = false;
 
     async function fetchStats() {
       try {
@@ -28,13 +35,13 @@ export function useStats(userId) {
         const [eventsRes, dailyWorkRes] = await Promise.all([
           supabase
             .from('events')
-            .select('*')
+            .select('id, payment_status, status, client_id, daily_cache_value, actual_revenue, estimated_revenue')
             .eq('user_id', userId)
             .gte('start_date', monthStart)
             .lte('start_date', monthEnd),
           supabase
             .from('daily_work')
-            .select('*')
+            .select('total_hours')
             .eq('user_id', userId)
             .gte('date', monthStart)
             .lte('date', monthEnd),
@@ -45,32 +52,35 @@ export function useStats(userId) {
 
         const faturamento_pago = events
           .filter(e => e.payment_status === 'paid')
-          .reduce((sum, e) => sum + (e.actual_revenue || e.estimated_revenue || 0), 0);
+          .reduce((sum, e) => sum + eventValue(e), 0);
 
         const a_receber = events
-          .filter(e => e.payment_status === 'pending' && e.status === 'completed')
-          .reduce((sum, e) => sum + (e.actual_revenue || e.estimated_revenue || 0), 0);
+          .filter(e => ['pending', 'unpaid', 'partial'].includes(e.payment_status))
+          .reduce((sum, e) => sum + eventValue(e), 0);
 
         const horas_trabalhadas = dailyWork.reduce((sum, d) => sum + (d.total_hours || 0), 0);
 
-        setStats({
-          faturamento_pago,
-          a_receber,
-          horas_trabalhadas,
-          eventos_count: events.length,
-          clientes_ativos: new Set(events.map(e => e.client_id).filter(Boolean)).size
-        });
+        if (!cancelled) {
+          setStats({
+            faturamento_pago,
+            a_receber,
+            horas_trabalhadas,
+            eventos_count: events.length,
+            clientes_ativos: new Set(events.map(e => e.client_id).filter(Boolean)).size
+          });
+        }
       } catch (err) {
-        setError(err.message);
+        if (!cancelled) setError(err.message);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
 
     fetchStats();
-  }, [userId]);
+    return () => { cancelled = true; };
+  }, [userId, version]);
 
-  return { stats, loading, error };
+  return { stats, loading, error, refetch };
 }
 
 export function useUpcomingEvent(userId) {
@@ -224,7 +234,7 @@ export function usePaymentAlerts(userId) {
       try {
         const { data, error: err } = await supabase
           .from('events')
-          .select('id, title, start_date, payment_status, status, actual_revenue, estimated_revenue, clients (name)')
+          .select('id, title, start_date, payment_status, status, daily_cache_value, actual_revenue, estimated_revenue, clients (name)')
           .eq('user_id', userId)
           .in('payment_status', ['pending', 'unpaid', 'partial'])
           .eq('status', 'completed')
@@ -234,10 +244,11 @@ export function usePaymentAlerts(userId) {
 
         const alertsList = (data || []).map(event => {
           const daysOverdue = differenceInDays(new Date(), parseISO(event.start_date));
+          const value = eventValue(event);
           return {
             id: event.id,
             type: daysOverdue > 0 ? 'overdue' : 'pending',
-            title: `${event.clients?.name || 'Cliente'} — R$${(event.actual_revenue || event.estimated_revenue || 0).toLocaleString('pt-BR')}`,
+            title: `${event.clients?.name || 'Cliente'} — R$${value.toLocaleString('pt-BR')}`,
             daysOverdue,
             description: daysOverdue > 0 ? `Atrasado há ${daysOverdue} dias` : 'Aguardando pagamento'
           };
