@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/authContext';
 import { useStats, useEvents } from '@/lib/useBackstageData';
@@ -6,7 +6,88 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
-import { Trophy, Zap, Star, TrendingUp, Award, Flame, Calendar } from 'lucide-react';
+import { Trophy, Zap, Star, TrendingUp, Award, Flame, Calendar, X } from 'lucide-react';
+
+const SEEN_BADGES_KEY = 'backstage_seen_badges';
+
+function getSeenBadges() {
+  try { return new Set(JSON.parse(localStorage.getItem(SEEN_BADGES_KEY) || '[]')); }
+  catch { return new Set(); }
+}
+
+function BadgeCelebration({ badge, onClose }) {
+  useEffect(() => {
+    const t = setTimeout(onClose, 4000);
+    return () => clearTimeout(t);
+  }, [onClose]);
+
+  const Icon = badge.icon;
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.4, rotate: -12 }}
+        animate={{ scale: 1, rotate: 0 }}
+        exit={{ scale: 0.4, opacity: 0 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+        className="relative text-center px-10 py-10 rounded-3xl border"
+        style={{
+          background: `radial-gradient(circle at 50% 30%, ${badge.color}18, #0a0c14 70%)`,
+          borderColor: `${badge.color}40`,
+          boxShadow: `0 0 60px ${badge.color}40, 0 0 120px ${badge.color}18`,
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Partículas */}
+        {[...Array(12)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-2 h-2 rounded-full"
+            style={{
+              background: badge.color,
+              top: '50%', left: '50%',
+            }}
+            initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+            animate={{
+              x: Math.cos((i / 12) * Math.PI * 2) * (80 + Math.random() * 60),
+              y: Math.sin((i / 12) * Math.PI * 2) * (80 + Math.random() * 60),
+              opacity: 0,
+              scale: 0,
+            }}
+            transition={{ duration: 1.2, delay: 0.1, ease: 'easeOut' }}
+          />
+        ))}
+
+        <motion.div
+          animate={{ scale: [1, 1.15, 1] }}
+          transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+          className="w-20 h-20 rounded-full mx-auto mb-5 flex items-center justify-center"
+          style={{ background: `${badge.color}22`, border: `2px solid ${badge.color}60` }}
+        >
+          <Icon className="w-9 h-9" style={{ color: badge.color }} />
+        </motion.div>
+
+        <p className="text-xs uppercase tracking-widest font-mono mb-2" style={{ color: badge.color }}>
+          Conquista desbloqueada!
+        </p>
+        <h2 className="text-2xl font-black text-white mb-1">{badge.title}</h2>
+        <p className="text-sm text-gray-400">{badge.description}</p>
+
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-gray-600 hover:text-gray-400 transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </motion.div>
+    </motion.div>
+  );
+}
 
 
 // ─── Círculo de progresso animado ───────────────────────────
@@ -90,6 +171,8 @@ export default function Goals() {
   const categoryId = profile?.category || 'lighting';
   const config = getCategoryConfig(categoryId);
   const [activeTab, setActiveTab] = useState('metas');
+  const [celebrationBadge, setCelebrationBadge] = useState(null);
+  const seenRef = useRef(getSeenBadges());
 
   // Stats reais
   const { stats, loading: statsLoading } = useStats(userId);
@@ -157,6 +240,19 @@ export default function Goals() {
     }
   ], [totalEvents, stats, metaEventos, metaReceita, config]);
 
+  // Detecta badges recém-desbloqueados
+  useEffect(() => {
+    if (!badges.length) return;
+    const seen = seenRef.current;
+    const newlyUnlocked = badges.find(b => b.unlocked && !seen.has(b.title));
+    if (newlyUnlocked) {
+      seen.add(newlyUnlocked.title);
+      try { localStorage.setItem(SEEN_BADGES_KEY, JSON.stringify([...seen])); } catch {}
+      // Pequeno delay para deixar a página carregar primeiro
+      setTimeout(() => setCelebrationBadge(newlyUnlocked), 600);
+    }
+  }, [badges]);
+
   const tabs = [
     { id: 'metas', label: 'Metas do Mês' },
     { id: 'nivel', label: 'Nível & XP' },
@@ -164,6 +260,15 @@ export default function Goals() {
   ];
 
   return (
+    <>
+    <AnimatePresence>
+      {celebrationBadge && (
+        <BadgeCelebration
+          badge={celebrationBadge}
+          onClose={() => setCelebrationBadge(null)}
+        />
+      )}
+    </AnimatePresence>
     <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-screen pb-24">
       {/* Header */}
       <motion.div
@@ -429,5 +534,6 @@ export default function Goals() {
         </AnimatePresence>
       </div>
     </NeonPageShell>
+    </>
   );
 }
