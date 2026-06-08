@@ -182,16 +182,16 @@ export default function AIMentorPage() {
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSendMessage = async () => {
-    if (!inputMessage.trim() && uploadedFiles.length === 0) return;
+  const handleSendMessage = async (overrideMessage) => {
+    const userMessage = (overrideMessage ?? inputMessage).trim();
+    if (!userMessage && uploadedFiles.length === 0) return;
     if (!currentConversation) {
       await handleNewConversation();
       return;
     }
 
-    const userMessage = inputMessage.trim();
     const filesToSend = [...uploadedFiles];
-    
+
     setInputMessage('');
     setUploadedFiles([]);
     setLoading(true);
@@ -219,12 +219,9 @@ export default function AIMentorPage() {
     }
   };
 
-  const handleSuggestionClick = async (suggestion) => {
+  const handleSuggestionClick = (suggestion) => {
     setInputMessage(suggestion);
-    // Auto-enviar sugestão
-    setTimeout(() => {
-      handleSendMessage();
-    }, 100);
+    handleSendMessage(suggestion);
   };
 
   if (loadingConversations) {

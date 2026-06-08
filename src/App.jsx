@@ -1,11 +1,8 @@
 import './App.css';
-import Pages from '@/pages/index.jsx';
+import { RouterProvider } from 'react-router-dom';
+import { router } from '@/routes';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from 'sonner';
-import { AuthProvider } from '@/lib/authContext';
-import { AppDataProvider } from '@/components/context/AppDataContext';
-import OAuthUrlGuard from '@/components/auth/OAuthUrlGuard';
-import { BrowserRouter } from 'react-router-dom';
 import { isSupabaseConfigured } from '@/lib/supabase';
 
 function ConfigMissingScreen() {
@@ -30,16 +27,11 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <OAuthUrlGuard />
-        <AppDataProvider>
-          <Pages />
-          <Toaster />
-          <SonnerToaster position="top-center" richColors closeButton />
-        </AppDataProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <>
+      <RouterProvider router={router} />
+      <Toaster />
+      <SonnerToaster position="top-center" richColors closeButton />
+    </>
   );
 }
 

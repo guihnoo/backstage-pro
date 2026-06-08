@@ -12,20 +12,20 @@ import { useExpenses } from '@/lib/useExpenses';
 
 const CATEGORIES = [
   { value: 'transporte', label: 'Transporte' },
-  { value: 'alimentacao', label: 'Alimentacao' },
+  { value: 'alimentacao', label: 'Alimentação' },
   { value: 'equipamento', label: 'Equipamento' },
   { value: 'hospedagem', label: 'Hospedagem' },
-  { value: 'combustivel', label: 'Combustivel' },
-  { value: 'manutencao', label: 'Manutencao' },
+  { value: 'combustivel', label: 'Combustível' },
+  { value: 'manutencao', label: 'Manutenção' },
   { value: 'outros', label: 'Outros' },
 ];
 
 const PAYMENT_METHODS = [
   { value: 'dinheiro', label: 'Dinheiro' },
-  { value: 'cartao_credito', label: 'Cartao de credito' },
-  { value: 'cartao_debito', label: 'Cartao de debito' },
+  { value: 'cartao_credito', label: 'Cartão de crédito' },
+  { value: 'cartao_debito', label: 'Cartão de débito' },
   { value: 'pix', label: 'PIX' },
-  { value: 'transferencia', label: 'Transferencia' },
+  { value: 'transferencia', label: 'Transferência' },
   { value: 'outros', label: 'Outros' },
 ];
 
@@ -115,7 +115,7 @@ export default function ExpenseForm({
       onOpenChange?.(false);
     } catch (error) {
       console.error('Erro ao salvar despesa:', error);
-      toast.error('Nao foi possivel salvar a despesa.');
+      toast.error('Não foi possível salvar a despesa.');
     } finally {
       setLoading(false);
     }
@@ -130,7 +130,7 @@ export default function ExpenseForm({
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <Label>Titulo</Label>
+            <Label>Título</Label>
             <Input value={formData.title} onChange={(e) => setField('title', e.target.value)} className="bg-slate-800 border-slate-700" />
           </div>
 
@@ -196,7 +196,7 @@ export default function ExpenseForm({
           </div>
 
           <div className="space-y-2">
-            <Label>Descricao</Label>
+            <Label>Descrição</Label>
             <Textarea value={formData.description} onChange={(e) => setField('description', e.target.value)} className="bg-slate-800 border-slate-700" />
           </div>
 

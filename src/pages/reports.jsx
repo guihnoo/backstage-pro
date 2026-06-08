@@ -32,7 +32,9 @@ import FinancialSummary from '@/components/reports/FinancialSummary';
 import ClientDetailedTable from '@/components/reports/ClientDetailedTable';
 import ExpenseAnalysis from '@/components/reports/ExpenseAnalysis';
 import ExportManager from '@/components/reports/ExportManager';
-import EventDetailModal from '@/components/reports/EventDetailModal'; // IMPORTANTE: Importar o modal
+import EventDetailModal from '@/components/reports/EventDetailModal';
+import EventForm from '@/components/calendar/EventForm';
+import ExpenseForm from '@/components/expenses/ExpenseForm';
 import { Skeleton } from '@/components/ui/skeleton';
 import EmptyState from '@/components/layout/EmptyState';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -220,8 +222,10 @@ export default function ReportsPage() {
   const [modalType, setModalType] = useState('');
   const [chartFilter, setChartFilter] = useState(null);
 
-  // NOVO: State para o EventDetailModal
+  // State para o EventDetailModal e formulários de edição
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [editingExpense, setEditingExpense] = useState(null);
 
   // Define isDataReady and hasError here
   const isDataReady = !loading.events && !loading.clients && !loading.dailyWork && !loading.expenses;
@@ -554,9 +558,10 @@ export default function ReportsPage() {
     });
   }, [processedData, chartFilter]);
 
-  // NOVO: Handlers para o EventDetailModal
+  // Handlers para o EventDetailModal
   const handleEventEdit = () => {
-    toast.info('Edição de eventos será implementada em breve!');
+    setEditingEvent(selectedEvent);
+    setSelectedEvent(null);
   };
 
   const handleEventDelete = async (eventId) => {
@@ -574,7 +579,8 @@ export default function ReportsPage() {
   };
 
   const handleWorkEdit = () => {
-    toast.info('Edição de trabalho será implementada em breve!');
+    navigate('/calendar');
+    toast.info('Edite o registro de trabalho diretamente na Agenda.');
   };
 
   const handleWorkDelete = async (workId) => {
@@ -590,8 +596,8 @@ export default function ReportsPage() {
     }
   };
 
-  const handleExpenseEdit = () => {
-    toast.info('Edição de despesas será implementada em breve!');
+  const handleExpenseEdit = (expense) => {
+    setEditingExpense(expense);
   };
 
   const handleExpenseDelete = async (expenseId) => {
@@ -867,7 +873,7 @@ export default function ReportsPage() {
         data={modalData}
         type={modalType} />
 
-      {/* NOVO: Modal de detalhes do evento */}
+      {/* Modal de detalhes do evento */}
       {selectedEvent && (
         <EventDetailModal
           event={selectedEvent}
@@ -885,6 +891,24 @@ export default function ReportsPage() {
           onApply12h={handleApply12h}
         />
       )}
+
+      {/* Form de edição de evento */}
+      <EventForm
+        isOpen={!!editingEvent}
+        onClose={() => setEditingEvent(null)}
+        event={editingEvent}
+        clients={data.clients}
+        onSuccess={() => { setEditingEvent(null); refreshData(); }}
+      />
+
+      {/* Form de edição de despesa */}
+      <ExpenseForm
+        open={!!editingExpense}
+        onOpenChange={(open) => { if (!open) setEditingExpense(null); }}
+        expense={editingExpense}
+        events={data.events}
+        onSuccess={() => { setEditingExpense(null); refreshData(); }}
+      />
     </NeonPageShell>
   );
 }

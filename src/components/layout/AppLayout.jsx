@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Home, Calendar, Users, Receipt, BarChart2, Sparkles } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
@@ -28,13 +28,13 @@ export default function AppLayout() {
   const autoHoursChecked = useRef(false);
   const mainRef = useRef(null);
   const location = useLocation();
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (import.meta.env.DEV) {
-      window.__testNavigate = (path) => navigate(path);
-    }
-  }, [navigate]);
+  const handleNavClick = (event, path) => {
+    event.preventDefault();
+    const current = `${window.location.pathname}${window.location.search}`;
+    if (current === path || (path !== '/' && current.startsWith(path))) return;
+    window.location.assign(path);
+  };
 
   useEffect(() => {
     const userId = user?.id;
@@ -53,7 +53,7 @@ export default function AppLayout() {
   }, [location.pathname]);
 
   return (
-    <div className="h-full bg-[#050609] text-white flex flex-col overflow-hidden" data-router-path={location.pathname}>
+    <div className="h-full bg-[#050609] text-white flex flex-col overflow-hidden">
       {/* Notificações — fixo no canto superior direito */}
       <div className="fixed top-3 right-3 z-40" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <NotificationCenter />
@@ -68,18 +68,19 @@ export default function AppLayout() {
           {navItems.map(({ path, label, icon: Icon, end }) => {
             const active = isNavActive(location.pathname, path, end);
             return (
-              <NavLink
+              <a
                 key={path}
-                to={path}
-                end={end}
+                href={path}
+                onClick={(event) => handleNavClick(event, path)}
                 aria-label={label}
+                aria-current={active ? 'page' : undefined}
                 className="flex-1 flex justify-center min-h-[56px] bg-transparent border-0 p-0 cursor-pointer no-underline"
               >
                 <motion.div whileTap={{ scale: 0.88 }} className="flex flex-col items-center gap-0.5 py-3 px-1 w-full">
                   <Icon className="w-5 h-5" style={{ color: active ? config.primaryHex : '#5f6678' }} />
                   <span className="text-[9px] font-mono uppercase leading-none truncate max-w-full" style={{ color: active ? config.primaryHex : '#5f6678' }}>{label}</span>
                 </motion.div>
-              </NavLink>
+              </a>
             );
           })}
         </div>

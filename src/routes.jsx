@@ -19,6 +19,7 @@ import ExpensesPage from './pages/Expenses';
 import ReportsPage from './pages/reports';
 import ClientDetailPage from './pages/ClientDetail';
 import OAuthUrlGuard from '@/components/auth/OAuthUrlGuard';
+import NavigationSync from '@/components/NavigationSync';
 import { AuthProvider } from '@/lib/authContext';
 import { AppDataProvider } from '@/components/context/AppDataContext';
 
@@ -64,6 +65,7 @@ function RootShell() {
   return (
     <AuthProvider>
       <AppDataProvider>
+        <NavigationSync />
         <OAuthUrlGuard />
         <Outlet />
       </AppDataProvider>
