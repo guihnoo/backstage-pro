@@ -1,139 +1,180 @@
-import { InvokeLLM } from '@/api/integrations';
+import { supabase } from '@/lib/supabase';
 
 const listeners = new Map();
+const conversationCache = new Map();
 
 function emit(conversationId, data) {
+  conversationCache.set(conversationId, data);
   const fns = listeners.get(conversationId) || [];
   fns.forEach(fn => fn(data));
 }
 
 export const agentSDK = {
-  // Criar nova conversa
-  async createConversation({ _agent_name, metadata = {} }) {
-    const id = crypto.randomUUID();
+  async createConversation({ agent_name, metadata = {} }) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Usuário não autenticado');
+
+    const title = metadata.name || `Conversa - ${new Date().toLocaleDateString('pt-BR')}`;
+
+    const { data, error } = await supabase
+      .from('ai_conversations')
+      .insert({ user_id: user.id, title, messages: [], context: {} })
+      .select()
+      .single();
+
+    if (error) throw error;
+
     const conversation = {
-      id,
-      _agent_name,
-      metadata: {
-        name: metadata.name || 'Nova Conversa',
-        description: metadata.description || '',
-        ...metadata
-      },
+      id: data.id,
+      agent_name,
+      metadata: { name: data.title, ...metadata },
       messages: [],
       status: 'idle',
-      created_at: new Date().toISOString()
+      created_at: data.created_at,
     };
-    
-    // Emitir evento inicial
-    setTimeout(() => emit(id, conversation), 0);
+
+    conversationCache.set(data.id, conversation);
     return conversation;
   },
 
-  // Listar conversas (mock - em produção viria do backend)
-  async listConversations({ _agent_name }) {
-    return [];
+  async listConversations({ agent_name: _agent_name }) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data, error } = await supabase
+      .from('ai_conversations')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false })
+      .limit(20);
+
+    if (error) return [];
+
+    return (data || []).map(row => ({
+      id: row.id,
+      metadata: { name: row.title },
+      messages: row.messages || [],
+      status: 'idle',
+      created_at: row.created_at,
+    }));
   },
 
-  // Obter conversa específica
   async getConversation(conversationId) {
+    const { data, error } = await supabase
+      .from('ai_conversations')
+      .select('*')
+      .eq('id', conversationId)
+      .single();
+
+    if (error) throw error;
+
     return {
-      id: conversationId,
-      _agent_name: 'RelatorioInteligente',
-      metadata: { name: 'Conversa', description: '' },
-      messages: [],
-      status: 'idle'
+      id: data.id,
+      metadata: { name: data.title },
+      messages: data.messages || [],
+      status: 'idle',
+      created_at: data.created_at,
     };
   },
 
-  // Atualizar conversa
-  async updateConversation(conversationId, updates) {
-    const conversation = await this.getConversation(conversationId);
-    const updated = { ...conversation, ...updates };
-    emit(conversationId, updated);
-    return updated;
-  },
-
-  // Adicionar mensagem e obter resposta da IA
   async addMessage(conversation, message) {
     const conversationId = typeof conversation === 'string' ? conversation : conversation.id;
-    
-    // Mensagem do usuário
+
+    const { data: current } = await supabase
+      .from('ai_conversations')
+      .select('messages')
+      .eq('id', conversationId)
+      .single();
+
+    const history = current?.messages || [];
+
     const userMessage = {
       id: crypto.randomUUID(),
       role: 'user',
       content: message.content,
       file_urls: message.file_urls || [],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
-    // Emitir conversa com mensagem do usuário
+    const updatedMessages = [...history, userMessage];
+
     emit(conversationId, {
       id: conversationId,
       status: 'running',
-      messages: [userMessage]
+      messages: updatedMessages,
     });
 
     try {
-      // Chamada para o LLM
-      const response = await InvokeLLM({
-        prompt: `Como analista financeiro especialista do Backstage Pro, responda de forma profissional e detalhada sobre: ${message.content}`,
-        add_context_from_internet: false,
-        file_urls: message.file_urls
+      const { data: fnData, error: fnError } = await supabase.functions.invoke('ai-chat', {
+        body: {
+          messages: updatedMessages.map(m => ({ role: m.role, content: m.content })),
+          context: {},
+        },
       });
 
-      // Mensagem da IA
+      if (fnError) throw fnError;
+
       const aiMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: response || 'Resposta gerada com sucesso.',
+        content: fnData?.answer ?? 'Não foi possível gerar uma resposta.',
         timestamp: new Date().toISOString(),
-        tool_calls: [] // Para compatibilidade com MessageBubble
+        tool_calls: [],
       };
 
-      // Emitir conversa completa
+      const finalMessages = [...updatedMessages, aiMessage];
+
+      await supabase
+        .from('ai_conversations')
+        .update({ messages: finalMessages, updated_at: new Date().toISOString() })
+        .eq('id', conversationId);
+
       emit(conversationId, {
         id: conversationId,
         status: 'completed',
-        messages: [userMessage, aiMessage]
+        messages: finalMessages,
       });
 
       return aiMessage;
     } catch (error) {
       console.error('Erro ao gerar resposta da IA:', error);
-      
+
       const errorMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: 'Desculpe, ocorreu um erro ao gerar a resposta. Tente novamente.',
+        content: 'Desculpe, ocorreu um erro ao gerar a resposta. Verifique se o AI Mentor está configurado corretamente.',
         timestamp: new Date().toISOString(),
-        tool_calls: []
+        tool_calls: [],
       };
+
+      const finalMessages = [...updatedMessages, errorMessage];
 
       emit(conversationId, {
         id: conversationId,
         status: 'error',
-        messages: [userMessage, errorMessage]
+        messages: finalMessages,
       });
 
       return errorMessage;
     }
   },
 
-  // Subscrever a atualizações da conversa
   subscribeToConversation(conversationId, callback) {
-    const existingCallbacks = listeners.get(conversationId) || [];
-    existingCallbacks.push(callback);
-    listeners.set(conversationId, existingCallbacks);
+    const existing = listeners.get(conversationId) || [];
+    existing.push(callback);
+    listeners.set(conversationId, existing);
 
-    // Retornar função de cleanup
+    const cached = conversationCache.get(conversationId);
+    if (cached) setTimeout(() => callback(cached), 0);
+
     return () => {
-      const callbacks = listeners.get(conversationId) || [];
-      const filtered = callbacks.filter(fn => fn !== callback);
+      const cbs = listeners.get(conversationId) || [];
+      const filtered = cbs.filter(fn => fn !== callback);
       if (filtered.length > 0) {
         listeners.set(conversationId, filtered);
       } else {
         listeners.delete(conversationId);
       }
     };
-  }
+  },
 };

@@ -8,28 +8,14 @@ import {
   Star
 } from 'lucide-react';
 import { Feedback } from '@/api/entities';
-import { User } from '@/api/entities';
+import { useAuth } from '@/lib/authContext';
 import { toast } from 'sonner';
 
 export default function FeedbackModal({ isOpen, onClose }) {
+  const { user } = useAuth();
   const [rating, setRating] = useState(0);
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    async function fetchUser() {
-      try {
-        const currentUser = await User.me();
-        setUser(currentUser);
-      } catch (error) {
-        console.error("Erro ao buscar usuário para feedback:", error);
-      }
-    }
-    if (isOpen) {
-      fetchUser();
-    }
-  }, [isOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,6 +28,7 @@ export default function FeedbackModal({ isOpen, onClose }) {
     setIsSubmitting(true);
     try {
       await Feedback.create({
+        user_id: user?.id,
         user_email: user?.email || 'anonimo@backstage.pro',
         rating,
         message,

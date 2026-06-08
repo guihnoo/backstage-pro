@@ -88,14 +88,15 @@ export const Expense = makeEntity('expenses');
 export const UserSettings = makeEntity('user_settings');
 export const Notification = makeEntity('notifications');
 
-// Entidades menos críticas — stub que não quebra imports
+export const Feedback = makeEntity('feedback');
+export const EventTemplate = makeEntity('event_templates');
+
+// Entidades sem tabela própria — stub
 const noop = () => Promise.resolve(null);
 const stubEntity = { create: noop, update: noop, delete: noop, filter: () => Promise.resolve([]) };
 
 export const UserDashboardSettings = stubEntity;
-export const Feedback = stubEntity;
 export const Report = stubEntity;
-export const EventTemplate = stubEntity;
 export const SystemBackup = { ...stubEntity, filter: () => Promise.resolve([]) };
 export const Invoice = stubEntity;
 export const UserBehaviorProfile = stubEntity;

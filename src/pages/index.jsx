@@ -1,26 +1,23 @@
-import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/authContext';
 import LoadingSpinner from '@/components/layout/LoadingSpinner';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { FinancialVisibilityProvider } from '@/components/context/FinancialVisibilityContext';
 
-// Eager: necessário para primeira renderização / auth flow
-import AppLayout from '@/components/layout/AppLayout';
+import LoginNew from './LoginNew';
+import SignupNew from './SignupNew';
+import AuthCallback from './AuthCallback';
+import Onboarding from './Onboarding';
 import Home from './Home';
-
-// Lazy: carregados apenas quando o usuário navega para a rota
-const LoginNew = lazy(() => import('./LoginNew'));
-const SignupNew = lazy(() => import('./SignupNew'));
-const AuthCallback = lazy(() => import('./AuthCallback'));
-const Onboarding = lazy(() => import('./Onboarding'));
-const Goals = lazy(() => import('./Goals'));
-const ProfileSimple = lazy(() => import('./ProfileSimple'));
-const CalendarPage = lazy(() => import('./Calendar'));
-const ClientsPage = lazy(() => import('./Clients'));
-const ExpensesPage = lazy(() => import('./Expenses'));
-const ReportsPage = lazy(() => import('./reports'));
-const ClientDetailPage = lazy(() => import('./ClientDetail'));
+import Goals from './Goals';
+import ProfileSimple from './ProfileSimple';
+import AIMentorPage from './AI_Mentor';
+import AppLayout from '@/components/layout/AppLayout';
+import CalendarPage from './Calendar';
+import ClientsPage from './Clients';
+import ExpensesPage from './Expenses';
+import ReportsPage from './reports';
+import ClientDetailPage from './ClientDetail';
 
 function RouteLoading() {
   return <LoadingSpinner fullScreen text="Carregando..." />;
@@ -62,7 +59,6 @@ function MigratedModuleRoute({ children }) {
 
 export default function PagesRouter() {
   return (
-    <Suspense fallback={<RouteLoading />}>
     <Routes>
       <Route
         path="/login"
@@ -146,10 +142,17 @@ export default function PagesRouter() {
         />
         <Route path="goals" element={<Goals />} />
         <Route path="profile" element={<ProfileSimple />} />
+        <Route
+          path="ai-mentor"
+          element={
+            <MigratedModuleRoute>
+              <AIMentorPage />
+            </MigratedModuleRoute>
+          }
+        />
       </Route>
 
       <Route path="*" element={<NotFoundRedirect />} />
     </Routes>
-    </Suspense>
   );
 }

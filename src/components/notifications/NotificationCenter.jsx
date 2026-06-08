@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Bell, Clock, Calendar, CheckCircle2, X } from 'lucide-react';
 import { Notification } from '@/api/entities';
-import { User } from '@/api/entities';
+import { useAuth } from '@/lib/authContext';
 import {
   format,
   parseISO
@@ -89,32 +89,31 @@ const NotificationItem = ({ notification, onMarkAsRead, onNavigate }) => {
 };
 
 export default function NotificationCenter() {
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
   const loadNotifications = useCallback(async () => {
+    if (!user?.id) {
+      setNotifications([]);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
-      const user = await User.me();
-      if (!user?.id) {
-        setNotifications([]);
-        setLoading(false);
-        return;
-      }
-      const unreadNotifications = await Notification.filter({ 
+      const unreadNotifications = await Notification.filter({
         is_read: false,
-        owner_id: user.id 
+        user_id: user.id,
       });
       setNotifications(Array.isArray(unreadNotifications) ? unreadNotifications : []);
     } catch (error) {
       console.error('Erro ao carregar notificações:', error);
-      toast.error('Erro ao carregar notificações');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     loadNotifications();

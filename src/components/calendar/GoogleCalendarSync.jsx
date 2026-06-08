@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,11 +17,14 @@ import {
   Settings
 } from 'lucide-react';
 import { UserSettings } from '@/api/entities';
-import { User } from '@/api/entities';
+import { useAuth } from '@/lib/authContext';
 import { googleAuthStart, googleDisconnect, googleSyncNow, googleListCalendars, googleImportEvents } from '@/api/functions';
 import { toast } from 'sonner';
 
 export default function GoogleCalendarSync() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [settings, setSettings] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -28,24 +32,22 @@ export default function GoogleCalendarSync() {
   const [lastSyncStatus, setLastSyncStatus] = useState(null);
 
   useEffect(() => {
-    loadSettings();
+    if (user?.id) loadSettings();
     checkUrlForError();
-  }, []);
+  }, [user?.id]);
 
   const checkUrlForError = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const error = urlParams.get('error');
     if (error) {
       toast.error(`Erro na conexão com Google: ${decodeURIComponent(error)}`);
-      // Limpar a URL
-      window.history.replaceState({}, document.title, window.location.pathname);
+      navigate(location.pathname, { replace: true });
     }
   };
 
   const loadSettings = async () => {
     setIsLoading(true);
     try {
-      const user = await User.me();
       const userSettings = await UserSettings.filter({ user_id: user.id });
       
       if (userSettings && userSettings.length > 0) {

@@ -2,23 +2,23 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { EventTemplate } from '@/api/entities';
-import { User } from '@/api/entities';
+import { useAuth } from '@/lib/authContext';
 import {
   Loader2,
   Sparkles
 } from 'lucide-react';
 
 const EventTemplateModal = ({ isOpen, onClose, onSelectTemplate }) => {
+  const { user } = useAuth();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && user?.id) {
       const fetchTemplates = async () => {
         setLoading(true);
         try {
-          const user = await User.me();
-          const fetchedTemplates = await EventTemplate.filter({ created_by: user.email });
+          const fetchedTemplates = await EventTemplate.filter({ user_id: user.id });
           setTemplates(fetchedTemplates || []);
         } catch (error) {
           console.error("Erro ao buscar templates:", error);
@@ -28,7 +28,7 @@ const EventTemplateModal = ({ isOpen, onClose, onSelectTemplate }) => {
       };
       fetchTemplates();
     }
-  }, [isOpen]);
+  }, [isOpen, user?.id]);
 
   return (
     <AnimatePresence>

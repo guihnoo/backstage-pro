@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Sparkles, Loader2, Send, Volume2, VolumeX, Upload, X } from 'lucide-react';
 import { agentSDK } from '@/components/agents';
 import { useAppData } from '@/components/context/AppDataContext';
-import { User } from '@/api/entities';
+import { useAuth } from '@/lib/authContext';
 import { toast } from 'sonner';
 import MessageBubble from '@/components/ai/MessageBubble';
 import SmartSuggestions from '@/components/ai/SmartSuggestions';
@@ -12,23 +12,21 @@ import { UploadFile } from '@/api/integrations';
 
 export default function AIMentorPage() {
   const { data } = useAppData();
+  const { user, profile } = useAuth();
   const [_conversations, setConversations] = useState([]);
   const [currentConversation, setCurrentConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingConversations, setLoadingConversations] = useState(true);
-  const [user, setUser] = useState(null);
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
-  
+
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const unsubscribeRef = useRef(null);
-  const _audioRef = useRef(null);
 
-  // Scroll to bottom quando novas mensagens chegam
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -36,20 +34,6 @@ export default function AIMentorPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  // Carregar usuário
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const currentUser = await User.me();
-        setUser(currentUser);
-      } catch (error) {
-        console.error('Erro ao carregar usuário:', error);
-        toast.error('Erro ao carregar dados do usuário');
-      }
-    };
-    loadUser();
-  }, []);
 
   // Carregar conversas
   useEffect(() => {
@@ -310,7 +294,7 @@ export default function AIMentorPage() {
                 <div className="absolute inset-0 bg-cyan-400 blur-2xl opacity-20 rounded-full"></div>
               </div>
               <h2 className="text-2xl font-bold text-white mb-3">
-                Olá, {user?.full_name?.split(' ')[0] || 'Profissional'}! 👋
+                Olá, {profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Profissional'}! 👋
               </h2>
               <p className="text-slate-400 mb-8 max-w-md">
                 Sou seu consultor financeiro pessoal. Posso te ajudar com análises, relatórios, insights e muito mais!
