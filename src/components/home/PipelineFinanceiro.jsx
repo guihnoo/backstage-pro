@@ -1,11 +1,10 @@
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { ChevronRight } from 'lucide-react';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 
 export default function PipelineFinanceiro({ stats, isLoading, primaryHex = '#A64AFF', accentHex = '#FFB700' }) {
-  const navigate = useNavigate();
   const { formatCurrency } = useFinancialVisibility();
   const total = stats.faturamento_pago + stats.a_receber;
   const percentualPago = total > 0 ? (stats.faturamento_pago / total) * 100 : 0;
@@ -17,7 +16,7 @@ export default function PipelineFinanceiro({ stats, isLoading, primaryHex = '#A6
           <h3 className="text-lg font-bold">Dinheiro nos Trilhos</h3>
           <button
             type="button"
-            onClick={() => navigate('/reports')}
+            onClick={() => hardNavigate('/reports')}
             className="text-xs text-[#7c8494] hover:text-cyan-400 flex items-center gap-1 transition-colors"
           >
             Ver relatório
@@ -34,7 +33,7 @@ export default function PipelineFinanceiro({ stats, isLoading, primaryHex = '#A6
               <motion.button
                 type="button"
                 whileTap={{ scale: 0.97 }}
-                onClick={() => navigate('/reports')}
+                onClick={() => hardNavigate('/reports')}
                 className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer text-left"
               >
                 <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: primaryHex }} />
@@ -46,7 +45,7 @@ export default function PipelineFinanceiro({ stats, isLoading, primaryHex = '#A6
               <motion.button
                 type="button"
                 whileTap={{ scale: 0.97 }}
-                onClick={() => navigate('/reports')}
+                onClick={() => hardNavigate('/reports')}
                 className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer text-left"
               >
                 <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: accentHex }} />

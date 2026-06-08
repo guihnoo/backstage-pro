@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import { ChevronRight } from 'lucide-react';
 
@@ -10,8 +10,6 @@ const statConfigs = [
 ];
 
 export default function QuickStats({ stats, isLoading, primaryHex = '#A64AFF', accentHex = '#FFB700' }) {
-  const navigate = useNavigate();
-
   return (
     <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
       {statConfigs.map((config, idx) => (
@@ -22,7 +20,7 @@ export default function QuickStats({ stats, isLoading, primaryHex = '#A64AFF', a
           transition={{ delay: idx * 0.1 }}
           whileHover={{ y: -4 }}
           whileTap={{ scale: 0.97 }}
-          onClick={() => navigate(config.route)}
+          onClick={() => hardNavigate(config.route)}
           className="cursor-pointer"
         >
           <NeonGlass primary={primaryHex} accent={accentHex} className="p-5 relative">

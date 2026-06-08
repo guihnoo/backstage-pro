@@ -10,7 +10,8 @@ import {
   CheckCircle,
   AlertTriangle,
   Link as LinkIcon,
-  Building
+  Building,
+  RotateCcw
 } from 'lucide-react';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { useAuth } from '@/lib/authContext';
@@ -27,7 +28,7 @@ const categoryColors = {
   outros: 'bg-slate-500/20 text-slate-300 border-slate-400/30',
 };
 
-export default function ExpenseListItem({ expense, event, onEdit, onDelete }) {
+export default function ExpenseListItem({ expense, event, onEdit, onDelete, onMarkReimbursed }) {
   const { isVisible, formatCurrency } = useFinancialVisibility();
   const { profile } = useAuth();
   const config = getCategoryConfig(profile?.category || 'lighting');
@@ -71,7 +72,19 @@ export default function ExpenseListItem({ expense, event, onEdit, onDelete }) {
 
       <div className="flex items-center justify-between sm:justify-end gap-4 mt-4 sm:mt-0">
         <p className="text-xl font-bold text-red-300">{isVisible ? formatCurrency(expense.amount) : '•••••'}</p>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          {expense.is_reimbursable && !expense.reimbursed && onMarkReimbursed && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="bg-green-900/20 border-green-700/50 hover:bg-green-900/40 text-green-400 text-xs h-8 px-2"
+              onClick={() => onMarkReimbursed(expense)}
+              title="Marcar como reembolsado"
+            >
+              <RotateCcw className="w-3 h-3 mr-1" />
+              Reembolsado
+            </Button>
+          )}
           <Button size="icon" variant="ghost" className="hover:bg-slate-700" onClick={() => onEdit(expense)}>
             <Edit className="w-4 h-4" />
           </Button>

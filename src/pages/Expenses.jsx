@@ -44,7 +44,7 @@ const StatCard = ({ title, value, onClick, active, primaryHex, accentHex }) => (
 );
 
 export default function ExpensesPage() {
-    const { expenses, loading: expensesLoading, error: expensesError, refetch: refetchExpenses, delete: deleteExpenseById } = useExpenses();
+    const { expenses, loading: expensesLoading, error: expensesError, refetch: refetchExpenses, update: updateExpense, delete: deleteExpenseById } = useExpenses();
     const { events } = useEvents();
     const { profile } = useAuth();
     const config = getCategoryConfig(profile?.category || 'lighting');
@@ -74,6 +74,16 @@ export default function ExpensesPage() {
     const handleEdit = (expense) => {
         setEditingExpense(expense);
         setShowForm(true);
+    };
+
+    const handleMarkReimbursed = async (expense) => {
+        try {
+            await updateExpense(expense.id, { reimbursed: true });
+            toast.success(`"${expense.title}" marcado como reembolsado!`);
+        } catch (err) {
+            toast.error('Erro ao atualizar despesa.');
+            console.error(err);
+        }
     };
 
     const handleDelete = async (expenseId) => {
@@ -210,6 +220,7 @@ export default function ExpensesPage() {
                                     event={events.find(e => e.id === expense.event_id)}
                                     onEdit={handleEdit}
                                     onDelete={handleDelete}
+                                    onMarkReimbursed={handleMarkReimbursed}
                                 />
                             ))
                         ) : (

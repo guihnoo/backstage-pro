@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { MapPin, Clock, User, ChevronRight, Navigation } from 'lucide-react';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { useCountdown } from '@/lib/useBackstageData';
-import { useNavigate } from 'react-router-dom';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import ModoPalcoActions from '@/components/home/ModoPalcoActions';
@@ -12,7 +12,6 @@ function getEventDateStr(event) {
 }
 
 export default function ProximoShow({ event, userCategory, isOnStage }) {
-  const navigate = useNavigate();
   const eventDateStr = getEventDateStr(event);
   const { countdown } = useCountdown(eventDateStr);
   const config = getCategoryConfig(userCategory);
@@ -33,7 +32,7 @@ export default function ProximoShow({ event, userCategory, isOnStage }) {
         </p>
         <motion.button
           whileTap={{ scale: 0.96 }}
-          onClick={() => navigate('/calendar')}
+          onClick={() => hardNavigate('/calendar')}
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-violet-600 text-white text-sm font-semibold hover:shadow-lg hover:shadow-cyan-500/30 transition-all"
         >
           <Navigation className="w-4 h-4" />
@@ -185,7 +184,7 @@ export default function ProximoShow({ event, userCategory, isOnStage }) {
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => navigate('/calendar')}
+            onClick={() => hardNavigate('/calendar')}
             className="flex-1 px-4 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-600 text-white font-semibold hover:shadow-lg hover:shadow-cyan-500/50 transition-all flex items-center justify-center gap-2"
           >
             <span>Ver Detalhes</span>

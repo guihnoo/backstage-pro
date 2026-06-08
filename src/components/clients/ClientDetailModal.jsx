@@ -15,7 +15,7 @@ import {
   Activity, Target, Globe
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { useEvents } from '@/lib/useEvents';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
@@ -156,7 +156,6 @@ export default function ClientDetailModal({
   onEdit,
   onDelete
 }) {
-  const navigate = useNavigate();
   const { events } = useEvents();
   const { dailyWork } = useDailyWork();
   const { formatCurrency } = useFinancialVisibility();
@@ -287,8 +286,8 @@ export default function ClientDetailModal({
 
   const handleEventClick = useCallback(() => {
     onClose();
-    navigate('/calendar');
-  }, [navigate, onClose]);
+    hardNavigate('/calendar');
+  }, [onClose]);
 
   const modalAnimation = {
     hidden: { opacity: 0, y: 20 },

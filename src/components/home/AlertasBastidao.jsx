@@ -1,11 +1,9 @@
 import { motion } from 'framer-motion';
 import { AlertCircle, Clock, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { NeonGlass } from '@/components/design/NeonGlass';
 
 export default function AlertasBastidao({ alerts, isLoading, primaryHex = '#A64AFF', accentHex = '#FFB700' }) {
-  const navigate = useNavigate();
-
   if (isLoading) return <NeonGlass primary={primaryHex} className="mb-8 p-5"><div className="space-y-3">{[1, 2].map((i) => <div key={i} className="h-12 bg-[#1a1d27] rounded animate-pulse" />)}</div></NeonGlass>;
   if (!alerts?.length) return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-8">
@@ -31,7 +29,7 @@ export default function AlertasBastidao({ alerts, isLoading, primaryHex = '#A64A
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: idx * 0.05 }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => navigate('/clients')}
+          onClick={() => hardNavigate('/clients')}
           className="w-full text-left p-4 rounded-xl border border-red-500/30 bg-red-600/10 hover:bg-red-600/20 hover:border-red-500/50 transition-colors cursor-pointer"
         >
           <div className="flex items-start gap-3">
@@ -52,7 +50,7 @@ export default function AlertasBastidao({ alerts, isLoading, primaryHex = '#A64A
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: (overdue.length + idx) * 0.05 }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => navigate('/calendar')}
+          onClick={() => hardNavigate('/calendar')}
           className="w-full text-left p-4 rounded-xl border transition-colors cursor-pointer"
           style={{ borderColor: `${accentHex}44`, background: `${accentHex}12` }}
           onMouseEnter={(e) => { e.currentTarget.style.background = `${accentHex}1e`; }}
