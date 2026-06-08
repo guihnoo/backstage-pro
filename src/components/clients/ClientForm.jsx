@@ -380,7 +380,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                       Permitir Meio Cachê + Dobra no mesmo dia
                     </Label>
                     <p className="text-xs text-purple-300 mt-1">
-                      Permite aplicar "Meio Cachê" e "Dobra" simultaneamente em um único evento.
+                      Permite aplicar &ldquo;Meio Cachê&rdquo; e &ldquo;Dobra&rdquo; simultaneamente em um único evento.
                     </p>
                   </div>
                 </motion.div>
