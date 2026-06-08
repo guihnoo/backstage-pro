@@ -1,5 +1,6 @@
-import { motion } from 'framer-motion';
-import { MessageCircle, Wallet, ChevronRight, AlertTriangle } from 'lucide-react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MessageCircle, Wallet, ChevronRight, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { buildChargeMessage, openWhatsAppCharge } from '@/lib/whatsapp';
@@ -16,8 +17,10 @@ function ReceivableSkeleton() {
   );
 }
 
-export default function AReceber({ rows, totalReceivable, isLoading }) {
+export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid }) {
   const { formatCurrency } = useFinancialVisibility();
+  const [marking, setMarking] = useState(null); // clientId being confirmed
+  const [confirming, setConfirming] = useState(null); // clientId awaiting confirm tap
 
   if (isLoading) return <ReceivableSkeleton />;
 
@@ -54,6 +57,24 @@ export default function AReceber({ rows, totalReceivable, isLoading }) {
     });
     const ok = openWhatsAppCharge(row.phone, message);
     if (!ok) toast.error('Não foi possível abrir o WhatsApp.');
+  };
+
+  const handleMarkPaid = async (row) => {
+    if (confirming !== row.clientId) {
+      setConfirming(row.clientId);
+      setTimeout(() => setConfirming(c => c === row.clientId ? null : c), 3000);
+      return;
+    }
+    setConfirming(null);
+    setMarking(row.clientId);
+    try {
+      await onMarkPaid?.(row.clientId);
+      toast.success(`Pagamento de ${row.clientName} marcado como recebido!`);
+    } catch {
+      toast.error('Erro ao marcar pagamento. Tente novamente.');
+    } finally {
+      setMarking(null);
+    }
   };
 
   const topRows = rows.slice(0, 5);
@@ -115,15 +136,50 @@ export default function AReceber({ rows, totalReceivable, isLoading }) {
                 )}
               </div>
             </div>
-            <motion.button
-              type="button"
-              whileTap={{ scale: 0.95 }}
-              onClick={() => handleCharge(row)}
-              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-green-600/20 border border-green-500/40 text-green-300 hover:bg-green-600/30 transition-colors"
-            >
-              <MessageCircle className="w-4 h-4" />
-              Cobrar
-            </motion.button>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <AnimatePresence mode="wait">
+                {confirming === row.clientId ? (
+                  <motion.button
+                    key="confirm"
+                    type="button"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleMarkPaid(row)}
+                    disabled={marking === row.clientId}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-emerald-600/30 border border-emerald-400/60 text-emerald-300 hover:bg-emerald-600/50 transition-colors"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    Confirmar
+                  </motion.button>
+                ) : (
+                  <motion.button
+                    key="paid"
+                    type="button"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleMarkPaid(row)}
+                    disabled={marking === row.clientId}
+                    className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-bold bg-[#1a2a1a] border border-[#2a4a2a] text-[#5a8a5a] hover:border-emerald-500/50 hover:text-emerald-300 transition-colors"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Pago
+                  </motion.button>
+                )}
+              </AnimatePresence>
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleCharge(row)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-green-600/20 border border-green-500/40 text-green-300 hover:bg-green-600/30 transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Cobrar
+              </motion.button>
+            </div>
           </motion.div>
         ))}
       </div>

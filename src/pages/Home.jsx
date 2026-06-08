@@ -15,6 +15,7 @@ import AlertasBastidao from '@/components/home/AlertasBastidao';
 import { useReceivableByClient } from '@/lib/useReceivable';
 import PipelineFinanceiro from '@/components/home/PipelineFinanceiro';
 import ProximosEventos from '@/components/home/ProximosEventos';
+import ForecastWidget from '@/components/home/ForecastWidget';
 import FloatingActions from '@/components/home/FloatingActions';
 import { NeonAtmosphere } from '@/components/design/NeonAtmosphere';
 import { LightingBeams } from '@/components/design/LightingBeams';
@@ -36,9 +37,11 @@ export default function Home() {
     rows: receivableRows,
     totalReceivable,
     loading: receivableLoading,
+    markClientPaid,
   } = useReceivableByClient(userId);
   const today = new Date().toISOString().split('T')[0];
   const { events: proximosEventos, refetch: refetchProximos } = useEvents(userId, { from: today, limit: 5, ascending: true });
+  const { events: forecastEvents, loading: forecastLoading } = useEvents(userId, { from: today, limit: 30, ascending: true });
   const isOnStage = proximoEvento
     ? today >= (proximoEvento.start_date || proximoEvento.event_date || '') &&
       today <= (proximoEvento.end_date || proximoEvento.start_date || proximoEvento.event_date || '')
@@ -93,11 +96,18 @@ export default function Home() {
           isLoading={statsLoading}
           accentColor={config.primaryHex}
         />
+        <ForecastWidget
+          events={forecastEvents}
+          isLoading={forecastLoading}
+          primaryHex={config.primaryHex}
+          accentHex={config.accentHex}
+        />
         <QuickStats stats={stats} isLoading={statsLoading} primaryHex={config.primaryHex} accentHex={config.accentHex} />
         <AReceber
           rows={receivableRows}
           totalReceivable={totalReceivable}
           isLoading={receivableLoading}
+          onMarkPaid={markClientPaid}
         />
         <AlertasBastidao alerts={alerts} isLoading={alertsLoading} primaryHex={config.primaryHex} accentHex={config.accentHex} />
         <PipelineFinanceiro stats={stats} isLoading={statsLoading} primaryHex={config.primaryHex} accentHex={config.accentHex} />

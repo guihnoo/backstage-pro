@@ -1,9 +1,19 @@
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, differenceInCalendarDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Clock, MapPin, User, CheckCircle2, Loader2, ChevronRight, Plus } from 'lucide-react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { usePaymentToggle } from '@/lib/usePaymentToggle';
+import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
+
+function getTimeGroup(daysFromToday) {
+  if (daysFromToday === 0) return 'Hoje';
+  if (daysFromToday === 1) return 'Amanhã';
+  if (daysFromToday <= 7) return 'Esta semana';
+  if (daysFromToday <= 14) return 'Próxima semana';
+  return 'Em breve';
+}
 
 const statusConfig = {
   pending: { label: 'Pendente', color: 'bg-amber-600/20 border-amber-500/30 text-amber-300' },
@@ -15,6 +25,26 @@ const statusConfig = {
 export default function ProximosEventos({ events, isLoading, onRefresh }) {
   const proximosEventos = events.slice(0, 5);
   const { togglePayment, toggling } = usePaymentToggle();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
+  const today = new Date();
+
+  const groupedEvents = useMemo(() => {
+    const groups = [];
+    let lastGroup = null;
+    for (const ev of proximosEventos) {
+      const dateStr = ev.start_date || ev.event_date;
+      const d = dateStr ? parseISO(dateStr) : null;
+      const days = d ? differenceInCalendarDays(d, today) : 999;
+      const group = getTimeGroup(Math.max(0, days));
+      if (group !== lastGroup) {
+        groups.push({ type: 'header', label: group });
+        lastGroup = group;
+      }
+      groups.push({ type: 'event', event: ev, days });
+    }
+    return groups;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [proximosEventos]);
 
   if (isLoading) {
     return (
@@ -61,8 +91,25 @@ export default function ProximosEventos({ events, isLoading, onRefresh }) {
           Ver agenda <ChevronRight className="w-3.5 h-3.5" />
         </button>
       </div>
-      <div className="space-y-3">
-        {proximosEventos.map((event, idx) => {
+      <div className="space-y-1">
+        {groupedEvents.map((item, idx) => {
+          if (item.type === 'header') {
+            return (
+              <div key={`h-${item.label}`} className={`flex items-center gap-2 ${idx > 0 ? 'mt-4' : 'mt-0'} mb-2`}>
+                <span className={`text-[10px] font-bold uppercase tracking-widest font-mono ${
+                  item.label === 'Hoje' ? 'text-cyan-400' :
+                  item.label === 'Amanhã' ? 'text-amber-400' :
+                  'text-[#5a6070]'
+                }`}>
+                  {item.label}
+                </span>
+                {item.label === 'Hoje' && <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />}
+                <div className="flex-1 h-px bg-[#1e2030]" />
+              </div>
+            );
+          }
+
+          const event = item.event;
           const status = statusConfig[event.status] || statusConfig.pending;
           const dateStr = event.start_date || event.event_date;
           const eventDate = dateStr ? parseISO(dateStr) : null;
@@ -72,20 +119,28 @@ export default function ProximosEventos({ events, isLoading, onRefresh }) {
             : '';
           const isPaid = event.payment_status === 'paid';
           const isToggling = toggling === event.id;
+          const cacheValue = event.daily_cache_value || event.actual_revenue || event.estimated_revenue || 0;
 
           return (
             <motion.div
               key={event.id}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: idx * 0.05 }}
+              transition={{ delay: Math.min(idx, 10) * 0.04 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => hardNavigate('/calendar')}
-              className="p-4 rounded-lg bg-gray-900/50 border border-gray-700/30 hover:border-gray-600/50 transition-all group cursor-pointer"
+              className={`p-4 rounded-lg border transition-all group cursor-pointer ${
+                item.days === 0
+                  ? 'bg-cyan-950/30 border-cyan-700/30 hover:border-cyan-600/50'
+                  : 'bg-gray-900/50 border-gray-700/30 hover:border-gray-600/50'
+              }`}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    {event.color && (
+                      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: event.color, boxShadow: `0 0 5px ${event.color}80` }} />
+                    )}
                     <h4 className="font-semibold text-white truncate group-hover:text-cyan-300 transition-colors">
                       {event.title}
                     </h4>
@@ -124,8 +179,8 @@ export default function ProximosEventos({ events, isLoading, onRefresh }) {
                 <div className="flex flex-col items-end gap-2 flex-shrink-0">
                   <div className="text-right">
                     <p className="text-xs text-gray-500 mb-0.5">{formattedDate.toUpperCase()}</p>
-                    <p className="font-bold text-cyan-400">
-                      R${(event.actual_revenue || event.estimated_revenue || 0).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}
+                    <p className="font-bold text-cyan-400 tabular-nums">
+                      {isVisible ? formatCurrency(cacheValue) : '•••'}
                     </p>
                   </div>
 

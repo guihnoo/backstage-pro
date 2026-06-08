@@ -74,11 +74,19 @@ export default function AppLayout() {
                 onClick={(event) => handleNavClick(event, path)}
                 aria-label={label}
                 aria-current={active ? 'page' : undefined}
-                className="flex-1 flex justify-center min-h-[56px] bg-transparent border-0 p-0 cursor-pointer no-underline"
+                className="flex-1 flex justify-center min-h-[56px] bg-transparent border-0 p-0 cursor-pointer no-underline relative"
               >
+                {active && (
+                  <motion.div
+                    layoutId="nav-indicator"
+                    className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-6 rounded-full"
+                    style={{ background: config.primaryHex, boxShadow: `0 0 8px ${config.primaryHex}` }}
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
                 <motion.div whileTap={{ scale: 0.88 }} className="flex flex-col items-center gap-0.5 py-3 px-1 w-full">
-                  <Icon className="w-5 h-5" style={{ color: active ? config.primaryHex : '#5f6678' }} />
-                  <span className="text-[9px] font-mono uppercase leading-none truncate max-w-full" style={{ color: active ? config.primaryHex : '#5f6678' }}>{label}</span>
+                  <Icon className="w-5 h-5 transition-transform" style={{ color: active ? config.primaryHex : '#5f6678', transform: active ? 'translateY(-1px)' : 'none' }} />
+                  <span className="text-[9px] font-mono uppercase leading-none truncate max-w-full transition-colors" style={{ color: active ? config.primaryHex : '#5f6678' }}>{label}</span>
                 </motion.div>
               </a>
             );

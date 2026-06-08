@@ -373,6 +373,14 @@ export default function ClientsPage() {
                           >
                             {client.stats.isActive ? 'Ativo' : 'Inativo'}
                           </Badge>
+                          {(() => {
+                            const last = client.stats.lastEventDate;
+                            if (!last) return <span title="Sem histórico de eventos" className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" style={{ boxShadow: '0 0 5px #ef444480' }} />;
+                            const days = Math.floor((Date.now() - new Date(last).getTime()) / 86400000);
+                            if (days <= 30) return <span title={`Último show há ${days}d`} className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" style={{ boxShadow: '0 0 5px #34d39980' }} />;
+                            if (days <= 90) return <span title={`Último show há ${days}d`} className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" style={{ boxShadow: '0 0 5px #fbbf2480' }} />;
+                            return <span title={`Último show há ${days}d`} className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" style={{ boxShadow: '0 0 5px #ef444480' }} />;
+                          })()}
                           {client.policy_default_payment_model && (
                             <Badge variant="outline" className="text-xs border-slate-700 text-slate-400">
                               {client.policy_default_payment_model === 'HORAS_EXTRAS' ? 'H.E.' : 'M&D'}

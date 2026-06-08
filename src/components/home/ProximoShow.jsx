@@ -6,6 +6,7 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import ModoPalcoActions from '@/components/home/ModoPalcoActions';
+import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 
 function getEventDateStr(event) {
   return event?.start_date || event?.event_date || null;
@@ -15,6 +16,7 @@ export default function ProximoShow({ event, userCategory, isOnStage }) {
   const eventDateStr = getEventDateStr(event);
   const { countdown } = useCountdown(eventDateStr);
   const config = getCategoryConfig(userCategory);
+  const { formatCurrency, isVisible } = useFinancialVisibility();
 
   if (!event) {
     return (
@@ -118,9 +120,11 @@ export default function ProximoShow({ event, userCategory, isOnStage }) {
 
           <div className="text-gray-300">
             <div className="text-sm">
-              <p className="text-gray-500 text-xs">Valor</p>
+              <p className="text-gray-500 text-xs">Cachê</p>
               <p className="font-semibold">
-                R${(event.actual_revenue || event.estimated_revenue || 0).toLocaleString('pt-BR')}
+                {isVisible
+                  ? formatCurrency(event.daily_cache_value || event.actual_revenue || event.estimated_revenue || 0)
+                  : '•••••'}
               </p>
             </div>
           </div>
