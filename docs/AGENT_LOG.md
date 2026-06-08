@@ -205,3 +205,18 @@ Registro cronológico de tarefas executadas por agentes.
 5. **index.jsx** — Mantida versão estática (sem lazy) do Cursor; `MigratedModuleRoute` em `ErrorBoundary`.
 
 **Build:** ✅ 3737 módulos, sem erros
+
+---
+## ESLINT-DEEP-PASS — 2026-06-07
+**Commits:** d6bc69e, e006ebf
+**Escopo:** Varredura completa de src/ exceto arquivos LOCKED
+
+### Fixes adicionais:
+1. **EventDetailModal.jsx** — `react-hooks/rules-of-hooks`: 3 `useMemo` chamados após `if (!event) return null` → movidos para antes do early return com optional chaining
+2. **36 arquivos** — `import React from 'react'` removido (desnecessário com JSX transform React 17+)
+3. **Calendar.jsx** — 37 mojibake C3 83 C2 XX → C3 XX corrigidos; + `deleteDailyWorkEntry` e `updateEvent` adicionados nas deps de `useCallback` (`exhaustive-deps`)
+4. **ClientForm.jsx** — aspas não escapadas em JSX text substituídas por `&ldquo;` / `&rdquo;`
+5. **command.jsx / toast.jsx** — `eslint-disable-next-line` para atributos custom de libs (`cmdk-input-wrapper`, `toast-close`)
+
+**Resultado:** zero violações de `rules-of-hooks`, `exhaustive-deps`, `no-empty`, `no-case-declarations` em arquivos não-LOCKED
+**Build:** ✅ 3737 módulos, sem erros
