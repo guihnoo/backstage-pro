@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,8 +23,8 @@ import { toast } from 'sonner';
 
 export default function GoogleCalendarSync() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
+  const locationPathname = location.pathname;
   const [settings, setSettings] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -41,7 +41,7 @@ export default function GoogleCalendarSync() {
     const error = urlParams.get('error');
     if (error) {
       toast.error(`Erro na conexão com Google: ${decodeURIComponent(error)}`);
-      navigate(location.pathname, { replace: true });
+      window.history.replaceState({}, '', locationPathname);
     }
   };
 

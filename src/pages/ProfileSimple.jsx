@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/authContext';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
-import { useNavigate } from 'react-router-dom';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { NeonGlass } from '@/components/design/NeonGlass';
@@ -17,7 +17,6 @@ import { toast } from 'sonner';
 export default function ProfileSimple() {
   const { user, profile, signOut, updateProfile } = useAuth();
   const { isVisible, toggleVisibility } = useFinancialVisibility();
-  const navigate = useNavigate();
   const categoryId = profile?.category || 'lighting';
   const config = getCategoryConfig(categoryId);
 
@@ -98,7 +97,7 @@ export default function ProfileSimple() {
 
   const handleLogout = async () => {
     await signOut();
-    navigate('/login');
+    hardNavigate('/login');
   };
 
   return (

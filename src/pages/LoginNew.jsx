@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
@@ -24,15 +25,14 @@ export default function LoginNew() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { signInWithPassword, isAuthenticated, isOnboardingComplete, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
 
   const [authBootTimedOut, setAuthBootTimedOut] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate(isOnboardingComplete ? '/' : '/onboarding', { replace: true });
+      hardNavigate(isOnboardingComplete ? '/' : '/onboarding', { replace: true });
     }
-  }, [isAuthenticated, isOnboardingComplete, navigate]);
+  }, [isAuthenticated, isOnboardingComplete]);
 
   useEffect(() => {
     if (!authLoading) {

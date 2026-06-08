@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/authContext';
 import { useStats, useEvents } from '@/lib/useBackstageData';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
-import { useNavigate } from 'react-router-dom';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { Trophy, Zap, Star, TrendingUp, Award, Flame, Calendar } from 'lucide-react';
 
@@ -85,7 +85,6 @@ function getLevelInfo(eventsCount) {
 
 export default function Goals() {
   const { user, profile } = useAuth();
-  const navigate = useNavigate();
   const { formatCurrency } = useFinancialVisibility();
   const userId = user?.id;
   const categoryId = profile?.category || 'lighting';
@@ -303,7 +302,7 @@ export default function Goals() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
                     whileTap={{ scale: 0.97 }}
-                    onClick={() => navigate(item.route)}
+                    onClick={() => hardNavigate(item.route)}
                     className="bg-gray-900/40 border border-gray-800/40 rounded-xl p-4 text-left hover:border-gray-700/60 transition-colors cursor-pointer"
                   >
                     <span className="text-xl">{item.icon}</span>

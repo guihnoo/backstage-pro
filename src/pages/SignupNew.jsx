@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
@@ -25,9 +26,8 @@ export default function SignupNew() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const { signUp, isAuthenticated, isOnboardingComplete, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
 
-  useEffect(() => { if (isAuthenticated) navigate(isOnboardingComplete ? '/' : '/onboarding', { replace: true }); }, [isAuthenticated, isOnboardingComplete, navigate]);
+  useEffect(() => { if (isAuthenticated) hardNavigate(isOnboardingComplete ? '/' : '/onboarding', { replace: true }); }, [isAuthenticated, isOnboardingComplete]);
   if (authLoading || isAuthenticated) return <div className="min-h-screen bg-[#050609] flex items-center justify-center"><motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="w-8 h-8 border-2 border-t-transparent rounded-full" style={{ borderColor: hero.primaryHex, borderTopColor: 'transparent' }} /></div>;
 
   const handleSubmit = async (e) => {

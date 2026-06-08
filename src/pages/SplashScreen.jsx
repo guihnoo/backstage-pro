@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { motion } from 'framer-motion';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { AUTH_HERO_CATEGORY } from '@/lib/categoryGear';
@@ -9,8 +9,7 @@ import { NeonLevelBars } from '@/components/design/NeonLevelBars';
 const hero = getCategoryConfig(AUTH_HERO_CATEGORY);
 
 export default function SplashScreen() {
-  const navigate = useNavigate();
-  useEffect(() => { const t = setTimeout(() => navigate('/login'), 2500); return () => clearTimeout(t); }, [navigate]);
+  useEffect(() => { const t = setTimeout(() => hardNavigate('/login'), 2500); return () => clearTimeout(t); }, []);
 
   return (
     <div className="fixed inset-0 bg-[#050609] flex items-center justify-center overflow-hidden">

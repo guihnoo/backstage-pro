@@ -1,6 +1,6 @@
 ﻿
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { useQueryAction } from '@/lib/useQueryAction';
 import { useAuth } from '@/lib/authContext';
 import { useEvents } from '@/lib/useEvents';
@@ -104,7 +104,6 @@ const StatCard = ({ title, value, subtext, icon: Icon, color, onClick, loading =
 );
 
 export default function CalendarPage() {
-  const navigate = useNavigate();
   const { user, profile, loading: authLoading } = useAuth();
   const config = getCategoryConfig(profile?.category || 'lighting');
   const { events, loading: eventsLoading, error: eventsError, refetch: refetchEvents, update: updateEvent, delete: deleteEvent } = useEvents();
@@ -901,7 +900,7 @@ export default function CalendarPage() {
               <button
                 type="button"
                 className="underline font-semibold"
-                onClick={() => navigate('/clients?action=new-client')}
+                onClick={() => hardNavigate('/clients?action=new-client')}
               >
                 Clientes
               </button>{' '}

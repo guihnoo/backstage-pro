@@ -1,10 +1,9 @@
 import { useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 /** OAuth pode cair em /?code=... se o redirect no Supabase estiver na raiz — normaliza para /auth/callback. */
 export default function OAuthUrlGuard() {
   const location = useLocation();
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (location.pathname === '/auth/callback') return;
@@ -14,9 +13,9 @@ export default function OAuthUrlGuard() {
       params.has('code') || params.has('error') || params.has('error_description');
 
     if (hasOAuthParams) {
-      navigate(`/auth/callback${location.search}${location.hash}`, { replace: true });
+      window.location.replace(`/auth/callback${location.search}${location.hash}`);
     }
-  }, [location.pathname, location.search, location.hash, navigate]);
+  }, [location.pathname, location.search, location.hash]);
 
   return null;
 }

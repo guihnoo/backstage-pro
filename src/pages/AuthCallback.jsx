@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { motion } from 'framer-motion';
 import { Zap, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
@@ -43,16 +44,10 @@ function humanizeAuthError(err) {
 }
 
 export default function AuthCallback() {
-  const navigate = useNavigate();
-  const navigateRef = useRef(navigate);
   const { applySession } = useAuth();
   const [error, setError] = useState(null);
   const [showEscape, setShowEscape] = useState(false);
   const finishedRef = useRef(false);
-
-  useEffect(() => {
-    navigateRef.current = navigate;
-  }, [navigate]);
 
   useEffect(() => {
     let cancelled = false;
@@ -67,7 +62,7 @@ export default function AuthCallback() {
       if (cancelled || finishedRef.current) return;
       finishedRef.current = true;
       window.history.replaceState({}, document.title, '/auth/callback');
-      navigateRef.current(profile?.onboarding_complete ? '/' : '/onboarding', { replace: true });
+      hardNavigate(profile?.onboarding_complete ? '/' : '/onboarding', { replace: true });
     };
 
     const escapeId = setTimeout(() => {
@@ -108,7 +103,7 @@ export default function AuthCallback() {
 
         if (!session?.user) {
           if (!code) {
-            navigateRef.current('/login', { replace: true });
+            hardNavigate('/login', { replace: true });
             finishedRef.current = true;
             return;
           }

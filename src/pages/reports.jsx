@@ -1,5 +1,5 @@
 ﻿import { useState, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
 import { useDailyWork } from '@/lib/useDailyWork';
@@ -169,7 +169,6 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type }) => {
 };
 
 export default function ReportsPage() {
-  const navigate = useNavigate();
   const { events, loading: eventsLoading, error: eventsError, refetch: refetchEvents, delete: deleteEvent } = useEvents();
   const { clients, loading: clientsLoading, error: clientsError, refetch: refetchClients } = useClients();
   const { dailyWork, loading: dailyWorkLoading, error: dailyWorkError, refetch: refetchDailyWork, delete: deleteWork } = useDailyWork();
@@ -593,7 +592,7 @@ export default function ReportsPage() {
   };
 
   const handleWorkEdit = () => {
-    navigate('/calendar');
+    hardNavigate('/calendar');
     toast.info('Edite o registro de trabalho diretamente na Agenda.');
   };
 
@@ -661,7 +660,7 @@ export default function ReportsPage() {
   );
 
   const handleClientDetail = (clientId) => {
-    navigate(`/client-detail?id=${clientId}`);
+    hardNavigate(`/client-detail?id=${clientId}`);
   };
 
   // Loading and Error States

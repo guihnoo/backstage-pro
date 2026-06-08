@@ -1,13 +1,12 @@
 import { useEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 /**
  * Abre fluxos via ?action= sem useSearchParams.
- * Limpa a query com navigate(replace) para manter o React Router sincronizado com a URL.
+ * Limpa a query com replaceState para manter a URL sem remount da rota.
  */
 export function useQueryAction(actionKey, onMatch) {
   const location = useLocation();
-  const navigate = useNavigate();
   const onMatchRef = useRef(onMatch);
   const handledRef = useRef(false);
   onMatchRef.current = onMatch;
@@ -22,6 +21,6 @@ export function useQueryAction(actionKey, onMatch) {
 
     handledRef.current = true;
     onMatchRef.current();
-    navigate({ pathname: location.pathname, search: '' }, { replace: true });
-  }, [location.search, location.pathname, actionKey, navigate]);
+    window.history.replaceState({}, '', location.pathname);
+  }, [location.search, location.pathname, actionKey]);
 }

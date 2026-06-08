@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Sparkles, BookmarkPlus } from 'lucide-react';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { normalizeDateString } from '@/components/utils/dateUtils';
 import { useEvents } from '@/lib/useEvents';
 import { useAuth } from '@/lib/authContext';
@@ -44,7 +44,6 @@ export default function EventForm({
   initialData,
   onSuccess,
 }) {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { create: createEvent, update: updateEvent } = useEvents();
   const [loading, setLoading] = useState(false);
@@ -202,7 +201,7 @@ export default function EventForm({
                   className="border-amber-500/50 text-amber-200 hover:bg-amber-500/20"
                   onClick={() => {
                     onClose?.(false);
-                    navigate('/clients?action=new-client');
+                    hardNavigate('/clients?action=new-client');
                   }}
                 >
                   Cadastrar primeiro cliente
