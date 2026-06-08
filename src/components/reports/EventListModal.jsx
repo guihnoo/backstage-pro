@@ -1,12 +1,14 @@
 
-import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { motion } from 'framer-motion';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { DollarSign, Calendar, List } from 'lucide-react';
+import {
+  Calendar,
+  List
+} from 'lucide-react';
 import EmptyState from '@/components/layout/EmptyState';
 
 export default function EventListModal({ isOpen, onClose, title, events = [], onEventClick }) {

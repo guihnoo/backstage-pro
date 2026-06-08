@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Bell, X, Timer, Clock, AlertTriangle } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import {
+  X,
+  Timer,
+  Clock
+} from 'lucide-react';
 import { normalizeDateString, getEventsForDate, getWorkForDate } from '../utils/dateUtils';
 
 export default function AlertsPanel({ 

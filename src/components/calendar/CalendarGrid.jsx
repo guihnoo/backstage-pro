@@ -1,5 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { useMemo, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format, addMonths, subMonths } from 'date-fns';

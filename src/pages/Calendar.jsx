@@ -1,5 +1,5 @@
 ﻿
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryAction } from '@/lib/useQueryAction';
 import { useAuth } from '@/lib/authContext';
@@ -18,10 +18,8 @@ import {
   Plus,
   Users,
   Clock,
-  Loader2,
   AlertCircle,
-  CheckCircle2,
-  DollarSign
+  CheckCircle2
 } from 'lucide-react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, parseISO, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';

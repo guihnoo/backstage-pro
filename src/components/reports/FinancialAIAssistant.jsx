@@ -1,5 +1,4 @@
 
-import React from 'react';
 
 export default function FinancialAIAssistant() {
   // O componente FinancialAIAssistant foi removido conforme a solicitação de "Deletar antigo componente da IA".

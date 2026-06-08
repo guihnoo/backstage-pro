@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQueryAction } from '@/lib/useQueryAction';
 import { useClients } from '@/lib/useClients';
 import { useEvents } from '@/lib/useEvents';
@@ -21,8 +21,10 @@ import {
   MessageCircle,
   MoreHorizontal
 } from 'lucide-react';
-import { format, parseISO, isValid } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import {
+  parseISO,
+  isValid
+} from 'date-fns';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { getEventStatus } from '@/components/utils/dateUtils';
 import { useMediaQuery } from '@/components/hooks/useMediaQuery';

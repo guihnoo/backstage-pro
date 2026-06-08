@@ -2,9 +2,14 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  X, CalendarPlus, Timer, Receipt, Eye, 
-  Building2, DollarSign, Clock, Play
+import {
+  X,
+  CalendarPlus,
+  Timer,
+  Receipt,
+  Eye,
+  DollarSign,
+  Clock
 } from 'lucide-react';
 import { formatDisplayDate, getEventStatus } from '../utils/dateUtils';
 

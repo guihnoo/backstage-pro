@@ -1,19 +1,18 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Calendar, 
-  RefreshCw, 
-  CheckCircle, 
-  AlertTriangle, 
-  ExternalLink, 
+import {
+  Calendar,
+  RefreshCw,
+  CheckCircle,
+  AlertTriangle,
+  ExternalLink,
   Loader2,
   Download,
-  Upload,
   Settings
 } from 'lucide-react';
 import { UserSettings } from '@/api/entities';

@@ -1,5 +1,5 @@
 
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { DollarSign, TrendingUp, TrendingDown, AlertCircle, BarChart2 } from 'lucide-react';

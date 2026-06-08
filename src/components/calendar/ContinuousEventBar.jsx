@@ -1,5 +1,5 @@
 
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Clock } from 'lucide-react'; // Removed MapPin as it's not used
 import { getContrastColor, softColor, timeRangeLabel } from '../utils/dateUtils';

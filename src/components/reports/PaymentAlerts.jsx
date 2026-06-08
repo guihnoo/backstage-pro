@@ -1,10 +1,14 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, AlertTriangle, Calendar } from 'lucide-react';
-import { format, isAfter, isBefore, differenceInDays, parseISO } from 'date-fns';
+import {
+  format,
+  differenceInDays,
+  parseISO
+} from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { daysDifference, getEventStatus, normalizeDateString } from '../utils/dateUtils';

@@ -1,6 +1,10 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { startOfWeek, addDays, format, startOfDay, addHours } from 'date-fns';
+import {
+  startOfWeek,
+  addDays,
+  format
+} from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { getEventsForDate, normalizeDateString } from '../utils/dateUtils';
 

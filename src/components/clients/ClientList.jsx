@@ -1,17 +1,14 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import {
+  Card
+} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { 
-  Building2, 
-  Calendar, 
-  TrendingUp, 
-  AlertCircle, 
-  CheckCircle2, 
-  Clock,
+import {
+  Building2,
   DollarSign,
   Phone,
   Mail,

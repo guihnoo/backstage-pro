@@ -1,7 +1,19 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
-import { DollarSign, TrendingDown, Wallet, Briefcase, Percent, Hourglass, CalendarDays, User, BarChartBig, TrendingUp, ArrowUp, ArrowDown, Minus } from 'lucide-react';
+import {
+  DollarSign,
+  TrendingDown,
+  Wallet,
+  Briefcase,
+  Percent,
+  Hourglass,
+  CalendarDays,
+  BarChartBig,
+  ArrowUp,
+  ArrowDown,
+  Minus
+} from 'lucide-react';
 
 const MetricCard = ({ icon: Icon, title, value, colorClass, size = 'small', comparison = null }) => {
   const ComparisonIcon = comparison?.trend === 'up' ? ArrowUp : comparison?.trend === 'down' ? ArrowDown : Minus;

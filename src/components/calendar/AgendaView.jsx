@@ -3,11 +3,23 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks, subWeeks } from 'date-fns';
+import {
+  format,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  addWeeks
+} from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { 
-  Calendar, Clock, DollarSign, ChevronLeft, ChevronRight, 
-  Building2, Timer, Play, CheckCircle, Receipt
+import {
+  Calendar,
+  Clock,
+  DollarSign,
+  ChevronLeft,
+  ChevronRight,
+  Play,
+  CheckCircle,
+  Receipt
 } from 'lucide-react';
 
 import { 

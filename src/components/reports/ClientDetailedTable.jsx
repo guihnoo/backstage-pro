@@ -1,9 +1,16 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Users, Search, ArrowUpDown, ArrowUp, ArrowDown, Eye, TrendingUp, Calendar } from 'lucide-react';
+import {
+  Users,
+  Search,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Eye
+} from 'lucide-react';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';

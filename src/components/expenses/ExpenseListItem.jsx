@@ -3,7 +3,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Receipt, Calendar, Tag, Edit, Trash2, CheckCircle, AlertTriangle, Link as LinkIcon, Building } from 'lucide-react';
+import {
+  Calendar,
+  Edit,
+  Trash2,
+  CheckCircle,
+  AlertTriangle,
+  Link as LinkIcon,
+  Building
+} from 'lucide-react';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';

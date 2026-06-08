@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import {
+  useState,
+  useEffect
+} from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Building2, DollarSign, X, AlertCircle, Phone, Mail, Globe, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/authContext';

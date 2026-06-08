@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, DollarSign, Calendar, Users, AlertCircle, Zap } from 'lucide-react';
 

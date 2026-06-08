@@ -1,5 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import {
+  useState
+} from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,16 +11,12 @@ import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { 
-  Filter, 
-  Calendar as CalendarIcon, 
-  X, 
+import {
+  Filter,
+  Calendar as CalendarIcon,
   RotateCcw,
-  TrendingUp,
   Users,
-  Receipt,
-  CheckCircle,
-  Clock
+  CheckCircle
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';

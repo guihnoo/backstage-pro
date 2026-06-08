@@ -4,7 +4,17 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, DollarSign, Building2, ChevronLeft, ChevronRight, Sun, Edit, Eye, Timer } from 'lucide-react';
+import {
+  Clock,
+  DollarSign,
+  Building2,
+  ChevronLeft,
+  ChevronRight,
+  Sun,
+  Edit,
+  Eye,
+  Timer
+} from 'lucide-react';
 import { format, isSameDay, addDays, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';

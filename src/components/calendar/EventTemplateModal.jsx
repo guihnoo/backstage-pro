@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { EventTemplate } from '@/api/entities';
 import { User } from '@/api/entities';
-import { Loader2, Sparkles, X } from 'lucide-react';
+import {
+  Loader2,
+  Sparkles
+} from 'lucide-react';
 
 const EventTemplateModal = ({ isOpen, onClose, onSelectTemplate }) => {
   const [templates, setTemplates] = useState([]);

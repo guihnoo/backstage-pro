@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +13,6 @@ import {
   Trash2,
   Plus,
   CheckCircle2,
-  AlertCircle,
   MapPin,
   FileText,
   Zap,
@@ -24,8 +23,10 @@ import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { applyAuto12Hours } from '@/api/functions';
 import { toast } from 'sonner';
-import { format, parseISO, differenceInDays } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import {
+  parseISO,
+  differenceInDays
+} from 'date-fns';
 
 export default function EventDetailModal({
   event,

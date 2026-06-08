@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { useClients } from '@/lib/useClients';
 import { useEvents } from '@/lib/useEvents';
@@ -7,8 +7,16 @@ import { useDailyWork } from '@/lib/useDailyWork';
 import { useExpenses } from '@/lib/useExpenses';
 import { AnimatePresence } from 'framer-motion';
 import {
-  ArrowLeft, Building, Mail, Phone, Clock, DollarSign,
-  Briefcase, Edit, Plus, AlertCircle, PieChart
+  ArrowLeft,
+  Building,
+  Mail,
+  Phone,
+  Clock,
+  DollarSign,
+  Briefcase,
+  Edit,
+  Plus,
+  PieChart
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';

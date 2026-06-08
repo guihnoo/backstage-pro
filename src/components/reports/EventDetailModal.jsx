@@ -1,7 +1,13 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter
+} from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,8 +21,6 @@ import {
   Calendar,
   Clock,
   DollarSign,
-  User,
-  Hash,
   Paperclip,
   Edit,
   Trash2,
@@ -26,7 +30,6 @@ import {
   Zap,
   Building2
 } from 'lucide-react';
-import { toast } from 'sonner';
 
 const InfoItem = ({ icon: Icon, label, value, color = 'text-slate-300', isCurrency = false, formatFn }) => {
   const { formatCurrency, isVisible } = useFinancialVisibility();
