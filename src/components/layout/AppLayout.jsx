@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Home, Calendar, Users, User, Receipt, BarChart2 } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
@@ -19,6 +19,8 @@ export default function AppLayout() {
   const { profile, user } = useAuth();
   const config = getCategoryConfig(profile?.category || 'lighting');
   const autoHoursChecked = useRef(false);
+  const mainRef = useRef(null);
+  const location = useLocation();
 
   useEffect(() => {
     const userId = user?.id;
@@ -27,9 +29,17 @@ export default function AppLayout() {
     checkCompletedEventsForAutoHours({ userId }).catch(() => {});
   }, [user?.id]);
 
+  // Reseta o scroll do container ao mudar de rota
+  useEffect(() => {
+    if (mainRef.current) {
+      mainRef.current.scrollTop = 0;
+    }
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   return (
     <div className="min-h-screen bg-[#050609] text-white flex flex-col">
-      <main className="flex-1 overflow-y-auto pb-20 min-h-0"><Outlet /></main>
+      <main ref={mainRef} className="flex-1 overflow-y-auto pb-20 min-h-0"><Outlet /></main>
       <nav className="fixed bottom-0 left-0 right-0 z-50">
         <div className="absolute inset-0 bg-[#050609]/95 backdrop-blur-xl border-t border-[#23262f]" />
         <motion.div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent 10%, ${config.primaryHex}50 50%, transparent 90%)` }} />
