@@ -5,11 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Sparkles, BookmarkPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { normalizeDateString } from '@/components/utils/dateUtils';
 import { useEvents } from '@/lib/useEvents';
+import { useAuth } from '@/lib/authContext';
+import { EventTemplate } from '@/api/entities';
+import EventTemplateModal from './EventTemplateModal';
 
 const PAYMENT_MODELS = [
   { value: 'HORAS_EXTRAS', label: 'Horas Extras' },
@@ -42,8 +45,11 @@ export default function EventForm({
   onSuccess,
 }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { create: createEvent, update: updateEvent } = useEvents();
   const [loading, setLoading] = useState(false);
+  const [savingTemplate, setSavingTemplate] = useState(false);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [formData, setFormData] = useState(defaultState);
 
   useEffect(() => {
@@ -70,6 +76,41 @@ export default function EventForm({
 
   const setField = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSelectTemplate = (template) => {
+    setFormData(prev => ({
+      ...prev,
+      title: template.title || prev.title,
+      payment_model: template.payment_model || prev.payment_model,
+      daily_cache_value: template.daily_cache_value ?? prev.daily_cache_value,
+      color: template.color || prev.color,
+    }));
+    setShowTemplateModal(false);
+    toast.success(`Template "${template.name}" aplicado`);
+  };
+
+  const handleSaveTemplate = async () => {
+    if (!formData.title.trim()) {
+      toast.error('Preencha o título antes de salvar o template');
+      return;
+    }
+    setSavingTemplate(true);
+    try {
+      await EventTemplate.create({
+        user_id: user.id,
+        name: formData.title.trim(),
+        title: formData.title.trim(),
+        payment_model: formData.payment_model,
+        daily_cache_value: formData.daily_cache_value === '' ? 0 : Number(formData.daily_cache_value),
+        color: formData.color,
+      });
+      toast.success('Template salvo!', { description: `"${formData.title}" disponível para próximos eventos.` });
+    } catch (err) {
+      toast.error('Erro ao salvar template', { description: err.message });
+    } finally {
+      setSavingTemplate(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -121,10 +162,30 @@ export default function EventForm({
   };
 
   return (
+    <>
+    <EventTemplateModal
+      isOpen={showTemplateModal}
+      onClose={() => setShowTemplateModal(false)}
+      onSelectTemplate={handleSelectTemplate}
+    />
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-2xl bg-slate-900 border-slate-700 text-white">
         <DialogHeader>
-          <DialogTitle>{event?.id ? 'Editar Evento' : 'Novo Evento'}</DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle>{event?.id ? 'Editar Evento' : 'Novo Evento'}</DialogTitle>
+            {!event?.id && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowTemplateModal(true)}
+                className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-400/10 gap-1.5 text-xs"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                Usar template
+              </Button>
+            )}
+          </div>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
@@ -217,7 +278,17 @@ export default function EventForm({
             <Textarea value={formData.observacoes_md} onChange={(e) => setField('observacoes_md', e.target.value)} className="bg-slate-800 border-slate-700" />
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleSaveTemplate}
+              disabled={savingTemplate || loading}
+              className="sm:mr-auto border-slate-600 text-slate-400 hover:text-slate-200 gap-1.5"
+            >
+              {savingTemplate ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BookmarkPlus className="w-3.5 h-3.5" />}
+              Salvar como template
+            </Button>
             <Button type="button" variant="outline" onClick={() => onClose?.(false)} disabled={loading}>
               Cancelar
             </Button>
@@ -228,5 +299,6 @@ export default function EventForm({
         </form>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
