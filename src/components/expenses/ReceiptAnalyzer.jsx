@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -66,115 +67,117 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg bg-slate-900/95 border-slate-800 text-slate-100">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-lg bg-slate-900/95 border-slate-800 text-slate-100 p-0 flex flex-col overflow-hidden max-h-[90dvh]">
+        <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 border-b border-slate-800 flex-shrink-0">
           <DialogTitle>Digitalizar Recibo</DialogTitle>
           <DialogDescription>
             Envie a foto do recibo e preencha os dados. A leitura automática por IA chega em breve.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="flex gap-2">
-            <label className="flex-1">
-              <input
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                disabled={uploading}
-                onChange={handleFileChange}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full bg-slate-800 border-slate-700 pointer-events-none"
-                disabled={uploading}
-              >
-                {uploading ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <Camera className="w-4 h-4 mr-2" />
-                )}
-                {uploading ? "Enviando..." : "Tirar Foto / Upload"}
-              </Button>
-            </label>
-            {fileUrl && (
-              <Button variant="outline" className="w-40 border-green-500/50 text-green-400" disabled>
-                <Upload className="w-4 h-4 mr-2" />
-                Salvo
-              </Button>
+        <ScrollArea className="flex-1">
+          <div className="space-y-4 p-4 sm:p-6 pb-2">
+            <div className="flex gap-2">
+              <label className="flex-1">
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  disabled={uploading}
+                  onChange={handleFileChange}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full bg-slate-800 border-slate-700 pointer-events-none h-12"
+                  disabled={uploading}
+                >
+                  {uploading ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Camera className="w-4 h-4 mr-2" />
+                  )}
+                  {uploading ? "Enviando..." : "Tirar Foto / Upload"}
+                </Button>
+              </label>
+              {fileUrl && (
+                <Button variant="outline" className="w-40 border-green-500/50 text-green-400" disabled>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Salvo
+                </Button>
+              )}
+            </div>
+
+            {previewUrl && (
+              <img src={previewUrl} alt="Pré-visualização do recibo" className="w-full h-40 object-cover rounded border border-slate-700" />
             )}
-          </div>
 
-          {previewUrl && (
-            <img src={previewUrl} alt="Pré-visualização do recibo" className="w-full h-40 object-cover rounded border border-slate-700" />
-          )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-slate-300 text-sm">Título</Label>
+                <Input
+                  value={data.title}
+                  onChange={(e) => setData({ ...data, title: e.target.value })}
+                  className="bg-slate-800 border-slate-700 h-12 text-base"
+                  placeholder="Ex: Almoço, Uber..."
+                />
+              </div>
+              <div>
+                <Label className="text-slate-300 text-sm">Valor</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={data.amount}
+                  onChange={(e) => setData({ ...data, amount: e.target.value })}
+                  className="bg-slate-800 border-slate-700 h-12 text-base"
+                  placeholder="0,00"
+                />
+              </div>
+              <div>
+                <Label className="text-slate-300 text-sm">Data</Label>
+                <Input
+                  type="date"
+                  value={data.date}
+                  onChange={(e) => setData({ ...data, date: e.target.value })}
+                  className="bg-slate-800 border-slate-700 h-12 text-base"
+                />
+              </div>
+              <div>
+                <Label className="text-slate-300 text-sm">Categoria</Label>
+                <Select value={data.category} onValueChange={(v) => setData({ ...data, category: v })}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700">
+                    <SelectValue placeholder="Escolha" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    {CATEGORY_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <Label className="text-slate-300 text-sm">Título</Label>
-              <Input
-                value={data.title}
-                onChange={(e) => setData({ ...data, title: e.target.value })}
-                className="bg-slate-800 border-slate-700"
-                placeholder="Ex: Almoço, Uber..."
+              <Label className="text-slate-300 text-sm">Observações</Label>
+              <Textarea
+                value={data.notes}
+                onChange={(e) => setData({ ...data, notes: e.target.value })}
+                className="bg-slate-800 border-slate-700 min-h-[80px]"
+                placeholder="Opcional"
               />
             </div>
-            <div>
-              <Label className="text-slate-300 text-sm">Valor</Label>
-              <Input
-                type="number"
-                step="0.01"
-                value={data.amount}
-                onChange={(e) => setData({ ...data, amount: e.target.value })}
-                className="bg-slate-800 border-slate-700"
-                placeholder="0,00"
-              />
-            </div>
-            <div>
-              <Label className="text-slate-300 text-sm">Data</Label>
-              <Input
-                type="date"
-                value={data.date}
-                onChange={(e) => setData({ ...data, date: e.target.value })}
-                className="bg-slate-800 border-slate-700"
-              />
-            </div>
-            <div>
-              <Label className="text-slate-300 text-sm">Categoria</Label>
-              <Select value={data.category} onValueChange={(v) => setData({ ...data, category: v })}>
-                <SelectTrigger className="bg-slate-800 border-slate-700">
-                  <SelectValue placeholder="Escolha" />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
-                  {CATEGORY_OPTIONS.map(opt => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
+        </ScrollArea>
 
-          <div>
-            <Label className="text-slate-300 text-sm">Observações</Label>
-            <Textarea
-              value={data.notes}
-              onChange={(e) => setData({ ...data, notes: e.target.value })}
-              className="bg-slate-800 border-slate-700 min-h-[80px]"
-              placeholder="Opcional"
-            />
-          </div>
-        </div>
-
-        <DialogFooter className="flex gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="bg-slate-800 border-slate-700">
+        <div className="flex gap-2 px-4 py-3 sm:px-6 border-t border-slate-800 flex-shrink-0 pb-safe">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 bg-slate-800 border-slate-700 h-11">
             Cancelar
           </Button>
-          <Button onClick={confirm} disabled={!data.title || !data.amount || !data.date}>
+          <Button onClick={confirm} disabled={!data.title || !data.amount || !data.date} className="flex-1 h-11">
             Usar dados
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
