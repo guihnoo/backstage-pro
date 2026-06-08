@@ -1,27 +1,24 @@
-
-import React, { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { format, parseISO, isValid } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { parseISO, isValid } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import {
-  X, Edit, Trash2, Building2, Phone, Mail, Calendar, TrendingUp,
-  Clock, DollarSign, User, Copy, ExternalLink, MessageCircle,
-  CheckCircle2, AlertCircle, ArrowRight, Plus, BarChart3,
-  Activity, Target, Zap, PlayCircle, PauseCircle, StopCircle, MoreHorizontal
-} from
-'lucide-react';
+  X, Edit, Trash2, Phone, Mail, Calendar, TrendingUp,
+  Clock, DollarSign, User, MessageCircle,
+  CheckCircle2, AlertCircle, ArrowRight, BarChart3,
+  Activity, Target
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { useEvents } from '@/lib/useEvents';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
-import { formatDisplayDate, formatDateWithWeekday, getEventStatus, getEventStatusLabel, getEventStatusConfig } from '@/components/utils/dateUtils';
+import { formatDisplayDate, formatDateWithWeekday, getEventStatus, getEventStatusConfig } from '@/components/utils/dateUtils';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 
@@ -286,8 +283,7 @@ export default function ClientDetailModal({
     }
   }, [client]);
 
-  const handleEventClick = useCallback((event) => {
-    // Esta função seria chamada para abrir detalhes do evento
+  const handleEventClick = useCallback(() => {
     toast.info('Abrindo detalhes do evento...');
   }, []);
 

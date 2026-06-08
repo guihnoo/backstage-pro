@@ -11,7 +11,7 @@ import {
 
 const weekDays = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'];
 
-const EventBadge = React.memo(({ event, clientName, onRegisterWork, isFirstDay }) => {
+const EventBadge = React.memo(({ event, clientName, onRegisterWork: _onRegisterWork, isFirstDay }) => {
   const eventStatus = getEventStatus(event);
 
   let statusColor = event.color || '#22d3ee';
@@ -85,7 +85,7 @@ export default function EnhancedCalendar({
   dailyWork = [],
   clients = [],
   onDateClick,
-  onEventClick,
+  onEventClick: _onEventClick,
   onRegisterWork,
   isLoading
 }) {
