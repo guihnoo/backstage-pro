@@ -295,7 +295,7 @@ export default function ClientDetailModal({
   return (
     <AnimatePresence>
       <Dialog open={true} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-4xl max-h-[95vh] bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200 flex flex-col p-0">
+        <DialogContent className="sm:max-w-4xl h-[95vh] bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200 flex flex-col p-0">
           <motion.div variants={modalAnimation} initial="hidden" animate="visible" exit="hidden" className="flex flex-col h-full">
             <DialogHeader className="pt-4 px-6 border-b border-slate-800 pb-4">
               <div className="flex items-start justify-between gap-4">
@@ -344,7 +344,7 @@ export default function ClientDetailModal({
               </div>
             </DialogHeader>
 
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col pt-4 px-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 min-h-0 flex flex-col pt-4 px-6">
               <TabsList className="grid grid-cols-3 bg-slate-800/50 p-1 h-auto rounded-xl mb-6">
                 <TabsTrigger value="overview" className="flex items-center gap-2 px-3">
                   <BarChart3 className="w-4 h-4" />
