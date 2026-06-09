@@ -226,7 +226,7 @@ export default function AIMentorPage() {
 
   return (
     <NeonPageShell primary={config.primaryHex} accent={config.accentHex}>
-      <div className="flex flex-col h-[calc(100vh-10rem)]">
+      <div className="flex flex-col h-[calc(100dvh-10rem)]">
         {/* Toolbar */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-[#23262f] flex-shrink-0">
           <p className="text-xs text-[#5a6070] font-mono truncate max-w-[180px]">

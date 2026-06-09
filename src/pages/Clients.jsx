@@ -309,7 +309,7 @@ export default function ClientsPage() {
                   variant={filterActive === 'all' ? 'secondary' : 'outline'}
                   size="sm"
                   onClick={() => setFilterActive('all')}
-                  className="bg-slate-800 border-slate-700 data-[state=active]:bg-slate-700"
+                  className="bg-slate-800 border-slate-700 data-[state=active]:bg-slate-700 h-9"
                 >
                   Todos
                 </Button>
@@ -317,7 +317,7 @@ export default function ClientsPage() {
                   variant={filterActive === 'active' ? 'secondary' : 'outline'}
                   size="sm"
                   onClick={() => setFilterActive('active')}
-                   className="bg-slate-800 border-slate-700 data-[state=active]:bg-slate-700"
+                  className="bg-slate-800 border-slate-700 data-[state=active]:bg-slate-700 h-9"
                 >
                   Ativos
                 </Button>
@@ -325,7 +325,7 @@ export default function ClientsPage() {
                   variant={filterActive === 'inactive' ? 'secondary' : 'outline'}
                   size="sm"
                   onClick={() => setFilterActive('inactive')}
-                   className="bg-slate-800 border-slate-700 data-[state=active]:bg-slate-700"
+                  className="bg-slate-800 border-slate-700 data-[state=active]:bg-slate-700 h-9"
                 >
                   Inativos
                 </Button>
