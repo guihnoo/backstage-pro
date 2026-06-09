@@ -19,13 +19,15 @@
 
 ## Rotas públicas
 
+> Estas rotas renderizam **fora** do `AppLayout` — sem `main[data-app-scroll]`. Usam `min-h-screen` corretamente; scroll nativo do browser as cobre.
+
 | Rota | Página | Scroll | Modais | E2E | Status | Notas |
 |------|--------|--------|--------|-----|--------|-------|
-| `/login` | LoginNew | ⬜ | — | ⬜ | ⬜ | |
-| `/signup` | SignupNew | ⬜ | — | ⬜ | ⬜ | |
-| `/onboarding` | Onboarding | ⬜ | — | ⬜ | ⬜ | 5 steps — validar teclado mobile |
-| `/privacidade` | PrivacyPolicy | ⬜ | — | ⬜ | ⬜ | |
-| `/termos` | TermsOfService | ⬜ | — | ⬜ | ⬜ | |
+| `/login` | LoginNew | [x] | — | ⬜ | 🟢 | `min-h-screen overflow-x-hidden` — fora do AppLayout ✅ |
+| `/signup` | SignupNew | [x] | — | ⬜ | 🟢 | `min-h-screen flex center py-10` — scroll doc ✅ |
+| `/onboarding` | Onboarding | [x] | — | ⬜ | 🟢 | 5 steps; `items-start py-8` — sem corte em mobile ✅ |
+| `/privacidade` | PrivacyPolicy | [x] | — | ⬜ | 🟢 | `min-h-screen` fora AppLayout, scroll nativo ✅ |
+| `/termos` | TermsOfService | [x] | — | ⬜ | 🟢 | `min-h-screen` fora AppLayout, scroll nativo ✅ |
 
 ---
 
@@ -161,7 +163,7 @@
 | `ConfirmDialog` | [x] | 🟢 | `AlertDialogContent` com `overflow-y-auto overscroll-contain` ✅ |
 | `FeedbackModal` | [x] | 🟢 | `bp-modal-scroll` ✅ |
 | `NotificationCenter` | [x] | 🟡 | DropdownMenu, scroll lock não necessário — aceitável |
-| `StatDetailModal` | [x] | 🟡 | **Órfão** — não importado em nenhuma rota ativa |
+| `StatDetailModal` | [x] | 🟡 | **Órfão** — `QuickStats` navega via `hardNavigate`, não usa modal; seguro remover |
 
 ---
 
@@ -184,6 +186,6 @@
 
 1. [x] **`/client-detail`** — auditada sessão 11 ✅
 2. [ ] **`/ai-mentor`** — LOCKED, pedir desbloqueio ao usuário se necessário
-3. [ ] **Rotas públicas** — `/login`, `/signup`, `/onboarding` (mobile keyboard UX)
-4. [ ] **`StatDetailModal`** — decidir: integrar à Home ou remover
+3. [x] **Rotas públicas** — auditadas sessão 11 ✅ (fora AppLayout, scroll nativo OK)
+4. [x] **`StatDetailModal`** — órfão confirmado; QuickStats usa `hardNavigate`; seguro remover quando quiser
 5. [ ] **NotificationCenter** — avaliar converter para Sheet se scroll lock for necessário

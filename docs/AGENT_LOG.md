@@ -6,6 +6,12 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-09
 
+### PUBLIC-ROUTES-AUDIT — Rotas públicas + StatDetailModal ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Rotas auditadas**: `/login`, `/signup`, `/onboarding` — renderizam fora do `AppLayout`, usam `min-h-screen` corretamente; scroll nativo do browser 🟢
+- **StatDetailModal** órfão confirmado: `QuickStats` usa `hardNavigate(config.route)`, não usa modal → seguro remover
+- **AUDITORIA_PAGINAS**: rotas públicas ✅, StatDetailModal ✅, /client-detail ✅
+
 ### RESPONSIVE-FIXES-R2 — GoogleCalendarSync + Profile + Goals modal ✅
 - **Agente**: Cursor (Composer)
 - **GoogleCalendarSync**: status em coluna no mobile, `min-w-0`, email truncate, botões `w-full sm:w-auto`
