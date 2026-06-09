@@ -19,8 +19,11 @@ import {
   PieChart,
   Pencil,
   Check,
-  X
+  X,
+  MessageCircle
 } from 'lucide-react';
+import { openWhatsAppCharge, buildChargeMessage } from '@/lib/whatsapp';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
@@ -216,9 +219,44 @@ export default function ClientDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <NeonGlass primary={config.primaryHex} glow className="md:col-span-1 p-5">
             <h2 className="text-sm font-mono uppercase tracking-wider mb-4" style={{ color: config.primaryHex }}>Informações de Contato</h2>
-            <div className="space-y-3 text-sm">
-              {client.email && <div className="flex items-center gap-3"><Mail className="w-4 h-4 text-slate-400" /> <span className="text-white break-all">{client.email}</span></div>}
-              {client.phone && <div className="flex items-center gap-3"><Phone className="w-4 h-4 text-slate-400" /> <span className="text-white">{client.phone}</span></div>}
+            <div className="space-y-2 text-sm">
+              {client.email && (
+                <a
+                  href={`mailto:${client.email}`}
+                  className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-800/60 transition-colors group"
+                >
+                  <Mail className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                  <span className="text-white break-all group-hover:text-cyan-300 transition-colors">{client.email}</span>
+                </a>
+              )}
+              {client.phone && (
+                <div className="flex items-center gap-2">
+                  <a
+                    href={`tel:${client.phone}`}
+                    className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-800/60 transition-colors group flex-1"
+                  >
+                    <Phone className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                    <span className="text-white group-hover:text-cyan-300 transition-colors">{client.phone}</span>
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const unpaid = clientEvents.filter(e => e.payment_status !== 'paid');
+                      if (unpaid.length === 0) {
+                        const clean = client.phone.replace(/\D/g, '');
+                        window.open(`https://wa.me/${clean.length > 11 ? clean : `55${clean}`}`, '_blank');
+                      } else {
+                        const msg = buildChargeMessage({ clientName: client.name, events: unpaid.map(e => ({ title: e.title, start_date: e.start_date, amount: 0 })), totalAmount: stats.unpaidAmount });
+                        openWhatsAppCharge(client.phone, msg);
+                      }
+                    }}
+                    className="flex-shrink-0 p-2 rounded-lg bg-green-600/20 border border-green-500/30 text-green-400 hover:bg-green-600/30 transition-colors"
+                    title={stats.unpaidAmount > 0 ? 'Cobrar via WhatsApp' : 'WhatsApp'}
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
               <div className="pt-3 border-t border-[#23262f]">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Observações</span>

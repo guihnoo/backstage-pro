@@ -6,10 +6,12 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
-import { Trophy, Zap, Star, TrendingUp, Award, Flame, Calendar, X, Pencil, Check } from 'lucide-react';
+import { Trophy, Zap, Star, TrendingUp, Award, Flame, Calendar, X, Pencil, Check, ChevronRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import MeiDashboard from '@/components/goals/MeiDashboard';
+import { format, parseISO, differenceInCalendarDays } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 const SEEN_BADGES_KEY = 'backstage_seen_badges';
 
@@ -245,6 +247,10 @@ export default function Goals() {
 
   // Total de eventos histórico (para nível) — todos os tempos, só completados
   const { events: allEvents } = useEvents(userId, { status: 'completed' });
+
+  // Próximos shows agendados
+  const today = new Date().toISOString().split('T')[0];
+  const { events: upcomingEvents } = useEvents(userId, { from: today, limit: 4, ascending: true });
 
   const totalEvents = allEvents.length;
   const levelInfo = getLevelInfo(totalEvents);
@@ -581,6 +587,54 @@ export default function Goals() {
                   </>
                 )}
               </div>
+
+              {/* Próximos shows */}
+              {upcomingEvents.length > 0 && (
+                <div className="bg-gray-900/40 border border-gray-800/50 rounded-2xl p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider">Próximos Shows</h3>
+                    <button
+                      type="button"
+                      onClick={() => hardNavigate('/calendar')}
+                      className="flex items-center gap-1 text-xs text-gray-500 hover:text-cyan-400 transition-colors"
+                    >
+                      Ver agenda <ChevronRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {upcomingEvents.map((ev, i) => {
+                      const days = differenceInCalendarDays(parseISO(ev.start_date), new Date());
+                      const label = days === 0 ? 'Hoje' : days === 1 ? 'Amanhã' : `em ${days} dias`;
+                      return (
+                        <motion.button
+                          key={ev.id}
+                          type="button"
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.05 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => hardNavigate('/calendar')}
+                          className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-800/40 transition-colors text-left"
+                        >
+                          <div
+                            className="w-2 h-2 rounded-full flex-shrink-0"
+                            style={{ background: days <= 1 ? '#FFB700' : config.primaryHex, boxShadow: `0 0 6px ${days <= 1 ? '#FFB700' : config.primaryHex}80` }}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-white truncate">{ev.title}</p>
+                            <p className="text-[10px] font-mono text-gray-500">
+                              {format(parseISO(ev.start_date), "EEE d/MM", { locale: ptBR })}
+                            </p>
+                          </div>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: `${days <= 1 ? '#FFB700' : config.primaryHex}22`, color: days <= 1 ? '#FFB700' : config.primaryHex }}>
+                            {label}
+                          </span>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
 
