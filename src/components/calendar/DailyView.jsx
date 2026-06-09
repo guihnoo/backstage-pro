@@ -114,7 +114,7 @@ const DailyView = ({ currentDate, onDateChange, events, dailyWork, clients, onEd
             const workForEvent = dayData.workForDay.find(w => w.event_id === event.id);
 
             return (
-              <Card key={event.id} className="bg-gradient-to-br from-slate-800/70 to-slate-900/70 border-slate-700 overflow-hidden">
+              <Card key={event.id} onClick={() => onDetails(event)} className="bg-gradient-to-br from-slate-800/70 to-slate-900/70 border-slate-700 overflow-hidden cursor-pointer hover:border-cyan-700/50 transition-colors">
                 <CardHeader className="flex flex-row items-start gap-4 p-4" style={{borderLeft: `5px solid ${event.color || '#22d3ee'}`}}>
                    {client.logo_url ? (
                     <img src={client.logo_url} alt={client.name} className="w-12 h-12 rounded-lg object-contain bg-white/10 p-1"/>
@@ -154,7 +154,7 @@ const DailyView = ({ currentDate, onDateChange, events, dailyWork, clients, onEd
                     </div>
                   )}
 
-                  <div className="flex items-center justify-end gap-2">
+                  <div className="flex items-center justify-end gap-2" onClick={e => e.stopPropagation()}>
                       <Button variant="ghost" size="sm" onClick={() => onDetails(event)}>
                         <Eye className="w-4 h-4 mr-2"/> Detalhes
                       </Button>
@@ -162,7 +162,7 @@ const DailyView = ({ currentDate, onDateChange, events, dailyWork, clients, onEd
                         <Edit className="w-4 h-4 mr-2"/> Editar Evento
                       </Button>
                       <Button size="sm" className="bg-cyan-400/90 text-black font-bold hover:bg-cyan-300" onClick={() => onRegisterWork(event)}>
-                        <Clock className="w-4 h-4 mr-2"/> 
+                        <Clock className="w-4 h-4 mr-2"/>
                         {workForEvent ? 'Editar Horas' : 'Registrar Horas'}
                       </Button>
                   </div>

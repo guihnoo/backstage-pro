@@ -131,7 +131,7 @@ function CircularProgress({ value, max, size = 120, color, label, sublabel }) {
 }
 
 // ─── Badge de conquista ──────────────────────────────────────
-function BadgeCard({ icon: Icon, title, description, unlocked, color, progress }) {
+function BadgeCard({ icon: Icon, title, description, unlocked, color, progress, onClick }) {
   const showProgress = !unlocked && progress != null && progress.max > 0;
   const pct = showProgress ? Math.min((progress.value / progress.max) * 100, 100) : 0;
 
@@ -140,7 +140,9 @@ function BadgeCard({ icon: Icon, title, description, unlocked, color, progress }
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       whileHover={{ scale: unlocked ? 1.04 : 1.02 }}
-      className={`p-4 rounded-xl border transition-all ${
+      whileTap={{ scale: 0.97 }}
+      onClick={onClick}
+      className={`p-4 rounded-xl border transition-all cursor-pointer ${
         unlocked
           ? 'bg-gray-800/60 border-gray-700/50'
           : 'bg-gray-900/30 border-gray-800/30'
@@ -206,6 +208,7 @@ export default function Goals() {
   const [editingGoals, setEditingGoals] = useState(false);
   const [savingGoals, setSavingGoals] = useState(false);
   const [goalForm, setGoalForm] = useState({ events: '', revenue: '' });
+  const [selectedBadge, setSelectedBadge] = useState(null);
 
   const openGoalEdit = () => {
     setGoalForm({
@@ -658,7 +661,7 @@ export default function Goals() {
             >
               <div className="grid grid-cols-2 gap-3">
                 {badges.map((badge, i) => (
-                  <BadgeCard key={i} {...badge} />
+                  <BadgeCard key={i} {...badge} onClick={() => setSelectedBadge(badge)} />
                 ))}
               </div>
               <p className="text-center text-xs text-gray-600 mt-5">
@@ -685,6 +688,88 @@ export default function Goals() {
         </AnimatePresence>
       </div>
     </NeonPageShell>
+
+    {/* Badge detail sheet */}
+    <AnimatePresence>
+      {selectedBadge && (() => {
+        const Icon = selectedBadge.icon;
+        const showProgress = !selectedBadge.unlocked && selectedBadge.progress?.max > 0;
+        const pct = showProgress ? Math.min((selectedBadge.progress.value / selectedBadge.progress.max) * 100, 100) : 0;
+        return (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm"
+            onClick={() => setSelectedBadge(null)}
+          >
+            <motion.div
+              initial={{ y: 80, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 80, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+              onClick={e => e.stopPropagation()}
+              className="w-full max-w-lg rounded-t-2xl border p-6 pb-8"
+              style={{
+                background: `radial-gradient(circle at 50% 0%, ${selectedBadge.color}14, #0d0f1a 60%)`,
+                borderColor: `${selectedBadge.color}30`,
+              }}
+            >
+              <div className="flex items-start justify-between mb-5">
+                <div className="flex items-center gap-4">
+                  <div
+                    className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                    style={{
+                      background: selectedBadge.unlocked ? `${selectedBadge.color}22` : 'transparent',
+                      border: `1px solid ${selectedBadge.unlocked ? selectedBadge.color + '44' : '#1f2937'}`,
+                      filter: selectedBadge.unlocked ? 'none' : 'grayscale(1)',
+                    }}
+                  >
+                    <Icon className="w-7 h-7" style={{ color: selectedBadge.unlocked ? selectedBadge.color : '#4b5563' }} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-white">{selectedBadge.title}</h3>
+                    <p className="text-sm text-gray-400">{selectedBadge.description}</p>
+                  </div>
+                </div>
+                <button onClick={() => setSelectedBadge(null)} className="text-gray-600 hover:text-gray-400 transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {selectedBadge.unlocked ? (
+                <div className="flex items-center gap-2 px-4 py-3 rounded-xl" style={{ background: `${selectedBadge.color}18`, border: `1px solid ${selectedBadge.color}30` }}>
+                  <span className="text-xl">🏆</span>
+                  <div>
+                    <p className="text-sm font-bold" style={{ color: selectedBadge.color }}>Conquista desbloqueada!</p>
+                    <p className="text-xs text-gray-500">Você completou este desafio.</p>
+                  </div>
+                </div>
+              ) : showProgress ? (
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs text-gray-500 font-mono">
+                    <span>Progresso</span>
+                    <span>{selectedBadge.progress.value} / {selectedBadge.progress.max} ({Math.round(pct)}%)</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-gray-800 overflow-hidden">
+                    <motion.div
+                      className="h-full rounded-full"
+                      style={{ background: selectedBadge.color }}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ duration: 0.8, ease: 'easeOut' }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-600 pt-1">Faltam {selectedBadge.progress.max - selectedBadge.progress.value} para desbloquear.</p>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-600 italic">🔒 Complete o desafio para desbloquear esta conquista.</p>
+              )}
+            </motion.div>
+          </motion.div>
+        );
+      })()}
+    </AnimatePresence>
     </>
   );
 }

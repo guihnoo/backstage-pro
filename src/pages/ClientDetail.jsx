@@ -16,7 +16,10 @@ import {
   Briefcase,
   Edit,
   Plus,
-  PieChart
+  PieChart,
+  Pencil,
+  Check,
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -58,7 +61,7 @@ export default function ClientDetailPage() {
   const query = useQuery();
   const clientId = query.get('id');
 
-  const { clients, loading: clientsLoading, refetch: refetchClients } = useClients();
+  const { clients, loading: clientsLoading, refetch: refetchClients, update: updateClient } = useClients();
   const { events, loading: eventsLoading, refetch: refetchEvents } = useEvents();
   const { dailyWork, loading: dailyWorkLoading, refetch: refetchDailyWork } = useDailyWork();
   const { expenses, loading: expensesLoading, refetch: refetchExpenses } = useExpenses();
@@ -70,6 +73,9 @@ export default function ClientDetailPage() {
   const [showEventForm, setShowEventForm] = useState(false);
   const [showEventDetail, setShowEventDetail] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [editingNotes, setEditingNotes] = useState(false);
+  const [notesValue, setNotesValue] = useState('');
+  const [savingNotes, setSavingNotes] = useState(false);
 
   const isLoading = clientsLoading || eventsLoading || dailyWorkLoading || expensesLoading;
 
@@ -136,6 +142,20 @@ export default function ClientDetailPage() {
     setShowEventDetail(true);
   };
 
+  const saveNotes = useCallback(async () => {
+    if (!client?.id) return;
+    setSavingNotes(true);
+    try {
+      await updateClient(client.id, { notes: notesValue });
+      await refetchClients();
+      setEditingNotes(false);
+    } catch {
+      // silent — useClients shows its own toast
+    } finally {
+      setSavingNotes(false);
+    }
+  }, [client?.id, notesValue, updateClient, refetchClients]);
+
   if (isLoading) {
     return <div className="flex justify-center items-center h-[80vh]"><LoadingSpinner text="Carregando dados do cliente..." /></div>;
   }
@@ -199,7 +219,37 @@ export default function ClientDetailPage() {
             <div className="space-y-3 text-sm">
               {client.email && <div className="flex items-center gap-3"><Mail className="w-4 h-4 text-slate-400" /> <span className="text-white break-all">{client.email}</span></div>}
               {client.phone && <div className="flex items-center gap-3"><Phone className="w-4 h-4 text-slate-400" /> <span className="text-white">{client.phone}</span></div>}
-              {client.notes && <p className="text-slate-300 pt-3 border-t border-[#23262f] whitespace-pre-wrap">{client.notes}</p>}
+              <div className="pt-3 border-t border-[#23262f]">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Observações</span>
+                  {!editingNotes ? (
+                    <button onClick={() => { setNotesValue(client.notes || ''); setEditingNotes(true); }} className="text-slate-500 hover:text-cyan-400 transition-colors p-0.5">
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                  ) : (
+                    <div className="flex gap-1.5">
+                      <button onClick={saveNotes} disabled={savingNotes} className="text-green-400 hover:text-green-300 disabled:opacity-50 p-0.5">
+                        <Check className="w-3.5 h-3.5" />
+                      </button>
+                      <button onClick={() => setEditingNotes(false)} className="text-slate-500 hover:text-red-400 transition-colors p-0.5">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+                {editingNotes ? (
+                  <textarea
+                    value={notesValue}
+                    onChange={e => setNotesValue(e.target.value)}
+                    className="w-full bg-slate-800/60 border border-slate-700 focus:border-cyan-500/50 rounded-lg p-2 text-sm text-white resize-none min-h-[80px] outline-none transition-colors"
+                    placeholder="Adicione observações sobre este cliente..."
+                  />
+                ) : client.notes ? (
+                  <p className="text-slate-300 whitespace-pre-wrap text-sm">{client.notes}</p>
+                ) : (
+                  <p className="text-slate-600 text-xs italic">Sem observações</p>
+                )}
+              </div>
             </div>
           </NeonGlass>
           <div className="md:col-span-2 grid grid-cols-2 gap-4">

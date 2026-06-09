@@ -129,7 +129,7 @@ const StatCard = ({ title, value, subtitle, icon: Icon, color, trend, onClick, i
 };
 
 // Modal para exibir detalhes dos KPIs
-const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type }) => {
+const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type, onItemClick }) => {
   const { formatCurrency } = useFinancialVisibility();
 
   const getModalContent = () => {
@@ -140,7 +140,11 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type }) => {
     return (
       <div className="space-y-4 max-h-96 overflow-y-auto">
         {data.map((item, index) => (
-          <div key={index} className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
+          <div
+            key={index}
+            onClick={() => item.event_ref && onItemClick?.(item.event_ref)}
+            className={`flex items-center justify-between p-3 bg-slate-800/50 rounded-lg transition-colors ${item.event_ref ? 'cursor-pointer hover:bg-slate-700/60' : ''}`}
+          >
             <div>
               <p className="font-medium text-white">{item.title}</p>
               <p className="text-sm text-slate-400">{item.subtitle}</p>
@@ -148,6 +152,7 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type }) => {
             <div className="text-right">
               <p className="font-bold text-green-400">{formatCurrency(item.value)}</p>
               {item.date && <p className="text-xs text-slate-500">{item.date}</p>}
+              {item.event_ref && <p className="text-[10px] text-slate-600 mt-0.5">Toque para detalhes</p>}
             </div>
           </div>
         ))}
@@ -449,7 +454,8 @@ export default function ReportsPage() {
             title: event.title,
             subtitle: `${client?.name || 'Cliente'} • ${format(parseISO(event.paid_date), 'dd/MM/yyyy')}`,
             value: event.paid_amount,
-            date: format(parseISO(event.paid_date), 'dd/MM/yyyy')
+            date: format(parseISO(event.paid_date), 'dd/MM/yyyy'),
+            event_ref: event
           };
         }));
         break;
@@ -464,7 +470,8 @@ export default function ReportsPage() {
           return {
             title: event.title,
             subtitle: `${client?.name || 'Cliente'} • Concluído em ${format(parseISO(event.end_date), 'dd/MM/yyyy')}`,
-            value: workValue || getEventCacheAmount(event)
+            value: workValue || getEventCacheAmount(event),
+            event_ref: event
           };
         }));
         break;
@@ -873,7 +880,8 @@ export default function ReportsPage() {
         onClose={() => setModalOpen(false)}
         title={modalTitle}
         data={modalData}
-        type={modalType} />
+        type={modalType}
+        onItemClick={(ev) => { setModalOpen(false); setSelectedEvent(ev); }} />
 
       {/* Modal de detalhes do evento */}
       {selectedEvent && (
