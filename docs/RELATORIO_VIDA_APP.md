@@ -5,9 +5,8 @@
 
 **Última atualização:** 2026-06-09 (sessão 11)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** `af786fe` — docs sessão 10 (em prod)  
-**Pendente commit/deploy:** fixes scroll sessão 11 (flex-shrink-0 + overflow responsivo + E2E regression)  
-**Último deploy:** 2026-06-09 — Vercel prod `af786fe` · Edge `search-company` redeployada  
+**Último commit:** `456d27d` — docs auditoria completa + E2E modais  
+**Último deploy:** 2026-06-09 — Vercel prod `dpl_ALLE4E73Tqzb5unuxuTdPjgukgHE` (`456d27d`) · https://backstage-pro-beta.vercel.app  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
 ---
