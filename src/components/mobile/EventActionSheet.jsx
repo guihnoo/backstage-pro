@@ -17,7 +17,9 @@ import {
   MapPin,
   Navigation,
   Loader2,
+  Building2,
 } from 'lucide-react';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { formatDisplayDate, getEventStatus, getEventStatusConfig } from '../utils/dateUtils';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { getEventCacheAmount } from '@/lib/eventFinance';
@@ -214,8 +216,20 @@ export default function EventActionSheet({
                   className="w-full h-12 min-h-[44px] bg-slate-800 border-slate-700 hover:bg-slate-700 text-white justify-start"
                 >
                   <Eye className="w-5 h-5 mr-3" />
-                  Ver Detalhes Completos
+                  Ver Detalhes do Evento
                 </Button>
+
+                {/* Ver Cliente */}
+                {event.client_id && (
+                  <Button
+                    variant="outline"
+                    onClick={() => { onClose(); hardNavigate(`/client-detail?id=${event.client_id}`); }}
+                    className="w-full h-12 min-h-[44px] bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-300 justify-start"
+                  >
+                    <Building2 className="w-5 h-5 mr-3" />
+                    Ver Página do Cliente
+                  </Button>
+                )}
 
                 {/* Editar */}
                 <Button
