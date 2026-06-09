@@ -24,7 +24,7 @@ export default function ProximoShow({ event, userCategory, isOnStage }) {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8 p-8 rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700/50 text-center"
+        className="mb-8 p-5 sm:p-8 rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700/50 text-center"
       >
         <div className="text-6xl mb-4">🎭</div>
         <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">

@@ -39,7 +39,7 @@ export default function SignupNew() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050609] text-white overflow-hidden relative">
+    <div className="min-h-screen bg-[#050609] text-white overflow-x-hidden relative">
       <NeonAtmosphere primary={hero.primaryHex} accent={hero.accentHex} />
       <StageBackdrop /><SpotlightRays primary={hero.primaryHex} accent={hero.accentHex} /><LightingBeams primary={hero.primaryHex} accent={hero.accentHex} />
       <FloatingEquipment categoryId={AUTH_HERO_CATEGORY} primary={hero.primaryHex} />
