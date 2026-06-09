@@ -40,20 +40,14 @@ export default function ContinuousEventBar({
 
     // Set a timeout for long press detection
     pressTimer.current = setTimeout(() => {
-      if (onQuickLog) {
-        console.log('⏰ Long press detectado, chamando onQuickLog');
-        onQuickLog();
-      }
+      if (onQuickLog) onQuickLog();
     }, 500); // 500ms for long press
 
     // Detect double tap
     const now = new Date().getTime();
     if (now - lastTapRef.current < 300) {// 300ms for double tap interval
       clearTimeout(pressTimer.current); // Cancel potential long press
-      if (onQuickLog) {
-        console.log('⚡ Double tap detectado, chamando onQuickLog');
-        onQuickLog();
-      }
+      if (onQuickLog) onQuickLog();
       lastTapRef.current = 0; // Reset lastTapRef after double tap to avoid triple tap issues
     } else {
       lastTapRef.current = now;
@@ -69,15 +63,7 @@ export default function ContinuousEventBar({
   const handleClick = (e) => {
     e.stopPropagation();
     e.preventDefault(); // Prevent default button actions
-    console.log('🖱️ ContinuousEventBar clicado:', span.block);
-    // If a quick log (double tap or long press) has been handled, we might not want to also
-    // trigger onEventClick. However, the outline doesn't provide logic to prevent handleClick
-    // if onQuickLog was called. We implement it as per the outline.
-    if (onEventClick) {
-      onEventClick();
-    } else {
-      console.warn('⚠️ onEventClick não foi fornecido para ContinuousEventBar');
-    }
+    if (onEventClick) onEventClick();
   };
 
   return (

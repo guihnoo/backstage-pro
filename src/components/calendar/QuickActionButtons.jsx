@@ -3,10 +3,7 @@ import { CalendarPlus, Timer, Receipt } from 'lucide-react';
 
 const QuickActionButtons = ({ onAction, selectedDate }) => {
   const handleAction = (actionType) => {
-    console.log(`🚀 QuickAction triggered: ${actionType}`, { selectedDate });
-    if (onAction) {
-      onAction(actionType, selectedDate);
-    }
+    if (onAction) onAction(actionType, selectedDate);
   };
 
   return (
