@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   MapPin,
   FileText,
+  Download,
   Zap,
   Loader2,
   MessageCircle,
@@ -33,6 +34,7 @@ import {
   getEventStatusConfig
 } from '../utils/dateUtils';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
+import { useAuth } from '@/lib/authContext';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { applyAuto12Hours } from '@/api/functions';
 import { useStatusToggle } from '@/lib/useStatusToggle';
@@ -43,6 +45,7 @@ import EventLocationSection from '@/components/events/EventLocationSection';
 import { useEvents } from '@/lib/useEvents';
 import { useExpenses } from '@/lib/useExpenses';
 import ExpenseForm from '@/components/expenses/ExpenseForm';
+import { useUserSettings } from '@/lib/useUserSettings';
 import {
   parseISO,
   differenceInDays,
@@ -60,9 +63,12 @@ export default function EventDetailModal({
   onMarkPaid
 }) {
   const { formatCurrency } = useFinancialVisibility();
+  const { profile } = useAuth();
   const { dailyWork } = useDailyWork();
   const { update: updateEvent } = useEvents();
   const { expenses, refetch: refetchExpenses } = useExpenses();
+  const { settings: userSettings } = useUserSettings();
+  const [generatingPDF, setGeneratingPDF] = useState(false);
   const [applying12h, setApplying12h] = useState(false);
   const [savingLocation, setSavingLocation] = useState(false);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
@@ -149,6 +155,51 @@ export default function EventDetailModal({
     });
     const ok = openWhatsAppCharge(phone, message);
     if (!ok) toast.error('Não foi possível abrir o WhatsApp.');
+  };
+
+  const handleDownloadPDF = async () => {
+    if (generatingPDF) return;
+    setGeneratingPDF(true);
+    try {
+      const { pdf } = await import('@react-pdf/renderer');
+      const { EventPDFDocument } = await import('@/lib/EventPDFDocument');
+
+      const reportSettings = {
+        report_full_name: userSettings?.report_full_name || null,
+        report_subtitle:  userSettings?.report_subtitle  || null,
+        report_profession:userSettings?.report_profession|| null,
+        pix_key:          userSettings?.pix_key          || null,
+        pix_key_type:     userSettings?.pix_key_type     || 'Chave PIX',
+      };
+
+      const blob = await pdf(
+        <EventPDFDocument
+          event={event}
+          client={client}
+          work={eventWork}
+          expenses={eventExpenses}
+          profile={profile || {}}
+          reportSettings={reportSettings}
+        />
+      ).toBlob();
+
+      const clientSlug = (client?.name || 'cliente').replace(/\s+/g, '_').substring(0, 20);
+      const dateSlug = event?.start_date ? event.start_date.replace(/-/g, '') : format(new Date(), 'yyyyMMdd');
+      const filename = `Fechamento_${clientSlug}_${dateSlug}.pdf`;
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('PDF gerado com sucesso!', { description: filename });
+    } catch (err) {
+      console.error('Erro ao gerar PDF:', err);
+      toast.error('Erro ao gerar PDF', { description: err.message });
+    } finally {
+      setGeneratingPDF(false);
+    }
   };
 
   // Hooks must be called before any conditional return
@@ -581,12 +632,24 @@ export default function EventDetailModal({
               Marcar como Pago
             </Button>
           )}
+          <Button
+            onClick={handleDownloadPDF}
+            disabled={generatingPDF}
+            variant="outline"
+            className="flex-shrink-0 border-blue-600 hover:bg-blue-900/20 text-blue-300"
+            title="Baixar relatório de fechamento em PDF"
+          >
+            {generatingPDF
+              ? <Loader2 className="w-4 h-4 animate-spin" />
+              : <FileText className="w-4 h-4" />
+            }
+          </Button>
           {client?.phone && (
             <Button
               onClick={handleSendReport}
               variant="outline"
               className="flex-shrink-0 border-amber-600 hover:bg-amber-900/20 text-amber-300"
-              title="Enviar relatório final do evento via WhatsApp"
+              title="Enviar relatório resumido via WhatsApp"
             >
               <Receipt className="w-4 h-4" />
             </Button>

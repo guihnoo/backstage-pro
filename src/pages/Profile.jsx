@@ -7,7 +7,7 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import { motion } from 'framer-motion';
 import {
   Loader2, Save, LogOut, User,
-  Briefcase, Target, Star, ChevronRight
+  Briefcase, Target, Star, ChevronRight, FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -64,6 +64,13 @@ export default function ProfilePage() {
   const [financialVisible, setFinancialVisible] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
+  const [reportForm, setReportForm] = useState({
+    report_full_name: '',
+    report_subtitle: '',
+    report_profession: '',
+    pix_key: '',
+    pix_key_type: 'Celular',
+  });
 
   useEffect(() => {
     if (profile) {
@@ -84,6 +91,13 @@ export default function ProfilePage() {
   useEffect(() => {
     if (settings !== null) {
       setFinancialVisible(settings?.financial_visibility ?? true);
+      setReportForm({
+        report_full_name: settings?.report_full_name || '',
+        report_subtitle: settings?.report_subtitle || '',
+        report_profession: settings?.report_profession || '',
+        pix_key: settings?.pix_key || '',
+        pix_key_type: settings?.pix_key_type || 'Celular',
+      });
     }
   }, [settings]);
 
@@ -105,7 +119,15 @@ export default function ProfilePage() {
           monthly_goal_events: form.monthly_goal_events ? Number(form.monthly_goal_events) : null,
           monthly_goal_revenue: form.monthly_goal_revenue ? Number(form.monthly_goal_revenue) : null,
         }),
-        upsert({ ...(settings || {}), financial_visibility: financialVisible }),
+        upsert({
+          ...(settings || {}),
+          financial_visibility: financialVisible,
+          report_full_name: reportForm.report_full_name.trim() || null,
+          report_subtitle: reportForm.report_subtitle.trim() || null,
+          report_profession: reportForm.report_profession.trim() || null,
+          pix_key: reportForm.pix_key.trim() || null,
+          pix_key_type: reportForm.pix_key_type || null,
+        }),
       ]);
       toast.success('Perfil salvo!');
     } catch (err) {
@@ -234,6 +256,64 @@ export default function ProfilePage() {
             </FieldRow>
           </div>
           <p className="text-[10px] text-[#5a6070] font-mono">Usado na barra de metas da Home e nos Badges.</p>
+        </SectionCard>
+
+        {/* Template de Fechamento */}
+        <SectionCard primary={config.primaryHex} title="Template de Fechamento (PDF)" icon={FileText}>
+          <p className="text-[10px] text-[#5a6070] font-mono">
+            Usado no relatório PDF de fechamento de evento enviado ao cliente.
+          </p>
+          <FieldRow label="Nome completo no relatório">
+            <Input
+              value={reportForm.report_full_name}
+              onChange={e => setReportForm(f => ({ ...f, report_full_name: e.target.value }))}
+              placeholder={form.name || 'Ex: Guilherme Monteiro de Oliveira'}
+              className="bg-[#0e1018] border-[#23262f] text-white"
+            />
+          </FieldRow>
+          <FieldRow label="Subtítulo profissional">
+            <Input
+              value={reportForm.report_subtitle}
+              onChange={e => setReportForm(f => ({ ...f, report_subtitle: e.target.value }))}
+              placeholder="Ex: ILUMINAÇÃO PROFISSIONAL & DESIGNER DE LUZ"
+              className="bg-[#0e1018] border-[#23262f] text-white"
+            />
+          </FieldRow>
+          <FieldRow label="Cargo / Função">
+            <Input
+              value={reportForm.report_profession}
+              onChange={e => setReportForm(f => ({ ...f, report_profession: e.target.value }))}
+              placeholder="Ex: Técnico de Iluminação"
+              className="bg-[#0e1018] border-[#23262f] text-white"
+            />
+          </FieldRow>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="col-span-2">
+              <FieldRow label="Chave PIX">
+                <Input
+                  value={reportForm.pix_key}
+                  onChange={e => setReportForm(f => ({ ...f, pix_key: e.target.value }))}
+                  placeholder="Ex: 11999990000 ou CPF"
+                  className="bg-[#0e1018] border-[#23262f] text-white"
+                />
+              </FieldRow>
+            </div>
+            <FieldRow label="Tipo da chave">
+              <Select
+                value={reportForm.pix_key_type}
+                onValueChange={v => setReportForm(f => ({ ...f, pix_key_type: v }))}
+              >
+                <SelectTrigger className="bg-[#0e1018] border-[#23262f] text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-[#0e1018] border-[#23262f] text-white">
+                  {['Celular', 'CPF', 'CNPJ', 'Email', 'Aleatória'].map(t => (
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldRow>
+          </div>
         </SectionCard>
 
         {/* Configurações */}
