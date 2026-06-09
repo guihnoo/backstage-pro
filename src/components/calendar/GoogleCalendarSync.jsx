@@ -21,6 +21,7 @@ import { useAuth } from '@/lib/authContext';
 import { googleAuthStart, googleDisconnect, googleSyncNow, googleListCalendars, googleImportEvents, googleDedupeEvents } from '@/api/functions';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import { formatGoogleOAuthError } from '@/lib/googleOAuthErrors';
 
 export default function GoogleCalendarSync() {
   const { user } = useAuth();
@@ -45,7 +46,10 @@ export default function GoogleCalendarSync() {
     const error = urlParams.get('error');
     const connected = urlParams.get('google_connected');
     if (error) {
-      toast.error(`Erro na conexão com Google: ${decodeURIComponent(error)}`);
+      toast.error('Falha ao conectar Google Calendar', {
+        description: formatGoogleOAuthError(error),
+        duration: 8000,
+      });
       window.history.replaceState({}, '', locationPathname);
     }
     if (connected === '1') {

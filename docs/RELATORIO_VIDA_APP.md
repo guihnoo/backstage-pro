@@ -3,11 +3,10 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-05 (sessão 7)  
+**Última atualização:** 2026-06-05 (sessão 8)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** `4da9604` — AlertsPanel + refetch próximo show + lazy routes  
-**Commits da sessão:** `4da9604`  
-**Último deploy:** 2026-06-05 — Vercel prod (`backstage-pro-beta.vercel.app`, deploy `6y1dxuSK`)  
+**Último commit:** *(pendente sessão 8)*  
+**Último deploy:** 2026-06-05 — Vercel prod (`backstage-pro-beta.vercel.app`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
 ---
@@ -28,7 +27,8 @@
 | Mapa Brasil (relatórios) | SVG interativo `@svg-maps/brazil`, lazy load + chunk dedicado |
 | Alertas agenda (local GPS) | `AlertsPanel` montado em `Calendar.jsx` — lembrete check-in para eventos de hoje sem local |
 | Modo Palco — check-in GPS | Botão em `ProximoShow` quando `isOnStage` e sem local |
-| Code-split rotas | `Calendar`, `Reports`, `AI_Mentor` via `React.lazy` + `Suspense` (~601 KB main vs ~820 KB) |
+| Code-split rotas | `Calendar`, `Reports`, `AI_Mentor`, `Clients`, `Expenses`, `ClientDetail` lazy |
+| OAuth Google (UX erros) | `googleOAuthErrors.js` + callback preserva `refresh_token` em reconexão |
 
 ---
 
@@ -60,6 +60,21 @@ Ordem oficial após fix de scroll (2026-06-05):
 ---
 
 ## Changelog
+
+### 2026-06-05 (sessão 8) — OAuth robustez + lazy routes + bundle
+
+- `google-calendar-callback`: preserva `refresh_token` existente quando Google não reenvia (reconexão)
+- `googleOAuthErrors.js`: mensagens pt-BR para erros OAuth no Perfil
+- Lazy load: `Clients`, `Expenses`, `ClientDetail` (bundle principal ~402 KB)
+
+**Checklist OAuth E2E (manual):**
+1. Perfil → Conectar ao Google → autorizar → redirect `/profile?google_connected=1` + toast verde
+2. Badge **Conectado** + e-mail Google visível
+3. **Sincronizar Agora** / **Importar Eventos** sem erro 401
+4. **Limpar duplicatas da agenda** (se houver dupes pós-import)
+5. Desconectar → status **Desconectado**
+
+---
 
 ### 2026-06-05 (sessão 7) — Alertas local + Modo Palco GPS + lazy routes
 

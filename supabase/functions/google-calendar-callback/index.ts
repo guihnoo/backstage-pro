@@ -35,9 +35,28 @@ Deno.serve(async (req) => {
   });
 
   const tokens = await tokenRes.json();
-  if (!tokenRes.ok || !tokens.refresh_token) {
+  if (!tokenRes.ok) {
     const msg = tokens.error_description || tokens.error || 'token_exchange_failed';
     return Response.redirect(`${appUrl}/profile?error=${encodeURIComponent(msg)}`, 302);
+  }
+
+  const serviceClient = createClient(getEnv('SUPABASE_URL'), serviceKey);
+
+  let refreshToken: string | undefined = tokens.refresh_token;
+  if (!refreshToken) {
+    const { data: existingConn } = await serviceClient
+      .from('google_calendar_connections')
+      .select('refresh_token')
+      .eq('user_id', userId)
+      .maybeSingle();
+    refreshToken = existingConn?.refresh_token ?? undefined;
+  }
+
+  if (!refreshToken) {
+    return Response.redirect(
+      `${appUrl}/profile?error=${encodeURIComponent('missing_refresh_token')}`,
+      302,
+    );
   }
 
   let email: string | null = null;
@@ -51,10 +70,9 @@ Deno.serve(async (req) => {
     }
   } catch { /* optional */ }
 
-  const serviceClient = createClient(getEnv('SUPABASE_URL'), serviceKey);
   await serviceClient.from('google_calendar_connections').upsert({
     user_id: userId,
-    refresh_token: tokens.refresh_token,
+    refresh_token: refreshToken,
     access_token: tokens.access_token,
     token_expires_at: new Date(Date.now() + (tokens.expires_in ?? 3600) * 1000).toISOString(),
     scope: tokens.scope,
