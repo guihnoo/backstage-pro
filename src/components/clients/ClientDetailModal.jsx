@@ -307,7 +307,7 @@ export default function ClientDetailModal({
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0">
-                    <DialogTitle className="text-2xl font-bold text-white font-display truncate mb-1">
+                    <DialogTitle className="text-xl sm:text-2xl font-bold text-white font-display truncate mb-1">
                       {client.name}
                     </DialogTitle>
                     {client.contact_person &&
@@ -322,22 +322,22 @@ export default function ClientDetailModal({
               {/* Ações Rápidas de Contato */}
               <div className="flex flex-wrap gap-2 pt-4">
                 {client.email && (
-                  <Button variant="outline" size="sm" onClick={(e) => handleContactAction('email', e)} className="bg-slate-800/50 border-slate-700 hover:bg-slate-700 text-slate-200 hover:text-white flex-1 min-w-[120px]">
+                  <Button variant="outline" size="sm" onClick={(e) => handleContactAction('email', e)} className="bg-slate-800/50 border-slate-700 hover:bg-slate-700 text-slate-200 hover:text-white flex-1 min-w-[120px] h-10">
                     <Mail className="w-4 h-4 mr-2" /> Email
                   </Button>
                 )}
                 {client.phone && (
                   <>
-                    <Button variant="outline" size="sm" onClick={(e) => handleContactAction('call', e)} className="bg-slate-800/50 border-slate-700 hover:bg-slate-700 text-slate-200 hover:text-white flex-1 min-w-[120px]">
+                    <Button variant="outline" size="sm" onClick={(e) => handleContactAction('call', e)} className="bg-slate-800/50 border-slate-700 hover:bg-slate-700 text-slate-200 hover:text-white flex-1 min-w-[120px] h-10">
                       <Phone className="w-4 h-4 mr-2" /> Ligar
                     </Button>
-                    <Button variant="outline" size="sm" onClick={(e) => handleContactAction('whatsapp', e)} className="bg-green-500/10 border-green-500/20 hover:bg-green-500/20 text-green-300 hover:text-green-200 flex-1 min-w-[120px]">
+                    <Button variant="outline" size="sm" onClick={(e) => handleContactAction('whatsapp', e)} className="bg-green-500/10 border-green-500/20 hover:bg-green-500/20 text-green-300 hover:text-green-200 flex-1 min-w-[120px] h-10">
                       <MessageCircle className="w-4 h-4 mr-2" /> WhatsApp
                     </Button>
                   </>
                 )}
                 {client.invoice_portal_url && (
-                  <Button variant="outline" size="sm" onClick={() => window.open(client.invoice_portal_url, '_blank')} className="bg-slate-800/50 border-slate-700 hover:bg-slate-700 text-cyan-300 hover:text-cyan-200 flex-1 min-w-[120px]">
+                  <Button variant="outline" size="sm" onClick={() => window.open(client.invoice_portal_url, '_blank')} className="bg-slate-800/50 border-slate-700 hover:bg-slate-700 text-cyan-300 hover:text-cyan-200 flex-1 min-w-[120px] h-10">
                     <Globe className="w-4 h-4 mr-2" /> Portal NF-e
                   </Button>
                 )}

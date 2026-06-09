@@ -104,7 +104,7 @@ export default function EventDetailModal({
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-800">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
-              <DialogTitle className="text-2xl font-bold text-white mb-2 truncate">
+              <DialogTitle className="text-xl sm:text-2xl font-bold text-white mb-2 truncate">
                 {event.title}
               </DialogTitle>
               {client && (
@@ -310,10 +310,10 @@ export default function EventDetailModal({
         </ScrollArea>
 
         {/* Footer com Ações */}
-        <DialogFooter className="px-6 py-4 border-t border-slate-800 flex-row gap-2">
+        <DialogFooter className="px-6 py-4 border-t border-slate-800 flex-row gap-2 flex-wrap">
           <Button
             onClick={onAddWork}
-            className="flex-1 bg-cyan-600 hover:bg-cyan-700"
+            className="flex-1 min-w-[120px] bg-cyan-600 hover:bg-cyan-700"
           >
             <Plus className="w-4 h-4 mr-2" />
             Registrar Horas
@@ -321,7 +321,7 @@ export default function EventDetailModal({
           <Button
             onClick={onEdit}
             variant="outline"
-            className="flex-1 border-slate-700 hover:bg-slate-800"
+            className="flex-1 min-w-[80px] border-slate-700 hover:bg-slate-800"
           >
             <Edit className="w-4 h-4 mr-2" />
             Editar
@@ -330,7 +330,7 @@ export default function EventDetailModal({
             <Button
               onClick={onMarkPaid}
               variant="outline"
-              className="flex-1 border-green-700 hover:bg-green-900/20 text-green-400"
+              className="flex-1 min-w-[140px] border-green-700 hover:bg-green-900/20 text-green-400"
             >
               <CheckCircle2 className="w-4 h-4 mr-2" />
               Marcar como Pago
@@ -339,7 +339,7 @@ export default function EventDetailModal({
           <Button
             onClick={onDelete}
             variant="outline"
-            className="border-red-700 hover:bg-red-900/20 text-red-400"
+            className="flex-shrink-0 border-red-700 hover:bg-red-900/20 text-red-400"
           >
             <Trash2 className="w-4 h-4" />
           </Button>
