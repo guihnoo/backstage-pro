@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/authContext';
 import LoadingSpinner from '@/components/layout/LoadingSpinner';
@@ -11,12 +12,13 @@ import Onboarding from './pages/Onboarding';
 import Home from './pages/Home';
 import Goals from './pages/Goals';
 import ProfileSimple from './pages/ProfileSimple';
-import AIMentorPage from './pages/AI_Mentor';
 import AppLayout from '@/components/layout/AppLayout';
-import CalendarPage from './pages/Calendar';
 import ClientsPage from './pages/Clients';
 import ExpensesPage from './pages/Expenses';
-import ReportsPage from './pages/Reports.jsx';
+
+const CalendarPage = lazy(() => import('./pages/Calendar'));
+const ReportsPage = lazy(() => import('./pages/Reports.jsx'));
+const AIMentorPage = lazy(() => import('./pages/AI_Mentor'));
 import ClientDetailPage from './pages/ClientDetail';
 import PrivacyPolicyPage from './pages/PrivacyPolicy';
 import TermsOfServicePage from './pages/TermsOfService';
@@ -123,7 +125,9 @@ export const router = createBrowserRouter([
             path: 'calendar',
             element: (
               <MigratedModuleRoute>
-                <CalendarPage />
+                <Suspense fallback={<RouteLoading />}>
+                  <CalendarPage />
+                </Suspense>
               </MigratedModuleRoute>
             ),
           },
@@ -147,7 +151,9 @@ export const router = createBrowserRouter([
             path: 'reports',
             element: (
               <MigratedModuleRoute>
-                <ReportsPage />
+                <Suspense fallback={<RouteLoading />}>
+                  <ReportsPage />
+                </Suspense>
               </MigratedModuleRoute>
             ),
           },
@@ -165,7 +171,9 @@ export const router = createBrowserRouter([
             path: 'ai-mentor',
             element: (
               <MigratedModuleRoute>
-                <AIMentorPage />
+                <Suspense fallback={<RouteLoading />}>
+                  <AIMentorPage />
+                </Suspense>
               </MigratedModuleRoute>
             ),
           },

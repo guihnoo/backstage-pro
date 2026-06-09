@@ -3,10 +3,10 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-05 (sessão 6)  
+**Última atualização:** 2026-06-05 (sessão 7)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** (pendente) — chips de local + scroll batch 4  
-**Commits da sessão:** `fe14d11` → (sessão 6)  
+**Último commit:** *(pendente)* — AlertsPanel + Modo Palco GPS + lazy routes  
+**Commits da sessão:** sessão 7 local (não commitada ainda)  
 **Último deploy:** 2026-06-05 — Vercel prod (`backstage-pro-beta.vercel.app`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
@@ -26,6 +26,9 @@
 | Badge rascunho (clientes) | Cards + modal detalhe + filtro **Rascunhos** |
 | OAuth Google callback | Redirect `/profile?google_connected=1`; toast ao detectar query |
 | Mapa Brasil (relatórios) | SVG interativo `@svg-maps/brazil`, lazy load + chunk dedicado |
+| Alertas agenda (local GPS) | `AlertsPanel` montado em `Calendar.jsx` — lembrete check-in para eventos de hoje sem local |
+| Modo Palco — check-in GPS | Botão em `ProximoShow` quando `isOnStage` e sem local |
+| Code-split rotas | `Calendar`, `Reports`, `AI_Mentor` via `React.lazy` + `Suspense` (~601 KB main vs ~820 KB) |
 
 ---
 
@@ -57,6 +60,15 @@ Ordem oficial após fix de scroll (2026-06-05):
 ---
 
 ## Changelog
+
+### 2026-06-05 (sessão 7) — Alertas local + Modo Palco GPS + lazy routes
+
+- `AlertsPanel` integrado na agenda (`Calendar.jsx`): alerta **Registrar local do evento** para shows de hoje sem `location`/coords; CTA chama `handleEventLocationCheckIn`
+- `ProximoShow`: botão **Check-in no local (GPS)** no Modo Palco quando falta local; rota usa `mapsUrlForCoords` quando há lat/lng
+- `useUpcomingEvent`: expõe `refetch` — Home atualiza card após GPS
+- `routes.jsx`: lazy load de `Calendar`, `Reports`, `AI_Mentor` (chunks separados no build)
+
+---
 
 ### 2026-06-05 (sessão 6) — UX local visível + scroll batch 4
 
@@ -166,12 +178,12 @@ Ordem oficial após fix de scroll (2026-06-05):
 1. Validar scroll em **todas** as telas após deploy (mobile + desktop)
 2. OAuth Google — teste E2E e documentar resultado aqui
 3. Limpar duplicatas históricas no banco (botão dedupe ou script)
-4. `git push` dos commits locais (main à frente de origin)
+4. Commit + deploy sessão 7 (AlertsPanel, ProximoShow GPS, lazy routes)
 
 ### Média
 5. Animações financeiras / charts no dashboard
 6. PWA offline refinado
-7. Code-split adicional do bundle principal (~811 KB)
+7. Code-split adicional (`Clients`, `Expenses`, `vendor-charts` ~421 KB)
 
 ### Baixa / segurança
 8. Rotação secret Google

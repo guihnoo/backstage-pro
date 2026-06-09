@@ -95,58 +95,61 @@ export function useUpcomingEvent(userId) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  const refetch = useCallback(async () => {
     if (!userId) {
       setLoading(false);
       return;
     }
 
-    async function fetchEvent() {
-      try {
-        const today = new Date().toISOString().split('T')[0];
+    setLoading(true);
+    setError(null);
 
-        const { data: onStage, error: stageErr } = await supabase
-          .from('events')
-          .select('*, clients (name, email, phone)')
-          .eq('user_id', userId)
-          .lte('start_date', today)
-          .gte('end_date', today)
-          .in('status', ['pending', 'confirmed'])
-          .order('start_date', { ascending: true })
-          .limit(1)
-          .maybeSingle();
+    try {
+      const today = new Date().toISOString().split('T')[0];
 
-        if (stageErr) throw stageErr;
-        if (onStage) {
-          setEvent(onStage);
-          return;
-        }
+      const { data: onStage, error: stageErr } = await supabase
+        .from('events')
+        .select('*, clients (name, email, phone)')
+        .eq('user_id', userId)
+        .lte('start_date', today)
+        .gte('end_date', today)
+        .in('status', ['pending', 'confirmed'])
+        .order('start_date', { ascending: true })
+        .limit(1)
+        .maybeSingle();
 
-        const { data, error: err } = await supabase
-          .from('events')
-          .select('*, clients (name, email, phone)')
-          .eq('user_id', userId)
-          .gte('start_date', today)
-          .in('status', ['pending', 'confirmed'])
-          .order('start_date', { ascending: true })
-          .limit(1)
-          .maybeSingle();
-
-        if (err) throw err;
-        setEvent(data || null);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+      if (stageErr) throw stageErr;
+      if (onStage) {
+        setEvent(onStage);
+        return;
       }
-    }
 
-    fetchEvent();
-    const interval = setInterval(fetchEvent, 60000);
-    return () => clearInterval(interval);
+      const { data, error: err } = await supabase
+        .from('events')
+        .select('*, clients (name, email, phone)')
+        .eq('user_id', userId)
+        .gte('start_date', today)
+        .in('status', ['pending', 'confirmed'])
+        .order('start_date', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (err) throw err;
+      setEvent(data || null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   }, [userId]);
 
-  return { event, loading, error };
+  useEffect(() => {
+    refetch();
+    const interval = setInterval(refetch, 60000);
+    return () => clearInterval(interval);
+  }, [refetch]);
+
+  return { event, loading, error, refetch };
 }
 
 export function useEvents(userId, options = {}) {

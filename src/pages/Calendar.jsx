@@ -35,6 +35,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import ExpenseForm from '@/components/expenses/ExpenseForm';
 import DrilldownModal from '@/components/reports/DrilldownModal';
 import DayQuickActions from '@/components/calendar/DayQuickActions';
+import AlertsPanel from '@/components/calendar/AlertsPanel';
 import EventActionSheet from '@/components/mobile/EventActionSheet';
 import EventHoursSheet from '@/components/mobile/EventHoursSheet';
 import NotesSheet from '@/components/mobile/NotesSheet';
@@ -992,6 +993,13 @@ export default function CalendarPage() {
             </AlertDescription>
           </Alert>
         )}
+
+        <AlertsPanel
+          events={events}
+          dailyWork={dailyWork}
+          onRegisterWork={handleQuickWorkEntry}
+          onLocationCheckIn={handleEventLocationCheckIn}
+        />
 
         {/* Monthly Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4">

@@ -5,15 +5,24 @@ import { Card, CardContent } from '@/components/ui/card';
 import {
   X,
   Timer,
-  Clock
+  Clock,
+  MapPin,
 } from 'lucide-react';
 import { normalizeDateString, getEventsForDate, getWorkForDate } from '../utils/dateUtils';
 
-export default function AlertsPanel({ 
-  events = [], 
-  dailyWork = [], 
+function eventNeedsLocation(event) {
+  if (!event) return false;
+  const hasText = Boolean(event.location?.trim());
+  const hasCoords = event.location_lat != null && event.location_lng != null;
+  return !hasText && !hasCoords;
+}
+
+export default function AlertsPanel({
+  events = [],
+  dailyWork = [],
   onRegisterWork,
-  className = ''
+  onLocationCheckIn,
+  className = '',
 }) {
   const [alerts, setAlerts] = useState([]);
   const [dismissedAlerts, setDismissedAlerts] = useState(new Set());
@@ -29,6 +38,8 @@ export default function AlertsPanel({
     const todayWork = getWorkForDate(dailyWork, today);
     const hasEntryTime = todayWork && todayWork.entry_time;
 
+    const todayEvents = getEventsForDate(events, today);
+
     if (hasEventToday && !hasEntryTime && !dismissedAlerts.has('checkin_suggestion')) {
       newAlerts.push({
         id: 'checkin_suggestion',
@@ -43,6 +54,24 @@ export default function AlertsPanel({
           label: 'Registrar agora',
           action: () => onRegisterWork?.(today)
         }
+      });
+    }
+
+    const eventMissingLocation = todayEvents.find(eventNeedsLocation);
+    if (eventMissingLocation && !dismissedAlerts.has('location_checkin')) {
+      newAlerts.push({
+        id: 'location_checkin',
+        kind: 'today',
+        title: 'Registrar local do evento',
+        body: `"${eventMissingLocation.title || 'Seu evento de hoje'}" ainda não tem local. Faça check-in GPS no venue.`,
+        icon: MapPin,
+        color: 'text-cyan-400',
+        bgColor: 'bg-cyan-500/10',
+        borderColor: 'border-cyan-500/30',
+        cta: {
+          label: 'Check-in GPS',
+          action: () => onLocationCheckIn?.(eventMissingLocation),
+        },
       });
     }
 
@@ -71,7 +100,7 @@ export default function AlertsPanel({
     }
 
     return newAlerts;
-  }, [events, dailyWork, dismissedAlerts, onRegisterWork]);
+  }, [events, dailyWork, dismissedAlerts, onRegisterWork, onLocationCheckIn]);
 
   useEffect(() => {
     setAlerts(generatedAlerts);

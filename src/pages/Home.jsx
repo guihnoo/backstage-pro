@@ -34,7 +34,7 @@ export default function Home() {
   const firstName = profile?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'Profissional';
   const greeting = (() => { const h = new Date().getHours(); if (h < 12) return 'Bom dia'; if (h < 18) return 'Boa tarde'; return 'Boa noite'; })();
   const { stats, loading: statsLoading, refetch: refetchStats } = useStats(userId);
-  const { event: proximoEvento } = useUpcomingEvent(userId);
+  const { event: proximoEvento, refetch: refetchProximoEvento } = useUpcomingEvent(userId);
   const { alerts, loading: alertsLoading } = usePaymentAlerts(userId);
   const {
     rows: receivableRows,
@@ -103,7 +103,16 @@ export default function Home() {
       </motion.header>
       <div className="px-4 py-6 max-w-2xl mx-auto pb-28">
         <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Próximo show">
-          <ProximoShow event={proximoEvento} userCategory={categoryId} isOnStage={isOnStage} onViewEvent={setDetailEvent} onRefresh={refetchStats} />
+          <ProximoShow
+            event={proximoEvento}
+            userCategory={categoryId}
+            isOnStage={isOnStage}
+            onViewEvent={setDetailEvent}
+            onRefresh={() => {
+              refetchStats();
+              refetchProximoEvento();
+            }}
+          />
         </NeonSectionFrame>
         <MetaMensalBar
           profile={profile}
