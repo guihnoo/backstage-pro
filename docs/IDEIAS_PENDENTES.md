@@ -46,7 +46,7 @@
 | 19 | **Registrar vida do app** (Cursor + Claude Code) | ✅ | Sessão 9–10: `CLAUDE.md`, RELATORIO, AUDITORIA, IDEIAS, AGENT_LOG |
 | 20 | Não repetir bugs (lazy routes, scroll, OAuth) | 🔄 | Seção “Bugs conhecidos” em AUDITORIA |
 | 21 | Check-in em itens prontos sem quebrar o que funciona | 🔄 | LOCKED em AGENTS.md |
-| 22 | Testes E2E smoke em cada release | 🟡 | 13 smoke tests; expandir por página |
+| 22 | Testes E2E smoke em cada release | ✅ | 17 smoke tests — expenses, goals, clients, reports |
 
 ---
 

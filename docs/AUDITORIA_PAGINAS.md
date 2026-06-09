@@ -77,7 +77,7 @@
 | `ClientActionSheet` | [x] | 🟢 | `useAppScrollLock` + `bp-modal-scroll` ✅ |
 | `CompanySearchInput` (3 abas) | [x] | 🟢 | Pesquisar/CNPJ/NF-e — sessão 10 |
 
-**Testes:** routes-auth ✅
+**Testes:** routes-auth ✅ · app-routes-navigation ✅
 
 ---
 
@@ -97,7 +97,7 @@
 | `ExpenseForm` (LOCKED) | [x] | 🟢 | `ScrollArea fill` ✅ |
 | `ReceiptAnalyzer` | [x] | 🟡 | OCR "em breve"; formulário manual OK |
 
-**Testes:** expense-form auth ✅
+**Testes:** expense-form auth ✅ · app-routes-navigation ✅
 
 ---
 
@@ -115,7 +115,7 @@
 | `BrazilVisitedMap` | [x] | 🟢 | Lazy subcomponent OK |
 | `ExportManager` PDF/CSV | [x] | 🟢 | Implementado |
 
-**Testes:** routes-auth ✅ · reports-guards regression ✅
+**Testes:** routes-auth ✅ · app-routes-navigation ✅ · reports-guards regression ✅
 
 ---
 

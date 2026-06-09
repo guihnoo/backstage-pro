@@ -264,7 +264,7 @@ Ordem oficial após fix de scroll (2026-06-05):
 6. Animações financeiras / charts animados no dashboard (`vendor-charts` já bundlado)
 7. PWA offline refinado + pre-fetch crítico
 8. Code-split seguro para `vendor-charts` (~421 KB) via `manualChunks`
-9. Expandir smoke E2E: adicionar `/expenses`, `/goals`, `/clients` (hoje só 13 testes)
+9. ~~Expandir smoke E2E~~ — feito: `app-routes-navigation.spec.js` (17 testes)
 
 ### Baixa / segurança
 10. **Rotacionar `GOOGLE_CLIENT_SECRET`** (exposto em sessões passadas)

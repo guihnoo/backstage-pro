@@ -6,6 +6,12 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-09
 
+### E2E-ROUTES — Smoke navigation expenses/goals/clients/reports ✅
+- **Agente**: Cursor (Composer)
+- **Arquivo**: `e2e/smoke/app-routes-navigation.spec.js` (4 testes novos)
+- **Cobertura**: shell da página ou estado de erro API (sessão fake); clients via Home evita redirect onboarding
+- **Smoke total**: 17/17 ✅
+
 ### SESSAO-10 — Auditoria geral scroll/modais + registro docs ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Auditoria**: `/calendar`, `/reports`, `/expenses`, `/goals`, `/clients`, `/`, `/profile` — 🟢 PASS
