@@ -1,4 +1,3 @@
-import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/authContext';
 import LoadingSpinner from '@/components/layout/LoadingSpinner';
@@ -12,14 +11,13 @@ import Onboarding from './pages/Onboarding';
 import Home from './pages/Home';
 import Goals from './pages/Goals';
 import ProfileSimple from './pages/ProfileSimple';
+import AIMentorPage from './pages/AI_Mentor';
 import AppLayout from '@/components/layout/AppLayout';
-
-const CalendarPage = lazy(() => import('./pages/Calendar'));
-const ReportsPage = lazy(() => import('./pages/Reports.jsx'));
-const AIMentorPage = lazy(() => import('./pages/AI_Mentor'));
-const ClientsPage = lazy(() => import('./pages/Clients'));
-const ExpensesPage = lazy(() => import('./pages/Expenses'));
-const ClientDetailPage = lazy(() => import('./pages/ClientDetail'));
+import CalendarPage from './pages/Calendar';
+import ClientsPage from './pages/Clients';
+import ExpensesPage from './pages/Expenses';
+import ReportsPage from './pages/Reports.jsx';
+import ClientDetailPage from './pages/ClientDetail';
 import PrivacyPolicyPage from './pages/PrivacyPolicy';
 import TermsOfServicePage from './pages/TermsOfService';
 import OAuthUrlGuard from '@/components/auth/OAuthUrlGuard';
@@ -125,9 +123,7 @@ export const router = createBrowserRouter([
             path: 'calendar',
             element: (
               <MigratedModuleRoute>
-                <Suspense fallback={<RouteLoading />}>
-                  <CalendarPage />
-                </Suspense>
+                <CalendarPage />
               </MigratedModuleRoute>
             ),
           },
@@ -135,9 +131,7 @@ export const router = createBrowserRouter([
             path: 'clients',
             element: (
               <MigratedModuleRoute>
-                <Suspense fallback={<RouteLoading />}>
-                  <ClientsPage />
-                </Suspense>
+                <ClientsPage />
               </MigratedModuleRoute>
             ),
           },
@@ -145,9 +139,7 @@ export const router = createBrowserRouter([
             path: 'expenses',
             element: (
               <MigratedModuleRoute>
-                <Suspense fallback={<RouteLoading />}>
-                  <ExpensesPage />
-                </Suspense>
+                <ExpensesPage />
               </MigratedModuleRoute>
             ),
           },
@@ -155,9 +147,7 @@ export const router = createBrowserRouter([
             path: 'reports',
             element: (
               <MigratedModuleRoute>
-                <Suspense fallback={<RouteLoading />}>
-                  <ReportsPage />
-                </Suspense>
+                <ReportsPage />
               </MigratedModuleRoute>
             ),
           },
@@ -165,9 +155,7 @@ export const router = createBrowserRouter([
             path: 'client-detail',
             element: (
               <MigratedModuleRoute>
-                <Suspense fallback={<RouteLoading />}>
-                  <ClientDetailPage />
-                </Suspense>
+                <ClientDetailPage />
               </MigratedModuleRoute>
             ),
           },
@@ -177,9 +165,7 @@ export const router = createBrowserRouter([
             path: 'ai-mentor',
             element: (
               <MigratedModuleRoute>
-                <Suspense fallback={<RouteLoading />}>
-                  <AIMentorPage />
-                </Suspense>
+                <AIMentorPage />
               </MigratedModuleRoute>
             ),
           },
