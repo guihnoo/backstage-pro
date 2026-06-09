@@ -110,7 +110,7 @@ export default function StatDetailModal({
           </div>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 overflow-y-auto">
+        <ScrollArea fill>
           <div className="p-4 sm:p-6 space-y-3 pb-safe">
             {events.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">

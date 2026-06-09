@@ -37,6 +37,7 @@ import { NeonGlass } from '@/components/design/NeonGlass';
 
 // Components
 import ClientForm from '@/components/clients/ClientForm';
+import { ClientDraftBadge } from '@/components/clients/ClientDraftBadge';
 import ClientDetailModal from '@/components/clients/ClientDetailModal';
 import EmptyState from '@/components/layout/EmptyState';
 import ClientActionSheet from '@/components/mobile/ClientActionSheet';
@@ -402,7 +403,10 @@ export default function ClientsPage() {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-white truncate">{client.name}</h3>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <h3 className="font-bold text-white truncate">{client.name}</h3>
+                        {client.profile_complete === false && <ClientDraftBadge />}
+                      </div>
                       {client.contact_person && (
                         <p className="text-sm text-slate-400 truncate">{client.contact_person}</p>
                       )}
@@ -420,12 +424,16 @@ export default function ClientsPage() {
                   <CardContent className="pt-0 flex-grow flex flex-col justify-between">
                     <div>
                       <div className="flex items-center gap-2 mb-4">
-                          <Badge
-                            variant={client.stats.isActive ? 'default' : 'secondary'}
-                            className={client.stats.isActive ? 'bg-green-600/80 text-white' : 'bg-slate-700 text-slate-300'}
-                          >
-                            {client.stats.isActive ? 'Ativo' : 'Inativo'}
-                          </Badge>
+                          {client.profile_complete === false ? (
+                            <ClientDraftBadge className="normal-case tracking-normal text-xs" />
+                          ) : (
+                            <Badge
+                              variant={client.stats.isActive ? 'default' : 'secondary'}
+                              className={client.stats.isActive ? 'bg-green-600/80 text-white' : 'bg-slate-700 text-slate-300'}
+                            >
+                              {client.stats.isActive ? 'Ativo' : 'Inativo'}
+                            </Badge>
+                          )}
                           {(() => {
                             const last = client.stats.lastEventDate;
                             if (!last) return <span title="Sem histórico de eventos" className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" style={{ boxShadow: '0 0 5px #ef444480' }} />;

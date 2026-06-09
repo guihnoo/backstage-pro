@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { X, FileText, Save } from 'lucide-react';
+import { useAppScrollLock } from '@/lib/useAppScrollLock';
 
 export default function NotesSheet({ 
   event,
@@ -14,6 +15,7 @@ export default function NotesSheet({
   onSave
 }) {
   const [notes, setNotes] = useState('');
+  useAppScrollLock(isOpen);
 
   useEffect(() => {
     if (event) {
@@ -60,7 +62,7 @@ export default function NotesSheet({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center p-0 sm:p-4">
+        <div className="fixed inset-0 z-[95] flex items-end sm:items-center sm:justify-center p-0 sm:p-4">
           {/* Overlay */}
           <motion.div
             variants={overlayVariants}
@@ -106,7 +108,7 @@ export default function NotesSheet({
             </div>
 
             {/* Scrollable Content */}
-            <ScrollArea className="flex-1 overflow-y-auto">
+            <ScrollArea fill>
               <div className="p-4 sm:p-6 space-y-5 pb-safe">
                 {/* Informações do Evento */}
                 <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700">

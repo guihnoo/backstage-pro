@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import MeiDashboard from '@/components/goals/MeiDashboard';
 import { format, parseISO, differenceInCalendarDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useAppScrollLock } from '@/lib/useAppScrollLock';
 
 const SEEN_BADGES_KEY = 'backstage_seen_badges';
 
@@ -32,7 +33,7 @@ function BadgeCelebration({ badge, onClose }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm"
       onClick={onClose}
     >
       <motion.div
@@ -211,6 +212,7 @@ export default function Goals() {
   const [savingGoals, setSavingGoals] = useState(false);
   const [goalForm, setGoalForm] = useState({ events: '', revenue: '' });
   const [selectedBadge, setSelectedBadge] = useState(null);
+  useAppScrollLock(Boolean(celebrationBadge || selectedBadge));
 
   const openGoalEdit = () => {
     setGoalForm({
@@ -754,7 +756,7 @@ export default function Goals() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] flex items-end justify-center bg-black/70 backdrop-blur-sm"
             onClick={() => setSelectedBadge(null)}
           >
             <motion.div

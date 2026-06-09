@@ -55,7 +55,7 @@ export default function DateInfoModal({
           </div>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 overflow-y-auto">
+        <ScrollArea fill>
           <div className="p-4 sm:p-6 space-y-6">
             {/* Resumo do Dia */}
             {workRecords.length > 0 && (

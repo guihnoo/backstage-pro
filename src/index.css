@@ -208,7 +208,8 @@ a, button, [role="button"], input, label, select, textarea {
 
 /* Trava scroll da página quando modal/sheet está aberto (container = main, não body) */
 body[data-scroll-lock] [data-app-scroll],
-body:has([role="dialog"][data-state="open"]) [data-app-scroll] {
+body:has([role="dialog"][data-state="open"]) [data-app-scroll],
+body:has([role="alertdialog"][data-state="open"]) [data-app-scroll] {
   overflow: hidden !important;
   overscroll-behavior: contain;
   touch-action: none;

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { X, Bell, AlertTriangle, Calendar, Timer } from 'lucide-react';
 import { format } from 'date-fns';
+import { useAppScrollLock } from '@/lib/useAppScrollLock';
 import { ptBR } from 'date-fns/locale';
 
 const alertIcons = {
@@ -18,12 +19,14 @@ const alertColors = {
 };
 
 export default function AlertsNotifications({ alerts, onAction, onDismiss, onClose }) {
+  useAppScrollLock(true);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[100] p-4"
     >
       <motion.div
         initial={{ scale: 0.9, y: 50, opacity: 0 }}

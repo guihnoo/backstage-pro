@@ -130,7 +130,7 @@ export default function ExpenseForm({
         </DialogHeader>
 
         <form className="flex flex-col flex-1 min-h-0" onSubmit={handleSubmit}>
-          <ScrollArea className="flex-1">
+          <ScrollArea fill>
             <div className="space-y-4 p-4 sm:p-6 pb-2">
               <div className="space-y-2">
                 <Label>Título</Label>

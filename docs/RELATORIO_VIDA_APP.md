@@ -3,8 +3,10 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-05  
+**Última atualização:** 2026-06-05 (sessão 2)  
 **Produção:** https://backstage-pro-beta.vercel.app  
+**Último commit:** `3fbe800` — scroll/z-index + relatório de vida  
+**Último deploy:** 2026-06-05 — Vercel prod (`backstage-pro-beta.vercel.app`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
 ---
@@ -18,7 +20,8 @@
 | UX cores / hierarquia empresa | Implementado (`brandColors`, `EventHeading`) |
 | Combobox cliente + geocode local | Implementado |
 | Páginas legais OAuth | `/privacidade`, `/termos` |
-| Scroll / modais / z-index | **Correção em andamento** (sessão 2026-06-05) |
+| Scroll / modais / z-index | Corrigido v1 em prod; v2 local (badge + modais restantes) |
+| Badge rascunho (clientes) | Implementado nos cards (`ClientDraftBadge`) |
 | Mapa Brasil (relatórios) | Grid 27 UFs (SVG interativo = backlog) |
 
 ---
@@ -51,6 +54,18 @@ Ordem oficial após fix de scroll (2026-06-05):
 ---
 
 ## Changelog
+
+### 2026-06-05 (sessão 2) — Badge rascunho + scroll batch 2
+
+**Mudanças (local, pós-deploy `3fbe800`):**
+- `ClientDraftBadge` nos cards de `Clients.jsx` quando `profile_complete === false`
+- `alert-dialog`, `drawer`, Goals, AlertsNotifications, NotesSheet — z-index e scroll lock
+- `ScrollArea fill` em StatDetailModal, ClientInsightsModal, DateInfoModal, DailyWorkModal, ExpenseForm
+- CSS: trava scroll também para `role="alertdialog"`
+
+**Para Claude Code ao retornar:** validar mobile em Goals, Despesas, alertas da agenda; depois OAuth Google E2E.
+
+---
 
 ### 2026-06-05 — Scroll, z-index e relatório de vida
 
