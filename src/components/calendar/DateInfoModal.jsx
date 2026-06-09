@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { formatDisplayDate, getEventStatusConfig } from '../utils/dateUtils';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
+import { hardNavigate } from '@/lib/hardNavigate';
 
 export default function DateInfoModal({ 
   isOpen, 
@@ -102,10 +103,14 @@ export default function DateInfoModal({
                             <div className="flex-1 min-w-0">
                               <h4 className="font-semibold text-white truncate">{event.title}</h4>
                               {client && (
-                                <div className="flex items-center gap-2 text-sm text-slate-400 mt-1">
-                                  <Building2 className="w-3 h-3" />
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); onClose?.(); hardNavigate(`/client-detail?id=${client.id}`); }}
+                                  className="flex items-center gap-2 text-sm text-slate-400 mt-1 hover:text-cyan-300 transition-colors"
+                                >
+                                  <Building2 className="w-3 h-3 flex-shrink-0" />
                                   <span className="truncate">{client.name}</span>
-                                </div>
+                                </button>
                               )}
                             </div>
                             <Badge className={`${statusConfig.badgeClass} text-xs flex-shrink-0`}>
