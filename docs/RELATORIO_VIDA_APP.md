@@ -5,9 +5,9 @@
 
 **Última atualização:** 2026-06-05 (sessão 7)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** *(pendente)* — AlertsPanel + Modo Palco GPS + lazy routes  
-**Commits da sessão:** sessão 7 local (não commitada ainda)  
-**Último deploy:** 2026-06-05 — Vercel prod (`backstage-pro-beta.vercel.app`)  
+**Último commit:** `4da9604` — AlertsPanel + refetch próximo show + lazy routes  
+**Commits da sessão:** `4da9604`  
+**Último deploy:** 2026-06-05 — Vercel prod (`backstage-pro-beta.vercel.app`, deploy `6y1dxuSK`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
 ---
@@ -178,7 +178,7 @@ Ordem oficial após fix de scroll (2026-06-05):
 1. Validar scroll em **todas** as telas após deploy (mobile + desktop)
 2. OAuth Google — teste E2E e documentar resultado aqui
 3. Limpar duplicatas históricas no banco (botão dedupe ou script)
-4. Commit + deploy sessão 7 (AlertsPanel, ProximoShow GPS, lazy routes)
+4. ~~Commit + deploy sessão 7~~ — feito (`4da9604`, prod 2026-06-05)
 
 ### Média
 5. Animações financeiras / charts no dashboard
