@@ -102,7 +102,7 @@ export default function Home() {
       </motion.header>
       <div className="px-4 py-6 max-w-2xl mx-auto pb-28">
         <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Próximo show">
-          <ProximoShow event={proximoEvento} userCategory={categoryId} isOnStage={isOnStage} onViewEvent={setDetailEvent} />
+          <ProximoShow event={proximoEvento} userCategory={categoryId} isOnStage={isOnStage} onViewEvent={setDetailEvent} onRefresh={refetchStats} />
         </NeonSectionFrame>
         <MetaMensalBar
           profile={profile}

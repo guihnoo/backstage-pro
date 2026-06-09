@@ -86,6 +86,7 @@ export default function ClientsPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterActive, setFilterActive] = useState('all');
+  const [sortBy, setSortBy] = useState('nome');
   const [showClientForm, setShowClientForm] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
   const [selectedClient, setSelectedClient] = useState(null);
@@ -168,11 +169,17 @@ export default function ClientsPage() {
       );
     }
 
-    // Ordenação Padrão: por nome
-    filtered.sort((a, b) => a.name.localeCompare(b.name));
+    if (sortBy === 'nome') filtered.sort((a, b) => a.name.localeCompare(b.name));
+    else if (sortBy === 'pendencia') filtered.sort((a, b) => b.stats.pendingRevenue - a.stats.pendingRevenue);
+    else if (sortBy === 'eventos') filtered.sort((a, b) => b.stats.totalEvents - a.stats.totalEvents);
+    else if (sortBy === 'recente') filtered.sort((a, b) => {
+      const da = a.stats.lastEventDate ? new Date(a.stats.lastEventDate) : new Date(0);
+      const db = b.stats.lastEventDate ? new Date(b.stats.lastEventDate) : new Date(0);
+      return db - da;
+    });
 
     return filtered;
-  }, [clientsWithStats, searchTerm, filterActive]);
+  }, [clientsWithStats, searchTerm, filterActive, sortBy]);
 
   const handleClientClick = useCallback((client) => {
     if (isMobile) {
@@ -293,7 +300,7 @@ export default function ClientsPage() {
           </Button>
         </div>
 
-        <NeonGlass primary={config.primaryHex} className="p-4">
+        <NeonGlass primary={config.primaryHex} className="p-4 space-y-3">
             <div className="flex flex-col lg:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
@@ -330,6 +337,24 @@ export default function ClientsPage() {
                   Inativos
                 </Button>
               </div>
+            </div>
+            <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600 flex-shrink-0">Ordenar:</span>
+              {[
+                { key: 'nome', label: 'A–Z' },
+                { key: 'pendencia', label: 'Maior pendência' },
+                { key: 'eventos', label: 'Mais shows' },
+                { key: 'recente', label: 'Mais recente' },
+              ].map(opt => (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => setSortBy(opt.key)}
+                  className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${sortBy === opt.key ? 'border-cyan-500/60 bg-cyan-500/15 text-cyan-300' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
         </NeonGlass>
 

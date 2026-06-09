@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { MapPin, Clock, User, ChevronRight, Navigation } from 'lucide-react';
+import { MapPin, Clock, User, ChevronRight, Navigation, CheckCircle2, Loader2 } from 'lucide-react';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { useCountdown } from '@/lib/useBackstageData';
 import { hardNavigate } from '@/lib/hardNavigate';
@@ -8,16 +8,18 @@ import { ptBR } from 'date-fns/locale';
 import ModoPalcoActions from '@/components/home/ModoPalcoActions';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { getEventCacheAmount } from '@/lib/eventFinance';
+import { useStatusToggle } from '@/lib/useStatusToggle';
 
 function getEventDateStr(event) {
   return event?.start_date || event?.event_date || null;
 }
 
-export default function ProximoShow({ event, userCategory, isOnStage, onViewEvent }) {
+export default function ProximoShow({ event, userCategory, isOnStage, onViewEvent, onRefresh }) {
   const eventDateStr = getEventDateStr(event);
   const { countdown } = useCountdown(eventDateStr);
   const config = getCategoryConfig(userCategory);
   const { formatCurrency, isVisible } = useFinancialVisibility();
+  const { confirmEvent, toggling } = useStatusToggle();
 
   if (!event) {
     return (
@@ -185,16 +187,32 @@ export default function ProximoShow({ event, userCategory, isOnStage, onViewEven
         )}
 
         {/* Buttons */}
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onViewEvent ? onViewEvent(event) : hardNavigate('/calendar')}
-            className="flex-1 px-4 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-600 text-white font-semibold hover:shadow-lg hover:shadow-cyan-500/50 transition-all flex items-center justify-center gap-2"
+            className="flex-1 min-w-[120px] px-4 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-600 text-white font-semibold hover:shadow-lg hover:shadow-cyan-500/50 transition-all flex items-center justify-center gap-2"
           >
             <span>Ver Detalhes</span>
             <ChevronRight className="w-4 h-4" />
           </motion.button>
+
+          {event.status === 'pending' && (
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              disabled={toggling === event.id}
+              onClick={() => confirmEvent(event, onRefresh)}
+              className="px-4 py-3 rounded-lg border border-blue-500/40 bg-blue-900/20 text-blue-300 font-semibold hover:bg-blue-900/40 transition-all flex items-center gap-2 disabled:opacity-60"
+            >
+              {toggling === event.id
+                ? <Loader2 className="w-4 h-4 animate-spin" />
+                : <CheckCircle2 className="w-4 h-4" />
+              }
+              Confirmar
+            </motion.button>
+          )}
 
           {event.location && (
             <motion.button

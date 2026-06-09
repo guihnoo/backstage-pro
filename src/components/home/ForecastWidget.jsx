@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, ChevronRight, CalendarDays } from 'lucide-react';
 import { hardNavigate } from '@/lib/hardNavigate';
@@ -16,6 +16,7 @@ function getWeekLabel(daysFromNow) {
 
 export default function ForecastWidget({ events = [], isLoading, primaryHex = '#A64AFF', accentHex = '#FFB700', onViewEvent }) {
   const { formatCurrency, isVisible } = useFinancialVisibility();
+  const [showAll, setShowAll] = useState(false);
   const today = new Date();
   const in30 = addDays(today, 30);
 
@@ -97,12 +98,12 @@ export default function ForecastWidget({ events = [], isLoading, primaryHex = '#
 
         {/* Timeline dos próximos eventos */}
         <div className="space-y-2">
-          {upcoming.slice(0, 4).map((ev, i) => (
+          {(showAll ? upcoming : upcoming.slice(0, 4)).map((ev, i, arr) => (
             <motion.div
               key={ev.id}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.05 * i }}
+              transition={{ delay: 0.05 * Math.min(i, 4) }}
               onClick={() => onViewEvent?.(ev)}
               className={`flex items-center gap-3 text-sm ${onViewEvent ? 'cursor-pointer hover:bg-white/5 rounded-lg px-1 -mx-1 transition-colors' : ''}`}
             >
@@ -115,7 +116,7 @@ export default function ForecastWidget({ events = [], isLoading, primaryHex = '#
                     boxShadow: `0 0 6px ${ev.color || primaryHex}80`,
                   }}
                 />
-                {i < Math.min(upcoming.length, 4) - 1 && (
+                {i < arr.length - 1 && (
                   <div className="w-px h-4 bg-[#2a2d3a] mt-0.5" />
                 )}
               </div>
@@ -138,9 +139,16 @@ export default function ForecastWidget({ events = [], isLoading, primaryHex = '#
             </motion.div>
           ))}
           {upcoming.length > 4 && (
-            <p className="text-[10px] text-[#5a6070] font-mono pl-5">
-              +{upcoming.length - 4} evento{upcoming.length - 4 !== 1 ? 's' : ''} neste período
-            </p>
+            <button
+              type="button"
+              onClick={() => setShowAll(v => !v)}
+              className="text-[10px] text-[#5a6070] font-mono pl-5 hover:text-cyan-400 transition-colors"
+            >
+              {showAll
+                ? '↑ Mostrar menos'
+                : `+${upcoming.length - 4} evento${upcoming.length - 4 !== 1 ? 's' : ''} — ver todos`
+              }
+            </button>
           )}
         </div>
       </NeonGlass>
