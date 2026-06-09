@@ -328,7 +328,7 @@ export default function AIMentorPage() {
               placeholder="Pergunte sobre seus dados financeiros…"
               disabled={loading}
               rows={1}
-              className="flex-1 bg-[#0e1018] border border-[#23262f] rounded-xl px-4 py-3 text-white text-sm placeholder:text-[#4a5060] focus:outline-none resize-none min-h-[48px] max-h-[120px] transition-colors"
+              className="flex-1 bg-[#0e1018] border border-[#23262f] rounded-xl px-4 py-3 text-white text-base md:text-sm placeholder:text-[#4a5060] focus:outline-none resize-none min-h-[48px] max-h-[120px] transition-colors"
               style={{ borderColor: input ? `${config.primaryHex}40` : undefined }}
             />
             <Button

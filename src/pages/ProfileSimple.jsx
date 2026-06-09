@@ -218,7 +218,7 @@ export default function ProfileSimple() {
                   value={form[key]}
                   onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
                   placeholder={placeholder}
-                  className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-gray-600 transition-colors"
+                  className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl pl-10 pr-4 py-3 text-base md:text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-gray-600 transition-colors"
                 />
               </div>
             </div>
@@ -232,7 +232,7 @@ export default function ProfileSimple() {
               <input
                 value={user?.email || ''}
                 disabled
-                className="w-full bg-gray-800/30 border border-gray-800/50 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-500 cursor-not-allowed"
+                className="w-full bg-gray-800/30 border border-gray-800/50 rounded-xl pl-10 pr-4 py-3 text-base md:text-sm text-gray-500 cursor-not-allowed"
               />
             </div>
           </div>
@@ -335,7 +335,7 @@ export default function ProfileSimple() {
                   value={form[key]}
                   onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
                   placeholder={placeholder}
-                  className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-gray-600 transition-colors"
+                  className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl pl-10 pr-4 py-3 text-base md:text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-gray-600 transition-colors"
                 />
               </div>
             </div>
