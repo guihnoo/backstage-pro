@@ -2,13 +2,15 @@ import { motion } from 'framer-motion';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { hardNavigate } from '@/lib/hardNavigate';
 import {
   Calendar,
   Clock,
   Building2,
   Zap,
   Eye,
-  Edit
+  Edit,
+  ExternalLink
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -50,9 +52,20 @@ export default function EventCardLarge({ event, client, work, onView, onEdit, cl
 
           {/* Informações do Cliente/Evento */}
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-lg text-cyan-300 font-display tracking-wide leading-tight mb-1">
-              {client?.name || 'Cliente'}
-            </h3>
+            {client?.id ? (
+              <button
+                type="button"
+                onClick={() => hardNavigate(`/client-detail?id=${client.id}`)}
+                className="font-bold text-lg text-cyan-300 font-display tracking-wide leading-tight mb-1 hover:text-cyan-100 transition-colors flex items-center gap-1.5 group text-left"
+              >
+                {client.name}
+                <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+              </button>
+            ) : (
+              <h3 className="font-bold text-lg text-cyan-300 font-display tracking-wide leading-tight mb-1">
+                {client?.name || 'Cliente'}
+              </h3>
+            )}
             <p className="text-base text-white leading-tight mb-2 break-words">
               {event.title}
             </p>

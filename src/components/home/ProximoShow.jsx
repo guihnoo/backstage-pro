@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Clock, User, ChevronRight, Navigation, CheckCircle2, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { useCountdown } from '@/lib/useBackstageData';
 import { hardNavigate } from '@/lib/hardNavigate';
@@ -9,9 +11,16 @@ import ModoPalcoActions from '@/components/home/ModoPalcoActions';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { useStatusToggle } from '@/lib/useStatusToggle';
+import { useEvents } from '@/lib/useEvents';
+import { captureEventLocationFromGps, mapsUrlForCoords } from '@/lib/eventLocation';
 
 function getEventDateStr(event) {
   return event?.start_date || event?.event_date || null;
+}
+
+function eventHasLocation(event) {
+  if (!event) return false;
+  return Boolean(event.location?.trim()) || (event.location_lat != null && event.location_lng != null);
 }
 
 export default function ProximoShow({ event, userCategory, isOnStage, onViewEvent, onRefresh }) {
@@ -20,6 +29,31 @@ export default function ProximoShow({ event, userCategory, isOnStage, onViewEven
   const config = getCategoryConfig(userCategory);
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const { confirmEvent, toggling } = useStatusToggle();
+  const { update: updateEvent } = useEvents();
+  const [locationSaving, setLocationSaving] = useState(false);
+
+  const handleGpsCheckIn = async () => {
+    if (!event?.id || locationSaving) return;
+    setLocationSaving(true);
+    try {
+      const captured = await captureEventLocationFromGps();
+      await updateEvent(event.id, {
+        location: captured.location,
+        location_city: captured.location_city,
+        location_state: captured.location_state,
+        location_lat: captured.location_lat,
+        location_lng: captured.location_lng,
+      });
+      toast.success('Local registrado no evento', {
+        description: (captured.label || captured.location || '').slice(0, 80),
+      });
+      onRefresh?.();
+    } catch (err) {
+      toast.error(err.message || 'Não foi possível registrar o local.');
+    } finally {
+      setLocationSaving(false);
+    }
+  };
 
   if (!event) {
     return (
@@ -89,7 +123,18 @@ export default function ProximoShow({ event, userCategory, isOnStage, onViewEven
               )}
             </div>
             <h3 className="text-xl sm:text-3xl font-black text-white mb-1 leading-tight">{event.title}</h3>
-            <p className="text-sm text-gray-400">{event.clients?.name || 'Cliente sem nome'}</p>
+            {event.clients?.name ? (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); hardNavigate(`/client-detail?id=${event.client_id}`); }}
+                className="text-sm text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-1.5 group"
+              >
+                <User className="w-3 h-3 group-hover:text-cyan-400 flex-shrink-0" />
+                {event.clients.name}
+              </button>
+            ) : (
+              <p className="text-sm text-gray-400">Cliente sem nome</p>
+            )}
           </div>
         </div>
 
@@ -134,7 +179,25 @@ export default function ProximoShow({ event, userCategory, isOnStage, onViewEven
         </div>
 
         {isOnStage && (
-          <ModoPalcoActions event={event} accentColor={config.primaryHex} />
+          <div className="mb-6 space-y-3">
+            <ModoPalcoActions event={event} accentColor={config.primaryHex} />
+            {!eventHasLocation(event) && (
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.98 }}
+                disabled={locationSaving}
+                onClick={handleGpsCheckIn}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-cyan-500/40 bg-cyan-500/10 text-cyan-200 font-semibold text-sm hover:bg-cyan-500/20 transition-all disabled:opacity-60"
+              >
+                {locationSaving ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <MapPin className="w-4 h-4" />
+                )}
+                Check-in no local (GPS)
+              </motion.button>
+            )}
+          </div>
         )}
 
         {/* Countdown */}
@@ -214,11 +277,16 @@ export default function ProximoShow({ event, userCategory, isOnStage, onViewEven
             </motion.button>
           )}
 
-          {event.location && (
+          {eventHasLocation(event) && (
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => window.open(`https://maps.google.com/?q=${encodeURIComponent(event.location)}`, '_blank')}
+              onClick={() => {
+                const url = event.location_lat != null && event.location_lng != null
+                  ? mapsUrlForCoords(event.location_lat, event.location_lng)
+                  : `https://maps.google.com/?q=${encodeURIComponent(event.location)}`;
+                window.open(url, '_blank');
+              }}
               className="px-4 py-3 rounded-lg border border-gray-700 text-gray-300 font-semibold hover:border-cyan-500/50 hover:bg-cyan-500/10 transition-all flex items-center gap-2"
             >
               <Navigation className="w-4 h-4 text-amber-400" />

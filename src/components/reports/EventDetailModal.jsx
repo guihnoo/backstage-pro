@@ -221,10 +221,14 @@ const EventDetailModal = React.memo(function EventDetailModal({
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <Badge className={`${statusConfig.badgeClass} border text-xs`}>{statusLabel}</Badge>
                   {client && (
-                    <div className="flex items-center gap-1 sm:gap-2 text-xs text-slate-300">
-                      <Building2 className="w-3 h-3 text-slate-400 flex-shrink-0" />
+                    <button
+                      type="button"
+                      onClick={() => { onClose(); hardNavigate(`/client-detail?id=${event.client_id}`); }}
+                      className="flex items-center gap-1 sm:gap-2 text-xs text-slate-300 hover:text-cyan-300 transition-colors group"
+                    >
+                      <Building2 className="w-3 h-3 text-slate-400 group-hover:text-cyan-400 flex-shrink-0" />
                       <span className="truncate max-w-[150px] sm:max-w-none">{client.name}</span>
-                    </div>
+                    </button>
                   )}
                 </div>
                 <DialogTitle className="text-base sm:text-lg md:text-xl font-bold font-display truncate pr-2">
