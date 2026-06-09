@@ -45,7 +45,7 @@ export default function DrilldownModal({ open, onOpenChange, title, items = [], 
             </Button>
           )}
         </DialogHeader>
-        <ScrollArea className="flex-1 min-h-0 mt-2">
+        <ScrollArea fill className="mt-2">
           <div className="divide-y divide-slate-800">
             {(!items || items.length === 0) ? (
               <p className="text-slate-400 p-4">Sem registros no período selecionado.</p>

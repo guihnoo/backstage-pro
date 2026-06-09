@@ -171,8 +171,10 @@ export default function ClientsPage() {
       );
     }
 
-    if (filterActive !== 'all') {
-      filtered = filtered.filter(client => 
+    if (filterActive === 'draft') {
+      filtered = filtered.filter((client) => client.profile_complete === false);
+    } else if (filterActive !== 'all') {
+      filtered = filtered.filter(client =>
         filterActive === 'active' ? client.stats.isActive : !client.stats.isActive
       );
     }
@@ -352,6 +354,14 @@ export default function ClientsPage() {
                   className="bg-slate-800 border-slate-700 data-[state=active]:bg-slate-700 h-9"
                 >
                   Inativos
+                </Button>
+                <Button
+                  variant={filterActive === 'draft' ? 'secondary' : 'outline'}
+                  size="sm"
+                  onClick={() => setFilterActive('draft')}
+                  className="bg-slate-800 border-slate-700 data-[state=active]:bg-amber-900/40 data-[state=active]:border-amber-500/40 h-9"
+                >
+                  Rascunhos
                 </Button>
               </div>
             </div>

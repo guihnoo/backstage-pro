@@ -75,7 +75,7 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1">
+        <ScrollArea fill>
           <div className="space-y-4 p-4 sm:p-6 pb-2">
             <div className="flex gap-2">
               <label className="flex-1">

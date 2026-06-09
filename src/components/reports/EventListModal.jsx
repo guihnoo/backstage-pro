@@ -26,8 +26,8 @@ export default function EventListModal({ isOpen, onClose, title, events = [], on
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="flex-1 overflow-hidden">
-                    <ScrollArea className="h-full">
+                <div className="flex-1 min-h-0 overflow-hidden">
+                    <ScrollArea fill>
                         <div className="p-6 pt-2 space-y-3">
                             {events.length > 0 ? (
                                 events.map((event, index) => (

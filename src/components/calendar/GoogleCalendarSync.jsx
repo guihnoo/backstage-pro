@@ -34,8 +34,11 @@ export default function GoogleCalendarSync() {
 
   useEffect(() => {
     if (user?.id) loadSettings();
-    checkUrlForError();
   }, [user?.id]);
+
+  useEffect(() => {
+    checkUrlForError();
+  }, [location.search, locationPathname, user?.id]);
 
   const checkUrlForError = () => {
     const urlParams = new URLSearchParams(window.location.search);

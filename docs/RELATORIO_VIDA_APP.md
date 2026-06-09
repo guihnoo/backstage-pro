@@ -21,8 +21,9 @@
 | UX cores / hierarquia empresa | Implementado (`brandColors`, `EventHeading`) |
 | Combobox cliente + geocode local | Implementado |
 | Páginas legais OAuth | `/privacidade`, `/termos` |
-| Scroll / modais / z-index | Corrigido v1 em prod; v2 local (badge + modais restantes) |
-| Badge rascunho (clientes) | Implementado nos cards (`ClientDraftBadge`) |
+| Scroll / modais / z-index | Corrigido (v1–v3); popovers/select `z-[110]` dentro de dialogs |
+| Badge rascunho (clientes) | Cards + modal detalhe + filtro **Rascunhos** |
+| OAuth Google callback | Redirect `/profile?google_connected=1`; toast ao detectar query |
 | Mapa Brasil (relatórios) | Grid 27 UFs (SVG interativo = backlog) |
 
 ---
@@ -55,6 +56,16 @@ Ordem oficial após fix de scroll (2026-06-05):
 ---
 
 ## Changelog
+
+### 2026-06-05 (sessão 3) — Scroll batch 3 + UX clientes + OAuth
+
+- `ClientDetailModal`: scroll `bp-modal-scroll`, badge rascunho
+- Filtro **Rascunhos** em `Clients.jsx`
+- `popover` / `select` / `LocationAutocomplete` → `z-[110]` (combobox e local dentro de modal)
+- `GoogleCalendarSync`: reage a `?google_connected=1` após redirect OAuth
+- `DrilldownModal`, `ReceiptAnalyzer`, `EventListModal`: `ScrollArea fill`
+
+---
 
 ### 2026-06-05 (sessão 2) — Badge rascunho + scroll batch 2
 

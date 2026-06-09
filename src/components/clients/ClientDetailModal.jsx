@@ -23,6 +23,7 @@ import { useFinancialVisibility } from '@/components/context/FinancialVisibility
 import { formatDisplayDate, formatDateWithWeekday, getEventStatus, getEventStatusConfig } from '@/components/utils/dateUtils';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
+import { ClientDraftBadge } from '@/components/clients/ClientDraftBadge';
 
 const EventTimelineItem = ({ event, isLast, workData, onClick }) => {
   const { formatCurrency } = useFinancialVisibility();
@@ -296,7 +297,7 @@ export default function ClientDetailModal({
     <AnimatePresence>
       <Dialog open={true} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-4xl h-[95dvh] bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200 flex flex-col p-0 overflow-hidden">
-          <motion.div variants={modalAnimation} initial="hidden" animate="visible" exit="hidden" className="flex flex-col h-full">
+          <motion.div variants={modalAnimation} initial="hidden" animate="visible" exit="hidden" className="flex flex-col h-full min-h-0">
             <DialogHeader className="pt-4 px-6 border-b border-slate-800 pb-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-4 min-w-0">
@@ -307,9 +308,12 @@ export default function ClientDetailModal({
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0">
-                    <DialogTitle className="text-xl sm:text-2xl font-bold text-white font-display truncate mb-1">
-                      {client.name}
-                    </DialogTitle>
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <DialogTitle className="text-xl sm:text-2xl font-bold text-white font-display truncate">
+                        {client.name}
+                      </DialogTitle>
+                      {client.profile_complete === false && <ClientDraftBadge />}
+                    </div>
                     {client.contact_person &&
                       <p className="text-slate-400 truncate">Contato: {client.contact_person}</p>
                     }
@@ -344,7 +348,7 @@ export default function ClientDetailModal({
               </div>
             </DialogHeader>
 
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 min-h-0 flex flex-col pt-4 px-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 min-h-0 flex flex-col overflow-hidden pt-4 px-6">
               <TabsList className="grid grid-cols-3 bg-slate-800/50 p-1 h-auto rounded-xl mb-6">
                 <TabsTrigger value="overview" className="flex items-center gap-2 px-3">
                   <BarChart3 className="w-4 h-4" />
@@ -360,7 +364,7 @@ export default function ClientDetailModal({
                 </TabsTrigger>
               </TabsList>
 
-              <div className="flex-1 overflow-y-auto pr-2 -mr-2 pb-6"> {/* Added scrollable wrapper */}
+              <div className="bp-modal-scroll pr-2 -mr-2 pb-6">
                 <AnimatePresence mode="wait">
                   <TabsContent value="overview" className="mt-0">
                     <motion.div

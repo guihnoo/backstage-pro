@@ -79,7 +79,7 @@ export default function LocationAutocomplete({
         )}
       </div>
       {open && suggestions.length > 0 && (
-        <ul className="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto rounded-lg border border-slate-700 bg-slate-900 shadow-xl">
+        <ul className="absolute z-[110] mt-1 w-full max-h-48 overflow-y-auto overscroll-contain rounded-lg border border-slate-700 bg-slate-900 shadow-xl">
           {suggestions.map((item) => (
             <li key={item.id}>
               <button
