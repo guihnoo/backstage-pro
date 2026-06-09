@@ -10,8 +10,10 @@ import {
   Clock,
   AlertCircle,
   CheckCircle2,
-  BarChart3
+  BarChart3,
+  ExternalLink
 } from 'lucide-react';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { useEvents } from '@/lib/useEvents';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
@@ -248,6 +250,23 @@ export default function ClientInsightsModal({ client, isOpen, onClose }) {
 
           </div>
         </ScrollArea>
+        <div className="p-4 pt-3 border-t border-slate-800 flex gap-2">
+          <Button
+            variant="outline"
+            className="flex-1 border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800"
+            onClick={onClose}
+          >
+            Fechar
+          </Button>
+          <Button
+            className="flex-1 font-bold text-[#06070a]"
+            style={{ background: `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})` }}
+            onClick={() => { onClose(); hardNavigate(`/client-detail?id=${client?.id}`); }}
+          >
+            <ExternalLink className="w-4 h-4 mr-2" />
+            Ver Detalhes Completos
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

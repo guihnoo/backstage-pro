@@ -125,7 +125,13 @@ export default function ClientDetailPage() {
       totalRevenue,
       paidAmount,
       unpaidAmount,
-      avgRevenuePerEvent: clientEvents.length > 0 ? totalRevenue / clientEvents.length : 0
+      avgRevenuePerEvent: clientEvents.length > 0 ? totalRevenue / clientEvents.length : 0,
+      unpaidEventsWithAmounts: unpaidEvents.map(e => ({
+        id: e.id,
+        title: e.title,
+        start_date: e.start_date,
+        amount: getEventRevenue(e),
+      })),
     };
   }, [clientEvents, clientWork]);
 
@@ -240,12 +246,11 @@ export default function ClientDetailPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      const unpaid = clientEvents.filter(e => e.payment_status !== 'paid');
-                      if (unpaid.length === 0) {
+                      if (stats.unpaidEventsWithAmounts.length === 0) {
                         const clean = client.phone.replace(/\D/g, '');
                         window.open(`https://wa.me/${clean.length > 11 ? clean : `55${clean}`}`, '_blank');
                       } else {
-                        const msg = buildChargeMessage({ clientName: client.name, events: unpaid.map(e => ({ title: e.title, start_date: e.start_date, amount: 0 })), totalAmount: stats.unpaidAmount });
+                        const msg = buildChargeMessage({ clientName: client.name, events: stats.unpaidEventsWithAmounts, totalAmount: stats.unpaidAmount });
                         openWhatsAppCharge(client.phone, msg);
                       }
                     }}
