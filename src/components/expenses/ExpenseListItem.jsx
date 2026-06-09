@@ -119,9 +119,9 @@ export default function ExpenseListItem({ expense, event, onEdit, onDelete, onMa
               {event && (
                 <button
                   type="button"
-                  onClick={(e) => { e.stopPropagation(); hardNavigate('/calendar'); }}
+                  onClick={(e) => { e.stopPropagation(); hardNavigate(event.client_id ? `/client-detail?id=${event.client_id}` : '/calendar'); }}
                   className="flex items-center gap-1.5 hover:text-cyan-300 transition-colors group"
-                  title="Ver evento na agenda"
+                  title={event.client_id ? 'Ver página do cliente' : 'Ver na agenda'}
                 >
                   <Building className="w-3.5 h-3.5" />
                   <span className="truncate">{event.title}</span>

@@ -10,6 +10,7 @@ import { Trophy, Zap, Star, TrendingUp, Award, Flame, Calendar, X, Pencil, Check
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import MeiDashboard from '@/components/goals/MeiDashboard';
+import EventDetailModal from '@/components/calendar/EventDetailModal';
 import { format, parseISO, differenceInCalendarDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
@@ -206,13 +207,14 @@ export default function Goals() {
   const config = getCategoryConfig(categoryId);
   const [activeTab, setActiveTab] = useState('metas');
   const [celebrationBadge, setCelebrationBadge] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const seenRef = useRef(getSeenBadges());
 
   const [editingGoals, setEditingGoals] = useState(false);
   const [savingGoals, setSavingGoals] = useState(false);
   const [goalForm, setGoalForm] = useState({ events: '', revenue: '' });
   const [selectedBadge, setSelectedBadge] = useState(null);
-  useAppScrollLock(Boolean(celebrationBadge || selectedBadge));
+  useAppScrollLock(Boolean(celebrationBadge || selectedBadge || selectedEvent));
 
   const openGoalEdit = () => {
     setGoalForm({
@@ -615,7 +617,7 @@ export default function Goals() {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: i * 0.05 }}
                           whileTap={{ scale: 0.98 }}
-                          onClick={() => hardNavigate('/calendar')}
+                          onClick={() => setSelectedEvent(ev)}
                           className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-800/40 transition-colors text-left"
                         >
                           <div
@@ -828,6 +830,17 @@ export default function Goals() {
         );
       })()}
     </AnimatePresence>
+    {selectedEvent && (
+      <EventDetailModal
+        event={selectedEvent}
+        client={selectedEvent.clients || null}
+        onClose={() => setSelectedEvent(null)}
+        onEdit={() => { setSelectedEvent(null); hardNavigate('/calendar'); }}
+        onDelete={() => setSelectedEvent(null)}
+        onMarkPaid={() => setSelectedEvent(null)}
+        onAddWork={() => { setSelectedEvent(null); hardNavigate('/calendar'); }}
+      />
+    )}
     </>
   );
 }
