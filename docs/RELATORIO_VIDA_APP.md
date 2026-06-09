@@ -5,7 +5,7 @@
 
 **Última atualização:** 2026-06-05 (sessão 8)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** *(pendente sessão 8)*  
+**Último commit:** `f7f2c45` — OAuth robustez + lazy Clients/Expenses  
 **Último deploy:** 2026-06-05 — Vercel prod (`backstage-pro-beta.vercel.app`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
@@ -191,14 +191,14 @@ Ordem oficial após fix de scroll (2026-06-05):
 
 ### Alta (próxima sprint)
 1. Validar scroll em **todas** as telas após deploy (mobile + desktop)
-2. OAuth Google — teste E2E e documentar resultado aqui
-3. Limpar duplicatas históricas no banco (botão dedupe ou script)
+2. OAuth Google — checklist E2E manual no Changelog sessão 8 (validar com sua conta)
+3. Limpar duplicatas — botão **Limpar duplicatas da agenda** no Perfil (já disponível)
 4. ~~Commit + deploy sessão 7~~ — feito (`4da9604`, prod 2026-06-05)
 
 ### Média
 5. Animações financeiras / charts no dashboard
 6. PWA offline refinado
-7. Code-split adicional (`Clients`, `Expenses`, `vendor-charts` ~421 KB)
+7. Code-split `react-pdf` (~1.4 MB) e `vendor-charts` (~421 KB)
 
 ### Baixa / segurança
 8. Rotação secret Google
