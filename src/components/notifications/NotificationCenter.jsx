@@ -164,7 +164,7 @@ function NotificationItem({ notification, onDismiss, onNavigate }) {
                   size="sm"
                   variant="outline"
                   onClick={() => { onNavigate(notification.action_url); onDismiss(notification.id); }}
-                  className="h-6 px-2 text-xs bg-cyan-600 hover:bg-cyan-700 border-cyan-500 text-white"
+                  className="h-8 px-2.5 text-xs bg-cyan-600 hover:bg-cyan-700 border-cyan-500 text-white"
                 >
                   Ver
                 </Button>
@@ -173,9 +173,9 @@ function NotificationItem({ notification, onDismiss, onNavigate }) {
                 size="sm"
                 variant="ghost"
                 onClick={() => onDismiss(notification.id)}
-                className="h-6 w-6 p-0 hover:bg-slate-600"
+                className="h-8 w-8 p-0 hover:bg-slate-600"
               >
-                <X className="w-3 h-3 text-slate-400" />
+                <X className="w-3.5 h-3.5 text-slate-400" />
               </Button>
             </div>
           </div>
