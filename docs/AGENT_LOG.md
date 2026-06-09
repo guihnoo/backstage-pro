@@ -4,6 +4,22 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+## 2026-06-09
+
+### HOTFIX-LAZY-ROUTES — Páginas travadas em Carregando ✅
+- **Agente**: Cursor (Composer)
+- **Bug**: `React.lazy()` + Suspense em `/calendar`, `/clients`, `/expenses`, `/reports`, `/client-detail`, `/ai-mentor` — chunk carregava mas módulo não resolvia; fallback infinito
+- **Fix**: `src/routes.jsx` — imports estáticos; removido Suspense das rotas
+- **Commit**: `ed46dfc` · **Deploy**: ✅ Vercel prod
+- **Testes**: smoke E2E 13/13
+
+### DOCS-VIDA-APP — Sistema de registro e auditoria ✅
+- **Agente**: Cursor (Composer)
+- **Arquivos**: `CLAUDE.md`, `docs/AUDITORIA_PAGINAS.md`, `docs/IDEIAS_PENDENTES.md`
+- **Atualizado**: `RELATORIO_VIDA_APP.md` sessão 9, `.cursor/rules/backstage-core.mdc`
+
+---
+
 ## 2026-06-07
 
 ### DAYQUICK-FIX — Bug filter eventsToRegister em DayQuickActionsMobile ✅

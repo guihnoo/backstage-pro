@@ -3,10 +3,10 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-05 (sessão 8)  
+**Última atualização:** 2026-06-09 (sessão 9)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** `f7f2c45` — OAuth robustez + lazy Clients/Expenses  
-**Último deploy:** 2026-06-05 — Vercel prod (`backstage-pro-beta.vercel.app`)  
+**Último commit:** `ed46dfc` — fix lazy routes (páginas travadas em Carregando)  
+**Último deploy:** 2026-06-09 — Vercel prod (`backstage-pro-beta.vercel.app`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
 ---
@@ -27,7 +27,8 @@
 | Mapa Brasil (relatórios) | SVG interativo `@svg-maps/brazil`, lazy load + chunk dedicado |
 | Alertas agenda (local GPS) | `AlertsPanel` montado em `Calendar.jsx` — lembrete check-in para eventos de hoje sem local |
 | Modo Palco — check-in GPS | Botão em `ProximoShow` quando `isOnStage` e sem local |
-| Code-split rotas | `Calendar`, `Reports`, `AI_Mentor`, `Clients`, `Expenses`, `ClientDetail` lazy |
+| Code-split rotas | **Revertido** — imports estáticos (`ed46dfc`); lazy travava Suspense |
+| Auditoria / ideias | `docs/AUDITORIA_PAGINAS.md` + `docs/IDEIAS_PENDENTES.md` + `CLAUDE.md` |
 | OAuth Google (UX erros) | `googleOAuthErrors.js` + callback preserva `refresh_token` em reconexão |
 
 ---
@@ -60,6 +61,18 @@ Ordem oficial após fix de scroll (2026-06-05):
 ---
 
 ## Changelog
+
+### 2026-06-09 (sessão 9) — Hotfix rotas + sistema de registro vivo
+
+- **Bug crítico:** `React.lazy()` em rotas principais deixava páginas presas em "Carregando..." (módulo não resolvia)
+- **Fix:** `routes.jsx` volta imports estáticos; deploy prod `ed46dfc`
+- **Docs:** `CLAUDE.md`, `docs/AUDITORIA_PAGINAS.md`, `docs/IDEIAS_PENDENTES.md`
+- **Testes:** smoke E2E 13/13 (calendar, bottom-nav, profile, auth routes)
+- **Também no ar:** busca empresas Google-like (`6d7cd90`, `2e676fc`)
+
+**Regra:** não reintroduzir lazy nas rotas até code-split seguro (subcomponentes ou error boundary).
+
+---
 
 ### 2026-06-05 (sessão 8) — OAuth robustez + lazy routes + bundle
 
@@ -190,10 +203,11 @@ Ordem oficial após fix de scroll (2026-06-05):
 ## Backlog priorizado
 
 ### Alta (próxima sprint)
-1. Validar scroll em **todas** as telas após deploy (mobile + desktop)
-2. OAuth Google — checklist E2E manual no Changelog sessão 8 (validar com sua conta)
-3. Limpar duplicatas — botão **Limpar duplicatas da agenda** no Perfil (já disponível)
-4. ~~Commit + deploy sessão 7~~ — feito (`4da9604`, prod 2026-06-05)
+1. **Auditoria página a página** — seguir `docs/AUDITORIA_PAGINAS.md` (scroll/modais)
+2. Validar scroll em **todas** as telas após deploy (mobile + desktop)
+3. OAuth Google — checklist E2E manual no Changelog sessão 8 (validar com sua conta)
+4. Registrar ideias do usuário em `docs/IDEIAS_PENDENTES.md` a cada pedido
+5. ~~Fix lazy routes Carregando~~ — feito (`ed46dfc`, prod 2026-06-09)
 
 ### Média
 5. Animações financeiras / charts no dashboard
@@ -208,10 +222,11 @@ Ordem oficial após fix de scroll (2026-06-05):
 
 ## Como usar este documento (agentes IA)
 
-1. **Antes de implementar:** ler “Estado atual” + “Backlog” + última entrada do Changelog.
-2. **Depois de implementar:** adicionar entrada no Changelog (data, problema, causa, arquivos, deploy).
+1. **Antes de implementar:** ler “Estado atual” + “Backlog” + `IDEIAS_PENDENTES.md` + `AUDITORIA_PAGINAS.md`.
+2. **Depois de implementar:** Changelog aqui + append em `AGENT_LOG.md` + marcar checkboxes nos outros docs.
 3. **Se mudar z-index ou scroll:** atualizar seções “Camadas de UI” e “Scroll”.
-4. **Não duplicar:** `MANUAL_WILL.md` = regras de negócio; este arquivo = estado técnico e histórico.
+4. **Claude Code:** ler `CLAUDE.md` na raiz.
+5. **Não duplicar:** regras de negócio em docs antigos; este arquivo = estado técnico e histórico.
 
 ---
 

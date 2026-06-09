@@ -8,6 +8,9 @@ alwaysApply: true
 
 ## Contexto vivo do app
 - Ler e atualizar `docs/RELATORIO_VIDA_APP.md` a cada sessão (changelog, estado, backlog, z-index/scroll).
+- Checklist por página: `docs/AUDITORIA_PAGINAS.md` — marcar itens revisados.
+- Ideias do usuário não implementadas: `docs/IDEIAS_PENDENTES.md` — append + status.
+- Histórico cronológico: append-only em `docs/AGENT_LOG.md`.
 - Modais: Dialog/Sheet Radix `z-[100]/[101]`; sheets mobile `z-[90]/[95]`; nav `z-30`.
 - Scroll da página: `main[data-app-scroll]`; travar com `useAppScrollLock` ou dialog Radix aberto.
 - Corpo rolável em modal flex: `.bp-modal-scroll` ou `<ScrollArea fill>`.
