@@ -1033,7 +1033,7 @@ export default function CalendarPage() {
               key={key}
               type="button"
               onClick={() => setStatusFilter(key)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold transition-all border ${
                 statusFilter === key
                   ? 'bg-cyan-600/20 border-cyan-500/60 text-cyan-300'
                   : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:border-slate-600 hover:text-slate-300'

@@ -122,7 +122,7 @@ export default function ExpenseAnalysis({ expenses = [], onSliceClick }) {
             {expenseData.map((entry) => (
               <div
                 key={entry.name}
-                className="flex justify-between items-center hover:bg-slate-800/40 rounded px-2 py-1 transition-colors"
+                className="flex justify-between items-center hover:bg-slate-800/40 rounded px-2 py-1.5 transition-colors"
                 onClick={() => onSliceClick && onSliceClick(entry.name)}
                 style={{ cursor: onSliceClick ? 'pointer' : 'default' }}
               >

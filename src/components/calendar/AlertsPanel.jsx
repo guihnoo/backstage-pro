@@ -121,7 +121,7 @@ export default function AlertsPanel({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 text-slate-400 hover:text-white"
+                    className="h-8 w-8 text-slate-400 hover:text-white"
                     onClick={() => dismissAlert(alert.id)}
                   >
                     <X className="w-4 h-4" />

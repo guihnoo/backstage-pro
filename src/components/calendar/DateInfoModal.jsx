@@ -170,7 +170,7 @@ export default function DateInfoModal({
                               size="sm"
                               variant="ghost"
                               onClick={() => onEditWork?.(work)}
-                              className="h-7 px-2"
+                              className="h-8 px-2"
                             >
                               <Edit className="w-3 h-3 mr-1" /> Editar
                             </Button>

@@ -80,7 +80,7 @@ function BadgeCelebration({ badge, onClose }) {
 
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-600 hover:text-gray-400 transition-colors"
+          className="absolute top-3 right-3 p-2 text-gray-600 hover:text-gray-400 transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
@@ -370,7 +370,7 @@ export default function Goals() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-2 px-2 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex-1 py-2 px-2 min-h-[36px] rounded-lg text-xs font-semibold transition-all ${
                 activeTab === tab.id
                   ? 'bg-gray-800 text-white'
                   : 'text-gray-500 hover:text-gray-400'

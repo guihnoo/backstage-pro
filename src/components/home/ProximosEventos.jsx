@@ -192,7 +192,7 @@ export default function ProximosEventos({ events, isLoading, onRefresh }) {
                       e.stopPropagation();
                       togglePayment(event, onRefresh);
                     }}
-                    className={`flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full border transition-all active:scale-95 ${
+                    className={`flex items-center gap-1 text-[10px] font-semibold px-2 py-1.5 rounded-full border transition-all active:scale-95 ${
                       isPaid
                         ? 'bg-emerald-600/15 border-emerald-500/30 text-emerald-400 hover:bg-emerald-600/25'
                         : 'bg-gray-800/50 border-gray-700/50 text-gray-500 hover:border-emerald-500/40 hover:text-emerald-400'

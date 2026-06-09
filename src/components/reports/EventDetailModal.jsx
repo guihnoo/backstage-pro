@@ -59,7 +59,7 @@ const WorkItem = ({ work, onEdit }) => {
 
       <div className="flex justify-between items-center mb-2 gap-2">
         <p className="text-sm font-bold text-white truncate flex-1">{formatFullDate(work.date)}</p>
-        <Button variant="ghost" size="sm" className="h-7 px-2 flex-shrink-0" onClick={() => onEdit(work)}>
+        <Button variant="ghost" size="sm" className="h-8 px-2 flex-shrink-0" onClick={() => onEdit(work)}>
           <Edit className="w-3 h-3 mr-1" /> Editar
         </Button>
       </div>

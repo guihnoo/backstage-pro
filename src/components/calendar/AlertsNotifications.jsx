@@ -75,7 +75,7 @@ export default function AlertsNotifications({ alerts, onAction, onDismiss, onClo
                         variant="ghost"
                         size="sm"
                         onClick={() => onDismiss(alert.id)}
-                        className="text-slate-400 hover:text-white h-6 w-6 p-0"
+                        className="text-slate-400 hover:text-white h-8 w-8 p-0"
                       >
                         <X className="w-3 h-3" />
                       </Button>
