@@ -1,6 +1,7 @@
 ﻿import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { getEventCacheAmount } from '@/lib/eventFinance';
+import { ExternalLink } from 'lucide-react';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
 import { useDailyWork } from '@/lib/useDailyWork';
@@ -139,23 +140,30 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type, onItemClick
 
     return (
       <div className="space-y-4">
-        {data.map((item, index) => (
-          <div
-            key={index}
-            onClick={() => item.event_ref && onItemClick?.(item.event_ref)}
-            className={`flex items-center justify-between p-3 bg-slate-800/50 rounded-lg transition-colors ${item.event_ref ? 'cursor-pointer hover:bg-slate-700/60' : ''}`}
-          >
-            <div>
-              <p className="font-medium text-white">{item.title}</p>
-              <p className="text-sm text-slate-400">{item.subtitle}</p>
+        {data.map((item, index) => {
+          const isClickable = !!(item.event_ref || item.client_id);
+          return (
+            <div
+              key={index}
+              onClick={() => {
+                if (item.event_ref) onItemClick?.(item.event_ref);
+                else if (item.client_id) { onClose?.(); hardNavigate(`/client-detail?id=${item.client_id}`); }
+              }}
+              className={`flex items-center justify-between p-3 bg-slate-800/50 rounded-lg transition-colors ${isClickable ? 'cursor-pointer hover:bg-slate-700/60' : ''}`}
+            >
+              <div>
+                <p className="font-medium text-white">{item.title}</p>
+                <p className="text-sm text-slate-400">{item.subtitle}</p>
+              </div>
+              <div className="text-right">
+                <p className={`font-bold ${item.value < 0 ? 'text-red-400' : 'text-green-400'}`}>{formatCurrency(item.value)}</p>
+                {item.date && <p className="text-xs text-slate-500">{item.date}</p>}
+                {item.event_ref && <p className="text-[10px] text-slate-600 mt-0.5">Toque para detalhes</p>}
+                {item.client_id && <p className="text-[10px] text-cyan-700 mt-0.5 flex items-center gap-0.5 justify-end"><ExternalLink className="w-2.5 h-2.5" /> Ver cliente</p>}
+              </div>
             </div>
-            <div className="text-right">
-              <p className="font-bold text-green-400">{formatCurrency(item.value)}</p>
-              {item.date && <p className="text-xs text-slate-500">{item.date}</p>}
-              {item.event_ref && <p className="text-[10px] text-slate-600 mt-0.5">Toque para detalhes</p>}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     );
   };
@@ -492,7 +500,8 @@ export default function ReportsPage() {
         setModalData(activeClients.map((client) => ({
           title: client.name,
           subtitle: `${current.events.filter((e) => e.client_id === client.id).length} eventos no período`,
-          value: current.paidEvents.filter((e) => e.client_id === client.id).reduce((sum, e) => sum + e.paid_amount, 0)
+          value: current.paidEvents.filter((e) => e.client_id === client.id).reduce((sum, e) => sum + e.paid_amount, 0),
+          client_id: client.id,
         })));
         break;
       }
