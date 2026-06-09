@@ -5,6 +5,7 @@ import { ptBR } from 'date-fns/locale';
 import { Clock, MapPin, User, CheckCircle2, Loader2, ChevronRight, Plus } from 'lucide-react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { usePaymentToggle } from '@/lib/usePaymentToggle';
+import { useStatusToggle } from '@/lib/useStatusToggle';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 
@@ -25,7 +26,8 @@ const statusConfig = {
 
 export default function ProximosEventos({ events, isLoading, onRefresh, onViewEvent }) {
   const proximosEventos = events.slice(0, 5);
-  const { togglePayment, toggling } = usePaymentToggle();
+  const { togglePayment, toggling: togglingPayment } = usePaymentToggle();
+  const { confirmEvent, toggling: togglingStatus } = useStatusToggle();
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const today = new Date();
 
@@ -119,7 +121,9 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
             ? format(parseISO(`2000-01-01T${event.start_time}`), 'HH:mm')
             : '';
           const isPaid = event.payment_status === 'paid';
-          const isToggling = toggling === event.id;
+          const isToggling = togglingPayment === event.id;
+          const isConfirming = togglingStatus === event.id;
+          const isPending = event.status === 'pending';
           const cacheValue = getEventCacheAmount(event);
 
           return (
@@ -185,6 +189,18 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
                     </p>
                   </div>
 
+                  {isPending && (
+                    <button
+                      type="button"
+                      disabled={isConfirming}
+                      onClick={(e) => { e.stopPropagation(); confirmEvent(event, onRefresh); }}
+                      className="flex items-center gap-1 text-[10px] font-semibold px-2 py-1.5 rounded-full border transition-all active:scale-95 bg-blue-800/30 border-blue-500/30 text-blue-300 hover:bg-blue-700/40"
+                      title="Confirmar evento"
+                    >
+                      {isConfirming ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+                      Confirmar
+                    </button>
+                  )}
                   <button
                     type="button"
                     disabled={isToggling}

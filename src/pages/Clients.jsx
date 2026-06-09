@@ -408,7 +408,7 @@ export default function ClientsPage() {
                       </div>
                     </div>
                     
-                    {!isMobile && (client.email || client.phone) && (
+                    {(client.email || client.phone) && (
                       <div className="flex items-center gap-1 mt-4 pt-4 border-t border-slate-800">
                         {client.email && (
                           <Button

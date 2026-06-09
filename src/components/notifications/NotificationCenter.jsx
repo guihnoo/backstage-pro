@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Bell, Clock, Calendar, DollarSign, Target, X, Zap } from 'lucide-react';
+import EventDetailModal from '@/components/calendar/EventDetailModal';
 import { useAuth } from '@/lib/authContext';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
@@ -62,6 +63,7 @@ function buildNotifications({ events, clients, profile, today, formatCurrency })
         title: `⚡ Hoje em cena: ${ev.title}`,
         message: `Você tem um show hoje com ${clientName}.`,
         action_url: '/calendar',
+        event_ref: ev,
         created_date: todayStr,
       });
     }
@@ -74,6 +76,7 @@ function buildNotifications({ events, clients, profile, today, formatCurrency })
         title: `📅 Show amanhã: ${ev.title}`,
         message: `Lembre de confirmar com ${clientName}.`,
         action_url: '/calendar',
+        event_ref: ev,
         created_date: todayStr,
       });
     }
@@ -95,6 +98,7 @@ function buildNotifications({ events, clients, profile, today, formatCurrency })
         title: `💰 Pagamento pendente: ${ev.title}`,
         message: `${clientName} · ${amountLabel} · ${daysLate} dia${daysLate !== 1 ? 's' : ''} em atraso.`,
         action_url: '/reports',
+        event_ref: ev,
         created_date: todayStr,
       });
     }
@@ -143,7 +147,7 @@ const TYPE_ICONS = {
   work_reminder: Clock,
 };
 
-function NotificationItem({ notification, onDismiss, onNavigate }) {
+function NotificationItem({ notification, onDismiss, onNavigate, onViewEvent }) {
   const Icon = TYPE_ICONS[notification.type] || Bell;
   const styleClass = PRIORITY_STYLES[notification.priority] || PRIORITY_STYLES.low;
 
@@ -163,7 +167,7 @@ function NotificationItem({ notification, onDismiss, onNavigate }) {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => { onNavigate(notification.action_url); onDismiss(notification.id); }}
+                  onClick={() => { onViewEvent ? onViewEvent(notification) : onNavigate(notification.action_url); onDismiss(notification.id); }}
                   className="h-8 px-2.5 text-xs bg-cyan-600 hover:bg-cyan-700 border-cyan-500 text-white"
                 >
                   Ver
@@ -192,6 +196,7 @@ export default function NotificationCenter() {
   const { formatCurrency } = useFinancialVisibility();
   const [dismissed, setDismissed] = useState(() => getDismissed());
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   // Limpa dismissed antigos (> 3 dias) a cada abertura
   useEffect(() => {
@@ -247,11 +252,21 @@ export default function NotificationCenter() {
     setIsOpen(false);
   }, []);
 
+  const handleViewEvent = useCallback((notification) => {
+    if (notification.event_ref) {
+      setIsOpen(false);
+      setSelectedEvent(notification.event_ref);
+    } else {
+      handleNavigate(notification.action_url);
+    }
+  }, [handleNavigate]);
+
   if (!user?.id) return null;
 
   const count = visible.length;
 
   return (
+    <>
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button
@@ -298,6 +313,7 @@ export default function NotificationCenter() {
                   notification={n}
                   onDismiss={handleDismiss}
                   onNavigate={handleNavigate}
+                  onViewEvent={handleViewEvent}
                 />
               ))
             ) : (
@@ -311,5 +327,17 @@ export default function NotificationCenter() {
         </ScrollArea>
       </DropdownMenuContent>
     </DropdownMenu>
+
+    {selectedEvent && (
+      <EventDetailModal
+        event={selectedEvent}
+        client={selectedEvent.clients || null}
+        onClose={() => setSelectedEvent(null)}
+        onEdit={() => { setSelectedEvent(null); hardNavigate('/calendar'); }}
+        onDelete={() => setSelectedEvent(null)}
+        onMarkPaid={() => setSelectedEvent(null)}
+      />
+    )}
+    </>
   );
 }
