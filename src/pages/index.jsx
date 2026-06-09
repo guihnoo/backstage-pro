@@ -11,6 +11,7 @@ import Onboarding from './Onboarding';
 import Home from './Home';
 import Goals from './Goals';
 import ProfileSimple from './ProfileSimple';
+import AIMentorPage from './AI_Mentor';
 import AppLayout from '@/components/layout/AppLayout';
 import CalendarPage from './Calendar';
 import ClientsPage from './Clients';
@@ -140,6 +141,7 @@ export default function PagesRouter() {
         />
         <Route path="goals" element={<Goals />} />
         <Route path="profile" element={<ProfileSimple />} />
+        <Route path="ai-mentor" element={<AIMentorPage />} />
       </Route>
 
       <Route path="*" element={<NotFoundRedirect />} />
