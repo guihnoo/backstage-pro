@@ -7,7 +7,6 @@ import { useExpenses } from '@/lib/useExpenses';
 import { useEvents } from '@/lib/useEvents';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
@@ -192,29 +191,37 @@ export default function ExpensesPage() {
                         <StatCard primaryHex={config.primaryHex} accentHex={config.accentHex} title="Reembolsado" value={isVisible ? formatCurrency(expenseStats.reimbursed) : '•••••'} onClick={() => setStatusFilter('reimbursed')} active={statusFilter === 'reimbursed'} />
                     </div>
 
-                    <NeonGlass primary={config.primaryHex} className="p-4">
-                    <div className="flex flex-col md:flex-row gap-4">
-                        <div className="relative flex-grow">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                            <Input
-                                placeholder="Buscar por título ou notas..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="bg-[#080a10]/80 border-[#23262f] pl-10 font-mono text-sm"
-                            />
-                        </div>
-                        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                            <SelectTrigger className="w-full md:w-[200px] bg-[#080a10]/80 border-[#23262f]">
-                                <SelectValue placeholder="Filtrar por categoria" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-slate-900 border-slate-700 text-white">
-                                <SelectItem value="all">Todas as Categorias</SelectItem>
-                                {expenseCategories.map(cat => (
-                                    <SelectItem key={cat} value={cat} className="capitalize">{cat}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                    <NeonGlass primary={config.primaryHex} className="p-4 space-y-3">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Input
+                            placeholder="Buscar por título ou notas..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="bg-[#080a10]/80 border-[#23262f] pl-10 font-mono text-sm"
+                        />
                     </div>
+                    {expenseCategories.length > 0 && (
+                        <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none">
+                            <button
+                                type="button"
+                                onClick={() => setCategoryFilter('all')}
+                                className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${categoryFilter === 'all' ? 'border-cyan-500/60 bg-cyan-500/15 text-cyan-300' : 'border-gray-700/50 bg-gray-800/40 text-gray-500 hover:text-gray-300'}`}
+                            >
+                                Todas
+                            </button>
+                            {expenseCategories.map(cat => (
+                                <button
+                                    key={cat}
+                                    type="button"
+                                    onClick={() => setCategoryFilter(cat === categoryFilter ? 'all' : cat)}
+                                    className={`flex-shrink-0 capitalize text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${categoryFilter === cat ? 'border-cyan-500/60 bg-cyan-500/15 text-cyan-300' : 'border-gray-700/50 bg-gray-800/40 text-gray-500 hover:text-gray-300'}`}
+                                >
+                                    {cat}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                     </NeonGlass>
 
                     <div className="space-y-3">

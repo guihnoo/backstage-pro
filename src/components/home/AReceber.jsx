@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Wallet, ChevronRight, AlertTriangle, CheckCircle2, X } from 'lucide-react';
+import { MessageCircle, Wallet, ChevronRight, ChevronDown, AlertTriangle, CheckCircle2, X, Calendar } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { buildChargeMessage, openWhatsAppCharge } from '@/lib/whatsapp';
@@ -23,6 +25,16 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
   const [marking, setMarking] = useState(null);
   const [confirming, setConfirming] = useState(null); // clientId awaiting confirm
   const [paidAmounts, setPaidAmounts] = useState({}); // clientId → typed amount string
+  const [expanded, setExpanded] = useState(new Set());
+
+  const toggleExpand = (clientId) => {
+    setExpanded(prev => {
+      const next = new Set(prev);
+      if (next.has(clientId)) next.delete(clientId);
+      else next.add(clientId);
+      return next;
+    });
+  };
 
   if (isLoading) return <ReceivableSkeleton />;
 
@@ -130,8 +142,15 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
             className="rounded-xl bg-gray-900/60 border border-gray-800/60 overflow-hidden transition-colors"
           >
             <div className="flex items-center gap-3 p-4">
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-white text-sm truncate">{row.clientName}</p>
+              <button
+                type="button"
+                onClick={() => toggleExpand(row.clientId)}
+                className="flex-1 min-w-0 text-left"
+              >
+                <div className="flex items-center gap-1.5">
+                  <p className="font-semibold text-white text-sm truncate">{row.clientName}</p>
+                  <ChevronDown className={`w-3.5 h-3.5 text-gray-500 flex-shrink-0 transition-transform duration-200 ${expanded.has(row.clientId) ? 'rotate-180' : ''}`} />
+                </div>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                   <span className="text-sm font-bold text-amber-300 tabular-nums">
                     {formatCurrency(row.totalAmount)}
@@ -146,7 +165,7 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
                     </span>
                   )}
                 </div>
-              </div>
+              </button>
               <div className="flex items-center gap-1.5 flex-shrink-0">
                 <motion.button
                   type="button"
@@ -173,6 +192,41 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
                 </motion.button>
               </div>
             </div>
+
+            {/* Painel de eventos individuais */}
+            <AnimatePresence>
+              {expanded.has(row.clientId) && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <div className="px-4 pb-3 pt-1 border-t border-gray-700/40 space-y-1.5">
+                    {row.events.map(ev => (
+                      <div key={ev.id} className="flex items-center justify-between gap-2 py-1">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-1 h-1 rounded-full bg-amber-500/60 flex-shrink-0" />
+                          <p className="text-xs text-gray-300 truncate">{ev.title}</p>
+                        </div>
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                          {ev.start_date && (
+                            <span className="text-[10px] text-gray-600 font-mono">
+                              {format(parseISO(ev.start_date), 'dd/MM', { locale: ptBR })}
+                            </span>
+                          )}
+                          <span className="text-xs font-bold text-amber-300 tabular-nums">{formatCurrency(ev.amount)}</span>
+                          {ev.daysOverdue > 0 && (
+                            <span className="text-[10px] text-red-400">{ev.daysOverdue}d</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Painel de confirmação com valor editável */}
             <AnimatePresence>

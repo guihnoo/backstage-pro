@@ -112,7 +112,7 @@ export default function ExpenseListItem({ expense, event, onEdit, onDelete, onMa
             <div className="flex items-center gap-4 text-sm text-slate-400 flex-wrap">
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5" />
-                <span>{format(new Date(expense.date), "dd/MM/yyyy", { locale: ptBR })}</span>
+                <span>{format(new Date(expense.date || expense.expense_date), "dd/MM/yyyy", { locale: ptBR })}</span>
               </div>
               {event && (
                 <div className="flex items-center gap-1.5">
@@ -127,6 +127,9 @@ export default function ExpenseListItem({ expense, event, onEdit, onDelete, onMa
                 </a>
               )}
             </div>
+            {expense.notes && (
+              <p className="text-xs text-slate-500 mt-1.5 italic line-clamp-2">{expense.notes}</p>
+            )}
           </div>
 
           <div className="flex items-center justify-between sm:justify-end gap-4 mt-2 sm:mt-0">
