@@ -12,8 +12,10 @@ import {
   AlertTriangle,
   Link as LinkIcon,
   Building,
-  RotateCcw
+  RotateCcw,
+  ExternalLink
 } from 'lucide-react';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
@@ -115,10 +117,16 @@ export default function ExpenseListItem({ expense, event, onEdit, onDelete, onMa
                 <span>{format(new Date(expense.date || expense.expense_date), "dd/MM/yyyy", { locale: ptBR })}</span>
               </div>
               {event && (
-                <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); hardNavigate('/calendar'); }}
+                  className="flex items-center gap-1.5 hover:text-cyan-300 transition-colors group"
+                  title="Ver evento na agenda"
+                >
                   <Building className="w-3.5 h-3.5" />
                   <span className="truncate">{event.title}</span>
-                </div>
+                  <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                </button>
               )}
               {expense.receipt_url && (
                 <a href={expense.receipt_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-cyan-400 hover:text-cyan-300">

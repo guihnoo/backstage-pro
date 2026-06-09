@@ -7,7 +7,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Bell, Clock, Calendar, DollarSign, Target, X, Zap } from 'lucide-react';
+import { Bell, Clock, Calendar, DollarSign, Target, X, Zap, MessageCircle } from 'lucide-react';
 import EventDetailModal from '@/components/calendar/EventDetailModal';
 import { useAuth } from '@/lib/authContext';
 import { useEvents } from '@/lib/useEvents';
@@ -15,6 +15,7 @@ import { useClients } from '@/lib/useClients';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { hardNavigate } from '@/lib/hardNavigate';
+import { openWhatsAppCharge, buildChargeMessage } from '@/lib/whatsapp';
 import {
   differenceInDays,
   parseISO,
@@ -100,6 +101,9 @@ function buildNotifications({ events, clients, profile, today, formatCurrency })
         action_url: '/reports',
         event_ref: ev,
         created_date: todayStr,
+        phone: clientMap.get(ev.client_id)?.phone || null,
+        clientName,
+        amount,
       });
     }
   }
@@ -151,6 +155,16 @@ function NotificationItem({ notification, onDismiss, onNavigate, onViewEvent }) 
   const Icon = TYPE_ICONS[notification.type] || Bell;
   const styleClass = PRIORITY_STYLES[notification.priority] || PRIORITY_STYLES.low;
 
+  const handleWhatsApp = (e) => {
+    e.stopPropagation();
+    const msg = buildChargeMessage({
+      clientName: notification.clientName,
+      events: [{ title: notification.event_ref?.title || '', start_date: notification.event_ref?.start_date, amount: notification.amount }],
+      totalAmount: notification.amount,
+    });
+    openWhatsAppCharge(notification.phone, msg);
+  };
+
   return (
     <div className={`p-3 border rounded-lg transition-all duration-200 hover:brightness-125 ${styleClass}`}>
       <div className="flex items-start gap-3">
@@ -163,6 +177,17 @@ function NotificationItem({ notification, onDismiss, onNavigate, onViewEvent }) 
               {format(parseISO(notification.created_date), "dd/MM", { locale: ptBR })}
             </span>
             <div className="flex items-center gap-1">
+              {notification.type === 'payment_reminder' && notification.phone && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleWhatsApp}
+                  className="h-8 px-2 text-xs bg-green-900/30 hover:bg-green-900/50 border-green-600/50 text-green-400"
+                  title="Cobrar via WhatsApp"
+                >
+                  <MessageCircle className="w-3 h-3" />
+                </Button>
+              )}
               {notification.action_url && (
                 <Button
                   size="sm"
