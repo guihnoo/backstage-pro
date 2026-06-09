@@ -627,6 +627,7 @@ export default function Goals() {
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-white truncate">{ev.title}</p>
                             <p className="text-[10px] font-mono text-gray-500">
+                              {ev.clients?.name && <span className="text-gray-600">{ev.clients.name} · </span>}
                               {format(parseISO(ev.start_date), "EEE d/MM", { locale: ptBR })}
                             </p>
                           </div>
