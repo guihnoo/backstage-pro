@@ -889,7 +889,7 @@ export default function CalendarPage() {
   }
 
   return (
-    <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-screen pb-24">
+    <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-full pb-24">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3 sm:space-y-4 md:space-y-6 p-3 sm:p-4 md:p-6">
         {/* Header do Calendário */}
         <div className="flex flex-col gap-3">

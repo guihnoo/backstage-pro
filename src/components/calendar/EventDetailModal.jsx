@@ -270,7 +270,7 @@ export default function EventDetailModal({
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-3xl h-[95dvh] bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200 flex flex-col p-0 overflow-hidden">
         {/* Header */}
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-800">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-800 flex-shrink-0">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               <div className="mb-3">
@@ -592,7 +592,7 @@ export default function EventDetailModal({
         </ScrollArea>
 
         {/* Footer com Ações */}
-        <DialogFooter className="px-6 py-4 border-t border-slate-800 flex-row gap-2 flex-wrap">
+        <DialogFooter className="px-6 py-4 border-t border-slate-800 flex-row gap-2 flex-wrap flex-shrink-0">
           <Button
             onClick={onAddWork}
             className="flex-1 min-w-[120px] bg-cyan-600 hover:bg-cyan-700"

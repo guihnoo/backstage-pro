@@ -51,7 +51,7 @@
 |------|--------|--------|-------|
 | Página (`Calendar.jsx`) | [x] | 🟢 | `NeonPageShell pb-24` ✅ |
 | `EventForm` | [x] | 🟢 | `ScrollArea fill` ✅ |
-| `EventDetailModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
+| `EventDetailModal` | [x] | 🟢 | `ScrollArea fill` + `flex-shrink-0` header/footer ✅ |
 | `DailyWorkModal` (LOCKED) | [x] | 🟢 | `bp-modal-scroll` ✅ |
 | `DateInfoModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
 | `RecurringEventActionModal` | [x] | 🟢 | `bp-modal-scroll` ✅ |
@@ -72,7 +72,7 @@
 |------|--------|--------|-------|
 | Página lista + filtros | [x] | 🟢 | `NeonPageShell min-h-full pb-24` ✅ |
 | `ClientForm` (LOCKED) | [x] | 🟢 | `ScrollArea fill` ✅; Razão Social adicionado sessão 10 |
-| `ClientDetailModal` | [x] | 🟢 | `bp-modal-scroll` ✅ |
+| `ClientDetailModal` | [x] | 🟢 | `bp-modal-scroll` + `flex-shrink-0` header/footer ✅ |
 | `ClientInsightsModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
 | `ClientActionSheet` | [x] | 🟢 | `useAppScrollLock` + `bp-modal-scroll` ✅ |
 | `CompanySearchInput` (3 abas) | [x] | 🟢 | Pesquisar/CNPJ/NF-e — sessão 10 |
@@ -85,7 +85,11 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página | ⬜ | ⬜ | Validar após lazy fix + ClientDetailModal scroll ✅ |
+| Página | [x] | 🟢 | `NeonPageShell min-h-full pb-24` ✅; scroll via `main[data-app-scroll]` |
+| `ReportEventList` | [x] | 🟢 | `ScrollArea h-[400px]` — card inline, correto ✅ |
+| `ClientForm` (LOCKED) | [x] | 🟢 | `ScrollArea fill` ✅ |
+| `EventForm` | [x] | 🟢 | `ScrollArea fill` ✅ |
+| `EventDetailModal` (reports) | [x] | 🟢 | `ScrollArea fill` + `flex-shrink-0` ✅ |
 
 ---
 
@@ -110,7 +114,7 @@
 | `DrilldownModal` | [x] | 🟢 | `bp-modal-scroll` ✅ |
 | `KPIDetailModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
 | `PaymentConfirmModal` | [x] | 🟢 | `bp-modal-scroll` ✅ |
-| `EventListModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
+| `EventListModal` | [x] | 🟢 | `ScrollArea fill` + `flex-shrink-0` header ✅ |
 | `DashboardCustomizer` | [x] | 🟢 | loading state pequeno + main `bp-modal-scroll` ✅ |
 | `BrazilVisitedMap` | [x] | 🟢 | Lazy subcomponent OK |
 | `ExportManager` PDF/CSV | [x] | 🟢 | Implementado |
@@ -171,12 +175,14 @@
 | Scroll fundo com modal aberto | ✅ Corrigido | `useAppScrollLock` + CSS sessões 2–6 |
 | `z-50` conflitando nav/dialogs/sheets | ✅ Corrigido | Hierarquia z-index oficial |
 | `min-h-0` ausente em flex main | ✅ Corrigido | AppLayout.jsx |
+| `flex-shrink-0` ausente em DialogHeader/Footer | ✅ Corrigido | SCROLL-FLEX-SHRINK 2026-06-09 |
+| `min-h-screen` em páginas dentro de `data-app-scroll` | ✅ Corrigido | sessão 11 — Calendar, Goals, Home, Profile → `min-h-full` |
 
 ---
 
 ## Próxima sprint de auditoria (ordem sugerida)
 
-1. [ ] **`/client-detail`** — página não auditada ainda
+1. [x] **`/client-detail`** — auditada sessão 11 ✅
 2. [ ] **`/ai-mentor`** — LOCKED, pedir desbloqueio ao usuário se necessário
 3. [ ] **Rotas públicas** — `/login`, `/signup`, `/onboarding` (mobile keyboard UX)
 4. [ ] **`StatDetailModal`** — decidir: integrar à Home ou remover

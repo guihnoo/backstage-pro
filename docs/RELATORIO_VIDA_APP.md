@@ -3,9 +3,10 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-09 (sessão 10)  
+**Última atualização:** 2026-06-09 (sessão 11)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** `af786fe` — docs sessão 10 (+ `d077cca`, `d52be4e`, `91778c2`)  
+**Último commit:** `af786fe` — docs sessão 10 (em prod)  
+**Pendente commit/deploy:** fixes scroll sessão 11 (flex-shrink-0 + overflow responsivo + E2E regression)  
 **Último deploy:** 2026-06-09 — Vercel prod `af786fe` · Edge `search-company` redeployada  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
@@ -66,6 +67,35 @@ Ordem oficial após fix de scroll (2026-06-05):
 ---
 
 ## Changelog
+
+### 2026-06-09 (sessão 11) — Scroll robustez: flex-shrink-0 + overflow responsivo + E2E regression
+
+**`flex-shrink-0` em DialogHeader/DialogFooter (Claude Code):**
+- `calendar/EventDetailModal.jsx` — header + footer agora não encolhem em telas pequenas
+- `clients/ClientDetailModal.jsx` — idem
+- `reports/EventListModal.jsx` — header corrigido
+- Grep pós-fix: zero DialogHeader/DialogFooter sem `flex-shrink-0` em todo o projeto ✅
+
+**Overflow responsivo + CSS (Claude Code):**
+- `min-h-screen` → `min-h-full` em Home, Calendar, Goals, Profile
+- `overflow-x-clip` em `NeonPageShell` + `[data-app-scroll]` no `index.css`
+- Profile: grid categorias `grid-cols-1 min-[360px]:grid-cols-2` + `min-w-0` nos botões
+
+**Auditoria `/client-detail` (Claude Code):**
+- `NeonPageShell min-h-full pb-24` ✅ — scroll correto via `main[data-app-scroll]`
+- `ReportEventList` com `ScrollArea h-[400px]` — inline card, correto ✅
+- Todos os modais já corretos ✅
+
+**E2E regression (Cursor):**
+- Novo: `e2e/regression/overflow-responsive.spec.js` — 24 testes (7 rotas × 3 viewports + scroll vertical)
+- Novo: `e2e/helpers/scrollAudit.js` — utilitários `auditPageOverflow` + `scrollMainContainer`
+- `fakeAuth.js` aprimorado: mock Supabase profiles + addInitScript
+- **Resultado:** 41/41 ✅ (1 flaky isolado de sequenciamento — pre-existente)
+
+**Build:** ✅  
+**Deploy:** pendente instrução do usuário
+
+---
 
 ### 2026-06-09 (sessão 10) — Auditoria geral + features cadastro empresa + PDF fechamento + Goals/Expenses UX
 
@@ -255,9 +285,9 @@ Ordem oficial após fix de scroll (2026-06-05):
 
 ### Alta (próxima sprint)
 1. ~~Auditoria página a página~~ — feito sessão 10 (todos 🟢)
-2. ~~Validar scroll em todas as telas~~ — feito sessão 10
+2. ~~Validar scroll em todas as telas~~ — feito sessões 10–11
 3. OAuth Google — checklist E2E manual (validar com sua conta real)
-4. ~~Deploy das features de hoje~~ — feito (`af786fe`, prod 2026-06-09)
+4. **Deploy sessão 11** — pendente instrução do usuário
 5. Testar `CompanySearchInput` aba CNPJ com `42.993.331/0001-10` (Amarrok)
 
 ### Média

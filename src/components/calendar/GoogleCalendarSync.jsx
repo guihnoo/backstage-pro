@@ -203,7 +203,7 @@ export default function GoogleCalendarSync() {
 
   if (isLoading) {
     return (
-      <Card className="bg-slate-800/50 border-slate-700">
+      <Card className="bg-slate-800/50 border-slate-700 min-w-0 overflow-hidden">
         <CardContent className="p-6 text-center">
           <Loader2 className="w-8 h-8 animate-spin text-cyan-400 mx-auto mb-4" />
           <p className="text-slate-400">Carregando configurações...</p>
@@ -218,36 +218,36 @@ export default function GoogleCalendarSync() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-6"
+      className="space-y-6 min-w-0"
     >
-      <Card className="bg-slate-800/50 border-slate-700">
-        <CardHeader>
-          <CardTitle className="text-white flex items-center gap-3">
-            <Calendar className="w-6 h-6 text-blue-400" />
-            Sincronização com Google Calendar
+      <Card className="bg-slate-800/50 border-slate-700 min-w-0 overflow-hidden">
+        <CardHeader className="min-w-0">
+          <CardTitle className="text-white flex flex-wrap items-center gap-2 text-base sm:text-lg">
+            <Calendar className="w-6 h-6 text-blue-400 shrink-0" />
+            <span className="min-w-0">Sincronização com Google Calendar</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 min-w-0">
           {/* Status da Conexão */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between min-w-0">
+            <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1">
+              <div className={`w-3 h-3 rounded-full shrink-0 ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
               <span className="text-white font-medium">
                 {isConnected ? 'Conectado' : 'Desconectado'}
               </span>
               {isConnected && settings?.google_account_email && (
-                <Badge variant="outline" className="bg-blue-500/20 text-blue-300 border-blue-400/50">
+                <Badge variant="outline" className="bg-blue-500/20 text-blue-300 border-blue-400/50 max-w-full truncate">
                   {settings.google_account_email}
                 </Badge>
               )}
             </div>
             
             {isConnected ? (
-              <Button variant="destructive" onClick={handleDisconnect} size="sm">
+              <Button variant="destructive" onClick={handleDisconnect} size="sm" className="w-full sm:w-auto shrink-0">
                 Desconectar
               </Button>
             ) : (
-              <Button onClick={handleConnect} className="bg-blue-600 hover:bg-blue-700">
+              <Button onClick={handleConnect} className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto shrink-0">
                 <ExternalLink className="w-4 h-4 mr-2" />
                 Conectar ao Google
               </Button>
@@ -258,9 +258,9 @@ export default function GoogleCalendarSync() {
           {isConnected && (
             <div className="space-y-4">
               <div className="bg-slate-900/50 rounded-lg p-4 space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-400">Última Sincronização:</span>
-                  <span className="text-white">
+                <div className="flex flex-col gap-1 sm:flex-row sm:justify-between text-sm min-w-0">
+                  <span className="text-slate-400 shrink-0">Última Sincronização:</span>
+                  <span className="text-white break-words text-right sm:text-left">
                     {settings.google_last_sync_at ?
                       new Date(settings.google_last_sync_at).toLocaleString('pt-BR') :
                       'Nunca'
@@ -282,9 +282,9 @@ export default function GoogleCalendarSync() {
                   </h4>
                   <div className="space-y-2 max-h-32 overflow-y-auto">
                     {calendars.map((calendar, index) => (
-                      <div key={index} className="flex items-center justify-between bg-slate-900/30 rounded p-2">
-                        <span className="text-slate-300 text-sm">{calendar.summary}</span>
-                        <Badge variant="outline" className={calendar.primary ? 'border-blue-400 text-blue-300' : 'border-slate-600 text-slate-400'}>
+                      <div key={index} className="flex items-center justify-between gap-2 bg-slate-900/30 rounded p-2 min-w-0">
+                        <span className="text-slate-300 text-sm truncate min-w-0 flex-1">{calendar.summary}</span>
+                        <Badge variant="outline" className={`shrink-0 ${calendar.primary ? 'border-blue-400 text-blue-300' : 'border-slate-600 text-slate-400'}`}>
                           {calendar.primary ? 'Principal' : 'Secundário'}
                         </Badge>
                       </div>

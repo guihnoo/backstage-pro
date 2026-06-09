@@ -298,7 +298,7 @@ export default function ClientDetailModal({
       <Dialog open={true} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-4xl h-[95dvh] bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200 flex flex-col p-0 overflow-hidden">
           <motion.div variants={modalAnimation} initial="hidden" animate="visible" exit="hidden" className="flex flex-col h-full min-h-0">
-            <DialogHeader className="pt-4 px-6 border-b border-slate-800 pb-4">
+            <DialogHeader className="pt-4 px-6 border-b border-slate-800 pb-4 flex-shrink-0">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-4 min-w-0">
                   <Avatar className="h-16 w-16 border-2 border-slate-700">
@@ -604,7 +604,7 @@ export default function ClientDetailModal({
               </div>
             </Tabs>
 
-            <DialogFooter className="p-6 pt-4 border-t border-slate-800 bg-slate-900/50 flex flex-col sm:flex-row sm:justify-between gap-3">
+            <DialogFooter className="p-6 pt-4 border-t border-slate-800 bg-slate-900/50 flex flex-col sm:flex-row sm:justify-between gap-3 flex-shrink-0">
               <Button
                 variant="destructive"
                 onClick={() => onDelete(client.id)}

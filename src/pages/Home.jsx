@@ -69,7 +69,7 @@ export default function Home() {
   );
 
   return (
-    <div className="min-h-screen bg-[#050609] text-white">
+    <div className="min-h-full overflow-x-clip bg-[#050609] text-white">
       <motion.header initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="relative overflow-hidden" style={{ background: isOnStage ? `linear-gradient(165deg, ${config.primaryHex}33, ${config.accentHex}14 45%, transparent 80%)` : 'linear-gradient(180deg, #11131c 0%, #050609 100%)' }}>
         <NeonAtmosphere primary={config.primaryHex} accent={config.accentHex} stage={isOnStage} />
         {isOnStage && <LightingBeams primary={config.primaryHex} accent={config.accentHex} />}

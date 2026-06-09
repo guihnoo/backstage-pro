@@ -206,6 +206,11 @@ a, button, [role="button"], input, label, select, textarea {
   100% { width: 8%; margin-left: 92%; }
 }
 
+/* Impede overflow horizontal no container principal */
+[data-app-scroll] {
+  overflow-x: clip;
+}
+
 /* Trava scroll da página quando modal/sheet está aberto (container = main, não body) */
 body[data-scroll-lock] [data-app-scroll],
 body:has([role="dialog"][data-state="open"]) [data-app-scroll],

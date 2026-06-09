@@ -351,7 +351,7 @@ export default function Goals() {
         />
       )}
     </AnimatePresence>
-    <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-screen pb-24">
+    <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-full pb-24">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -851,10 +851,10 @@ export default function Goals() {
               }}
             >
               <div className="bp-modal-scroll flex-1 min-h-0 -mx-1 px-1">
-              <div className="flex items-start justify-between mb-5">
-                <div className="flex items-center gap-4">
+              <div className="flex items-start justify-between gap-3 mb-5 min-w-0">
+                <div className="flex items-center gap-4 min-w-0 flex-1">
                   <div
-                    className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                    className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0"
                     style={{
                       background: selectedBadge.unlocked ? `${selectedBadge.color}22` : 'transparent',
                       border: `1px solid ${selectedBadge.unlocked ? selectedBadge.color + '44' : '#1f2937'}`,
@@ -863,12 +863,12 @@ export default function Goals() {
                   >
                     <Icon className="w-7 h-7" style={{ color: selectedBadge.unlocked ? selectedBadge.color : '#4b5563' }} />
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-white">{selectedBadge.title}</h3>
-                    <p className="text-sm text-gray-400">{selectedBadge.description}</p>
+                  <div className="min-w-0">
+                    <h3 className="text-lg font-bold text-white break-words">{selectedBadge.title}</h3>
+                    <p className="text-sm text-gray-400 break-words">{selectedBadge.description}</p>
                   </div>
                 </div>
-                <button onClick={() => setSelectedBadge(null)} className="text-gray-600 hover:text-gray-400 transition-colors">
+                <button onClick={() => setSelectedBadge(null)} className="text-gray-600 hover:text-gray-400 transition-colors shrink-0">
                   <X className="w-5 h-5" />
                 </button>
               </div>

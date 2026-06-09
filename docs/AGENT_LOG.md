@@ -6,6 +6,38 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-09
 
+### RESPONSIVE-FIXES-R2 — GoogleCalendarSync + Profile + Goals modal ✅
+- **Agente**: Cursor (Composer)
+- **GoogleCalendarSync**: status em coluna no mobile, `min-w-0`, email truncate, botões `w-full sm:w-auto`
+- **ProfileSimple**: toggle visibilidade com `min-w-0 flex-1`, avatar com clip
+- **Goals**: sheet de badge com `break-words` / `min-w-0`
+- **Testes pós-fix**: regression 25/25 ✅, smoke 17/17 ✅ — profile @ 320px sem overflow horizontal
+
+### CLIENT-DETAIL-AUDIT — Auditoria /client-detail ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Resultado**: página 🟢 PASS — `NeonPageShell min-h-full pb-24` ✅ · `ReportEventList` (`ScrollArea h-[400px]`) ✅ · modais: ClientForm LOCKED ✅, EventForm ✅, EventDetailModal reports ✅
+- **AUDITORIA_PAGINAS**: `/client-detail` marcada ✅
+
+### CSS-RESPONSIVE-FIX — min-h-full, overflow-x-clip, Profile grid ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Problema**: páginas com `min-h-screen` dentro de `[data-app-scroll]` conflitavam com 100vh; sem contenção de overflow-x
+- **Arquivos corrigidos**:
+  - `src/pages/Calendar.jsx`, `Goals.jsx`, `Home.jsx`, `ProfileSimple.jsx` — `min-h-screen` → `min-h-full`
+  - `src/pages/ProfileSimple.jsx` — grid categorias `grid-cols-1 min-[360px]:grid-cols-2` + `min-w-0` nos botões
+  - `src/components/design/NeonPageShell.jsx` — `overflow-x-clip` adicionado
+  - `src/index.css` — `[data-app-scroll] { overflow-x: clip }`
+- **Build**: ✅
+
+### SCROLL-FLEX-SHRINK — flex-shrink-0 em DialogHeader/DialogFooter ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Problema**: `DialogHeader` e `DialogFooter` sem `flex-shrink-0` em containers `flex flex-col` — poderiam ser comprimidos em telas pequenas, ocultando conteúdo
+- **Arquivos corrigidos**:
+  - `src/components/calendar/EventDetailModal.jsx` — DialogHeader (l.273) + DialogFooter (l.595)
+  - `src/components/clients/ClientDetailModal.jsx` — DialogHeader (l.301) + DialogFooter (l.607)
+  - `src/components/reports/EventListModal.jsx` — DialogHeader (l.20)
+- **Auditoria pós-fix**: grep confirma zero DialogHeader/DialogFooter sem `flex-shrink-0` em todo o projeto
+- **Build**: ✅ 37.76s — sem erros
+
 ### E2E-ROUTES — Smoke navigation expenses/goals/clients/reports ✅
 - **Agente**: Cursor (Composer)
 - **Arquivo**: `e2e/smoke/app-routes-navigation.spec.js` (4 testes novos)

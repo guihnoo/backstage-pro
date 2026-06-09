@@ -113,7 +113,7 @@ export default function ProfileSimple() {
   };
 
   return (
-    <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-screen pb-28">
+    <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-full pb-28">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -133,7 +133,7 @@ export default function ProfileSimple() {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.1 }}
-          className="relative inline-block mb-4"
+          className="relative inline-block mb-4 max-w-full overflow-hidden"
         >
           <input
             ref={photoInputRef}
@@ -196,7 +196,7 @@ export default function ProfileSimple() {
         <p className="text-xs text-gray-500 mt-0.5">{user?.email}</p>
       </motion.div>
 
-      <div className="px-4 max-w-2xl mx-auto space-y-4">
+      <div className="px-4 max-w-2xl mx-auto space-y-4 w-full min-w-0">
 
         {/* Dados pessoais */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
@@ -267,13 +267,13 @@ export default function ProfileSimple() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
         <NeonGlass primary={config.primaryHex} className="p-5">
           <h2 className="text-sm font-bold text-gray-300 uppercase tracking-wider mb-4 font-mono">Área de Atuação</h2>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-2">
             {Object.values(CATEGORIES).map(cat => (
               <button
                 key={cat.id}
                 type="button"
                 onClick={() => setForm(f => ({ ...f, category: cat.id }))}
-                className="flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all"
+                className="flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all min-w-0"
                 style={form.category === cat.id ? {
                   background: `${cat.primaryHex}20`,
                   borderColor: `${cat.primaryHex}60`,
@@ -377,14 +377,14 @@ export default function ProfileSimple() {
           <h2 className="text-sm font-bold text-gray-300 uppercase tracking-wider mb-4 font-mono">Configurações</h2>
           <button
             onClick={toggleVisibility}
-            className="w-full flex items-center justify-between py-3 px-1 rounded-xl transition-all hover:bg-gray-800/30"
+            className="w-full flex items-center justify-between gap-3 py-3 px-1 rounded-xl transition-all hover:bg-gray-800/30 min-w-0"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
               {isVisible
-                ? <Eye className="w-4 h-4 text-cyan-400" />
-                : <EyeOff className="w-4 h-4 text-gray-500" />
+                ? <Eye className="w-4 h-4 text-cyan-400 shrink-0" />
+                : <EyeOff className="w-4 h-4 text-gray-500 shrink-0" />
               }
-              <div className="text-left">
+              <div className="text-left min-w-0">
                 <p className="text-sm font-semibold text-white">Visibilidade Financeira</p>
                 <p className="text-xs text-gray-500">
                   {isVisible ? 'Valores visíveis em todo o app' : 'Valores ocultos — modo privado'}
