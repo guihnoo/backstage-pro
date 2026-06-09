@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { AlertTriangle, CheckCircle2, TrendingUp, Calendar, Info } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, TrendingUp, Calendar, Info, ExternalLink } from 'lucide-react';
 import { MEI_LIMIT, MEI_DAS } from '@/lib/useBackstageData';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { hardNavigate } from '@/lib/hardNavigate';
@@ -45,7 +45,7 @@ function DasCard({ dasType, color }) {
         <span className="text-sm font-normal text-slate-400">/mês</span>
       </p>
       <p className="text-xs text-slate-400 mt-1">{das.label}</p>
-      <div className="mt-3 pt-3 border-t border-slate-700/50">
+      <div className="mt-3 pt-3 border-t border-slate-700/50 space-y-2">
         {daysUntilDue <= 0 ? (
           <p className="text-xs text-red-400 font-semibold flex items-center gap-1">
             <AlertTriangle className="w-3 h-3" /> DAS do mês venceu — regularize agora
@@ -56,6 +56,18 @@ function DasCard({ dasType, color }) {
           </p>
         ) : (
           <p className="text-xs text-slate-500">Próximo vencimento em {daysUntilDue} dias</p>
+        )}
+        {daysUntilDue <= 7 && (
+          <a
+            href="https://www8.receita.fazenda.gov.br/SimplesNacional/Servicos/Grupo.aspx?grp=17"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full py-2 rounded-lg text-xs font-bold border transition-colors"
+            style={{ borderColor: `${color}50`, color, background: `${color}15` }}
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            Pagar DAS no Portal MEI
+          </a>
         )}
       </div>
     </div>

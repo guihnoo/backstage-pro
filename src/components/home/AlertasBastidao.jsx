@@ -45,7 +45,7 @@ export default function AlertasBastidao({ alerts, isLoading, primaryHex = '#A64A
         >
           <button
             type="button"
-            onClick={() => hardNavigate(alert.clientId ? `/clients?id=${alert.clientId}` : '/clients')}
+            onClick={() => hardNavigate(alert.clientId ? `/client-detail?id=${alert.clientId}` : '/clients')}
             className="flex items-start gap-3 flex-1 text-left"
           >
             <span>🚨</span>
@@ -78,7 +78,7 @@ export default function AlertasBastidao({ alerts, isLoading, primaryHex = '#A64A
         >
           <button
             type="button"
-            onClick={() => hardNavigate(alert.clientId ? `/clients?id=${alert.clientId}` : '/calendar')}
+            onClick={() => hardNavigate(alert.clientId ? `/client-detail?id=${alert.clientId}` : '/calendar')}
             className="flex items-start gap-3 flex-1 text-left"
           >
             <span>⏳</span>
