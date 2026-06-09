@@ -109,7 +109,7 @@ export default function ClientInsightsModal({ client, isOpen, onClose }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl h-[90vh] max-h-[90vh] bg-slate-900/95 backdrop-blur-lg border-slate-700 text-white p-0 flex flex-col">
+      <DialogContent className="sm:max-w-2xl h-[90vh] max-h-[90vh] bg-slate-900/95 backdrop-blur-lg border-slate-700 text-white p-0 flex flex-col overflow-hidden">
         <DialogHeader className="p-4 sm:p-6 border-b border-slate-800 flex-shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-lg sm:text-xl font-bold text-white">
