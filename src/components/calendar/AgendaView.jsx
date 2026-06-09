@@ -21,6 +21,7 @@ import {
   CheckCircle,
   Receipt
 } from 'lucide-react';
+import EventLocationChip from '@/components/events/EventLocationChip';
 
 import {
   normalizeDateString,
@@ -212,8 +213,9 @@ export default function AgendaView({
                                 <h3 className="font-bold text-white text-base sm:text-lg mb-1 truncate">
                                   {getClientName(event.client_id)}
                                 </h3>
-                                <p className="text-slate-300 mb-3 text-sm break-words">{event.title || 'Evento sem título'}</p>
-                                
+                                <p className="text-slate-300 mb-2 text-sm break-words">{event.title || 'Evento sem título'}</p>
+                                <EventLocationChip event={event} className="mb-3 block" />
+
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-2 text-sm">
                                   <div className="flex items-center gap-2 text-slate-400">
                                     <Calendar className="w-4 h-4" />

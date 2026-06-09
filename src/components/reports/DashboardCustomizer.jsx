@@ -91,8 +91,8 @@ export default function DashboardCustomizer({ isOpen, onClose, onSettingsChange 
   if (loading) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-2xl bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200">
-          <div className="flex items-center justify-center py-20">
+        <DialogContent className="sm:max-w-2xl max-h-[90dvh] bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200 flex flex-col overflow-hidden">
+          <div className="flex items-center justify-center py-20 flex-1 min-h-[12rem]">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400"></div>
           </div>
         </DialogContent>

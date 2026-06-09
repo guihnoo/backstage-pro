@@ -7,8 +7,8 @@ export default function RecurringEventActionModal({ isOpen, onClose, onConfirm }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-slate-900 border-slate-700 text-white">
-        <DialogHeader>
+      <DialogContent className="bg-slate-900 border-slate-700 text-white max-h-[90dvh] flex flex-col overflow-hidden p-0 sm:max-w-md">
+        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <RefreshCw className="w-5 h-5 text-cyan-400" />
             Ação em Evento Recorrente
@@ -17,7 +17,7 @@ export default function RecurringEventActionModal({ isOpen, onClose, onConfirm }
             Esta ação afetará um evento que faz parte de uma série. Como você deseja proceder?
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
+        <div className="bp-modal-scroll px-6 space-y-4">
           <Button
             variant="outline"
             className="w-full justify-start text-base py-6"
@@ -35,7 +35,7 @@ export default function RecurringEventActionModal({ isOpen, onClose, onConfirm }
             Alterar este e os futuros eventos
           </Button>
         </div>
-        <DialogFooter>
+        <DialogFooter className="px-6 py-4 border-t border-slate-700 flex-shrink-0">
           <Button variant="ghost" onClick={onClose}>Cancelar</Button>
         </DialogFooter>
       </DialogContent>

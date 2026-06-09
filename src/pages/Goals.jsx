@@ -765,12 +765,13 @@ export default function Goals() {
               exit={{ y: 80, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 28 }}
               onClick={e => e.stopPropagation()}
-              className="w-full max-w-lg rounded-t-2xl border p-6 pb-8"
+              className="w-full max-w-lg max-h-[85dvh] flex flex-col rounded-t-2xl border p-6 pb-8 overflow-hidden"
               style={{
                 background: `radial-gradient(circle at 50% 0%, ${selectedBadge.color}14, #0d0f1a 60%)`,
                 borderColor: `${selectedBadge.color}30`,
               }}
             >
+              <div className="bp-modal-scroll flex-1 min-h-0 -mx-1 px-1">
               <div className="flex items-start justify-between mb-5">
                 <div className="flex items-center gap-4">
                   <div
@@ -821,6 +822,7 @@ export default function Goals() {
               ) : (
                 <p className="text-sm text-gray-600 italic">🔒 Complete o desafio para desbloquear esta conquista.</p>
               )}
+              </div>
             </motion.div>
           </motion.div>
         );

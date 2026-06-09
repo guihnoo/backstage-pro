@@ -18,6 +18,7 @@ import {
 import { format, isSameDay, addDays, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
+import EventLocationChip from '@/components/events/EventLocationChip';
 
 // Helper to check if a day is within an event's range
 const isDayInEvent = (day, event) => {
@@ -123,9 +124,10 @@ const DailyView = ({ currentDate, onDateChange, events, dailyWork, clients, onEd
                       <Building2 className="w-6 h-6 text-cyan-300" />
                     </div>
                   )}
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className="font-bold text-lg text-cyan-300">{client.name}</p>
                     <p className="text-white font-medium">{event.title}</p>
+                    <EventLocationChip event={event} className="mt-2" />
                   </div>
                 </CardHeader>
                 <CardContent className="p-4 pt-0 space-y-4">

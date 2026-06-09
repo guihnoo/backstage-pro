@@ -3,10 +3,10 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-05 (sessão 5)  
+**Última atualização:** 2026-06-05 (sessão 6)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** (pendente) — local evento GPS + scroll modais  
-**Commits da sessão:** `e1424fa` → (local GPS)  
+**Último commit:** (pendente) — chips de local + scroll batch 4  
+**Commits da sessão:** `fe14d11` → (sessão 6)  
 **Último deploy:** 2026-06-05 — Vercel prod (`backstage-pro-beta.vercel.app`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
@@ -57,6 +57,15 @@ Ordem oficial após fix de scroll (2026-06-05):
 ---
 
 ## Changelog
+
+### 2026-06-05 (sessão 6) — UX local visível + scroll batch 4
+
+- `EventLocationChip` em `AgendaView` e `DailyView` (local ou “não registrado”)
+- Scroll: `RecurringEventActionModal`, loading do `DashboardCustomizer`, sheet de badge em `Goals`
+- `LoadingSpinner` → `z-[100]` (acima da nav)
+- `.gitignore`: `.env.vercel*`
+
+---
 
 ### 2026-06-05 (sessão 5) — Local do evento + scroll modais
 
