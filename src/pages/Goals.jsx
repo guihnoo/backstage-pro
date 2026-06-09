@@ -6,7 +6,9 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
-import { Trophy, Zap, Star, TrendingUp, Award, Flame, Calendar, X } from 'lucide-react';
+import { Trophy, Zap, Star, TrendingUp, Award, Flame, Calendar, X, Pencil, Check } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 import MeiDashboard from '@/components/goals/MeiDashboard';
 
 const SEEN_BADGES_KEY = 'backstage_seen_badges';
@@ -192,7 +194,7 @@ function getLevelInfo(eventsCount) {
 }
 
 export default function Goals() {
-  const { user, profile } = useAuth();
+  const { user, profile, updateProfile } = useAuth();
   const { formatCurrency } = useFinancialVisibility();
   const userId = user?.id;
   const categoryId = profile?.category || 'lighting';
@@ -200,6 +202,37 @@ export default function Goals() {
   const [activeTab, setActiveTab] = useState('metas');
   const [celebrationBadge, setCelebrationBadge] = useState(null);
   const seenRef = useRef(getSeenBadges());
+
+  const [editingGoals, setEditingGoals] = useState(false);
+  const [savingGoals, setSavingGoals] = useState(false);
+  const [goalForm, setGoalForm] = useState({ events: '', revenue: '' });
+
+  const openGoalEdit = () => {
+    setGoalForm({
+      events: String(profile?.monthly_goal_events || 10),
+      revenue: String(profile?.monthly_goal_revenue || 5000),
+    });
+    setEditingGoals(true);
+  };
+
+  const saveGoals = async () => {
+    const events = parseInt(goalForm.events);
+    const revenue = parseFloat(goalForm.revenue);
+    if (!events || events < 1 || !revenue || revenue < 0) {
+      toast.error('Preencha valores válidos para as metas.');
+      return;
+    }
+    try {
+      setSavingGoals(true);
+      await updateProfile({ monthly_goal_events: events, monthly_goal_revenue: revenue });
+      toast.success('Metas atualizadas!');
+      setEditingGoals(false);
+    } catch {
+      toast.error('Erro ao salvar metas.');
+    } finally {
+      setSavingGoals(false);
+    }
+  };
 
   // Stats reais
   const { stats, loading: statsLoading } = useStats(userId);
@@ -399,7 +432,73 @@ export default function Goals() {
             >
               {/* Circulos de progresso */}
               <div className="bg-gray-900/40 border border-gray-800/50 rounded-2xl p-6">
-                <h3 className="text-sm font-bold text-gray-300 mb-6 uppercase tracking-wider">Progresso do Mês</h3>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider">Progresso do Mês</h3>
+                  {!editingGoals && (
+                    <button
+                      type="button"
+                      onClick={openGoalEdit}
+                      className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-cyan-400 transition-colors px-2 py-1 rounded-lg hover:bg-cyan-400/10"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      Editar metas
+                    </button>
+                  )}
+                </div>
+
+                <AnimatePresence>
+                  {editingGoals && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden mb-5"
+                    >
+                      <div className="grid grid-cols-2 gap-3 p-4 rounded-xl border border-cyan-500/20 bg-cyan-500/5">
+                        <div>
+                          <label className="block text-xs text-gray-400 mb-1.5">Shows/mês</label>
+                          <Input
+                            type="number"
+                            min="1"
+                            value={goalForm.events}
+                            onChange={e => setGoalForm(f => ({ ...f, events: e.target.value }))}
+                            className="bg-gray-800/80 border-gray-700 text-white h-9 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-400 mb-1.5">Meta R$ / mês</label>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="100"
+                            value={goalForm.revenue}
+                            onChange={e => setGoalForm(f => ({ ...f, revenue: e.target.value }))}
+                            className="bg-gray-800/80 border-gray-700 text-white h-9 text-sm"
+                          />
+                        </div>
+                        <div className="col-span-2 flex gap-2 mt-1">
+                          <button
+                            type="button"
+                            onClick={saveGoals}
+                            disabled={savingGoals}
+                            className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg text-xs font-bold bg-cyan-500 text-black hover:bg-cyan-400 transition-colors disabled:opacity-50"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                            {savingGoals ? 'Salvando...' : 'Salvar'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingGoals(false)}
+                            className="px-4 h-9 rounded-lg text-xs text-gray-400 hover:text-white border border-gray-700 hover:border-gray-600 transition-colors"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 {statsLoading ? (
                   <div className="flex justify-around">
                     {[1, 2].map(i => (

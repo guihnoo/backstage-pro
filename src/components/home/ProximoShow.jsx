@@ -13,7 +13,7 @@ function getEventDateStr(event) {
   return event?.start_date || event?.event_date || null;
 }
 
-export default function ProximoShow({ event, userCategory, isOnStage }) {
+export default function ProximoShow({ event, userCategory, isOnStage, onViewEvent }) {
   const eventDateStr = getEventDateStr(event);
   const { countdown } = useCountdown(eventDateStr);
   const config = getCategoryConfig(userCategory);
@@ -189,7 +189,7 @@ export default function ProximoShow({ event, userCategory, isOnStage }) {
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => hardNavigate('/calendar')}
+            onClick={() => onViewEvent ? onViewEvent(event) : hardNavigate('/calendar')}
             className="flex-1 px-4 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-600 text-white font-semibold hover:shadow-lg hover:shadow-cyan-500/50 transition-all flex items-center justify-center gap-2"
           >
             <span>Ver Detalhes</span>

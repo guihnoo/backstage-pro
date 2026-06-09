@@ -8,6 +8,7 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import { getCategoryConfig, getCategoryMotivation } from '@/lib/categoryConfig';
 import { useStats, useUpcomingEvent, usePaymentAlerts, useEvents } from '@/lib/useBackstageData';
 import ProximoShow from '@/components/home/ProximoShow';
+import EventDetailModal from '@/components/calendar/EventDetailModal';
 import MetaMensalBar from '@/components/home/MetaMensalBar';
 import QuickStats from '@/components/home/QuickStats';
 import AReceber from '@/components/home/AReceber';
@@ -25,6 +26,7 @@ import { NeonSectionFrame } from '@/components/design/NeonSectionFrame';
 export default function Home() {
   const { user, profile, signOut } = useAuth();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [detailEvent, setDetailEvent] = useState(null);
   const userId = user?.id;
   const categoryId = profile?.category || 'lighting';
   const config = getCategoryConfig(categoryId);
@@ -100,7 +102,7 @@ export default function Home() {
       </motion.header>
       <div className="px-4 py-6 max-w-2xl mx-auto pb-28">
         <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Próximo show">
-          <ProximoShow event={proximoEvento} userCategory={categoryId} isOnStage={isOnStage} />
+          <ProximoShow event={proximoEvento} userCategory={categoryId} isOnStage={isOnStage} onViewEvent={setDetailEvent} />
         </NeonSectionFrame>
         <MetaMensalBar
           profile={profile}
@@ -144,6 +146,16 @@ export default function Home() {
         </motion.div>
       </div>
       <FloatingActions />
+      {detailEvent && (
+        <EventDetailModal
+          event={detailEvent}
+          client={detailEvent.clients || null}
+          onClose={() => setDetailEvent(null)}
+          onEdit={() => { setDetailEvent(null); hardNavigate('/calendar'); }}
+          onDelete={() => { setDetailEvent(null); refetchStats(); }}
+          onMarkPaid={() => { setDetailEvent(null); refetchStats(); }}
+        />
+      )}
     </div>
   );
 }
