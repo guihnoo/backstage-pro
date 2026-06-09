@@ -28,6 +28,7 @@ import {
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { getEventStatus } from '@/components/utils/dateUtils';
 import { getEventCacheAmount } from '@/lib/eventFinance';
+import { openWhatsAppCharge, buildChargeMessage } from '@/lib/whatsapp';
 import { useMediaQuery } from '@/components/hooks/useMediaQuery';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
@@ -147,6 +148,12 @@ export default function ClientsPage() {
           pendingRevenue,
           isActive,
           lastEventDate: lastEvent?.start_date,
+          unpaidEvents: completedUnpaidEvents.map(e => ({
+            id: e.id,
+            title: e.title,
+            start_date: e.start_date,
+            amount: getEventRevenue(e),
+          })),
         }
       };
     });
@@ -244,9 +251,18 @@ export default function ClientsPage() {
         break;
       case 'whatsapp':
         if (client.phone) {
-          const cleanPhone = client.phone.replace(/\D/g, '');
-          const whatsappNumber = cleanPhone.length > 11 ? cleanPhone : `55${cleanPhone}`;
-          window.open(`https://wa.me/${whatsappNumber}`, '_blank');
+          if (client.stats?.pendingRevenue > 0 && client.stats?.unpaidEvents?.length > 0) {
+            const msg = buildChargeMessage({
+              clientName: client.name,
+              events: client.stats.unpaidEvents,
+              totalAmount: client.stats.pendingRevenue,
+            });
+            openWhatsAppCharge(client.phone, msg);
+          } else {
+            const cleanPhone = client.phone.replace(/\D/g, '');
+            const whatsappNumber = cleanPhone.length > 11 ? cleanPhone : `55${cleanPhone}`;
+            window.open(`https://wa.me/${whatsappNumber}`, '_blank');
+          }
         }
         break;
     }
@@ -461,10 +477,14 @@ export default function ClientsPage() {
                             variant="ghost"
                             size="sm"
                             onClick={(e) => { e.stopPropagation(); handleActionSheetContact(client, 'whatsapp'); }}
-                            className="text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 h-9 px-2 group"
-                            aria-label="WhatsApp"
+                            className={`h-9 px-2 relative group transition-colors ${client.stats.pendingRevenue > 0 ? 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'}`}
+                            aria-label={client.stats.pendingRevenue > 0 ? 'Cobrar via WhatsApp' : 'WhatsApp'}
+                            title={client.stats.pendingRevenue > 0 ? `Cobrar ${formatCurrency(client.stats.pendingRevenue)} via WhatsApp` : 'Abrir WhatsApp'}
                           >
-                            <MessageCircle className="w-4 h-4 group-hover:text-green-400 transition-colors" />
+                            <MessageCircle className="w-4 h-4 transition-colors group-hover:text-green-400" />
+                            {client.stats.pendingRevenue > 0 && (
+                              <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-amber-400" />
+                            )}
                           </Button>
                           </>
                         )}

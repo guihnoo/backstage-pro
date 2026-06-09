@@ -144,11 +144,6 @@ export default function BackstageCalendarGrid({
   onEventQuickLog,
   showDayChips
 }) {
-  console.log('🔄 BackstageCalendarGrid renderizado com:', {
-    eventsCount: events.length,
-    hasOnEventClick: !!onEventClick
-  });
-
   // CORREÇÃO: Envolvido em useMemo para estabilizar as referências.
   const safeEvents = useMemo(() => Array.isArray(events) ? events : [], [events]);
   const safeClients = useMemo(() => Array.isArray(clients) ? clients : [], [clients]);
@@ -176,12 +171,7 @@ export default function BackstageCalendarGrid({
   }, [safeEvents, safeClients]);
 
   const handleEventClickInternal = useCallback((event) => {
-    console.log('🎯 BackstageCalendarGrid handleEventClickInternal:', event);
-    if (onEventClick) {
-      onEventClick(event);
-    } else {
-      console.warn('⚠️ onEventClick não foi fornecido');
-    }
+    if (onEventClick) onEventClick(event);
   }, [onEventClick]);
 
   return (

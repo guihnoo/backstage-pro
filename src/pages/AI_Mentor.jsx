@@ -300,7 +300,7 @@ export default function AIMentorPage() {
               <p className="text-[#7c8494] text-sm mb-6 max-w-xs">
                 Sou seu mentor financeiro. Pergunte sobre seus shows, clientes, receitas e metas.
               </p>
-              <SmartSuggestions userData={{}} onSuggestionClick={(s) => handleSend(s)} />
+              <SmartSuggestions userData={financialContext} onSuggestionClick={(s) => handleSend(s)} />
             </motion.div>
           ) : (
             <div className="space-y-2 max-w-2xl mx-auto">
