@@ -5,8 +5,8 @@
 
 **Última atualização:** 2026-06-05 (sessão 4)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** (pendente) — mapa SVG Brasil + lazy load  
-**Commits da sessão:** `3fbe800` → `f87b72a` → (mapa SVG)  
+**Último commit:** `e1424fa` — mapa SVG Brasil + lazy load  
+**Commits da sessão:** `3fbe800` → `f87b72a` → `e1424fa`  
 **Último deploy:** 2026-06-05 — Vercel prod (`backstage-pro-beta.vercel.app`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
