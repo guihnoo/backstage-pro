@@ -16,7 +16,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import CalendarPage from './pages/Calendar';
 import ClientsPage from './pages/Clients';
 import ExpensesPage from './pages/Expenses';
-import ReportsPage from './pages/reports';
+import ReportsPage from './pages/Reports.jsx';
 import ClientDetailPage from './pages/ClientDetail';
 import OAuthUrlGuard from '@/components/auth/OAuthUrlGuard';
 import NavigationSync from '@/components/NavigationSync';
