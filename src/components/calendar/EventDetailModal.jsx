@@ -18,8 +18,10 @@ import {
   FileText,
   Zap,
   Loader2,
-  MessageCircle
+  MessageCircle,
+  ExternalLink
 } from 'lucide-react';
+import { hardNavigate } from '@/lib/hardNavigate';
 import {
   formatDisplayDate,
   getEventStatus,
@@ -455,6 +457,16 @@ export default function EventDetailModal({
               title="Enviar detalhes via WhatsApp"
             >
               <MessageCircle className="w-4 h-4" />
+            </Button>
+          )}
+          {client?.id && (
+            <Button
+              onClick={() => { onClose(); hardNavigate(`/client-detail?id=${client.id}`); }}
+              variant="outline"
+              className="flex-shrink-0 border-slate-700 hover:bg-slate-800 text-slate-300"
+              title={`Ver detalhes de ${client.name || 'cliente'}`}
+            >
+              <ExternalLink className="w-4 h-4" />
             </Button>
           )}
           <Button

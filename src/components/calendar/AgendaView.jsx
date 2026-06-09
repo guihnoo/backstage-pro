@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { hardNavigate } from '@/lib/hardNavigate';
 import {
   format,
   startOfWeek,
@@ -210,9 +211,13 @@ export default function AgendaView({
                                 style={{ backgroundColor: event.color || '#22d3ee' }}
                               />
                               <div className="flex-1 min-w-0">
-                                <h3 className="font-bold text-white text-base sm:text-lg mb-1 truncate">
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); hardNavigate(`/client-detail?id=${event.client_id}`); }}
+                                  className="font-bold text-white text-base sm:text-lg mb-1 truncate block hover:text-cyan-300 transition-colors text-left w-full"
+                                >
                                   {getClientName(event.client_id)}
-                                </h3>
+                                </button>
                                 <p className="text-slate-300 mb-2 text-sm break-words">{event.title || 'Evento sem título'}</p>
                                 <EventLocationChip event={event} className="mb-3 block" />
 
