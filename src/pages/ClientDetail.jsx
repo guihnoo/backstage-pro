@@ -355,16 +355,15 @@ export default function ClientDetailPage() {
         {showEventDetail && selectedEvent && (
           <EventDetailModal
             event={selectedEvent}
+            client={client}
             onClose={() => setShowEventDetail(false)}
             dailyWork={dailyWork.filter(w => w.event_id === selectedEvent.id)}
             expenses={expenses.filter(e => e.event_id === selectedEvent.id)}
             onPaymentUpdate={handleSuccess}
-            onDeleteSuccess={handleSuccess}
+            onDelete={handleSuccess}
             onWorkEdit={handleSuccess}
-            onWorkDelete={handleSuccess}
             onAddExpense={handleSuccess}
             onExpenseEdit={handleSuccess}
-            onExpenseDelete={handleSuccess}
           />
         )}
       </AnimatePresence>
