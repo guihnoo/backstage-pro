@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+﻿import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { parseISO, isValid } from 'date-fns';
 import { getEventCacheAmount } from '@/lib/eventFinance';
@@ -295,7 +295,7 @@ export default function ClientDetailModal({
   return (
     <AnimatePresence>
       <Dialog open={true} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-4xl h-[95vh] bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200 flex flex-col p-0 overflow-hidden">
+        <DialogContent className="sm:max-w-4xl h-[95dvh] bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200 flex flex-col p-0 overflow-hidden">
           <motion.div variants={modalAnimation} initial="hidden" animate="visible" exit="hidden" className="flex flex-col h-full">
             <DialogHeader className="pt-4 px-6 border-b border-slate-800 pb-4">
               <div className="flex items-start justify-between gap-4">

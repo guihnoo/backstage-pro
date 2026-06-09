@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+﻿import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { X, Bell, AlertTriangle, Calendar, Timer } from 'lucide-react';
@@ -30,7 +30,7 @@ export default function AlertsNotifications({ alerts, onAction, onDismiss, onClo
         animate={{ scale: 1, y: 0, opacity: 1 }}
         exit={{ scale: 0.9, y: 50, opacity: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="w-full max-w-lg max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-lg max-h-[90dvh] overflow-y-auto"
       >
         <Card className="bg-slate-900 border-slate-800 shadow-2xl shadow-black/30 text-slate-200">
           <CardHeader className="border-b border-slate-800">

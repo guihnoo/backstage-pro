@@ -35,17 +35,17 @@ export default function DrilldownModal({ open, onOpenChange, title, items = [], 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl bg-slate-900/95 border-slate-800 text-slate-100">
-        <DialogHeader className="flex flex-row items-center justify-between">
-          <DialogTitle className="text-white">{title}</DialogTitle>
+      <DialogContent className="sm:max-w-2xl bg-slate-900/95 border-slate-800 text-slate-100 max-h-[90dvh] flex flex-col overflow-hidden">
+        <DialogHeader className="flex flex-row items-center justify-between gap-3 flex-shrink-0">
+          <DialogTitle className="text-white min-w-0 flex-1 truncate">{title}</DialogTitle>
           {items?.length > 0 && (
-            <Button variant="outline" size="sm" onClick={exportCsv} className="bg-slate-800 border-slate-700 hover:bg-slate-700">
+            <Button variant="outline" size="sm" onClick={exportCsv} className="bg-slate-800 border-slate-700 hover:bg-slate-700 flex-shrink-0">
               <Download className="w-4 h-4 mr-2" />
-              Exportar CSV
+              <span className="hidden sm:inline">Exportar </span>CSV
             </Button>
           )}
         </DialogHeader>
-        <ScrollArea className="max-h-[60vh] mt-2">
+        <ScrollArea className="flex-1 min-h-0 mt-2">
           <div className="divide-y divide-slate-800">
             {(!items || items.length === 0) ? (
               <p className="text-slate-400 p-4">Sem registros no período selecionado.</p>

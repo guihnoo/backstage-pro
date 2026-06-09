@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -77,7 +77,7 @@ export default function NotesSheet({
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="relative w-full sm:w-auto sm:min-w-[420px] sm:max-w-[500px] bg-slate-900 rounded-t-3xl sm:rounded-2xl border-t sm:border border-slate-800 shadow-2xl max-h-[90vh] flex flex-col overflow-hidden"
+            className="relative w-full sm:w-auto sm:min-w-[420px] sm:max-w-[500px] bg-slate-900 rounded-t-3xl sm:rounded-2xl border-t sm:border border-slate-800 shadow-2xl max-h-[90dvh] flex flex-col overflow-hidden"
           >
             {/* Handle (mobile) */}
             <div className="flex justify-center pt-3 pb-2 sm:hidden flex-shrink-0">

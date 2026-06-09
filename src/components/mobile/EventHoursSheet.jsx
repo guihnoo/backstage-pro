@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -266,7 +266,7 @@ export default function EventHoursSheet({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 bg-slate-900 rounded-t-2xl shadow-2xl z-50 max-h-[90vh] flex flex-col overflow-hidden"
+            className="fixed bottom-0 left-0 right-0 bg-slate-900 rounded-t-2xl shadow-2xl z-50 max-h-[90dvh] flex flex-col overflow-hidden"
           >
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-2">

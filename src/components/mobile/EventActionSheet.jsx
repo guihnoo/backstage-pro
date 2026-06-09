@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion';
+﻿import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -71,7 +71,7 @@ export default function EventActionSheet({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed inset-x-0 bottom-0 z-50 bg-slate-900 border-t-2 border-cyan-400 rounded-t-3xl shadow-2xl pb-safe max-h-[85vh] flex flex-col overflow-hidden"
+            className="fixed inset-x-0 bottom-0 z-50 bg-slate-900 border-t-2 border-cyan-400 rounded-t-3xl shadow-2xl pb-safe max-h-[85dvh] flex flex-col overflow-hidden"
           >
             {/* Handle */}
             <div className="flex justify-center py-3">

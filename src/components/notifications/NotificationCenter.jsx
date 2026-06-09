@@ -289,7 +289,7 @@ export default function NotificationCenter() {
             {count > 0 ? `${count} alerta${count !== 1 ? 's' : ''}` : 'Tudo em dia'}
           </p>
         </div>
-        <ScrollArea className="max-h-[60vh]">
+        <ScrollArea className="max-h-[60dvh]">
           <div className="p-2 space-y-2">
             {count > 0 ? (
               visible.map(n => (

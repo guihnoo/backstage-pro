@@ -782,7 +782,7 @@ export default function ReportsPage() {
                 variant={selectedView === view.id ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setSelectedView(view.id)}
-                className={`h-9 ${selectedView === view.id ? "text-white" : "text-slate-400 hover:text-white"}`}
+                className={`h-9 flex-shrink-0 ${selectedView === view.id ? "text-white" : "text-slate-400 hover:text-white"}`}
                 style={selectedView === view.id ? { backgroundColor: config.primaryHex } : undefined}>
 
                 <view.icon className="w-4 h-4 mr-2" />

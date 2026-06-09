@@ -102,7 +102,7 @@ export default function DashboardCustomizer({ isOpen, onClose, onSettingsChange 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200">
+      <DialogContent className="sm:max-w-3xl max-h-[90dvh] overflow-y-auto bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-white flex items-center gap-3">
             <Settings className="w-6 h-6 text-cyan-400" />

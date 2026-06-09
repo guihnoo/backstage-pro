@@ -120,28 +120,28 @@ export default function AdvancedFilters({
               </Badge>
             )}
           </CardTitle>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap justify-end">
             {activeCount > 0 && (
-              <Button variant="outline" size="sm" onClick={handleReset} className="text-slate-300">
+              <Button variant="outline" size="sm" onClick={handleReset} className="text-slate-300 h-9">
                 <RotateCcw className="w-4 h-4 mr-2" />
-                Limpar Filtros
+                Limpar
               </Button>
             )}
-            <Button 
-              variant="default" 
-              size="sm" 
+            <Button
+              variant="default"
+              size="sm"
               onClick={handleApply}
               disabled={loading}
-              className="bg-cyan-600 hover:bg-cyan-700"
+              className="bg-cyan-600 hover:bg-cyan-700 h-9"
             >
               <Filter className="w-4 h-4 mr-2" />
               Aplicar
             </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-slate-300"
+              className="text-slate-300 h-9"
             >
               {isExpanded ? 'Minimizar' : 'Expandir'}
             </Button>
@@ -183,7 +183,7 @@ export default function AdvancedFilters({
                   defaultMonth={internalFilters.dateRange?.from}
                   selected={internalFilters.dateRange}
                   onSelect={(range) => updateFilter('dateRange', range)}
-                  numberOfMonths={2}
+                  numberOfMonths={1}
                   locale={ptBR}
                   className="text-white"
                 />
