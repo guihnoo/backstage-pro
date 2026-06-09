@@ -34,6 +34,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
 
   const [formData, setFormData] = useState({
     name: '',
+    razao_social: '',
     contact_person: '',
     email: '',
     phone: '',
@@ -50,6 +51,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
     if (client) {
       setFormData({
         name: client.name || '',
+        razao_social: '',
         contact_person: client.contact_person || '',
         email: client.email || '',
         phone: client.phone || '',
@@ -64,6 +66,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
     } else {
       setFormData({
         name: '',
+        razao_social: '',
         contact_person: '',
         email: '',
         phone: '',
@@ -142,23 +145,28 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
     }
     setSelectedCompany(company);
 
-    // Auto-preenche os campos com dados da empresa
-    const name = company.trading_name || company.name || '';
+    // Nome fantasia = nome de exibição; razão social = nome jurídico
+    const nomeFantasia = company.trading_name || company.name || '';
+    const razaoSocial  = company.razao_social && company.razao_social !== nomeFantasia
+      ? company.razao_social
+      : '';
     const autoNotes = buildCompanyNotes(company);
+    const clearbitLogo = company.domain ? `https://logo.clearbit.com/${company.domain}` : null;
 
     setFormData(prev => ({
       ...prev,
-      name: name || prev.name,
+      name: nomeFantasia || prev.name,
+      razao_social: razaoSocial || prev.razao_social,
       email: company.email || prev.email,
       phone: company.phone || prev.phone,
       contact_person: company.contact_person || prev.contact_person,
+      logo_url: prev.logo_url || clearbitLogo || '',
       notes: autoNotes
         ? (prev.notes ? `${autoNotes}\n\n${prev.notes}` : autoNotes)
         : prev.notes,
     }));
 
-    // Limpa erros do nome se foi preenchido
-    if (name) setErrors(prev => { const e = { ...prev }; delete e.name; return e; });
+    if (nomeFantasia) setErrors(prev => { const e = { ...prev }; delete e.name; return e; });
   };
 
   const handleLogoUpload = async (e) => {
@@ -220,6 +228,15 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
         }
       }
 
+      // Prepend razão social to notes if filled and not already present
+      let notesValue = formData.notes || null;
+      if (formData.razao_social?.trim()) {
+        const razaoLine = `Razão Social: ${formData.razao_social.trim()}`;
+        if (!notesValue?.includes(razaoLine)) {
+          notesValue = notesValue ? `${razaoLine}\n${notesValue}` : razaoLine;
+        }
+      }
+
       const clientData = {
         name: formData.name.trim(),
         contact_person: formData.contact_person || null,
@@ -227,7 +244,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
         phone: formData.phone || null,
         logo_url: formData.logo_url || null,
         invoice_portal_url: formData.invoice_portal_url || null,
-        notes: formData.notes || null,
+        notes: notesValue,
         policy_default_payment_model: formData.policy_default_payment_model || null,
         policy_allows_meio_e_dobra_juntos: formData.policy_allows_meio_e_dobra_juntos || false,
         default_daily_cache: formData.default_daily_cache === ''
@@ -325,7 +342,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
 
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-slate-300 text-sm font-medium">
-                  Nome do Cliente *
+                  Nome do Cliente / Nome Fantasia *
                 </Label>
                 <Input
                   id="name"
@@ -335,13 +352,13 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                   className={`bg-slate-800 border-slate-700 text-white h-12 text-base touch-manipulation ${
                     errors.name && touched.name ? 'border-red-500' : ''
                   }`}
-                  placeholder="Ex: Empresa ABC"
+                  placeholder="Ex: Amarrok Produções"
                   maxLength={100}
                   required
                 />
                 <AnimatePresence>
                   {errors.name && touched.name && (
-                    <motion.p 
+                    <motion.p
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
@@ -352,6 +369,21 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                     </motion.p>
                   )}
                 </AnimatePresence>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="razao_social" className="text-slate-300 text-sm font-medium">
+                  Razão Social
+                  <span className="ml-1.5 text-[10px] text-slate-600 font-normal normal-case">Nome jurídico na NF</span>
+                </Label>
+                <Input
+                  id="razao_social"
+                  value={formData.razao_social}
+                  onChange={(e) => handleChange('razao_social', e.target.value)}
+                  className="bg-slate-800 border-slate-700 text-white h-12 text-base touch-manipulation"
+                  placeholder="Ex: AMARROK PRODUCOES E SERVICOS LTDA"
+                  maxLength={150}
+                />
               </div>
 
               <ColorGridPicker

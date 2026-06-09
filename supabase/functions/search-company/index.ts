@@ -144,11 +144,13 @@ async function handleCNPJ(cnpj: string): Promise<Record<string, unknown>[]> {
   return [];
 }
 
-async function handleNameSearch(query: string, city?: string): Promise<Record<string, unknown>[]> {
+function stripAccents(str: string): string {
+  return str.normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+async function searchCnpja(query: string, city?: string): Promise<Record<string, unknown>[]> {
   const q = encodeURIComponent(query.trim());
   const cityParam = city ? `&municipality=${encodeURIComponent(city)}` : '';
-
-  // open.cnpja.com — busca por nome
   try {
     const url = `https://open.cnpja.com/company/search?query=${q}${cityParam}&limit=10`;
     const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
@@ -157,7 +159,28 @@ async function handleNameSearch(query: string, city?: string): Promise<Record<st
       const items = (d.companies || d.data || (Array.isArray(d) ? d : [])) as Array<Record<string, unknown>>;
       if (items.length > 0) return items.map(mapCnpjaSearch);
     }
-  } catch { /* API indisponível */ }
+  } catch { /* ignore */ }
+  return [];
+}
+
+async function handleNameSearch(query: string, city?: string): Promise<Record<string, unknown>[]> {
+  const normalized = stripAccents(query.trim()).toUpperCase();
+
+  // Tenta com a query normalizada (sem acento) + cidade
+  let results = await searchCnpja(normalized, city);
+  if (results.length > 0) return results;
+
+  // Se não achou, tenta sem cidade
+  if (city) {
+    results = await searchCnpja(normalized);
+    if (results.length > 0) return results;
+  }
+
+  // Tenta com a query original + cidade
+  if (normalized !== query.trim().toUpperCase()) {
+    results = await searchCnpja(query.trim(), city);
+    if (results.length > 0) return results;
+  }
 
   return [];
 }

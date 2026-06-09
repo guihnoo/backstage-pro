@@ -6,7 +6,7 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
-import { Trophy, Zap, Star, TrendingUp, Award, Flame, Calendar, X, Pencil, Check, ChevronRight } from 'lucide-react';
+import { Trophy, Zap, Star, TrendingUp, Award, Flame, Calendar, X, Pencil, Check, ChevronRight, Plus, Clock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import MeiDashboard from '@/components/goals/MeiDashboard';
@@ -446,7 +446,12 @@ export default function Goals() {
               {/* Circulos de progresso */}
               <div className="bg-gray-900/40 border border-gray-800/50 rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider">Progresso do Mês</h3>
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider">Progresso do Mês</h3>
+                    <p className="text-xs text-gray-500 mt-0.5 capitalize">
+                      {format(new Date(), "MMMM 'de' yyyy", { locale: ptBR })}
+                    </p>
+                  </div>
                   {!editingGoals && (
                     <button
                       type="button"
@@ -514,27 +519,35 @@ export default function Goals() {
 
                 {statsLoading ? (
                   <div className="flex justify-around">
-                    {[1, 2].map(i => (
-                      <div key={i} className="w-28 h-28 bg-gray-800 rounded-full animate-pulse" />
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="w-24 h-24 bg-gray-800 rounded-full animate-pulse" />
                     ))}
                   </div>
                 ) : (
-                  <div className="flex justify-around flex-wrap gap-6">
+                  <div className="flex justify-around flex-wrap gap-4">
                     <CircularProgress
                       value={stats.faturamento_pago}
                       max={metaReceita}
-                      size={130}
+                      size={110}
                       color={config.primaryHex}
-                      label="Receita"
-                      sublabel={`${formatCurrency(stats.faturamento_pago)} / ${formatCurrency(metaReceita)}`}
+                      label="Recebido"
+                      sublabel={formatCurrency(stats.faturamento_pago)}
                     />
                     <CircularProgress
                       value={stats.eventos_count}
                       max={metaEventos}
-                      size={130}
+                      size={110}
                       color={config.accentHex}
-                      label="Eventos"
-                      sublabel={`${stats.eventos_count} / ${metaEventos} shows`}
+                      label="Shows"
+                      sublabel={`${stats.eventos_count} / ${metaEventos}`}
+                    />
+                    <CircularProgress
+                      value={stats.a_receber}
+                      max={metaReceita}
+                      size={110}
+                      color="#FFB700"
+                      label="A Receber"
+                      sublabel={formatCurrency(stats.a_receber)}
                     />
                   </div>
                 )}
@@ -543,10 +556,30 @@ export default function Goals() {
               {/* Resumo financeiro */}
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { label: 'Recebido', value: formatCurrency(stats.faturamento_pago), icon: '✅', color: '#39FF14', route: '/reports' },
-                  { label: 'A Receber', value: formatCurrency(stats.a_receber), icon: '⏳', color: '#FFB700', route: '/reports' },
-                  { label: 'Eventos', value: `${stats.eventos_count} shows`, icon: '🎤', color: config.primaryHex, route: '/calendar' },
-                  { label: 'Clientes Ativos', value: `${stats.clientes_ativos}`, icon: '👥', color: config.accentHex, route: '/clients' },
+                  {
+                    label: 'Recebido',
+                    value: formatCurrency(stats.faturamento_pago),
+                    sub: `${Math.round(metaReceita > 0 ? Math.min((stats.faturamento_pago / metaReceita) * 100, 100) : 0)}% da meta`,
+                    icon: '✅', color: '#39FF14', route: '/reports'
+                  },
+                  {
+                    label: 'A Receber',
+                    value: formatCurrency(stats.a_receber),
+                    sub: stats.a_receber > 0 ? 'pendente de pagamento' : 'tudo em dia',
+                    icon: '⏳', color: '#FFB700', route: '/reports'
+                  },
+                  {
+                    label: 'Shows no mês',
+                    value: `${stats.eventos_count} shows`,
+                    sub: `meta: ${metaEventos} shows`,
+                    icon: '🎤', color: config.primaryHex, route: '/calendar'
+                  },
+                  {
+                    label: 'Clientes Ativos',
+                    value: `${stats.clientes_ativos}`,
+                    sub: 'empresas / contratantes',
+                    icon: '👥', color: config.accentHex, route: '/clients'
+                  },
                 ].map((item, i) => (
                   <motion.button
                     key={i}
@@ -563,52 +596,95 @@ export default function Goals() {
                     <p className="text-lg font-black mt-0.5" style={{ color: item.color }}>
                       {item.value}
                     </p>
+                    <p className="text-[10px] text-gray-600 mt-0.5">{item.sub}</p>
                   </motion.button>
                 ))}
               </div>
 
               {/* Mensagem de incentivo */}
-              <div
-                className="p-4 rounded-xl border text-center"
-                style={{
-                  background: `${config.primaryHex}08`,
-                  borderColor: `${config.primaryHex}30`
-                }}
-              >
-                {stats.eventos_count >= metaEventos ? (
-                  <>
-                    <p className="text-xl mb-1">🎉</p>
-                    <p className="text-sm font-bold text-white">Meta de eventos batida!</p>
-                    <p className="text-xs text-gray-400 mt-1">Você superou {metaEventos} eventos este mês. Incrível!</p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-xl mb-1">💪</p>
-                    <p className="text-sm font-bold text-white">
-                      {metaEventos - stats.eventos_count} eventos para a meta!
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">Você está construindo sua carreira, show a show.</p>
-                  </>
-                )}
-              </div>
+              {(() => {
+                const metaBatida = stats.faturamento_pago >= metaReceita && stats.eventos_count >= metaEventos;
+                const metaReceita100 = stats.faturamento_pago >= metaReceita;
+                const metaEventos100 = stats.eventos_count >= metaEventos;
+                if (metaBatida) {
+                  return (
+                    <div className="p-4 rounded-xl border text-center" style={{ background: '#39FF1408', borderColor: '#39FF1430' }}>
+                      <p className="text-2xl mb-1">🏆</p>
+                      <p className="text-sm font-bold text-white">Todas as metas batidas!</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {stats.eventos_count} shows · {formatCurrency(stats.faturamento_pago)} recebidos. Mês excepcional!
+                      </p>
+                    </div>
+                  );
+                }
+                return (
+                  <div
+                    className="p-4 rounded-xl border"
+                    style={{ background: `${config.primaryHex}08`, borderColor: `${config.primaryHex}30` }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="text-xl mt-0.5">{metaReceita100 || metaEventos100 ? '🎉' : '💪'}</span>
+                      <div>
+                        {!metaEventos100 && (
+                          <p className="text-sm font-bold text-white">
+                            {metaEventos - stats.eventos_count} show{metaEventos - stats.eventos_count !== 1 ? 's' : ''} para bater a meta de eventos
+                          </p>
+                        )}
+                        {metaEventos100 && !metaReceita100 && (
+                          <p className="text-sm font-bold text-white">Meta de eventos batida! 🎤</p>
+                        )}
+                        {!metaReceita100 && (
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            Faltam {formatCurrency(metaReceita - stats.faturamento_pago)} para a meta de receita
+                          </p>
+                        )}
+                        {metaReceita100 && !metaEventos100 && (
+                          <p className="text-xs text-gray-400 mt-0.5">Meta de receita atingida! Continue firme nos shows.</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Próximos shows */}
-              {upcomingEvents.length > 0 && (
-                <div className="bg-gray-900/40 border border-gray-800/50 rounded-2xl p-5">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider">Próximos Shows</h3>
+              <div className="bg-gray-900/40 border border-gray-800/50 rounded-2xl p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider">Próximos Shows</h3>
+                  <button
+                    type="button"
+                    onClick={() => hardNavigate('/calendar')}
+                    className="flex items-center gap-1 text-xs text-gray-500 hover:text-cyan-400 transition-colors"
+                  >
+                    Ver agenda <ChevronRight className="w-3 h-3" />
+                  </button>
+                </div>
+
+                {upcomingEvents.length === 0 ? (
+                  <div className="flex flex-col items-center gap-3 py-6 text-center">
+                    <div className="w-12 h-12 rounded-full bg-gray-800/60 flex items-center justify-center">
+                      <Calendar className="w-5 h-5 text-gray-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Nenhum show agendado</p>
+                      <p className="text-xs text-gray-600 mt-0.5">Adicione eventos à sua agenda para acompanhar aqui</p>
+                    </div>
                     <button
                       type="button"
                       onClick={() => hardNavigate('/calendar')}
-                      className="flex items-center gap-1 text-xs text-gray-500 hover:text-cyan-400 transition-colors"
+                      className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+                      style={{ background: `${config.primaryHex}20`, color: config.primaryHex }}
                     >
-                      Ver agenda <ChevronRight className="w-3 h-3" />
+                      <Plus className="w-3.5 h-3.5" />
+                      Agendar show
                     </button>
                   </div>
+                ) : (
                   <div className="space-y-2">
                     {upcomingEvents.map((ev, i) => {
                       const days = differenceInCalendarDays(parseISO(ev.start_date), new Date());
-                      const label = days === 0 ? 'Hoje' : days === 1 ? 'Amanhã' : `em ${days} dias`;
+                      const isUrgent = days <= 1;
+                      const label = days === 0 ? 'Hoje' : days === 1 ? 'Amanhã' : `em ${days}d`;
                       return (
                         <motion.button
                           key={ev.id}
@@ -622,7 +698,7 @@ export default function Goals() {
                         >
                           <div
                             className="w-2 h-2 rounded-full flex-shrink-0"
-                            style={{ background: days <= 1 ? '#FFB700' : config.primaryHex, boxShadow: `0 0 6px ${days <= 1 ? '#FFB700' : config.primaryHex}80` }}
+                            style={{ background: isUrgent ? '#FFB700' : config.primaryHex, boxShadow: `0 0 6px ${isUrgent ? '#FFB700' : config.primaryHex}80` }}
                           />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-white truncate">{ev.title}</p>
@@ -631,15 +707,15 @@ export default function Goals() {
                               {format(parseISO(ev.start_date), "EEE d/MM", { locale: ptBR })}
                             </p>
                           </div>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: `${days <= 1 ? '#FFB700' : config.primaryHex}22`, color: days <= 1 ? '#FFB700' : config.primaryHex }}>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: `${isUrgent ? '#FFB700' : config.primaryHex}22`, color: isUrgent ? '#FFB700' : config.primaryHex }}>
                             {label}
                           </span>
                         </motion.button>
                       );
                     })}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </motion.div>
           )}
 
