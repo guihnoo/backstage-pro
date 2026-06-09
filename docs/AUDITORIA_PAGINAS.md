@@ -188,4 +188,4 @@
 2. [x] **`/ai-mentor`** — desbloqueado + auditado sessão 11 ✅
 3. [x] **Rotas públicas** — auditadas sessão 11 ✅ (fora AppLayout, scroll nativo OK)
 4. [x] **`StatDetailModal`** — órfão confirmado; QuickStats usa `hardNavigate`; seguro remover quando quiser
-5. [ ] **NotificationCenter** — avaliar converter para Sheet se scroll lock for necessário
+5. [x] **NotificationCenter** — DropdownMenu + `ScrollArea max-h-[60dvh]` ✅ não usa Dialog, sem scroll lock; aceitável

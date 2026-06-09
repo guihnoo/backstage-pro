@@ -6,6 +6,14 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-09
 
+### SESSAO-11-CLOSE — Encerramento sessão 11 + NotificationCenter ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **NotificationCenter**: DropdownMenu + `ScrollArea max-h-[60dvh]` — funcional, sem necessidade de Sheet ✅
+- **Auditoria sprint completa**: todas as rotas 🟢 (login, signup, onboarding, legal, /client-detail, /ai-mentor, NotificationCenter)
+- **RELATORIO** backlog atualizado; deploy registrado `0b666c7`
+- **E2E total**: 46/46 ✅
+- **Próximo**: OAuth E2E manual · CNPJ Amarrok · charts animados · GOOGLE_CLIENT_SECRET rotation
+
 ### PUBLIC-ROUTES-AUDIT — Rotas públicas + StatDetailModal ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Rotas auditadas**: `/login`, `/signup`, `/onboarding` — renderizam fora do `AppLayout`, usam `min-h-screen` corretamente; scroll nativo do browser 🟢

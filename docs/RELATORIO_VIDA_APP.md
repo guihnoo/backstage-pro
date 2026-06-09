@@ -5,8 +5,8 @@
 
 **Última atualização:** 2026-06-09 (sessão 11)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** `456d27d` — docs auditoria completa + E2E modais  
-**Último deploy:** 2026-06-09 — Vercel prod `dpl_ALLE4E73Tqzb5unuxuTdPjgukgHE` (`456d27d`) · https://backstage-pro-beta.vercel.app  
+**Último commit:** `0b666c7` — unlock + audit /ai-mentor  
+**Último deploy:** 2026-06-09 — Vercel prod `dpl_CGGJudw1KpsMYDDV1tgMFxVfvSPM` (`0b666c7`) · https://backstage-pro-beta.vercel.app  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
 ---
@@ -283,22 +283,22 @@ Ordem oficial após fix de scroll (2026-06-05):
 ## Backlog priorizado
 
 ### Alta (próxima sprint)
-1. ~~Auditoria página a página~~ — feito sessão 10 (todos 🟢)
-2. ~~Validar scroll em todas as telas~~ — feito sessões 10–11
+1. ~~Auditoria página a página~~ — ✅ sessão 11 (todas as rotas incluindo /ai-mentor)
+2. ~~Validar scroll em todas as telas~~ — ✅ sessões 10–11
 3. OAuth Google — checklist E2E manual (validar com sua conta real)
-4. **Deploy sessão 11** — pendente instrução do usuário
+4. ~~Deploy sessão 11~~ — ✅ `0b666c7` em prod
 5. Testar `CompanySearchInput` aba CNPJ com `42.993.331/0001-10` (Amarrok)
 
 ### Média
 6. Animações financeiras / charts animados no dashboard (`vendor-charts` já bundlado)
 7. PWA offline refinado + pre-fetch crítico
-8. Code-split seguro para `vendor-charts` (~421 KB) via `manualChunks`
-9. ~~Expandir smoke E2E~~ — feito: `app-routes-navigation.spec.js` (17 testes)
+8. Code-split seguro para `vendor-charts` (~421 KB) — `vite.config.js` LOCKED
+9. ~~Expandir smoke E2E~~ — ✅ 46 testes (smoke + regression overflow + modal)
 
 ### Baixa / segurança
 10. **Rotacionar `GOOGLE_CLIENT_SECRET`** (exposto em sessões passadas)
 11. Publicar app OAuth (sair de “Testing”) quando E2E validado
-12. `StatDetailModal` — verificar se deve ser removido ou integrado à Home
+12. ~~`StatDetailModal`~~ — ✅ confirmado órfão; seguro remover quando quiser
 
 ---
 
