@@ -194,7 +194,17 @@ export default function AIMentorPage() {
         },
       });
 
-      if (error) throw new Error(error.message || 'Erro na edge function');
+      if (error) {
+        const ctx = error.context;
+        let detail = error.message || 'Erro na edge function';
+        if (ctx && typeof ctx.json === 'function') {
+          try {
+            const body = await ctx.json();
+            if (body?.error) detail = body.error;
+          } catch { /* ignore */ }
+        }
+        throw new Error(detail);
+      }
       if (data?.error) throw new Error(data.error);
 
       const assistantMsg = { role: 'assistant', content: data.answer };

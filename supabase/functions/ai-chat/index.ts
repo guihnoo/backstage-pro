@@ -1,7 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -28,8 +26,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!ANTHROPIC_API_KEY) {
-      return new Response(JSON.stringify({ error: 'ANTHROPIC_API_KEY não configurado' }), {
+    const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
+    if (!anthropicKey) {
+      return new Response(JSON.stringify({ error: 'ANTHROPIC_API_KEY não configurado no Supabase' }), {
         status: 503,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -53,24 +52,30 @@ ${Object.keys(context).length > 0 ? `\nContexto financeiro do usuário:\n${JSON.
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_API_KEY,
+        'x-api-key': anthropicKey,
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-3-5-haiku-20241022',
         max_tokens: 1024,
         system: systemPrompt,
-        messages: messages.map((m: { role: string; content: string }) => ({
-          role: m.role,
-          content: m.content,
-        })),
+        messages: messages
+          .filter((m: { role: string }) => m.role === 'user' || m.role === 'assistant')
+          .map((m: { role: string; content: string }) => ({
+            role: m.role,
+            content: m.content,
+          })),
       }),
     });
 
     const result = await response.json();
 
     if (!response.ok) {
-      throw new Error(result.error?.message ?? 'Erro na API Claude');
+      const apiMsg = result.error?.message ?? 'Erro na API Claude';
+      const hint = response.status === 401
+        ? ' Chave inválida ou sem créditos — gere uma nova em console.anthropic.com/settings/keys'
+        : '';
+      throw new Error(`${apiMsg}${hint}`);
     }
 
     const answer = result.content?.[0]?.text ?? 'Não foi possível gerar uma resposta.';
