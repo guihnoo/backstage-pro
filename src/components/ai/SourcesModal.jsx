@@ -47,13 +47,14 @@ export default function SourcesModal({ isOpen, onClose }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-slate-900/90 backdrop-blur-lg border-slate-700 text-white">
-        <DialogHeader>
+      <DialogContent className="bg-slate-900/90 backdrop-blur-lg border-slate-700 text-white max-h-[90dvh] flex flex-col overflow-hidden p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
           <DialogTitle>Fontes de Conhecimento Personalizadas</DialogTitle>
           <DialogDescription>
             Adicione links (documentação, manuais, artigos) para que o AI Mentor use como referência em suas respostas. Um link por linha.
           </DialogDescription>
         </DialogHeader>
+        <div className="bp-modal-scroll px-6 pb-4">
         {isLoading ? (
           <div className="flex justify-center items-center h-40">
             <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
@@ -63,10 +64,11 @@ export default function SourcesModal({ isOpen, onClose }) {
             value={sources}
             onChange={(e) => setSources(e.target.value)}
             placeholder="https://exemplo.com/manual-do-equipamento&#10;https://outro.site/documentacao-da-api"
-            className="h-40 bg-slate-800 border-slate-700"
+            className="min-h-[10rem] bg-slate-800 border-slate-700"
           />
         )}
-        <DialogFooter>
+        </div>
+        <DialogFooter className="px-6 py-4 border-t border-slate-700 flex-shrink-0">
           <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
           <Button onClick={handleSave} disabled={isLoading || isSaving}>
             {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}

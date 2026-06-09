@@ -1,4 +1,5 @@
-﻿import { motion, AnimatePresence } from 'framer-motion';
+﻿import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -13,6 +14,9 @@ import {
   Calendar,
   Zap,
   Copy,
+  MapPin,
+  Navigation,
+  Loader2,
 } from 'lucide-react';
 import { formatDisplayDate, getEventStatus, getEventStatusConfig } from '../utils/dateUtils';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
@@ -33,8 +37,10 @@ export default function EventActionSheet({
   onMarkPaid,
   onApplyManual12h,
   canApplyAuto12h,
+  onCheckInLocation,
 }) {
   const { formatCurrency } = useFinancialVisibility();
+  const [checkingIn, setCheckingIn] = useState(false);
   useAppScrollLock(Boolean(isOpen && event));
 
   if (!event) return null;
@@ -52,6 +58,17 @@ export default function EventActionSheet({
       });
     }
     onClose();
+  };
+
+  const handleCheckIn = async () => {
+    if (!onCheckInLocation) return;
+    setCheckingIn(true);
+    try {
+      await onCheckInLocation(event);
+      onClose();
+    } finally {
+      setCheckingIn(false);
+    }
   };
 
   return (
@@ -129,6 +146,12 @@ export default function EventActionSheet({
                     <span>{formatCurrency(getEventCacheAmount(event))}</span>
                   </div>
                 )}
+                {event.location && (
+                  <div className="flex items-start gap-2 text-slate-300">
+                    <MapPin className="w-4 h-4 text-cyan-500 mt-0.5 flex-shrink-0" />
+                    <span className="line-clamp-2">{event.location}</span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -161,6 +184,26 @@ export default function EventActionSheet({
                     <div className="text-xs opacity-80">Entrada, saída e detalhes</div>
                   </div>
                 </Button>
+
+                {onCheckInLocation && (
+                  <Button
+                    onClick={handleCheckIn}
+                    disabled={checkingIn}
+                    className="w-full h-14 min-h-[44px] bg-slate-800 border border-cyan-700/40 hover:bg-slate-800/80 text-cyan-300 font-medium text-base justify-start px-4"
+                  >
+                    {checkingIn ? (
+                      <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                    ) : (
+                      <Navigation className="w-5 h-5 mr-3" />
+                    )}
+                    <div className="text-left">
+                      <div className="font-bold">
+                        {event.location ? 'Atualizar local (GPS)' : 'Check-in no local'}
+                      </div>
+                      <div className="text-xs opacity-80">Registra sua posição exata agora</div>
+                    </div>
+                  </Button>
+                )}
 
                 <Separator className="bg-slate-800 my-3" />
 

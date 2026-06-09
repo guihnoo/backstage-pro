@@ -43,6 +43,7 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { applyAuto12Hours } from '@/lib/applyAuto12Hours';
 import { getEventCacheAmount } from '@/lib/eventFinance';
+import { captureEventLocationFromGps } from '@/lib/eventLocation';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
 
 const useMediaQuery = (query) => {
@@ -511,6 +512,29 @@ export default function CalendarPage() {
     }
   }, [selectedActionSheetEvent]);
 
+  const handleEventLocationCheckIn = useCallback(
+    async (event) => {
+      if (!event?.id) return;
+      try {
+        const captured = await captureEventLocationFromGps();
+        await updateEvent(event.id, {
+          location: captured.location,
+          location_city: captured.location_city,
+          location_state: captured.location_state,
+          location_lat: captured.location_lat,
+          location_lng: captured.location_lng,
+        });
+        toast.success('Local registrado no evento', {
+          description: (captured.label || captured.location || '').slice(0, 80),
+        });
+        await refetchEvents();
+      } catch (err) {
+        toast.error(err.message || 'Não foi possível registrar o local.');
+        throw err;
+      }
+    },
+    [updateEvent, refetchEvents],
+  );
 
   const handleEventActionSheetApplyManual12h = useCallback(
     async (event) => {
@@ -1221,6 +1245,7 @@ export default function CalendarPage() {
           onOpenHours={handleActionSheetOpenHours}
           onOpenNotes={handleActionSheetOpenNotes}
           onApplyManual12h={handleEventActionSheetApplyManual12h}
+          onCheckInLocation={handleEventLocationCheckIn}
           canApplyAuto12h={selectedActionSheetEvent && !selectedActionSheetEvent.auto_hours_applied}
           onEdit={() => {
             setEditingEvent(selectedActionSheetEvent);

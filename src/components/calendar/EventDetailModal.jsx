@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from 'react';
+﻿import { useState, useMemo, useEffect } from 'react';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,8 @@ import { useStatusToggle } from '@/lib/useStatusToggle';
 import { openWhatsAppCharge, formatBRL } from '@/lib/whatsapp';
 import { toast } from 'sonner';
 import EventHeading from '@/components/events/EventHeading';
+import EventLocationSection from '@/components/events/EventLocationSection';
+import { useEvents } from '@/lib/useEvents';
 import {
   parseISO,
   differenceInDays
@@ -48,8 +50,53 @@ export default function EventDetailModal({
 }) {
   const { formatCurrency } = useFinancialVisibility();
   const { dailyWork } = useDailyWork();
+  const { update: updateEvent } = useEvents();
   const [applying12h, setApplying12h] = useState(false);
+  const [savingLocation, setSavingLocation] = useState(false);
+  const [locDraft, setLocDraft] = useState({
+    location: '',
+    location_city: '',
+    location_state: '',
+    location_lat: null,
+    location_lng: null,
+  });
   const { confirmEvent, toggling } = useStatusToggle();
+
+  useEffect(() => {
+    if (!event) return;
+    setLocDraft({
+      location: event.location || '',
+      location_city: event.location_city || '',
+      location_state: event.location_state || '',
+      location_lat: event.location_lat ?? null,
+      location_lng: event.location_lng ?? null,
+    });
+  }, [event?.id, event?.location, event?.location_city, event?.location_state, event?.location_lat, event?.location_lng]);
+
+  const locationDirty =
+    event &&
+    (locDraft.location !== (event.location || '') ||
+      locDraft.location_lat !== (event.location_lat ?? null) ||
+      locDraft.location_lng !== (event.location_lng ?? null));
+
+  const persistLocation = async (patch = locDraft) => {
+    if (!event?.id) return;
+    setSavingLocation(true);
+    try {
+      await updateEvent(event.id, {
+        location: patch.location?.trim() || null,
+        location_city: patch.location_city || null,
+        location_state: patch.location_state || null,
+        location_lat: patch.location_lat,
+        location_lng: patch.location_lng,
+      });
+      toast.success('Local do evento salvo');
+    } catch (err) {
+      toast.error('Erro ao salvar local', { description: err.message });
+    } finally {
+      setSavingLocation(false);
+    }
+  };
 
   const handleShareWhatsApp = () => {
     const phone = client?.phone;
@@ -206,16 +253,6 @@ export default function EventDetailModal({
                   </div>
                 </div>
 
-                {event.location && (
-                  <div className="flex items-start gap-2">
-                    <MapPin className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-sm text-slate-400">Local</p>
-                      <p className="text-white">{event.location}</p>
-                    </div>
-                  </div>
-                )}
-
                 {event.description && (
                   <div className="flex items-start gap-2">
                     <FileText className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
@@ -224,6 +261,43 @@ export default function EventDetailModal({
                       <p className="text-white">{event.description}</p>
                     </div>
                   </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-cyan-400" />
+                  Local do evento
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <EventLocationSection
+                  location={locDraft.location}
+                  location_city={locDraft.location_city}
+                  location_state={locDraft.location_state}
+                  location_lat={locDraft.location_lat}
+                  location_lng={locDraft.location_lng}
+                  onChange={(patch) => setLocDraft((prev) => ({ ...prev, ...patch }))}
+                  onGpsCaptured={(captured) => persistLocation(captured)}
+                />
+                {locationDirty && (
+                  <Button
+                    type="button"
+                    onClick={() => persistLocation()}
+                    disabled={savingLocation}
+                    className="w-full sm:w-auto bg-cyan-600 hover:bg-cyan-700"
+                  >
+                    {savingLocation ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Salvando...
+                      </>
+                    ) : (
+                      'Salvar local'
+                    )}
+                  </Button>
                 )}
               </CardContent>
             </Card>

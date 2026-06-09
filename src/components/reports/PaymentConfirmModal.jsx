@@ -54,15 +54,15 @@ export default function PaymentConfirmModal({ event, isOpen, onClose, onSuccess 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-slate-900 border-slate-700 text-white">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md max-h-[90dvh] bg-slate-900 border-slate-700 text-white flex flex-col overflow-hidden p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-xl">
             <CheckCircle className="w-5 h-5 text-green-400" />
             Confirmar Recebimento
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="bp-modal-scroll px-6 space-y-4">
           <div className="space-y-2">
             <p className="text-sm text-slate-400">Evento:</p>
             <p className="font-semibold text-white">{event.title}</p>
@@ -112,7 +112,7 @@ export default function PaymentConfirmModal({ event, isOpen, onClose, onSuccess 
           </div>
         </div>
 
-        <DialogFooter className="gap-2">
+        <DialogFooter className="gap-2 px-6 py-4 border-t border-slate-700 flex-shrink-0">
           <Button
             variant="outline"
             onClick={onClose}

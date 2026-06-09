@@ -102,15 +102,15 @@ export default function DashboardCustomizer({ isOpen, onClose, onSettingsChange 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-3xl max-h-[90dvh] overflow-y-auto bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-3xl max-h-[90dvh] bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200 flex flex-col overflow-hidden p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
           <DialogTitle className="text-xl font-bold text-white flex items-center gap-3">
             <Settings className="w-6 h-6 text-cyan-400" />
             Personalizar Dashboard
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="bp-modal-scroll px-6 pb-6 space-y-6">
           <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
               <CardTitle className="text-cyan-300 flex items-center gap-2">

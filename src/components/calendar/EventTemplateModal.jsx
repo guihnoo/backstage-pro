@@ -34,8 +34,8 @@ const EventTemplateModal = ({ isOpen, onClose, onSelectTemplate }) => {
     <AnimatePresence>
       {isOpen && (
         <Dialog open onOpenChange={onClose}>
-          <DialogContent className="sm:max-w-md bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200">
-            <DialogHeader>
+          <DialogContent className="sm:max-w-md max-h-[90dvh] bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200 flex flex-col overflow-hidden p-0">
+            <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
               <DialogTitle className="flex items-center gap-2 text-cyan-400">
                 <Sparkles className="w-5 h-5" />
                 Usar Template de Evento
@@ -44,7 +44,7 @@ const EventTemplateModal = ({ isOpen, onClose, onSelectTemplate }) => {
                 Selecione um template para preencher os dados do evento rapidamente.
               </DialogDescription>
             </DialogHeader>
-            <div className="max-h-96 overflow-y-auto space-y-3 pr-2 -mr-2">
+            <div className="bp-modal-scroll px-6 pb-6 space-y-3">
               {loading ? (
                 <div className="flex justify-center items-center h-40">
                   <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />

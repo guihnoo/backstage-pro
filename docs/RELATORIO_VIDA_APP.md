@@ -3,10 +3,10 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-05 (sessão 4)  
+**Última atualização:** 2026-06-05 (sessão 5)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** `e1424fa` — mapa SVG Brasil + lazy load  
-**Commits da sessão:** `3fbe800` → `f87b72a` → `e1424fa`  
+**Último commit:** (pendente) — local evento GPS + scroll modais  
+**Commits da sessão:** `e1424fa` → (local GPS)  
 **Último deploy:** 2026-06-05 — Vercel prod (`backstage-pro-beta.vercel.app`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
@@ -20,6 +20,7 @@
 | Google Calendar OAuth + sync | Configurado (modo Teste no GCP); validar E2E com usuário |
 | UX cores / hierarquia empresa | Implementado (`brandColors`, `EventHeading`) |
 | Combobox cliente + geocode local | Implementado |
+| Local do evento (endereço + GPS check-in) | `EventLocationSection` — criar, detalhe, action sheet |
 | Páginas legais OAuth | `/privacidade`, `/termos` |
 | Scroll / modais / z-index | Corrigido (v1–v3); popovers/select `z-[110]` dentro de dialogs |
 | Badge rascunho (clientes) | Cards + modal detalhe + filtro **Rascunhos** |
@@ -56,6 +57,16 @@ Ordem oficial após fix de scroll (2026-06-05):
 ---
 
 ## Changelog
+
+### 2026-06-05 (sessão 5) — Local do evento + scroll modais
+
+- `EventLocationSection`: autocomplete de endereço + botão **Check-in no local (GPS)** com reverse geocode
+- `EventForm`: scroll `ScrollArea fill` + import `Select` corrigido
+- `EventDetailModal` (calendar + reports): editar/salvar local; GPS salva automaticamente
+- `EventActionSheet`: check-in GPS rápido no mobile
+- Scroll: `KPIDetailModal`, `EventTemplateModal`, `FeedbackModal`, `PaymentConfirmModal`, `SourcesModal`, `DashboardCustomizer` → `bp-modal-scroll`
+
+---
 
 ### 2026-06-05 (sessão 4) — Mapa SVG Brasil
 

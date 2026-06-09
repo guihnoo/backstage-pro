@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Sparkles, BookmarkPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { hardNavigate } from '@/lib/hardNavigate';
@@ -16,7 +18,7 @@ import EventTemplateModal from './EventTemplateModal';
 import { resolveEventColor } from '@/lib/brandColors';
 import { useClients } from '@/lib/useClients';
 import ClientCombobox from '@/components/clients/ClientCombobox';
-import LocationAutocomplete from '@/components/events/LocationAutocomplete';
+import EventLocationSection from '@/components/events/EventLocationSection';
 
 const PAYMENT_MODELS = [
   { value: 'HORAS_EXTRAS', label: 'Horas Extras' },
@@ -270,7 +272,7 @@ export default function EventForm({
         </DialogHeader>
 
         <form className="flex flex-col flex-1 min-h-0" onSubmit={handleSubmit}>
-          <div className="flex-1 min-h-0 overflow-y-auto">
+          <ScrollArea fill>
           <div className="space-y-4 p-4 sm:p-6 pb-2">
           <div className="space-y-2">
             <Label>Cliente</Label>
@@ -340,23 +342,14 @@ export default function EventForm({
             </p>
           )}
 
-          <div className="space-y-2">
-            <Label>Local do evento</Label>
-            <LocationAutocomplete
-              value={formData.location}
-              onChange={(text) => setField('location', text)}
-              onSelect={(item) => {
-                setFormData((prev) => ({
-                  ...prev,
-                  location: item.location,
-                  location_city: item.city || prev.location_city,
-                  location_state: item.stateCode || item.state || prev.location_state,
-                  location_lat: item.lat,
-                  location_lng: item.lng,
-                }));
-              }}
-            />
-          </div>
+          <EventLocationSection
+            location={formData.location}
+            location_city={formData.location_city}
+            location_state={formData.location_state}
+            location_lat={formData.location_lat}
+            location_lng={formData.location_lng}
+            onChange={(patch) => setFormData((prev) => ({ ...prev, ...patch }))}
+          />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -396,7 +389,7 @@ export default function EventForm({
             <Textarea value={formData.observacoes_md} onChange={(e) => setField('observacoes_md', e.target.value)} className="bg-slate-800 border-slate-700" />
           </div>
           </div>
-          </div>
+          </ScrollArea>
 
           <div className="flex flex-col sm:flex-row gap-2 px-4 py-3 sm:px-6 border-t border-slate-700 flex-shrink-0 pb-safe">
             <Button

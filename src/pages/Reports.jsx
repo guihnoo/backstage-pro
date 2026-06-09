@@ -138,7 +138,7 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type, onItemClick
     }
 
     return (
-      <div className="space-y-4 max-h-96 overflow-y-auto">
+      <div className="space-y-4">
         {data.map((item, index) => (
           <div
             key={index}
@@ -162,14 +162,14 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type, onItemClick
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-2xl max-h-[90dvh] flex flex-col overflow-hidden p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
           <DialogTitle className="text-xl font-bold text-purple-300">{title}</DialogTitle>
           <DialogDescription className="text-slate-400">
             Detalhamento dos registros que compõem esta métrica
           </DialogDescription>
         </DialogHeader>
-        {getModalContent()}
+        <div className="bp-modal-scroll px-6 pb-6">{getModalContent()}</div>
       </DialogContent>
     </Dialog>
   );

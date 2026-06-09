@@ -1,5 +1,5 @@
 ﻿
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Dialog,
@@ -31,8 +31,13 @@ import {
   Zap,
   Building2,
   Copy,
-  Plus
+  Plus,
+  MapPin,
+  Loader2,
 } from 'lucide-react';
+import EventLocationSection from '@/components/events/EventLocationSection';
+import { useEvents } from '@/lib/useEvents';
+import { toast } from 'sonner';
 
 const InfoItem = ({ icon: Icon, label, value, color = 'text-slate-300', isCurrency = false, formatFn }) => {
   const { formatCurrency, isVisible } = useFinancialVisibility();
@@ -125,6 +130,51 @@ const EventDetailModal = React.memo(function EventDetailModal({
   onAddExpense,
 }) {
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
+  const { update: updateEvent } = useEvents();
+  const [savingLocation, setSavingLocation] = useState(false);
+  const [locDraft, setLocDraft] = useState({
+    location: '',
+    location_city: '',
+    location_state: '',
+    location_lat: null,
+    location_lng: null,
+  });
+
+  useEffect(() => {
+    if (!event) return;
+    setLocDraft({
+      location: event.location || '',
+      location_city: event.location_city || '',
+      location_state: event.location_state || '',
+      location_lat: event.location_lat ?? null,
+      location_lng: event.location_lng ?? null,
+    });
+  }, [event?.id, event?.location, event?.location_city, event?.location_state, event?.location_lat, event?.location_lng]);
+
+  const locationDirty =
+    event &&
+    (locDraft.location !== (event.location || '') ||
+      locDraft.location_lat !== (event.location_lat ?? null) ||
+      locDraft.location_lng !== (event.location_lng ?? null));
+
+  const persistLocation = async (patch = locDraft) => {
+    if (!event?.id) return;
+    setSavingLocation(true);
+    try {
+      await updateEvent(event.id, {
+        location: patch.location?.trim() || null,
+        location_city: patch.location_city || null,
+        location_state: patch.location_state || null,
+        location_lat: patch.location_lat,
+        location_lng: patch.location_lng,
+      });
+      toast.success('Local do evento salvo');
+    } catch (err) {
+      toast.error('Erro ao salvar local', { description: err.message });
+    } finally {
+      setSavingLocation(false);
+    }
+  };
 
   const statusConfig = useMemo(() => event ? getEventStatusConfig(event) : {}, [event]);
   const statusLabel = useMemo(() => event ? getEventStatusLabel(event) : '', [event]);
@@ -239,6 +289,41 @@ const EventDetailModal = React.memo(function EventDetailModal({
                   {event.paid_amount > 0 && <InfoItem icon={DollarSign} label="Valor Recebido" value={event.paid_amount} isCurrency />}
                 </div>
               </div>
+
+              <Card className="bg-slate-800/40 border-slate-700">
+                <CardContent className="p-3 sm:p-4 space-y-3">
+                  <h3 className="font-semibold text-white text-sm sm:text-base flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-cyan-400" />
+                    Local do evento
+                  </h3>
+                  <EventLocationSection
+                    location={locDraft.location}
+                    location_city={locDraft.location_city}
+                    location_state={locDraft.location_state}
+                    location_lat={locDraft.location_lat}
+                    location_lng={locDraft.location_lng}
+                    onChange={(patch) => setLocDraft((prev) => ({ ...prev, ...patch }))}
+                    onGpsCaptured={(captured) => persistLocation(captured)}
+                  />
+                  {locationDirty && (
+                    <Button
+                      type="button"
+                      onClick={() => persistLocation()}
+                      disabled={savingLocation}
+                      className="w-full sm:w-auto bg-cyan-600 hover:bg-cyan-700 h-10 min-h-[44px]"
+                    >
+                      {savingLocation ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Salvando...
+                        </>
+                      ) : (
+                        'Salvar local'
+                      )}
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
 
               <div className="space-y-4">
                 <h3 className="font-semibold text-white text-sm sm:text-base">Registros de Trabalho ({dailyWork.length})</h3>

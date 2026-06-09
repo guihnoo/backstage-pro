@@ -55,14 +55,15 @@ export default function FeedbackModal({ isOpen, onClose }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200 sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200 sm:max-w-md max-h-[90dvh] flex flex-col overflow-hidden p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">Enviar Feedback</DialogTitle>
           <DialogDescription>
             Sua opinião é muito importante para nós.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+        <div className="bp-modal-scroll px-6 space-y-4">
           <div>
             <label className="text-sm font-medium text-slate-300 mb-2 block">
               Como você avalia sua experiência?
@@ -95,7 +96,8 @@ export default function FeedbackModal({ isOpen, onClose }) {
               {message.length} / 1000
             </p>
           </div>
-          <DialogFooter>
+        </div>
+          <DialogFooter className="px-6 py-4 border-t border-slate-800 flex-shrink-0">
             <Button type="button" variant="outline" onClick={onClose} className="bg-slate-700 hover:bg-slate-600">
               Cancelar
             </Button>
