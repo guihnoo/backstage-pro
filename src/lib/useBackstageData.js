@@ -1,9 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from './supabase';
 import { differenceInDays, parseISO } from 'date-fns';
+import { calcEventDays } from './eventFinance';
 
-const eventValue = (e) =>
-  Number(e.daily_cache_value || e.actual_revenue || e.estimated_revenue || 0);
+const eventValue = (e) => {
+  if (Number(e.actual_revenue) > 0) return Number(e.actual_revenue);
+  if (Number(e.estimated_revenue) > 0) return Number(e.estimated_revenue);
+  if (Number(e.daily_cache_value) > 0) {
+    return Math.round(Number(e.daily_cache_value) * calcEventDays(e) * 100) / 100;
+  }
+  return 0;
+};
 
 export function useStats(userId) {
   const [stats, setStats] = useState({
@@ -35,7 +42,7 @@ export function useStats(userId) {
         const [eventsRes, dailyWorkRes] = await Promise.all([
           supabase
             .from('events')
-            .select('id, payment_status, status, client_id, daily_cache_value, actual_revenue, estimated_revenue, paid_amount')
+            .select('id, payment_status, status, client_id, start_date, end_date, daily_cache_value, actual_revenue, estimated_revenue, paid_amount')
             .eq('user_id', userId)
             .gte('start_date', monthStart)
             .lte('start_date', monthEnd),
@@ -326,14 +333,14 @@ export function useMeiStats(userId) {
 
         const { data } = await supabase
           .from('events')
-          .select('payment_status, paid_amount, daily_cache_value, actual_revenue, estimated_revenue')
+          .select('payment_status, paid_amount, start_date, end_date, daily_cache_value, actual_revenue, estimated_revenue')
           .eq('user_id', userId)
           .gte('start_date', yearStart)
           .lte('start_date', yearEnd);
 
         const total = (data || [])
           .filter(e => e.payment_status === 'paid')
-          .reduce((sum, e) => sum + Number(e.paid_amount || e.daily_cache_value || e.actual_revenue || e.estimated_revenue || 0), 0);
+          .reduce((sum, e) => sum + (Number(e.paid_amount) > 0 ? Number(e.paid_amount) : eventValue(e)), 0);
 
         if (!cancelled) setAnnualRevenue(total);
       } finally {

@@ -1,4 +1,5 @@
-﻿import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
+import { differenceInDays, parseISO } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,6 +78,20 @@ export default function EventForm({
   const setField = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
+
+  const eventSummary = useMemo(() => {
+    const daily = Number(formData.daily_cache_value) || 0;
+    if (!formData.start_date || daily <= 0) return null;
+    try {
+      const start = parseISO(formData.start_date);
+      const end = parseISO(formData.end_date || formData.start_date);
+      const days = Math.max(1, differenceInDays(end, start) + 1);
+      const total = Math.round(daily * days * 100) / 100;
+      return { days, total };
+    } catch {
+      return null;
+    }
+  }, [formData.start_date, formData.end_date, formData.daily_cache_value]);
 
   const handleClientChange = (clientId) => {
     const client = clients.find((c) => c.id === clientId);
@@ -275,7 +290,7 @@ export default function EventForm({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Cachê do evento</Label>
+              <Label>Cachê por Dia (R$)</Label>
               <Input type="number" step="0.01" min="0" value={formData.daily_cache_value} onChange={(e) => setField('daily_cache_value', e.target.value)} className="bg-slate-800 border-slate-700" />
             </div>
             <div className="space-y-2">
@@ -294,6 +309,17 @@ export default function EventForm({
               </Select>
             </div>
           </div>
+
+          {eventSummary && (
+            <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-cyan-900/20 border border-cyan-700/30 text-sm">
+              <span className="text-slate-400">
+                {eventSummary.days} {eventSummary.days === 1 ? 'dia' : 'dias'} × R$ {Number(formData.daily_cache_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </span>
+              <span className="font-bold text-cyan-300">
+                = R$ {eventSummary.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </span>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label>Observacoes</Label>
