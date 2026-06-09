@@ -16,7 +16,7 @@ export default function EventListModal({ isOpen, onClose, title, events = [], on
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-2xl h-[90vh] bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200 flex flex-col p-0 overflow-hidden">
+            <DialogContent className="sm:max-w-2xl h-[90dvh] bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200 flex flex-col p-0 overflow-hidden">
                 <DialogHeader className="p-6 pb-4 border-b border-slate-800">
                     <DialogTitle className="text-lg sm:text-xl font-bold text-white font-display">
                         {title}
