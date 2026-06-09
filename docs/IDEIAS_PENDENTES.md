@@ -12,12 +12,12 @@
 | # | Ideia | Status | Onde / notas |
 |---|-------|--------|--------------|
 | 1 | App **premium** — sensação native PWA, animações Framer | 🔄 | Várias telas OK; polish contínuo |
-| 2 | **Revisão página a página** com testes e correções scroll/modais | 🔄 | Este doc + `AUDITORIA_PAGINAS.md` |
-| 3 | Cards/páginas/modais **sem rolagem** — corrigir todos | 🔄 | Batches scroll sessões 2–6; usuário ainda reporta casos |
+| 2 | **Revisão página a página** com testes e correções scroll/modais | ✅ | Sessão 10 — auditoria completa, todas 🟢 |
+| 3 | Cards/páginas/modais **sem rolagem** — corrigir todos | ✅ | Sessão 10 — todos os padrões validados |
 | 4 | Gráficos financeiros animados no dashboard | ⬜ | Backlog médio |
 | 5 | Relógios dinâmicos / dados em tempo real na Home | ⬜ | |
 | 6 | Modais CRM automatizados (fluxos inteligentes) | ⬜ | |
-| 7 | Celebração ao desbloquear badge (Goals) | ⬜ | STRATEGIC_ANALYSIS |
+| 7 | Celebração ao desbloquear badge (Goals) | ✅ | `BadgeCelebration` implementado — partículas + auto-close |
 
 ---
 
@@ -29,7 +29,7 @@
 | 9 | Local do evento (endereço + GPS check-in) | ✅ | EventLocationSection, Modo Palco |
 | 10 | Mapa Brasil visitados (relatórios) | ✅ | BrazilVisitedMap |
 | 11 | Alertas agenda — check-in local hoje | ✅ | AlertsPanel |
-| 12 | Busca inteligente empresas / CNPJ compartilhado | ✅ | migrations 020 + Edge Function |
+| 12 | Busca inteligente empresas / CNPJ compartilhado | ✅ | migrations 020 + Edge Function + NF-e XML sessão 10 |
 | 13 | Export PDF/CSV relatórios | ✅ | exportReport.js |
 | 14 | OCR recibo despesas (ReceiptAnalyzer) | 🟡 | Manual OK; scan “em breve” |
 | 15 | PWA offline refinado + sync estado | ⬜ | PWA_ROADMAP |
@@ -43,7 +43,7 @@
 
 | # | Ideia | Status | Onde / notas |
 |---|-------|--------|--------------|
-| 19 | **Registrar vida do app** (Cursor + Claude Code) | 🔄 | `RELATORIO_VIDA_APP.md`, `AGENT_LOG.md`, este arquivo |
+| 19 | **Registrar vida do app** (Cursor + Claude Code) | ✅ | Sessão 9–10: `CLAUDE.md`, RELATORIO, AUDITORIA, IDEIAS, AGENT_LOG |
 | 20 | Não repetir bugs (lazy routes, scroll, OAuth) | 🔄 | Seção “Bugs conhecidos” em AUDITORIA |
 | 21 | Check-in em itens prontos sem quebrar o que funciona | 🔄 | LOCKED em AGENTS.md |
 | 22 | Testes E2E smoke em cada release | 🟡 | 13 smoke tests; expandir por página |
@@ -64,7 +64,13 @@
 
 | # | Ideia | Data | Status |
 |---|-------|------|--------|
-| 26 | _(espaço livre)_ | | |
+| 26 | PDF de fechamento de evento (relatório final para cliente) | 2026-06-09 | ✅ `EventPDFDocument` + `@react-pdf/renderer` |
+| 27 | Template de fechamento configurável no Perfil | 2026-06-09 | ✅ Campos: nome, subtítulo, PIX |
+| 28 | Campo Razão Social separado do Nome Fantasia no cadastro | 2026-06-09 | ✅ `ClientForm` + `CompanySearchInput` |
+| 29 | Importar dados de empresa via NF-e XML | 2026-06-09 | ✅ Parse local no browser, extrai dest/emit |
+| 30 | Busca por CNPJ dedicada (sem pesquisa por nome) | 2026-06-09 | ✅ Aba CNPJ no `CompanySearchInput` |
+| 31 | Goals: mostrar A Receber nos círculos de progresso | 2026-06-09 | ✅ 3° círculo âmbar |
+| 32 | Expenses: agrupar despesas por mês | 2026-06-09 | ✅ `MonthGroup` com collapse animado |
 
 ---
 

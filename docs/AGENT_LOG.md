@@ -6,6 +6,15 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-09
 
+### SESSAO-10 — Auditoria geral scroll/modais + registro docs ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Auditoria**: `/calendar`, `/reports`, `/expenses`, `/goals`, `/clients`, `/`, `/profile` — 🟢 PASS
+- **Sem fix de código crítico** — padrões scroll já corretos (batches sessões 2–6)
+- **Órfãos**: `StatDetailModal` não importado; `NotificationCenter` dropdown OK
+- **Docs**: RELATORIO sessão 10, AUDITORIA_PAGINAS checkboxes, IDEIAS_PENDENTES atualizado
+- **Build**: ✅
+- **Deploy**: pendente — commits locais `91778c2`–`d077cca` não pushados
+
 ### HOTFIX-LAZY-ROUTES — Páginas travadas em Carregando ✅
 - **Agente**: Cursor (Composer)
 - **Bug**: `React.lazy()` + Suspense em `/calendar`, `/clients`, `/expenses`, `/reports`, `/client-detail`, `/ai-mentor` — chunk carregava mas módulo não resolvia; fallback infinito

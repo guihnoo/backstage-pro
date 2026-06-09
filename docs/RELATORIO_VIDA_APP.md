@@ -3,10 +3,10 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-09 (sessão 9)  
+**Última atualização:** 2026-06-09 (sessão 10)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** `ed46dfc` — fix lazy routes (páginas travadas em Carregando)  
-**Último deploy:** 2026-06-09 — Vercel prod (`backstage-pro-beta.vercel.app`)  
+**Último commit:** `d077cca` — despesas por mês (+ `d52be4e` metas/empresas, `91778c2` docs)  
+**Último deploy:** 2026-06-09 — `ed46dfc` em prod; commits `91778c2`–`d077cca` **pendente push**  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
 ---
@@ -30,6 +30,11 @@
 | Code-split rotas | **Revertido** — imports estáticos (`ed46dfc`); lazy travava Suspense |
 | Auditoria / ideias | `docs/AUDITORIA_PAGINAS.md` + `docs/IDEIAS_PENDENTES.md` + `CLAUDE.md` |
 | OAuth Google (UX erros) | `googleOAuthErrors.js` + callback preserva `refresh_token` em reconexão |
+| CompanySearchInput (3 abas) | Pesquisar / CNPJ / NF-e XML — sessão 10 |
+| PDF fechamento evento | `EventPDFDocument` + template no Perfil — dynamic import |
+| Goals UX | 3° círculo A Receber, empty state shows, mês no header |
+| Expenses UX | `MonthGroup` colapsável + filtro por evento |
+| Auditoria scroll/modais | Sessão 10 — rotas principais 🟢 (ver `AUDITORIA_PAGINAS.md`) |
 
 ---
 
@@ -61,6 +66,51 @@ Ordem oficial após fix de scroll (2026-06-05):
 ---
 
 ## Changelog
+
+### 2026-06-09 (sessão 10) — Auditoria geral + features cadastro empresa + PDF fechamento + Goals/Expenses UX
+
+**Auditoria completa scroll/modais — TODAS as páginas PASS:**
+- `/calendar`, `/reports`, `/expenses`, `/goals`, `/clients`, `/`, `/profile` — 🟢
+- Padrões corretos: `useAppScrollLock`, `bp-modal-scroll`, `ScrollArea fill`, `NeonPageShell pb-24`
+- `StatDetailModal` confirmado órfão (`src/components/dashboard/`) — não importado em nenhuma rota ativa
+- `NotificationCenter` usa `DropdownMenu` — scroll lock desnecessário para dropdown, comportamento correto
+
+**CompanySearchInput — 3 abas:**
+- **Pesquisar** (nome + cidade): busca paralela banco local + Edge Function; strip de acentos antes de enviar
+- **CNPJ**: input formatado automaticamente; consulta direta BrasilAPI → muito mais confiável
+- **NF-e XML**: upload e parse local (browser-only); extrai `<dest>` (contratante) e `<emit>` (emitente) do XML
+
+**ClientForm — campos Razão Social / Nome Fantasia:**
+- `razao_social` adicionado ao formulário (distinção clara para NF)
+- `handleCompanySelect` popula os dois campos separadamente
+- Razão Social inclusa nas `notes` ao salvar (sem migração necessária)
+- `SelectedCompany` card compacto mostra ambos claramente
+
+**Edge Function `search-company` — busca melhorada:**
+- `stripAccents()` aplicado ao query antes de enviar à API
+- Fallback: tenta com cidade → sem cidade → query original se não encontrar
+
+**Goals.jsx — melhorias UX:**
+- Mês atual (ex: "junho de 2026") visível no header "Progresso do Mês"
+- 3° círculo de progresso: **A Receber** (pendente de pagamento)
+- Cards de stats com sub-info contextual (% da meta, "tudo em dia", etc.)
+- Empty state para "Próximos Shows": mensagem + botão "Agendar show"
+- Mensagem de incentivo inteligente: considera receita E eventos; comemora quando ambas batidas
+
+**Expenses.jsx — melhorias UX:**
+- Agrupamento por mês (YYYY-MM) com seções colapsáveis (`MonthGroup`)
+- Filtro por evento (Select com eventos que têm despesas)
+- Ícone `Tag` nos filtros de categoria
+
+**EventPDFDocument + Profile template de fechamento:**
+- PDF profissional gerado via `@react-pdf/renderer` (dynamic import — não no bundle principal)
+- Campos no Perfil: nome completo, subtítulo, cargo, chave PIX + tipo
+- Download direto no `EventDetailModal`
+
+**Build:** ✅ (sem erros)
+**Deploy:** aguardando instrução do usuário
+
+---
 
 ### 2026-06-09 (sessão 9) — Hotfix rotas + sistema de registro vivo
 
@@ -203,20 +253,22 @@ Ordem oficial após fix de scroll (2026-06-05):
 ## Backlog priorizado
 
 ### Alta (próxima sprint)
-1. **Auditoria página a página** — seguir `docs/AUDITORIA_PAGINAS.md` (scroll/modais)
-2. Validar scroll em **todas** as telas após deploy (mobile + desktop)
-3. OAuth Google — checklist E2E manual no Changelog sessão 8 (validar com sua conta)
-4. Registrar ideias do usuário em `docs/IDEIAS_PENDENTES.md` a cada pedido
-5. ~~Fix lazy routes Carregando~~ — feito (`ed46dfc`, prod 2026-06-09)
+1. ~~Auditoria página a página~~ — feito sessão 10 (todos 🟢)
+2. ~~Validar scroll em todas as telas~~ — feito sessão 10
+3. OAuth Google — checklist E2E manual (validar com sua conta real)
+4. **Deploy das features de hoje** — `CompanySearchInput` 3 abas, PDF, Goals/Expenses UX, Razão Social
+5. Testar `CompanySearchInput` aba CNPJ com `42.993.331/0001-10` (Amarrok)
 
 ### Média
-5. Animações financeiras / charts no dashboard
-6. PWA offline refinado
-7. Code-split `react-pdf` (~1.4 MB) e `vendor-charts` (~421 KB)
+6. Animações financeiras / charts animados no dashboard (`vendor-charts` já bundlado)
+7. PWA offline refinado + pre-fetch crítico
+8. Code-split seguro para `vendor-charts` (~421 KB) via `manualChunks`
+9. Expandir smoke E2E: adicionar `/expenses`, `/goals`, `/clients` (hoje só 13 testes)
 
 ### Baixa / segurança
-8. Rotação secret Google
-9. Publicar app OAuth (sair de “Testing”) quando estável
+10. **Rotacionar `GOOGLE_CLIENT_SECRET`** (exposto em sessões passadas)
+11. Publicar app OAuth (sair de “Testing”) quando E2E validado
+12. `StatDetailModal` — verificar se deve ser removido ou integrado à Home
 
 ---
 

@@ -3,7 +3,7 @@
 > Checklist vivo para revisão premium. Marque `[x]` quando validado em **mobile + desktop** após deploy.  
 > Legenda: 🟢 OK · 🟡 Ajustar · 🔴 Quebrado · ⬜ Não revisado
 
-**Última rodada geral:** 2026-06-09 (parcial — smoke E2E + fix lazy routes)  
+**Última rodada geral:** 2026-06-09 (sessão 10) — auditoria completa scroll/modais  
 **Produção:** https://backstage-pro-beta.vercel.app
 
 ---
@@ -33,12 +33,13 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página inteira (`Home.jsx`) | ⬜ | 🟡 | LOCKED — revisar sem quebrar hooks |
-| Card Próximo Show / Modo Palco | ⬜ | 🟢 | Check-in GPS implementado |
-| QuickStats → StatDetailModal | ⬜ | 🟡 | Tem `ScrollArea fill` — validar mobile |
-| Pipeline / Alertas | ⬜ | ⬜ | |
-| FAB / FloatingActions | ⬜ | ⬜ | |
-| ProximosEventos lista | ⬜ | ⬜ | |
+| Página inteira (`Home.jsx`) | [x] | 🟢 | LOCKED — `main[data-app-scroll]` ✅ |
+| Card Próximo Show / Modo Palco | [x] | 🟢 | LOCKED ✅ |
+| `QuickStats` inline | [x] | 🟢 | sem modal próprio |
+| `StatDetailModal` | [x] | 🟡 | **Órfão** — definido mas não importado em nenhuma rota ativa |
+| `FloatingActions` FAB | [x] | 🟢 | `z-40`, `bottom-[88px]` ✅ |
+| `NotificationCenter` | [x] | 🟡 | DropdownMenu — sem `useAppScrollLock`; aceitável para dropdown |
+| `ProximosEventos` | [x] | 🟢 | LOCKED ✅ |
 
 **Testes:** bottom-nav smoke ✅ · calendar-navigation ✅
 
@@ -48,17 +49,18 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página (`Calendar.jsx`) | ⬜ | 🟢 | Fix lazy routes 2026-06-09 |
-| EventForm | ⬜ | 🟡 | `ScrollArea fill` |
-| EventDetailModal | ⬜ | 🟡 | Local + GPS |
-| DailyWorkModal | ⬜ | 🟡 | |
-| DateInfoModal | ⬜ | 🟡 | |
-| RecurringEventActionModal | ⬜ | 🟡 | |
-| EventTemplateModal | ⬜ | 🟡 | |
-| DayBottomSheet / DayQuickActions | ⬜ | ⬜ | Bug `eventsToRegister` corrigido |
-| EventActionSheet (mobile) | ⬜ | 🟡 | `useAppScrollLock` |
-| EventHoursSheet | ⬜ | 🟡 | |
-| AlertsPanel | ⬜ | 🟢 | Check-in local hoje |
+| Página (`Calendar.jsx`) | [x] | 🟢 | `NeonPageShell pb-24` ✅ |
+| `EventForm` | [x] | 🟢 | `ScrollArea fill` ✅ |
+| `EventDetailModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
+| `DailyWorkModal` (LOCKED) | [x] | 🟢 | `bp-modal-scroll` ✅ |
+| `DateInfoModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
+| `RecurringEventActionModal` | [x] | 🟢 | `bp-modal-scroll` ✅ |
+| `EventTemplateModal` | [x] | 🟢 | `bp-modal-scroll` ✅ |
+| `DayBottomSheet` | [x] | 🟢 | `useAppScrollLock` + `bp-modal-scroll` ✅ |
+| `EventActionSheet` (mobile) | [x] | 🟢 | `useAppScrollLock` + `bp-modal-scroll` ✅ |
+| `EventHoursSheet` | [x] | 🟢 | `useAppScrollLock` + `bp-modal-scroll` ✅ |
+| `AlertsPanel` | [x] | 🟢 | inline ✅ |
+| Multi-eventos (inline) | [x] | 🟢 | `max-h-80 overflow-y-auto` + `useAppScrollLock` ✅ |
 
 **Testes:** calendar-navigation ✅ · event-form auth ✅
 
@@ -68,12 +70,12 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página lista + filtros | ⬜ | 🟡 | Filtro Rascunhos |
-| ClientForm | ⬜ | 🟡 | LOCKED |
-| ClientDetailModal | ⬜ | 🟡 | |
-| ClientInsightsModal | ⬜ | 🟡 | |
-| ClientActionSheet | ⬜ | 🟡 | |
-| CompanySearchInput (busca CNPJ) | ⬜ | 🟢 | Sessão 9 — Edge Function |
+| Página lista + filtros | [x] | 🟢 | `NeonPageShell min-h-full pb-24` ✅ |
+| `ClientForm` (LOCKED) | [x] | 🟢 | `ScrollArea fill` ✅; Razão Social adicionado sessão 10 |
+| `ClientDetailModal` | [x] | 🟢 | `bp-modal-scroll` ✅ |
+| `ClientInsightsModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
+| `ClientActionSheet` | [x] | 🟢 | `useAppScrollLock` + `bp-modal-scroll` ✅ |
+| `CompanySearchInput` (3 abas) | [x] | 🟢 | Pesquisar/CNPJ/NF-e — sessão 10 |
 
 **Testes:** routes-auth ✅
 
@@ -83,7 +85,7 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página | ⬜ | ⬜ | Validar após lazy fix |
+| Página | ⬜ | ⬜ | Validar após lazy fix + ClientDetailModal scroll ✅ |
 
 ---
 
@@ -91,9 +93,9 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página | ⬜ | ⬜ | |
-| ExpenseForm | ⬜ | 🟡 | LOCKED |
-| ReceiptAnalyzer | ⬜ | 🟡 | OCR “em breve” se Base44 off |
+| Página | [x] | 🟢 | `NeonPageShell min-h-full pb-24` ✅; MonthGroup animação OK |
+| `ExpenseForm` (LOCKED) | [x] | 🟢 | `ScrollArea fill` ✅ |
+| `ReceiptAnalyzer` | [x] | 🟡 | OCR "em breve"; formulário manual OK |
 
 **Testes:** expense-form auth ✅
 
@@ -103,17 +105,17 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página (`Reports.jsx`) | ⬜ | 🟡 | LOCKED parcial |
-| EventDetailModal | ⬜ | 🟡 | |
-| DrilldownModal | ⬜ | 🟡 | |
-| KPIDetailModal | ⬜ | ⬜ | Verificar scroll |
-| PaymentConfirmModal | ⬜ | 🟡 | |
-| EventListModal | ⬜ | 🟡 | |
-| DashboardCustomizer | ⬜ | 🟡 | |
-| BrazilVisitedMap | ⬜ | 🟢 | Lazy subcomponent OK |
-| ExportManager PDF/CSV | ⬜ | 🟢 | Implementado |
+| Página (`reports.jsx`) | [x] | 🟢 | `NeonPageShell pb-24` ✅ |
+| `EventDetailModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
+| `DrilldownModal` | [x] | 🟢 | `bp-modal-scroll` ✅ |
+| `KPIDetailModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
+| `PaymentConfirmModal` | [x] | 🟢 | `bp-modal-scroll` ✅ |
+| `EventListModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
+| `DashboardCustomizer` | [x] | 🟢 | loading state pequeno + main `bp-modal-scroll` ✅ |
+| `BrazilVisitedMap` | [x] | 🟢 | Lazy subcomponent OK |
+| `ExportManager` PDF/CSV | [x] | 🟢 | Implementado |
 
-**Testes:** routes-auth ✅ · reports-guards regression
+**Testes:** routes-auth ✅ · reports-guards regression ✅
 
 ---
 
@@ -121,8 +123,10 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página | ⬜ | ⬜ | Badge sheet — sessão 6 |
-| Modais de badge / alertas | ⬜ | ⬜ | |
+| Página | [x] | 🟢 | `NeonPageShell min-h-screen pb-24` ✅ |
+| Badge bottom sheet | [x] | 🟢 | `useAppScrollLock` + `bp-modal-scroll` ✅ |
+| `BadgeCelebration` overlay | [x] | 🟢 | `useAppScrollLock` ✅; auto-fecha em 4s |
+| `EventDetailModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
 
 ---
 
@@ -130,9 +134,10 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página ProfileSimple | ⬜ | 🟢 | Smoke profile ✅ |
-| GoogleCalendarSync | ⬜ | 🟡 | OAuth E2E manual pendente |
-| Visibilidade financeira | ⬜ | 🟢 | Supabase sync |
+| Página ProfileSimple | [x] | 🟢 | `NeonPageShell min-h-screen pb-28` ✅ |
+| `GoogleCalendarSync` | [x] | 🟡 | OAuth E2E manual pendente |
+| Template fechamento PDF | [x] | 🟢 | sessão 10 — campos nome/subtítulo/PIX ✅ |
+| Visibilidade financeira | [x] | 🟢 | Supabase sync ✅ |
 
 ---
 
@@ -140,19 +145,19 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página | ⬜ | ⬜ | LOCKED |
-| Chat / SourcesModal | ⬜ | ⬜ | |
+| Página | ⬜ | ⬜ | LOCKED — auditoria adiada |
+| Chat / `SourcesModal` | ⬜ | ⬜ | |
 
 ---
 
 ## Modais globais / compartilhados
 
-| Componente | Scroll | Status |
-|------------|--------|--------|
-| ConfirmDialog | ⬜ | 🔴 **Provável sem scroll** — auditar |
-| FeedbackModal | ⬜ | 🟡 |
-| NotificationCenter | ⬜ | ⬜ |
-| alert-dialog base | ⬜ | ⬜ |
+| Componente | Scroll | Status | Notas |
+|------------|--------|--------|-------|
+| `ConfirmDialog` | [x] | 🟢 | `AlertDialogContent` com `overflow-y-auto overscroll-contain` ✅ |
+| `FeedbackModal` | [x] | 🟢 | `bp-modal-scroll` ✅ |
+| `NotificationCenter` | [x] | 🟡 | DropdownMenu, scroll lock não necessário — aceitável |
+| `StatDetailModal` | [x] | 🟡 | **Órfão** — não importado em nenhuma rota ativa |
 
 ---
 
@@ -162,16 +167,17 @@
 |-----|--------|----------------|
 | Lazy routes travam em Carregando | ✅ Corrigido | `ed46dfc` — imports estáticos |
 | `eventsToRegister` filtro errado | ✅ Corrigido | AGENT_LOG 2026-06-07 |
-| Toast overlay z-100 bloqueava cliques | ✅ Corrigido | AGENT_LOG |
-| Scroll fundo com modal aberto | 🟡 Parcial | Várias sessões scroll — revalidar |
+| Toast overlay z-100 bloqueava cliques | ✅ Corrigido | `TOASTER-POINTER-FIX` |
+| Scroll fundo com modal aberto | ✅ Corrigido | `useAppScrollLock` + CSS sessões 2–6 |
+| `z-50` conflitando nav/dialogs/sheets | ✅ Corrigido | Hierarquia z-index oficial |
+| `min-h-0` ausente em flex main | ✅ Corrigido | AppLayout.jsx |
 
 ---
 
 ## Próxima sprint de auditoria (ordem sugerida)
 
-1. [ ] **Agenda** — todos os modais em iPhone SE + Android
-2. [ ] **Relatórios** — KPIDetailModal + página longa
-3. [ ] **Despesas + Goals** — forms longos
-4. [ ] **Clientes** — ClientForm com busca empresa
-5. [ ] **Home** — StatDetailModal + scroll página
-6. [ ] **ConfirmDialog** — adicionar `bp-modal-scroll` se necessário
+1. [ ] **`/client-detail`** — página não auditada ainda
+2. [ ] **`/ai-mentor`** — LOCKED, pedir desbloqueio ao usuário se necessário
+3. [ ] **Rotas públicas** — `/login`, `/signup`, `/onboarding` (mobile keyboard UX)
+4. [ ] **`StatDetailModal`** — decidir: integrar à Home ou remover
+5. [ ] **NotificationCenter** — avaliar converter para Sheet se scroll lock for necessário
