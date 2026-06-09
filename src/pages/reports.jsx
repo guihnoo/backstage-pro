@@ -38,6 +38,7 @@ import EventForm from '@/components/calendar/EventForm';
 import ExpenseForm from '@/components/expenses/ExpenseForm';
 import { Skeleton } from '@/components/ui/skeleton';
 import EmptyState from '@/components/layout/EmptyState';
+import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useAuth } from '@/lib/authContext';
 import { applyAuto12Hours } from '@/lib/applyAuto12Hours';
@@ -226,6 +227,9 @@ export default function ReportsPage() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [editingEvent, setEditingEvent] = useState(null);
   const [editingExpense, setEditingExpense] = useState(null);
+  const [confirmDeleteEvent, setConfirmDeleteEvent] = useState(null);
+  const [confirmDeleteWork, setConfirmDeleteWork] = useState(null);
+  const [confirmDeleteExpense, setConfirmDeleteExpense] = useState(null);
 
   // Define isDataReady and hasError here
   const isDataReady = !loading.events && !loading.clients && !loading.dailyWork && !loading.expenses;
@@ -553,17 +557,20 @@ export default function ReportsPage() {
     toast.info('Preencha as novas datas para o evento duplicado');
   };
 
-  const handleEventDelete = async (eventId) => {
-    if (window.confirm('Tem certeza que deseja excluir este evento? Esta ação não pode ser desfeita.')) {
-      try {
-        // Aqui você chamaria a função de deleção
-        await deleteEvent(eventId);
-        toast.success('Evento excluído com sucesso!');
-        setSelectedEvent(null);
-        refreshData();
-      } catch (_e) {
-        toast.error('Erro ao excluir evento');
-      }
+  const handleEventDelete = (eventId) => {
+    setConfirmDeleteEvent(eventId);
+  };
+
+  const handleConfirmEventDelete = async () => {
+    try {
+      await deleteEvent(confirmDeleteEvent);
+      toast.success('Evento excluído com sucesso!');
+      setSelectedEvent(null);
+      refreshData();
+    } catch (_e) {
+      toast.error('Erro ao excluir evento');
+    } finally {
+      setConfirmDeleteEvent(null);
     }
   };
 
@@ -572,16 +579,19 @@ export default function ReportsPage() {
     toast.info('Edite o registro de trabalho diretamente na Agenda.');
   };
 
-  const handleWorkDelete = async (workId) => {
-    if (window.confirm('Tem certeza que deseja excluir este registro de trabalho?')) {
-      try {
-        // Aqui você chamaria a função de deleção
-        await deleteWork(workId);
-        toast.success('Registro de trabalho excluído!');
-        refreshData();
-      } catch (_e) {
-        toast.error('Erro ao excluir registro');
-      }
+  const handleWorkDelete = (workId) => {
+    setConfirmDeleteWork(workId);
+  };
+
+  const handleConfirmWorkDelete = async () => {
+    try {
+      await deleteWork(confirmDeleteWork);
+      toast.success('Registro de trabalho excluído!');
+      refreshData();
+    } catch (_e) {
+      toast.error('Erro ao excluir registro');
+    } finally {
+      setConfirmDeleteWork(null);
     }
   };
 
@@ -589,16 +599,19 @@ export default function ReportsPage() {
     setEditingExpense(expense);
   };
 
-  const handleExpenseDelete = async (expenseId) => {
-    if (window.confirm('Tem certeza que deseja excluir esta despesa?')) {
-      try {
-        // Aqui você chamaria a função de deleção
-        await deleteExpense(expenseId);
-        toast.success('Despesa excluída!');
-        refreshData();
-      } catch (_e) {
-        toast.error('Erro ao excluir despesa');
-      }
+  const handleExpenseDelete = (expenseId) => {
+    setConfirmDeleteExpense(expenseId);
+  };
+
+  const handleConfirmExpenseDelete = async () => {
+    try {
+      await deleteExpense(confirmDeleteExpense);
+      toast.success('Despesa excluída!');
+      refreshData();
+    } catch (_e) {
+      toast.error('Erro ao excluir despesa');
+    } finally {
+      setConfirmDeleteExpense(null);
     }
   };
 
@@ -898,6 +911,34 @@ export default function ReportsPage() {
         expense={editingExpense}
         events={data.events}
         onSuccess={() => { setEditingExpense(null); refreshData(); }}
+      />
+
+      <ConfirmDialog
+        open={!!confirmDeleteEvent}
+        onOpenChange={(open) => !open && setConfirmDeleteEvent(null)}
+        title="Excluir evento?"
+        description="Esta ação não pode ser desfeita."
+        confirmLabel="Excluir"
+        destructive
+        onConfirm={handleConfirmEventDelete}
+      />
+      <ConfirmDialog
+        open={!!confirmDeleteWork}
+        onOpenChange={(open) => !open && setConfirmDeleteWork(null)}
+        title="Excluir registro de trabalho?"
+        description="Esta ação não pode ser desfeita."
+        confirmLabel="Excluir"
+        destructive
+        onConfirm={handleConfirmWorkDelete}
+      />
+      <ConfirmDialog
+        open={!!confirmDeleteExpense}
+        onOpenChange={(open) => !open && setConfirmDeleteExpense(null)}
+        title="Excluir despesa?"
+        description="Esta ação não pode ser desfeita."
+        confirmLabel="Excluir"
+        destructive
+        onConfirm={handleConfirmExpenseDelete}
       />
     </NeonPageShell>
   );
