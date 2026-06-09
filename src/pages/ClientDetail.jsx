@@ -340,7 +340,7 @@ export default function ClientDetailPage() {
 
       <AnimatePresence>
         {showClientForm && (
-          <ClientForm isOpen={showClientForm} client={client} onClose={() => setShowClientForm(false)} onSaveSuccess={handleSuccess} />
+          <ClientForm client={client} onSuccess={handleSuccess} onCancel={() => setShowClientForm(false)} />
         )}
         {showEventForm && (
           <EventForm
