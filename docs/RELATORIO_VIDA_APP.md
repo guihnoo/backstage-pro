@@ -3,10 +3,10 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-05 (sessão 2)  
+**Última atualização:** 2026-06-05 (sessão 4)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** `71bd732` — badge rascunho + scroll batch 2  
-**Commits da sessão:** `3fbe800` → `71bd732`  
+**Último commit:** (pendente) — mapa SVG Brasil + lazy load  
+**Commits da sessão:** `3fbe800` → `f87b72a` → (mapa SVG)  
 **Último deploy:** 2026-06-05 — Vercel prod (`backstage-pro-beta.vercel.app`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
@@ -24,7 +24,7 @@
 | Scroll / modais / z-index | Corrigido (v1–v3); popovers/select `z-[110]` dentro de dialogs |
 | Badge rascunho (clientes) | Cards + modal detalhe + filtro **Rascunhos** |
 | OAuth Google callback | Redirect `/profile?google_connected=1`; toast ao detectar query |
-| Mapa Brasil (relatórios) | Grid 27 UFs (SVG interativo = backlog) |
+| Mapa Brasil (relatórios) | SVG interativo `@svg-maps/brazil`, lazy load + chunk dedicado |
 
 ---
 
@@ -56,6 +56,15 @@ Ordem oficial após fix de scroll (2026-06-05):
 ---
 
 ## Changelog
+
+### 2026-06-05 (sessão 4) — Mapa SVG Brasil
+
+- `BrazilVisitedMap.jsx`: paths reais por UF (`@svg-maps/brazil`), hover/click com tooltip
+- Inferência de UF por `location_state` ou texto do endereço
+- `Reports.jsx`: `React.lazy` + `Suspense` (skeleton)
+- `vite.config.js`: chunk `vendor-brazil-map` (~64 KB gzip ~23 KB)
+
+---
 
 ### 2026-06-05 (sessão 3) — Scroll batch 3 + UX clientes + OAuth
 
@@ -135,14 +144,14 @@ Ordem oficial após fix de scroll (2026-06-05):
 
 ### Alta (próxima sprint)
 1. Validar scroll em **todas** as telas após deploy (mobile + desktop)
-2. Badge “rascunho” em clientes `profile_complete: false`
-3. OAuth Google — teste e documentar resultado aqui
-4. Limpar duplicatas históricas no banco (botão dedupe ou script)
+2. OAuth Google — teste E2E e documentar resultado aqui
+3. Limpar duplicatas históricas no banco (botão dedupe ou script)
+4. `git push` dos commits locais (main à frente de origin)
 
 ### Média
-5. Mapa Brasil SVG interativo (substituir grid)
-6. Animações financeiras / charts no dashboard
-7. PWA offline refinado
+5. Animações financeiras / charts no dashboard
+6. PWA offline refinado
+7. Code-split adicional do bundle principal (~811 KB)
 
 ### Baixa / segurança
 8. Rotação secret Google

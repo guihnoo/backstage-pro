@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useCallback } from 'react';
+﻿import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { useEvents } from '@/lib/useEvents';
@@ -43,7 +43,7 @@ import { useAuth } from '@/lib/authContext';
 import { applyAuto12Hours } from '@/lib/applyAuto12Hours';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
-import BrazilVisitedMap from '@/components/reports/BrazilVisitedMap';
+const BrazilVisitedMap = lazy(() => import('@/components/reports/BrazilVisitedMap'));
 
 const ReportsSkeleton = () => (
   <div className="p-4 md:p-6 space-y-6">
@@ -753,7 +753,9 @@ export default function ReportsPage() {
 
         </div>
 
-        <BrazilVisitedMap events={events} />
+        <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl bg-slate-800/60" />}>
+          <BrazilVisitedMap events={events} />
+        </Suspense>
 
         {/* Projeção para o Próximo Período */}
         {processedData.next.projectedRevenue > 0 &&
