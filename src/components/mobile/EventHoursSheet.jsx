@@ -10,6 +10,7 @@ import { useDailyWork } from '@/lib/useDailyWork';
 import { X, Clock, Camera, Loader2, AlertCircle, Save, Info, Calendar as CalendarIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { normalizeDateString, formatDisplayDate } from '../utils/dateUtils';
+import { useAppScrollLock } from '@/lib/useAppScrollLock';
 
 export default function EventHoursSheet({ 
   isOpen, 
@@ -20,7 +21,8 @@ export default function EventHoursSheet({
   onSave 
 }) {
     const { create, update } = useDailyWork();
-  
+  useAppScrollLock(isOpen);
+
   const [formData, setFormData] = useState({
     date: '',
     entry_time: '',
@@ -252,7 +254,7 @@ export default function EventHoursSheet({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90]"
             onClick={onClose}
           />
         )}
@@ -266,7 +268,7 @@ export default function EventHoursSheet({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 bg-slate-900 rounded-t-2xl shadow-2xl z-50 max-h-[90dvh] flex flex-col overflow-hidden"
+            className="fixed bottom-0 left-0 right-0 bg-slate-900 rounded-t-2xl shadow-2xl z-[95] max-h-[90dvh] flex flex-col overflow-hidden"
           >
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-2">
@@ -295,7 +297,7 @@ export default function EventHoursSheet({
             </div>
 
             {/* Content */}
-            <div className="overflow-y-auto flex-1 px-6 py-4 pb-safe">
+            <div className="bp-modal-scroll px-6 py-4 pb-safe">
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Data */}
                 <div className="space-y-2">

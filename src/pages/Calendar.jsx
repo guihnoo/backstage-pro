@@ -43,6 +43,7 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { applyAuto12Hours } from '@/lib/applyAuto12Hours';
 import { getEventCacheAmount } from '@/lib/eventFinance';
+import { useAppScrollLock } from '@/lib/useAppScrollLock';
 
 const useMediaQuery = (query) => {
   const [matches, setMatches] = useState(false);
@@ -127,6 +128,7 @@ export default function CalendarPage() {
   const [editingWork, setEditingWork] = useState(null); // For daily work form (edit existing)
 
   const [multipleEventsModal, setMultipleEventsModal] = useState(false);
+  useAppScrollLock(multipleEventsModal);
   const [eventsForSelectedDate, setEventsForSelectedDate] = useState([]);
   const [formPrefilledData, setFormPrefilledData] = useState(null); // For daily work form (new entry)
 
@@ -1144,7 +1146,7 @@ export default function CalendarPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[100] p-4"
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}

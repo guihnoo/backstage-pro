@@ -13,6 +13,7 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
+import { useAppScrollLock } from '@/lib/useAppScrollLock';
 
 export default function ClientActionSheet({ 
   client, 
@@ -23,6 +24,7 @@ export default function ClientActionSheet({
   onContact
 }) {
   const { formatCurrency } = useFinancialVisibility();
+  useAppScrollLock(Boolean(isOpen && client));
 
   if (!client) return null;
 
@@ -40,7 +42,7 @@ export default function ClientActionSheet({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90]"
           />
 
           {/* Sheet */}
@@ -49,7 +51,7 @@ export default function ClientActionSheet({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed inset-x-0 bottom-0 z-50 bg-slate-900 border-t-2 border-cyan-400 rounded-t-3xl shadow-2xl pb-safe max-h-[85dvh] flex flex-col overflow-hidden"
+            className="fixed inset-x-0 bottom-0 z-[95] bg-slate-900 border-t-2 border-cyan-400 rounded-t-3xl shadow-2xl pb-safe max-h-[85dvh] flex flex-col overflow-hidden"
           >
             {/* Handle */}
             <div className="flex justify-center py-3">
@@ -93,7 +95,7 @@ export default function ClientActionSheet({
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto px-6 py-4">
+            <div className="bp-modal-scroll px-6 py-4">
               <div className="space-y-4">
                 {/* Stats */}
                 {stats && (

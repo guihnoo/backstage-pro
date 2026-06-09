@@ -255,7 +255,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 overflow-y-auto">
+        <ScrollArea fill>
           <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6 pb-safe">
             
             {/* Informações Básicas */}

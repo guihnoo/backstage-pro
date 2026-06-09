@@ -205,3 +205,20 @@ a, button, [role="button"], input, label, select, textarea {
   50% { width: 55%; margin-left: 22%; }
   100% { width: 8%; margin-left: 92%; }
 }
+
+/* Trava scroll da página quando modal/sheet está aberto (container = main, não body) */
+body[data-scroll-lock] [data-app-scroll],
+body:has([role="dialog"][data-state="open"]) [data-app-scroll] {
+  overflow: hidden !important;
+  overscroll-behavior: contain;
+  touch-action: none;
+}
+
+/* Corpo rolável padrão dentro de modais flex */
+.bp-modal-scroll {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}

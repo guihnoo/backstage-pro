@@ -1,4 +1,5 @@
 ﻿import { motion } from 'framer-motion';
+import { useAppScrollLock } from '@/lib/useAppScrollLock';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +26,8 @@ export default function DayBottomSheet({
   onAddExpense, 
   onViewEvent 
 }) {
+  useAppScrollLock(Boolean(isOpen && date));
+
   if (!isOpen || !date) return null;
 
   const handleAddEvent = () => {
@@ -59,7 +62,7 @@ export default function DayBottomSheet({
       animate={{ y: 0 }}
       exit={{ y: '100%' }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="fixed inset-x-0 bottom-0 z-50 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800 rounded-t-2xl max-h-[80dvh] overflow-hidden flex flex-col"
+      className="fixed inset-x-0 bottom-0 z-[95] bg-slate-900/95 backdrop-blur-lg border-t border-slate-800 rounded-t-2xl max-h-[80dvh] overflow-hidden flex flex-col"
     >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-slate-800">
@@ -83,7 +86,7 @@ export default function DayBottomSheet({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="bp-modal-scroll p-4 space-y-4">
         {/* Quick Actions */}
         <div className="grid grid-cols-3 gap-3">
           <Button 

@@ -6,6 +6,12 @@ alwaysApply: true
 
 # Backstage Pro — Regras Core
 
+## Contexto vivo do app
+- Ler e atualizar `docs/RELATORIO_VIDA_APP.md` a cada sessão (changelog, estado, backlog, z-index/scroll).
+- Modais: Dialog/Sheet Radix `z-[100]/[101]`; sheets mobile `z-[90]/[95]`; nav `z-30`.
+- Scroll da página: `main[data-app-scroll]`; travar com `useAppScrollLock` ou dialog Radix aberto.
+- Corpo rolável em modal flex: `.bp-modal-scroll` ou `<ScrollArea fill>`.
+
 ## Stack obrigatória
 - React 18, Vite 6, JavaScript (sem TypeScript por enquanto)
 - Tailwind CSS + shadcn/ui — verificar registry MCP antes de criar componente novo

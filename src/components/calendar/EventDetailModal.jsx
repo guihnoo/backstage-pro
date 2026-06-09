@@ -149,7 +149,7 @@ export default function EventDetailModal({
           </div>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 overflow-y-auto px-6">
+        <ScrollArea fill className="px-6">
           <div className="space-y-6 py-6">
             
             {/* Quick Actions para evento concluído */}
