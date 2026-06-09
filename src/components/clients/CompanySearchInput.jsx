@@ -1,63 +1,175 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, Building2, MapPin, CheckCircle2, Loader2, X, Database, Globe } from 'lucide-react';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import {
+  Search, Building2, MapPin, CheckCircle2, Loader2,
+  X, Globe, Sparkles, AlertCircle, ChevronRight
+} from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '@/lib/supabase';
 import { useCompanies } from '@/lib/useCompanies';
-import { searchCompanies, fetchByCNPJ, formatCNPJ, looksLikeCNPJ, cleanCNPJ } from '@/lib/cnpjSearch';
+import { formatCNPJ, looksLikeCNPJ, cleanCNPJ } from '@/lib/cnpjSearch';
 
-/**
- * Campo de busca inteligente de empresas.
- *
- * Busca primeiro no banco compartilhado do Backstage Pro,
- * depois na API externa (open.cnpja.com / BrasilAPI).
- *
- * onSelect(company) → objeto normalizado para preencher o ClientForm
- */
+// ── Logo com fallback ────────────────────────────────────────────────────────
+
+function CompanyLogo({ domain, name, size = 'md' }) {
+  const [ok, setOk] = useState(!!domain);
+  const sz = size === 'lg' ? 'w-14 h-14' : 'w-10 h-10';
+  const icon = size === 'lg' ? 'w-7 h-7' : 'w-5 h-5';
+  const initial = (name || '?')[0].toUpperCase();
+
+  if (ok && domain) {
+    return (
+      <div className={`${sz} rounded-xl border border-slate-700 bg-white flex items-center justify-center flex-shrink-0 overflow-hidden`}>
+        <img
+          src={`https://logo.clearbit.com/${domain}`}
+          alt={name}
+          className="w-full h-full object-contain p-1"
+          onError={() => setOk(false)}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={`${sz} rounded-xl border border-slate-700 bg-slate-800 flex items-center justify-center flex-shrink-0`}>
+      <span className="text-slate-300 font-bold text-base">{initial}</span>
+    </div>
+  );
+}
+
+// ── Card de resultado ─────────────────────────────────────────────────────────
+
+function CompanyCard({ company, onSelect }) {
+  const displayName = company.trading_name || company.name || '';
+  const razao = company.trading_name && company.razao_social && company.razao_social !== company.trading_name
+    ? company.razao_social
+    : null;
+  const location = [company.city, company.state].filter(Boolean).join(' / ');
+  const cnpjFmt  = company.cnpj ? formatCNPJ(company.cnpj) : null;
+  const isInactive = company.status && !['ativa', 'Ativa', 'ATIVA'].includes(company.status);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="group relative rounded-xl border border-slate-700/60 bg-slate-800/60 hover:bg-slate-800 hover:border-cyan-500/40 transition-all cursor-pointer overflow-hidden"
+      onClick={() => onSelect(company)}
+    >
+      {/* Barra lateral colorida */}
+      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-cyan-500/0 group-hover:bg-cyan-500/60 transition-colors" />
+
+      <div className="flex items-start gap-3 p-3.5">
+        {/* Logo */}
+        <CompanyLogo domain={company.domain} name={displayName} size="md" />
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-white truncate leading-tight">{displayName}</p>
+              {razao && (
+                <p className="text-[11px] text-slate-500 truncate mt-0.5">{razao}</p>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              {company.verified && (
+                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" title="Dados verificados (Receita Federal)" />
+              )}
+              {isInactive && (
+                <Badge className="text-[9px] h-4 px-1.5 bg-red-500/20 text-red-300 border-red-500/30">
+                  {company.status}
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
+            {location && (
+              <span className="flex items-center gap-1 text-[11px] text-slate-400">
+                <MapPin className="w-3 h-3 text-slate-500 flex-shrink-0" />
+                {location}
+              </span>
+            )}
+            {cnpjFmt && (
+              <span className="text-[11px] text-slate-500 font-mono">{cnpjFmt}</span>
+            )}
+            {company.cnae && (
+              <span className="text-[11px] text-slate-500 truncate max-w-[180px]">{company.cnae}</span>
+            )}
+          </div>
+
+          {(company.phone || company.email || company.website) && (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1.5">
+              {company.phone && (
+                <span className="text-[11px] text-slate-400">{company.phone}</span>
+              )}
+              {company.email && (
+                <span className="text-[11px] text-slate-400 truncate max-w-[160px]">{company.email}</span>
+              )}
+              {company.website && (
+                <span className="flex items-center gap-0.5 text-[11px] text-cyan-500">
+                  <Globe className="w-3 h-3" />
+                  {company.domain}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Selecionar */}
+        <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-cyan-400 transition-colors flex-shrink-0 mt-1" />
+      </div>
+    </motion.div>
+  );
+}
+
+// ── Componente principal ─────────────────────────────────────────────────────
+
 export default function CompanySearchInput({ onSelect, disabled }) {
-  const [query, setQuery]           = useState('');
-  const [results, setResults]       = useState([]);
-  const [loading, setLoading]       = useState(false);
-  const [open, setOpen]             = useState(false);
-  const [selectedName, setSelectedName] = useState('');
-  const [searchedExternal, setSearchedExternal] = useState(false);
+  const [query,   setQuery]   = useState('');
+  const [city,    setCity]    = useState('');
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
+  const [selected, setSelected] = useState(null);
+  const [error,   setError]   = useState('');
 
   const { searchLocal } = useCompanies();
-  const abortRef  = useRef(null);
-  const wrapRef   = useRef(null);
-  const debounceRef = useRef(null);
+  const abortRef = useRef(null);
 
-  // Fecha dropdown ao clicar fora
-  useEffect(() => {
-    function handleClick(e) {
-      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
-    }
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
+  // Busca ao pressionar Enter ou botão
+  const runSearch = useCallback(async () => {
+    const q = query.trim();
+    if (!q || q.length < 2) return;
 
-  const runSearch = useCallback(async (q) => {
-    if (q.length < 2) { setResults([]); setOpen(false); return; }
-
-    // Cancela busca anterior
     abortRef.current?.abort();
     abortRef.current = new AbortController();
 
     setLoading(true);
-    setSearchedExternal(false);
+    setError('');
+    setResults([]);
+    setSearched(false);
 
     try {
-      // 1) Banco local (Backstage Pro — compartilhado)
-      const local = await searchLocal(q);
+      const isCNPJ = looksLikeCNPJ(q);
+      const payload = isCNPJ
+        ? { cnpj: cleanCNPJ(q) }
+        : { query: q, city: city.trim() || undefined };
 
-      // 2) API externa em paralelo
-      let external = [];
-      try {
-        external = await searchCompanies(q, abortRef.current.signal);
-        setSearchedExternal(true);
-      } catch { /* API externa opcional */ }
+      // Busca paralela: banco local + Edge Function
+      const [localResults, edgeResult] = await Promise.allSettled([
+        searchLocal(q),
+        supabase.functions.invoke('search-company', { body: payload }),
+      ]);
 
-      // Mescla: locais primeiro, depois externos não duplicados
+      const local   = localResults.status === 'fulfilled' ? localResults.value : [];
+      const external = edgeResult.status === 'fulfilled'
+        ? (edgeResult.value.data?.results || [])
+        : [];
+
+      // Remove duplicatas (CNPJ igual)
       const localCNPJs = new Set(local.map(c => c.cnpj).filter(Boolean));
       const merged = [
         ...local.map(c => ({ ...c, _origin: 'local' })),
@@ -67,187 +179,187 @@ export default function CompanySearchInput({ onSelect, disabled }) {
       ];
 
       setResults(merged);
-      setOpen(merged.length > 0);
+      setSearched(true);
+
+      if (merged.length === 0 && edgeResult.status === 'rejected') {
+        setError('Serviço de busca indisponível. Use o CNPJ ou preencha manualmente.');
+      }
     } finally {
       setLoading(false);
     }
-  }, [searchLocal]);
+  }, [query, city, searchLocal]);
 
-  const handleChange = (e) => {
-    const val = e.target.value;
-    setQuery(val);
-    setSelectedName('');
-
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => runSearch(val), 400);
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); runSearch(); }
   };
 
   const handleSelect = async (company) => {
-    setOpen(false);
-    setQuery('');
-
-    // Se é resultado parcial da API (sem endereço completo), busca detalhes
+    // Se resultado parcial da API (só o search, sem detalhes completos), busca o CNPJ completo
     let full = company;
     if (company._origin === 'api' && company._partial && company.cnpj) {
       setLoading(true);
       try {
-        const detail = await fetchByCNPJ(company.cnpj);
-        if (detail) full = { ...detail, _origin: 'api' };
-      } catch { /* usa o parcial */ }
+        const { data } = await supabase.functions.invoke('search-company', {
+          body: { cnpj: company.cnpj },
+        });
+        if (data?.results?.[0]) full = { ...data.results[0], _origin: 'api' };
+      } catch { /* usa parcial */ }
       setLoading(false);
     }
 
-    const displayName = full.trading_name || full.name;
-    setSelectedName(displayName);
+    setSelected(full);
+    setQuery('');
+    setCity('');
+    setResults([]);
+    setSearched(false);
     onSelect(full);
   };
 
   const handleClear = () => {
+    setSelected(null);
     setQuery('');
-    setSelectedName('');
+    setCity('');
     setResults([]);
-    setOpen(false);
+    setSearched(false);
+    setError('');
     onSelect(null);
   };
 
-  const isCNPJQuery = looksLikeCNPJ(query);
-
-  return (
-    <div ref={wrapRef} className="relative w-full">
-      {/* Label */}
-      <p className="text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">
-        Buscar empresa
-      </p>
-
-      {/* Campo */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-        {loading && (
-          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400 animate-spin pointer-events-none" />
-        )}
-        {selectedName && !loading && (
+  // ── Se empresa já selecionada ────────────────────────────────────────────
+  if (selected) {
+    const displayName = selected.trading_name || selected.name || '';
+    const location = [selected.city, selected.state].filter(Boolean).join(' / ');
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="flex items-center gap-3 p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/30"
+      >
+        <CompanyLogo domain={selected.domain} name={displayName} size="md" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-white truncate">{displayName}</p>
+          <div className="flex items-center gap-2 mt-0.5">
+            {location && <span className="text-[11px] text-slate-400">{location}</span>}
+            {selected.cnpj && <span className="text-[11px] text-slate-500 font-mono">{formatCNPJ(selected.cnpj)}</span>}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <CheckCircle2 className="w-4 h-4 text-cyan-400" />
           <button
             type="button"
             onClick={handleClear}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center transition-colors"
+            className="w-7 h-7 rounded-full hover:bg-slate-700 flex items-center justify-center transition-colors"
+            title="Remover seleção"
           >
-            <X className="w-3 h-3 text-slate-300" />
+            <X className="w-3.5 h-3.5 text-slate-400" />
           </button>
-        )}
-        <Input
-          value={selectedName || query}
-          onChange={selectedName ? undefined : handleChange}
-          onFocus={() => results.length > 0 && !selectedName && setOpen(true)}
-          disabled={disabled}
-          readOnly={!!selectedName}
-          placeholder={isCNPJQuery ? 'Digite o CNPJ completo (14 dígitos)' : 'Nome da empresa, CNPJ ou cidade…'}
-          className={`pl-10 pr-9 bg-slate-800/80 border-slate-600 text-white h-11 text-sm transition-colors
-            ${selectedName ? 'border-cyan-500/60 bg-cyan-950/30 cursor-default' : 'focus:border-cyan-500'}
-            ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-        />
+        </div>
+      </motion.div>
+    );
+  }
+
+  // ── Formulário de busca ─────────────────────────────────────────────────
+  return (
+    <div className="space-y-3">
+      {/* Campos de pesquisa */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+          <Input
+            value={query}
+            onChange={e => { setQuery(e.target.value); setSearched(false); }}
+            onKeyDown={handleKeyDown}
+            disabled={disabled || loading}
+            placeholder="Nome da empresa ou CNPJ…"
+            className="pl-10 bg-slate-800/80 border-slate-600 text-white h-11 text-sm focus:border-cyan-500"
+          />
+        </div>
+        <div className="relative w-32">
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+          <Input
+            value={city}
+            onChange={e => setCity(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={disabled || loading}
+            placeholder="Cidade"
+            className="pl-8 bg-slate-800/80 border-slate-600 text-white h-11 text-sm focus:border-cyan-500"
+          />
+        </div>
+        <Button
+          type="button"
+          onClick={runSearch}
+          disabled={disabled || loading || query.trim().length < 2}
+          className="h-11 px-4 bg-cyan-600 hover:bg-cyan-700 text-white flex-shrink-0"
+        >
+          {loading
+            ? <Loader2 className="w-4 h-4 animate-spin" />
+            : <Search className="w-4 h-4" />
+          }
+        </Button>
       </div>
 
-      {/* Empresa selecionada */}
-      <AnimatePresence>
-        {selectedName && (
-          <motion.div
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="mt-1.5 flex items-center gap-1.5 text-xs text-cyan-300"
-          >
-            <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
-            <span>Dados preenchidos automaticamente — ajuste se necessário</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Erro */}
+      {error && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 text-xs text-amber-400">
+          <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+          {error}
+        </motion.div>
+      )}
 
-      {/* Dropdown de resultados */}
+      {/* Resultados */}
       <AnimatePresence>
-        {open && results.length > 0 && (
+        {results.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: -8, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -4, scale: 0.98 }}
-            transition={{ duration: 0.15 }}
-            className="absolute left-0 right-0 top-full mt-1 z-50 rounded-xl border border-slate-700 bg-slate-900 shadow-2xl shadow-black/40 overflow-hidden max-h-[340px] overflow-y-auto"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="space-y-2"
           >
-            {/* Grupos: local vs externo */}
-            {renderGroup(results.filter(r => r._origin === 'local'), 'No Backstage Pro', <Database className="w-3 h-3" />, 'text-cyan-400', handleSelect)}
-            {renderGroup(results.filter(r => r._origin === 'api'), 'Receita Federal / Internet', <Globe className="w-3 h-3" />, 'text-green-400', handleSelect)}
+            {/* Grupo local */}
+            {results.filter(r => r._origin === 'local').length > 0 && (
+              <div>
+                <p className="text-[10px] font-mono uppercase tracking-wider text-cyan-500 mb-1.5 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3" />
+                  Já cadastradas no Backstage Pro
+                </p>
+                <div className="space-y-2">
+                  {results.filter(r => r._origin === 'local').map((c, i) => (
+                    <CompanyCard key={c.cnpj || c.id || i} company={c} onSelect={handleSelect} />
+                  ))}
+                </div>
+              </div>
+            )}
 
-            {searchedExternal && results.length === 0 && (
-              <p className="text-xs text-slate-500 text-center py-4">
-                Nenhuma empresa encontrada. Preencha os campos manualmente abaixo.
-              </p>
+            {/* Grupo API */}
+            {results.filter(r => r._origin === 'api').length > 0 && (
+              <div>
+                <p className="text-[10px] font-mono uppercase tracking-wider text-green-400 mb-1.5 flex items-center gap-1">
+                  <Globe className="w-3 h-3" />
+                  Receita Federal
+                </p>
+                <div className="space-y-2">
+                  {results.filter(r => r._origin === 'api').map((c, i) => (
+                    <CompanyCard key={c.cnpj || i} company={c} onSelect={handleSelect} />
+                  ))}
+                </div>
+              </div>
             )}
           </motion.div>
         )}
+
+        {/* Nenhum resultado */}
+        {searched && results.length === 0 && !loading && !error && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center gap-2 py-6 text-center"
+          >
+            <Building2 className="w-10 h-10 text-slate-700" />
+            <p className="text-sm text-slate-400">Empresa não encontrada</p>
+            <p className="text-xs text-slate-600">Tente pelo CNPJ, ou preencha os campos manualmente abaixo.</p>
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
-  );
-}
-
-function renderGroup(items, label, icon, iconClass, onSelect) {
-  if (!items.length) return null;
-  return (
-    <div>
-      <div className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider ${iconClass} bg-slate-800/60 border-b border-slate-700/50`}>
-        <span className={iconClass}>{icon}</span>
-        {label}
-      </div>
-      {items.map((company, i) => (
-        <CompanyResultRow key={company.cnpj || company.id || i} company={company} onSelect={onSelect} />
-      ))}
-    </div>
-  );
-}
-
-function CompanyResultRow({ company, onSelect }) {
-  const displayName = company.trading_name || company.name || '';
-  const razao = company.trading_name && company.name !== company.trading_name ? company.name : '';
-  const location = [company.city, company.state].filter(Boolean).join(' / ');
-  const cnpj = company.cnpj ? formatCNPJ(company.cnpj) : null;
-
-  return (
-    <button
-      type="button"
-      onClick={() => onSelect(company)}
-      className="w-full flex items-start gap-3 px-3 py-3 text-left hover:bg-slate-800/80 transition-colors border-b border-slate-800/50 last:border-0"
-    >
-      {/* Ícone */}
-      <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Building2 className="w-4 h-4 text-slate-400" />
-      </div>
-
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-white truncate leading-tight">{displayName}</p>
-        {razao && (
-          <p className="text-[11px] text-slate-500 truncate mt-0.5">{razao}</p>
-        )}
-        <div className="flex items-center gap-2 mt-1 flex-wrap">
-          {location && (
-            <span className="flex items-center gap-0.5 text-[11px] text-slate-400">
-              <MapPin className="w-3 h-3 flex-shrink-0" />
-              {location}
-            </span>
-          )}
-          {cnpj && (
-            <span className="text-[11px] text-slate-500 font-mono">{cnpj}</span>
-          )}
-          {company.verified && (
-            <Badge className="text-[9px] py-0 px-1.5 h-4 bg-green-500/20 text-green-300 border-green-500/30">
-              verificado
-            </Badge>
-          )}
-          {company.status && company.status.toLowerCase() !== 'ativa' && (
-            <Badge className="text-[9px] py-0 px-1.5 h-4 bg-red-500/20 text-red-300 border-red-500/30">
-              {company.status}
-            </Badge>
-          )}
-        </div>
-      </div>
-    </button>
   );
 }
