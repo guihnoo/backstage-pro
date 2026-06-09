@@ -1,11 +1,10 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { differenceInDays, parseISO } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Sparkles, BookmarkPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { hardNavigate } from '@/lib/hardNavigate';
@@ -15,6 +14,9 @@ import { useAuth } from '@/lib/authContext';
 import { EventTemplate } from '@/api/entities';
 import EventTemplateModal from './EventTemplateModal';
 import { resolveEventColor } from '@/lib/brandColors';
+import { useClients } from '@/lib/useClients';
+import ClientCombobox from '@/components/clients/ClientCombobox';
+import LocationAutocomplete from '@/components/events/LocationAutocomplete';
 
 const PAYMENT_MODELS = [
   { value: 'HORAS_EXTRAS', label: 'Horas Extras' },
@@ -34,6 +36,11 @@ const defaultState = {
   daily_cache_value: '',
   cache_valor_base: '',
   color: '#22d3ee',
+  location: '',
+  location_city: '',
+  location_state: '',
+  location_lat: null,
+  location_lng: null,
   observacoes_md: '',
 };
 
@@ -48,6 +55,8 @@ export default function EventForm({
 }) {
   const { user, profile } = useAuth();
   const { create: createEvent, update: updateEvent } = useEvents();
+  const { create: createClient } = useClients();
+  const [extraClients, setExtraClients] = useState([]);
   const [loading, setLoading] = useState(false);
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
@@ -71,18 +80,38 @@ export default function EventForm({
       daily_cache_value: seed.daily_cache_value ?? '',
       cache_valor_base: seed.cache_valor_base ?? '',
       color: seed.color || '#22d3ee',
+      location: seed.location || '',
+      location_city: seed.location_city || '',
+      location_state: seed.location_state || '',
+      location_lat: seed.location_lat ?? null,
+      location_lng: seed.location_lng ?? null,
       observacoes_md: seed.observacoes_md || '',
     });
+    if (!isOpen) setExtraClients([]);
   }, [isOpen, event, prefillData, initialData]);
 
   const setField = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const allClients = useMemo(() => {
+    const map = new Map();
+    [...clients, ...extraClients].forEach((c) => {
+      if (c?.id) map.set(c.id, c);
+    });
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+  }, [clients, extraClients]);
+
   const selectedClient = useMemo(
-    () => clients.find((c) => c.id === formData.client_id),
-    [clients, formData.client_id],
+    () => allClients.find((c) => c.id === formData.client_id),
+    [allClients, formData.client_id],
   );
+
+  const handleCreateClient = useCallback(async (data) => {
+    const created = await createClient(data);
+    setExtraClients((prev) => [...prev, created]);
+    return created;
+  }, [createClient]);
 
   const eventSummary = useMemo(() => {
     const daily = Number(formData.daily_cache_value) || 0;
@@ -99,7 +128,7 @@ export default function EventForm({
   }, [formData.start_date, formData.end_date, formData.daily_cache_value]);
 
   const handleClientChange = (clientId) => {
-    const client = clients.find((c) => c.id === clientId);
+    const client = allClients.find((c) => c.id === clientId);
     setFormData((prev) => {
       const next = { ...prev, client_id: clientId };
       if (event || !client) return next;
@@ -164,7 +193,7 @@ export default function EventForm({
       return;
     }
 
-    const selectedClient = clients.find((c) => c.id === formData.client_id);
+    const selectedClient = allClients.find((c) => c.id === formData.client_id);
     const eventTitle = formData.title.trim() || selectedClient?.name || 'Evento';
 
     setLoading(true);
@@ -185,6 +214,11 @@ export default function EventForm({
         daily_cache_value: formData.daily_cache_value === '' ? 0 : Number(formData.daily_cache_value),
         cache_valor_base: formData.cache_valor_base === '' ? null : Number(formData.cache_valor_base),
         color: resolveEventColor({ client_id: formData.client_id, color: formData.color }, selectedClient),
+        location: formData.location?.trim() || null,
+        location_city: formData.location_city || null,
+        location_state: formData.location_state || null,
+        location_lat: formData.location_lat,
+        location_lng: formData.location_lng,
         observacoes_md: formData.observacoes_md || null,
       };
 
@@ -240,7 +274,7 @@ export default function EventForm({
           <div className="space-y-4 p-4 sm:p-6 pb-2">
           <div className="space-y-2">
             <Label>Cliente</Label>
-            {clients.length === 0 ? (
+            {allClients.length === 0 ? (
               <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 space-y-3">
                 <p className="text-sm text-amber-100">
                   Cadastre um cliente antes de criar um evento na agenda.
@@ -258,21 +292,12 @@ export default function EventForm({
                 </Button>
               </div>
             ) : (
-              <Select value={formData.client_id} onValueChange={handleClientChange}>
-                <SelectTrigger className="bg-slate-800 border-slate-700">
-                  <SelectValue placeholder="Selecione o cliente" />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
-                  {clients.map((client) => (
-                    <SelectItem key={client.id} value={client.id}>
-                      <span className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: client.brand_color || '#A64AFF' }} />
-                        {client.name}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <ClientCombobox
+                clients={allClients}
+                value={formData.client_id}
+                onChange={handleClientChange}
+                onCreateClient={handleCreateClient}
+              />
             )}
           </div>
 
@@ -314,6 +339,24 @@ export default function EventForm({
               Horários são registrados no dia do evento (toque longo na barra da agenda ou aba Horas).
             </p>
           )}
+
+          <div className="space-y-2">
+            <Label>Local do evento</Label>
+            <LocationAutocomplete
+              value={formData.location}
+              onChange={(text) => setField('location', text)}
+              onSelect={(item) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  location: item.location,
+                  location_city: item.city || prev.location_city,
+                  location_state: item.stateCode || item.state || prev.location_state,
+                  location_lat: item.lat,
+                  location_lng: item.lng,
+                }));
+              }}
+            />
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">

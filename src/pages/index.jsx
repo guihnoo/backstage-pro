@@ -18,6 +18,8 @@ import ClientsPage from './Clients';
 import ExpensesPage from './Expenses';
 import ReportsPage from './reports';
 import ClientDetailPage from './ClientDetail';
+import PrivacyPolicyPage from './PrivacyPolicy';
+import TermsOfServicePage from './TermsOfService';
 
 function RouteLoading() {
   return <LoadingSpinner fullScreen text="Carregando..." />;
@@ -78,6 +80,10 @@ export default function PagesRouter() {
       />
 
       <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/privacidade" element={<PrivacyPolicyPage />} />
+      <Route path="/privacy" element={<PrivacyPolicyPage />} />
+      <Route path="/termos" element={<TermsOfServicePage />} />
+      <Route path="/terms" element={<TermsOfServicePage />} />
 
       <Route
         path="/onboarding"

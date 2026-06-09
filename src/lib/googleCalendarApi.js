@@ -16,6 +16,7 @@ export const googleDisconnect = () => invokeGoogleCalendar('disconnect');
 export const googleListCalendars = () => invokeGoogleCalendar('list-calendars');
 export const googleSyncNow = () => invokeGoogleCalendar('sync-now');
 export const googleImportEvents = (opts) => invokeGoogleCalendar('import-events', opts);
+export const googleDedupeEvents = () => invokeGoogleCalendar('dedupe-events');
 export const googlePushEvent = (eventId) => invokeGoogleCalendar('push-event', { event_id: eventId });
 export const googleDeleteEvent = (eventId, googleEventId) =>
   invokeGoogleCalendar('delete-event', { event_id: eventId, google_event_id: googleEventId ?? null });

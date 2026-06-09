@@ -18,7 +18,8 @@ import {
 } from 'lucide-react';
 import { UserSettings } from '@/api/entities';
 import { useAuth } from '@/lib/authContext';
-import { googleAuthStart, googleDisconnect, googleSyncNow, googleListCalendars, googleImportEvents } from '@/api/functions';
+import { googleAuthStart, googleDisconnect, googleSyncNow, googleListCalendars, googleImportEvents, googleDedupeEvents } from '@/api/functions';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
 export default function GoogleCalendarSync() {
@@ -175,6 +176,24 @@ export default function GoogleCalendarSync() {
     setIsSyncing(false);
   };
 
+  const handleDedupeEvents = async () => {
+    if (!confirm('Remover eventos duplicados na agenda? Mantém o registro com Google vinculado ou com horas lançadas.')) return;
+    setIsSyncing(true);
+    try {
+      const { data } = await googleDedupeEvents();
+      if (data.success) {
+        toast.success('Limpeza concluída', {
+          description: `${data.removed_count || 0} duplicata(s) removida(s).`,
+        });
+      } else {
+        throw new Error(data.error || 'Erro na limpeza');
+      }
+    } catch (error) {
+      toast.error('Erro ao limpar duplicatas', { description: error.message });
+    }
+    setIsSyncing(false);
+  };
+
   if (isLoading) {
     return (
       <Card className="bg-slate-800/50 border-slate-700">
@@ -293,6 +312,16 @@ export default function GoogleCalendarSync() {
                 </Button>
               </div>
 
+              <Button
+                type="button"
+                onClick={handleDedupeEvents}
+                disabled={isSyncing}
+                variant="outline"
+                className="w-full border-amber-600/40 text-amber-200 hover:bg-amber-500/10"
+              >
+                Limpar duplicatas da agenda
+              </Button>
+
               {/* Status da Última Sincronização */}
               {lastSyncStatus && (
                 <Alert className={lastSyncStatus.success ? 'border-green-500 bg-green-500/10' : 'border-red-500 bg-red-500/10'}>
@@ -328,6 +357,13 @@ export default function GoogleCalendarSync() {
               </AlertDescription>
             </Alert>
           )}
+
+          <p className="text-xs text-slate-500 text-center pt-2">
+            Ao conectar, você concorda com a{' '}
+            <Link to="/privacidade" className="text-cyan-400 hover:underline">Política de Privacidade</Link>
+            {' e os '}
+            <Link to="/termos" className="text-cyan-400 hover:underline">Termos de Uso</Link>.
+          </p>
         </CardContent>
       </Card>
     </motion.div>

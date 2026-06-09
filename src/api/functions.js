@@ -15,6 +15,7 @@ export {
   googleListCalendars,
   googleSyncNow,
   googleImportEvents,
+  googleDedupeEvents,
 } from '@/lib/googleCalendarApi';
 export const googleAuthCallback = notAvailable('googleAuthCallback');
 export const generateMonthlyReport = notAvailable('generateMonthlyReport');

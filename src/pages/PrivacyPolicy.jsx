@@ -1,5 +1,6 @@
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Eye, Database, Lock, UserCheck, FileText } from 'lucide-react';
+import { Shield, Eye, Database, Lock, UserCheck, FileText, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function PrivacyPolicyPage() {
@@ -7,7 +8,7 @@ export default function PrivacyPolicyPage() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-4xl mx-auto p-6 space-y-8"
+      className="min-h-screen bg-[#050609] max-w-4xl mx-auto p-6 space-y-8"
     >
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold text-white font-display flex items-center justify-center gap-3 mb-4">
@@ -18,7 +19,7 @@ export default function PrivacyPolicyPage() {
           Sua privacidade e segurança são nossa prioridade máxima
         </p>
         <p className="text-slate-500 text-sm mt-2">
-          Última atualização: Janeiro de 2025
+          Última atualização: junho de 2026
         </p>
       </div>
 
@@ -67,6 +68,25 @@ export default function PrivacyPolicyPage() {
                 <li>Fotos e arquivos anexados voluntariamente</li>
               </ul>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-slate-900/50 border-slate-800">
+          <CardHeader>
+            <CardTitle className="text-cyan-300 flex items-center gap-2">
+              <Calendar className="w-5 h-5" />
+              Google Calendar (opcional)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-slate-300 space-y-3 text-sm leading-relaxed">
+            <p>
+              Se você conectar o Google Calendar, armazenamos tokens OAuth de forma segura para sincronizar eventos
+              entre o Backstage Pro e o calendário escolhido. Acessamos apenas calendários autorizados por você.
+            </p>
+            <p>
+              Não lemos e-mails, contatos ou outros dados da conta Google além do necessário para a sincronização de agenda.
+              Você pode revogar o acesso a qualquer momento em Perfil → Google Calendar ou nas configurações da sua conta Google.
+            </p>
           </CardContent>
         </Card>
 
@@ -184,10 +204,15 @@ export default function PrivacyPolicyPage() {
           </CardContent>
         </Card>
 
-        <div className="text-center pt-8 border-t border-slate-800">
+        <div className="text-center pt-8 border-t border-slate-800 space-y-2">
           <p className="text-slate-400 text-sm">
-            Esta política pode ser atualizada ocasionalmente. Notificaremos sobre 
+            Esta política pode ser atualizada ocasionalmente. Notificaremos sobre
             mudanças significativas através do aplicativo.
+          </p>
+          <p className="text-sm">
+            <Link to="/termos" className="text-cyan-400 hover:underline">Termos de Uso</Link>
+            {' · '}
+            <Link to="/login" className="text-cyan-400 hover:underline">Voltar ao login</Link>
           </p>
           <p className="text-slate-500 text-xs mt-2">
             Backstage Pro - Gestão Profissional com Privacidade Total

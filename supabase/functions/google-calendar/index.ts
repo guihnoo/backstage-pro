@@ -193,6 +193,43 @@ async function importGoogleEventsForUser(
   return { imported_count: imported, linked_count: linked, skipped_count: skipped };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function dedupeEventsForUser(svc: any, userId: string) {
+  const { data: events } = await svc
+    .from('events')
+    .select('id, title, start_date, google_event_id, client_id, created_at, clients(name)')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: true });
+
+  const { data: workRows } = await svc.from('daily_work').select('event_id').eq('user_id', userId);
+  const withWork = new Set((workRows ?? []).map((w: { event_id: string }) => w.event_id));
+
+  const groups = new Map<string, Array<Record<string, unknown>>>();
+  for (const ev of events ?? []) {
+    const clientName = (ev as { clients?: { name?: string } }).clients?.name || '';
+    const key = `${ev.start_date}|${normalizeTitleKey(String(clientName || ev.title))}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(ev as Record<string, unknown>);
+  }
+
+  let removed = 0;
+  for (const group of groups.values()) {
+    if (group.length <= 1) continue;
+    group.sort((a, b) => {
+      const score = (e: Record<string, unknown>) =>
+        (e.google_event_id ? 4 : 0) + (withWork.has(String(e.id)) ? 2 : 0);
+      return score(b) - score(a);
+    });
+    for (let i = 1; i < group.length; i++) {
+      const dup = group[i];
+      if (withWork.has(String(dup.id))) continue;
+      await svc.from('events').delete().eq('id', dup.id).eq('user_id', userId);
+      removed++;
+    }
+  }
+  return { removed_count: removed };
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
@@ -289,6 +326,11 @@ Deno.serve(async (req) => {
       const daysBack = Number(body.days_back ?? 30);
       const daysForward = Number(body.days_forward ?? 90);
       const result = await importGoogleEventsForUser(svc, user.id, daysBack, daysForward);
+      return jsonResponse({ success: true, ...result });
+    }
+
+    if (action === 'dedupe-events') {
+      const result = await dedupeEventsForUser(svc, user.id);
       return jsonResponse({ success: true, ...result });
     }
 

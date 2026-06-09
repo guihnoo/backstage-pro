@@ -43,6 +43,7 @@ import { useAuth } from '@/lib/authContext';
 import { applyAuto12Hours } from '@/lib/applyAuto12Hours';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
+import BrazilVisitedMap from '@/components/reports/BrazilVisitedMap';
 
 const ReportsSkeleton = () => (
   <div className="p-4 md:p-6 space-y-6">
@@ -751,6 +752,8 @@ export default function ReportsPage() {
             onClick={() => handleKPIClick('clientes')} />
 
         </div>
+
+        <BrazilVisitedMap events={events} />
 
         {/* Projeção para o Próximo Período */}
         {processedData.next.projectedRevenue > 0 &&
