@@ -23,7 +23,6 @@ import {
   MessageCircle
 } from 'lucide-react';
 import { openWhatsAppCharge, buildChargeMessage } from '@/lib/whatsapp';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';

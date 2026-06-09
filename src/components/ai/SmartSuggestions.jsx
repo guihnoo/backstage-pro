@@ -1,10 +1,14 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, DollarSign, Calendar, Users, AlertCircle, Zap } from 'lucide-react';
+import { TrendingUp, DollarSign, Calendar, Users, AlertCircle, Zap, Target } from 'lucide-react';
+
+function formatBRLSimple(value) {
+  return `R$ ${Number(value || 0).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}`;
+}
 
 export default function SmartSuggestions({ userData, onSuggestionClick }) {
   const suggestions = useMemo(() => {
-    const baseSuggestions = [
+    const base = [
       {
         icon: DollarSign,
         text: 'Como está meu faturamento este mês?',
@@ -49,7 +53,61 @@ export default function SmartSuggestions({ userData, onSuggestionClick }) {
       }
     ];
 
-    return baseSuggestions;
+    if (!userData) return base;
+
+    const contextual = [];
+
+    // Pagamento pendente com valor real
+    if (userData.a_receber > 0) {
+      contextual.push({
+        icon: AlertCircle,
+        text: `Tenho ${formatBRLSimple(userData.a_receber)} a receber — como devo agir?`,
+        color: 'text-red-400',
+        bgColor: 'bg-red-500/10',
+        borderColor: 'border-red-500/30'
+      });
+    }
+
+    // Próximo show com nome
+    const nextShow = userData.proximos_eventos?.[0];
+    if (nextShow) {
+      contextual.push({
+        icon: Calendar,
+        text: `Tenho show com ${nextShow.cliente || 'cliente'} — o que devo preparar?`,
+        color: 'text-cyan-400',
+        bgColor: 'bg-cyan-500/10',
+        borderColor: 'border-cyan-500/30'
+      });
+    }
+
+    // Progresso da meta
+    if (userData.meta_receita > 0 && userData.faturamento_mes > 0) {
+      const pct = Math.round((userData.faturamento_mes / userData.meta_receita) * 100);
+      if (pct >= 50 && pct < 100) {
+        contextual.push({
+          icon: Target,
+          text: `Estou ${pct}% da meta — o que fazer para fechar o mês forte?`,
+          color: 'text-amber-400',
+          bgColor: 'bg-amber-500/10',
+          borderColor: 'border-amber-500/30'
+        });
+      }
+    }
+
+    // Análise de crescimento
+    if (userData.eventos_mes > 0) {
+      contextual.push({
+        icon: TrendingUp,
+        text: `Fiz ${userData.eventos_mes} show${userData.eventos_mes !== 1 ? 's' : ''} este mês — como estou em relação ao mercado?`,
+        color: 'text-purple-400',
+        bgColor: 'bg-purple-500/10',
+        borderColor: 'border-purple-500/30'
+      });
+    }
+
+    // Usa contextuais se disponíveis, completa com genéricos
+    const combined = [...contextual, ...base.filter(b => !contextual.find(c => c.text === b.text))];
+    return combined.slice(0, 6);
   }, [userData]);
 
   return (
@@ -61,12 +119,13 @@ export default function SmartSuggestions({ userData, onSuggestionClick }) {
             key={index}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+            transition={{ delay: index * 0.08 }}
+            whileTap={{ scale: 0.97 }}
             onClick={() => onSuggestionClick(suggestion.text)}
-            className={`flex items-center gap-3 p-4 rounded-lg border ${suggestion.borderColor} ${suggestion.bgColor} hover:scale-105 transition-all text-left group`}
+            className={`flex items-center gap-3 p-4 rounded-lg border ${suggestion.borderColor} ${suggestion.bgColor} hover:brightness-110 transition-all text-left group`}
           >
             <Icon className={`w-5 h-5 ${suggestion.color} flex-shrink-0`} />
-            <span className="text-sm text-slate-300 group-hover:text-white transition-colors">
+            <span className="text-sm text-slate-300 group-hover:text-white transition-colors leading-snug">
               {suggestion.text}
             </span>
           </motion.button>
