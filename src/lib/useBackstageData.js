@@ -300,3 +300,50 @@ export function useCountdown(eventDate) {
 
   return { countdown, isToday: isTodayFlag };
 }
+
+// MEI annual revenue limit (2025)
+export const MEI_LIMIT = 81000;
+
+// DAS 2025 values by activity type
+export const MEI_DAS = {
+  services:  { label: 'Prestador de serviços', monthly: 80.90 },
+  commerce:  { label: 'Comércio / Indústria',  monthly: 76.90 },
+  both:      { label: 'Comércio + Serviços',   monthly: 81.90 },
+};
+
+export function useMeiStats(userId) {
+  const [annualRevenue, setAnnualRevenue] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!userId) { setLoading(false); return; }
+    let cancelled = false;
+
+    async function fetch() {
+      try {
+        const yearStart = `${new Date().getFullYear()}-01-01`;
+        const yearEnd   = `${new Date().getFullYear()}-12-31`;
+
+        const { data } = await supabase
+          .from('events')
+          .select('payment_status, paid_amount, daily_cache_value, actual_revenue, estimated_revenue')
+          .eq('user_id', userId)
+          .gte('start_date', yearStart)
+          .lte('start_date', yearEnd);
+
+        const total = (data || [])
+          .filter(e => e.payment_status === 'paid')
+          .reduce((sum, e) => sum + Number(e.paid_amount || e.daily_cache_value || e.actual_revenue || e.estimated_revenue || 0), 0);
+
+        if (!cancelled) setAnnualRevenue(total);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetch();
+    return () => { cancelled = true; };
+  }, [userId]);
+
+  return { annualRevenue, loading };
+}

@@ -1,12 +1,13 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/authContext';
-import { useStats, useEvents } from '@/lib/useBackstageData';
+import { useStats, useEvents, useMeiStats } from '@/lib/useBackstageData';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { Trophy, Zap, Star, TrendingUp, Award, Flame, Calendar, X } from 'lucide-react';
+import MeiDashboard from '@/components/goals/MeiDashboard';
 
 const SEEN_BADGES_KEY = 'backstage_seen_badges';
 
@@ -203,6 +204,9 @@ export default function Goals() {
   // Stats reais
   const { stats, loading: statsLoading } = useStats(userId);
 
+  // MEI anual
+  const { annualRevenue, loading: meiLoading } = useMeiStats(userId);
+
   // Total de eventos histórico (para nível) — todos os tempos, só completados
   const { events: allEvents } = useEvents(userId, { status: 'completed' });
 
@@ -285,9 +289,10 @@ export default function Goals() {
   }, [badges]);
 
   const tabs = [
-    { id: 'metas', label: 'Metas do Mês' },
-    { id: 'nivel', label: 'Nível & XP' },
+    { id: 'metas', label: 'Metas' },
+    { id: 'nivel', label: 'Nível' },
     { id: 'conquistas', label: 'Conquistas' },
+    { id: 'mei', label: 'MEI' },
   ];
 
   return (
@@ -370,7 +375,7 @@ export default function Goals() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-2 px-2 min-h-[36px] rounded-lg text-xs font-semibold transition-all ${
+              className={`flex-1 py-2 px-1 min-h-[36px] rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                 activeTab === tab.id
                   ? 'bg-gray-800 text-white'
                   : 'text-gray-500 hover:text-gray-400'
@@ -560,6 +565,22 @@ export default function Goals() {
               <p className="text-center text-xs text-gray-600 mt-5">
                 {badges.filter(b => b.unlocked).length} / {badges.length} conquistas desbloqueadas
               </p>
+            </motion.div>
+          )}
+
+          {activeTab === 'mei' && (
+            <motion.div
+              key="mei"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+            >
+              <MeiDashboard
+                annualRevenue={annualRevenue}
+                loading={meiLoading}
+                dasType="services"
+                accentColor={config.primaryHex}
+              />
             </motion.div>
           )}
         </AnimatePresence>
