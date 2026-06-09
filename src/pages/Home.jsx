@@ -157,6 +157,7 @@ export default function Home() {
           onEdit={() => { setDetailEvent(null); hardNavigate('/calendar'); }}
           onDelete={() => { setDetailEvent(null); refetchStats(); }}
           onMarkPaid={() => { setDetailEvent(null); refetchStats(); }}
+          onAddWork={() => { setDetailEvent(null); hardNavigate('/calendar'); }}
         />
       )}
     </div>

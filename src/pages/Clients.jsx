@@ -1,5 +1,6 @@
 
 import { useState, useMemo, useCallback } from 'react';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { useQueryAction } from '@/lib/useQueryAction';
 import { useClients } from '@/lib/useClients';
 import { useEvents } from '@/lib/useEvents';
@@ -241,7 +242,7 @@ export default function ClientsPage() {
 
   const handleActionSheetViewDetails = useCallback((client) => {
     setActionSheetClient(null);
-    setSelectedClient(client);
+    hardNavigate(`/client-detail?id=${client.id}`);
   }, []);
 
   const handleActionSheetContact = useCallback((client, type) => {
