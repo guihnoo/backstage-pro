@@ -13,17 +13,22 @@ import { Loader2, Building2, DollarSign, X, AlertCircle, Phone, Mail, Globe, Fil
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/authContext';
 import { useClients } from '@/lib/useClients';
+import { useCompanies } from '@/lib/useCompanies';
+import { buildCompanyNotes } from '@/lib/cnpjSearch';
 import { uploadUserFile } from '@/lib/uploadFile';
 import { motion, AnimatePresence } from 'framer-motion';
 import ColorGridPicker from '@/components/ui/ColorGridPicker';
 import { pickDefaultClientColor, DEFAULT_CLIENT_COLOR } from '@/lib/brandColors';
+import CompanySearchInput from './CompanySearchInput';
 
 export default function ClientForm({ client, onSuccess, onCancel }) {
   const { user } = useAuth();
   const { create: createClient, update: updateClient } = useClients();
+  const { upsertCompany } = useCompanies();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+  const [selectedCompany, setSelectedCompany] = useState(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef(null);
 
@@ -130,6 +135,32 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
     validateField(name, formData[name]);
   };
 
+  const handleCompanySelect = (company) => {
+    if (!company) {
+      setSelectedCompany(null);
+      return;
+    }
+    setSelectedCompany(company);
+
+    // Auto-preenche os campos com dados da empresa
+    const name = company.trading_name || company.name || '';
+    const autoNotes = buildCompanyNotes(company);
+
+    setFormData(prev => ({
+      ...prev,
+      name: name || prev.name,
+      email: company.email || prev.email,
+      phone: company.phone || prev.phone,
+      contact_person: company.contact_person || prev.contact_person,
+      notes: autoNotes
+        ? (prev.notes ? `${autoNotes}\n\n${prev.notes}` : autoNotes)
+        : prev.notes,
+    }));
+
+    // Limpa erros do nome se foi preenchido
+    if (name) setErrors(prev => { const e = { ...prev }; delete e.name; return e; });
+  };
+
   const handleLogoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -178,6 +209,17 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
         return;
       }
 
+      // Salva empresa no banco compartilhado se selecionada via busca
+      let companyId = null;
+      if (selectedCompany && !client?.id) {
+        try {
+          const saved = await upsertCompany(selectedCompany);
+          companyId = saved?.id || null;
+        } catch (e) {
+          console.warn('Não foi possível salvar empresa no banco compartilhado:', e.message);
+        }
+      }
+
       const clientData = {
         name: formData.name.trim(),
         contact_person: formData.contact_person || null,
@@ -192,6 +234,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
           ? 0
           : Number(formData.default_daily_cache),
         brand_color: formData.brand_color || pickDefaultClientColor(formData.name),
+        ...(companyId ? { company_id: companyId } : {}),
       };
 
       let result;
@@ -257,7 +300,22 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
 
         <ScrollArea fill>
           <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6 pb-safe">
-            
+
+            {/* Busca inteligente de empresa */}
+            {!client && (
+              <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/60 space-y-2">
+                <CompanySearchInput
+                  onSelect={handleCompanySelect}
+                  disabled={loading}
+                />
+                <p className="text-[10px] text-slate-600 font-mono leading-relaxed">
+                  Busca no banco do Backstage Pro e na Receita Federal.
+                  Encontrou? Clique para preencher tudo automaticamente.
+                  Ou preencha manualmente abaixo.
+                </p>
+              </div>
+            )}
+
             {/* Informações Básicas */}
             <div className="space-y-4">
               <h3 className="text-base sm:text-lg font-medium text-white flex items-center gap-2">
