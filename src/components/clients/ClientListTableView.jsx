@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Edit, Trash2 } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { MoreHorizontal, Edit, Trash2, ExternalLink } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { hardNavigate } from '@/lib/hardNavigate';
 
 const ClientRow = ({ client, onClientClick, onEdit, onDelete }) => {
     // Função para parar a propagação do evento, evitando que o modal abra ao clicar no menu
@@ -41,10 +42,15 @@ const ClientRow = ({ client, onClientClick, onEdit, onDelete }) => {
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="bg-slate-900 border-slate-700 text-white">
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); hardNavigate(`/client-detail?id=${client.id}`); }} className="focus:bg-slate-800">
+                            <ExternalLink className="w-4 h-4 mr-2 text-cyan-400" />
+                            Ver Página
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(client); }} className="focus:bg-slate-800">
                             <Edit className="w-4 h-4 mr-2" />
                             Editar
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator className="bg-slate-700" />
                         <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onDelete(client.id); }} className="text-red-400 focus:bg-red-900/50 focus:text-red-300">
                             <Trash2 className="w-4 h-4 mr-2" />
                             Excluir
