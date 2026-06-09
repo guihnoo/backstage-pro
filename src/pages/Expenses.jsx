@@ -224,6 +224,19 @@ export default function ExpensesPage() {
                     )}
                     </NeonGlass>
 
+                    {/* Resumo do filtro */}
+                    {filteredExpenses.length > 0 && (
+                        <div className="flex items-center justify-between px-1 py-0.5">
+                            <span className="text-[11px] font-mono text-slate-500">
+                                {filteredExpenses.length} despesa{filteredExpenses.length !== 1 ? 's' : ''}
+                                {categoryFilter !== 'all' && <span className="text-slate-600"> · {categoryFilter}</span>}
+                            </span>
+                            <span className="text-[11px] font-mono font-bold" style={{ color: config.accentHex }}>
+                                {isVisible ? formatCurrency(filteredExpenses.reduce((s, e) => s + (e.amount || 0), 0)) : '•••••'}
+                            </span>
+                        </div>
+                    )}
+
                     <div className="space-y-3">
                         {filteredExpenses.length > 0 ? (
                             filteredExpenses.map(expense => (

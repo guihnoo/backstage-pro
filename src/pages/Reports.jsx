@@ -7,7 +7,6 @@ import { useDailyWork } from '@/lib/useDailyWork';
 import { useExpenses } from '@/lib/useExpenses';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   DollarSign,
   TrendingUp,
@@ -687,19 +686,6 @@ export default function ReportsPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-              <SelectTrigger className="bg-slate-800 text-slate-50 px-3 py-2 text-sm flex h-10 items-center justify-between rounded-md border ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 w-48 border-slate-700">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-800">
-                {PERIOD_OPTIONS.map((option) =>
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
-
             <ExportManager
               data={{
                 events: processedData.current.events,
@@ -710,6 +696,20 @@ export default function ReportsPage() {
               period={currentRange} />
 
           </div>
+        </div>
+
+        {/* Filtro de período — chips scrolláveis */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none -mt-4">
+          {PERIOD_OPTIONS.map(opt => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setSelectedPeriod(opt.value)}
+              className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${selectedPeriod === opt.value ? 'border-purple-500/60 bg-purple-500/15 text-purple-300' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
+            >
+              {opt.label}
+            </button>
+          ))}
         </div>
 
         {/* Enhanced KPI Cards with Click Handlers */}

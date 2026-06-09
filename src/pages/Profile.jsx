@@ -250,17 +250,6 @@ export default function ProfilePage() {
           </div>
         </SectionCard>
 
-        {/* Botão salvar */}
-        <Button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="w-full h-12 text-sm font-bold rounded-xl border-0"
-          style={{ background: `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})`, color: '#050609' }}
-        >
-          {isSaving ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Save className="w-5 h-5 mr-2" />}
-          Salvar Perfil
-        </Button>
-
         {/* Integrações */}
         <GoogleCalendarSync />
 
@@ -290,6 +279,22 @@ export default function ProfilePage() {
         </div>
 
       </motion.div>
+
+      {/* Sticky save bar */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-30 px-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] pt-3 bg-[#050609]/90 backdrop-blur-md border-t border-[#1a1d27]"
+        style={{ paddingBottom: 'calc(84px + env(safe-area-inset-bottom, 0px))' }}
+      >
+        <Button
+          onClick={handleSave}
+          disabled={isSaving}
+          className="w-full h-12 text-sm font-bold rounded-xl border-0"
+          style={{ background: `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})`, color: '#050609' }}
+        >
+          {isSaving ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Save className="w-5 h-5 mr-2" />}
+          Salvar Perfil
+        </Button>
+      </div>
     </NeonPageShell>
   );
 }
