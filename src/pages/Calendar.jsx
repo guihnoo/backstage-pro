@@ -38,6 +38,7 @@ import DayQuickActions from '@/components/calendar/DayQuickActions';
 import EventActionSheet from '@/components/mobile/EventActionSheet';
 import EventHoursSheet from '@/components/mobile/EventHoursSheet';
 import NotesSheet from '@/components/mobile/NotesSheet';
+import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { applyAuto12Hours } from '@/lib/applyAuto12Hours';
@@ -136,6 +137,8 @@ export default function CalendarPage() {
   const [prefilledEventIdForExpense, setPrefilledEventIdForExpense] = useState(null);
 
   const [statusFilter, setStatusFilter] = useState('all');
+  const [confirmWork, setConfirmWork] = useState(null);
+  const [confirmEvent, setConfirmEvent] = useState(null);
 
   const [drilldownOpen, setDrilldownOpen] = useState(false);
   const [drilldownTitle, setDrilldownTitle] = useState('');
@@ -390,24 +393,25 @@ export default function CalendarPage() {
   }, [closeModals, closeActionSheets, refetchEvents, refetchDailyWork, refetchExpenses]);
 
   const handleWorkDelete = useCallback(
-    async (workId) => {
+    (workId) => {
       if (!workId) return;
-
-      if (window.confirm('Tem certeza que deseja excluir este registro de horas? Esta ação não pode ser desfeita.')) {
-        try {
-          await deleteDailyWorkEntry(workId);
-          toast.success('Registro de horas excluído com sucesso!');
-          handleFormSuccess();
-        } catch (err) {
-          console.error('Erro ao excluir registro de trabalho:', err);
-          toast.error('Erro ao excluir o registro de horas.', {
-            description: 'Por favor, tente novamente.',
-          });
-        }
-      }
+      setConfirmWork(workId);
     },
-    [handleFormSuccess, deleteDailyWorkEntry]
+    []
   );
+
+  const handleConfirmWorkDelete = useCallback(async () => {
+    try {
+      await deleteDailyWorkEntry(confirmWork);
+      toast.success('Registro de horas excluído com sucesso!');
+      handleFormSuccess();
+    } catch (err) {
+      console.error('Erro ao excluir registro de trabalho:', err);
+      toast.error('Erro ao excluir o registro de horas.', { description: 'Por favor, tente novamente.' });
+    } finally {
+      setConfirmWork(null);
+    }
+  }, [confirmWork, deleteDailyWorkEntry, handleFormSuccess]);
 
   const handleAddExpenseForEvent = useCallback(
     (event) => {
@@ -429,30 +433,27 @@ export default function CalendarPage() {
   );
 
   const handleDeleteEvent = useCallback(
-    async (eventId) => {
+    (eventId) => {
       if (!eventId) return;
-
       const eventToDelete = events.find((e) => e.id === eventId);
-      if (!eventToDelete) {
-        toast.error('Evento não encontrado para exclusão.');
-        return;
-      }
-
-      const confirmationMessage = `Tem certeza que deseja excluir o evento "${eventToDelete.title}"?`;
-
-      if (window.confirm(confirmationMessage)) {
-        try {
-          await deleteEvent(eventId);
-          toast.success(`Evento "${eventToDelete.title}" foi excluído com sucesso!`);
-          handleFormSuccess();
-        } catch (err) {
-          console.error('Erro ao excluir evento:', err);
-          toast.error('Erro ao excluir o evento.', { description: 'Por favor, tente novamente.' });
-        }
-      }
+      if (!eventToDelete) { toast.error('Evento não encontrado para exclusão.'); return; }
+      setConfirmEvent(eventToDelete);
     },
-    [events, handleFormSuccess, deleteEvent]
+    [events]
   );
+
+  const handleConfirmDeleteEvent = useCallback(async () => {
+    try {
+      await deleteEvent(confirmEvent.id);
+      toast.success(`Evento "${confirmEvent.title}" foi excluído com sucesso!`);
+      handleFormSuccess();
+    } catch (err) {
+      console.error('Erro ao excluir evento:', err);
+      toast.error('Erro ao excluir o evento.', { description: 'Por favor, tente novamente.' });
+    } finally {
+      setConfirmEvent(null);
+    }
+  }, [confirmEvent, deleteEvent, handleFormSuccess]);
 
   const handleMarkPaid = useCallback(
     async (eventToUpdate) => {
@@ -1269,6 +1270,26 @@ export default function CalendarPage() {
           />
         )}
       </AnimatePresence>
+
+      <ConfirmDialog
+        open={!!confirmWork}
+        onOpenChange={(open) => !open && setConfirmWork(null)}
+        title="Excluir registro de horas?"
+        description="Esta ação não pode ser desfeita."
+        confirmLabel="Excluir"
+        destructive
+        onConfirm={handleConfirmWorkDelete}
+      />
+
+      <ConfirmDialog
+        open={!!confirmEvent}
+        onOpenChange={(open) => !open && setConfirmEvent(null)}
+        title={`Excluir "${confirmEvent?.title}"?`}
+        description="Esta ação não pode ser desfeita."
+        confirmLabel="Excluir"
+        destructive
+        onConfirm={handleConfirmDeleteEvent}
+      />
     </NeonPageShell>
   );
 }

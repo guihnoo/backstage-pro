@@ -40,6 +40,7 @@ import ClientDetailModal from '@/components/clients/ClientDetailModal';
 import EmptyState from '@/components/layout/EmptyState';
 import ClientActionSheet from '@/components/mobile/ClientActionSheet';
 import ClientInsightsModal from '@/components/clients/ClientInsightsModal';
+import ConfirmDialog from '@/components/layout/ConfirmDialog';
 
 import { toast } from 'sonner';
 
@@ -90,6 +91,7 @@ export default function ClientsPage() {
   const [selectedClient, setSelectedClient] = useState(null);
   const [actionSheetClient, setActionSheetClient] = useState(null);
   const [insightsClient, setInsightsClient] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   useQueryAction('new-client', useCallback(() => {
     setShowClientForm(true);
@@ -201,12 +203,13 @@ export default function ClientsPage() {
     refetchClients();
   }, [refetchClients]);
 
-  const handleDeleteClient = useCallback(async (clientId) => {
-    if (!window.confirm("Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.")) {
-      return;
-    }
+  const handleDeleteClient = useCallback((clientId) => {
+    setConfirmDeleteId(clientId);
+  }, []);
+
+  const handleConfirmDeleteClient = useCallback(async () => {
     try {
-      await deleteClient(clientId);
+      await deleteClient(confirmDeleteId);
       toast.success("Cliente excluído com sucesso.");
       setSelectedClient(null);
     } catch (err) {
@@ -214,8 +217,10 @@ export default function ClientsPage() {
       toast.error("Não foi possível excluir o cliente.", {
         description: "Verifique se ele não possui eventos associados e tente novamente."
       });
+    } finally {
+      setConfirmDeleteId(null);
     }
-  }, [deleteClient]);
+  }, [deleteClient, confirmDeleteId]);
 
   const handleActionSheetViewDetails = useCallback((client) => {
     setActionSheetClient(null);
@@ -495,6 +500,16 @@ export default function ClientsPage() {
             />
         )}
       </AnimatePresence>
+
+      <ConfirmDialog
+        open={!!confirmDeleteId}
+        onOpenChange={(open) => !open && setConfirmDeleteId(null)}
+        title="Excluir cliente?"
+        description="Esta ação não pode ser desfeita. Verifique se o cliente não possui eventos associados."
+        confirmLabel="Excluir"
+        destructive
+        onConfirm={handleConfirmDeleteClient}
+      />
     </NeonPageShell>
   );
 }

@@ -18,6 +18,7 @@ import ExpenseForm from '@/components/expenses/ExpenseForm';
 import ExpenseListItem from '@/components/expenses/ExpenseListItem';
 import ReceiptAnalyzer from '@/components/expenses/ReceiptAnalyzer';
 import EmptyState from '@/components/layout/EmptyState';
+import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const ExpensesSkeleton = () => (
@@ -58,6 +59,7 @@ export default function ExpensesPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [categoryFilter, setCategoryFilter] = useState("all");
     const [statusFilter, setStatusFilter] = useState("all");
+    const [confirmDelete, setConfirmDelete] = useState(null);
 
     useQueryAction('new', useCallback(() => {
         setShowForm(true);
@@ -86,15 +88,19 @@ export default function ExpensesPage() {
         }
     };
 
-    const handleDelete = async (expenseId) => {
-        if (window.confirm("Tem certeza que deseja excluir esta despesa?")) {
-            try {
-                await deleteExpenseById(expenseId);
-                toast.success("Despesa excluída com sucesso!");
-            } catch (err) {
-                toast.error("Erro ao excluir despesa.");
-                console.error(err);
-            }
+    const handleDelete = (expenseId) => {
+        setConfirmDelete(expenseId);
+    };
+
+    const handleConfirmDelete = async () => {
+        try {
+            await deleteExpenseById(confirmDelete);
+            toast.success("Despesa excluída com sucesso!");
+        } catch (err) {
+            toast.error("Erro ao excluir despesa.");
+            console.error(err);
+        } finally {
+            setConfirmDelete(null);
         }
     };
 
@@ -249,6 +255,16 @@ export default function ExpensesPage() {
                 open={showAnalyzer}
                 onOpenChange={setShowAnalyzer}
                 onExtract={handleAnalyzerExtract}
+            />
+
+            <ConfirmDialog
+                open={!!confirmDelete}
+                onOpenChange={(open) => !open && setConfirmDelete(null)}
+                title="Excluir despesa?"
+                description="Esta ação não pode ser desfeita."
+                confirmLabel="Excluir"
+                destructive
+                onConfirm={handleConfirmDelete}
             />
         </>
     );

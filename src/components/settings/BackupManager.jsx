@@ -12,6 +12,7 @@ import {
 import { SystemBackup } from '@/api/entities';
 import { createBackup } from '@/api/functions';
 import { restoreFromBackup } from '@/api/functions';
+import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -63,6 +64,7 @@ export default function BackupManager({ user }) {
     const [isLoading, setIsLoading] = useState(true);
     const [isCreating, setIsCreating] = useState(false);
     const [isRestoring, setIsRestoring] = useState(false);
+    const [confirmRestoreId, setConfirmRestoreId] = useState(null);
 
     const fetchBackups = useCallback(async () => {
         if (!user?.id) return;
@@ -100,10 +102,13 @@ export default function BackupManager({ user }) {
         }
     };
 
-    const handleRestoreBackup = async (backupId) => {
-        if (!window.confirm('ATENÇÃO: Esta ação substituirá TODOS os seus dados atuais pelos do backup selecionado. Um backup de segurança do estado atual será criado automaticamente. Deseja continuar?')) {
-            return;
-        }
+    const handleRestoreBackup = (backupId) => {
+        setConfirmRestoreId(backupId);
+    };
+
+    const handleConfirmRestore = async () => {
+        const backupId = confirmRestoreId;
+        setConfirmRestoreId(null);
         setIsRestoring(true);
         toast.info('Iniciando restauração...', { description: 'Não feche esta página. O processo pode levar alguns minutos.' });
         try {
@@ -178,5 +183,16 @@ export default function BackupManager({ user }) {
                 </div>
             </CardContent>
         </Card>
+
+        <ConfirmDialog
+            open={!!confirmRestoreId}
+            onOpenChange={(open) => !open && setConfirmRestoreId(null)}
+            title="Restaurar backup?"
+            description="ATENÇÃO: Esta ação substituirá TODOS os seus dados atuais pelos do backup selecionado. Um backup de segurança do estado atual será criado automaticamente."
+            confirmLabel="Restaurar"
+            cancelLabel="Cancelar"
+            destructive
+            onConfirm={handleConfirmRestore}
+        />
     );
 }
