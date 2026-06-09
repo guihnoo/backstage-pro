@@ -32,6 +32,7 @@ export default function Home() {
   const config = getCategoryConfig(categoryId);
   const motivation = getCategoryMotivation(categoryId);
   const firstName = profile?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'Profissional';
+  const greeting = (() => { const h = new Date().getHours(); if (h < 12) return 'Bom dia'; if (h < 18) return 'Boa tarde'; return 'Boa noite'; })();
   const { stats, loading: statsLoading, refetch: refetchStats } = useStats(userId);
   const { event: proximoEvento } = useUpcomingEvent(userId);
   const { alerts, loading: alertsLoading } = usePaymentAlerts(userId);
@@ -84,7 +85,7 @@ export default function Home() {
             </div>
           </div>
           <motion.h1 initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="text-3xl font-extrabold leading-tight tracking-tight">
-            Olá, <span style={{ WebkitTextStroke: `1px ${config.primaryHex}`, textShadow: `0 0 30px ${config.primaryHex}60` }}>{firstName}</span>.
+            {greeting}, <span style={{ WebkitTextStroke: `1px ${config.primaryHex}`, textShadow: `0 0 30px ${config.primaryHex}60` }}>{firstName}</span>.
           </motion.h1>
           <AnimatePresence mode="wait">
             {isOnStage ? (

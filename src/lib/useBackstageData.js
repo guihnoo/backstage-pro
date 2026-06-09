@@ -241,7 +241,7 @@ export function usePaymentAlerts(userId) {
       try {
         const { data, error: err } = await supabase
           .from('events')
-          .select('id, title, start_date, end_date, payment_status, status, daily_cache_value, actual_revenue, estimated_revenue, clients (name)')
+          .select('id, title, client_id, start_date, end_date, payment_status, status, daily_cache_value, actual_revenue, estimated_revenue, clients (name, phone)')
           .eq('user_id', userId)
           .in('payment_status', ['pending', 'unpaid', 'partial'])
           .eq('status', 'completed')
@@ -258,7 +258,13 @@ export function usePaymentAlerts(userId) {
             type: daysOverdue > 0 ? 'overdue' : 'pending',
             title: `${event.clients?.name || 'Cliente'} — R$${value.toLocaleString('pt-BR')}`,
             daysOverdue,
-            description: daysOverdue > 0 ? `Atrasado há ${daysOverdue} dias` : 'Aguardando pagamento'
+            description: daysOverdue > 0 ? `Atrasado há ${daysOverdue} dias` : 'Aguardando pagamento',
+            clientId: event.client_id,
+            clientName: event.clients?.name || 'Cliente',
+            phone: event.clients?.phone || null,
+            amount: value,
+            eventTitle: event.title,
+            eventStartDate: event.start_date,
           };
         });
 

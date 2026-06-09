@@ -30,7 +30,8 @@ import {
   FileText,
   Zap,
   Building2,
-  Copy
+  Copy,
+  Plus
 } from 'lucide-react';
 
 const InfoItem = ({ icon: Icon, label, value, color = 'text-slate-300', isCurrency = false, formatFn }) => {
@@ -120,7 +121,8 @@ const EventDetailModal = React.memo(function EventDetailModal({
   onPaymentUpdate,
   onWorkEdit,
   onExpenseEdit,
-  onApply12h
+  onApply12h,
+  onAddExpense,
 }) {
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
 
@@ -290,6 +292,15 @@ const EventDetailModal = React.memo(function EventDetailModal({
               </Button>
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
+              {onAddExpense && (
+                <Button
+                  variant="outline"
+                  onClick={() => { onAddExpense(event); onClose(); }}
+                  className="flex-1 sm:flex-none bg-slate-800 border-amber-600/50 hover:bg-amber-900/20 text-amber-400 text-xs sm:text-sm h-10 min-h-[44px]"
+                >
+                  <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Despesa
+                </Button>
+              )}
               {event.payment_status !== 'paid' && (
                 <Button
                   onClick={handlePaymentUpdate}
