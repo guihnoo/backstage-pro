@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Wallet, ChevronRight, ChevronDown, AlertTriangle, CheckCircle2, X, Calendar } from 'lucide-react';
+import { MessageCircle, Wallet, ChevronRight, ChevronDown, AlertTriangle, CheckCircle2, X, Calendar, ExternalLink } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { hardNavigate } from '@/lib/hardNavigate';
@@ -223,6 +223,14 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
                         </div>
                       </div>
                     ))}
+                    <button
+                      type="button"
+                      onClick={() => hardNavigate(`/client-detail?id=${row.clientId}`)}
+                      className="flex items-center gap-1.5 text-[10px] text-gray-600 hover:text-cyan-400 transition-colors pt-1"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      Ver página de {row.clientName}
+                    </button>
                   </div>
                 </motion.div>
               )}
