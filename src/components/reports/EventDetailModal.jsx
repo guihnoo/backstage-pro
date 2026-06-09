@@ -34,10 +34,12 @@ import {
   Plus,
   MapPin,
   Loader2,
+  ExternalLink,
 } from 'lucide-react';
 import EventLocationSection from '@/components/events/EventLocationSection';
 import { useEvents } from '@/lib/useEvents';
 import { toast } from 'sonner';
+import { hardNavigate } from '@/lib/hardNavigate';
 
 const InfoItem = ({ icon: Icon, label, value, color = 'text-slate-300', isCurrency = false, formatFn }) => {
   const { formatCurrency, isVisible } = useFinancialVisibility();
@@ -366,6 +368,16 @@ const EventDetailModal = React.memo(function EventDetailModal({
                   title="Criar cópia deste evento"
                 >
                   <Copy className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Duplicar
+                </Button>
+              )}
+              {event.client_id && (
+                <Button
+                  variant="outline"
+                  onClick={() => { onClose(); hardNavigate(`/client-detail?id=${event.client_id}`); }}
+                  className="flex-1 sm:flex-none bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-300 px-3 py-2 text-xs sm:text-sm h-10 min-h-[44px]"
+                  title="Ver página do cliente"
+                >
+                  <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Cliente
                 </Button>
               )}
               <Button
