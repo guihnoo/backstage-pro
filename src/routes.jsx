@@ -18,6 +18,8 @@ import ClientsPage from './pages/Clients';
 import ExpensesPage from './pages/Expenses';
 import ReportsPage from './pages/Reports.jsx';
 import ClientDetailPage from './pages/ClientDetail';
+import PrivacyPolicyPage from './pages/PrivacyPolicy';
+import TermsOfServicePage from './pages/TermsOfService';
 import OAuthUrlGuard from '@/components/auth/OAuthUrlGuard';
 import NavigationSync from '@/components/NavigationSync';
 import { AuthProvider } from '@/lib/authContext';
@@ -94,6 +96,10 @@ export const router = createBrowserRouter([
         ),
       },
       { path: '/auth/callback', element: <AuthCallback /> },
+      { path: '/privacidade', element: <PrivacyPolicyPage /> },
+      { path: '/privacy', element: <PrivacyPolicyPage /> },
+      { path: '/termos', element: <TermsOfServicePage /> },
+      { path: '/terms', element: <TermsOfServicePage /> },
       {
         path: '/onboarding',
         element: (
