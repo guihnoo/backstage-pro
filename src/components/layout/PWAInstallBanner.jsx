@@ -61,7 +61,7 @@ export default function PWAInstallBanner() {
             </Button>
             <button
               onClick={() => setDismissedInstall(true)}
-              className="text-cyan-400/60 hover:text-cyan-300 p-1"
+              className="text-cyan-400/60 hover:text-cyan-300 p-2"
               aria-label="Fechar"
             >
               <X className="w-5 h-5" />
