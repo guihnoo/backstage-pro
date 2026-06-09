@@ -78,7 +78,7 @@ const WorkItem = ({ work, onEdit }) => {
   );
 };
 
-const ExpenseItem = ({ expense, onEdit: _onEdit }) => {
+const ExpenseItem = ({ expense, onEdit }) => {
   const { formatCurrency } = useFinancialVisibility();
   return (
     <motion.div
@@ -91,9 +91,16 @@ const ExpenseItem = ({ expense, onEdit: _onEdit }) => {
           <p className="text-sm font-bold text-white truncate">{expense.title}</p>
           <Badge variant="secondary" className="text-xs capitalize mt-1">{expense.category}</Badge>
         </div>
-        <div className="text-right flex-shrink-0">
-          <p className="text-sm font-bold text-amber-400">{formatCurrency(expense.amount)}</p>
-          <p className="text-xs text-slate-400 whitespace-nowrap">{formatDisplayDate(expense.date)}</p>
+        <div className="flex items-start gap-2 flex-shrink-0">
+          <div className="text-right">
+            <p className="text-sm font-bold text-amber-400">{formatCurrency(expense.amount)}</p>
+            <p className="text-xs text-slate-400 whitespace-nowrap">{formatDisplayDate(expense.date)}</p>
+          </div>
+          {onEdit && (
+            <Button variant="ghost" size="sm" className="h-8 px-2 flex-shrink-0" onClick={() => onEdit(expense)}>
+              <Edit className="w-3 h-3 mr-1" /> Editar
+            </Button>
+          )}
         </div>
       </div>
       {expense.description && <p className="text-xs text-slate-400 mt-2 break-words">{expense.description}</p>}
@@ -112,10 +119,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
   onDuplicate,
   onPaymentUpdate,
   onWorkEdit,
-  _onWorkDelete,
-  _onAddExpense,
   onExpenseEdit,
-  _onExpenseDelete,
   onApply12h
 }) {
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);

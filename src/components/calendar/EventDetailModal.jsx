@@ -17,7 +17,8 @@ import {
   MapPin,
   FileText,
   Zap,
-  Loader2
+  Loader2,
+  MessageCircle
 } from 'lucide-react';
 import {
   formatDisplayDate,
@@ -27,6 +28,8 @@ import {
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { applyAuto12Hours } from '@/api/functions';
+import { useStatusToggle } from '@/lib/useStatusToggle';
+import { openWhatsAppCharge, formatBRL } from '@/lib/whatsapp';
 import { toast } from 'sonner';
 import {
   parseISO,
@@ -45,6 +48,28 @@ export default function EventDetailModal({
   const { formatCurrency } = useFinancialVisibility();
   const { dailyWork } = useDailyWork();
   const [applying12h, setApplying12h] = useState(false);
+  const { confirmEvent, toggling } = useStatusToggle();
+
+  const handleShareWhatsApp = () => {
+    const phone = client?.phone;
+    if (!phone) {
+      toast.error('Cliente sem telefone cadastrado.');
+      return;
+    }
+    const dateStr = event.start_date
+      ? new Date(event.start_date + 'T12:00:00').toLocaleDateString('pt-BR')
+      : '';
+    const timeStr = event.start_time
+      ? event.start_time.slice(0, 5)
+      : '';
+    const value = getEventCacheAmount(event);
+    const parts = [`*${event.title}*`];
+    if (dateStr) parts.push(`📅 ${dateStr}`);
+    if (timeStr) parts.push(`🕐 ${timeStr}`);
+    if (event.location) parts.push(`📍 ${event.location}`);
+    if (value > 0) parts.push(`💰 ${formatBRL(value)}`);
+    openWhatsAppCharge(phone, parts.join('\n'));
+  };
 
   // Hooks must be called before any conditional return
   const eventWork = useMemo(() => {
@@ -326,6 +351,20 @@ export default function EventDetailModal({
             <Edit className="w-4 h-4 mr-2" />
             Editar
           </Button>
+          {event.status === 'pending' && (
+            <Button
+              onClick={() => confirmEvent(event, onClose)}
+              disabled={toggling === event.id}
+              variant="outline"
+              className="flex-1 min-w-[120px] border-blue-700 hover:bg-blue-900/20 text-blue-400"
+            >
+              {toggling === event.id
+                ? <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                : <CheckCircle2 className="w-4 h-4 mr-2" />
+              }
+              Confirmar
+            </Button>
+          )}
           {status === 'completed' && event.payment_status !== 'paid' && (
             <Button
               onClick={onMarkPaid}
@@ -334,6 +373,16 @@ export default function EventDetailModal({
             >
               <CheckCircle2 className="w-4 h-4 mr-2" />
               Marcar como Pago
+            </Button>
+          )}
+          {client?.phone && (
+            <Button
+              onClick={handleShareWhatsApp}
+              variant="outline"
+              className="flex-shrink-0 border-green-600 hover:bg-green-900/20 text-green-400"
+              title="Enviar detalhes via WhatsApp"
+            >
+              <MessageCircle className="w-4 h-4" />
             </Button>
           )}
           <Button
