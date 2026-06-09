@@ -9,7 +9,8 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  Eye
+  Eye,
+  ExternalLink
 } from 'lucide-react';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { Badge } from '@/components/ui/badge';
@@ -204,7 +205,14 @@ export default function ClientDetailedTable({ data, onClientClick }) {
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium text-white truncate">{client.name}</p>
+                          <button
+                            type="button"
+                            onClick={() => onClientClick && onClientClick(client.id)}
+                            className="font-medium text-white truncate hover:text-cyan-300 transition-colors flex items-center gap-1 group text-left"
+                          >
+                            {client.name}
+                            <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 flex-shrink-0" />
+                          </button>
                           <p className="text-sm text-slate-400 truncate">{client.contact_person}</p>
                           <div className="flex gap-1 mt-1">
                             {client.completedEventsCount > 0 && (
