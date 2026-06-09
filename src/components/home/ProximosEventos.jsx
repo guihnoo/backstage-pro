@@ -23,7 +23,7 @@ const statusConfig = {
   cancelled: { label: 'Cancelado', color: 'bg-red-600/20 border-red-500/30 text-red-300' }
 };
 
-export default function ProximosEventos({ events, isLoading, onRefresh }) {
+export default function ProximosEventos({ events, isLoading, onRefresh, onViewEvent }) {
   const proximosEventos = events.slice(0, 5);
   const { togglePayment, toggling } = usePaymentToggle();
   const { formatCurrency, isVisible } = useFinancialVisibility();
@@ -129,7 +129,7 @@ export default function ProximosEventos({ events, isLoading, onRefresh }) {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: Math.min(idx, 10) * 0.04 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => hardNavigate('/calendar')}
+              onClick={() => onViewEvent ? onViewEvent(event) : hardNavigate('/calendar')}
               className={`p-4 rounded-lg border transition-all group cursor-pointer ${
                 item.days === 0
                   ? 'bg-cyan-950/30 border-cyan-700/30 hover:border-cyan-600/50'

@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Wallet, ChevronRight, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { MessageCircle, Wallet, ChevronRight, AlertTriangle, CheckCircle2, X } from 'lucide-react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { buildChargeMessage, openWhatsAppCharge } from '@/lib/whatsapp';
 import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
 
 function ReceivableSkeleton() {
   return (
@@ -19,8 +20,9 @@ function ReceivableSkeleton() {
 
 export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid }) {
   const { formatCurrency } = useFinancialVisibility();
-  const [marking, setMarking] = useState(null); // clientId being confirmed
-  const [confirming, setConfirming] = useState(null); // clientId awaiting confirm tap
+  const [marking, setMarking] = useState(null);
+  const [confirming, setConfirming] = useState(null); // clientId awaiting confirm
+  const [paidAmounts, setPaidAmounts] = useState({}); // clientId → typed amount string
 
   if (isLoading) return <ReceivableSkeleton />;
 
@@ -59,16 +61,24 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
     if (!ok) toast.error('Não foi possível abrir o WhatsApp.');
   };
 
+  const openConfirm = (row) => {
+    setPaidAmounts(prev => ({ ...prev, [row.clientId]: String(row.totalAmount.toFixed(2)) }));
+    setConfirming(row.clientId);
+  };
+
+  const cancelConfirm = (clientId) => {
+    setConfirming(null);
+    setPaidAmounts(prev => { const n = { ...prev }; delete n[clientId]; return n; });
+  };
+
   const handleMarkPaid = async (row) => {
-    if (confirming !== row.clientId) {
-      setConfirming(row.clientId);
-      setTimeout(() => setConfirming(c => c === row.clientId ? null : c), 3000);
-      return;
-    }
     setConfirming(null);
     setMarking(row.clientId);
+    const typed = parseFloat(paidAmounts[row.clientId]);
+    const actualAmount = isNaN(typed) || typed <= 0 ? undefined : typed;
+    setPaidAmounts(prev => { const n = { ...prev }; delete n[row.clientId]; return n; });
     try {
-      await onMarkPaid?.(row.clientId);
+      await onMarkPaid?.(row.clientId, actualAmount);
       toast.success(`Pagamento de ${row.clientName} marcado como recebido!`);
     } catch {
       toast.error('Erro ao marcar pagamento. Tente novamente.');
@@ -117,69 +127,91 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
             initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: idx * 0.05 }}
-            className="flex items-center gap-3 p-4 rounded-xl bg-gray-900/60 border border-gray-800/60 hover:border-gray-700/80 transition-colors"
+            className="rounded-xl bg-gray-900/60 border border-gray-800/60 overflow-hidden transition-colors"
           >
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-white text-sm truncate">{row.clientName}</p>
-              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                <span className="text-sm font-bold text-amber-300 tabular-nums">
-                  {formatCurrency(row.totalAmount)}
-                </span>
-                <span className="text-xs text-gray-500">
-                  {row.eventsCount} show{row.eventsCount !== 1 ? 's' : ''}
-                </span>
-                {row.maxDaysOverdue > 0 && (
-                  <span className="inline-flex items-center gap-1 text-xs text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full">
-                    <AlertTriangle className="w-3 h-3" />
-                    {row.maxDaysOverdue}d
+            <div className="flex items-center gap-3 p-4">
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-white text-sm truncate">{row.clientName}</p>
+                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                  <span className="text-sm font-bold text-amber-300 tabular-nums">
+                    {formatCurrency(row.totalAmount)}
                   </span>
-                )}
+                  <span className="text-xs text-gray-500">
+                    {row.eventsCount} show{row.eventsCount !== 1 ? 's' : ''}
+                  </span>
+                  {row.maxDaysOverdue > 0 && (
+                    <span className="inline-flex items-center gap-1 text-xs text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full">
+                      <AlertTriangle className="w-3 h-3" />
+                      {row.maxDaysOverdue}d
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <motion.button
+                  type="button"
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => confirming === row.clientId ? cancelConfirm(row.clientId) : openConfirm(row)}
+                  disabled={marking === row.clientId}
+                  className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-bold transition-colors ${
+                    confirming === row.clientId
+                      ? 'bg-gray-700/50 border border-gray-600/50 text-gray-400'
+                      : 'bg-[#1a2a1a] border border-[#2a4a2a] text-[#5a8a5a] hover:border-emerald-500/50 hover:text-emerald-300'
+                  }`}
+                >
+                  {confirming === row.clientId ? <X className="w-3.5 h-3.5" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                  {confirming === row.clientId ? 'Cancelar' : 'Pago'}
+                </motion.button>
+                <motion.button
+                  type="button"
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleCharge(row)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-green-600/20 border border-green-500/40 text-green-300 hover:bg-green-600/30 transition-colors"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Cobrar
+                </motion.button>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 flex-shrink-0">
-              <AnimatePresence mode="wait">
-                {confirming === row.clientId ? (
-                  <motion.button
-                    key="confirm"
-                    type="button"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleMarkPaid(row)}
-                    disabled={marking === row.clientId}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-emerald-600/30 border border-emerald-400/60 text-emerald-300 hover:bg-emerald-600/50 transition-colors"
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                    Confirmar
-                  </motion.button>
-                ) : (
-                  <motion.button
-                    key="paid"
-                    type="button"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleMarkPaid(row)}
-                    disabled={marking === row.clientId}
-                    className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-bold bg-[#1a2a1a] border border-[#2a4a2a] text-[#5a8a5a] hover:border-emerald-500/50 hover:text-emerald-300 transition-colors"
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    Pago
-                  </motion.button>
-                )}
-              </AnimatePresence>
-              <motion.button
-                type="button"
-                whileTap={{ scale: 0.95 }}
-                onClick={() => handleCharge(row)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-green-600/20 border border-green-500/40 text-green-300 hover:bg-green-600/30 transition-colors"
-              >
-                <MessageCircle className="w-4 h-4" />
-                Cobrar
-              </motion.button>
-            </div>
+
+            {/* Painel de confirmação com valor editável */}
+            <AnimatePresence>
+              {confirming === row.clientId && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <div className="px-4 pb-4 pt-1 border-t border-emerald-500/20 bg-emerald-500/5">
+                    <p className="text-xs text-emerald-400/80 mb-2">Valor recebido (ajuste se necessário):</p>
+                    <div className="flex gap-2">
+                      <div className="flex-1 relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-mono">R$</span>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={paidAmounts[row.clientId] ?? ''}
+                          onChange={e => setPaidAmounts(prev => ({ ...prev, [row.clientId]: e.target.value }))}
+                          className="pl-8 bg-gray-800/80 border-emerald-500/30 text-white h-9 text-sm font-mono"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        disabled={marking === row.clientId}
+                        onClick={() => handleMarkPaid(row)}
+                        className="flex items-center gap-1.5 px-4 h-9 rounded-lg text-xs font-bold bg-emerald-600/40 border border-emerald-400/60 text-emerald-200 hover:bg-emerald-600/60 transition-colors disabled:opacity-50"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        {marking === row.clientId ? '...' : 'Confirmar'}
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         ))}
       </div>

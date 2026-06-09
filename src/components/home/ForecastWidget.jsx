@@ -14,7 +14,7 @@ function getWeekLabel(daysFromNow) {
   return `Em ${Math.ceil(daysFromNow / 7)} semanas`;
 }
 
-export default function ForecastWidget({ events = [], isLoading, primaryHex = '#A64AFF', accentHex = '#FFB700' }) {
+export default function ForecastWidget({ events = [], isLoading, primaryHex = '#A64AFF', accentHex = '#FFB700', onViewEvent }) {
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const today = new Date();
   const in30 = addDays(today, 30);
@@ -103,7 +103,8 @@ export default function ForecastWidget({ events = [], isLoading, primaryHex = '#
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.05 * i }}
-              className="flex items-center gap-3 text-sm"
+              onClick={() => onViewEvent?.(ev)}
+              className={`flex items-center gap-3 text-sm ${onViewEvent ? 'cursor-pointer hover:bg-white/5 rounded-lg px-1 -mx-1 transition-colors' : ''}`}
             >
               {/* Ponto na timeline */}
               <div className="flex flex-col items-center flex-shrink-0">

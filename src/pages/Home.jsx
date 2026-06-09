@@ -60,8 +60,8 @@ export default function Home() {
   };
 
   const handleMarkPaid = useCallback(
-    async (clientId) => {
-      await markClientPaid(clientId);
+    async (clientId, paidAmount) => {
+      await markClientPaid(clientId, paidAmount);
       refetchStats();
     },
     [markClientPaid, refetchStats]
@@ -115,6 +115,7 @@ export default function Home() {
           isLoading={forecastLoading}
           primaryHex={config.primaryHex}
           accentHex={config.accentHex}
+          onViewEvent={setDetailEvent}
         />
         <QuickStats stats={stats} isLoading={statsLoading} primaryHex={config.primaryHex} accentHex={config.accentHex} />
         <AReceber
@@ -131,6 +132,7 @@ export default function Home() {
             isLoading={proximosLoading}
             userCategory={categoryId}
             onRefresh={refetchProximos}
+            onViewEvent={setDetailEvent}
           />
         </NeonSectionFrame>
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="mt-6 flex justify-center">

@@ -100,21 +100,34 @@ export function useReceivableByClient(userId) {
     return () => { cancelledRef.current = true; };
   }, [fetchReceivable]);
 
-  const markClientPaid = useCallback(async (clientId) => {
+  const markClientPaid = useCallback(async (clientId, paidAmount) => {
     const row = rows.find(r => r.clientId === clientId);
     if (!row) return;
-    const eventIds = row.events.map(e => e.id);
-    // Optimistic update
+    const today = new Date().toISOString().split('T')[0];
     setRows(prev => prev.filter(r => r.clientId !== clientId));
-    const { error: updateError } = await supabase
-      .from('events')
-      .update({ payment_status: 'paid', paid_date: new Date().toISOString().split('T')[0] })
-      .in('id', eventIds)
-      .eq('user_id', userId);
-    if (updateError) {
-      // Revert on error
-      await fetchReceivable();
-      throw updateError;
+
+    // Distribute paidAmount proportionally across events if provided
+    const basePayload = { payment_status: 'paid', paid_date: today };
+    if (paidAmount != null && paidAmount > 0 && row.events.length > 0) {
+      const totalCalc = row.events.reduce((s, e) => s + e.amount, 0);
+      const ratio = totalCalc > 0 ? paidAmount / totalCalc : 1;
+      const updates = row.events.map(ev =>
+        supabase
+          .from('events')
+          .update({ ...basePayload, actual_revenue: Math.round(ev.amount * ratio * 100) / 100 })
+          .eq('id', ev.id)
+          .eq('user_id', userId)
+      );
+      const results = await Promise.all(updates);
+      const err = results.find(r => r.error)?.error;
+      if (err) { await fetchReceivable(); throw err; }
+    } else {
+      const { error: updateError } = await supabase
+        .from('events')
+        .update(basePayload)
+        .in('id', row.events.map(e => e.id))
+        .eq('user_id', userId);
+      if (updateError) { await fetchReceivable(); throw updateError; }
     }
   }, [rows, userId, fetchReceivable]);
 
