@@ -5,8 +5,8 @@
 
 **Última atualização:** 2026-06-09 (sessão 10)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** `d077cca` — despesas por mês (+ `d52be4e` metas/empresas, `91778c2` docs)  
-**Último deploy:** 2026-06-09 — `ed46dfc` em prod; commits `91778c2`–`d077cca` **pendente push**  
+**Último commit:** `af786fe` — docs sessão 10 (+ `d077cca`, `d52be4e`, `91778c2`)  
+**Último deploy:** 2026-06-09 — Vercel prod `af786fe` · Edge `search-company` redeployada  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
 ---
@@ -108,7 +108,8 @@ Ordem oficial após fix de scroll (2026-06-05):
 - Download direto no `EventDetailModal`
 
 **Build:** ✅ (sem erros)
-**Deploy:** aguardando instrução do usuário
+**Deploy:** ✅ Vercel prod (`af786fe`) + `search-company` Supabase
+**Smoke E2E:** 13/13 ✅
 
 ---
 
@@ -256,7 +257,7 @@ Ordem oficial após fix de scroll (2026-06-05):
 1. ~~Auditoria página a página~~ — feito sessão 10 (todos 🟢)
 2. ~~Validar scroll em todas as telas~~ — feito sessão 10
 3. OAuth Google — checklist E2E manual (validar com sua conta real)
-4. **Deploy das features de hoje** — `CompanySearchInput` 3 abas, PDF, Goals/Expenses UX, Razão Social
+4. ~~Deploy das features de hoje~~ — feito (`af786fe`, prod 2026-06-09)
 5. Testar `CompanySearchInput` aba CNPJ com `42.993.331/0001-10` (Amarrok)
 
 ### Média

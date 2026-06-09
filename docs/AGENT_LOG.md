@@ -15,6 +15,13 @@ Registro cronológico de tarefas executadas por agentes.
 - **Build**: ✅
 - **Deploy**: pendente — commits locais `91778c2`–`d077cca` não pushados
 
+### DEPLOY-SESSAO-10 — Push + Vercel + Edge Function ✅
+- **Agente**: Cursor (Composer)
+- **Push**: `ed46dfc..af786fe` → `origin/main`
+- **Vercel prod**: https://backstage-pro-beta.vercel.app (`dpl_EGsLJ8TBfeYsmGtZjgEzkvu8zc35`)
+- **Supabase**: `search-company` function redeployada
+- **Smoke E2E**: 13/13 ✅
+
 ### HOTFIX-LAZY-ROUTES — Páginas travadas em Carregando ✅
 - **Agente**: Cursor (Composer)
 - **Bug**: `React.lazy()` + Suspense em `/calendar`, `/clients`, `/expenses`, `/reports`, `/client-detail`, `/ai-mentor` — chunk carregava mas módulo não resolvia; fallback infinito
