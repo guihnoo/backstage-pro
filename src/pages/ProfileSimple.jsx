@@ -13,6 +13,7 @@ import {
 import { createBackup } from '@/api/functions';
 import { uploadUserFile } from '@/lib/uploadFile';
 import { toast } from 'sonner';
+import GoogleCalendarSync from '@/components/calendar/GoogleCalendarSync';
 
 export default function ProfileSimple() {
   const { user, profile, signOut, updateProfile } = useAuth();
@@ -363,6 +364,11 @@ export default function ProfileSimple() {
             )}
           </motion.button>
         </NeonGlass>
+        </motion.div>
+
+        {/* Google Calendar */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }}>
+          <GoogleCalendarSync />
         </motion.div>
 
         {/* Configurações */}

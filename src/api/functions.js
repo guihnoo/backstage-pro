@@ -9,12 +9,14 @@ const notAvailable = (name) => async (_args) => ({
   data: { success: false, error: `${name}: funcionalidade não disponível nesta versão.` },
 });
 
-export const googleAuthStart = notAvailable('googleAuthStart');
+export {
+  googleAuthStart,
+  googleDisconnect,
+  googleListCalendars,
+  googleSyncNow,
+  googleImportEvents,
+} from '@/lib/googleCalendarApi';
 export const googleAuthCallback = notAvailable('googleAuthCallback');
-export const googleDisconnect = notAvailable('googleDisconnect');
-export const googleListCalendars = notAvailable('googleListCalendars');
-export const googleSyncNow = notAvailable('googleSyncNow');
-export const googleImportEvents = notAvailable('googleImportEvents');
 export const generateMonthlyReport = notAvailable('generateMonthlyReport');
 export const exportReportXlsx = notAvailable('exportReportXlsx');
 export const exportExpenseReport = notAvailable('exportExpenseReport');

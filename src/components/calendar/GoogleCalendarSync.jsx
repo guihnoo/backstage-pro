@@ -39,9 +39,15 @@ export default function GoogleCalendarSync() {
   const checkUrlForError = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const error = urlParams.get('error');
+    const connected = urlParams.get('google_connected');
     if (error) {
       toast.error(`Erro na conexão com Google: ${decodeURIComponent(error)}`);
       window.history.replaceState({}, '', locationPathname);
+    }
+    if (connected === '1') {
+      toast.success('Google Calendar conectado com sucesso!');
+      window.history.replaceState({}, '', locationPathname);
+      loadSettings();
     }
   };
 
@@ -219,8 +225,8 @@ export default function GoogleCalendarSync() {
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-400">Última Sincronização:</span>
                   <span className="text-white">
-                    {settings.last_sync_date ? 
-                      new Date(settings.last_sync_date).toLocaleString('pt-BR') : 
+                    {settings.google_last_sync_at ?
+                      new Date(settings.google_last_sync_at).toLocaleString('pt-BR') :
                       'Nunca'
                     }
                   </span>

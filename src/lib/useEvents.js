@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState, useCallback } from 'react';
 import { supabase } from './supabase';
 import { useAuth } from './authContext';
+import { syncEventToGoogleCalendar } from '@/lib/googleCalendarPush';
 
 const mapPayloadToDb = (payload = {}) => {
   const mapped = {
@@ -70,6 +71,7 @@ export function useEvents() {
 
       const mapped = mapRowFromDb(result);
       setEvents((prev) => [...prev, mapped].sort((a, b) => (a.start_date > b.start_date ? 1 : -1)));
+      syncEventToGoogleCalendar(mapped.id, 'upsert');
       return mapped;
     },
     [userId]
@@ -90,15 +92,20 @@ export function useEvents() {
 
     const mapped = mapRowFromDb(result);
     setEvents((prev) => prev.map((event) => (event.id === id ? mapped : event)));
+    syncEventToGoogleCalendar(id, 'upsert');
     return mapped;
   }, []);
 
   const remove = useCallback(async (id) => {
+    const existing = events.find((e) => e.id === id);
+    if (existing?.google_event_id) {
+      syncEventToGoogleCalendar(id, 'delete', existing.google_event_id);
+    }
     const { error: err } = await supabase.from('events').delete().eq('id', id);
     if (err) throw err;
 
     setEvents((prev) => prev.filter((event) => event.id !== id));
-  }, []);
+  }, [events]);
 
   return { events, loading, error, refetch, create, update, delete: remove };
 }
