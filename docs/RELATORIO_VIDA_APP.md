@@ -5,7 +5,8 @@
 
 **Última atualização:** 2026-06-05 (sessão 2)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** `3fbe800` — scroll/z-index + relatório de vida  
+**Último commit:** `71bd732` — badge rascunho + scroll batch 2  
+**Commits da sessão:** `3fbe800` → `71bd732`  
 **Último deploy:** 2026-06-05 — Vercel prod (`backstage-pro-beta.vercel.app`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
@@ -57,7 +58,9 @@ Ordem oficial após fix de scroll (2026-06-05):
 
 ### 2026-06-05 (sessão 2) — Badge rascunho + scroll batch 2
 
-**Mudanças (local, pós-deploy `3fbe800`):**
+**Commit:** `71bd732` — deploy prod
+
+**Mudanças:**
 - `ClientDraftBadge` nos cards de `Clients.jsx` quando `profile_complete === false`
 - `alert-dialog`, `drawer`, Goals, AlertsNotifications, NotesSheet — z-index e scroll lock
 - `ScrollArea fill` em StatDetailModal, ClientInsightsModal, DateInfoModal, DailyWorkModal, ExpenseForm
