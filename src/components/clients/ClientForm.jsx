@@ -15,6 +15,8 @@ import { useAuth } from '@/lib/authContext';
 import { useClients } from '@/lib/useClients';
 import { uploadUserFile } from '@/lib/uploadFile';
 import { motion, AnimatePresence } from 'framer-motion';
+import ColorGridPicker from '@/components/ui/ColorGridPicker';
+import { pickDefaultClientColor, DEFAULT_CLIENT_COLOR } from '@/lib/brandColors';
 
 export default function ClientForm({ client, onSuccess, onCancel }) {
   const { user } = useAuth();
@@ -36,6 +38,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
     policy_default_payment_model: null,
     policy_allows_meio_e_dobra_juntos: false,
     default_daily_cache: '',
+    brand_color: DEFAULT_CLIENT_COLOR,
   });
 
   useEffect(() => {
@@ -51,6 +54,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
         policy_default_payment_model: client.policy_default_payment_model || null,
         policy_allows_meio_e_dobra_juntos: client.policy_allows_meio_e_dobra_juntos || false,
         default_daily_cache: client.default_daily_cache > 0 ? String(client.default_daily_cache) : '',
+        brand_color: client.brand_color || DEFAULT_CLIENT_COLOR,
       });
     } else {
       setFormData({
@@ -64,6 +68,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
         policy_default_payment_model: null,
         policy_allows_meio_e_dobra_juntos: false,
         default_daily_cache: '',
+        brand_color: DEFAULT_CLIENT_COLOR,
       });
     }
     setErrors({});
@@ -186,6 +191,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
         default_daily_cache: formData.default_daily_cache === ''
           ? 0
           : Number(formData.default_daily_cache),
+        brand_color: formData.brand_color || pickDefaultClientColor(formData.name),
       };
 
       let result;
@@ -202,6 +208,27 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
       }
     } catch (error) {
       console.error("Erro ao salvar cliente:", error);
+      const missingBrandColor = /brand_color/i.test(error?.message || '');
+      if (missingBrandColor && client?.id) {
+        try {
+          const { brand_color: _bc, ...withoutColor } = {
+            name: formData.name.trim(),
+            contact_person: formData.contact_person || null,
+            email: formData.email || null,
+            phone: formData.phone || null,
+            logo_url: formData.logo_url || null,
+            invoice_portal_url: formData.invoice_portal_url || null,
+            notes: formData.notes || null,
+            policy_default_payment_model: formData.policy_default_payment_model || null,
+            policy_allows_meio_e_dobra_juntos: formData.policy_allows_meio_e_dobra_juntos || false,
+            default_daily_cache: formData.default_daily_cache === '' ? 0 : Number(formData.default_daily_cache),
+          };
+          const result = await updateClient(client.id, withoutColor);
+          toast.success('Cliente atualizado (cor será salva após atualização do banco).');
+          onSuccess?.(result);
+          return;
+        } catch { /* fall through */ }
+      }
       toast.error('Erro ao salvar cliente.', {
         description: error?.message || 'Ocorreu um problema. Por favor, tente novamente.',
       });
@@ -268,6 +295,11 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                   )}
                 </AnimatePresence>
               </div>
+
+              <ColorGridPicker
+                value={formData.brand_color}
+                onChange={(hex) => handleChange('brand_color', hex)}
+              />
 
               <div className="space-y-2">
                 <Label htmlFor="contact_person" className="text-slate-300 text-sm font-medium">

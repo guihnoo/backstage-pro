@@ -31,6 +31,7 @@ import { applyAuto12Hours } from '@/api/functions';
 import { useStatusToggle } from '@/lib/useStatusToggle';
 import { openWhatsAppCharge, formatBRL } from '@/lib/whatsapp';
 import { toast } from 'sonner';
+import EventHeading from '@/components/events/EventHeading';
 import {
   parseISO,
   differenceInDays
@@ -129,12 +130,9 @@ export default function EventDetailModal({
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-800">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
-              <DialogTitle className="text-xl sm:text-2xl font-bold text-white mb-2 truncate">
-                {event.title}
-              </DialogTitle>
-              {client && (
-                <p className="text-slate-400 truncate mb-3">{client.name}</p>
-              )}
+              <div className="mb-3">
+                <EventHeading event={event} client={client} size="lg" />
+              </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge className={statusConfig.badgeClass}>
                   {StatusIcon && <StatusIcon className="w-4 h-4 mr-1" />}

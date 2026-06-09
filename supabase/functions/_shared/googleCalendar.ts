@@ -141,3 +141,21 @@ export async function getAccessToken(serviceClient: any, userId: string) {
   }).eq('user_id', userId);
   return tokens.access_token;
 }
+
+const BRAND_COLORS = ['#A64AFF', '#22d3ee', '#EAB308', '#22c55e', '#f43f5e', '#f97316', '#3b82f6', '#8b5cf6'];
+
+export function pickDefaultClientColor(seed = '') {
+  const text = String(seed).trim().toLowerCase();
+  if (!text) return '#A64AFF';
+  let hash = 0;
+  for (let i = 0; i < text.length; i++) hash = text.charCodeAt(i) + ((hash << 5) - hash);
+  return BRAND_COLORS[Math.abs(hash) % BRAND_COLORS.length];
+}
+
+export function normalizeGoogleDay(iso: string) {
+  return String(iso).slice(0, 10);
+}
+
+export function normalizeTitleKey(value: string) {
+  return String(value || '').trim().toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
+}

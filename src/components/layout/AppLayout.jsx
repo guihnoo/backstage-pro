@@ -58,7 +58,7 @@ export default function AppLayout() {
       <div className="fixed top-3 right-3 z-40" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <NotificationCenter />
       </div>
-      <main ref={mainRef} className="flex-1 overflow-y-auto overscroll-contain" style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }}>
+      <main ref={mainRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain" style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }}>
         <Outlet key={location.pathname} />
       </main>
       <nav className="fixed bottom-0 left-0 right-0 z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>

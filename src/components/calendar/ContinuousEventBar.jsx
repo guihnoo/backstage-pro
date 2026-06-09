@@ -3,6 +3,8 @@ import { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Clock } from 'lucide-react'; // Removed MapPin as it's not used
 import { getContrastColor, softColor, timeRangeLabel } from '../utils/dateUtils';
+import { resolveEventColor } from '@/lib/brandColors';
+import { getEventDisplay } from '@/lib/eventDisplay';
 
 export default function ContinuousEventBar({
   span,
@@ -20,7 +22,9 @@ export default function ContinuousEventBar({
   const client = clients.find((c) => c?.id === event?.client_id);
 
   // Determine the base color for the bar, prioritizing span.block.color from outline
-  const baseColor = span.block.color || event?.color || '#22d3ee';
+  const baseColor = resolveEventColor(event, client) || span.block.color || '#22d3ee';
+  const { companyName, eventName, showEventSubtitle } = getEventDisplay(event, client);
+  const isToday = span.isToday;
 
   const timeLabel = timeRangeLabel(event);
 
@@ -79,7 +83,11 @@ export default function ContinuousEventBar({
   return (
     <motion.button
       initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
+      animate={{
+        opacity: 1,
+        scale: 1,
+        boxShadow: isToday ? [`0 0 8px ${baseColor}66`, `0 0 16px ${baseColor}33`] : '0 2px 8px rgba(0,0,0,0.3)',
+      }}
       exit={{ opacity: 0, scale: 0.95 }} // Added from outline
       whileHover={{ scale: 1.02 }} // Added from outline
       whileTap={{ scale: 0.98 }} // Added from outline
@@ -87,7 +95,7 @@ export default function ContinuousEventBar({
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp} // Clear timer if pointer leaves the element
-      className="w-full h-7 sm:h-8 text-left cursor-pointer rounded-full
+      className="w-full h-8 sm:h-9 text-left cursor-pointer rounded-full
                  transition-all duration-200 shadow-md
                  hover:shadow-lg active:shadow-sm
                  relative overflow-hidden group
@@ -120,12 +128,14 @@ export default function ContinuousEventBar({
             className="w-2 h-2 rounded-full flex-shrink-0"
             style={{ backgroundColor: baseColor }} // Uses baseColor for dot
           />
-          <span className="text-slate-50 text-xs font-medium truncate">
-
-
-
-            {client?.name || 'Cliente'}
+          <span className="text-slate-50 text-xs font-semibold truncate">
+            {companyName}
           </span>
+          {showEventSubtitle && (
+            <span className="text-[10px] text-slate-300/80 truncate hidden sm:inline max-w-[40%]">
+              {eventName}
+            </span>
+          )}
           {timeLabel &&
           <span
             className="text-xs opacity-80 flex-shrink-0"

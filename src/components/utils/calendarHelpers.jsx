@@ -1,4 +1,5 @@
 import { normalizeDateString, isSameDay } from './dateUtils';
+import { resolveEventColor } from '@/lib/brandColors';
 import {
   startOfWeek,
   addDays,
@@ -42,8 +43,9 @@ export const normalizeEventForGrid = (event, clients = []) => {
     endExclusive,
     isAllDay: true,
     client_id: event.client_id,
-    // Adicionar o nome do cliente para exibição
+    _clients: clients,
     displayName: getClientName(event.client_id),
+    color: resolveEventColor(event, clients),
   };
 };
 
@@ -58,7 +60,7 @@ export const groupContinuousEvents = (normalizedEvents) => {
     seriesId: event.series_id,
     start: event.startLocal,
     end: event.endExclusive,
-    color: event.color || '#A78BFA',
+    color: resolveEventColor(event, event._clients ?? []),
     title: event.displayName || event.title || 'Evento',
     client_id: event.client_id,
     events: [event],

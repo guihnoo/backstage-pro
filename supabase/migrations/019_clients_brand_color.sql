@@ -1,0 +1,2 @@
+ALTER TABLE clients
+  ADD COLUMN IF NOT EXISTS brand_color text DEFAULT '#A64AFF';

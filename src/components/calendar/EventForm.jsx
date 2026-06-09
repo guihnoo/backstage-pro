@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Sparkles, BookmarkPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { hardNavigate } from '@/lib/hardNavigate';
@@ -15,6 +14,7 @@ import { useEvents } from '@/lib/useEvents';
 import { useAuth } from '@/lib/authContext';
 import { EventTemplate } from '@/api/entities';
 import EventTemplateModal from './EventTemplateModal';
+import { resolveEventColor } from '@/lib/brandColors';
 
 const PAYMENT_MODELS = [
   { value: 'HORAS_EXTRAS', label: 'Horas Extras' },
@@ -26,8 +26,8 @@ const defaultState = {
   title: '',
   start_date: '',
   end_date: '',
-  start_time: '09:00',
-  end_time: '18:00',
+  start_time: '',
+  end_time: '',
   payment_due_date: '',
   payment_status: 'unpaid',
   payment_model: 'HORAS_EXTRAS',
@@ -79,6 +79,11 @@ export default function EventForm({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const selectedClient = useMemo(
+    () => clients.find((c) => c.id === formData.client_id),
+    [clients, formData.client_id],
+  );
+
   const eventSummary = useMemo(() => {
     const daily = Number(formData.daily_cache_value) || 0;
     if (!formData.start_date || daily <= 0) return null;
@@ -108,6 +113,9 @@ export default function EventForm({
       }
       if (client.policy_default_payment_model) {
         next.payment_model = client.policy_default_payment_model;
+      }
+      if (!event?.id) {
+        next.color = resolveEventColor({ client_id: clientId }, client);
       }
       return next;
     });
@@ -151,28 +159,32 @@ export default function EventForm({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.client_id || !formData.title || !formData.start_date) {
-      toast.error('Preencha cliente, titulo e data inicial.');
+    if (!formData.client_id || !formData.start_date) {
+      toast.error('Preencha cliente e data inicial.');
       return;
     }
+
+    const selectedClient = clients.find((c) => c.id === formData.client_id);
+    const eventTitle = formData.title.trim() || selectedClient?.name || 'Evento';
 
     setLoading(true);
 
     try {
+      const isNew = !event?.id;
       const payload = {
         client_id: formData.client_id,
-        title: formData.title.trim(),
+        title: eventTitle,
         start_date: normalizeDateString(formData.start_date),
         end_date: formData.end_date ? normalizeDateString(formData.end_date) : normalizeDateString(formData.start_date),
-        start_time: formData.start_time || null,
-        end_time: formData.end_time || null,
+        start_time: isNew ? null : (formData.start_time || null),
+        end_time: isNew ? null : (formData.end_time || null),
         payment_due_date: formData.payment_due_date ? normalizeDateString(formData.payment_due_date) : null,
         payment_status: formData.payment_status || 'pending',
         status: 'pending',
         payment_model: formData.payment_model || 'HORAS_EXTRAS',
         daily_cache_value: formData.daily_cache_value === '' ? 0 : Number(formData.daily_cache_value),
         cache_valor_base: formData.cache_valor_base === '' ? null : Number(formData.cache_valor_base),
-        color: formData.color || '#22d3ee',
+        color: resolveEventColor({ client_id: formData.client_id, color: formData.color }, selectedClient),
         observacoes_md: formData.observacoes_md || null,
       };
 
@@ -224,7 +236,7 @@ export default function EventForm({
         </DialogHeader>
 
         <form className="flex flex-col flex-1 min-h-0" onSubmit={handleSubmit}>
-          <ScrollArea className="flex-1">
+          <div className="flex-1 min-h-0 overflow-y-auto">
           <div className="space-y-4 p-4 sm:p-6 pb-2">
           <div className="space-y-2">
             <Label>Cliente</Label>
@@ -253,7 +265,10 @@ export default function EventForm({
                 <SelectContent className="bg-slate-800 border-slate-700">
                   {clients.map((client) => (
                     <SelectItem key={client.id} value={client.id}>
-                      {client.name}
+                      <span className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: client.brand_color || '#A64AFF' }} />
+                        {client.name}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -262,8 +277,13 @@ export default function EventForm({
           </div>
 
           <div className="space-y-2">
-            <Label>Titulo</Label>
-            <Input value={formData.title} onChange={(e) => setField('title', e.target.value)} className="bg-slate-800 border-slate-700" />
+            <Label>Nome do evento (opcional)</Label>
+            <Input
+              value={formData.title}
+              onChange={(e) => setField('title', e.target.value)}
+              placeholder={selectedClient?.name ? `Padrão: ${selectedClient.name}` : 'Usa o nome da empresa se vazio'}
+              className="bg-slate-800 border-slate-700"
+            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -277,16 +297,23 @@ export default function EventForm({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Horario inicial</Label>
-              <Input type="time" value={formData.start_time} onChange={(e) => setField('start_time', e.target.value)} className="bg-slate-800 border-slate-700" />
+          {event?.id && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Horario inicial</Label>
+                <Input type="time" value={formData.start_time} onChange={(e) => setField('start_time', e.target.value)} className="bg-slate-800 border-slate-700" />
+              </div>
+              <div className="space-y-2">
+                <Label>Horario final</Label>
+                <Input type="time" value={formData.end_time} onChange={(e) => setField('end_time', e.target.value)} className="bg-slate-800 border-slate-700" />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label>Horario final</Label>
-              <Input type="time" value={formData.end_time} onChange={(e) => setField('end_time', e.target.value)} className="bg-slate-800 border-slate-700" />
-            </div>
-          </div>
+          )}
+          {!event?.id && (
+            <p className="text-xs text-slate-500 rounded-lg border border-slate-700/50 bg-slate-800/40 px-3 py-2">
+              Horários são registrados no dia do evento (toque longo na barra da agenda ou aba Horas).
+            </p>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -326,7 +353,7 @@ export default function EventForm({
             <Textarea value={formData.observacoes_md} onChange={(e) => setField('observacoes_md', e.target.value)} className="bg-slate-800 border-slate-700" />
           </div>
           </div>
-          </ScrollArea>
+          </div>
 
           <div className="flex flex-col sm:flex-row gap-2 px-4 py-3 sm:px-6 border-t border-slate-700 flex-shrink-0 pb-safe">
             <Button

@@ -8,6 +8,8 @@ import { usePaymentToggle } from '@/lib/usePaymentToggle';
 import { useStatusToggle } from '@/lib/useStatusToggle';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { getEventCacheAmount } from '@/lib/eventFinance';
+import { getEventDisplay } from '@/lib/eventDisplay';
+import { resolveEventColor } from '@/lib/brandColors';
 
 function getTimeGroup(daysFromToday) {
   if (daysFromToday === 0) return 'Hoje';
@@ -125,6 +127,8 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
           const isConfirming = togglingStatus === event.id;
           const isPending = event.status === 'pending';
           const cacheValue = getEventCacheAmount(event);
+          const display = getEventDisplay(event, event.clients);
+          const barColor = resolveEventColor(event, event.clients);
 
           return (
             <motion.div
@@ -143,12 +147,15 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
-                    {event.color && (
-                      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: event.color, boxShadow: `0 0 5px ${event.color}80` }} />
-                    )}
-                    <h4 className="font-semibold text-white truncate group-hover:text-cyan-300 transition-colors">
-                      {event.title}
-                    </h4>
+                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: barColor, boxShadow: `0 0 5px ${barColor}80` }} />
+                    <div className="min-w-0">
+                      <h4 className="font-semibold text-white truncate group-hover:text-cyan-300 transition-colors">
+                        {display.companyName}
+                      </h4>
+                      {display.showEventSubtitle && (
+                        <p className="text-xs text-slate-400 truncate">{display.eventName}</p>
+                      )}
+                    </div>
                     <span className={`text-xs px-2 py-0.5 rounded border whitespace-nowrap ${status.color}`}>
                       {status.label}
                     </span>
@@ -160,12 +167,6 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
                   </div>
 
                   <div className="flex flex-wrap gap-3 text-xs text-gray-400">
-                    {event.clients?.name && (
-                      <div className="flex items-center gap-1">
-                        <User className="w-3 h-3" />
-                        <span>{event.clients.name}</span>
-                      </div>
-                    )}
                     {formattedTime && (
                       <div className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />

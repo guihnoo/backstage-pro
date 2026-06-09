@@ -124,12 +124,17 @@ export default function GoogleCalendarSync() {
       const { data } = await googleSyncNow();
       
       if (data.success) {
+        const parts = [];
+        if (data.imported_count) parts.push(`${data.imported_count} importados`);
+        if (data.linked_count) parts.push(`${data.linked_count} vinculados`);
+        if (data.skipped_count) parts.push(`${data.skipped_count} ignorados (já existiam)`);
+        parts.push(`${data.synced_events || 0} enviados ao Google`);
         setLastSyncStatus({
           success: true,
-          message: `Sincronização concluída! ${data.synced_events || 0} eventos sincronizados.`,
+          message: `Sincronização concluída: ${parts.join(', ')}.`,
           timestamp: new Date()
         });
-        toast.success("Sincronização concluída com sucesso!");
+        toast.success("Sincronização concluída!", { description: parts.join(' · ') });
       } else {
         throw new Error(data.error || 'Erro desconhecido na sincronização');
       }
@@ -146,7 +151,7 @@ export default function GoogleCalendarSync() {
   };
 
   const handleImportEvents = async () => {
-    if (!confirm("Importar eventos do Google Calendar? Isso pode criar eventos duplicados.")) return;
+    if (!confirm("Importar eventos do Google Calendar? Duplicatas serão ignoradas automaticamente.")) return;
     
     setIsSyncing(true);
     try {
@@ -154,7 +159,12 @@ export default function GoogleCalendarSync() {
       const { data } = await googleImportEvents({ days_back: 30, days_forward: 90 });
       
       if (data.success) {
-        toast.success(`${data.imported_count || 0} eventos importados com sucesso!`);
+        const msg = [
+          data.imported_count ? `${data.imported_count} novos` : null,
+          data.linked_count ? `${data.linked_count} vinculados` : null,
+          data.skipped_count ? `${data.skipped_count} ignorados` : null,
+        ].filter(Boolean).join(', ') || 'Nenhum evento novo';
+        toast.success('Importação concluída', { description: msg });
       } else {
         throw new Error(data.error || 'Erro na importação');
       }

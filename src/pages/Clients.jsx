@@ -385,8 +385,11 @@ export default function ClientsPage() {
                 whileTap={{ scale: 0.98 }}
               >
                 <Card
-                  className="bg-[#161923]/60 border-[#23262f] cursor-pointer transition-all duration-300 hover:shadow-lg flex flex-col h-full"
-                  style={{ ['--hover-border']: config.primaryHex }}
+                  className="bg-[#161923]/60 border-[#23262f] cursor-pointer transition-all duration-300 hover:shadow-lg flex flex-col h-full border-l-4"
+                  style={{
+                    ['--hover-border']: config.primaryHex,
+                    borderLeftColor: client.brand_color || '#A64AFF',
+                  }}
                   onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${config.primaryHex}66`; }}
                   onMouseLeave={(e) => { e.currentTarget.style.borderColor = ''; }}
                   onClick={() => handleClientClick(client)}
