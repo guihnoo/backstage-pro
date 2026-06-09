@@ -19,7 +19,12 @@ import {
   Zap,
   Loader2,
   MessageCircle,
-  ExternalLink
+  ExternalLink,
+  Receipt,
+  Send,
+  ChevronDown,
+  ChevronUp,
+  AlertTriangle
 } from 'lucide-react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import {
@@ -31,15 +36,19 @@ import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { applyAuto12Hours } from '@/api/functions';
 import { useStatusToggle } from '@/lib/useStatusToggle';
-import { openWhatsAppCharge, formatBRL } from '@/lib/whatsapp';
+import { openWhatsAppCharge, formatBRL, buildEventReport } from '@/lib/whatsapp';
 import { toast } from 'sonner';
 import EventHeading from '@/components/events/EventHeading';
 import EventLocationSection from '@/components/events/EventLocationSection';
 import { useEvents } from '@/lib/useEvents';
+import { useExpenses } from '@/lib/useExpenses';
+import ExpenseForm from '@/components/expenses/ExpenseForm';
 import {
   parseISO,
-  differenceInDays
+  differenceInDays,
+  format
 } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 export default function EventDetailModal({
   event,
@@ -53,8 +62,11 @@ export default function EventDetailModal({
   const { formatCurrency } = useFinancialVisibility();
   const { dailyWork } = useDailyWork();
   const { update: updateEvent } = useEvents();
+  const { expenses, refetch: refetchExpenses } = useExpenses();
   const [applying12h, setApplying12h] = useState(false);
   const [savingLocation, setSavingLocation] = useState(false);
+  const [showExpenseForm, setShowExpenseForm] = useState(false);
+  const [showExpenses, setShowExpenses] = useState(true);
   const [locDraft, setLocDraft] = useState({
     location: '',
     location_city: '',
@@ -121,6 +133,24 @@ export default function EventDetailModal({
     openWhatsAppCharge(phone, parts.join('\n'));
   };
 
+  const handleSendReport = () => {
+    const phone = client?.phone;
+    if (!phone) {
+      toast.error('Cliente sem telefone cadastrado.', {
+        description: 'Adicione o telefone na página do cliente para enviar o relatório.',
+      });
+      return;
+    }
+    const message = buildEventReport({
+      event,
+      client,
+      work: eventWork,
+      expenses: eventExpenses,
+    });
+    const ok = openWhatsAppCharge(phone, message);
+    if (!ok) toast.error('Não foi possível abrir o WhatsApp.');
+  };
+
   // Hooks must be called before any conditional return
   const eventWork = useMemo(() => {
     if (!event) return [];
@@ -138,6 +168,19 @@ export default function EventDetailModal({
     if (!event || eventWork.length > 0) return null;
     return getEventCacheAmount(event);
   }, [event, eventWork.length]);
+
+  const eventExpenses = useMemo(() => {
+    if (!event) return [];
+    return (expenses || []).filter(e => e.event_id === event.id);
+  }, [expenses, event]);
+
+  const expenseTotals = useMemo(() => {
+    const total = eventExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+    const reimbursable = eventExpenses
+      .filter(e => e.is_reimbursable && !e.reimbursed)
+      .reduce((sum, e) => sum + (e.amount || 0), 0);
+    return { total, reimbursable };
+  }, [eventExpenses]);
 
   if (!event) return null;
 
@@ -358,6 +401,95 @@ export default function EventDetailModal({
               </CardContent>
             </Card>
 
+            {/* Despesas do Evento */}
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setShowExpenses(v => !v)}
+                    className="flex items-center gap-2 text-left hover:opacity-80 transition-opacity"
+                  >
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Receipt className="w-4 h-4 text-amber-400" />
+                      Despesas do Evento
+                      {eventExpenses.length > 0 && (
+                        <span className="text-xs font-normal text-slate-400">
+                          ({eventExpenses.length})
+                        </span>
+                      )}
+                    </CardTitle>
+                    {showExpenses ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+                  </button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowExpenseForm(true)}
+                    className="h-8 px-2.5 text-xs border-amber-600/40 text-amber-300 hover:bg-amber-500/10 flex-shrink-0"
+                  >
+                    <Plus className="w-3 h-3 mr-1" />
+                    Adicionar
+                  </Button>
+                </div>
+                {expenseTotals.total > 0 && (
+                  <div className="flex items-center gap-3 mt-2 pt-2 border-t border-slate-700/50">
+                    <div>
+                      <p className="text-[10px] text-slate-500 uppercase tracking-wide">Total</p>
+                      <p className="text-sm font-bold text-red-300">{formatCurrency(expenseTotals.total)}</p>
+                    </div>
+                    {expenseTotals.reimbursable > 0 && (
+                      <div>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wide">A reembolsar</p>
+                        <p className="text-sm font-bold text-amber-300">{formatCurrency(expenseTotals.reimbursable)}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardHeader>
+              {showExpenses && (
+                <CardContent className="pt-0">
+                  {eventExpenses.length === 0 ? (
+                    <p className="text-sm text-slate-500 text-center py-3">
+                      Nenhuma despesa registrada para este evento.
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {eventExpenses.map((exp) => (
+                        <div key={exp.id} className="flex items-center justify-between gap-2 p-2.5 rounded-lg bg-slate-900/50 border border-slate-700/50">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-white truncate">{exp.title || exp.category}</p>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="text-[10px] text-slate-500 capitalize">{exp.category}</span>
+                              {exp.date && (
+                                <span className="text-[10px] text-slate-600">
+                                  · {format(new Date(exp.date + 'T12:00:00'), 'dd/MM', { locale: ptBR })}
+                                </span>
+                              )}
+                              {exp.is_reimbursable && !exp.reimbursed && (
+                                <span className="text-[10px] text-amber-400 flex items-center gap-0.5">
+                                  <AlertTriangle className="w-2.5 h-2.5" />
+                                  reembolsável
+                                </span>
+                              )}
+                              {exp.reimbursed && (
+                                <span className="text-[10px] text-green-400 flex items-center gap-0.5">
+                                  <CheckCircle2 className="w-2.5 h-2.5" />
+                                  reembolsado
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <p className="text-sm font-bold text-red-300 flex-shrink-0">
+                            {formatCurrency(exp.amount)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              )}
+            </Card>
+
             {/* Registros de Trabalho */}
             {eventWork.length > 0 && (
               <Card className="bg-slate-800/50 border-slate-700">
@@ -451,6 +583,16 @@ export default function EventDetailModal({
           )}
           {client?.phone && (
             <Button
+              onClick={handleSendReport}
+              variant="outline"
+              className="flex-shrink-0 border-amber-600 hover:bg-amber-900/20 text-amber-300"
+              title="Enviar relatório final do evento via WhatsApp"
+            >
+              <Receipt className="w-4 h-4" />
+            </Button>
+          )}
+          {client?.phone && (
+            <Button
               onClick={handleShareWhatsApp}
               variant="outline"
               className="flex-shrink-0 border-green-600 hover:bg-green-900/20 text-green-400"
@@ -478,6 +620,18 @@ export default function EventDetailModal({
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      {showExpenseForm && (
+        <ExpenseForm
+          open={showExpenseForm}
+          onOpenChange={setShowExpenseForm}
+          initialEventId={event?.id}
+          onSuccess={() => {
+            refetchExpenses();
+            setShowExpenseForm(false);
+          }}
+        />
+      )}
     </Dialog>
   );
 }
