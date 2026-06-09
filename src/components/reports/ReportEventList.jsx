@@ -56,7 +56,7 @@ const EventItem = ({ event, client, work, onClick }) => {
   );
 };
 
-export default function ReportEventList({ events, clients, dailyWork, title, onEventClick }) {
+export default function ReportEventList({ events, clients, dailyWork = [], title, onEventClick }) {
   const clientMap = new Map(clients.map(c => [c.id, c]));
 
   return (

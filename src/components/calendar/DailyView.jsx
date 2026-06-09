@@ -19,6 +19,7 @@ import { format, isSameDay, addDays, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import EventLocationChip from '@/components/events/EventLocationChip';
+import { hardNavigate } from '@/lib/hardNavigate';
 
 // Helper to check if a day is within an event's range
 const isDayInEvent = (day, event) => {
@@ -125,7 +126,13 @@ const DailyView = ({ currentDate, onDateChange, events, dailyWork, clients, onEd
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-lg text-cyan-300">{client.name}</p>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); hardNavigate(`/client-detail?id=${event.client_id}`); }}
+                      className="font-bold text-lg text-cyan-300 hover:text-cyan-200 transition-colors text-left"
+                    >
+                      {client.name}
+                    </button>
                     <p className="text-white font-medium">{event.title}</p>
                     <EventLocationChip event={event} className="mt-2" />
                   </div>

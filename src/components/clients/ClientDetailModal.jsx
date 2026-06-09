@@ -13,7 +13,7 @@ import {
   X, Edit, Trash2, Phone, Mail, Calendar, TrendingUp,
   Clock, DollarSign, User, MessageCircle,
   CheckCircle2, AlertCircle, ArrowRight, BarChart3,
-  Activity, Target, Globe
+  Activity, Target, Globe, ExternalLink
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { hardNavigate } from '@/lib/hardNavigate';
@@ -614,16 +614,24 @@ export default function ClientDetailModal({
                 Excluir Cliente
               </Button>
               <div className="flex gap-3 w-full sm:w-auto order-1 sm:order-2">
-                <Button variant="outline" onClick={onClose} className="flex-1 sm:flex-none bg-transparent border-slate-600 hover:bg-slate-800">
+                <Button variant="outline" onClick={onClose} className="sm:flex-none bg-transparent border-slate-600 hover:bg-slate-800">
                   Fechar
                 </Button>
                 <Button
+                  variant="outline"
+                  onClick={() => { onClose(); hardNavigate(`/client-detail?id=${client.id}`); }}
+                  className="sm:flex-none border-slate-600 hover:bg-slate-800 text-slate-300"
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Página Completa
+                </Button>
+                <Button
                   onClick={() => onEdit(client)}
-                  className="flex-1 sm:flex-none text-white border-0"
+                  className="sm:flex-none text-white border-0"
                   style={{ backgroundColor: config.primaryHex }}
                 >
                   <Edit className="w-4 h-4 mr-2" />
-                  Editar Cliente
+                  Editar
                 </Button>
               </div>
             </DialogFooter>

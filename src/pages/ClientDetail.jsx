@@ -330,6 +330,7 @@ export default function ClientDetailPage() {
             <ReportEventList
               events={clientEvents}
               clients={clients}
+              dailyWork={clientWork}
               onEventClick={handleEventClick}
               title="Histórico de Eventos"
             />
