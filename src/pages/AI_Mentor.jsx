@@ -359,13 +359,13 @@ export default function AIMentorPage() {
       {/* Sheet histórico */}
       <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
         <SheetContent side="left" className="bg-[#0a0c14] border-[#23262f] w-72 flex flex-col p-0">
-          <SheetHeader className="p-4 border-b border-[#23262f]">
+          <SheetHeader className="p-4 border-b border-[#23262f] flex-shrink-0">
             <SheetTitle className="text-white flex items-center gap-2 text-sm">
               <History className="w-4 h-4" style={{ color: config.primaryHex }} />
               Histórico de conversas
             </SheetTitle>
           </SheetHeader>
-          <div className="p-3">
+          <div className="p-3 flex-shrink-0">
             <Button
               onClick={handleNewConv}
               className="w-full gap-2 h-9 text-sm"

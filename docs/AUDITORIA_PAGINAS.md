@@ -151,8 +151,8 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página | ⬜ | ⬜ | LOCKED — auditoria adiada |
-| Chat / `SourcesModal` | ⬜ | ⬜ | |
+| Página (chat) | [x] | 🟢 | `flex flex-col h-[calc(100dvh-10rem)]` + `flex-1 overflow-y-auto` mensagens ✅ |
+| Sheet histórico | [x] | 🟢 | `flex flex-col` + SheetHeader/botão `flex-shrink-0` + `flex-1 overflow-y-auto` ✅ |
 
 ---
 
@@ -185,7 +185,7 @@
 ## Próxima sprint de auditoria (ordem sugerida)
 
 1. [x] **`/client-detail`** — auditada sessão 11 ✅
-2. [ ] **`/ai-mentor`** — LOCKED, pedir desbloqueio ao usuário se necessário
+2. [x] **`/ai-mentor`** — desbloqueado + auditado sessão 11 ✅
 3. [x] **Rotas públicas** — auditadas sessão 11 ✅ (fora AppLayout, scroll nativo OK)
 4. [x] **`StatDetailModal`** — órfão confirmado; QuickStats usa `hardNavigate`; seguro remover quando quiser
 5. [ ] **NotificationCenter** — avaliar converter para Sheet se scroll lock for necessário

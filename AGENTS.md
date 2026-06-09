@@ -18,7 +18,6 @@ Estes arquivos são gerenciados pelo Cursor ou têm restrições explícitas:
 - `src/components/home/ProximosEventos.jsx`
 - `src/components/utils/dateUtils.jsx`
 - `src/components/ai-elements/**`
-- `src/pages/AI_Mentor.jsx`
 - `public/` (ícones PWA)
 
 ## Convenções
@@ -47,6 +46,7 @@ Ver `docs/AGENT_LOG.md`.
 
 - `src/pages/Calendar.jsx`, `src/pages/reports.jsx`, `src/pages/Onboarding.jsx`, `src/pages/AuthCallback.jsx`
 - `src/components/home/FloatingActions.jsx`
+- `src/pages/AI_Mentor.jsx` — desbloqueado 2026-06-09 (auditoria scroll concluída)
 
 ## Regras adicionais
 
