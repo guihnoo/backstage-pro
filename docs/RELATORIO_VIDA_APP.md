@@ -3,10 +3,10 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-09 (sessão 11)  
+**Última atualização:** 2026-06-09 (sessão 12)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** `0b666c7` — unlock + audit /ai-mentor  
-**Último deploy:** 2026-06-09 — Vercel prod `dpl_CGGJudw1KpsMYDDV1tgMFxVfvSPM` (`0b666c7`) · https://backstage-pro-beta.vercel.app  
+**Último commit:** `ad651e1` — Sprint A+B nav SPA + fix patchHistory  
+**Último deploy:** 2026-06-09 — push `ad651e1` → Vercel  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
 ---
@@ -27,7 +27,9 @@
 | Mapa Brasil (relatórios) | SVG interativo `@svg-maps/brazil`, lazy load + chunk dedicado |
 | Alertas agenda (local GPS) | `AlertsPanel` montado em `Calendar.jsx` — lembrete check-in para eventos de hoje sem local |
 | Modo Palco — check-in GPS | Botão em `ProximoShow` quando `isOnStage` e sem local |
-| Code-split rotas | **Revertido** — imports estáticos (`ed46dfc`); lazy travava Suspense |
+| Rotas lazy (code-split) | **Reativado** — AppLayout usa `<Suspense>` + `wrapPage` lazy; Sprint A+B |
+| Nav SPA via Link | `AppLayout` migrado de `<a onClick>` para `<Link>` (7 navItems + Metas) |
+| patchHistory fix | Filtra chamadas internas React Router (state.idx) — evitava loop que cancelava lazy load |
 | Auditoria / ideias | `docs/AUDITORIA_PAGINAS.md` + `docs/IDEIAS_PENDENTES.md` + `CLAUDE.md` |
 | OAuth Google (UX erros) | `googleOAuthErrors.js` + callback preserva `refresh_token` em reconexão |
 | CompanySearchInput (3 abas) | Pesquisar / CNPJ / NF-e XML — sessão 10 |

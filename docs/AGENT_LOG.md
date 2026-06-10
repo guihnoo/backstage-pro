@@ -6,6 +6,20 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-09
 
+### PERF-SPA-LAZY — Code splitting + navegação SPA estável + E2E 47/47 ✅
+- **Agente**: Cursor (Composer)
+- **Performance (build)**:
+  - Bundle principal `index-*.js`: **~878 KB → ~263 KB** (~70% menor)
+  - Chunks lazy: `Home` ~54 KB, `Calendar` ~63 KB, `Goals` ~33 KB, `Reports` ~42 KB, `AI_Mentor` ~139 KB, `react-pdf` ~1.4 MB (só ao abrir Reports)
+- **Navegação SPA (fix raiz)**:
+  - `AppLayout`: `<Link>` com paths **relativos** (`calendar`, `clients`, …) + `end` no Home; `Suspense` no `<Outlet>`
+  - `routes.jsx`: **todas** as rotas do shell (`Home` inclusive) via `lazy` + `HydrateFallback`
+  - `App.jsx`: `RouterProvider useTransitions={false}` — evita UI “fantasma” durante troca de rota
+  - `NavigationSync`: reconcile só em `popstate` (não compete com `Link`)
+  - `useQueryAction`: `navigate(pathname, { replace: true })` em vez de `replaceState` cru
+- **E2E**: smoke **18/18** ✅ · regression **29/29** ✅ (overflow + modais)
+- **Próximo**: Sprint C (charts Reports, specs `goals-edit` / `ai-mentor-shell` se desejado)
+
 ### SPRINT-AB-FIX — Sprint A+B Cursor + fix SPA navigation + E2E 47/47 ✅
 - **Agente**: Claude Code (claude-sonnet-4-6) + Cursor (Sprint A+B)
 - **BUG RAIZ**: `patchHistoryNotifications` disparava `bp:history` em TODA chamada de `pushState`/`replaceState`, incluindo as internas do React Router. Isso fazia `NavigationSync.reconcile` chamar `navigate()` dentro do rAF em loop, cancelando a navegação pendente — Calendar nunca commitava. Fix: filtrar chamadas com state `{ idx }` (assinatura do React Router).
