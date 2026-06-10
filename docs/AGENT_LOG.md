@@ -6,6 +6,13 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-10
 
+### POLISH-MICRO — payment_due_date, labels pt-BR, busca description, toast erro perfil ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **EventDetailModal (calendar)**: exibe `payment_due_date` na seção financeira quando preenchido e não pago — data em âmbar + ícone de alerta
+- **Expenses.jsx**: labels de categoria agora usam pt-BR acentuado (ex: "Alimentação" em vez de "alimentacao"); busca inclui `description`; placeholder atualizado
+- **ProfileSimple.jsx**: `handleSave` em catch só fazia `console.error` sem feedback — adicionado `toast.error`
+- **Build**: Vite ✅; deploy: push `8e78e07`
+
 ### REVENUE-CONSISTENCY — getEventCacheAmount como fallback em 3 componentes ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Bug**: `ClientInsightsModal`, `PaymentAlerts`, `ClientDetailedTable` calculavam receita/pendência usando apenas `daily_cache` dos registros de trabalho — eventos sem work registrado apareciam com valor R$ 0,00

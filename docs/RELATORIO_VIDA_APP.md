@@ -5,8 +5,8 @@
 
 **Última atualização:** 2026-06-10 (sessão 15)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** `2693168` — Fix ReportsChart ClientDetail (prop chartInput)  
-**Último deploy:** 2026-06-10 — push para Vercel  
+**Último commit:** `8e78e07` — toast.error no ProfileSimple + payment_due_date no EventDetailModal  
+**Último deploy:** 2026-06-10 — push `8e78e07` → Vercel  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
 ---
@@ -75,7 +75,11 @@ Ordem oficial após fix de scroll (2026-06-05):
 **Migração `gray-*` → `slate-*` finalizada:** todos os arquivos fora do Cursor migrados. Único remanescente intencional: `SocialLoginButtons.jsx` (branding Google/Apple).  
 **Clients.jsx — busca expandida:** `searchTerm` agora pesquisa em `razao_social`, `email`, `phone` (normalizado) e `city`, além de `name` e `contact_person`.  
 **ClientDetail.jsx — ReportsChart fix:** gráfico estava sempre vazio; `data` → `chartInput` com mapeamento correto de `{ realized, receivable, projected, expenses }`.  
-**Build:** Vite ✅ (51.75s)
+**Receita consistente (3 componentes):** `ClientInsightsModal`, `PaymentAlerts`, `ClientDetailedTable` agora usam `getEventCacheAmount` como fallback, igual a `Clients.jsx` e `Reports.jsx`.  
+**Expenses.jsx:** labels de categoria acentuados ("Alimentação" em vez de "alimentacao"); busca inclui `description`; placeholder atualizado.  
+**EventDetailModal (calendar):** exibe `payment_due_date` na seção financeira quando preenchido e não pago.  
+**ProfileSimple.jsx:** `handleSave` agora exibe `toast.error` quando falha (era silencioso).  
+**Build:** Vite ✅ — deploy `8e78e07`
 
 ### 2026-06-10 (sessão 14) — Polish forms + paleta slate consistente
 
