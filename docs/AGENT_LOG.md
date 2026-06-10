@@ -6,6 +6,16 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-10
 
+### REVENUE-CONSISTENCY — getEventCacheAmount como fallback em 3 componentes ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Bug**: `ClientInsightsModal`, `PaymentAlerts`, `ClientDetailedTable` calculavam receita/pendência usando apenas `daily_cache` dos registros de trabalho — eventos sem work registrado apareciam com valor R$ 0,00
+- **Fix**: adicionado `getEventCacheAmount(event)` como fallback em todos os três (padrão já usado em `Clients.jsx`, `ClientDetailModal`, `Reports.jsx`)
+- **Arquivos**:
+  - `src/components/clients/ClientInsightsModal.jsx` — `getEventRevenue` helper + fallback
+  - `src/components/dashboard/PaymentAlerts.jsx` — fallback no valor do alerta
+  - `src/components/reports/ClientDetailedTable.jsx` — `getEventRevenue` helper + fallback em `generatedRevenue` + `pendingRevenue`
+- **Build**: Vite ✅
+
 ### SLATE-COMPLETE + CLIENT-SEARCH — Migração gray→slate finalizada + busca expandida ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **SocialLoginButtons.jsx**: `text-gray-500` (rodapé OAuth) → `text-slate-500`; branding Google/Apple mantido intencional

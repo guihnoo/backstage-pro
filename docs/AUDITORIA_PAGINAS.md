@@ -129,7 +129,7 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página | [x] | 🟢 | `NeonPageShell min-h-screen pb-24` ✅ |
+| Página | [x] | 🟢 | `NeonPageShell min-h-full pb-24` ✅ |
 | Badge bottom sheet | [x] | 🟢 | `useAppScrollLock` + `bp-modal-scroll` ✅ |
 | `BadgeCelebration` overlay | [x] | 🟢 | `useAppScrollLock` ✅; auto-fecha em 4s |
 | `EventDetailModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
@@ -140,7 +140,7 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página ProfileSimple | [x] | 🟢 | `NeonPageShell min-h-screen pb-28` ✅ |
+| Página ProfileSimple | [x] | 🟢 | `NeonPageShell min-h-full pb-28` ✅ |
 | `GoogleCalendarSync` | [x] | 🟡 | OAuth E2E manual pendente |
 | Template fechamento PDF | [x] | 🟢 | sessão 10 — campos nome/subtítulo/PIX ✅ |
 | Visibilidade financeira | [x] | 🟢 | Supabase sync ✅ |

@@ -15,7 +15,7 @@
 | 2 | **Revisão página a página** com testes e correções scroll/modais | ✅ | Sessão 10 — auditoria completa, todas 🟢 |
 | 3 | Cards/páginas/modais **sem rolagem** — corrigir todos | ✅ | Sessão 10 — todos os padrões validados |
 | 4 | Gráficos financeiros animados no dashboard | ✅ | Sprint C1 — AreaChart + gradientes + AnimatePresence |
-| 5 | Relógios dinâmicos / dados em tempo real na Home | ⬜ | |
+| 5 | Relógios dinâmicos / dados em tempo real na Home | ✅ | Cursor sessão 15 — `LiveClockBar`, `AnimatedStatValue`, `useLiveClock` |
 | 6 | Modais CRM automatizados (fluxos inteligentes) | ⬜ | |
 | 7 | Celebração ao desbloquear badge (Goals) | ✅ | `BadgeCelebration` implementado — partículas + auto-close |
 
@@ -34,7 +34,7 @@
 | 14 | OCR recibo despesas (ReceiptAnalyzer) | 🟡 | Manual OK; scan “em breve” |
 | 15 | PWA offline refinado + sync estado | ⬜ | PWA_ROADMAP |
 | 16 | Push notifications | ⬜ | |
-| 17 | Code-split **seguro** (sem travar rotas) | ⬜ | Lazy routes revertido `ed46dfc` |
+| 17 | Code-split **seguro** (sem travar rotas) | ✅ | Cursor Sprint PERF-SPA-LAZY — bundle principal ~263 KB; todas as rotas lazy + Suspense ✅ |
 | 18 | Dedupe eventos Google Calendar | 🟡 | Botão no Perfil — validar |
 
 ---

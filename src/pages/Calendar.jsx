@@ -13,9 +13,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Calendar,
-  ChevronLeft,
-  ChevronRight,
-  Plus,
   Users,
   Clock,
   AlertCircle,
@@ -29,7 +26,15 @@ import EventForm from '@/components/calendar/EventForm';
 import DailyWorkModal from '@/components/calendar/DailyWorkModal';
 import EventDetailModal from '@/components/reports/EventDetailModal';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
-import { normalizeDateString } from '@/components/utils/dateUtils';
+import {
+  normalizeDateString,
+  todayLocalISO,
+  getEventsForDate,
+} from '@/components/utils/dateUtils';
+import { isCancelledEvent } from '@/lib/eventFinance';
+import AnimatedStatValue from '@/components/home/AnimatedStatValue';
+import CalendarPageHeader from '@/components/calendar/CalendarPageHeader';
+import CalendarTodayStrip from '@/components/calendar/CalendarTodayStrip';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import ExpenseForm from '@/components/expenses/ExpenseForm';
@@ -87,7 +92,17 @@ const CalendarSkeleton = () => (
   </div>
 );
 
-const StatCard = ({ title, value, subtext, icon: Icon, color, onClick, loading = false }) => (
+const StatCard = ({
+  title,
+  value,
+  numericValue,
+  formatValue,
+  subtext,
+  icon: Icon,
+  color,
+  onClick,
+  loading = false,
+}) => (
   <Card
     className={`bg-slate-900/50 border-slate-800 transition-all duration-300 ${onClick ? 'hover:border-slate-700 cursor-pointer hover:scale-[1.02] active:scale-[0.98]' : ''}`}
     onClick={onClick}
@@ -98,6 +113,12 @@ const StatCard = ({ title, value, subtext, icon: Icon, color, onClick, loading =
           <p className="text-slate-400 text-xs uppercase font-medium tracking-wide mb-1 truncate">{title}</p>
           {loading ? (
             <Skeleton className="h-7 sm:h-8 w-16" />
+          ) : numericValue != null && formatValue ? (
+            <AnimatedStatValue
+              value={numericValue}
+              format={formatValue}
+              className={`text-xl sm:text-2xl font-bold ${color} truncate block`}
+            />
           ) : (
             <p className={`text-xl sm:text-2xl font-bold ${color} truncate`}>{value}</p>
           )}
@@ -158,11 +179,27 @@ export default function CalendarPage() {
 
   const isMobile = useMediaQuery('(max-width: 768px)');
 
+  const activeEvents = useMemo(
+    () => events.filter((e) => !isCancelledEvent(e)),
+    [events]
+  );
+
   const filteredEvents = useMemo(() => {
-    if (statusFilter === 'all') return events;
-    if (statusFilter === 'paid') return events.filter(e => e.payment_status === 'paid');
-    return events.filter(e => e.status === statusFilter);
-  }, [events, statusFilter]);
+    if (statusFilter === 'all') return activeEvents;
+    if (statusFilter === 'paid') return activeEvents.filter((e) => e.payment_status === 'paid');
+    return activeEvents.filter((e) => e.status === statusFilter);
+  }, [activeEvents, statusFilter]);
+
+  const todayStr = todayLocalISO();
+  const isLiveShiftToday = useMemo(() => {
+    const todayEvents = getEventsForDate(activeEvents, todayStr);
+    return todayEvents.some((event) => {
+      const work = dailyWork.find(
+        (w) => w.event_id === event.id && normalizeDateString(w.date) === todayStr
+      );
+      return work?.entry_time && !work?.exit_time;
+    });
+  }, [activeEvents, dailyWork, todayStr]);
   useQueryAction('new-event', useCallback(() => {
     setShowEventForm(true);
     setEditingEvent(null);
@@ -315,7 +352,7 @@ export default function CalendarPage() {
   const handleEventClick = useCallback(
     (event) => {
       if (!event) {
-        console.warn('âš ï¸ Evento é null ou undefined');
+        console.warn('Evento é null ou undefined');
         return;
       }
 
@@ -643,6 +680,7 @@ export default function CalendarPage() {
     const monthEnd = endOfMonth(currentDate);
 
     const monthEvents = events.filter((event) => {
+      if (isCancelledEvent(event)) return false;
       if (!event?.start_date || !event?.end_date) return false;
       try {
         const eventStart = parseISO(event.start_date);
@@ -739,7 +777,7 @@ export default function CalendarPage() {
         const workDate = parseISO(work.date);
 
         return {
-          title: `${client?.name || 'Cliente'} â€” ${event?.title || 'Evento'}`,
+          title: `${client?.name || 'Cliente'} — ${event?.title || 'Evento'}`,
           subtitle: `${isValid(workDate) ? format(workDate, 'dd/MM/yy', { locale: ptBR }) : ''} • ${
             work.total_hours || 0
           }h trabalhadas`,
@@ -765,10 +803,10 @@ export default function CalendarPage() {
         const workDate = parseISO(work.date);
 
         return {
-          title: `${client?.name || 'Cliente'} â€” ${event?.title || 'Evento'}`,
+          title: `${client?.name || 'Cliente'} — ${event?.title || 'Evento'}`,
           subtitle: `${isValid(workDate) ? format(workDate, 'dd/MM/yy', { locale: ptBR }) : ''} • ${
             work.entry_time || ''
-          }â€“${work.exit_time || ''}`,
+          }–${work.exit_time || ''}`,
           amount: Number(work.total_hours) || 0,
           amountFormatted: `${(Number(work.total_hours) || 0).toFixed(1)}h`,
           event_id: work.event_id,
@@ -891,81 +929,16 @@ export default function CalendarPage() {
   return (
     <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-full pb-24">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3 sm:space-y-4 md:space-y-6 p-3 sm:p-4 md:p-6">
-        {/* Header do Calendário */}
-        <div className="flex flex-col gap-3">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl sm:text-3xl font-bold text-white font-display truncate">Agenda</h1>
-              <p className="text-sm text-slate-400 truncate">Gerencie seus eventos e registre horas de trabalho.</p>
-            </div>
-          </div>
-
-          {/* Controles de Navegação e Ações */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex items-center justify-between sm:justify-start gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={goToPreviousMonth}
-                className="text-slate-50 text-sm font-medium inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:text-accent-foreground hover:bg-slate-800 flex-shrink-0 h-10 w-10 active:scale-95"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </Button>
-
-              <motion.h2
-                key={currentDate.getMonth()}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="text-lg sm:text-xl md:text-2xl font-bold text-white font-display text-center min-w-[140px] sm:min-w-[180px]"
-              >
-                {format(currentDate, 'MMMM yyyy', { locale: ptBR })}
-              </motion.h2>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={goToNextMonth}
-                className="text-slate-50 text-sm font-medium inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:text-accent-foreground hover:bg-slate-800 flex-shrink-0 h-10 w-10 active:scale-95"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={goToToday}
-                className="bg-slate-800 text-slate-50 ml-2 px-3 text-sm font-medium inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border hover:text-accent-foreground rounded-md border-slate-700 hover:bg-slate-700 h-10"
-              >
-                Hoje
-              </Button>
-            </div>
-
-            {/* Botões de Ação */}
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={() => handleQuickWorkEntry()}
-                variant="outline"
-                size="sm"
-                className="bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-200 flex-1 sm:flex-none h-10 text-sm"
-              >
-                <Clock className="w-4 h-4 mr-2" />
-                <span className="hidden xs:inline">Registrar Horas</span>
-                <span className="xs:hidden">Horas</span>
-              </Button>
-
-              <Button
-                onClick={() => handleNewEvent()}
-                size="sm"
-                className="flex-1 sm:flex-none h-10 text-sm active:scale-95 text-white border-0"
-                style={{ backgroundColor: config.primaryHex }}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                <span className="hidden xs:inline">Novo Evento</span>
-                <span className="xs:hidden">Evento</span>
-              </Button>
-            </div>
-          </div>
-        </div>
+        <CalendarPageHeader
+          currentDate={currentDate}
+          primaryHex={config.primaryHex}
+          isLive={isLiveShiftToday}
+          onPreviousMonth={goToPreviousMonth}
+          onNextMonth={goToNextMonth}
+          onGoToToday={goToToday}
+          onNewEvent={() => handleNewEvent()}
+          onRegisterWork={() => handleQuickWorkEntry()}
+        />
 
         {!clientsLoading && clients.length === 0 && (
           <Alert className="border-amber-500/40 bg-amber-500/10">
@@ -995,10 +968,20 @@ export default function CalendarPage() {
         )}
 
         <AlertsPanel
-          events={events}
+          events={activeEvents}
           dailyWork={dailyWork}
           onRegisterWork={handleQuickWorkEntry}
           onLocationCheckIn={handleEventLocationCheckIn}
+        />
+
+        <CalendarTodayStrip
+          events={activeEvents}
+          dailyWork={dailyWork}
+          primaryHex={config.primaryHex}
+          accentHex={config.accentHex}
+          onEventClick={handleEventClick}
+          onRegisterWork={() => handleQuickWorkEntry()}
+          onNewEvent={() => handleNewEvent()}
         />
 
         {/* Monthly Stats */}
@@ -1006,6 +989,8 @@ export default function CalendarPage() {
           <StatCard
             title="Eventos"
             value={monthStats.totalEvents}
+            numericValue={monthStats.totalEvents}
+            formatValue={(v) => String(Math.round(v))}
             subtext={monthStats.totalEvents === 1 ? 'evento' : 'eventos'}
             icon={Calendar}
             color="text-purple-400"
@@ -1016,6 +1001,8 @@ export default function CalendarPage() {
           <StatCard
             title="Dias"
             value={monthStats.workDays}
+            numericValue={monthStats.workDays}
+            formatValue={(v) => String(Math.round(v))}
             subtext={monthStats.workDays === 1 ? 'dia' : 'dias'}
             icon={CheckCircle2}
             color="text-green-400"
@@ -1026,6 +1013,8 @@ export default function CalendarPage() {
           <StatCard
             title="Horas"
             value={`${monthStats.totalHours}h`}
+            numericValue={monthStats.totalHours}
+            formatValue={(v) => `${Number(v).toFixed(1)}h`}
             subtext="trabalhadas"
             icon={Clock}
             color="text-amber-400"
@@ -1036,6 +1025,8 @@ export default function CalendarPage() {
           <StatCard
             title="Receita"
             value={formatCurrency(monthStats.totalRevenue)}
+            numericValue={monthStats.totalRevenue}
+            formatValue={formatCurrency}
             subtext="estimada no mês"
             icon={TrendingUp}
             color="text-emerald-400"
@@ -1046,6 +1037,8 @@ export default function CalendarPage() {
           <StatCard
             title="Clientes"
             value={monthStats.uniqueClients}
+            numericValue={monthStats.uniqueClients}
+            formatValue={(v) => String(Math.round(v))}
             subtext={monthStats.uniqueClients === 1 ? 'cliente' : 'clientes'}
             icon={Users}
             color="text-purple-400"
@@ -1057,11 +1050,11 @@ export default function CalendarPage() {
         {/* Filtros de status */}
         <div className="flex items-center gap-2 flex-wrap">
           {[
-            { key: 'all', label: 'Todos', count: events.length },
-            { key: 'pending', label: 'Pendentes', count: events.filter(e => e.status === 'pending').length },
-            { key: 'confirmed', label: 'Confirmados', count: events.filter(e => e.status === 'confirmed').length },
-            { key: 'completed', label: 'Concluídos', count: events.filter(e => e.status === 'completed').length },
-            { key: 'paid', label: 'Pagos', count: events.filter(e => e.payment_status === 'paid').length },
+            { key: 'all', label: 'Todos', count: activeEvents.length },
+            { key: 'pending', label: 'Pendentes', count: activeEvents.filter(e => e.status === 'pending').length },
+            { key: 'confirmed', label: 'Confirmados', count: activeEvents.filter(e => e.status === 'confirmed').length },
+            { key: 'completed', label: 'Concluídos', count: activeEvents.filter(e => e.status === 'completed').length },
+            { key: 'paid', label: 'Pagos', count: activeEvents.filter(e => e.payment_status === 'paid').length },
           ].map(({ key, label, count }) => (
             <button
               key={key}

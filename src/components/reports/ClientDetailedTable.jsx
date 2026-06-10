@@ -16,6 +16,7 @@ import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getEventStatus } from '../utils/dateUtils';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 
 export default function ClientDetailedTable({ data, onClientClick }) {
   const { isVisible, formatCurrency } = useFinancialVisibility();
@@ -42,13 +43,18 @@ export default function ClientDetailedTable({ data, onClientClick }) {
         const scheduledEvents = clientEvents.filter(e => getEventStatus(e) === 'scheduled');
         const inProgressEvents = clientEvents.filter(e => getEventStatus(e) === 'in_progress');
 
-        const generatedRevenue = clientWork.reduce((sum, w) => sum + (w.daily_cache || 0), 0);
-        const receivedRevenue = paidEvents.reduce((sum, e) => sum + (e.paid_amount || 0), 0);
-        const pendingRevenue = completedEvents.filter(e => e.payment_status === 'unpaid')
-            .reduce((sum, e) => {
-                const eventWork = clientWork.filter(w => w.event_id === e.id);
-                return sum + eventWork.reduce((workSum, w) => workSum + (w.daily_cache || 0), 0);
-            }, 0);
+        const getEventRevenue = (event) => {
+          const fromWork = clientWork
+            .filter(w => w.event_id === event.id)
+            .reduce((sum, w) => sum + (w.daily_cache || 0), 0);
+          return fromWork > 0 ? fromWork : getEventCacheAmount(event);
+        };
+
+        const generatedRevenue = clientEvents.reduce((sum, e) => sum + getEventRevenue(e), 0);
+        const receivedRevenue = paidEvents.reduce((sum, e) => sum + (e.paid_amount || getEventRevenue(e)), 0);
+        const pendingRevenue = completedEvents
+            .filter(e => e.payment_status === 'unpaid')
+            .reduce((sum, e) => sum + getEventRevenue(e), 0);
         
         const totalHours = clientWork.reduce((sum, w) => sum + (w.total_hours || 0), 0);
         const totalExpenses = clientExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);

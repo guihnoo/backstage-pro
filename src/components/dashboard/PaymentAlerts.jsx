@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { formatDisplayDate, getEventStatus } from '../utils/dateUtils';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 
 export default function PaymentAlerts({ events = [], work = [], clients = [], onEventClick }) {
   const { formatCurrency, isVisible } = useFinancialVisibility();
@@ -20,7 +21,8 @@ export default function PaymentAlerts({ events = [], work = [], clients = [], on
       // Alerta: Evento concluído mas pagamento não confirmado
       if (eventStatus === 'completed' && event.payment_status !== 'paid') {
         const eventWork = work.filter(w => w.event_id === event.id);
-        const totalRevenue = eventWork.reduce((sum, w) => sum + (w.daily_cache || 0), 0);
+        const fromWork = eventWork.reduce((sum, w) => sum + (w.daily_cache || 0), 0);
+        const totalRevenue = fromWork > 0 ? fromWork : getEventCacheAmount(event);
         const client = clients.find(c => c.id === event.client_id);
 
         alerts.push({

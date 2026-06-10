@@ -18,6 +18,7 @@ import { useEvents } from '@/lib/useEvents';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { getEventStatus, formatDisplayDate } from '../utils/dateUtils';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 import { parseISO, differenceInDays, isValid } from 'date-fns';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
@@ -36,8 +37,15 @@ export default function ClientInsightsModal({ client, isOpen, onClose }) {
     const clientEventIds = new Set(clientEvents.map(e => e.id));
     const clientWork = dailyWork.filter(w => clientEventIds.has(w.event_id));
 
+    const getEventRevenue = (event) => {
+      const fromWork = clientWork
+        .filter(w => w.event_id === event.id)
+        .reduce((sum, w) => sum + (w.daily_cache || 0), 0);
+      return fromWork > 0 ? fromWork : getEventCacheAmount(event);
+    };
+
     // Receita total
-    const totalRevenue = clientWork.reduce((sum, w) => sum + (w.daily_cache || 0), 0);
+    const totalRevenue = clientEvents.reduce((sum, e) => sum + getEventRevenue(e), 0);
 
     // Eventos por status
     const eventsByStatus = {
@@ -49,12 +57,9 @@ export default function ClientInsightsModal({ client, isOpen, onClose }) {
     // Pagamentos
     const paidEvents = clientEvents.filter(e => e.payment_status === 'paid');
     const unpaidEvents = clientEvents.filter(e => e.payment_status !== 'paid' && getEventStatus(e) === 'completed');
-    
-    const paidAmount = paidEvents.reduce((sum, e) => sum + (e.paid_amount || 0), 0);
-    const pendingAmount = unpaidEvents.reduce((sum, e) => {
-      const eventWork = clientWork.filter(w => w.event_id === e.id);
-      return sum + eventWork.reduce((workSum, w) => workSum + (w.daily_cache || 0), 0);
-    }, 0);
+
+    const paidAmount = paidEvents.reduce((sum, e) => sum + (e.paid_amount || getEventRevenue(e)), 0);
+    const pendingAmount = unpaidEvents.reduce((sum, e) => sum + getEventRevenue(e), 0);
 
     // Média de receita por evento
     const avgRevenuePerEvent = clientEvents.length > 0 ? totalRevenue / clientEvents.length : 0;
