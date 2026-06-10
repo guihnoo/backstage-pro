@@ -449,6 +449,21 @@ export default function EventDetailModal({
                     </div>
                   </>
                 )}
+
+                {event.payment_due_date && event.payment_status !== 'paid' && (
+                  <>
+                    <Separator className="bg-slate-700" />
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-slate-400 mb-0.5">Vencimento do pagamento</p>
+                        <p className="text-base font-bold text-amber-400">
+                          {formatDisplayDate(event.payment_due_date)}
+                        </p>
+                      </div>
+                      <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
 
