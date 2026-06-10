@@ -8,7 +8,7 @@ export default function SpecialtyPicker({ categoryId, selected, onSelect }) {
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-gray-400 mb-4">Selecione até 5 especialidades:</p>
+      <p className="text-sm text-slate-400 mb-4">Selecione até 5 especialidades:</p>
       <div className="space-y-2">
         {category.specialties.map((specialty, idx) => (
           <motion.button
@@ -27,10 +27,10 @@ export default function SpecialtyPicker({ categoryId, selected, onSelect }) {
             className={`w-full p-4 rounded-lg border-2 transition-all flex items-center justify-between ${
               selected.includes(specialty)
                 ? 'bg-cyan-500/20 border-cyan-500 shadow-lg shadow-cyan-500/20'
-                : 'bg-gray-800/30 border-gray-700 hover:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed'
+                : 'bg-slate-800/30 border-slate-700 hover:border-slate-600 disabled:opacity-50 disabled:cursor-not-allowed'
             }`}
           >
-            <span className={selected.includes(specialty) ? 'text-white font-medium' : 'text-gray-300'}>
+            <span className={selected.includes(specialty) ? 'text-white font-medium' : 'text-slate-300'}>
               {specialty}
             </span>
             {selected.includes(specialty) && (
@@ -39,7 +39,7 @@ export default function SpecialtyPicker({ categoryId, selected, onSelect }) {
           </motion.button>
         ))}
       </div>
-      <p className="text-xs text-gray-500 text-center mt-4">
+      <p className="text-xs text-slate-500 text-center mt-4">
         {selected.length}/5 selecionadas
       </p>
     </div>

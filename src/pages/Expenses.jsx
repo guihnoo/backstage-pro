@@ -314,7 +314,7 @@ export default function ExpensesPage() {
                               <button
                                   type="button"
                                   onClick={() => setCategoryFilter('all')}
-                                  className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${categoryFilter === 'all' ? 'border-cyan-500/60 bg-cyan-500/15 text-cyan-300' : 'border-gray-700/50 bg-gray-800/40 text-gray-500 hover:text-gray-300'}`}
+                                  className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${categoryFilter === 'all' ? 'border-cyan-500/60 bg-cyan-500/15 text-cyan-300' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
                               >
                                   Todas
                               </button>
@@ -323,7 +323,7 @@ export default function ExpensesPage() {
                                       key={cat}
                                       type="button"
                                       onClick={() => setCategoryFilter(cat === categoryFilter ? 'all' : cat)}
-                                      className={`flex-shrink-0 capitalize text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${categoryFilter === cat ? 'border-cyan-500/60 bg-cyan-500/15 text-cyan-300' : 'border-gray-700/50 bg-gray-800/40 text-gray-500 hover:text-gray-300'}`}
+                                      className={`flex-shrink-0 capitalize text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${categoryFilter === cat ? 'border-cyan-500/60 bg-cyan-500/15 text-cyan-300' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
                                   >
                                       {cat}
                                   </button>

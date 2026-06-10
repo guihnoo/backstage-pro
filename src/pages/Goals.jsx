@@ -83,11 +83,11 @@ function BadgeCelebration({ badge, onClose }) {
           Conquista desbloqueada!
         </p>
         <h2 className="text-2xl font-black text-white mb-1">{badge.title}</h2>
-        <p className="text-sm text-gray-400">{badge.description}</p>
+        <p className="text-sm text-slate-400">{badge.description}</p>
 
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 p-2 text-gray-600 hover:text-gray-400 transition-colors"
+          className="absolute top-3 right-3 p-2 text-slate-600 hover:text-slate-400 transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
@@ -128,7 +128,7 @@ function CircularProgress({ value, max, size = 120, color, label, sublabel }) {
       </div>
       <div className="text-center">
         <p className="text-sm font-bold text-white">{label}</p>
-        <p className="text-xs text-gray-500">{sublabel}</p>
+        <p className="text-xs text-slate-500">{sublabel}</p>
       </div>
     </div>
   );
@@ -148,8 +148,8 @@ function BadgeCard({ icon: Icon, title, description, unlocked, color, progress, 
       onClick={onClick}
       className={`p-4 rounded-xl border transition-all cursor-pointer ${
         unlocked
-          ? 'bg-gray-800/60 border-gray-700/50'
-          : 'bg-gray-900/30 border-gray-800/30'
+          ? 'bg-slate-800/60 border-slate-700/50'
+          : 'bg-slate-900/30 border-slate-800/30'
       }`}
       style={unlocked ? { boxShadow: `0 0 20px ${color}20` } : { opacity: 0.7 }}
     >
@@ -164,16 +164,16 @@ function BadgeCard({ icon: Icon, title, description, unlocked, color, progress, 
         <Icon className="w-5 h-5" style={{ color: unlocked ? color : '#4b5563' }} />
       </div>
       <p className="text-sm font-bold text-white leading-tight">{title}</p>
-      <p className="text-xs text-gray-500 mt-0.5">{description}</p>
+      <p className="text-xs text-slate-500 mt-0.5">{description}</p>
       {unlocked ? (
         <p className="text-xs font-bold mt-2" style={{ color }}>✓ Desbloqueado</p>
       ) : showProgress ? (
         <div className="mt-2">
-          <div className="flex justify-between text-[9px] font-mono text-gray-600 mb-1">
+          <div className="flex justify-between text-[9px] font-mono text-slate-600 mb-1">
             <span>{progress.value} / {progress.max}</span>
             <span>{Math.round(pct)}%</span>
           </div>
-          <div className="h-1 rounded-full bg-gray-800 overflow-hidden">
+          <div className="h-1 rounded-full bg-slate-800 overflow-hidden">
             <motion.div
               className="h-full rounded-full"
               style={{ background: color }}
@@ -184,7 +184,7 @@ function BadgeCard({ icon: Icon, title, description, unlocked, color, progress, 
           </div>
         </div>
       ) : (
-        <p className="text-xs text-gray-600 mt-1">🔒 Bloqueado</p>
+        <p className="text-xs text-slate-600 mt-1">🔒 Bloqueado</p>
       )}
     </motion.div>
   );
@@ -368,9 +368,9 @@ export default function Goals() {
           transition={{ duration: 3, repeat: Infinity }}
         />
         <div className="max-w-2xl mx-auto">
-          <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Sua Evolução</p>
+          <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Sua Evolução</p>
           <h1 className="text-2xl font-black text-white">Metas & Conquistas</h1>
-          <p className="text-sm text-gray-400 mt-1">{config.emoji} {config.label}</p>
+          <p className="text-sm text-slate-400 mt-1">{config.emoji} {config.label}</p>
         </div>
       </motion.div>
 
@@ -380,27 +380,27 @@ export default function Goals() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="mt-4 mb-5 p-5 rounded-2xl border border-gray-800/50 bg-gray-900/40"
+          className="mt-4 mb-5 p-5 rounded-2xl border border-slate-800/50 bg-slate-900/40"
           style={{ boxShadow: `0 0 40px ${levelInfo.color}10` }}
         >
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Nível atual</p>
+              <p className="text-xs text-slate-500 uppercase tracking-wide mb-0.5">Nível atual</p>
               <h2 className="text-lg font-black" style={{ color: levelInfo.color }}>
                 {levelInfo.emoji} {levelInfo.title}
               </h2>
-              <p className="text-xs text-gray-400 mt-0.5">{totalEvents} evento{totalEvents !== 1 ? 's' : ''} concluído{totalEvents !== 1 ? 's' : ''} no total</p>
+              <p className="text-xs text-slate-400 mt-0.5">{totalEvents} evento{totalEvents !== 1 ? 's' : ''} concluído{totalEvents !== 1 ? 's' : ''} no total</p>
             </div>
             {levelInfo.next && (
               <div className="text-right">
-                <p className="text-xs text-gray-500">Próximo nível</p>
+                <p className="text-xs text-slate-500">Próximo nível</p>
                 <p className="text-sm font-bold text-white">{levelInfo.next - totalEvents} eventos</p>
               </div>
             )}
           </div>
           {/* Barra de nível */}
           {levelInfo.next && (
-            <div className="bg-gray-800/70 rounded-full h-2 overflow-hidden">
+            <div className="bg-slate-800/70 rounded-full h-2 overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${Math.min(levelProgress, 100)}%` }}
@@ -416,15 +416,15 @@ export default function Goals() {
         </motion.div>
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-gray-900/50 p-1 rounded-xl mb-5 border border-gray-800/50">
+        <div className="flex gap-1 bg-slate-900/50 p-1 rounded-xl mb-5 border border-slate-800/50">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 py-2 px-1 min-h-[36px] rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                 activeTab === tab.id
-                  ? 'bg-gray-800 text-white'
-                  : 'text-gray-500 hover:text-gray-400'
+                  ? 'bg-slate-800 text-white'
+                  : 'text-slate-500 hover:text-slate-400'
               }`}
             >
               {tab.label}
@@ -444,11 +444,11 @@ export default function Goals() {
               className="space-y-5"
             >
               {/* Circulos de progresso */}
-              <div className="bg-gray-900/40 border border-gray-800/50 rounded-2xl p-6">
+              <div className="bg-slate-900/40 border border-slate-800/50 rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider">Progresso do Mês</h3>
-                    <p className="text-xs text-gray-500 mt-0.5 capitalize">
+                    <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">Progresso do Mês</h3>
+                    <p className="text-xs text-slate-500 mt-0.5 capitalize">
                       {format(new Date(), "MMMM 'de' yyyy", { locale: ptBR })}
                     </p>
                   </div>
@@ -456,7 +456,7 @@ export default function Goals() {
                     <button
                       type="button"
                       onClick={openGoalEdit}
-                      className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-cyan-400 transition-colors px-2 py-1 rounded-lg hover:bg-cyan-400/10"
+                      className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-cyan-400 transition-colors px-2 py-1 rounded-lg hover:bg-cyan-400/10"
                     >
                       <Pencil className="w-3.5 h-3.5" />
                       Editar metas
@@ -474,24 +474,24 @@ export default function Goals() {
                     >
                       <div className="grid grid-cols-2 gap-3 p-4 rounded-xl border border-cyan-500/20 bg-cyan-500/5">
                         <div>
-                          <label className="block text-xs text-gray-400 mb-1.5">Shows/mês</label>
+                          <label className="block text-xs text-slate-400 mb-1.5">Shows/mês</label>
                           <Input
                             type="number"
                             min="1"
                             value={goalForm.events}
                             onChange={e => setGoalForm(f => ({ ...f, events: e.target.value }))}
-                            className="bg-gray-800/80 border-gray-700 text-white h-9 text-sm"
+                            className="bg-slate-800/80 border-slate-700 text-white h-9 text-sm"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-gray-400 mb-1.5">Meta R$ / mês</label>
+                          <label className="block text-xs text-slate-400 mb-1.5">Meta R$ / mês</label>
                           <Input
                             type="number"
                             min="0"
                             step="100"
                             value={goalForm.revenue}
                             onChange={e => setGoalForm(f => ({ ...f, revenue: e.target.value }))}
-                            className="bg-gray-800/80 border-gray-700 text-white h-9 text-sm"
+                            className="bg-slate-800/80 border-slate-700 text-white h-9 text-sm"
                           />
                         </div>
                         <div className="col-span-2 flex gap-2 mt-1">
@@ -507,7 +507,7 @@ export default function Goals() {
                           <button
                             type="button"
                             onClick={() => setEditingGoals(false)}
-                            className="px-4 h-9 rounded-lg text-xs text-gray-400 hover:text-white border border-gray-700 hover:border-gray-600 transition-colors"
+                            className="px-4 h-9 rounded-lg text-xs text-slate-400 hover:text-white border border-slate-700 hover:border-slate-600 transition-colors"
                           >
                             Cancelar
                           </button>
@@ -520,7 +520,7 @@ export default function Goals() {
                 {statsLoading ? (
                   <div className="flex justify-around">
                     {[1, 2, 3].map(i => (
-                      <div key={i} className="w-24 h-24 bg-gray-800 rounded-full animate-pulse" />
+                      <div key={i} className="w-24 h-24 bg-slate-800 rounded-full animate-pulse" />
                     ))}
                   </div>
                 ) : (
@@ -589,14 +589,14 @@ export default function Goals() {
                     transition={{ delay: i * 0.05 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => hardNavigate(item.route)}
-                    className="bg-gray-900/40 border border-gray-800/40 rounded-xl p-4 text-left hover:border-gray-700/60 transition-colors cursor-pointer"
+                    className="bg-slate-900/40 border border-slate-800/40 rounded-xl p-4 text-left hover:border-slate-700/60 transition-colors cursor-pointer"
                   >
                     <span className="text-xl">{item.icon}</span>
-                    <p className="text-xs text-gray-500 mt-2">{item.label}</p>
+                    <p className="text-xs text-slate-500 mt-2">{item.label}</p>
                     <p className="text-lg font-black mt-0.5" style={{ color: item.color }}>
                       {item.value}
                     </p>
-                    <p className="text-[10px] text-gray-600 mt-0.5">{item.sub}</p>
+                    <p className="text-[10px] text-slate-600 mt-0.5">{item.sub}</p>
                   </motion.button>
                 ))}
               </div>
@@ -611,7 +611,7 @@ export default function Goals() {
                     <div className="p-4 rounded-xl border text-center" style={{ background: '#39FF1408', borderColor: '#39FF1430' }}>
                       <p className="text-2xl mb-1">🏆</p>
                       <p className="text-sm font-bold text-white">Todas as metas batidas!</p>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-slate-400 mt-1">
                         {stats.eventos_count} shows · {formatCurrency(stats.faturamento_pago)} recebidos. Mês excepcional!
                       </p>
                     </div>
@@ -634,12 +634,12 @@ export default function Goals() {
                           <p className="text-sm font-bold text-white">Meta de eventos batida! 🎤</p>
                         )}
                         {!metaReceita100 && (
-                          <p className="text-xs text-gray-400 mt-0.5">
+                          <p className="text-xs text-slate-400 mt-0.5">
                             Faltam {formatCurrency(metaReceita - stats.faturamento_pago)} para a meta de receita
                           </p>
                         )}
                         {metaReceita100 && !metaEventos100 && (
-                          <p className="text-xs text-gray-400 mt-0.5">Meta de receita atingida! Continue firme nos shows.</p>
+                          <p className="text-xs text-slate-400 mt-0.5">Meta de receita atingida! Continue firme nos shows.</p>
                         )}
                       </div>
                     </div>
@@ -648,13 +648,13 @@ export default function Goals() {
               })()}
 
               {/* Próximos shows */}
-              <div className="bg-gray-900/40 border border-gray-800/50 rounded-2xl p-5">
+              <div className="bg-slate-900/40 border border-slate-800/50 rounded-2xl p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider">Próximos Shows</h3>
+                  <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">Próximos Shows</h3>
                   <button
                     type="button"
                     onClick={() => hardNavigate('/calendar')}
-                    className="flex items-center gap-1 text-xs text-gray-500 hover:text-cyan-400 transition-colors"
+                    className="flex items-center gap-1 text-xs text-slate-500 hover:text-cyan-400 transition-colors"
                   >
                     Ver agenda <ChevronRight className="w-3 h-3" />
                   </button>
@@ -662,12 +662,12 @@ export default function Goals() {
 
                 {upcomingEvents.length === 0 ? (
                   <div className="flex flex-col items-center gap-3 py-6 text-center">
-                    <div className="w-12 h-12 rounded-full bg-gray-800/60 flex items-center justify-center">
-                      <Calendar className="w-5 h-5 text-gray-600" />
+                    <div className="w-12 h-12 rounded-full bg-slate-800/60 flex items-center justify-center">
+                      <Calendar className="w-5 h-5 text-slate-600" />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Nenhum show agendado</p>
-                      <p className="text-xs text-gray-600 mt-0.5">Adicione eventos à sua agenda para acompanhar aqui</p>
+                      <p className="text-sm text-slate-500">Nenhum show agendado</p>
+                      <p className="text-xs text-slate-600 mt-0.5">Adicione eventos à sua agenda para acompanhar aqui</p>
                     </div>
                     <button
                       type="button"
@@ -694,7 +694,7 @@ export default function Goals() {
                           transition={{ delay: i * 0.05 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={() => setSelectedEvent(ev)}
-                          className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-800/40 transition-colors text-left"
+                          className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-800/40 transition-colors text-left"
                         >
                           <div
                             className="w-2 h-2 rounded-full flex-shrink-0"
@@ -702,8 +702,8 @@ export default function Goals() {
                           />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-white truncate">{ev.title}</p>
-                            <p className="text-[10px] font-mono text-gray-500">
-                              {ev.clients?.name && <span className="text-gray-600">{ev.clients.name} · </span>}
+                            <p className="text-[10px] font-mono text-slate-500">
+                              {ev.clients?.name && <span className="text-slate-600">{ev.clients.name} · </span>}
                               {format(parseISO(ev.start_date), "EEE d/MM", { locale: ptBR })}
                             </p>
                           </div>
@@ -746,10 +746,10 @@ export default function Goals() {
                     transition={{ delay: i * 0.06 }}
                     className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${
                       isCurrent
-                        ? 'border-opacity-60 bg-gray-800/60'
+                        ? 'border-opacity-60 bg-slate-800/60'
                         : reached
-                        ? 'border-gray-700/30 bg-gray-900/30'
-                        : 'border-gray-800/20 bg-gray-900/10 opacity-40'
+                        ? 'border-slate-700/30 bg-slate-900/30'
+                        : 'border-slate-800/20 bg-slate-900/10 opacity-40'
                     }`}
                     style={isCurrent ? {
                       borderColor: `${level.color}50`,
@@ -767,7 +767,7 @@ export default function Goals() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-white text-sm">{level.title}</p>
-                      <p className="text-xs text-gray-500">{level.req}+ eventos concluídos</p>
+                      <p className="text-xs text-slate-500">{level.req}+ eventos concluídos</p>
                     </div>
                     {isCurrent && (
                       <span
@@ -778,7 +778,7 @@ export default function Goals() {
                       </span>
                     )}
                     {reached && !isCurrent && (
-                      <TrendingUp className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                      <TrendingUp className="w-4 h-4 text-slate-600 flex-shrink-0" />
                     )}
                   </motion.div>
                 );
@@ -799,7 +799,7 @@ export default function Goals() {
                   <BadgeCard key={i} {...badge} onClick={() => setSelectedBadge(badge)} />
                 ))}
               </div>
-              <p className="text-center text-xs text-gray-600 mt-5">
+              <p className="text-center text-xs text-slate-600 mt-5">
                 {badges.filter(b => b.unlocked).length} / {badges.length} conquistas desbloqueadas
               </p>
             </motion.div>
@@ -865,10 +865,10 @@ export default function Goals() {
                   </div>
                   <div className="min-w-0">
                     <h3 className="text-lg font-bold text-white break-words">{selectedBadge.title}</h3>
-                    <p className="text-sm text-gray-400 break-words">{selectedBadge.description}</p>
+                    <p className="text-sm text-slate-400 break-words">{selectedBadge.description}</p>
                   </div>
                 </div>
-                <button onClick={() => setSelectedBadge(null)} className="text-gray-600 hover:text-gray-400 transition-colors shrink-0">
+                <button onClick={() => setSelectedBadge(null)} className="text-slate-600 hover:text-slate-400 transition-colors shrink-0">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -878,16 +878,16 @@ export default function Goals() {
                   <span className="text-xl">🏆</span>
                   <div>
                     <p className="text-sm font-bold" style={{ color: selectedBadge.color }}>Conquista desbloqueada!</p>
-                    <p className="text-xs text-gray-500">Você completou este desafio.</p>
+                    <p className="text-xs text-slate-500">Você completou este desafio.</p>
                   </div>
                 </div>
               ) : showProgress ? (
                 <div className="space-y-2">
-                  <div className="flex justify-between text-xs text-gray-500 font-mono">
+                  <div className="flex justify-between text-xs text-slate-500 font-mono">
                     <span>Progresso</span>
                     <span>{selectedBadge.progress.value} / {selectedBadge.progress.max} ({Math.round(pct)}%)</span>
                   </div>
-                  <div className="h-2 rounded-full bg-gray-800 overflow-hidden">
+                  <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
                     <motion.div
                       className="h-full rounded-full"
                       style={{ background: selectedBadge.color }}
@@ -896,10 +896,10 @@ export default function Goals() {
                       transition={{ duration: 0.8, ease: 'easeOut' }}
                     />
                   </div>
-                  <p className="text-xs text-gray-600 pt-1">Faltam {selectedBadge.progress.max - selectedBadge.progress.value} para desbloquear.</p>
+                  <p className="text-xs text-slate-600 pt-1">Faltam {selectedBadge.progress.max - selectedBadge.progress.value} para desbloquear.</p>
                 </div>
               ) : (
-                <p className="text-sm text-gray-600 italic">🔒 Complete o desafio para desbloquear esta conquista.</p>
+                <p className="text-sm text-slate-600 italic">🔒 Complete o desafio para desbloquear esta conquista.</p>
               )}
               </div>
             </motion.div>

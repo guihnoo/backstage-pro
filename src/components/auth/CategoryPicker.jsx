@@ -27,7 +27,7 @@ export default function CategoryPicker({ selected, onSelect }) {
           className={`p-6 rounded-xl border-2 transition-all ${
             selected === category.id
               ? `bg-gradient-to-br ${colorMap[category.color]} border-${category.color}-400 ring-2 ring-${category.color}-500/50 shadow-lg shadow-${category.color}-500/20`
-              : `bg-gray-800/30 border-gray-700 hover:border-gray-600`
+              : `bg-slate-800/30 border-slate-700 hover:border-slate-600`
           }`}
         >
           <div className="text-4xl mb-3">{getIconComponent(category.icon)}</div>

@@ -193,7 +193,7 @@ export default function ProfileSimple() {
         <p className="text-sm mt-1" style={{ color: config.primaryHex }}>
           {config.label}
         </p>
-        <p className="text-xs text-gray-500 mt-0.5">{user?.email}</p>
+        <p className="text-xs text-slate-500 mt-0.5">{user?.email}</p>
       </motion.div>
 
       <div className="px-4 max-w-2xl mx-auto space-y-4 w-full min-w-0">
@@ -201,7 +201,7 @@ export default function ProfileSimple() {
         {/* Dados pessoais */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
         <NeonGlass primary={config.primaryHex} glow className="p-5 space-y-4">
-          <h2 className="text-sm font-bold text-gray-300 uppercase tracking-wider font-mono">Dados Pessoais</h2>
+          <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider font-mono">Dados Pessoais</h2>
 
           {[
             { key: 'name', label: 'Nome completo', icon: User, placeholder: 'Seu nome' },
@@ -211,15 +211,15 @@ export default function ProfileSimple() {
             { key: 'years_experience', label: 'Anos de experiência', icon: Calendar, placeholder: '5', type: 'number' },
           ].map(({ key, label, icon: Icon, placeholder, type = 'text' }) => (
             <div key={key}>
-              <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-wide">{label}</label>
+              <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">{label}</label>
               <div className="relative">
-                <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
+                <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
                 <input
                   type={type}
                   value={form[key]}
                   onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
                   placeholder={placeholder}
-                  className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl pl-10 pr-4 py-3 text-base md:text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-gray-600 transition-colors"
+                  className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl pl-10 pr-4 py-3 text-base md:text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-600 transition-colors"
                 />
               </div>
             </div>
@@ -227,13 +227,13 @@ export default function ProfileSimple() {
 
           {/* Email (readonly) */}
           <div>
-            <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-wide">Email (conta)</label>
+            <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Email (conta)</label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
               <input
                 value={user?.email || ''}
                 disabled
-                className="w-full bg-gray-800/30 border border-gray-800/50 rounded-xl pl-10 pr-4 py-3 text-base md:text-sm text-gray-500 cursor-not-allowed"
+                className="w-full bg-slate-800/30 border border-slate-800/50 rounded-xl pl-10 pr-4 py-3 text-base md:text-sm text-slate-500 cursor-not-allowed"
               />
             </div>
           </div>
@@ -266,7 +266,7 @@ export default function ProfileSimple() {
         {/* Categoria */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
         <NeonGlass primary={config.primaryHex} className="p-5">
-          <h2 className="text-sm font-bold text-gray-300 uppercase tracking-wider mb-4 font-mono">Área de Atuação</h2>
+          <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-4 font-mono">Área de Atuação</h2>
           <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-2">
             {Object.values(CATEGORIES).map(cat => (
               <button
@@ -296,7 +296,7 @@ export default function ProfileSimple() {
         {profile?.specialties?.length > 0 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
           <NeonGlass primary={config.primaryHex} className="p-5">
-            <h2 className="text-sm font-bold text-gray-300 uppercase tracking-wider mb-3 font-mono">Especialidades</h2>
+            <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-3 font-mono">Especialidades</h2>
             <div className="flex flex-wrap gap-2">
               {profile.specialties.map(spec => (
                 <span
@@ -319,7 +319,7 @@ export default function ProfileSimple() {
         {/* Metas e diária */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
         <NeonGlass primary={config.primaryHex} glow className="p-5 space-y-4">
-          <h2 className="text-sm font-bold text-gray-300 uppercase tracking-wider font-mono">Metas & Precificação</h2>
+          <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider font-mono">Metas & Precificação</h2>
 
           {[
             { key: 'daily_rate', label: 'Valor da diária (R$)', icon: DollarSign, placeholder: '800', type: 'number' },
@@ -327,16 +327,16 @@ export default function ProfileSimple() {
             { key: 'monthly_goal_events', label: 'Meta de shows por mês', icon: Calendar, placeholder: '6', type: 'number' },
           ].map(({ key, label, icon: Icon, placeholder, type }) => (
             <div key={key}>
-              <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-wide">{label}</label>
+              <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">{label}</label>
               <div className="relative">
-                <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
+                <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
                 <input
                   type={type}
                   min="0"
                   value={form[key]}
                   onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
                   placeholder={placeholder}
-                  className="w-full bg-gray-800/60 border border-gray-700/50 rounded-xl pl-10 pr-4 py-3 text-base md:text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-gray-600 transition-colors"
+                  className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl pl-10 pr-4 py-3 text-base md:text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-600 transition-colors"
                 />
               </div>
             </div>
@@ -374,19 +374,19 @@ export default function ProfileSimple() {
         {/* Configurações */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.33 }}>
         <NeonGlass primary={config.primaryHex} className="p-5">
-          <h2 className="text-sm font-bold text-gray-300 uppercase tracking-wider mb-4 font-mono">Configurações</h2>
+          <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-4 font-mono">Configurações</h2>
           <button
             onClick={toggleVisibility}
-            className="w-full flex items-center justify-between gap-3 py-3 px-1 rounded-xl transition-all hover:bg-gray-800/30 min-w-0"
+            className="w-full flex items-center justify-between gap-3 py-3 px-1 rounded-xl transition-all hover:bg-slate-800/30 min-w-0"
           >
             <div className="flex items-center gap-3 min-w-0 flex-1">
               {isVisible
                 ? <Eye className="w-4 h-4 text-cyan-400 shrink-0" />
-                : <EyeOff className="w-4 h-4 text-gray-500 shrink-0" />
+                : <EyeOff className="w-4 h-4 text-slate-500 shrink-0" />
               }
               <div className="text-left min-w-0">
                 <p className="text-sm font-semibold text-white">Visibilidade Financeira</p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-slate-500">
                   {isVisible ? 'Valores visíveis em todo o app' : 'Valores ocultos — modo privado'}
                 </p>
               </div>
@@ -409,11 +409,11 @@ export default function ProfileSimple() {
         <NeonGlass primary={config.primaryHex} className="p-4">
           {showLogoutConfirm ? (
             <div className="text-center space-y-3">
-              <p className="text-sm text-gray-300">Tem certeza que quer sair?</p>
+              <p className="text-sm text-slate-300">Tem certeza que quer sair?</p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowLogoutConfirm(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-gray-800 text-gray-400 text-sm font-semibold hover:bg-gray-700 transition-all"
+                  className="flex-1 py-2.5 rounded-xl bg-slate-800 text-slate-400 text-sm font-semibold hover:bg-slate-700 transition-all"
                 >
                   Cancelar
                 </button>
@@ -445,7 +445,7 @@ export default function ProfileSimple() {
           {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
           {exporting ? 'Exportando...' : 'Exportar meus dados'}
         </button>
-        <p className="text-center text-gray-700 text-xs pb-2 font-mono">Backstage Pro v1.0 MVP</p>
+        <p className="text-center text-slate-700 text-xs pb-2 font-mono">Backstage Pro v1.0 MVP</p>
       </div>
     </NeonPageShell>
   );

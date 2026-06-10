@@ -55,7 +55,7 @@ const EventBadges = ({ events }) => {
       {visibleEvents.map(event => (
         <div
           key={event.id}
-          className={`w-full text-xs text-white font-medium px-2 py-1 rounded truncate ${STATUS_COLORS[getEventStatus(event)] || 'bg-gray-500'}`}
+          className={`w-full text-xs text-white font-medium px-2 py-1 rounded truncate ${STATUS_COLORS[getEventStatus(event)] || 'bg-slate-500'}`}
         >
           {event.title}
         </div>

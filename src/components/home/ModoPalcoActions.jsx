@@ -4,6 +4,7 @@ import { LogIn, LogOut, Clock, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/authContext';
+import { todayLocalISO } from '@/components/utils/dateUtils';
 
 function nowTimeString() {
   const d = new Date();
@@ -39,13 +40,13 @@ function calculateCache(event, totalHours, overtimeHours) {
   return Math.round((baseValue + overtimeHours * overtimeRate) * 100) / 100;
 }
 
-export default function ModoPalcoActions({ event, accentColor = '#00D9FF' }) {
+export default function ModoPalcoActions({ event, accentColor = '#00D9FF', onRefresh }) {
   const { user } = useAuth();
   const [record, setRecord] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayLocalISO();
 
   const loadRecord = useCallback(async () => {
     if (!user?.id || !event?.id) {
@@ -98,6 +99,7 @@ export default function ModoPalcoActions({ event, accentColor = '#00D9FF' }) {
       if (error) throw error;
       setRecord(data);
       toast.success(`Entrada registrada às ${entryTime}`);
+      onRefresh?.();
     } catch (err) {
       console.error(err);
       toast.error('Não foi possível registrar a entrada.');
@@ -130,6 +132,7 @@ export default function ModoPalcoActions({ event, accentColor = '#00D9FF' }) {
       if (error) throw error;
       setRecord(data);
       toast.success(`Saída às ${exitTime} · ${worked.total}h · R$ ${cache.toLocaleString('pt-BR')}`);
+      onRefresh?.();
     } catch (err) {
       console.error(err);
       toast.error('Não foi possível registrar a saída.');
@@ -140,7 +143,7 @@ export default function ModoPalcoActions({ event, accentColor = '#00D9FF' }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-4 text-gray-500 text-sm gap-2">
+      <div className="flex items-center justify-center py-4 text-slate-500 text-sm gap-2">
         <Loader2 className="w-4 h-4 animate-spin" />
         Carregando turno...
       </div>
@@ -152,14 +155,14 @@ export default function ModoPalcoActions({ event, accentColor = '#00D9FF' }) {
   const isCompleted = record?.status === 'completed' || hasExit;
 
   return (
-    <div className="mb-6 p-4 rounded-xl bg-gray-900/60 border border-gray-700/50">
-      <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3 flex items-center gap-2">
+    <div className="mb-6 p-4 rounded-xl bg-slate-900/60 border border-slate-700/50">
+      <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
         <Clock className="w-3.5 h-3.5" style={{ color: accentColor }} />
         Registro de turno
       </p>
 
       {hasEntry && (
-        <div className="flex flex-wrap gap-3 text-sm text-gray-300 mb-4">
+        <div className="flex flex-wrap gap-3 text-sm text-slate-300 mb-4">
           <span>
             Entrada: <strong className="text-white">{record.entry_time}</strong>
           </span>
@@ -167,7 +170,7 @@ export default function ModoPalcoActions({ event, accentColor = '#00D9FF' }) {
             <span>
               Saída: <strong className="text-white">{record.exit_time}</strong>
               {(record.total_hours || record.hours_worked) > 0 && (
-                <span className="text-gray-500 ml-1">
+                <span className="text-slate-500 ml-1">
                   ({record.total_hours || record.hours_worked}h)
                 </span>
               )}

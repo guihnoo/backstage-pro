@@ -120,20 +120,20 @@ export default function Onboarding() {
           transition={{ duration: 0.8 }}
           className="w-full max-w-2xl"
         >
-          <div className="bg-gray-900/40 backdrop-blur-xl border border-gray-800/50 rounded-2xl p-5 sm:p-8 shadow-2xl">
+          <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-5 sm:p-8 shadow-2xl">
             <div className="flex items-center justify-between mb-6 sm:mb-8">
               <div>
                 <h1 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-purple-400 to-amber-400 bg-clip-text text-transparent">
                   Complete seu perfil
                 </h1>
-                <p className="text-gray-400 text-sm mt-1">Vamos conhecer você melhor</p>
+                <p className="text-slate-400 text-sm mt-1">Vamos conhecer você melhor</p>
               </div>
               {step > 1 && (
                 <Button
                   onClick={() => setStep(step - 1)}
                   variant="ghost"
                   size="icon"
-                  className="rounded-full hover:bg-gray-800"
+                  className="rounded-full hover:bg-slate-800"
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </Button>
@@ -160,47 +160,47 @@ export default function Onboarding() {
                   className="space-y-5"
                 >
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Nome completo</label>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">Nome completo</label>
                     <Input
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Seu nome"
-                      className="bg-gray-800/50 border-gray-700"
+                      className="bg-slate-800/50 border-slate-700"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Telefone / WhatsApp</label>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">Telefone / WhatsApp</label>
                     <Input
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="(11) 99999-9999"
-                      className="bg-gray-800/50 border-gray-700"
+                      className="bg-slate-800/50 border-slate-700"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Cidade</label>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Cidade</label>
                       <Input
                         type="text"
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
                         placeholder="São Paulo"
-                        className="bg-gray-800/50 border-gray-700"
+                        className="bg-slate-800/50 border-slate-700"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Estado</label>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Estado</label>
                       <Input
                         type="text"
                         value={state}
                         onChange={(e) => setState(e.target.value)}
                         placeholder="SP"
-                        className="bg-gray-800/50 border-gray-700"
+                        className="bg-slate-800/50 border-slate-700"
                       />
                     </div>
                   </div>
@@ -277,20 +277,20 @@ export default function Onboarding() {
                   className="space-y-5"
                 >
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Anos de experiência</label>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">Anos de experiência</label>
                     <Input
                       type="number"
                       min="0"
                       value={yearsExperience}
                       onChange={(e) => setYearsExperience(parseInt(e.target.value))}
                       placeholder="5"
-                      className="bg-gray-800/50 border-gray-700"
+                      className="bg-slate-800/50 border-slate-700"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Valor por diária (R$)</label>
-                    <p className="text-xs text-gray-500 mb-2">
+                    <label className="block text-sm font-medium text-slate-300 mb-2">Valor por diária (R$)</label>
+                    <p className="text-xs text-slate-500 mb-2">
                       Usado como padrão ao criar eventos quando o cliente não tiver cachê próprio.
                     </p>
                     <Input
@@ -300,24 +300,24 @@ export default function Onboarding() {
                       value={dailyRate}
                       onChange={(e) => setDailyRate(e.target.value)}
                       placeholder="500"
-                      className="bg-gray-800/50 border-gray-700"
+                      className="bg-slate-800/50 border-slate-700"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Meta de eventos/mês</label>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">Meta de eventos/mês</label>
                     <Input
                       type="number"
                       min="1"
                       value={monthlyGoalEvents}
                       onChange={(e) => setMonthlyGoalEvents(parseInt(e.target.value))}
                       placeholder="10"
-                      className="bg-gray-800/50 border-gray-700"
+                      className="bg-slate-800/50 border-slate-700"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Meta de faturamento/mês (R$)</label>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">Meta de faturamento/mês (R$)</label>
                     <Input
                       type="number"
                       min="0"
@@ -325,7 +325,7 @@ export default function Onboarding() {
                       value={monthlyGoalRevenue}
                       onChange={(e) => setMonthlyGoalRevenue(e.target.value)}
                       placeholder="5000"
-                      className="bg-gray-800/50 border-gray-700"
+                      className="bg-slate-800/50 border-slate-700"
                     />
                   </div>
 
@@ -360,16 +360,16 @@ export default function Onboarding() {
 
                   <div>
                     <h3 className="text-2xl font-black text-white mb-2">Tudo pronto, {name}! 🎉</h3>
-                    <p className="text-gray-400">Seu perfil foi criado com sucesso</p>
+                    <p className="text-slate-400">Seu perfil foi criado com sucesso</p>
                   </div>
 
-                  <div className="bg-gray-800/50 rounded-lg p-6 text-left space-y-3 border border-gray-700">
+                  <div className="bg-slate-800/50 rounded-lg p-6 text-left space-y-3 border border-slate-700">
                     <div>
-                      <p className="text-gray-400 text-sm">Profissão</p>
+                      <p className="text-slate-400 text-sm">Profissão</p>
                       <p className="text-white font-semibold">{CATEGORIES.find(c => c.id === selectedCategory)?.label}</p>
                     </div>
                     <div>
-                      <p className="text-gray-400 text-sm">Especialidades</p>
+                      <p className="text-slate-400 text-sm">Especialidades</p>
                       <div className="flex flex-wrap gap-2 mt-2">
                         {selectedSpecialties.map((spec) => (
                           <span key={spec} className="bg-purple-500/20 border border-purple-500/50 text-purple-300 px-3 py-1 rounded-full text-sm">
@@ -379,7 +379,7 @@ export default function Onboarding() {
                       </div>
                     </div>
                     <div>
-                      <p className="text-gray-400 text-sm">Valor por diária</p>
+                      <p className="text-slate-400 text-sm">Valor por diária</p>
                       <p className="text-white font-semibold">R$ {parseFloat(dailyRate).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                     </div>
                   </div>
