@@ -13,6 +13,16 @@ import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { NeonGlass } from '@/components/design/NeonGlass';
+
+const CATEGORY_LABELS = {
+  transporte: 'Transporte',
+  alimentacao: 'Alimentação',
+  equipamento: 'Equipamento',
+  hospedagem: 'Hospedagem',
+  combustivel: 'Combustível',
+  manutencao: 'Manutenção',
+  outros: 'Outros',
+};
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -185,7 +195,11 @@ export default function ExpensesPage() {
     const filteredExpenses = useMemo(() => {
         return allExpenses
             .filter(exp => {
-                const searchMatch = searchTerm ? exp.title.toLowerCase().includes(searchTerm.toLowerCase()) || exp.notes?.toLowerCase().includes(searchTerm.toLowerCase()) : true;
+                const searchMatch = searchTerm ? (
+                    exp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    exp.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    exp.description?.toLowerCase().includes(searchTerm.toLowerCase())
+                ) : true;
                 const categoryMatch = categoryFilter === 'all' ? true : exp.category === categoryFilter;
                 const statusMatch = statusFilter === 'all' ? true :
                                     statusFilter === 'reimbursable' ? exp.is_reimbursable && !exp.reimbursed :
@@ -278,7 +292,7 @@ export default function ExpensesPage() {
                       <div className="relative">
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                           <Input
-                              placeholder="Buscar por título ou notas..."
+                              placeholder="Buscar por título, descrição ou notas..."
                               value={searchTerm}
                               onChange={(e) => setSearchTerm(e.target.value)}
                               className="bg-[#080a10]/80 border-[#23262f] pl-10 font-mono text-sm"
@@ -323,9 +337,9 @@ export default function ExpensesPage() {
                                       key={cat}
                                       type="button"
                                       onClick={() => setCategoryFilter(cat === categoryFilter ? 'all' : cat)}
-                                      className={`flex-shrink-0 capitalize text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${categoryFilter === cat ? 'border-cyan-500/60 bg-cyan-500/15 text-cyan-300' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
+                                      className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${categoryFilter === cat ? 'border-cyan-500/60 bg-cyan-500/15 text-cyan-300' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
                                   >
-                                      {cat}
+                                      {CATEGORY_LABELS[cat] || cat}
                                   </button>
                               ))}
                           </div>
@@ -337,7 +351,7 @@ export default function ExpensesPage() {
                         <div className="flex items-center justify-between px-1 py-0.5">
                             <span className="text-[11px] font-mono text-slate-500">
                                 {filteredExpenses.length} despesa{filteredExpenses.length !== 1 ? 's' : ''}
-                                {categoryFilter !== 'all' && <span className="text-slate-600"> · {categoryFilter}</span>}
+                                {categoryFilter !== 'all' && <span className="text-slate-600"> · {CATEGORY_LABELS[categoryFilter] || categoryFilter}</span>}
                             </span>
                             <span className="text-[11px] font-mono font-bold" style={{ color: config.accentHex }}>
                                 {isVisible ? formatCurrency(filteredExpenses.reduce((s, e) => s + (e.amount || 0), 0)) : '•••••'}
