@@ -85,7 +85,7 @@ export default function ExpenseForm({
     e.preventDefault();
 
     if (!formData.title || !formData.amount || !formData.date) {
-      toast.error('Preencha titulo, valor e data da despesa.');
+      toast.error('Preencha título, valor e data da despesa.');
       return;
     }
 
@@ -186,7 +186,7 @@ export default function ExpenseForm({
                 <Label>Evento (opcional)</Label>
                 <Select value={formData.event_id || ''} onValueChange={(value) => setField('event_id', value)}>
                   <SelectTrigger className="bg-slate-800 border-slate-700">
-                    <SelectValue placeholder="Sem vinculo" />
+                    <SelectValue placeholder="Sem vínculo" />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-800 border-slate-700">
                     {events.map((evt) => (

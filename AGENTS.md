@@ -2,23 +2,15 @@
 
 Arquivo de referência para agentes (Claude Code, Cursor, etc.) que trabalham neste projeto.
 
-## Arquivos LOCKED (não editar)
+## Arquivos protegidos (cuidado ao editar)
 
-Estes arquivos são gerenciados pelo Cursor ou têm restrições explícitas:
+Estes arquivos têm lógica crítica — editar com atenção, não refatorar sem motivo:
 
-- `vite.config.js`
-- `package.json` / `package-lock.json`
-- `src/lib/authContext.jsx`
-- `src/components/clients/ClientForm.jsx`
-- `src/components/calendar/EventForm.jsx`
-- `src/components/expenses/ExpenseForm.jsx`
-- `src/components/calendar/DailyWorkModal.jsx`
-- `e2e/**`
-- `src/components/home/ProximoShow.jsx`
-- `src/components/home/ProximosEventos.jsx`
-- `src/components/utils/dateUtils.jsx`
-- `src/components/ai-elements/**`
-- `public/` (ícones PWA)
+- `e2e/**` — testes E2E; não alterar sem rodar `npm run test:e2e` depois
+- `src/lib/authContext.jsx` — autenticação central; mudanças afetam todo o app
+- `vite.config.js` — build; mudanças quebram PWA/chunks
+- `package.json` / `package-lock.json` — dependências; não adicionar sem motivo
+- `public/` — ícones PWA; não substituir sem regenerar manifesto
 
 ## Convenções
 
@@ -27,27 +19,10 @@ Estes arquivos são gerenciados pelo Cursor ou têm restrições explícitas:
 - Auth: `useAuth()` de `src/lib/authContext.jsx`
 - Dados: hooks Supabase diretos (`useClients`, `useEvents`, etc.) em `src/lib/`
 - Formatação de moeda: `formatCurrency` do `useFinancialVisibility()`
+- Scroll: `main[data-app-scroll]`, `useAppScrollLock`, `.bp-modal-scroll` ou `ScrollArea fill`
 - Sem commits automáticos — aguardar instrução explícita do usuário
 - Sem secrets em código — `.env.local` nunca commitado
 
 ## Log de atividade
 
-Ver `docs/AGENT_LOG.md`.
-
-## LOCKED (Sprint 1 re-stabilization)
-
-- `src/lib/useEvents.js`
-- `src/lib/useDailyWork.js`
-- `src/lib/useExpenses.js`
-- `src/components/reports/PaymentConfirmModal.jsx`
-- scripts `test:e2e*` em `package.json`
-
-## Desbloqueado (Neon Bastidor — autorizado pelo usuário)
-
-- `src/pages/Calendar.jsx`, `src/pages/reports.jsx`, `src/pages/Onboarding.jsx`, `src/pages/AuthCallback.jsx`
-- `src/components/home/FloatingActions.jsx`
-- `src/pages/AI_Mentor.jsx` — desbloqueado 2026-06-09 (auditoria scroll concluída)
-
-## Regras adicionais
-
-- `docs/AGENT_LOG.md` � append-only (somente anexar novas entradas).
+Ver `docs/AGENT_LOG.md` — append-only (somente anexar novas entradas).

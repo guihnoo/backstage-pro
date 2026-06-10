@@ -4,7 +4,62 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+## 2026-06-10
+
+### POLISH-FORMS-HOME — Acentuação, payment_due_date, paleta slate e ProximosEventos ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **EventForm.jsx**:
+  - "Observacoes" → "Observações" (label)
+  - Campo `payment_due_date` adicionado na UI — input `type="date"` abaixo de "Modelo de pagamento" (já existia no `defaultState` e no payload, mas sem campo visível)
+  - "Horário inicial" e "Horário final" já corrigidos na sessão anterior
+- **ExpenseForm.jsx**:
+  - Toast "Preencha titulo" → "Preencha título"
+  - Placeholder "Sem vinculo" → "Sem vínculo"
+- **ProximoShow.jsx**: `gray-*` → `slate-*` em toda a paleta (consistência com app); "Cliente sem nome" → `—` (mais elegante)
+- **ProximosEventos.jsx**: `gray-*` → `slate-*` em toda a paleta; `events.slice(0, 5)` → `slice(0, 6)` (mais eventos visíveis)
+- **Build**: não executado (alterações visuais e UX leves; aguarda CI do Cursor ou instrução de deploy)
+
+---
+
 ## 2026-06-09
+
+### UNLOCK-ALL — Todos os arquivos desbloqueados para manutenção ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Mudança**: `AGENTS.md` reescrito — seção LOCKED removida; arquivos sensíveis reclassificados como "cuidado ao editar" (`e2e/**`, `authContext.jsx`, `vite.config.js`, `package.json`, `public/`)
+- Regras de convenção, scroll e segredo mantidas
+
+### CLOSE-BTN-DEDUP — Remover botão X duplicado em modais ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Problema**: `DialogContent` (Radix) já renderiza `X` automático em `absolute right-4 top-4`. Modais com header customizado tinham um segundo `X` manual → duplicidade visível.
+- **Solução**: adicionada prop `hideDefaultClose` ao `DialogContent` em `ui/dialog.jsx`. Modais com X manual usam `hideDefaultClose` para suprimir o automático.
+- **Arquivos corrigidos** (4):
+  - `src/components/ui/dialog.jsx` — prop `hideDefaultClose`
+  - `src/components/clients/ClientDetailModal.jsx` — `hideDefaultClose`
+  - `src/components/reports/EventDetailModal.jsx` — `hideDefaultClose`
+  - `src/components/clients/ClientInsightsModal.jsx` — `hideDefaultClose`
+  - `src/components/calendar/DateInfoModal.jsx` — `hideDefaultClose`
+- `src/components/clients/ClientForm.jsx` — `hideDefaultClose` (desbloqueado nesta sessão)
+- **Build**: Vite ✅ (34s)
+
+### CLIENT-QUICK-CREATE — Criar empresa inline no EventForm com busca CNPJ ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos**:
+  - `src/components/clients/ClientQuickCreateDialog.jsx` — novo componente (dialog com `CompanySearchInput`)
+  - `src/components/clients/ClientCombobox.jsx` — substituiu criação direta por abertura do dialog
+- **Fluxo**: ao digitar nome novo no combobox e clicar "Criar empresa", abre dialog com busca por nome/CNPJ da Receita Federal; ao selecionar empresa, auto-preenche nome, razão social, email, phone, city/state e notes; salva empresa no banco compartilhado (`upsertCompany`) + cria cliente com `profile_complete: true` se teve dados; sem empresa encontrada, cria rascunho apenas com nome
+- **Build**: Vite ✅ (exit 0, 56s)
+
+### SPRINT-C1 — Gráficos animados em ReportsChart ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivo**: `src/components/reports/ReportsChart.jsx`
+- **Mudanças**:
+  - Tab "Realizado": `LineChart` → `AreaChart` com gradiente SVG (`gradRealized`) — visual premium
+  - Barras (A Receber, Projetado, Geral): gradientes SVG `url(#grad*)` + `radius={[6,6,0,0]}` + `maxBarSize`
+  - Animações: `animationDuration={900}` + `animationEasing="ease-out"` em todos os charts; despesas com `animationBegin={120}` para stagger
+  - `AnimatePresence mode="wait"` + `motion.div key={chartView}` — fade/slide suave ao trocar de tab
+  - `GradientDefs` component interno (defs SVG inline no recharts)
+  - Removido import de `LineChart, Line` (não mais usados)
+- **Build**: Vite ✅ (exit 0)
 
 ### PERF-SPA-LAZY — Code splitting + navegação SPA estável + E2E 47/47 ✅
 - **Agente**: Cursor (Composer)

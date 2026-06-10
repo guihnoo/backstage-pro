@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-09 (sessão 12)  
+**Última atualização:** 2026-06-10 (sessão 14)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último commit:** `ad651e1` — Sprint A+B nav SPA + fix patchHistory  
 **Último deploy:** 2026-06-09 — push `ad651e1` → Vercel  
@@ -30,6 +30,7 @@
 | Rotas lazy (code-split) | **Reativado** — AppLayout usa `<Suspense>` + `wrapPage` lazy; Sprint A+B |
 | Nav SPA via Link | `AppLayout` migrado de `<a onClick>` para `<Link>` (7 navItems + Metas) |
 | patchHistory fix | Filtra chamadas internas React Router (state.idx) — evitava loop que cancelava lazy load |
+| Gráficos animados (Sprint C1) | `ReportsChart`: AreaChart + gradientes SVG + AnimatePresence tabs |
 | Auditoria / ideias | `docs/AUDITORIA_PAGINAS.md` + `docs/IDEIAS_PENDENTES.md` + `CLAUDE.md` |
 | OAuth Google (UX erros) | `googleOAuthErrors.js` + callback preserva `refresh_token` em reconexão |
 | CompanySearchInput (3 abas) | Pesquisar / CNPJ / NF-e XML — sessão 10 |
@@ -68,6 +69,16 @@ Ordem oficial após fix de scroll (2026-06-05):
 ---
 
 ## Changelog
+
+### 2026-06-10 (sessão 14) — Polish forms + paleta slate consistente
+
+**EventForm:** label "Observações" corrigido; campo `payment_due_date` adicionado à UI (input date após "Modelo de pagamento").  
+**ExpenseForm:** toast "título" e placeholder "Sem vínculo" acentuados.  
+**ProximoShow + ProximosEventos:** `gray-*` → `slate-*` em toda a paleta (consistência visual); "Cliente sem nome" → `—`; ProximosEventos mostra até 6 eventos (era 5).
+
+**Build:** pendente instrução de deploy.
+
+---
 
 ### 2026-06-09 (sessão 11) — Scroll robustez: flex-shrink-0 + overflow responsivo + E2E regression
 

@@ -27,7 +27,7 @@ const statusConfig = {
 };
 
 export default function ProximosEventos({ events, isLoading, onRefresh, onViewEvent }) {
-  const proximosEventos = events.slice(0, 5);
+  const proximosEventos = events.slice(0, 6);
   const { togglePayment, toggling: togglingPayment } = usePaymentToggle();
   const { confirmEvent, toggling: togglingStatus } = useStatusToggle();
   const { formatCurrency, isVisible } = useFinancialVisibility();
@@ -57,7 +57,7 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
         <h3 className="text-lg font-bold text-white mb-4">Próximos Eventos</h3>
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-16 bg-gray-800 rounded-lg animate-pulse" />
+            <div key={i} className="h-16 bg-slate-800 rounded-lg animate-pulse" />
           ))}
         </div>
       </div>
@@ -91,7 +91,7 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
         <button
           type="button"
           onClick={() => hardNavigate('/calendar')}
-          className="text-xs text-gray-500 hover:text-cyan-400 flex items-center gap-1 transition-colors"
+          className="text-xs text-slate-500 hover:text-cyan-400 flex items-center gap-1 transition-colors"
         >
           Ver agenda <ChevronRight className="w-3.5 h-3.5" />
         </button>
@@ -141,7 +141,7 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
               className={`p-4 rounded-lg border transition-all group cursor-pointer ${
                 item.days === 0
                   ? 'bg-cyan-950/30 border-cyan-700/30 hover:border-cyan-600/50'
-                  : 'bg-gray-900/50 border-gray-700/30 hover:border-gray-600/50'
+                  : 'bg-slate-900/50 border-slate-700/30 hover:border-slate-600/50'
               }`}
             >
               <div className="flex items-start justify-between gap-3">
@@ -166,7 +166,7 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
                     )}
                   </div>
 
-                  <div className="flex flex-wrap gap-3 text-xs text-gray-400">
+                  <div className="flex flex-wrap gap-3 text-xs text-slate-400">
                     {formattedTime && (
                       <div className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
@@ -184,7 +184,7 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
 
                 <div className="flex flex-col items-end gap-2 flex-shrink-0">
                   <div className="text-right">
-                    <p className="text-xs text-gray-500 mb-0.5">{formattedDate.toUpperCase()}</p>
+                    <p className="text-xs text-slate-500 mb-0.5">{formattedDate.toUpperCase()}</p>
                     <p className="font-bold text-cyan-400 tabular-nums">
                       {isVisible ? formatCurrency(cacheValue) : '•••'}
                     </p>
@@ -212,7 +212,7 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
                     className={`flex items-center gap-1 text-[10px] font-semibold px-2 py-1.5 rounded-full border transition-all active:scale-95 ${
                       isPaid
                         ? 'bg-emerald-600/15 border-emerald-500/30 text-emerald-400 hover:bg-emerald-600/25'
-                        : 'bg-gray-800/50 border-gray-700/50 text-gray-500 hover:border-emerald-500/40 hover:text-emerald-400'
+                        : 'bg-slate-800/50 border-slate-700/50 text-slate-500 hover:border-emerald-500/40 hover:text-emerald-400'
                     }`}
                     title={isPaid ? 'Desmarcar pagamento' : 'Marcar como pago'}
                   >

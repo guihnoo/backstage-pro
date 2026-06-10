@@ -73,10 +73,15 @@ export const isSameDay = (date1, date2) => {
 };
 
 /**
+ * Data de hoje no fuso local (YYYY-MM-DD). Preferir em vez de toISOString().split('T')[0] (UTC).
+ */
+export const todayLocalISO = () => format(new Date(), 'yyyy-MM-dd');
+
+/**
  * Verifica se uma data é hoje
  */
 export const isToday = (dateValue) => {
-  const today = format(new Date(), 'yyyy-MM-dd');
+  const today = todayLocalISO();
   const normalized = normalizeDateString(dateValue);
   return normalized === today;
 };
@@ -150,9 +155,10 @@ export const isDateBetween = (dateToCheck, startDate, endDate) => {
  */
 export const getEventStatus = (event) => {
   if (!event?.start_date || !event?.end_date) return 'scheduled';
-  
+  if (event.status === 'cancelled') return 'cancelled';
+
   try {
-    const today = format(new Date(), 'yyyy-MM-dd');
+    const today = todayLocalISO();
     const eventStartStr = normalizeDateString(event.start_date);
     const eventEndStr = normalizeDateString(event.end_date);
     

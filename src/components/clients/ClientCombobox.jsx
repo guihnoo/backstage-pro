@@ -12,7 +12,7 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
-import { pickDefaultClientColor } from '@/lib/brandColors';
+import ClientQuickCreateDialog from './ClientQuickCreateDialog';
 
 export default function ClientCombobox({
   clients = [],
@@ -24,7 +24,8 @@ export default function ClientCombobox({
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [creating, setCreating] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [pendingName, setPendingName] = useState('');
 
   const selected = useMemo(() => clients.find((c) => c.id === value), [clients, value]);
 
@@ -33,26 +34,21 @@ export default function ClientCombobox({
     trimmedQuery.length >= 2 &&
     !clients.some((c) => c.name.toLowerCase() === trimmedQuery.toLowerCase());
 
-  const handleCreate = async () => {
+  const handleOpenQuickCreate = () => {
     if (!onCreateClient || !trimmedQuery) return;
-    setCreating(true);
-    try {
-      const created = await onCreateClient({
-        name: trimmedQuery,
-        brand_color: pickDefaultClientColor(trimmedQuery),
-        profile_complete: false,
-      });
-      if (created?.id) {
-        onChange(created.id);
-        setOpen(false);
-        setQuery('');
-      }
-    } finally {
-      setCreating(false);
-    }
+    setPendingName(trimmedQuery);
+    setOpen(false);
+    setDialogOpen(true);
+  };
+
+  const handleDialogCreated = (clientId) => {
+    onChange(clientId);
+    setQuery('');
+    setDialogOpen(false);
   };
 
   return (
+    <>
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
@@ -119,16 +115,15 @@ export default function ClientCombobox({
                 <CommandSeparator className="bg-slate-700" />
                 <CommandGroup>
                   <CommandItem
-                    onSelect={handleCreate}
-                    disabled={creating}
+                    onSelect={handleOpenQuickCreate}
                     className="text-cyan-300"
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    {creating ? 'Criando...' : `Criar empresa "${trimmedQuery}"`}
+                    {`Criar empresa "${trimmedQuery}"`}
                   </CommandItem>
                   <p className="px-3 py-2 text-[11px] text-slate-500 flex items-start gap-1.5">
                     <Building2 className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                    Rascunho — complete o cadastro depois em Clientes.
+                    Busca CNPJ ou preencha só o nome — leva 5 segundos.
                   </p>
                 </CommandGroup>
               </>
@@ -137,5 +132,17 @@ export default function ClientCombobox({
         </Command>
       </PopoverContent>
     </Popover>
+
+    {onCreateClient && (
+      <ClientQuickCreateDialog
+        key={pendingName}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        initialName={pendingName}
+        onCreateClient={onCreateClient}
+        onCreated={handleDialogCreated}
+      />
+    )}
+    </>
   );
 }

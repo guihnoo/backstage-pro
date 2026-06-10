@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from './supabase';
 import { differenceInDays, parseISO } from 'date-fns';
-import { calcEventDays } from './eventFinance';
+import { todayLocalISO } from '@/components/utils/dateUtils';
+import {
+  calcEventDays,
+  isCancelledEvent,
+  isReceivableEvent,
+  sumReceivableAmount,
+} from './eventFinance';
 
 const eventValue = (e) => {
   if (Number(e.actual_revenue) > 0) return Number(e.actual_revenue);
@@ -39,41 +45,58 @@ export function useStats(userId) {
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
         const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
 
-        const [eventsRes, dailyWorkRes] = await Promise.all([
+        const [monthEventsRes, receivableEventsRes, monthWorkRes, receivableWorkRes] = await Promise.all([
           supabase
             .from('events')
             .select('id, payment_status, status, client_id, start_date, end_date, daily_cache_value, actual_revenue, estimated_revenue, paid_amount')
             .eq('user_id', userId)
-            .gte('start_date', monthStart)
-            .lte('start_date', monthEnd),
+            .lte('start_date', monthEnd)
+            .gte('end_date', monthStart),
+          supabase
+            .from('events')
+            .select('id, payment_status, status, start_date, end_date, daily_cache_value, actual_revenue, estimated_revenue, paid_amount')
+            .eq('user_id', userId)
+            .in('payment_status', ['pending', 'unpaid', 'partial']),
           supabase
             .from('daily_work')
             .select('total_hours')
             .eq('user_id', userId)
             .gte('date', monthStart)
             .lte('date', monthEnd),
+          supabase
+            .from('daily_work')
+            .select('event_id, daily_cache')
+            .eq('user_id', userId),
         ]);
 
-        const events = eventsRes.data || [];
-        const dailyWork = dailyWorkRes.data || [];
+        const monthEvents = (monthEventsRes.data || []).filter(e => !isCancelledEvent(e));
+        const receivableEvents = receivableEventsRes.data || [];
+        const monthWork = monthWorkRes.data || [];
+        const receivableWork = receivableWorkRes.data || [];
 
-        const faturamento_pago = events
-          .filter(e => e.payment_status === 'paid')
-          .reduce((sum, e) => sum + (e.paid_amount || eventValue(e)), 0);
+        const workByEvent = receivableWork.reduce((acc, w) => {
+          if (!w.event_id) return acc;
+          if (!acc[w.event_id]) acc[w.event_id] = [];
+          acc[w.event_id].push(w);
+          return acc;
+        }, {});
 
-        const a_receber = events
-          .filter(e => ['pending', 'unpaid', 'partial'].includes(e.payment_status))
-          .reduce((sum, e) => sum + eventValue(e), 0);
+        const paidInMonth = monthEvents.filter(e => e.payment_status === 'paid');
+        const faturamento_pago = paidInMonth.reduce(
+          (sum, e) => sum + (e.paid_amount || eventValue(e)),
+          0
+        );
 
-        const horas_trabalhadas = dailyWork.reduce((sum, d) => sum + (d.total_hours || 0), 0);
+        const a_receber = sumReceivableAmount(receivableEvents, workByEvent);
+        const horas_trabalhadas = monthWork.reduce((sum, d) => sum + (d.total_hours || 0), 0);
 
         if (!cancelled) {
           setStats({
             faturamento_pago,
             a_receber,
             horas_trabalhadas,
-            eventos_count: events.length,
-            clientes_ativos: new Set(events.map(e => e.client_id).filter(Boolean)).size
+            eventos_count: monthEvents.length,
+            clientes_ativos: new Set(monthEvents.map(e => e.client_id).filter(Boolean)).size
           });
         }
       } catch (err) {

@@ -3,7 +3,12 @@ import { getEventStatus } from '@/components/utils/dateUtils';
 
 const UNPAID_STATUSES = new Set(['pending', 'unpaid', 'partial']);
 
+export function isCancelledEvent(event) {
+  return event?.status === 'cancelled';
+}
+
 export function isReceivableEvent(event) {
+  if (isCancelledEvent(event)) return false;
   if (!event) return false;
   const status = getEventStatus(event);
   if (status !== 'completed') return false;
@@ -47,6 +52,18 @@ export function calculateEventReceivableAmount(event, dailyWorkForEvent = []) {
   }
 
   return getEventCacheAmount(event);
+}
+
+/** Soma valores a receber com a mesma regra do bloco A Receber. */
+export function sumReceivableAmount(events = [], workByEvent = {}) {
+  return events.reduce((sum, event) => {
+    if (!isReceivableEvent(event)) return sum;
+    const amount = calculateEventReceivableAmount(
+      event,
+      workByEvent[event.id] || []
+    );
+    return sum + amount;
+  }, 0);
 }
 
 export function daysSinceEventEnd(event) {

@@ -14,7 +14,7 @@
 | 1 | App **premium** — sensação native PWA, animações Framer | 🔄 | Várias telas OK; polish contínuo |
 | 2 | **Revisão página a página** com testes e correções scroll/modais | ✅ | Sessão 10 — auditoria completa, todas 🟢 |
 | 3 | Cards/páginas/modais **sem rolagem** — corrigir todos | ✅ | Sessão 10 — todos os padrões validados |
-| 4 | Gráficos financeiros animados no dashboard | ⬜ | Backlog médio |
+| 4 | Gráficos financeiros animados no dashboard | ✅ | Sprint C1 — AreaChart + gradientes + AnimatePresence |
 | 5 | Relógios dinâmicos / dados em tempo real na Home | ⬜ | |
 | 6 | Modais CRM automatizados (fluxos inteligentes) | ⬜ | |
 | 7 | Celebração ao desbloquear badge (Goals) | ✅ | `BadgeCelebration` implementado — partículas + auto-close |
@@ -71,6 +71,7 @@
 | 30 | Busca por CNPJ dedicada (sem pesquisa por nome) | 2026-06-09 | ✅ Aba CNPJ no `CompanySearchInput` |
 | 31 | Goals: mostrar A Receber nos círculos de progresso | 2026-06-09 | ✅ 3° círculo âmbar |
 | 32 | Expenses: agrupar despesas por mês | 2026-06-09 | ✅ `MonthGroup` com collapse animado |
+| 33 | Criar empresa inline no EventForm com busca CNPJ | 2026-06-09 | ✅ `ClientQuickCreateDialog` + `ClientCombobox` |
 
 ---
 

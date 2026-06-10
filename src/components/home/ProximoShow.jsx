@@ -60,13 +60,13 @@ export default function ProximoShow({ event, userCategory, isOnStage, onViewEven
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8 p-5 sm:p-8 rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700/50 text-center"
+        className="mb-8 p-5 sm:p-8 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50 text-center"
       >
         <div className="text-6xl mb-4">🎭</div>
         <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
           Palco Limpo
         </h2>
-        <p className="text-gray-400 mb-5">
+        <p className="text-slate-400 mb-5">
           Desfrute da calma antes da tormenta. Seus próximos eventos aparecem aqui.
         </p>
         <motion.button
@@ -93,8 +93,8 @@ export default function ProximoShow({ event, userCategory, isOnStage, onViewEven
       animate={{ opacity: 1, y: 0 }}
       className={`mb-8 rounded-2xl border-2 overflow-hidden ${
         isOnStage
-          ? `bg-gradient-to-br from-gray-900 to-gray-800 ${config.borderGlow}`
-          : 'bg-gradient-to-br from-gray-900/80 to-gray-800/50 border-gray-700/30'
+          ? `bg-gradient-to-br from-slate-900 to-slate-800 ${config.borderGlow}`
+          : 'bg-gradient-to-br from-slate-900/80 to-slate-800/50 border-slate-700/30'
       }`}
     >
       {isOnStage && (
@@ -127,48 +127,48 @@ export default function ProximoShow({ event, userCategory, isOnStage, onViewEven
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); hardNavigate(`/client-detail?id=${event.client_id}`); }}
-                className="text-sm text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-1.5 group"
+                className="text-sm text-slate-400 hover:text-cyan-300 transition-colors flex items-center gap-1.5 group"
               >
                 <User className="w-3 h-3 group-hover:text-cyan-400 flex-shrink-0" />
                 {event.clients.name}
               </button>
             ) : (
-              <p className="text-sm text-gray-400">Cliente sem nome</p>
+              <p className="text-sm text-slate-500">—</p>
             )}
           </div>
         </div>
 
         {/* Info Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="flex items-center gap-2 text-gray-300">
+          <div className="flex items-center gap-2 text-slate-300">
             <Clock className="w-4 h-4 text-cyan-400" />
             <div className="text-sm">
-              <p className="text-gray-500 text-xs">Horário</p>
+              <p className="text-slate-500 text-xs">Horário</p>
               <p className="font-semibold">{formattedTime}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-gray-300">
+          <div className="flex items-center gap-2 text-slate-300">
             <MapPin className="w-4 h-4 text-amber-400" />
             <div className="text-sm">
-              <p className="text-gray-500 text-xs">Local</p>
+              <p className="text-slate-500 text-xs">Local</p>
               <p className="font-semibold truncate">{event.location || 'Sem local'}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-gray-300">
+          <div className="flex items-center gap-2 text-slate-300">
             <User className="w-4 h-4 text-violet-400" />
             <div className="text-sm">
-              <p className="text-gray-500 text-xs">Status</p>
+              <p className="text-slate-500 text-xs">Status</p>
               <p className="font-semibold capitalize">
                 {event.status === 'confirmed' ? '✓ Confirmado' : '◷ Pendente'}
               </p>
             </div>
           </div>
 
-          <div className="text-gray-300">
+          <div className="text-slate-300">
             <div className="text-sm">
-              <p className="text-gray-500 text-xs">Cachê</p>
+              <p className="text-slate-500 text-xs">Cachê</p>
               <p className="font-semibold">
                 {isVisible
                   ? formatCurrency(getEventCacheAmount(event))
@@ -202,35 +202,35 @@ export default function ProximoShow({ event, userCategory, isOnStage, onViewEven
 
         {/* Countdown */}
         {countdown && !isOnStage && (
-          <motion.div className="bg-gray-900/50 border border-gray-700/50 rounded-xl p-4 mb-6">
+          <motion.div className="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 mb-6">
             <div className="text-center">
-              <p className="text-xs text-gray-400 mb-2">ACONTECE EM</p>
+              <p className="text-xs text-slate-400 mb-2">ACONTECE EM</p>
               <div className="flex justify-center gap-4">
                 {countdown.days > 0 && (
                   <div className="text-center">
                     <div className="text-2xl font-black text-cyan-400">{countdown.days}</div>
-                    <div className="text-xs text-gray-500">dia{countdown.days !== 1 ? 's' : ''}</div>
+                    <div className="text-xs text-slate-500">dia{countdown.days !== 1 ? 's' : ''}</div>
                   </div>
                 )}
                 {(countdown.days > 0 || countdown.hours > 0) && (
                   <>
-                    <div className="text-gray-600">:</div>
+                    <div className="text-slate-600">:</div>
                     <div className="text-center">
                       <div className="text-2xl font-black text-cyan-400">
                         {String(countdown.hours).padStart(2, '0')}
                       </div>
-                      <div className="text-xs text-gray-500">horas</div>
+                      <div className="text-xs text-slate-500">horas</div>
                     </div>
                   </>
                 )}
                 {countdown.minutes >= 0 && (
                   <>
-                    <div className="text-gray-600">:</div>
+                    <div className="text-slate-600">:</div>
                     <div className="text-center">
                       <div className="text-2xl font-black text-cyan-400">
                         {String(countdown.minutes).padStart(2, '0')}
                       </div>
-                      <div className="text-xs text-gray-500">min</div>
+                      <div className="text-xs text-slate-500">min</div>
                     </div>
                   </>
                 )}
@@ -240,12 +240,12 @@ export default function ProximoShow({ event, userCategory, isOnStage, onViewEven
         )}
 
         {/* Data */}
-        <p className="text-sm text-gray-400 mb-6">{formattedDate.toUpperCase()}</p>
+        <p className="text-sm text-slate-400 mb-6">{formattedDate.toUpperCase()}</p>
 
         {/* Descrição */}
         {event.description && (
-          <div className="bg-gray-900/50 rounded-lg p-4 mb-6 border border-gray-700/30">
-            <p className="text-sm text-gray-300">{event.description}</p>
+          <div className="bg-slate-900/50 rounded-lg p-4 mb-6 border border-slate-700/30">
+            <p className="text-sm text-slate-300">{event.description}</p>
           </div>
         )}
 
@@ -287,7 +287,7 @@ export default function ProximoShow({ event, userCategory, isOnStage, onViewEven
                   : `https://maps.google.com/?q=${encodeURIComponent(event.location)}`;
                 window.open(url, '_blank');
               }}
-              className="px-4 py-3 rounded-lg border border-gray-700 text-gray-300 font-semibold hover:border-cyan-500/50 hover:bg-cyan-500/10 transition-all flex items-center gap-2"
+              className="px-4 py-3 rounded-lg border border-slate-700 text-slate-300 font-semibold hover:border-cyan-500/50 hover:bg-cyan-500/10 transition-all flex items-center gap-2"
             >
               <Navigation className="w-4 h-4 text-amber-400" />
               Rota

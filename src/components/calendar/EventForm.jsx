@@ -327,11 +327,11 @@ export default function EventForm({
           {event?.id && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Horario inicial</Label>
+                <Label>Horário inicial</Label>
                 <Input type="time" value={formData.start_time} onChange={(e) => setField('start_time', e.target.value)} className="bg-slate-800 border-slate-700" />
               </div>
               <div className="space-y-2">
-                <Label>Horario final</Label>
+                <Label>Horário final</Label>
                 <Input type="time" value={formData.end_time} onChange={(e) => setField('end_time', e.target.value)} className="bg-slate-800 border-slate-700" />
               </div>
             </div>
@@ -373,6 +373,16 @@ export default function EventForm({
             </div>
           </div>
 
+          <div className="space-y-2">
+            <Label>Vencimento do pagamento</Label>
+            <Input
+              type="date"
+              value={formData.payment_due_date}
+              onChange={(e) => setField('payment_due_date', e.target.value)}
+              className="bg-slate-800 border-slate-700"
+            />
+          </div>
+
           {eventSummary && (
             <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-cyan-900/20 border border-cyan-700/30 text-sm">
               <span className="text-slate-400">
@@ -385,7 +395,7 @@ export default function EventForm({
           )}
 
           <div className="space-y-2">
-            <Label>Observacoes</Label>
+            <Label>Observações</Label>
             <Textarea value={formData.observacoes_md} onChange={(e) => setField('observacoes_md', e.target.value)} className="bg-slate-800 border-slate-700" />
           </div>
           </div>
