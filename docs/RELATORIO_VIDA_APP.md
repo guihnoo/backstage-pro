@@ -3,10 +3,10 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-10 (sessão 20)  
+**Última atualização:** 2026-06-10 (sessão 21)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** `8e78e07` — toast.error no ProfileSimple + payment_due_date no EventDetailModal  
-**Último deploy:** 2026-06-10 — push `8e78e07` → Vercel  
+**Último commit:** `964abe2` — backup git automático (hook Cursor + `npm run git:backup`)  
+**Último deploy:** 2026-06-10 — `dpl_8dAJVA59EXHp35SMnc4TJCWUrJCA` → https://backstage-pro-beta.vercel.app  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
 ---
@@ -38,6 +38,8 @@
 | Goals UX | 3° círculo A Receber, empty state shows, mês no header |
 | Expenses UX | `MonthGroup` colapsável + filtro por evento |
 | Auditoria scroll/modais | Sessão 10 — rotas principais 🟢 (ver `AUDITORIA_PAGINAS.md`) |
+| Meta mensal = diárias únicas | `diarias_count` + UI Goals/Home/Perfil/IA/Onboarding ✅ |
+| Backup git automático | Hook `.cursor/hooks.json` + `npm run git:backup` ✅ |
 
 ---
 
@@ -69,6 +71,12 @@ Ordem oficial após fix de scroll (2026-06-05):
 ---
 
 ## Changelog
+
+### 2026-06-10 (sessão 21) — Meta diárias + backup git automático
+
+**Meta diárias:** `countUniqueWorkDays` em `dateUtils.jsx`; `stats.diarias_count` em `useBackstageData.js`; labels em Goals, Home (`MetaMensalBar`, `QuickStats`), Perfil, Onboarding, `NotificationCenter`, `AI_Mentor`, `SmartSuggestions`, edge `ai-chat`. Campo DB continua `monthly_goal_events` (significado = dias únicos trabalhados).  
+**Auto-git:** `.cursor/hooks.json` (`stop` + `sessionEnd`), script `auto-save-push.mjs`, regra `auto-git-backup.mdc`, `npm run git:backup`. Pausa via `.cursor/PAUSE_AUTO_GIT`.  
+**Build:** Vite ✅ (25s) | **Smoke local:** 18/18 ✅
 
 ### 2026-06-10 (sessão 20) — Diferenciação Empresa / Pessoa nos clientes
 

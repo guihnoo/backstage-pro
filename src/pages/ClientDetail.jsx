@@ -9,6 +9,8 @@ import { AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft,
   Building,
+  Building2,
+  User,
   Mail,
   Phone,
   Clock,
@@ -217,13 +219,35 @@ export default function ClientDetailPage() {
             {client.logo_url ? (
               <img src={client.logo_url} alt="Logo" className="w-16 h-16 rounded-lg object-contain bg-white/10 p-1" />
             ) : (
-              <div className="w-16 h-16 rounded-lg flex items-center justify-center font-bold text-3xl text-[#06070a]" style={{ background: `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})` }}>
-                {(client.name?.charAt(0) || '?').toUpperCase()}
+              <div
+                className="w-16 h-16 rounded-lg flex items-center justify-center font-bold text-3xl"
+                style={
+                  client.client_type === 'pessoa'
+                    ? { background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: '#fff' }
+                    : { background: `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})`, color: '#06070a' }
+                }
+              >
+                {client.client_type === 'pessoa'
+                  ? <User className="w-8 h-8" />
+                  : (client.name?.charAt(0) || '?').toUpperCase()
+                }
               </div>
             )}
             <div>
-              <h1 className="text-2xl font-bold text-white">{client.name}</h1>
-              <p className="text-slate-400">{client.contact_person}</p>
+              <div className="flex items-center gap-2 mb-0.5">
+                <h1 className="text-2xl font-bold text-white">{client.name}</h1>
+                {client.client_type === 'pessoa' ? (
+                  <span className="text-[11px] bg-purple-600/20 text-purple-300 border border-purple-500/30 rounded px-2 py-0.5">Pessoa</span>
+                ) : (
+                  <span className="text-[11px] bg-cyan-600/10 text-cyan-400 border border-cyan-500/20 rounded px-2 py-0.5">Empresa</span>
+                )}
+              </div>
+              {client.contact_person && (
+                <p className="text-slate-400">
+                  {client.client_type === 'pessoa' ? 'Empresa: ' : 'Contato: '}
+                  {client.contact_person}
+                </p>
+              )}
             </div>
           </div>
           <div className="flex gap-2">

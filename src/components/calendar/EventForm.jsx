@@ -308,7 +308,7 @@ export default function EventForm({
             <Input
               value={formData.title}
               onChange={(e) => setField('title', e.target.value)}
-              placeholder={selectedClient?.name ? `Padrão: ${selectedClient.name}` : 'Usa o nome da empresa se vazio'}
+              placeholder={selectedClient?.name ? `Padrão: ${selectedClient.name}` : 'Usa o nome do cliente se vazio'}
               className="bg-slate-800 border-slate-700"
             />
           </div>

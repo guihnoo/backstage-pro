@@ -487,3 +487,15 @@ Registro cronológico de tarefas executadas por agentes.
 - **Reports.jsx**: corrigido encoding mojibake no comentário `MUDANÃ‡A CRÍTICA` → `MUDANÇA CRÍTICA`
 - **Total removido**: ~26 arquivos adicionais
 - **Build**: Vite ✅ (1m 3s)
+
+---
+
+### SESSÃO-21 — Meta diárias + auto-git backup — 2026-06-10
+- **Agente**: Cursor (Auto)
+- **Escopo**: Confirmar meta diárias no código; backup git automático; validação build/smoke; docs
+- **Arquivos**: `.cursor/hooks.json`, `.cursor/hooks/auto-save-push.mjs`, `.cursor/rules/auto-git-backup.mdc`, `CLAUDE.md`, `AGENTS.md`, `package.json`, `.gitignore`, `docs/RELATORIO_VIDA_APP.md`
+- **Build**: Vite ✅ (~25s)
+- **Testes**: `npm run test:e2e:smoke` 18/18 ✅
+- **Deploy**: Vercel prod ✅ `dpl_8dAJVA59EXHp35SMnc4TJCWUrJCA` → https://backstage-pro-beta.vercel.app
+- **Testes prod**: `npm run test:e2e:prod` 47/47 ✅ (incl. assert "Meta de diárias por mês" no perfil)
+- **Notas**: Commits WIP usam prefixo `chore(auto):`
