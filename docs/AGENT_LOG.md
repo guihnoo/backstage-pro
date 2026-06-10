@@ -6,6 +6,20 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-10
 
+### SLATE-COMPLETE + CLIENT-SEARCH — Migração gray→slate finalizada + busca expandida ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **SocialLoginButtons.jsx**: `text-gray-500` (rodapé OAuth) → `text-slate-500`; branding Google/Apple mantido intencional
+- **Clients.jsx (busca expandida)**: filtro `searchTerm` agora inclui `razao_social`, `email`, `phone` (normalizado, sem formatação) e `city` — antes só buscava `name` + `contact_person`
+- **Auditoria final `gray-*`**: todos os arquivos fora do domínio Cursor migrados para `slate-*`. Único remanescente: `SocialLoginButtons.jsx` (classes de branding Google/Apple — intencional)
+- **Build**: Vite ✅ (51.75s)
+
+### CLIENT-DETAIL-CHART-FIX — ReportsChart no ClientDetail recebia prop errada ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Bug**: `<ReportsChart data={{...}} />` — prop `data` ignorada; componente espera `chartInput`
+- **Fix**: adicionado `import { getEventStatus }`, `getEventRevenue` como `useCallback`, `chartInput` como `useMemo` com `{ realized, receivable, projected, expenses }`. Prop trocada para `chartInput`
+- **Arquivos**: `src/pages/ClientDetail.jsx`
+- **Build**: Vite ✅
+
 ### POLISH-FORMS-HOME — Acentuação, payment_due_date, paleta slate e ProximosEventos ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **EventForm.jsx**:

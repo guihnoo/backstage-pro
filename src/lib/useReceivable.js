@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { supabase } from './supabase';
+import { todayLocalISO } from '@/components/utils/dateUtils';
 import {
   isReceivableEvent,
   calculateEventReceivableAmount,
@@ -103,7 +104,7 @@ export function useReceivableByClient(userId) {
   const markClientPaid = useCallback(async (clientId, paidAmount) => {
     const row = rows.find(r => r.clientId === clientId);
     if (!row) return;
-    const today = new Date().toISOString().split('T')[0];
+    const today = todayLocalISO();
     setRows(prev => prev.filter(r => r.clientId !== clientId));
 
     // Distribute paidAmount proportionally across events if provided

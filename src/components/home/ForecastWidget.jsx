@@ -5,7 +5,8 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { parseISO, addDays, isValid, differenceInCalendarDays, format } from 'date-fns';
-import { getEventCacheAmount } from '@/lib/eventFinance';
+import { getEventCacheAmount, isCancelledEvent } from '@/lib/eventFinance';
+import { getEventStatus } from '@/components/utils/dateUtils';
 import { ptBR } from 'date-fns/locale';
 
 function getWeekLabel(daysFromNow) {
@@ -23,6 +24,8 @@ export default function ForecastWidget({ events = [], isLoading, primaryHex = '#
   const upcoming = useMemo(() => {
     return events
       .filter(ev => {
+        if (isCancelledEvent(ev)) return false;
+        if (getEventStatus(ev) === 'completed') return false;
         const d = ev.start_date ? parseISO(ev.start_date) : null;
         return d && isValid(d) && d >= today && d <= in30;
       })

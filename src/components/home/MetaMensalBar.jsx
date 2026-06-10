@@ -30,7 +30,28 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
   const metaEventos = Number(profile?.monthly_goal_events) || 0;
   const hasGoals = metaReceita > 0 || metaEventos > 0;
 
-  if (!hasGoals && !isLoading) return null;
+  if (!hasGoals && !isLoading) {
+    return (
+      <motion.button
+        type="button"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        onClick={() => hardNavigate('/goals')}
+        className="mb-8 w-full text-left p-5 rounded-2xl border border-dashed border-gray-700/60 bg-gray-900/40 hover:border-gray-600/80 transition-all group"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Target className="w-4 h-4" style={{ color: accentColor }} />
+            <div>
+              <span className="text-sm font-bold text-white block">Defina sua meta do mês</span>
+              <span className="text-xs text-gray-500">Faturamento e shows — acompanhe o progresso aqui</span>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors" />
+        </div>
+      </motion.button>
+    );
+  }
 
   const receitaAtual = stats?.faturamento_pago ?? 0;
   const eventosAtual = stats?.eventos_count ?? 0;

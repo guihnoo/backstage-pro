@@ -3,10 +3,10 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-10 (sessão 14)  
+**Última atualização:** 2026-06-10 (sessão 15)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** `ad651e1` — Sprint A+B nav SPA + fix patchHistory  
-**Último deploy:** 2026-06-09 — push `ad651e1` → Vercel  
+**Último commit:** `2693168` — Fix ReportsChart ClientDetail (prop chartInput)  
+**Último deploy:** 2026-06-10 — push para Vercel  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
 ---
@@ -69,6 +69,13 @@ Ordem oficial após fix de scroll (2026-06-05):
 ---
 
 ## Changelog
+
+### 2026-06-10 (sessão 15) — Migração slate completa + busca Clients + fix ReportsChart ClientDetail
+
+**Migração `gray-*` → `slate-*` finalizada:** todos os arquivos fora do Cursor migrados. Único remanescente intencional: `SocialLoginButtons.jsx` (branding Google/Apple).  
+**Clients.jsx — busca expandida:** `searchTerm` agora pesquisa em `razao_social`, `email`, `phone` (normalizado) e `city`, além de `name` e `contact_person`.  
+**ClientDetail.jsx — ReportsChart fix:** gráfico estava sempre vazio; `data` → `chartInput` com mapeamento correto de `{ realized, receivable, projected, expenses }`.  
+**Build:** Vite ✅ (51.75s)
 
 ### 2026-06-10 (sessão 14) — Polish forms + paleta slate consistente
 

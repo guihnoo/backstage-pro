@@ -23,7 +23,7 @@ function eventHasLocation(event) {
   return Boolean(event.location?.trim()) || (event.location_lat != null && event.location_lng != null);
 }
 
-export default function ProximoShow({ event, userCategory, isOnStage, onViewEvent, onRefresh }) {
+export default function ProximoShow({ event, userCategory, isOnStage, isLiveShift, isLoading, onViewEvent, onRefresh }) {
   const eventDateStr = getEventDateStr(event);
   const { countdown } = useCountdown(eventDateStr);
   const config = getCategoryConfig(userCategory);
@@ -55,6 +55,20 @@ export default function ProximoShow({ event, userCategory, isOnStage, onViewEven
     }
   };
 
+  const live = isOnStage || isLiveShift;
+
+  if (isLoading) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8 p-8 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50"
+      >
+        <div className="h-32 bg-slate-800/50 rounded-xl animate-pulse" />
+      </motion.div>
+    );
+  }
+
   if (!event) {
     return (
       <motion.div
@@ -71,7 +85,7 @@ export default function ProximoShow({ event, userCategory, isOnStage, onViewEven
         </p>
         <motion.button
           whileTap={{ scale: 0.96 }}
-          onClick={() => hardNavigate('/calendar')}
+          onClick={() => hardNavigate('/calendar?action=new-event')}
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-violet-600 text-white text-sm font-semibold hover:shadow-lg hover:shadow-cyan-500/30 transition-all"
         >
           <Navigation className="w-4 h-4" />
@@ -92,12 +106,12 @@ export default function ProximoShow({ event, userCategory, isOnStage, onViewEven
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       className={`mb-8 rounded-2xl border-2 overflow-hidden ${
-        isOnStage
+        live
           ? `bg-gradient-to-br from-slate-900 to-slate-800 ${config.borderGlow}`
           : 'bg-gradient-to-br from-slate-900/80 to-slate-800/50 border-slate-700/30'
       }`}
     >
-      {isOnStage && (
+      {live && (
         <motion.div
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 2, repeat: Infinity }}
@@ -111,7 +125,7 @@ export default function ProximoShow({ event, userCategory, isOnStage, onViewEven
           <div>
             <div className="flex items-center gap-2 mb-2 sm:mb-3">
               <span className="text-2xl sm:text-3xl">{config.emoji}</span>
-              {isOnStage && (
+              {live && (
                 <motion.span
                   animate={{ scale: [1, 1.1, 1] }}
                   transition={{ duration: 1, repeat: Infinity }}
@@ -180,7 +194,7 @@ export default function ProximoShow({ event, userCategory, isOnStage, onViewEven
 
         {isOnStage && (
           <div className="mb-6 space-y-3">
-            <ModoPalcoActions event={event} accentColor={config.primaryHex} />
+            <ModoPalcoActions event={event} accentColor={config.primaryHex} onRefresh={onRefresh} />
             {!eventHasLocation(event) && (
               <motion.button
                 type="button"
@@ -201,7 +215,7 @@ export default function ProximoShow({ event, userCategory, isOnStage, onViewEven
         )}
 
         {/* Countdown */}
-        {countdown && !isOnStage && (
+        {countdown && !live && (
           <motion.div className="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 mb-6">
             <div className="text-center">
               <p className="text-xs text-slate-400 mb-2">ACONTECE EM</p>

@@ -107,7 +107,11 @@ export function useStats(userId) {
     }
 
     fetchStats();
-    return () => { cancelled = true; };
+    const interval = setInterval(fetchStats, 60000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, [userId, version]);
 
   return { stats, loading, error, refetch };
@@ -128,7 +132,7 @@ export function useUpcomingEvent(userId) {
     setError(null);
 
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const today = todayLocalISO();
 
       const { data: onStage, error: stageErr } = await supabase
         .from('events')
@@ -199,7 +203,11 @@ export function useEvents(userId, options = {}) {
         if (options.limit) query = query.limit(options.limit);
         if (options.status) query = query.eq('status', options.status);
         if (options.from) query = query.gte('start_date', options.from);
+        if (options.endAfter) query = query.gte('end_date', options.endAfter);
         if (options.to) query = query.lte('start_date', options.to);
+        if (options.excludeCancelled) {
+          query = query.neq('status', 'cancelled');
+        }
 
         query = query.order('start_date', { ascending: options.ascending !== false });
 
@@ -256,6 +264,8 @@ export function useClients(userId) {
 export function usePaymentAlerts(userId) {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [version, setVersion] = useState(0);
+  const refetch = useCallback(() => setVersion(v => v + 1), []);
 
   useEffect(() => {
     if (!userId) {
@@ -263,49 +273,56 @@ export function usePaymentAlerts(userId) {
       return;
     }
 
+    let cancelled = false;
+
     async function fetchAlerts() {
+      setLoading(true);
       try {
         const { data, error: err } = await supabase
           .from('events')
           .select('id, title, client_id, start_date, end_date, payment_status, status, daily_cache_value, actual_revenue, estimated_revenue, clients (name, phone)')
           .eq('user_id', userId)
           .in('payment_status', ['pending', 'unpaid', 'partial'])
-          .eq('status', 'completed')
           .order('start_date', { ascending: true });
 
         if (err) throw err;
 
-        const alertsList = (data || []).map(event => {
-          const refDate = event.end_date || event.start_date;
-          const daysOverdue = differenceInDays(new Date(), parseISO(refDate));
-          const value = eventValue(event);
-          return {
-            id: event.id,
-            type: daysOverdue > 0 ? 'overdue' : 'pending',
-            title: `${event.clients?.name || 'Cliente'} — R$${value.toLocaleString('pt-BR')}`,
-            daysOverdue,
-            description: daysOverdue > 0 ? `Atrasado há ${daysOverdue} dias` : 'Aguardando pagamento',
-            clientId: event.client_id,
-            clientName: event.clients?.name || 'Cliente',
-            phone: event.clients?.phone || null,
-            amount: value,
-            eventTitle: event.title,
-            eventStartDate: event.start_date,
-          };
-        });
+        const alertsList = (data || [])
+          .filter(isReceivableEvent)
+          .map(event => {
+            const refDate = event.end_date || event.start_date;
+            const daysOverdue = differenceInDays(new Date(), parseISO(refDate));
+            const value = eventValue(event);
+            return {
+              id: event.id,
+              type: daysOverdue > 0 ? 'overdue' : 'pending',
+              title: `${event.clients?.name || 'Cliente'} — R$${value.toLocaleString('pt-BR')}`,
+              daysOverdue,
+              description: daysOverdue > 0 ? `Atrasado há ${daysOverdue} dias` : 'Aguardando pagamento',
+              clientId: event.client_id,
+              clientName: event.clients?.name || 'Cliente',
+              phone: event.clients?.phone || null,
+              amount: value,
+              eventTitle: event.title,
+              eventStartDate: event.start_date,
+            };
+          });
 
-        setAlerts(alertsList.sort((a, b) => b.daysOverdue - a.daysOverdue));
+        if (!cancelled) {
+          setAlerts(alertsList.sort((a, b) => b.daysOverdue - a.daysOverdue));
+        }
       } catch (err) {
         console.error('Erro ao buscar alertas:', err);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
 
     fetchAlerts();
-  }, [userId]);
+    return () => { cancelled = true; };
+  }, [userId, version]);
 
-  return { alerts, loading };
+  return { alerts, loading, refetch };
 }
 
 export function useCountdown(eventDate) {

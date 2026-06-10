@@ -122,7 +122,7 @@ export default function SocialLoginButtons({ mode = 'login' }) {
         <p className="text-xs text-amber-300/90 text-center px-2 leading-relaxed">{error}</p>
       )}
 
-      <div className="flex items-center justify-center gap-1.5 pt-1 text-[11px] text-gray-500">
+      <div className="flex items-center justify-center gap-1.5 pt-1 text-[11px] text-slate-500">
         <ShieldCheck className="w-3.5 h-3.5 text-emerald-500/80" />
         <span>Autenticação segura · OAuth 2.0 · Supabase</span>
       </div>

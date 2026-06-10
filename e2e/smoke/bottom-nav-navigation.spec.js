@@ -19,7 +19,7 @@ test('bottom nav troca pagina sem precisar de refresh', async ({ page }) => {
   await expect(page.getByRole('navigation').getByRole('link', { name: /^home$/i })).toBeVisible({
     timeout: 20_000,
   });
-  await expectPageShell(page, (p) => p.getByRole('heading', { name: /boa (noite|tarde|dia)/i }));
+  await expectPageShell(page, (p) => p.getByRole('heading', { name: /(bom dia|boa tarde|boa noite)/i }));
 
   await clickNavAndWait(page, /^agenda$/i, /\/calendar/);
   await expectPageShell(page, (p) =>
@@ -39,7 +39,7 @@ test('bottom nav troca pagina sem precisar de refresh', async ({ page }) => {
   );
 
   await clickNavAndWait(page, /^home$/i, /\/$/);
-  await expectPageShell(page, (p) => p.getByRole('heading', { name: /boa (noite|tarde|dia)/i }));
+  await expectPageShell(page, (p) => p.getByRole('heading', { name: /(bom dia|boa tarde|boa noite)/i }));
 });
 
 test('apos FAB novo evento, nav continua funcionando sem refresh', async ({ page }) => {

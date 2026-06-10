@@ -166,9 +166,13 @@ export default function ClientsPage() {
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(client => 
+      filtered = filtered.filter(client =>
         client.name.toLowerCase().includes(term) ||
-        (client.contact_person && client.contact_person.toLowerCase().includes(term))
+        (client.contact_person && client.contact_person.toLowerCase().includes(term)) ||
+        (client.razao_social && client.razao_social.toLowerCase().includes(term)) ||
+        (client.email && client.email.toLowerCase().includes(term)) ||
+        (client.phone && client.phone.replace(/\D/g, '').includes(term.replace(/\D/g, ''))) ||
+        (client.city && client.city.toLowerCase().includes(term))
       );
     }
 

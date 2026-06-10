@@ -3,12 +3,13 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import { ChevronRight } from 'lucide-react';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
+import AnimatedStatValue from '@/components/home/AnimatedStatValue';
 
 const statConfigs = [
   { key: 'faturamento_pago', label: 'Recebido', icon: '✅', route: '/reports', hint: 'Ver relatórios', financial: true },
   { key: 'a_receber', label: 'A Receber', icon: '💰', route: '/reports', hint: 'Ver relatórios', financial: true },
+  { key: 'horas_trabalhadas', label: 'Horas no Mês', icon: '⏱️', route: '/reports', hint: 'Ver relatórios', format: (v) => `${Number(v).toFixed(1)}h` },
   { key: 'eventos_count', label: 'Shows este Mês', icon: '🎤', route: '/calendar', hint: 'Ver agenda', format: (v) => `${v} show${v !== 1 ? 's' : ''}` },
-  { key: 'clientes_ativos', label: 'Clientes Ativos', icon: '👥', route: '/clients', hint: 'Ver clientes', format: (v) => `${v} cliente${v !== 1 ? 's' : ''}` },
 ];
 
 export default function QuickStats({ stats, isLoading, primaryHex = '#A64AFF', accentHex = '#FFB700' }) {
@@ -18,7 +19,10 @@ export default function QuickStats({ stats, isLoading, primaryHex = '#A64AFF', a
     <div className="mb-8 grid grid-cols-2 md:grid-cols-4 gap-3">
       {statConfigs.map((config, idx) => {
         const value = stats[config.key] ?? 0;
-        const display = config.financial ? formatCurrency(value) : config.format(value);
+        const displayFormat = config.financial
+          ? (v) => formatCurrency(v)
+          : config.format;
+
         return (
           <motion.div
             key={config.key}
@@ -36,8 +40,15 @@ export default function QuickStats({ stats, isLoading, primaryHex = '#A64AFF', a
                 <ChevronRight className="w-3.5 h-3.5 text-[#4a5060] mt-0.5" />
               </div>
               <p className="text-[9px] font-mono uppercase tracking-wider text-[#7c8494] mt-2 mb-1">{config.label}</p>
-              {isLoading ? <div className="h-6 bg-[#1a1d27] rounded animate-pulse" /> : (
-                <p className="text-lg font-extrabold text-white leading-tight" style={{ textShadow: `0 0 20px ${primaryHex}33` }}>{display}</p>
+              {isLoading ? (
+                <div className="h-6 bg-[#1a1d27] rounded animate-pulse" />
+              ) : (
+                <AnimatedStatValue
+                  value={value}
+                  format={displayFormat}
+                  className="text-lg font-extrabold text-white leading-tight block"
+                  style={{ textShadow: `0 0 20px ${primaryHex}33` }}
+                />
               )}
               <p className="text-[9px] text-[#4a5060] mt-1 font-mono">{config.hint} →</p>
             </NeonGlass>
