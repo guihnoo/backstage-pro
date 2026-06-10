@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 /**
  * Abre fluxos via ?action= sem useSearchParams.
@@ -7,6 +7,7 @@ import { useLocation } from 'react-router-dom';
  */
 export function useQueryAction(actionKey, onMatch) {
   const location = useLocation();
+  const navigate = useNavigate();
   const onMatchRef = useRef(onMatch);
   const handledRef = useRef(false);
   onMatchRef.current = onMatch;
@@ -21,6 +22,6 @@ export function useQueryAction(actionKey, onMatch) {
 
     handledRef.current = true;
     onMatchRef.current();
-    window.history.replaceState({}, '', location.pathname);
+    navigate(location.pathname, { replace: true });
   }, [location.search, location.pathname, actionKey]);
 }

@@ -6,6 +6,20 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-09
 
+### SPRINT-AB-FIX — Sprint A+B Cursor + fix SPA navigation + E2E 47/47 ✅
+- **Agente**: Claude Code (claude-sonnet-4-6) + Cursor (Sprint A+B)
+- **BUG RAIZ**: `patchHistoryNotifications` disparava `bp:history` em TODA chamada de `pushState`/`replaceState`, incluindo as internas do React Router. Isso fazia `NavigationSync.reconcile` chamar `navigate()` dentro do rAF em loop, cancelando a navegação pendente — Calendar nunca commitava. Fix: filtrar chamadas com state `{ idx }` (assinatura do React Router).
+- **Arquivos alterados**:
+  - `src/lib/patchHistory.js` — filtro `isReactRouterNav` para não disparar `bp:history` em navegações internas do React Router
+  - `e2e/helpers/fakeAuth.js` — revertido `seedAuth` para `goto('/login') + evaluate` (addInitScript causava validação de JWT pelo Supabase → auth nunca resolvia)
+  - Sprint A Cursor: deletados órfãos (`StatDetailModal`, `Profile.jsx`, `SplashScreen.jsx`, `DashboardCustomizer.jsx`, `FeedbackModal.jsx`, `PhotoReceiptAnalyzer.jsx`, `ChatInterface.jsx`, `BackupManager.jsx`)
+  - Sprint B Cursor: `AppLayout` migrado de `<a onClick>` para `<Link>` (7 navItems incluindo Metas)
+  - `src/lib/appNavigate.js` — novo arquivo por Cursor
+  - `src/lib/hardNavigate.js`, `src/lib/useQueryAction.js`, `src/components/NavigationSync.jsx` — atualizados por Cursor
+- **E2E**: 47/47 ✅ (incluindo novos testes de Metas e navegação SPA)
+- **Deploy**: pendente (aguardando instrução)
+- **Próximo**: Sprint C1 — gráficos animados em Reports; OAuth E2E manual; GOOGLE_CLIENT_SECRET rotation
+
 ### SESSAO-11-CLOSE — Encerramento sessão 11 + NotificationCenter ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **NotificationCenter**: DropdownMenu + `ScrollArea max-h-[60dvh]` — funcional, sem necessidade de Sheet ✅

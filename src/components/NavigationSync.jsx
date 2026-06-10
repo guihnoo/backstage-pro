@@ -1,31 +1,33 @@
 import { useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { registerAppNavigate } from '@/lib/appNavigate';
 
 /**
- * Se a URL do browser divergir do estado do React Router, força reload para a URL correta.
- * Cobre navegação via FAB/deep links que atualizam a URL sem re-renderizar o Outlet.
+ * Mantém hardNavigate e deep links alinhados ao React Router sem full reload.
  */
 export default function NavigationSync() {
   const location = useLocation();
+  const navigate = useNavigate();
   const locationRef = useRef(location);
   locationRef.current = location;
 
   useEffect(() => {
-    const reconcile = () => {
+    registerAppNavigate(navigate);
+    return () => registerAppNavigate(null);
+  }, [navigate]);
+
+  useEffect(() => {
+    const onPopState = () => {
       const browser = `${window.location.pathname}${window.location.search}${window.location.hash}`;
       const router = `${locationRef.current.pathname}${locationRef.current.search}${locationRef.current.hash}`;
       if (browser !== router) {
-        window.location.replace(browser);
+        navigate(browser, { replace: true });
       }
     };
 
-    window.addEventListener('bp:history', reconcile);
-    window.addEventListener('popstate', reconcile);
-    return () => {
-      window.removeEventListener('bp:history', reconcile);
-      window.removeEventListener('popstate', reconcile);
-    };
-  }, []);
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [navigate]);
 
   return null;
 }

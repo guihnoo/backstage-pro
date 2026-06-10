@@ -9,10 +9,11 @@ async function expectRouteShell(page, { path, shell, viaHome = false }) {
     await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 15_000 });
     await page.goto(path, { waitUntil: 'domcontentloaded' });
   } else {
-    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await page.goto(path, { waitUntil: 'load' });
   }
 
-  await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 15_000 });
+  await expect(page).not.toHaveURL(/\/onboarding/, { timeout: 15_000 });
+  await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 20_000 });
   await expect(page).toHaveURL(new RegExp(path.replace('/', '\\/')), { timeout: 10_000 });
   await expect(shell(page).first()).toBeVisible({ timeout: 10_000 });
 }

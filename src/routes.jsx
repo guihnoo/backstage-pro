@@ -6,18 +6,7 @@ import { FinancialVisibilityProvider } from '@/components/context/FinancialVisib
 
 import LoginNew from './pages/LoginNew';
 import SignupNew from './pages/SignupNew';
-import AuthCallback from './pages/AuthCallback';
-import Onboarding from './pages/Onboarding';
-import Home from './pages/Home';
-import Goals from './pages/Goals';
-import ProfileSimple from './pages/ProfileSimple';
-import AIMentorPage from './pages/AI_Mentor';
 import AppLayout from '@/components/layout/AppLayout';
-import CalendarPage from './pages/Calendar';
-import ClientsPage from './pages/Clients';
-import ExpensesPage from './pages/Expenses';
-import ReportsPage from './pages/Reports.jsx';
-import ClientDetailPage from './pages/ClientDetail';
 import PrivacyPolicyPage from './pages/PrivacyPolicy';
 import TermsOfServicePage from './pages/TermsOfService';
 import OAuthUrlGuard from '@/components/auth/OAuthUrlGuard';
@@ -27,6 +16,21 @@ import { AppDataProvider } from '@/components/context/AppDataContext';
 
 function RouteLoading() {
   return <LoadingSpinner fullScreen text="Carregando..." />;
+}
+
+function wrapPage(importFn) {
+  return async () => {
+    const { default: Page } = await importFn();
+    function PageWithBoundary() {
+      const location = useLocation();
+      return (
+        <ErrorBoundary key={location.pathname}>
+          <Page />
+        </ErrorBoundary>
+      );
+    }
+    return { Component: PageWithBoundary, HydrateFallback: RouteLoading };
+  };
 }
 
 function PrivateRoute({ children }) {
@@ -56,11 +60,6 @@ function OnboardingRoute({ children }) {
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (isOnboardingComplete) return <Navigate to="/" replace />;
   return children;
-}
-
-function MigratedModuleRoute({ children }) {
-  const location = useLocation();
-  return <ErrorBoundary key={location.pathname}>{children}</ErrorBoundary>;
 }
 
 function RootShell() {
@@ -95,7 +94,7 @@ export const router = createBrowserRouter([
           </PublicRoute>
         ),
       },
-      { path: '/auth/callback', element: <AuthCallback /> },
+      { path: '/auth/callback', lazy: wrapPage(() => import('./pages/AuthCallback')) },
       { path: '/privacidade', element: <PrivacyPolicyPage /> },
       { path: '/privacy', element: <PrivacyPolicyPage /> },
       { path: '/termos', element: <TermsOfServicePage /> },
@@ -104,9 +103,10 @@ export const router = createBrowserRouter([
         path: '/onboarding',
         element: (
           <OnboardingRoute>
-            <Onboarding />
+            <Outlet />
           </OnboardingRoute>
         ),
+        children: [{ index: true, lazy: wrapPage(() => import('./pages/Onboarding')) }],
       },
       {
         path: '/',
@@ -118,57 +118,15 @@ export const router = createBrowserRouter([
           </PrivateRoute>
         ),
         children: [
-          { index: true, element: <Home /> },
-          {
-            path: 'calendar',
-            element: (
-              <MigratedModuleRoute>
-                <CalendarPage />
-              </MigratedModuleRoute>
-            ),
-          },
-          {
-            path: 'clients',
-            element: (
-              <MigratedModuleRoute>
-                <ClientsPage />
-              </MigratedModuleRoute>
-            ),
-          },
-          {
-            path: 'expenses',
-            element: (
-              <MigratedModuleRoute>
-                <ExpensesPage />
-              </MigratedModuleRoute>
-            ),
-          },
-          {
-            path: 'reports',
-            element: (
-              <MigratedModuleRoute>
-                <ReportsPage />
-              </MigratedModuleRoute>
-            ),
-          },
-          {
-            path: 'client-detail',
-            element: (
-              <MigratedModuleRoute>
-                <ClientDetailPage />
-              </MigratedModuleRoute>
-            ),
-          },
-          { path: 'goals', element: <Goals /> },
-          { path: 'profile', element: <ProfileSimple /> },
-          {
-            path: 'ai-mentor',
-            element: (
-              <MigratedModuleRoute>
-                <AIMentorPage />
-              </MigratedModuleRoute>
-            ),
-          },
+          { index: true, lazy: wrapPage(() => import('./pages/Home')) },
+          { path: 'calendar', lazy: wrapPage(() => import('./pages/Calendar')) },
+          { path: 'clients', lazy: wrapPage(() => import('./pages/Clients')) },
+          { path: 'expenses', lazy: wrapPage(() => import('./pages/Expenses')) },
+          { path: 'reports', lazy: wrapPage(() => import('./pages/Reports.jsx')) },
+          { path: 'client-detail', lazy: wrapPage(() => import('./pages/ClientDetail')) },
+          { path: 'goals', lazy: wrapPage(() => import('./pages/Goals')) },
+          { path: 'profile', lazy: wrapPage(() => import('./pages/ProfileSimple')) },
+          { path: 'ai-mentor', lazy: wrapPage(() => import('./pages/AI_Mentor')) },
         ],
       },
       { path: '*', element: <NotFoundRedirect /> },

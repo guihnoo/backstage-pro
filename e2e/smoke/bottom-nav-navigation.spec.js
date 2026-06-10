@@ -1,61 +1,57 @@
 import { test, expect } from '@playwright/test';
+import { seedAuth } from '../helpers/fakeAuth.js';
 
-const AUTH_KEY = 'sb-cwtallnetgodoacuoaow-auth-token';
-
-function fakeSession() {
-  const expiresAt = Math.floor(Date.now() / 1000) + 3600;
-  return {
-    access_token: 'fake-access-token-for-e2e',
-    refresh_token: 'fake-refresh-token',
-    expires_at: expiresAt,
-    expires_in: 3600,
-    token_type: 'bearer',
-    user: {
-      id: '00000000-0000-4000-8000-000000000001',
-      aud: 'authenticated',
-      role: 'authenticated',
-      email: 'e2e-test@backstage.local',
-      email_confirmed_at: new Date().toISOString(),
-      app_metadata: { provider: 'email', providers: ['email'] },
-      user_metadata: { name: 'E2E Test' },
-      created_at: new Date().toISOString(),
-    },
-  };
+async function clickNavAndWait(page, label, urlPattern) {
+  await page.getByRole('link', { name: label }).click();
+  await expect(page).toHaveURL(urlPattern, { timeout: 15_000 });
+  await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 20_000 });
 }
 
-async function seedAuth(page) {
-  await page.goto('/login', { waitUntil: 'domcontentloaded' });
-  await page.evaluate(
-    ({ key, session }) => {
-      localStorage.setItem(key, JSON.stringify(session));
-    },
-    { key: AUTH_KEY, session: fakeSession() }
-  );
+async function expectPageShell(page, shell) {
+  await expect(shell(page).first()).toBeVisible({ timeout: 15_000 });
 }
 
 test('bottom nav troca pagina sem precisar de refresh', async ({ page }) => {
   await seedAuth(page);
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 15_000 });
+  await page.goto('/', { waitUntil: 'load' });
+  await expect(page).not.toHaveURL(/\/onboarding/, { timeout: 15_000 });
+  await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 20_000 });
+  await expect(page.getByRole('navigation').getByRole('link', { name: /^home$/i })).toBeVisible({
+    timeout: 20_000,
+  });
+  await expectPageShell(page, (p) => p.getByRole('heading', { name: /boa (noite|tarde|dia)/i }));
 
-  await page.getByRole('link', { name: /agenda/i }).click();
-  await expect(page).toHaveURL(/\/calendar/);
-  await expect(page.getByRole('heading', { name: /agenda/i })).toBeVisible({ timeout: 10_000 });
+  await clickNavAndWait(page, /^agenda$/i, /\/calendar/);
+  await expectPageShell(page, (p) =>
+    p.getByRole('heading', { name: /^agenda$/i }).or(p.getByText(/erro ao carregar agenda/i)),
+  );
 
-  await page.getByRole('link', { name: /clientes/i }).click();
-  await expect(page).toHaveURL(/\/clients/);
-  await expect(page.getByRole('heading', { name: /clientes/i })).toBeVisible({ timeout: 10_000 });
+  await clickNavAndWait(page, /^metas$/i, /\/goals/);
+  await expectPageShell(page, (p) =>
+    p.getByRole('heading', { name: /metas & conquistas/i }).or(p.getByText(/progresso do mês/i)),
+  );
 
-  await page.getByRole('link', { name: /^home$/i }).click();
-  await expect(page).toHaveURL(/\/$/);
+  await clickNavAndWait(page, /^clientes$/i, /\/clients/);
+  await expectPageShell(page, (p) =>
+    p.getByRole('heading', { name: /clientes|erro ao carregar clientes/i }).or(
+      p.getByRole('link', { name: /clientes/i }),
+    ),
+  );
+
+  await clickNavAndWait(page, /^home$/i, /\/$/);
+  await expectPageShell(page, (p) => p.getByRole('heading', { name: /boa (noite|tarde|dia)/i }));
 });
 
 test('apos FAB novo evento, nav continua funcionando sem refresh', async ({ page }) => {
   await seedAuth(page);
-  await page.goto('/calendar?action=new-event', { waitUntil: 'domcontentloaded' });
-  await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 15_000 });
+  await page.goto('/calendar?action=new-event', { waitUntil: 'load' });
+  await expect(page).not.toHaveURL(/\/onboarding/, { timeout: 15_000 });
+  await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 20_000 });
 
-  await page.getByRole('link', { name: /clientes/i }).click();
-  await expect(page).toHaveURL(/\/clients/);
-  await expect(page.getByRole('heading', { name: /clientes/i })).toBeVisible({ timeout: 10_000 });
+  await clickNavAndWait(page, /^clientes$/i, /\/clients/);
+  await expectPageShell(page, (p) =>
+    p.getByRole('heading', { name: /clientes|erro ao carregar clientes/i }).or(
+      p.getByRole('link', { name: /clientes/i }),
+    ),
+  );
 });

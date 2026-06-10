@@ -41,24 +41,84 @@ export function fakeProfile() {
   };
 }
 
+function wantsSingleObject(headers) {
+  const accept = headers.accept || headers.Accept || '';
+  return accept.includes('application/vnd.pgrst.object+json');
+}
+
+function mergeProfileUpdate(profile, payload) {
+  if (!payload || typeof payload !== 'object') return profile;
+  const row = Array.isArray(payload) ? payload[0] : payload;
+  if (!row || typeof row !== 'object') return profile;
+  return { ...profile, ...row, updated_at: new Date().toISOString() };
+}
+
 export async function installProfileMock(page) {
-  await page.route('**/rest/v1/profiles**', async (route) => {
+  let profileState = fakeProfile();
+
+  await page.route(/\/rest\/v1\/profiles(\?|$)/, async (route) => {
     const method = route.request().method();
-    if (method === 'GET' || method === 'PATCH' || method === 'POST') {
+    const headers = route.request().headers();
+
+    if (method === 'GET' || method === 'HEAD') {
+      const body = wantsSingleObject(headers) ? profileState : [profileState];
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify(fakeProfile()),
+        body: JSON.stringify(body),
       });
       return;
     }
+
+    if (method === 'POST' || method === 'PATCH') {
+      try {
+        const payload = route.request().postDataJSON();
+        profileState = mergeProfileUpdate(profileState, payload);
+      } catch {
+        // ignore malformed body in mock
+      }
+
+      const body = wantsSingleObject(headers) ? profileState : [profileState];
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(body),
+      });
+      return;
+    }
+
     await route.continue();
+  });
+}
+
+/** Evita que o Workbox (NetworkFirst supabase.co) contorne os mocks do Playwright. */
+export async function disableServiceWorkerForE2E(page) {
+  await page.addInitScript(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((regs) => {
+        regs.forEach((reg) => reg.unregister());
+      });
+      const sw = navigator.serviceWorker;
+      sw.register = () =>
+        Promise.resolve({
+          unregister: () => Promise.resolve(true),
+          update: () => Promise.resolve(),
+        });
+    }
+    if ('caches' in window) {
+      caches.keys().then((keys) => Promise.all(keys.map((key) => caches.delete(key))));
+    }
   });
 }
 
 export async function seedAuth(page) {
   await installProfileMock(page);
-  await page.addInitScript(
+  await disableServiceWorkerForE2E(page);
+  // goto /login primeiro para que o Supabase inicialize sem sessão;
+  // depois setamos localStorage via evaluate — evita a validação de token
+  // que ocorre quando Supabase encontra a sessão já presente no boot.
+  await page.goto('/login', { waitUntil: 'domcontentloaded' });
+  await page.evaluate(
     ({ key, session }) => {
       localStorage.setItem(key, JSON.stringify(session));
     },

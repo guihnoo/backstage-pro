@@ -28,7 +28,7 @@ function App() {
 
   return (
     <>
-      <RouterProvider router={router} />
+      <RouterProvider router={router} useTransitions={false} />
       <Toaster />
       <SonnerToaster position="top-center" richColors closeButton />
     </>
