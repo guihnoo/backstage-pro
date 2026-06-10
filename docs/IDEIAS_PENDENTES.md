@@ -31,7 +31,7 @@
 | 11 | Alertas agenda — check-in local hoje | ✅ | AlertsPanel |
 | 12 | Busca inteligente empresas / CNPJ compartilhado | ✅ | migrations 020 + Edge Function + NF-e XML sessão 10 |
 | 13 | Export PDF/CSV relatórios | ✅ | exportReport.js |
-| 14 | OCR recibo despesas (ReceiptAnalyzer) | 🟡 | Manual OK; scan “em breve” |
+| 14 | OCR recibo despesas (ReceiptAnalyzer) | ✅ | Gemini Vision via Edge Function `analyze-receipt`; auto-preenche form |
 | 15 | PWA offline refinado + sync estado | ⬜ | PWA_ROADMAP |
 | 16 | Push notifications | ⬜ | |
 | 17 | Code-split **seguro** (sem travar rotas) | ✅ | Cursor Sprint PERF-SPA-LAZY — bundle principal ~263 KB; todas as rotas lazy + Suspense ✅ |

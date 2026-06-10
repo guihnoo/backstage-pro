@@ -1,7 +1,6 @@
 import './App.css';
 import { RouterProvider } from 'react-router-dom';
 import { router } from '@/routes';
-import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from 'sonner';
 import { isSupabaseConfigured } from '@/lib/supabase';
 
@@ -29,7 +28,6 @@ function App() {
   return (
     <>
       <RouterProvider router={router} useTransitions={false} />
-      <Toaster />
       <SonnerToaster position="top-center" richColors closeButton />
     </>
   );

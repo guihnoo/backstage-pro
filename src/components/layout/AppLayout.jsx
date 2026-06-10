@@ -6,7 +6,6 @@ import { Home, Calendar, Users, Receipt, BarChart2, Sparkles, Target } from 'luc
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { checkCompletedEventsForAutoHours } from '@/lib/checkCompletedEventsForAutoHours';
-import { generateUserNotifications } from '@/lib/generateNotifications';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
 
 const navItems = [
@@ -36,7 +35,6 @@ export default function AppLayout() {
     if (!userId || autoHoursChecked.current) return;
     autoHoursChecked.current = true;
     checkCompletedEventsForAutoHours({ userId }).catch(() => {});
-    generateUserNotifications(userId).catch(() => {});
   }, [user?.id]);
 
   useEffect(() => {

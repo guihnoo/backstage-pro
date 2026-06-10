@@ -2,6 +2,8 @@
  * Utilitários WhatsApp — cobrança, contato e relatório de evento (Brasil).
  */
 
+import { getEventCacheAmount } from '@/lib/eventFinance';
+
 export function formatWhatsAppNumber(phone) {
   if (!phone) return null;
   const clean = String(phone).replace(/\D/g, '');
@@ -78,10 +80,7 @@ export function buildEventReport({ event, client, work = [], expenses = [] }) {
   const totalHours = work.reduce((sum, w) => sum + (w.total_hours || 0), 0);
   const totalEarned = work.reduce((sum, w) => sum + (w.daily_cache || 0), 0);
 
-  // Se não tiver registros de trabalho, usa o cachê do evento
-  const cacheValue = totalEarned > 0
-    ? totalEarned
-    : (event?.actual_revenue || event?.estimated_revenue || event?.daily_cache_value || 0);
+  const cacheValue = totalEarned > 0 ? totalEarned : getEventCacheAmount(event);
 
   const reimbursableExpenses = expenses.filter(e => e.is_reimbursable && !e.reimbursed);
   const totalReimbursable = reimbursableExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);

@@ -9,7 +9,7 @@ const statConfigs = [
   { key: 'faturamento_pago', label: 'Recebido', icon: '✅', route: '/reports', hint: 'Ver relatórios', financial: true },
   { key: 'a_receber', label: 'A Receber', icon: '💰', route: '/reports', hint: 'Ver relatórios', financial: true },
   { key: 'horas_trabalhadas', label: 'Horas no Mês', icon: '⏱️', route: '/reports', hint: 'Ver relatórios', format: (v) => `${Number(v).toFixed(1)}h` },
-  { key: 'eventos_count', label: 'Shows este Mês', icon: '🎤', route: '/calendar', hint: 'Ver agenda', format: (v) => `${v} show${v !== 1 ? 's' : ''}` },
+  { key: 'diarias_count', label: 'Diárias no Mês', icon: '📅', route: '/goals', hint: 'Ver metas', format: (v) => `${v} dia${v !== 1 ? 's' : ''}` },
 ];
 
 export default function QuickStats({ stats, isLoading, primaryHex = '#A64AFF', accentHex = '#FFB700' }) {

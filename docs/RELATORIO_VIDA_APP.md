@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-10 (sessão 15)  
+**Última atualização:** 2026-06-10 (sessão 20)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último commit:** `8e78e07` — toast.error no ProfileSimple + payment_due_date no EventDetailModal  
 **Último deploy:** 2026-06-10 — push `8e78e07` → Vercel  
@@ -69,6 +69,52 @@ Ordem oficial após fix de scroll (2026-06-05):
 ---
 
 ## Changelog
+
+### 2026-06-10 (sessão 20) — Diferenciação Empresa / Pessoa nos clientes
+
+**`022_clients_type.sql`:** coluna `client_type` (`'empresa'|'pessoa'`, default `'empresa'`) na tabela `clients` — aplicada no Studio ✅.  
+**`ClientForm.jsx`:** toggle segmentado no topo do formulário; quando `pessoa` — oculta CNPJ/Razão Social e CompanySearchInput, labels se adaptam, `client_type` salvo no payload.  
+**`ClientCombobox.jsx`:** ícone `Building2`/`User` ao lado de cada cliente na lista dropdown do EventForm.  
+**`Clients.jsx`:** avatar com fallback `User` roxo + badge circular para pessoas; filtros "Empresas" e "Pessoas" adicionados.  
+**`ClientDetailModal.jsx`:** badge "Pessoa"/"Empresa" no header; label "Contato" → "Empresa:" quando pessoa.  
+**Build:** Vite ✅ (1m 29s)
+
+### 2026-06-10 (sessão 19) — Fix categoria EventDetailModal + AlertsPanel cor CTA
+
+**`EventDetailModal.jsx`:** seção de despesas inline exibia categoria bruta (`alimentacao`) — adicionado `EXPENSE_CATEGORY_LABELS` map igual ao de `ExpenseListItem`.  
+**`AlertsPanel.jsx`:** botão CTA do alerta GPS check-in (cyan) herdava estilo amber — adicionada branch para `text-cyan-400`.  
+**Auditoria**: `Calendar.jsx`, `DayQuickActions.jsx`, `AlertsPanel.jsx`, `EventDetailModal.jsx`, `ClientInsightsModal.jsx`, `Clients.jsx` — sem novos bugs.  
+**Build:** Vite ✅ (26s)
+
+### 2026-06-10 (sessão 18) — LiveClockBar em Reports/Goals/Expenses + fixes categoria + E2E
+
+**`Reports.jsx`:** `LiveClockBar` adicionado na área de actions (ao lado do ExportManager); mojibake `â†'` → `→` corrigido.  
+**`Goals.jsx`:** `LiveClockBar` adicionado no header (flex right).  
+**`Expenses.jsx`:** `LiveClockBar` dual-visibility (mobile: linha do título; desktop: linha de botões); título encurtado para "Despesas".  
+**`ExpenseListItem.jsx`:** badge de categoria exibia valor bruto (ex: `alimentacao`) — adicionado `CATEGORY_LABELS` map; campo `description` não era exibido na lista — corrigido para mostrar `description · notes` quando ambos preenchidos.  
+**`e2e/regression/modal-overflow.spec.js`:** `strict mode violation` em `/E2E Show Demo/i` (2 elementos) — corrigido para `exact: true`.  
+**Build:** Vite ✅ | **Testes:** `modal-overflow.spec.js` 4/4 ✅ (era 1 falhando)
+
+### 2026-06-10 (sessão 17) — Migration is_reimbursable + fix description/notes em Expenses
+
+**`supabase/migrations/021_expenses_reimbursable.sql`:** adiciona `is_reimbursable boolean DEFAULT false`, `reimbursed boolean DEFAULT false` e `description text` à tabela `expenses` — colunas usadas no UI (ExpenseForm, ExpenseListItem, Expenses.jsx, whatsapp.js) mas ausentes no banco.  
+**`useExpenses.js` fix:** `mapPayloadToDb` salvava `notes` como fallback de `description` via `??` quebrado (strings vazias não disparam nullish coalescing); agora ambos salvos separadamente. `mapRowFromDb` também expõe `description` corretamente ao carregar despesa existente.  
+**Build:** Vite ✅ (37.88s)  
+**Migration aplicada:** 2026-06-10 — colunas confirmadas via `information_schema` ✅
+
+### 2026-06-10 (sessão 16b) — Purge UI Shadcn + hooks órfãos + sistema toast legado
+
+**Remoção adicional (~26 arquivos):** 16 componentes Shadcn nunca usados (`accordion`, `carousel`, `chart`, `drawer`, `form`, etc.), 5 UI customizados (`toggle`, `button-group`, `input-group`, `streak-badge`, `spinner`), sistema toast legado (`toast`, `toaster`, `use-toast`, `sidebar`), hooks `usePWA` + `use-mobile`, stub `generateNotifications`.  
+**App.jsx:** `<Toaster>` legado removido — apenas Sonner ativo.  
+**AppLayout.jsx:** import e chamada de `generateUserNotifications` removidos (stub vazio).  
+**Reports.jsx:** encoding mojibake corrigido no comentário.  
+**Build:** Vite ✅ (1m 3s)
+
+### 2026-06-10 (sessão 16) — Purge de 42 componentes órfãos + bugfixes revenue/horários
+
+**Remoção de código morto (42 arquivos):** Calendar (28), Dashboard (8), Reports (2), Auth/Notifications (2), Events/AI (3), Lib (1). Mais de 5.000 linhas removidas. Build continua ✅.  
+**`whatsapp.js` `buildEventReport` — bug multi-dia:** fallback de cachê agora usa `getEventCacheAmount(event)` (considera `daily_cache_value × dias`) em vez de apenas `daily_cache_value` — eventos multi-dia tinham valor subestimado na mensagem WhatsApp.  
+**`EventForm.jsx` — bug horários ignorados:** criar novo evento zerava `start_time` e `end_time` mesmo quando preenchidos — removida condicional `isNew ? null : ...`; horários agora salvos para todos os eventos.  
 
 ### 2026-06-10 (sessão 15) — Migração slate completa + busca Clients + fix ReportsChart ClientDetail
 

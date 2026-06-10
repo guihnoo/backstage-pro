@@ -49,6 +49,16 @@ test('clients nao fica preso em Carregando', async ({ page }) => {
   });
 });
 
+test('ai-mentor nao fica preso em Carregando', async ({ page }) => {
+  await expectRouteShell(page, {
+    path: '/ai-mentor',
+    shell: (p) =>
+      p.getByRole('heading', { name: /ai mentor/i }).or(
+        p.getByText(/olá,/i),
+      ),
+  });
+});
+
 test('reports nao fica preso em Carregando', async ({ page }) => {
   await expectRouteShell(page, {
     path: '/reports',

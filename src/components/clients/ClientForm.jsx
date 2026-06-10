@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Building2, DollarSign, X, AlertCircle, Phone, Mail, Globe, FileText, Camera, ImagePlus } from 'lucide-react';
+import { Loader2, Building2, User, DollarSign, X, AlertCircle, Phone, Mail, Globe, FileText, Camera, ImagePlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/authContext';
 import { useClients } from '@/lib/useClients';
@@ -33,6 +33,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
   const logoInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
+    client_type: 'empresa',
     name: '',
     razao_social: '',
     contact_person: '',
@@ -50,6 +51,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
   useEffect(() => {
     if (client) {
       setFormData({
+        client_type: client.client_type || 'empresa',
         name: client.name || '',
         razao_social: '',
         contact_person: client.contact_person || '',
@@ -65,6 +67,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
       });
     } else {
       setFormData({
+        client_type: 'empresa',
         name: '',
         razao_social: '',
         contact_person: '',
@@ -238,6 +241,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
       }
 
       const clientData = {
+        client_type: formData.client_type || 'empresa',
         name: formData.name.trim(),
         contact_person: formData.contact_person || null,
         email: formData.email || null,
@@ -303,7 +307,10 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
         <DialogHeader className="p-4 sm:p-6 border-b border-slate-800 flex-shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
-              <Building2 className="w-5 h-5 text-cyan-400 flex-shrink-0" />
+              {formData.client_type === 'pessoa'
+                ? <User className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                : <Building2 className="w-5 h-5 text-cyan-400 flex-shrink-0" />
+              }
               {client ? 'Editar Cliente' : 'Novo Cliente'}
             </DialogTitle>
             <Button variant="ghost" size="icon" onClick={onCancel} className="h-10 w-10 flex-shrink-0">
@@ -318,8 +325,36 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
         <ScrollArea fill>
           <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6 pb-safe">
 
-            {/* Busca inteligente de empresa */}
-            {!client && (
+            {/* Toggle Empresa / Pessoa */}
+            <div className="flex rounded-xl overflow-hidden border border-slate-700">
+              <button
+                type="button"
+                onClick={() => handleChange('client_type', 'empresa')}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors ${
+                  formData.client_type === 'empresa'
+                    ? 'bg-cyan-600 text-white'
+                    : 'bg-slate-800/60 text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Building2 className="w-4 h-4" />
+                Empresa
+              </button>
+              <button
+                type="button"
+                onClick={() => handleChange('client_type', 'pessoa')}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors ${
+                  formData.client_type === 'pessoa'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-slate-800/60 text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <User className="w-4 h-4" />
+                Pessoa
+              </button>
+            </div>
+
+            {/* Busca inteligente de empresa (só para empresas) */}
+            {!client && formData.client_type === 'empresa' && (
               <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/60 space-y-2">
                 <CompanySearchInput
                   onSelect={handleCompanySelect}
@@ -336,13 +371,16 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
             {/* Informações Básicas */}
             <div className="space-y-4">
               <h3 className="text-base sm:text-lg font-medium text-white flex items-center gap-2">
-                <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 flex-shrink-0" />
+                {formData.client_type === 'pessoa'
+                  ? <User className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400 flex-shrink-0" />
+                  : <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 flex-shrink-0" />
+                }
                 Informações Básicas
               </h3>
 
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-slate-300 text-sm font-medium">
-                  Nome do Cliente / Nome Fantasia *
+                  {formData.client_type === 'pessoa' ? 'Nome completo *' : 'Nome do Cliente / Nome Fantasia *'}
                 </Label>
                 <Input
                   id="name"
@@ -352,7 +390,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                   className={`bg-slate-800 border-slate-700 text-white h-12 text-base touch-manipulation ${
                     errors.name && touched.name ? 'border-red-500' : ''
                   }`}
-                  placeholder="Ex: Amarrok Produções"
+                  placeholder={formData.client_type === 'pessoa' ? 'Ex: João Silva' : 'Ex: Amarrok Produções'}
                   maxLength={100}
                   required
                 />
@@ -371,20 +409,22 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                 </AnimatePresence>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="razao_social" className="text-slate-300 text-sm font-medium">
-                  Razão Social
-                  <span className="ml-1.5 text-[10px] text-slate-600 font-normal normal-case">Nome jurídico na NF</span>
-                </Label>
-                <Input
-                  id="razao_social"
-                  value={formData.razao_social}
-                  onChange={(e) => handleChange('razao_social', e.target.value)}
-                  className="bg-slate-800 border-slate-700 text-white h-12 text-base touch-manipulation"
-                  placeholder="Ex: AMARROK PRODUCOES E SERVICOS LTDA"
-                  maxLength={150}
-                />
-              </div>
+              {formData.client_type === 'empresa' && (
+                <div className="space-y-2">
+                  <Label htmlFor="razao_social" className="text-slate-300 text-sm font-medium">
+                    Razão Social
+                    <span className="ml-1.5 text-[10px] text-slate-600 font-normal normal-case">Nome jurídico na NF</span>
+                  </Label>
+                  <Input
+                    id="razao_social"
+                    value={formData.razao_social}
+                    onChange={(e) => handleChange('razao_social', e.target.value)}
+                    className="bg-slate-800 border-slate-700 text-white h-12 text-base touch-manipulation"
+                    placeholder="Ex: AMARROK PRODUCOES E SERVICOS LTDA"
+                    maxLength={150}
+                  />
+                </div>
+              )}
 
               <ColorGridPicker
                 value={formData.brand_color}
@@ -393,14 +433,14 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
 
               <div className="space-y-2">
                 <Label htmlFor="contact_person" className="text-slate-300 text-sm font-medium">
-                  Pessoa de Contato
+                  {formData.client_type === 'pessoa' ? 'Empresa / Produtora' : 'Pessoa de Contato'}
                 </Label>
                 <Input
                   id="contact_person"
                   value={formData.contact_person}
                   onChange={(e) => handleChange('contact_person', e.target.value)}
                   className="bg-slate-800 border-slate-700 text-white h-12 text-base touch-manipulation"
-                  placeholder="Ex: João Silva"
+                  placeholder={formData.client_type === 'pessoa' ? 'Ex: Amarrok Produções' : 'Ex: João Silva'}
                 />
               </div>
 

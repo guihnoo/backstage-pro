@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Camera, Upload, Loader2 } from "lucide-react";
+import { Camera, Upload, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { UploadFile } from "@/api/integrations";
+import { analyzeReceipt } from "@/lib/analyzeReceiptApi";
 
 const CATEGORY_OPTIONS = [
   { value: "transporte", label: "Transporte" },
@@ -27,21 +28,44 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
   const [data, setData] = useState({ title: "", amount: "", date: todayIso(), category: "outros", notes: "" });
   const [fileUrl, setFileUrl] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
 
   const uploadReceipt = async (selectedFile) => {
     setUploading(true);
+    let uploadedUrl = null;
     try {
       const { file_url } = await UploadFile({ file: selectedFile, folder: "receipts" });
+      uploadedUrl = file_url;
       setFileUrl(file_url);
-      toast.success("Recibo enviado!", { description: "Preencha os dados e confirme." });
-      if (!data.date) {
-        setData((prev) => ({ ...prev, date: todayIso() }));
-      }
+      if (!data.date) setData((prev) => ({ ...prev, date: todayIso() }));
     } catch (error) {
       console.error("Upload recibo:", error);
       toast.error("Erro ao enviar recibo", { description: error.message || "Tente novamente." });
-    } finally {
       setUploading(false);
+      return;
+    }
+    setUploading(false);
+
+    // OCR automático via Gemini Vision
+    if (uploadedUrl) {
+      setAnalyzing(true);
+      try {
+        const extracted = await analyzeReceipt(uploadedUrl);
+        setData((prev) => ({
+          title: extracted.title || prev.title,
+          amount: extracted.amount > 0 ? String(extracted.amount) : prev.amount,
+          date: extracted.date || prev.date || todayIso(),
+          category: extracted.category || prev.category,
+          notes: extracted.notes || prev.notes,
+        }));
+        toast.success("Recibo lido pela IA!", { description: "Verifique os dados e confirme." });
+      } catch (err) {
+        toast.info("Recibo salvo. Preencha os dados manualmente.", {
+          description: err.message?.includes('configurado') ? 'OCR não configurado.' : 'IA indisponível no momento.',
+        });
+      } finally {
+        setAnalyzing(false);
+      }
     }
   };
 
@@ -71,7 +95,7 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
         <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 border-b border-slate-800 flex-shrink-0">
           <DialogTitle>Digitalizar Recibo</DialogTitle>
           <DialogDescription>
-            Envie a foto do recibo e preencha os dados. A leitura automática por IA chega em breve.
+            Tire uma foto ou envie o recibo — a IA extrai os dados automaticamente.
           </DialogDescription>
         </DialogHeader>
 
@@ -84,24 +108,26 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
                   accept="image/*"
                   capture="environment"
                   className="hidden"
-                  disabled={uploading}
+                  disabled={uploading || analyzing}
                   onChange={handleFileChange}
                 />
                 <Button
                   type="button"
                   variant="outline"
                   className="w-full bg-slate-800 border-slate-700 pointer-events-none h-12"
-                  disabled={uploading}
+                  disabled={uploading || analyzing}
                 >
                   {uploading ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : analyzing ? (
+                    <Sparkles className="w-4 h-4 mr-2 animate-pulse text-amber-400" />
                   ) : (
                     <Camera className="w-4 h-4 mr-2" />
                   )}
-                  {uploading ? "Enviando..." : "Tirar Foto / Upload"}
+                  {uploading ? "Enviando..." : analyzing ? "Lendo com IA..." : "Tirar Foto / Upload"}
                 </Button>
               </label>
-              {fileUrl && (
+              {fileUrl && !analyzing && (
                 <Button variant="outline" className="w-40 border-green-500/50 text-green-400" disabled>
                   <Upload className="w-4 h-4 mr-2" />
                   Salvo
@@ -174,7 +200,7 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
           <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 bg-slate-800 border-slate-700 h-11">
             Cancelar
           </Button>
-          <Button onClick={confirm} disabled={!data.title || !data.amount || !data.date} className="flex-1 h-11">
+          <Button onClick={confirm} disabled={!data.title || !data.amount || !data.date || analyzing} className="flex-1 h-11">
             Usar dados
           </Button>
         </div>

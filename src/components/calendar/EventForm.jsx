@@ -207,8 +207,8 @@ export default function EventForm({
         title: eventTitle,
         start_date: normalizeDateString(formData.start_date),
         end_date: formData.end_date ? normalizeDateString(formData.end_date) : normalizeDateString(formData.start_date),
-        start_time: isNew ? null : (formData.start_time || null),
-        end_time: isNew ? null : (formData.end_time || null),
+        start_time: formData.start_time || null,
+        end_time: formData.end_time || null,
         payment_due_date: formData.payment_due_date ? normalizeDateString(formData.payment_due_date) : null,
         payment_status: formData.payment_status || 'pending',
         status: 'pending',
@@ -252,7 +252,7 @@ export default function EventForm({
       onSelectTemplate={handleSelectTemplate}
     />
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl bg-slate-900 border-slate-700 text-white p-0 flex flex-col overflow-hidden max-h-[90dvh]">
+      <DialogContent className="sm:max-w-2xl bg-slate-900 border-slate-700 text-white p-0 flex flex-col overflow-hidden h-[95dvh] max-h-[95dvh]">
         <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 sm:pt-5 border-b border-slate-700 flex-shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-white">{event?.id ? 'Editar Evento' : 'Novo Evento'}</DialogTitle>

@@ -53,6 +53,16 @@ import {
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+const EXPENSE_CATEGORY_LABELS = {
+  transporte: 'Transporte',
+  alimentacao: 'Alimentação',
+  equipamento: 'Equipamento',
+  hospedagem: 'Hospedagem',
+  combustivel: 'Combustível',
+  manutencao: 'Manutenção',
+  outros: 'Outros',
+};
+
 export default function EventDetailModal({
   event,
   client,
@@ -525,7 +535,7 @@ export default function EventDetailModal({
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-white truncate">{exp.title || exp.category}</p>
                             <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="text-[10px] text-slate-500 capitalize">{exp.category}</span>
+                              <span className="text-[10px] text-slate-500">{EXPENSE_CATEGORY_LABELS[exp.category] || exp.category}</span>
                               {exp.date && (
                                 <span className="text-[10px] text-slate-600">
                                   · {format(new Date(exp.date + 'T12:00:00'), 'dd/MM', { locale: ptBR })}

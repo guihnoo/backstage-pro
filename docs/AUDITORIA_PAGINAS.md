@@ -38,7 +38,7 @@
 | Página inteira (`Home.jsx`) | [x] | 🟢 | LOCKED — `main[data-app-scroll]` ✅ |
 | Card Próximo Show / Modo Palco | [x] | 🟢 | LOCKED ✅ |
 | `QuickStats` inline | [x] | 🟢 | sem modal próprio |
-| `StatDetailModal` | [x] | 🟡 | **Órfão** — definido mas não importado em nenhuma rota ativa |
+| `StatDetailModal` | [x] | 🟢 | Removido — arquivo não existia no src; referência limpa ✅ |
 | `FloatingActions` FAB | [x] | 🟢 | `z-40`, `bottom-[88px]` ✅ |
 | `NotificationCenter` | [x] | 🟡 | DropdownMenu — sem `useAppScrollLock`; aceitável para dropdown |
 | `ProximosEventos` | [x] | 🟢 | LOCKED ✅ |
@@ -53,7 +53,7 @@
 |------|--------|--------|-------|
 | Página (`Calendar.jsx`) | [x] | 🟢 | `NeonPageShell pb-24` ✅ |
 | `EventForm` | [x] | 🟢 | `ScrollArea fill` ✅ |
-| `EventDetailModal` | [x] | 🟢 | `ScrollArea fill` + `flex-shrink-0` header/footer ✅ |
+| `EventDetailModal` | [x] | 🟢 | `ScrollArea fill` + `flex-shrink-0` header/footer ✅; categoria despesa inline traduzida sessão 19 |
 | `DailyWorkModal` (LOCKED) | [x] | 🟢 | `bp-modal-scroll` ✅ |
 | `DateInfoModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
 | `RecurringEventActionModal` | [x] | 🟢 | `bp-modal-scroll` ✅ |
@@ -61,7 +61,7 @@
 | `DayBottomSheet` | [x] | 🟢 | `useAppScrollLock` + `bp-modal-scroll` ✅ |
 | `EventActionSheet` (mobile) | [x] | 🟢 | `useAppScrollLock` + `bp-modal-scroll` ✅ |
 | `EventHoursSheet` | [x] | 🟢 | `useAppScrollLock` + `bp-modal-scroll` ✅ |
-| `AlertsPanel` | [x] | 🟢 | inline ✅ |
+| `AlertsPanel` | [x] | 🟢 | inline ✅; cor CTA cyan corrigida sessão 19 |
 | Multi-eventos (inline) | [x] | 🟢 | `max-h-80 overflow-y-auto` + `useAppScrollLock` ✅ |
 
 **Testes:** calendar-navigation ✅ · event-form auth ✅
@@ -101,7 +101,7 @@
 |------|--------|--------|-------|
 | Página | [x] | 🟢 | `NeonPageShell min-h-full pb-24` ✅; MonthGroup animação OK |
 | `ExpenseForm` (LOCKED) | [x] | 🟢 | `ScrollArea fill` ✅ |
-| `ReceiptAnalyzer` | [x] | 🟡 | OCR "em breve"; formulário manual OK |
+| `ReceiptAnalyzer` | [x] | 🟢 | OCR Gemini Vision implementado — Edge Function `analyze-receipt` + auto-preenchimento ✅ |
 
 **Testes:** expense-form auth ✅ · app-routes-navigation ✅
 
@@ -111,13 +111,13 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página (`reports.jsx`) | [x] | 🟢 | `NeonPageShell pb-24` ✅ |
+| Página (`reports.jsx`) | [x] | 🟢 | `NeonPageShell pb-24` ✅; `LiveClockBar` adicionado sessão 18 |
 | `EventDetailModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
 | `DrilldownModal` | [x] | 🟢 | `bp-modal-scroll` ✅ |
 | `KPIDetailModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
 | `PaymentConfirmModal` | [x] | 🟢 | `bp-modal-scroll` ✅ |
 | `EventListModal` | [x] | 🟢 | `ScrollArea fill` + `flex-shrink-0` header ✅ |
-| `DashboardCustomizer` | [x] | 🟢 | loading state pequeno + main `bp-modal-scroll` ✅ |
+| `DashboardCustomizer` | [x] | 🟢 | Removido no purge sessão 16 — não existe mais no src |
 | `BrazilVisitedMap` | [x] | 🟢 | Lazy subcomponent OK |
 | `ExportManager` PDF/CSV | [x] | 🟢 | Implementado |
 
@@ -163,7 +163,7 @@
 | `ConfirmDialog` | [x] | 🟢 | `AlertDialogContent` com `overflow-y-auto overscroll-contain` ✅ |
 | `FeedbackModal` | [x] | 🟢 | `bp-modal-scroll` ✅ |
 | `NotificationCenter` | [x] | 🟡 | DropdownMenu, scroll lock não necessário — aceitável |
-| `StatDetailModal` | [x] | 🟡 | **Órfão** — `QuickStats` navega via `hardNavigate`, não usa modal; seguro remover |
+| `StatDetailModal` | [x] | 🟢 | Removido — arquivo inexistente no src (purge anterior); referência limpa ✅ |
 
 ---
 

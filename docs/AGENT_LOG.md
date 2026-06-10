@@ -6,6 +6,60 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-10
 
+### CLIENT-TYPE-S20 — Diferenciação Empresa / Pessoa nos clientes ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Migration `022_clients_type.sql`**: coluna `client_type text DEFAULT 'empresa' CHECK (IN 'empresa','pessoa')` — aplicada no Studio ✅; clientes existentes herdam `'empresa'`
+- **`ClientForm.jsx`**: toggle segmentado Empresa/Pessoa no topo; quando `pessoa` — oculta `razao_social` e `CompanySearchInput`, placeholder e label do `name` muda para "Nome completo", `contact_person` vira "Empresa / Produtora"; ícone do header muda para `User` roxo; `client_type` incluído no payload de save
+- **`ClientCombobox.jsx`**: lista exibe `Building2` (empresa) ou `User` roxo (pessoa) ao lado do color dot; selecionado também exibe `User` se pessoa
+- **`Clients.jsx`**: avatar fallback `User` roxo para pessoas + badge circular roxo; filtros "Empresas" e "Pessoas" (toggle — clica de novo para voltar a "all"); `contact_person` de pessoa exibe "🏢 " como prefixo
+- **`ClientDetailModal.jsx`**: badge "Pessoa"/"Empresa" ao lado do nome + avatar fallback diferenciado; label "Contato" vira "Empresa:" quando pessoa
+- **Build**: Vite ✅ (1m 29s)
+- **Arquivos**: `supabase/migrations/022_clients_type.sql`, `src/components/clients/ClientForm.jsx`, `src/components/clients/ClientCombobox.jsx`, `src/pages/Clients.jsx`, `src/components/clients/ClientDetailModal.jsx`
+
+### PAGE-AUDIT-S19 — Fix categoria EventDetailModal + AlertsPanel cor CTA + auditoria Clientes ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Fix `EventDetailModal.jsx`** — seção de despesas do evento exibia categoria bruta (`alimentacao`) com CSS capitalize; adicionado `EXPENSE_CATEGORY_LABELS` map com mesmos valores de `ExpenseListItem`
+- **Fix `AlertsPanel.jsx`** — botão CTA do alerta GPS check-in (cor cyan) recebia estilo amber via else genérico; adicionada branch condicional para `text-cyan-400`
+- **Auditoria**: `Calendar.jsx`, `DayQuickActions.jsx`, `AlertsPanel.jsx`, `EventDetailModal.jsx`, `ClientInsightsModal.jsx`, `Clients.jsx` — todos sem bugs estruturais
+- **Build**: Vite ✅ (26s)
+- **Arquivos**: `src/components/calendar/EventDetailModal.jsx`, `src/components/calendar/AlertsPanel.jsx`
+
+### PAGE-AUDIT-S18 — LiveClockBar + fixes de categoria + teste E2E ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **LiveClockBar adicionado** — `Reports.jsx`: clock na área de actions (direita) + import + mojibake corrigido; `Goals.jsx`: clock na div flex right; `Expenses.jsx`: dual-visibility (mobile: dentro do título, desktop: na linha de botões) + título encurtado de "Gerenciador de Despesas" para "Despesas"
+- **Fix `ExpenseListItem.jsx`** — badge de categoria exibia valor bruto (ex: `alimentacao`) em vez de label pt-BR (`Alimentação`) — adicionado `CATEGORY_LABELS` map e usado no badge; campo `description` nunca exibido na lista — corrigido para mostrar `description || notes` ou ambos separados por ` · `
+- **Fix teste E2E `modal-overflow.spec.js`** — `getByRole('button', { name: /E2E Show Demo/i })` resolvia 2 elementos (lista "Hoje" + grid calendário) → `strict mode violation`; corrigido para `exact: true` — testa apenas o item da lista do dia corrente
+- **Builds**: Vite ✅ (×2 — 24s e 67s)
+- **Testes**: `modal-overflow.spec.js` 4/4 ✅ (era 1 falhando antes do fix)
+- **Arquivos**: `src/pages/Reports.jsx`, `src/pages/Goals.jsx`, `src/pages/Expenses.jsx`, `src/components/expenses/ExpenseListItem.jsx`, `e2e/regression/modal-overflow.spec.js`
+
+### EXPENSES-MIGRATION-APPLY — Migration 021 aplicada no Supabase Studio ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Ação**: SQL da migration 021 executado manualmente via SQL Editor do Supabase Studio
+- **Verificado**: `information_schema.columns` confirmou `is_reimbursable` (boolean NOT NULL default false), `reimbursed` (boolean NOT NULL default false), `description` (text nullable) na tabela `expenses`
+- **Status**: completo — pendência anterior encerrada
+
+### EXPENSES-MIGRATION — Migration is_reimbursable + fix description/notes ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Bug detectado**: colunas `is_reimbursable`, `reimbursed` e `description` usadas no UI/whatsapp mas ausentes na tabela `expenses` → Supabase retornaria erro 400 ao salvar
+- **Fix**: `supabase/migrations/021_expenses_reimbursable.sql` — 3 colunas via `ADD COLUMN IF NOT EXISTS`; CONSOLIDATED.sql atualizado
+- **Fix `useExpenses.js`**: `mapPayloadToDb` — `notes` e `description` salvos separadamente (bug com `??` em strings vazias); `mapRowFromDb` — expõe `description` ao carregar
+- **Arquivos**: `supabase/migrations/021_expenses_reimbursable.sql`, `supabase/migrations/CONSOLIDATED.sql`, `src/lib/useExpenses.js`
+- **Build**: Vite ✅ (37.88s)
+- **Pendente**: rodar migration no Supabase Studio
+
+### ORPHAN-PURGE-2 + BUGFIXES — Remoção 42 componentes órfãos + correções revenue e horários ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Removidos — Calendar (28 arquivos)**: `AgendaView`, `AlertsNotifications`, `CalendarGrid`, `DailyView`, `DateInfoModal`, `DayBottomSheet`, `DayCardGoogle`, `DayCellFrame`, `DayDetailPanel`, `DayQuickActionsMobile`, `EnhancedCalendar`, `EventCardLarge`, `EventDots`, `FilterChips`, `GestureNavigator`, `KeyboardShortcuts`, `Legend`, `MiniDay`, `MiniMonthGrid`, `MobileDayHeader`, `MobileNavigation`, `MonthlyStats`, `QuickActionButtons`, `RecurringEventActionModal`, `WeekTimeGrid`, `WeekdayBarGoogle`, `WeekdayStickyHeader`, `WeeklySummary`
+- **Removidos — Dashboard (8 arquivos)**: `DashboardSkeleton`, `EventStatusSummary`, `EventsInPeriod`, `MobileDashboard`, `PaymentAlerts` (dash), `PeriodSelector`, `PeriodSummary`, `StatCard`
+- **Removidos — Reports (2)**: `EventListModal`, `PaymentAlerts` (reports)
+- **Removidos — Auth/Notifications (2)**: `AudioWave`, `PushNotifications`
+- **Removidos — Events/AI (3)**: `EventLocationChip`, `ChatSuggestions`, `SourcesModal`
+- **Removidos — Lib (1)**: `featureUnavailable.js`
+- **Bug fix — `whatsapp.js` `buildEventReport`**: fallback de cachê agora usa `getEventCacheAmount(event)` (multi-dia correto) em vez de apenas `daily_cache_value` sem multiplicar pelos dias
+- **Bug fix — `EventForm.jsx` start_time/end_time**: ao criar novo evento, `start_time` e `end_time` sempre nulos mesmo quando user preencheu os campos — removida condicional `isNew ? null : ...`
+- **Build**: Vite ✅ (~57s)
+
 ### POLISH-MICRO — payment_due_date, labels pt-BR, busca description, toast erro perfil ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **EventDetailModal (calendar)**: exibe `payment_due_date` na seção financeira quando preenchido e não pago — data em âmbar + ícone de alerta
@@ -418,3 +472,18 @@ Registro cronológico de tarefas executadas por agentes.
 
 **Resultado:** zero violações de `rules-of-hooks`, `exhaustive-deps`, `no-empty`, `no-case-declarations` em arquivos não-LOCKED
 **Build:** ✅ 3737 módulos, sem erros
+
+---
+
+### ORPHAN-PURGE-3 + UI-CLEANUP — Purge UI Shadcn + hooks + geração de notif morta ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Diretórios vazios removidos**: `src/components/ai-elements/`, `src/lib/branding/`, `src/lib/closure/`, `src/components/ui/backstage/`
+- **Hooks órfãos removidos**: `src/hooks/usePWA.js`, `src/hooks/use-mobile.jsx`
+- **Lib stub removida**: `src/lib/generateNotifications.js` (função vazia, nunca chamada) + `AppLayout.jsx` limpo do import morto
+- **UI Shadcn não utilizados removidos (16)**: `accordion`, `aspect-ratio`, `breadcrumb`, `carousel`, `chart`, `collapsible`, `context-menu`, `drawer`, `form`, `hover-card`, `input-otp`, `menubar`, `navigation-menu`, `pagination`, `resizable`, `toggle-group`
+- **UI customizados não utilizados removidos (5)**: `toggle`, `button-group`, `input-group`, `streak-badge`, `spinner`
+- **Sistema toast legado removido (4)**: `toast.jsx`, `toaster.jsx`, `use-toast.jsx`, `sidebar.jsx` — Sonner é o único sistema de toast ativo
+- **App.jsx**: `<Toaster />` legado removido
+- **Reports.jsx**: corrigido encoding mojibake no comentário `MUDANÃ‡A CRÍTICA` → `MUDANÇA CRÍTICA`
+- **Total removido**: ~26 arquivos adicionais
+- **Build**: Vite ✅ (1m 3s)

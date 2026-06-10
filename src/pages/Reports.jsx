@@ -1,6 +1,10 @@
 ﻿import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
 import { hardNavigate } from '@/lib/hardNavigate';
-import { getEventCacheAmount } from '@/lib/eventFinance';
+import {
+  getEventCacheAmount,
+  isReceivableEvent,
+  calculateEventReceivableAmount,
+} from '@/lib/eventFinance';
 import { ExternalLink } from 'lucide-react';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
@@ -44,6 +48,7 @@ import { useAuth } from '@/lib/authContext';
 import { applyAuto12Hours } from '@/lib/applyAuto12Hours';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
+import LiveClockBar from '@/components/home/LiveClockBar';
 const BrazilVisitedMap = lazy(() => import('@/components/reports/BrazilVisitedMap'));
 
 const ReportsSkeleton = () => (
@@ -121,7 +126,7 @@ const StatCard = ({ title, value, subtitle, icon: Icon, color, trend, onClick, i
         </div>
         {isClickable && onClick && (
           <div className="mt-2 text-xs text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity">
-            Clique para ver detalhes â†’
+            Clique para ver detalhes →
           </div>
         )}
       </CardContent>
@@ -350,7 +355,7 @@ export default function ReportsPage() {
 
     // Processar dados do período atual
     const processForPeriod = (range) => {
-      // **MUDANÃ‡A CRÍTICA**: Faturamento baseado em paid_date, não em start_date
+      // **MUDANÇA CRÍTICA**: Faturamento baseado em paid_date, não em start_date
       const paidEventsInPeriod = eventsWithCorrectStatus.filter((e) =>
         e.payment_status === 'paid' &&
         e.paid_date &&
@@ -360,13 +365,19 @@ export default function ReportsPage() {
       // Eventos do período para outras métricas (baseado em start_date)
       const periodEvents = eventsWithCorrectStatus.filter((e) => e.start_date && isInRange(e.start_date, range));
       const periodWork = dailyWork.filter((w) => w.date && isInRange(w.date, range));
-      const periodExpenses = expenses.filter((e) => e.date && isInRange(e.date, range));
+      const periodExpenses = expenses.filter((e) => {
+        const expenseDate = e.expense_date || e.date;
+        return expenseDate && isInRange(expenseDate, range);
+      });
 
       const realizedRevenue = paidEventsInPeriod.reduce((sum, e) => sum + (e.paid_amount || calculateRealEventValue(e)), 0);
 
       const receivableRevenue = eventsWithCorrectStatus
-        .filter((e) => e.calculatedStatus === 'completed' && ['unpaid', 'pending', 'partial'].includes(e.payment_status))
-        .reduce((sum, e) => sum + calculateRealEventValue(e), 0);
+        .filter(isReceivableEvent)
+        .reduce((sum, e) => {
+          const eventDailyWork = dailyWork.filter((work) => work.event_id === e.id);
+          return sum + calculateEventReceivableAmount(e, eventDailyWork);
+        }, 0);
 
       const projectedRevenue = eventsWithCorrectStatus.
         filter((e) => e.calculatedStatus === 'scheduled').
@@ -442,7 +453,10 @@ export default function ReportsPage() {
       // Dados para componentes filhos
       chartInput: {
         realized: currentData.paidEvents.map((e) => ({ ...e, calculated_value: e.paid_amount || calculateRealEventValue(e) })),
-        receivable: eventsWithCorrectStatus.filter((e) => e.calculatedStatus === 'completed' && ['unpaid', 'pending', 'partial'].includes(e.payment_status)).map((e) => ({ ...e, calculated_value: calculateRealEventValue(e) })),
+        receivable: eventsWithCorrectStatus.filter(isReceivableEvent).map((e) => {
+          const eventDailyWork = dailyWork.filter((work) => work.event_id === e.id);
+          return { ...e, calculated_value: calculateEventReceivableAmount(e, eventDailyWork) };
+        }),
         projected: eventsWithCorrectStatus.filter((e) => e.calculatedStatus === 'scheduled').map((e) => ({ ...e, calculated_value: calculateRealEventValue(e) })),
         expenses: currentData.expenses
       }
@@ -469,16 +483,14 @@ export default function ReportsPage() {
         break;
       case 'a_receber': {
         setModalTitle('Valores a Receber');
-        const receivableEvents = data.events.filter((e) =>
-          getEventStatus(e) === 'completed' && ['unpaid', 'pending', 'partial'].includes(e.payment_status)
-        );
+        const receivableEvents = data.events.filter(isReceivableEvent);
         setModalData(receivableEvents.map((event) => {
           const client = data.clients.find((c) => c.id === event.client_id);
-          const workValue = data.dailyWork.filter((w) => w.event_id === event.id).reduce((sum, w) => sum + (w.daily_cache || 0), 0);
+          const eventDailyWork = data.dailyWork.filter((w) => w.event_id === event.id);
           return {
             title: event.title,
-            subtitle: `${client?.name || 'Cliente'} • Concluído em ${format(parseISO(event.end_date), 'dd/MM/yyyy')}`,
-            value: workValue || getEventCacheAmount(event),
+            subtitle: `${client?.name || 'Cliente'} • Concluído em ${format(parseISO(event.end_date || event.start_date), 'dd/MM/yyyy')}`,
+            value: calculateEventReceivableAmount(event, eventDailyWork),
             event_ref: event
           };
         }));
@@ -542,7 +554,7 @@ export default function ReportsPage() {
       if (chartView === 'receivable') {
         // A receber é baseado na data de finalização do evento
         const eventEndDate = event.end_date ? event.end_date.split('T')[0] : null;
-        return eventEndDate === chartFilter.date && getEventStatus(event) === 'completed' && ['unpaid', 'pending', 'partial'].includes(event.payment_status);
+        return eventEndDate === chartFilter.date && isReceivableEvent(event);
       }
       if (chartView === 'projected') {
         return eventStartDate === chartFilter.date && getEventStatus(event) === 'scheduled';
@@ -690,12 +702,13 @@ export default function ReportsPage() {
       <div className="p-4 md:p-6 space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
+          <div className="flex-1 min-w-0">
             <h1 className="text-3xl font-bold text-white font-display">Relatórios</h1>
             <p className="text-slate-400">Análise completa do seu desempenho financeiro e operacional.</p>
           </div>
 
           <div className="flex items-center gap-3">
+            <LiveClockBar primaryHex={config.primaryHex} />
             <ExportManager
               data={{
                 events: processedData.current.events,
@@ -736,7 +749,7 @@ export default function ReportsPage() {
           <StatCard
             title="A Receber"
             value={isVisible ? formatCurrency(processedData.current.receivableRevenue) : '•••••'}
-            subtitle={`${data.events?.filter((e) => getEventStatus(e) === 'completed' && ['unpaid', 'pending', 'partial'].includes(e.payment_status)).length || 0} pendentes`}
+            subtitle={`${data.events?.filter(isReceivableEvent).length || 0} pendentes`}
             icon={Clock}
             color="text-amber-400"
             trend={processedData.trends.receivable}

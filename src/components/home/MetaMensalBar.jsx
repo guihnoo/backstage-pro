@@ -27,8 +27,8 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
   const { isVisible } = useFinancialVisibility();
 
   const metaReceita = Number(profile?.monthly_goal_revenue) || 0;
-  const metaEventos = Number(profile?.monthly_goal_events) || 0;
-  const hasGoals = metaReceita > 0 || metaEventos > 0;
+  const metaDiarias = Number(profile?.monthly_goal_events) || 0;
+  const hasGoals = metaReceita > 0 || metaDiarias > 0;
 
   if (!hasGoals && !isLoading) {
     return (
@@ -44,7 +44,7 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
             <Target className="w-4 h-4" style={{ color: accentColor }} />
             <div>
               <span className="text-sm font-bold text-white block">Defina sua meta do mês</span>
-              <span className="text-xs text-gray-500">Faturamento e shows — acompanhe o progresso aqui</span>
+              <span className="text-xs text-gray-500">Faturamento e diárias — acompanhe o progresso aqui</span>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors" />
@@ -54,11 +54,11 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
   }
 
   const receitaAtual = stats?.faturamento_pago ?? 0;
-  const eventosAtual = stats?.eventos_count ?? 0;
+  const diariasAtual = stats?.diarias_count ?? 0;
   const pctReceita = metaReceita > 0 ? Math.min((receitaAtual / metaReceita) * 100, 100) : 0;
-  const pctEventos = metaEventos > 0 ? Math.min((eventosAtual / metaEventos) * 100, 100) : 0;
-  const goalReached = pctReceita >= 100 || pctEventos >= 100;
-  const bothGoalsReached = (metaReceita === 0 || pctReceita >= 100) && (metaEventos === 0 || pctEventos >= 100);
+  const pctDiarias = metaDiarias > 0 ? Math.min((diariasAtual / metaDiarias) * 100, 100) : 0;
+  const goalReached = pctReceita >= 100 || pctDiarias >= 100;
+  const bothGoalsReached = (metaReceita === 0 || pctReceita >= 100) && (metaDiarias === 0 || pctDiarias >= 100);
 
   return (
     <motion.button
@@ -113,16 +113,16 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
               <ProgressBar value={receitaAtual} max={metaReceita} color={pctReceita >= 100 ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' : accentColor} />
             </div>
           )}
-          {metaEventos > 0 && (
+          {metaDiarias > 0 && (
             <div>
               <div className="flex justify-between text-xs text-gray-400 mb-1.5">
-                <span>Shows</span>
+                <span>Diárias</span>
                 <span>
-                  {eventosAtual} / {metaEventos}
-                  <span className={`ml-1 ${pctEventos >= 100 ? 'text-emerald-400 font-bold' : 'text-gray-500'}`}>({Math.round(pctEventos)}%)</span>
+                  {diariasAtual} / {metaDiarias}
+                  <span className={`ml-1 ${pctDiarias >= 100 ? 'text-emerald-400 font-bold' : 'text-gray-500'}`}>({Math.round(pctDiarias)}%)</span>
                 </span>
               </div>
-              <ProgressBar value={eventosAtual} max={metaEventos} color={pctEventos >= 100 ? 'linear-gradient(90deg, #10b981, #34d399)' : '#00D9FF'} />
+              <ProgressBar value={diariasAtual} max={metaDiarias} color={pctDiarias >= 100 ? 'linear-gradient(90deg, #10b981, #34d399)' : '#00D9FF'} />
             </div>
           )}
         </div>

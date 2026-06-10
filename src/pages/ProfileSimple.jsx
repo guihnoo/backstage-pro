@@ -14,9 +14,12 @@ import { createBackup } from '@/api/functions';
 import { uploadUserFile } from '@/lib/uploadFile';
 import { toast } from 'sonner';
 import GoogleCalendarSync from '@/components/calendar/GoogleCalendarSync';
+import LiveClockBar from '@/components/home/LiveClockBar';
+import { useStats } from '@/lib/useBackstageData';
 
 export default function ProfileSimple() {
   const { user, profile, signOut, updateProfile } = useAuth();
+  const { stats } = useStats(user?.id);
   const { isVisible, toggleVisibility } = useFinancialVisibility();
   const categoryId = profile?.category || 'lighting';
 
@@ -119,7 +122,7 @@ export default function ProfileSimple() {
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden px-4 pt-6 pb-8 text-center"
+        className="relative overflow-hidden px-4 pt-6 pb-8"
         style={{ background: `linear-gradient(160deg, ${config.primaryHex}15, transparent)` }}
       >
         <motion.div
@@ -129,6 +132,15 @@ export default function ProfileSimple() {
           transition={{ duration: 3, repeat: Infinity }}
         />
 
+        <div className="max-w-2xl mx-auto flex items-start justify-between mb-4">
+          <div className="text-left">
+            <p className="text-xs text-slate-500 uppercase tracking-wider">Seu perfil</p>
+            <h1 className="text-xl font-black text-white">Configurações</h1>
+          </div>
+          <LiveClockBar primaryHex={config.primaryHex} />
+        </div>
+
+        <div className="text-center">
         {/* Avatar com upload */}
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
@@ -195,6 +207,7 @@ export default function ProfileSimple() {
           {config.label}
         </p>
         <p className="text-xs text-slate-500 mt-0.5">{user?.email}</p>
+        </div>
       </motion.div>
 
       <div className="px-4 max-w-2xl mx-auto space-y-4 w-full min-w-0">
@@ -325,10 +338,14 @@ export default function ProfileSimple() {
           {[
             { key: 'daily_rate', label: 'Valor da diária (R$)', icon: DollarSign, placeholder: '800', type: 'number' },
             { key: 'monthly_goal_revenue', label: 'Meta de receita mensal (R$)', icon: Target, placeholder: '5000', type: 'number' },
-            { key: 'monthly_goal_events', label: 'Meta de shows por mês', icon: Calendar, placeholder: '6', type: 'number' },
-          ].map(({ key, label, icon: Icon, placeholder, type }) => (
+            { key: 'monthly_goal_events', label: 'Meta de diárias por mês', icon: Calendar, placeholder: '12', type: 'number', hint: 'Dias únicos trabalhados no mês (independente de quantas empresas no mesmo dia)' },
+          ].map(({ key, label, icon: Icon, placeholder, type, hint }) => (
             <div key={key}>
               <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">{label}</label>
+              {hint && <p className="text-[10px] text-slate-600 mb-1.5">{hint}</p>}
+              {key === 'monthly_goal_events' && stats?.diarias_count != null && (
+                <p className="text-[10px] text-cyan-400/80 mb-1.5">Este mês: {stats.diarias_count} diária{stats.diarias_count !== 1 ? 's' : ''} registrada{stats.diarias_count !== 1 ? 's' : ''}</p>
+              )}
               <div className="relative">
                 <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
                 <input

@@ -18,10 +18,11 @@ function buildLocalAnswer(question: string, context: FinancialContext): string {
   const faturamento = Number(context.faturamento_mes) || 0;
   const aReceber = Number(context.a_receber) || 0;
   const eventosMes = Number(context.eventos_mes) || 0;
+  const diariasMes = Number(context.diarias_mes) || 0;
   const clientesAtivos = Number(context.clientes_ativos) || 0;
   const totalClientes = Number(context.total_clientes) || 0;
   const metaReceita = Number(context.meta_receita) || 0;
-  const metaEventos = Number(context.meta_eventos) || 0;
+  const metaDiarias = Number(context.meta_diarias) || Number(context.meta_eventos) || 0;
   const proximos = (context.proximos_eventos as Array<Record<string, unknown>>) || [];
   const categoria = String(context.categoria || 'técnico de eventos');
 
@@ -30,7 +31,8 @@ function buildLocalAnswer(question: string, context: FinancialContext): string {
     let text = `📊 **Resumo financeiro do mês**\n\n`;
     text += `• Faturamento recebido: ${formatBRL(faturamento)}\n`;
     text += `• A receber: ${formatBRL(aReceber)}\n`;
-    text += `• Eventos no mês: ${eventosMes}\n`;
+    text += `• Diárias no mês: ${diariasMes}\n`;
+    if (eventosMes > 0) text += `• Shows/eventos no mês: ${eventosMes}\n`;
     if (metaReceita > 0) {
       text += `• Meta de receita: ${formatBRL(metaReceita)} (${pctMeta}% atingido)\n`;
     }
@@ -60,12 +62,12 @@ function buildLocalAnswer(question: string, context: FinancialContext): string {
 
   if (/meta|objetivo/.test(q)) {
     const pctR = metaReceita > 0 ? Math.round((faturamento / metaReceita) * 100) : 0;
-    const pctE = metaEventos > 0 ? Math.round((eventosMes / metaEventos) * 100) : 0;
-    return `🎯 **Suas metas do mês**\n\n• Receita: ${formatBRL(faturamento)} de ${formatBRL(metaReceita)} (${pctR}%)\n• Eventos: ${eventosMes} de ${metaEventos} (${pctE}%)\n\nAjuste metas no Perfil se quiser recalibrar o mês.`;
+    const pctD = metaDiarias > 0 ? Math.round((diariasMes / metaDiarias) * 100) : 0;
+    return `🎯 **Suas metas do mês**\n\n• Receita: ${formatBRL(faturamento)} de ${formatBRL(metaReceita)} (${pctR}%)\n• Diárias: ${diariasMes} de ${metaDiarias} (${pctD}%)\n\nAjuste metas no Perfil se quiser recalibrar o mês.`;
   }
 
   if (/resumo|mês passado|mes passado/.test(q)) {
-    return `📋 **Panorama atual (${categoria})**\n\n• Faturamento: ${formatBRL(faturamento)}\n• Pendente: ${formatBRL(aReceber)}\n• Eventos: ${eventosMes}\n• Clientes ativos: ${clientesAtivos}\n\nPergunte sobre faturamento, agenda, clientes ou metas para detalhes.`;
+    return `📋 **Panorama atual (${categoria})**\n\n• Faturamento: ${formatBRL(faturamento)}\n• Pendente: ${formatBRL(aReceber)}\n• Diárias: ${diariasMes}\n• Clientes ativos: ${clientesAtivos}\n\nPergunte sobre faturamento, agenda, clientes ou metas para detalhes.`;
   }
 
   if (/preço|precific|cachê|cache|valor|diária|diaria/.test(q)) {

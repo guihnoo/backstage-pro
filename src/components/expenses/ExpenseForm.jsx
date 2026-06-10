@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
+import { Loader2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { normalizeDateString } from '@/components/utils/dateUtils';
 import { useExpenses } from '@/lib/useExpenses';
@@ -40,6 +40,7 @@ const defaultState = {
   description: '',
   notes: '',
   receipt_url: '',
+  is_reimbursable: false,
 };
 
 export default function ExpenseForm({
@@ -74,6 +75,7 @@ export default function ExpenseForm({
       description: seed.description || '',
       notes: seed.notes || '',
       receipt_url: seed.receipt_url || '',
+      is_reimbursable: seed.is_reimbursable ?? false,
     });
   }, [open, expense, prefillData, initialEvent]);
 
@@ -102,6 +104,7 @@ export default function ExpenseForm({
         description: formData.description || null,
         notes: formData.notes || null,
         receipt_url: formData.receipt_url || null,
+        is_reimbursable: formData.is_reimbursable,
       };
 
       if (expense?.id) {
@@ -197,6 +200,25 @@ export default function ExpenseForm({
                   </SelectContent>
                 </Select>
               </div>
+
+              <button
+                type="button"
+                onClick={() => setField('is_reimbursable', !formData.is_reimbursable)}
+                className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
+                  formData.is_reimbursable
+                    ? 'bg-amber-500/15 border-amber-500/40 text-amber-300'
+                    : 'bg-slate-800/60 border-slate-700 text-slate-400 hover:border-slate-600'
+                }`}
+              >
+                <div className={`w-9 h-5 rounded-full flex-shrink-0 relative transition-colors ${formData.is_reimbursable ? 'bg-amber-500' : 'bg-slate-600'}`}>
+                  <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${formData.is_reimbursable ? 'left-4' : 'left-0.5'}`} />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Reembolsável pelo contratante</p>
+                  <p className="text-xs opacity-70">Será incluído no relatório de cobrança via WhatsApp</p>
+                </div>
+                <RefreshCw className={`w-4 h-4 ml-auto flex-shrink-0 ${formData.is_reimbursable ? 'text-amber-400' : 'text-slate-600'}`} />
+              </button>
 
               <div className="space-y-2">
                 <Label>Descrição</Label>

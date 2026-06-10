@@ -209,6 +209,9 @@ create table if not exists expenses (
 alter table expenses add column if not exists expense_date date;
 alter table expenses add column if not exists payment_method text;
 alter table expenses add column if not exists receipt_url text;
+alter table expenses add column if not exists is_reimbursable boolean not null default false;
+alter table expenses add column if not exists reimbursed boolean not null default false;
+alter table expenses add column if not exists description text;
 
 -- Migrar date → expense_date (schema antigo)
 do $$ begin

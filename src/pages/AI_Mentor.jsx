@@ -15,6 +15,8 @@ import { ptBR } from 'date-fns/locale';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
+import LiveClockBar from '@/components/home/LiveClockBar';
+import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 
 const STORAGE_KEY = 'backstage_ai_conversations';
 const MAX_HISTORY = 20;
@@ -78,6 +80,9 @@ export default function AIMentorPage() {
   const today = new Date().toISOString().split('T')[0];
   const { events } = useEvents(user?.id, { from: today, limit: 10, ascending: true });
   const config = getCategoryConfig(profile?.category || 'lighting');
+  const { formatCurrency } = useFinancialVisibility();
+  const metaDiarias = Number(profile?.monthly_goal_events) || 0;
+  const metaReceita = Number(profile?.monthly_goal_revenue) || 0;
 
   const [conversations, setConversations] = useState(() => loadConversations());
   const [currentConv, setCurrentConv] = useState(null);
@@ -119,6 +124,7 @@ export default function AIMentorPage() {
     faturamento_mes: stats?.faturamento_pago ?? 0,
     a_receber: stats?.a_receber ?? 0,
     eventos_mes: stats?.eventos_count ?? 0,
+    diarias_mes: stats?.diarias_count ?? 0,
     clientes_ativos: stats?.clientes_ativos ?? 0,
     proximos_eventos: events?.slice(0, 5).map(e => ({
       titulo: e.title,
@@ -130,6 +136,7 @@ export default function AIMentorPage() {
     categoria: profile?.category_label || profile?.category || 'técnico de eventos',
     meta_receita: profile?.monthly_goal_revenue || 0,
     meta_eventos: profile?.monthly_goal_events || 0,
+    meta_diarias: profile?.monthly_goal_events || 0,
   }), [stats, events, clients, profile]);
 
   const persistConversations = useCallback((convs) => {
@@ -233,10 +240,51 @@ export default function AIMentorPage() {
   };
 
   const firstName = profile?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'Profissional';
+  const diariasMes = stats?.diarias_count ?? 0;
 
   return (
     <NeonPageShell primary={config.primaryHex} accent={config.accentHex}>
       <div className="flex flex-col h-[calc(100dvh-10rem)]">
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="px-4 pt-4 pb-3 border-b border-[#23262f] flex-shrink-0"
+          style={{ background: `linear-gradient(135deg, ${config.primaryHex}10, transparent)` }}
+        >
+          <div className="flex items-start justify-between max-w-2xl mx-auto">
+            <div>
+              <p className="text-xs text-slate-500 uppercase tracking-wider">Mentor financeiro</p>
+              <h1 className="text-lg font-black text-white flex items-center gap-2">
+                <Sparkles className="w-5 h-5" style={{ color: config.primaryHex }} />
+                AI Mentor
+              </h1>
+            </div>
+            <LiveClockBar primaryHex={config.primaryHex} />
+          </div>
+          {stats && (
+            <div className="flex flex-wrap gap-2 mt-3 max-w-2xl mx-auto">
+              {metaDiarias > 0 && (
+                <span
+                  className="text-[10px] font-mono px-2.5 py-1 rounded-full border"
+                  style={{ borderColor: `${config.accentHex}35`, color: config.accentHex, background: `${config.accentHex}10` }}
+                >
+                  📅 {diariasMes}/{metaDiarias} diárias
+                </span>
+              )}
+              {metaReceita > 0 && (
+                <span className="text-[10px] font-mono px-2.5 py-1 rounded-full border border-emerald-500/25 text-emerald-400 bg-emerald-500/10">
+                  💰 {formatCurrency(stats.faturamento_pago)} / {formatCurrency(metaReceita)}
+                </span>
+              )}
+              {(stats.a_receber ?? 0) > 0 && (
+                <span className="text-[10px] font-mono px-2.5 py-1 rounded-full border border-amber-500/25 text-amber-400 bg-amber-500/10">
+                  ⏳ {formatCurrency(stats.a_receber)} a receber
+                </span>
+              )}
+            </div>
+          )}
+        </motion.div>
+
         {/* Toolbar */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-[#23262f] flex-shrink-0">
           <p className="text-xs text-[#5a6070] font-mono truncate max-w-[180px]">
@@ -298,7 +346,7 @@ export default function AIMentorPage() {
               </div>
               <h2 className="text-xl font-bold text-white mb-1">Olá, {firstName}!</h2>
               <p className="text-[#7c8494] text-sm mb-6 max-w-xs">
-                Sou seu mentor financeiro. Pergunte sobre seus shows, clientes, receitas e metas.
+                Sou seu mentor financeiro. Pergunte sobre diárias, cachês, clientes, cobranças e metas do mês.
               </p>
               <SmartSuggestions userData={financialContext} onSuggestionClick={(s) => handleSend(s)} />
             </motion.div>

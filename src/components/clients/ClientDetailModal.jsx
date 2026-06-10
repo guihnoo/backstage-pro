@@ -11,7 +11,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import {
   X, Edit, Trash2, Phone, Mail, Calendar, TrendingUp,
-  Clock, DollarSign, User, MessageCircle,
+  Clock, DollarSign, User, Building2, MessageCircle,
   CheckCircle2, AlertCircle, ArrowRight, BarChart3,
   Activity, Target, Globe, ExternalLink
 } from 'lucide-react';
@@ -301,21 +301,49 @@ export default function ClientDetailModal({
             <DialogHeader className="pt-4 px-6 border-b border-slate-800 pb-4 flex-shrink-0">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-4 min-w-0">
-                  <Avatar className="h-16 w-16 border-2 border-slate-700">
-                    <AvatarImage src={client.logo_url} alt={client.name} />
-                    <AvatarFallback className="bg-purple-900/50 text-purple-300 text-2xl font-bold">
-                      {client.name?.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="relative flex-shrink-0">
+                    <Avatar className="h-16 w-16 border-2 border-slate-700">
+                      <AvatarImage src={client.logo_url} alt={client.name} />
+                      <AvatarFallback
+                        className={`text-2xl font-bold ${
+                          client.client_type === 'pessoa'
+                            ? 'bg-purple-900/50 text-purple-300'
+                            : 'bg-slate-800 text-slate-200'
+                        }`}
+                      >
+                        {client.client_type === 'pessoa'
+                          ? <User className="w-7 h-7" />
+                          : client.name?.charAt(0).toUpperCase()
+                        }
+                      </AvatarFallback>
+                    </Avatar>
+                    {client.client_type === 'pessoa' && (
+                      <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-purple-600 border-2 border-slate-900 flex items-center justify-center">
+                        <User className="w-3 h-3 text-white" />
+                      </span>
+                    )}
+                  </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <DialogTitle className="text-xl sm:text-2xl font-bold text-white font-display truncate">
                         {client.name}
                       </DialogTitle>
+                      {client.client_type === 'pessoa' ? (
+                        <span className="text-[11px] bg-purple-600/20 text-purple-300 border border-purple-500/30 rounded px-2 py-0.5 flex-shrink-0">
+                          Pessoa
+                        </span>
+                      ) : (
+                        <span className="text-[11px] bg-cyan-600/10 text-cyan-400 border border-cyan-500/20 rounded px-2 py-0.5 flex-shrink-0">
+                          Empresa
+                        </span>
+                      )}
                       {client.profile_complete === false && <ClientDraftBadge />}
                     </div>
                     {client.contact_person &&
-                      <p className="text-slate-400 truncate">Contato: {client.contact_person}</p>
+                      <p className="text-slate-400 truncate">
+                        {client.client_type === 'pessoa' ? 'Empresa: ' : 'Contato: '}
+                        {client.contact_person}
+                      </p>
                     }
                   </div>
                 </div>

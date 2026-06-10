@@ -20,7 +20,9 @@ import {
   Mail,
   Phone,
   MessageCircle,
-  MoreHorizontal
+  MoreHorizontal,
+  Building2,
+  User
 } from 'lucide-react';
 import {
   parseISO,
@@ -178,6 +180,10 @@ export default function ClientsPage() {
 
     if (filterActive === 'draft') {
       filtered = filtered.filter((client) => client.profile_complete === false);
+    } else if (filterActive === 'pessoa') {
+      filtered = filtered.filter((client) => client.client_type === 'pessoa');
+    } else if (filterActive === 'empresa') {
+      filtered = filtered.filter((client) => !client.client_type || client.client_type === 'empresa');
     } else if (filterActive !== 'all') {
       filtered = filtered.filter(client =>
         filterActive === 'active' ? client.stats.isActive : !client.stats.isActive
@@ -369,6 +375,26 @@ export default function ClientsPage() {
                   Rascunhos
                 </Button>
               </div>
+              <div className="flex gap-2">
+                <Button
+                  variant={filterActive === 'empresa' ? 'secondary' : 'outline'}
+                  size="sm"
+                  onClick={() => setFilterActive(filterActive === 'empresa' ? 'all' : 'empresa')}
+                  className="bg-slate-800 border-slate-700 h-9 gap-1.5"
+                >
+                  <Building2 className="w-3.5 h-3.5" />
+                  Empresas
+                </Button>
+                <Button
+                  variant={filterActive === 'pessoa' ? 'secondary' : 'outline'}
+                  size="sm"
+                  onClick={() => setFilterActive(filterActive === 'pessoa' ? 'all' : 'pessoa')}
+                  className="bg-slate-800 border-slate-700 h-9 gap-1.5"
+                >
+                  <User className="w-3.5 h-3.5" />
+                  Pessoas
+                </Button>
+              </div>
             </div>
             <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none">
               <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600 flex-shrink-0">Ordenar:</span>
@@ -411,19 +437,40 @@ export default function ClientsPage() {
                   onClick={() => handleClientClick(client)}
                 >
                   <CardHeader className="flex flex-row items-center gap-4">
-                    <Avatar className="h-12 w-12 border-2 border-slate-700">
-                      <AvatarImage src={client.logo_url} alt={client.name} />
-                      <AvatarFallback className="bg-slate-800 text-slate-200 font-bold">
-                        {getInitials(client.name)}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className="relative flex-shrink-0">
+                      <Avatar className="h-12 w-12 border-2 border-slate-700">
+                        <AvatarImage src={client.logo_url} alt={client.name} />
+                        <AvatarFallback
+                          className={`font-bold ${
+                            client.client_type === 'pessoa'
+                              ? 'bg-purple-900/50 text-purple-300'
+                              : 'bg-slate-800 text-slate-200'
+                          }`}
+                        >
+                          {client.client_type === 'pessoa'
+                            ? <User className="w-5 h-5" />
+                            : getInitials(client.name)
+                          }
+                        </AvatarFallback>
+                      </Avatar>
+                      {client.client_type === 'pessoa' && (
+                        <span
+                          className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-purple-600 border-2 border-slate-900 flex items-center justify-center"
+                          title="Pessoa física"
+                        >
+                          <User className="w-2.5 h-2.5 text-white" />
+                        </span>
+                      )}
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 min-w-0">
                         <h3 className="font-bold text-white truncate">{client.name}</h3>
                         {client.profile_complete === false && <ClientDraftBadge />}
                       </div>
                       {client.contact_person && (
-                        <p className="text-sm text-slate-400 truncate">{client.contact_person}</p>
+                        <p className="text-sm text-slate-400 truncate">
+                          {client.client_type === 'pessoa' ? '🏢 ' : ''}{client.contact_person}
+                        </p>
                       )}
                     </div>
                     <Button

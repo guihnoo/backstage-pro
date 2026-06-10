@@ -279,6 +279,17 @@ export const getWorkForDate = (dailyWork, targetDate) => {
   });
 };
 
+/** Conta dias únicos trabalhados (diárias) a partir de daily_work. */
+export function countUniqueWorkDays(workRecords = []) {
+  const days = new Set();
+  for (const w of workRecords) {
+    if (!w?.date) continue;
+    const d = normalizeDateString(w.date);
+    if (d) days.add(d);
+  }
+  return days.size;
+}
+
 /**
  * Ordena eventos por data
  */

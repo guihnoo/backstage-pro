@@ -305,13 +305,14 @@ export default function Onboarding() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">Meta de eventos/mês</label>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">Meta de diárias/mês</label>
+                    <p className="text-xs text-slate-500 mb-2">Dias únicos trabalhados no mês — várias empresas no mesmo dia contam como 1 diária.</p>
                     <Input
                       type="number"
                       min="1"
                       value={monthlyGoalEvents}
                       onChange={(e) => setMonthlyGoalEvents(parseInt(e.target.value))}
-                      placeholder="10"
+                      placeholder="12"
                       className="bg-slate-800/50 border-slate-700"
                     />
                   </div>

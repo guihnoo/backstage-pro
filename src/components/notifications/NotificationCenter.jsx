@@ -10,6 +10,7 @@ import {
 import { Bell, Clock, Calendar, DollarSign, Target, X, Zap, MessageCircle } from 'lucide-react';
 import EventDetailModal from '@/components/calendar/EventDetailModal';
 import { useAuth } from '@/lib/authContext';
+import { useStats } from '@/lib/useBackstageData';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
 import { getEventCacheAmount } from '@/lib/eventFinance';
@@ -41,7 +42,7 @@ function saveDismissed(set) {
 }
 
 // Gera lista estável de notificações a partir dos dados do usuário
-function buildNotifications({ events, clients, profile, today, formatCurrency }) {
+function buildNotifications({ events, clients, profile, diariasCount = 0, today, formatCurrency }) {
   const todayStr = today.toISOString().split('T')[0];
   const tomorrow = addDays(today, 1);
   const tomorrowStr = tomorrow.toISOString().split('T')[0];
@@ -108,24 +109,18 @@ function buildNotifications({ events, clients, profile, today, formatCurrency })
     }
   }
 
-  // Meta mensal de eventos quase batida
-  const metaEventos = Number(profile?.monthly_goal_events) || 10;
-  const thisMonthEvents = (events || []).filter(ev => {
-    const s = ev.start_date?.split('T')[0];
-    if (!s) return false;
-    const now = new Date();
-    return s.startsWith(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
-  });
-  const count = thisMonthEvents.length;
-  const remaining = metaEventos - count;
+  // Meta mensal de diárias quase batida
+  const metaDiarias = Number(profile?.monthly_goal_events) || 10;
+  const count = Number(diariasCount) || 0;
+  const remaining = metaDiarias - count;
 
-  if (remaining > 0 && remaining <= 2) {
+  if (metaDiarias > 0 && remaining > 0 && remaining <= 2) {
     notes.push({
-      id: `goal:events:${todayStr.slice(0, 7)}`,
+      id: `goal:diarias:${todayStr.slice(0, 7)}`,
       type: 'goal_reminder',
       priority: 'medium',
       title: `🎯 Meta quase lá!`,
-      message: `Falta${remaining === 1 ? '' : 'm'} só ${remaining} evento${remaining !== 1 ? 's' : ''} para bater sua meta do mês.`,
+      message: `Falta${remaining === 1 ? '' : 'm'} só ${remaining} diária${remaining !== 1 ? 's' : ''} para bater sua meta do mês.`,
       action_url: '/goals',
       created_date: todayStr,
     });
@@ -218,6 +213,7 @@ export default function NotificationCenter() {
   const { user, profile } = useAuth();
   const { events } = useEvents();
   const { clients } = useClients();
+  const { stats } = useStats(user?.id);
   const { formatCurrency } = useFinancialVisibility();
   const [dismissed, setDismissed] = useState(() => getDismissed());
   const [isOpen, setIsOpen] = useState(false);
@@ -244,8 +240,15 @@ export default function NotificationCenter() {
   }, [isOpen]);
 
   const allNotifications = useMemo(() =>
-    buildNotifications({ events, clients, profile, today: new Date(), formatCurrency }),
-    [events, clients, profile, formatCurrency]
+    buildNotifications({
+      events,
+      clients,
+      profile,
+      diariasCount: stats?.diarias_count ?? 0,
+      today: new Date(),
+      formatCurrency,
+    }),
+    [events, clients, profile, stats?.diarias_count, formatCurrency]
   );
 
   const visible = useMemo(() =>

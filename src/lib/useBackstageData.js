@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from './supabase';
 import { differenceInDays, parseISO } from 'date-fns';
-import { todayLocalISO } from '@/components/utils/dateUtils';
+import { todayLocalISO, countUniqueWorkDays } from '@/components/utils/dateUtils';
 import {
   calcEventDays,
   isCancelledEvent,
@@ -24,6 +24,7 @@ export function useStats(userId) {
     a_receber: 0,
     horas_trabalhadas: 0,
     eventos_count: 0,
+    diarias_count: 0,
     clientes_ativos: 0
   });
   const [loading, setLoading] = useState(true);
@@ -59,7 +60,7 @@ export function useStats(userId) {
             .in('payment_status', ['pending', 'unpaid', 'partial']),
           supabase
             .from('daily_work')
-            .select('total_hours')
+            .select('date, total_hours')
             .eq('user_id', userId)
             .gte('date', monthStart)
             .lte('date', monthEnd),
@@ -89,6 +90,7 @@ export function useStats(userId) {
 
         const a_receber = sumReceivableAmount(receivableEvents, workByEvent);
         const horas_trabalhadas = monthWork.reduce((sum, d) => sum + (d.total_hours || 0), 0);
+        const diarias_count = countUniqueWorkDays(monthWork);
 
         if (!cancelled) {
           setStats({
@@ -96,6 +98,7 @@ export function useStats(userId) {
             a_receber,
             horas_trabalhadas,
             eventos_count: monthEvents.length,
+            diarias_count,
             clientes_ativos: new Set(monthEvents.map(e => e.client_id).filter(Boolean)).size
           });
         }

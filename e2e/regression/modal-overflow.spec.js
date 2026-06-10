@@ -55,7 +55,7 @@ test.describe('overflow em modais (desktop)', () => {
 
   test('event detail dialog sem overflow horizontal', async ({ page }) => {
     await gotoAuthed(page, '/calendar');
-    await page.getByRole('button', { name: /E2E Show Demo/i }).click();
+    await page.getByRole('button', { name: 'E2E Show Demo', exact: true }).click();
     await expect(page.getByRole('dialog')).toBeVisible({ timeout: 10_000 });
 
     const audit = await auditOverlayOverflow(page);

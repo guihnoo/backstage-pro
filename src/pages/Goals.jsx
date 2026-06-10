@@ -10,6 +10,7 @@ import { Trophy, Zap, Star, TrendingUp, Award, Flame, Calendar, X, Pencil, Check
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import MeiDashboard from '@/components/goals/MeiDashboard';
+import LiveClockBar from '@/components/home/LiveClockBar';
 import EventDetailModal from '@/components/calendar/EventDetailModal';
 import { format, parseISO, differenceInCalendarDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -260,7 +261,8 @@ export default function Goals() {
   const levelInfo = getLevelInfo(totalEvents);
 
   // Metas mensais do perfil
-  const metaEventos = profile?.monthly_goal_events || 10;
+  const metaDiarias = profile?.monthly_goal_events || 10;
+  const diariasMes = stats.diarias_count ?? 0;
   const metaReceita = profile?.monthly_goal_revenue || 5000;
 
   // Progress para level
@@ -314,12 +316,12 @@ export default function Goals() {
     {
       icon: Calendar,
       title: 'Agenda Cheia',
-      description: 'Bata sua meta de eventos no mês',
-      unlocked: metaEventos > 0 && stats.eventos_count >= metaEventos,
+      description: 'Bata sua meta de diárias no mês',
+      unlocked: metaDiarias > 0 && diariasMes >= metaDiarias,
       color: config.primaryHex,
-      progress: metaEventos > 0 ? { value: Math.min(stats.eventos_count, metaEventos), max: metaEventos } : null,
+      progress: metaDiarias > 0 ? { value: Math.min(diariasMes, metaDiarias), max: metaDiarias } : null,
     },
-  ], [totalEvents, stats, metaEventos, metaReceita, config]);
+  ], [totalEvents, stats, diariasMes, metaDiarias, metaReceita, config]);
 
   // Detecta badges recém-desbloqueados
   useEffect(() => {
@@ -367,10 +369,13 @@ export default function Goals() {
           animate={{ opacity: [0.4, 0.8, 0.4] }}
           transition={{ duration: 3, repeat: Infinity }}
         />
-        <div className="max-w-2xl mx-auto">
-          <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Sua Evolução</p>
-          <h1 className="text-2xl font-black text-white">Metas & Conquistas</h1>
-          <p className="text-sm text-slate-400 mt-1">{config.emoji} {config.label}</p>
+        <div className="max-w-2xl mx-auto flex items-start justify-between">
+          <div>
+            <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Sua Evolução</p>
+            <h1 className="text-2xl font-black text-white">Metas & Conquistas</h1>
+            <p className="text-sm text-slate-400 mt-1">{config.emoji} {config.label}</p>
+          </div>
+          <LiveClockBar primaryHex={config.primaryHex} />
         </div>
       </motion.div>
 
@@ -474,7 +479,7 @@ export default function Goals() {
                     >
                       <div className="grid grid-cols-2 gap-3 p-4 rounded-xl border border-cyan-500/20 bg-cyan-500/5">
                         <div>
-                          <label className="block text-xs text-slate-400 mb-1.5">Shows/mês</label>
+                          <label className="block text-xs text-slate-400 mb-1.5">Diárias/mês</label>
                           <Input
                             type="number"
                             min="1"
@@ -534,12 +539,12 @@ export default function Goals() {
                       sublabel={formatCurrency(stats.faturamento_pago)}
                     />
                     <CircularProgress
-                      value={stats.eventos_count}
-                      max={metaEventos}
+                      value={diariasMes}
+                      max={metaDiarias}
                       size={110}
                       color={config.accentHex}
-                      label="Shows"
-                      sublabel={`${stats.eventos_count} / ${metaEventos}`}
+                      label="Diárias"
+                      sublabel={`${diariasMes} / ${metaDiarias}`}
                     />
                     <CircularProgress
                       value={stats.a_receber}
@@ -569,10 +574,10 @@ export default function Goals() {
                     icon: '⏳', color: '#FFB700', route: '/reports'
                   },
                   {
-                    label: 'Shows no mês',
-                    value: `${stats.eventos_count} shows`,
-                    sub: `meta: ${metaEventos} shows`,
-                    icon: '🎤', color: config.primaryHex, route: '/calendar'
+                    label: 'Diárias no mês',
+                    value: `${diariasMes} diária${diariasMes !== 1 ? 's' : ''}`,
+                    sub: `meta: ${metaDiarias} dias trabalhados`,
+                    icon: '📅', color: config.primaryHex, route: '/calendar'
                   },
                   {
                     label: 'Clientes Ativos',
@@ -603,16 +608,16 @@ export default function Goals() {
 
               {/* Mensagem de incentivo */}
               {(() => {
-                const metaBatida = stats.faturamento_pago >= metaReceita && stats.eventos_count >= metaEventos;
+                const metaBatida = stats.faturamento_pago >= metaReceita && diariasMes >= metaDiarias;
                 const metaReceita100 = stats.faturamento_pago >= metaReceita;
-                const metaEventos100 = stats.eventos_count >= metaEventos;
+                const metaDiarias100 = diariasMes >= metaDiarias;
                 if (metaBatida) {
                   return (
                     <div className="p-4 rounded-xl border text-center" style={{ background: '#39FF1408', borderColor: '#39FF1430' }}>
                       <p className="text-2xl mb-1">🏆</p>
                       <p className="text-sm font-bold text-white">Todas as metas batidas!</p>
                       <p className="text-xs text-slate-400 mt-1">
-                        {stats.eventos_count} shows · {formatCurrency(stats.faturamento_pago)} recebidos. Mês excepcional!
+                        {diariasMes} diária{diariasMes !== 1 ? 's' : ''} · {formatCurrency(stats.faturamento_pago)} recebidos. Mês excepcional!
                       </p>
                     </div>
                   );
@@ -623,23 +628,23 @@ export default function Goals() {
                     style={{ background: `${config.primaryHex}08`, borderColor: `${config.primaryHex}30` }}
                   >
                     <div className="flex items-start gap-3">
-                      <span className="text-xl mt-0.5">{metaReceita100 || metaEventos100 ? '🎉' : '💪'}</span>
+                      <span className="text-xl mt-0.5">{metaReceita100 || metaDiarias100 ? '🎉' : '💪'}</span>
                       <div>
-                        {!metaEventos100 && (
+                        {!metaDiarias100 && (
                           <p className="text-sm font-bold text-white">
-                            {metaEventos - stats.eventos_count} show{metaEventos - stats.eventos_count !== 1 ? 's' : ''} para bater a meta de eventos
+                            {metaDiarias - diariasMes} diária{metaDiarias - diariasMes !== 1 ? 's' : ''} para bater a meta do mês
                           </p>
                         )}
-                        {metaEventos100 && !metaReceita100 && (
-                          <p className="text-sm font-bold text-white">Meta de eventos batida! 🎤</p>
+                        {metaDiarias100 && !metaReceita100 && (
+                          <p className="text-sm font-bold text-white">Meta de diárias batida! 📅</p>
                         )}
                         {!metaReceita100 && (
                           <p className="text-xs text-slate-400 mt-0.5">
                             Faltam {formatCurrency(metaReceita - stats.faturamento_pago)} para a meta de receita
                           </p>
                         )}
-                        {metaReceita100 && !metaEventos100 && (
-                          <p className="text-xs text-slate-400 mt-0.5">Meta de receita atingida! Continue firme nos shows.</p>
+                        {metaReceita100 && !metaDiarias100 && (
+                          <p className="text-xs text-slate-400 mt-0.5">Meta de receita atingida! Continue registrando suas diárias.</p>
                         )}
                       </div>
                     </div>

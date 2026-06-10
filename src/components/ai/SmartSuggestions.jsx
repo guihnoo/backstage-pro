@@ -80,13 +80,13 @@ export default function SmartSuggestions({ userData, onSuggestionClick }) {
       });
     }
 
-    // Progresso da meta
+    // Progresso da meta de receita
     if (userData.meta_receita > 0 && userData.faturamento_mes > 0) {
       const pct = Math.round((userData.faturamento_mes / userData.meta_receita) * 100);
       if (pct >= 50 && pct < 100) {
         contextual.push({
           icon: Target,
-          text: `Estou ${pct}% da meta — o que fazer para fechar o mês forte?`,
+          text: `Estou ${pct}% da meta de receita — o que fazer para fechar o mês forte?`,
           color: 'text-amber-400',
           bgColor: 'bg-amber-500/10',
           borderColor: 'border-amber-500/30'
@@ -94,11 +94,25 @@ export default function SmartSuggestions({ userData, onSuggestionClick }) {
       }
     }
 
-    // Análise de crescimento
-    if (userData.eventos_mes > 0) {
+    const diariasMes = userData.diarias_mes ?? 0;
+    const metaDiarias = userData.meta_diarias ?? userData.meta_eventos ?? 0;
+    if (metaDiarias > 0 && diariasMes > 0) {
+      const pctD = Math.round((diariasMes / metaDiarias) * 100);
+      if (pctD >= 50 && pctD < 100) {
+        contextual.push({
+          icon: Calendar,
+          text: `Trabalhei ${diariasMes} de ${metaDiarias} diárias — como acelerar até o fim do mês?`,
+          color: 'text-cyan-400',
+          bgColor: 'bg-cyan-500/10',
+          borderColor: 'border-cyan-500/30'
+        });
+      }
+    }
+
+    if (diariasMes > 0) {
       contextual.push({
         icon: TrendingUp,
-        text: `Fiz ${userData.eventos_mes} show${userData.eventos_mes !== 1 ? 's' : ''} este mês — como estou em relação ao mercado?`,
+        text: `Trabalhei ${diariasMes} diária${diariasMes !== 1 ? 's' : ''} este mês — como estou em relação ao mercado?`,
         color: 'text-purple-400',
         bgColor: 'bg-purple-500/10',
         borderColor: 'border-purple-500/30'

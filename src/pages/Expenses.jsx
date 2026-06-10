@@ -12,6 +12,7 @@ import { useFinancialVisibility } from '@/components/context/FinancialVisibility
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
+import LiveClockBar from '@/components/home/LiveClockBar';
 import { NeonGlass } from '@/components/design/NeonGlass';
 
 const CATEGORY_LABELS = {
@@ -261,11 +262,15 @@ export default function ExpensesPage() {
             <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-full pb-24">
                 <div className="p-4 md:p-6 space-y-6">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                        <div>
-                            <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Gerenciador de Despesas</h1>
-                            <p className="text-[#8a91a1] text-sm font-mono mt-1">Controle gastos e reembolsos do backstage.</p>
+                        <div className="flex items-start justify-between sm:block gap-2">
+                            <div>
+                                <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Despesas</h1>
+                                <p className="text-[#8a91a1] text-sm font-mono mt-1">Controle gastos e reembolsos do backstage.</p>
+                            </div>
+                            <LiveClockBar primaryHex={config.primaryHex} className="sm:hidden flex-shrink-0" />
                         </div>
-                        <div className="flex gap-3">
+                        <div className="flex items-center gap-3">
+                            <LiveClockBar primaryHex={config.primaryHex} className="hidden sm:flex flex-shrink-0" />
                             <Button variant="outline" className="bg-[#161923]/80 border-[#23262f] hover:bg-[#1a1d27] text-[#cfd4de]" onClick={handleScan}>
                                 <Camera className="w-4 h-4 mr-2" />
                                 Digitalizar Recibo

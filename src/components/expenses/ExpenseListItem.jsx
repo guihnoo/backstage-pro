@@ -23,6 +23,16 @@ import { NeonGlass } from '@/components/design/NeonGlass';
 
 const SNAP_WIDTH = 130;
 
+const CATEGORY_LABELS = {
+  transporte: 'Transporte',
+  alimentacao: 'Alimentação',
+  equipamento: 'Equipamento',
+  hospedagem: 'Hospedagem',
+  combustivel: 'Combustível',
+  manutencao: 'Manutenção',
+  outros: 'Outros',
+};
+
 const categoryColors = {
   transporte: 'bg-blue-500/20 text-blue-300 border-blue-400/30',
   alimentacao: 'bg-amber-500/20 text-amber-300 border-amber-400/30',
@@ -107,7 +117,7 @@ export default function ExpenseListItem({ expense, event, onEdit, onDelete, onMa
             <div className="flex flex-col sm:flex-row sm:items-center gap-x-4 gap-y-2 mb-2">
               <p className="text-lg font-bold text-white truncate">{expense.title}</p>
               <div className="flex items-center gap-2 flex-wrap">
-                <Badge className={categoryColors[expense.category] || categoryColors.outros}>{expense.category}</Badge>
+                <Badge className={categoryColors[expense.category] || categoryColors.outros}>{CATEGORY_LABELS[expense.category] || expense.category}</Badge>
                 {statusBadge}
               </div>
             </div>
@@ -135,8 +145,10 @@ export default function ExpenseListItem({ expense, event, onEdit, onDelete, onMa
                 </a>
               )}
             </div>
-            {expense.notes && (
-              <p className="text-xs text-slate-500 mt-1.5 italic line-clamp-2">{expense.notes}</p>
+            {(expense.description || expense.notes) && (
+              <p className="text-xs text-slate-500 mt-1.5 italic line-clamp-2">
+                {[expense.description, expense.notes].filter(Boolean).join(' · ')}
+              </p>
             )}
           </div>
 

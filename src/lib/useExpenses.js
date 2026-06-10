@@ -7,27 +7,27 @@ const mapPayloadToDb = (payload = {}) => {
     ...payload,
     amount: payload.amount != null ? Number(payload.amount) : payload.amount,
     expense_date: payload.expense_date || payload.date || null,
-    notes: payload.notes ?? payload.description ?? null,
+    notes: payload.notes || null,
+    description: payload.description || null,
     event_id: payload.event_id || null,
   };
 
   delete mapped.id;
   delete mapped.owner_id;
   delete mapped.date;
-  delete mapped._is_reimbursable;
 
   return mapped;
 };
 
 const mapRowFromDb = (row = {}) => {
-  const { _is_reimbursable, ...rest } = row;
-  const expenseDate = rest.expense_date || rest.date || null;
+  const expenseDate = row.expense_date || row.date || null;
 
   return {
-    ...rest,
+    ...row,
     expense_date: expenseDate,
     date: expenseDate,
-    notes: rest.notes ?? rest.description ?? '',
+    notes: row.notes ?? '',
+    description: row.description ?? '',
   };
 };
 

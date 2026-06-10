@@ -162,10 +162,13 @@ export default function AlertsPanel({
                     <Button
                       size="sm"
                       onClick={() => executeAction(alert)}
-                      className={`${alert.color === 'text-green-400' 
-                        ? 'bg-green-500/20 hover:bg-green-500/30 text-green-300 border-green-400/30' 
-                        : 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border-amber-400/30'
-                      }`}
+                      className={
+                        alert.color === 'text-green-400'
+                          ? 'bg-green-500/20 hover:bg-green-500/30 text-green-300 border-green-400/30'
+                          : alert.color === 'text-cyan-400'
+                            ? 'bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border-cyan-400/30'
+                            : 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border-amber-400/30'
+                      }
                       variant="outline"
                     >
                       {alert.cta.label}
