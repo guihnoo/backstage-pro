@@ -21,7 +21,8 @@
     "test:e2e": "playwright test",
     "test:e2e:smoke": "playwright test e2e/smoke",
     "test:e2e:regression": "playwright test e2e/regression",
-    "test:e2e:prod": "playwright test -c playwright.prod.config.js"
+    "test:e2e:prod": "playwright test -c playwright.prod.config.js",
+    "git:backup": "node .cursor/hooks/auto-save-push.mjs"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.81",

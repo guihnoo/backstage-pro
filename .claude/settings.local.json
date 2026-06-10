@@ -109,7 +109,8 @@
       "Bash(agent-browser --auto-connect open https://backstage-pro-beta.vercel.app/)",
       "Bash(supabase functions *)",
       "Bash(npx playwright *)",
-      "Bash(findstr /i \"passed failed error\")"
+      "Bash(findstr /i \"passed failed error\")",
+      "Bash(git reset *)"
     ]
   },
   "enabledMcpjsonServers": [

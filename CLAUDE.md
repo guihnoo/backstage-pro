@@ -18,5 +18,7 @@ Leia **antes de qualquer tarefa**:
 ## Regras críticas
 
 - Scroll: `main[data-app-scroll]`, `useAppScrollLock`, `.bp-modal-scroll` ou `ScrollArea fill`
-- Sem commits/deploy sem instrução explícita do usuário
+- **Backup git automático**: ao terminar tarefa com mudanças, rodar `npm run git:backup` (commit WIP + push). Hook Cursor também dispara em `stop`/`sessionEnd`.
+- Commits oficiais (mensagem do usuário) são separados dos WIP `chore(auto):`.
+- Pausar backup: criar `.cursor/PAUSE_AUTO_GIT`. Deploy na Vercel continua só com pedido explícito.
 - Responder ao usuário em **pt-BR**

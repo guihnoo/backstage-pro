@@ -1,0 +1,37 @@
+---
+description: Backup automático git — commit e push WIP para não perder trabalho
+alwaysApply: true
+---
+
+# Auto backup Git (Backstage Pro)
+
+## Política ativa
+
+Este projeto **salva trabalho automaticamente** no GitHub. Commits WIP são esperados e podem ser reescritos depois (`git commit --amend`, squash, novo commit limpo).
+
+## Quando commitar e dar push
+
+1. **Hook Cursor** — ao terminar turno (`stop`) ou sessão (`sessionEnd`), roda `node .cursor/hooks/auto-save-push.mjs`.
+2. **Agentes (Cursor + Claude Code)** — ao concluir tarefa com mudanças em arquivos do projeto, rodar `npm run git:backup` se ainda houver alterações não salvas.
+3. **Mensagem** — prefixo `chore(auto): wip backup …` (não usar para releases finais).
+
+## Nunca versionar
+
+- `.env`, `.env.local`, `.env.vercel*`
+- `client_secret*.json`
+- `playwright-report/`, `test-results/`, `node_modules/`, `dist/`
+
+## Proibido
+
+- `git push --force` em `main`/`master`
+- Alterar `git config`
+- `--no-verify` nos commits automáticos
+
+## Pausar temporariamente
+
+Criar arquivo vazio: `.cursor/PAUSE_AUTO_GIT`  
+Remover o arquivo para reativar.
+
+## Commits “oficiais” do usuário
+
+Quando o usuário pedir commit com mensagem específica, fazer commit normal (sem prefixo `chore(auto)`). O backup automático não substitui releases — só evita perda de trabalho.

@@ -31,3 +31,7 @@ dist-ssr
 agent-review/incoming/*
 !agent-review/incoming/.gitkeep
 .vercel
+
+# Auto-git backup (estado local)
+.cursor/.last-auto-git
+.cursor/PAUSE_AUTO_GIT

@@ -20,7 +20,8 @@ Estes arquivos têm lógica crítica — editar com atenção, não refatorar se
 - Dados: hooks Supabase diretos (`useClients`, `useEvents`, etc.) em `src/lib/`
 - Formatação de moeda: `formatCurrency` do `useFinancialVisibility()`
 - Scroll: `main[data-app-scroll]`, `useAppScrollLock`, `.bp-modal-scroll` ou `ScrollArea fill`
-- Sem commits automáticos — aguardar instrução explícita do usuário
+- **Backup automático**: `npm run git:backup` ao fim de sessões com mudanças; hook em `.cursor/hooks.json`. Commits WIP usam `chore(auto):`. Pausa: `.cursor/PAUSE_AUTO_GIT`
+- Commits “oficiais” e deploy só com pedido explícito do usuário
 - Sem secrets em código — `.env.local` nunca commitado
 
 ## Log de atividade
