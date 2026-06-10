@@ -499,3 +499,18 @@ Registro cronológico de tarefas executadas por agentes.
 - **Deploy**: Vercel prod ✅ `dpl_8dAJVA59EXHp35SMnc4TJCWUrJCA` → https://backstage-pro-beta.vercel.app
 - **Testes prod**: `npm run test:e2e:prod` 47/47 ✅ (incl. assert "Meta de diárias por mês" no perfil)
 - **Notas**: Commits WIP usam prefixo `chore(auto):`
+
+---
+
+### PAGE-AUDIT-S22 — Fixes client_type display + EventForm + ClientDetail — 2026-06-10
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos modificados**:
+  - `src/pages/ClientDetail.jsx` — avatar purple/User para pessoa; badge Pessoa/Empresa; label "Empresa:"/"Contato:" dinâmico
+  - `src/components/calendar/EventForm.jsx` — placeholder "Usa o nome da empresa se vazio" → "Usa o nome do cliente se vazio"
+  - `docs/RELATORIO_VIDA_APP.md` — changelog sessão 22; estado `client_type` + combobox
+  - `docs/IDEIAS_PENDENTES.md` — item 34 `client_type` marcado ✅
+  - `docs/AGENT_LOG.md` — este entry
+- **Build**: Vite ✅ (31.73s — sessão anterior; sem regressão)
+- **Deploy**: Vercel prod ✅ `dpl_CSCrk4jRwwdQwJaVUjAy7ie7wBiX`; Supabase `ai-chat` + `analyze-receipt` ✅
+- **Auditoria página a página**: todas as rotas 🟢 — auditoria completa encerrada
+- **Notas**: EventForm scroll fix (`h-[95dvh]`), ClientCombobox "Criar" bug fix e ClientQuickCreateDialog rewrite (Empresa+Pessoa) foram feitos em sessões 20–21; sessão 22 completou o polish em `ClientDetail.jsx` e fechou a auditoria

@@ -72,6 +72,7 @@
 | 31 | Goals: mostrar A Receber nos círculos de progresso | 2026-06-09 | ✅ 3° círculo âmbar |
 | 32 | Expenses: agrupar despesas por mês | 2026-06-09 | ✅ `MonthGroup` com collapse animado |
 | 33 | Criar empresa inline no EventForm com busca CNPJ | 2026-06-09 | ✅ `ClientQuickCreateDialog` + `ClientCombobox` |
+| 34 | Diferenciar **Empresa** vs **Pessoa** no cadastro de clientes | 2026-06-10 | ✅ Migration `022_clients_type.sql` + toggle em `ClientForm`, `ClientCombobox`, `ClientDetailModal`, `ClientDetail.jsx`, `Clients.jsx`, `ClientQuickCreateDialog` |
 
 ---
 

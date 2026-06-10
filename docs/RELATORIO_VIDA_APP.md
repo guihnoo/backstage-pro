@@ -3,10 +3,11 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-10 (sessão 21)  
+**Última atualização:** 2026-06-10 (sessão 22)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** `964abe2` — backup git automático (hook Cursor + `npm run git:backup`)  
-**Último deploy:** 2026-06-10 — `dpl_8dAJVA59EXHp35SMnc4TJCWUrJCA` → https://backstage-pro-beta.vercel.app  
+**Último commit:** pendente nesta sessão — deploy testes reais  
+**Último deploy:** 2026-06-10 — `dpl_CSCrk4jRwwdQwJaVUjAy7ie7wBiX` → https://backstage-pro-beta.vercel.app  
+**Edge Functions:** `ai-chat` + `analyze-receipt` deployadas no Supabase ✅  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
 ---
@@ -16,9 +17,10 @@
 | Área | Status |
 |------|--------|
 | Core (eventos, clientes, despesas, horas) | Funcional |
+| Clientes — Empresa vs Pessoa | `client_type` coluna DB; toggle visual em form/combobox/cards/modais ✅ sessão 20–22 |
 | Google Calendar OAuth + sync | Configurado (modo Teste no GCP); validar E2E com usuário |
 | UX cores / hierarquia empresa | Implementado (`brandColors`, `EventHeading`) |
-| Combobox cliente + geocode local | Implementado |
+| Combobox cliente + geocode local | Implementado; criar Pessoa inline ✅ |
 | Local do evento (endereço + GPS check-in) | `EventLocationSection` — criar, detalhe, action sheet |
 | Páginas legais OAuth | `/privacidade`, `/termos` |
 | Scroll / modais / z-index | Corrigido (v1–v3); popovers/select `z-[110]` dentro de dialogs |
@@ -71,6 +73,19 @@ Ordem oficial após fix de scroll (2026-06-05):
 ---
 
 ## Changelog
+
+### 2026-06-10 (sessão 22) — Fixes client_type + EventForm + ClientDetail
+
+**client_type display polish:** `ClientDetail.jsx` — avatar purple com ícone `User` para pessoa, avatar gradient neon + inicial para empresa; badge "Pessoa"/"Empresa" ao lado do nome; label "Empresa:" / "Contato:" dinâmico para `contact_person`.  
+**EventForm placeholder:** "Usa o nome da empresa se vazio" → "Usa o nome do cliente se vazio" (neutro, cobre pessoa e empresa).  
+**EventForm scroll fix (sessão 21):** `DialogContent` mudou de `max-h-[90dvh]` para `h-[95dvh] max-h-[95dvh]` — sem `h` explícito, `flex-1` no form não tinha referência de altura e `ScrollArea fill` não funcionava.  
+**ClientCombobox bug fix:** item "Criar" aparecia e sumia — cmdk filtrava o `CommandItem` dinâmico; fix: `value={\`criar-${trimmedQuery}\`}` explícito; threshold `>= 1` char.  
+**ClientQuickCreateDialog rewrite:** reescrito para suportar Empresa e Pessoa com toggle, `contact_person` para empresa de origem de pessoa.  
+**Auditoria página a página:** concluída — todas as rotas 🟢 (exceto Google Calendar E2E manual pendente).  
+**Build:** Vite ✅ (31.73s)  
+**Deploy testes reais:** Vercel `dpl_CSCrk4jRwwdQwJaVUjAy7ie7wBiX` + Edge `ai-chat`/`analyze-receipt` ✅
+
+---
 
 ### 2026-06-10 (sessão 21) — Meta diárias + backup git automático
 
