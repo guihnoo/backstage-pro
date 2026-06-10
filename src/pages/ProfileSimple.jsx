@@ -86,6 +86,7 @@ export default function ProfileSimple() {
       setTimeout(() => setSaved(false), 2500);
     } catch (err) {
       console.error('Erro ao salvar:', err);
+      toast.error('Erro ao salvar perfil.', { description: err?.message });
     } finally {
       setSaving(false);
     }
