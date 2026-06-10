@@ -110,7 +110,8 @@
       "Bash(supabase functions *)",
       "Bash(npx playwright *)",
       "Bash(findstr /i \"passed failed error\")",
-      "Bash(git reset *)"
+      "Bash(git reset *)",
+      "Bash(xxd)"
     ]
   },
   "enabledMcpjsonServers": [

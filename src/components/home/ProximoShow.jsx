@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Clock, User, ChevronRight, Navigation, CheckCircle2, Loader2 } from 'lucide-react';
+import { MapPin, Clock, User, ChevronRight, Navigation, CheckCircle2, Loader2, Circle } from 'lucide-react';
 import { toast } from 'sonner';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { useCountdown } from '@/lib/useBackstageData';
 import { hardNavigate } from '@/lib/hardNavigate';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import ModoPalcoActions from '@/components/home/ModoPalcoActions';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
@@ -95,8 +95,10 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
     );
   }
 
-  const eventDate = parseISO(eventDateStr);
-  const formattedDate = format(eventDate, "EEEE, d 'de' MMMM", { locale: ptBR });
+  const eventDate = eventDateStr ? parseISO(eventDateStr) : null;
+  const formattedDate = eventDate && isValid(eventDate)
+    ? format(eventDate, "EEEE, d 'de' MMMM", { locale: ptBR })
+    : 'Data a definir';
   const formattedTime = event.start_time
     ? format(parseISO(`2000-01-01T${event.start_time}`), 'HH:mm', { locale: ptBR })
     : 'Horário a definir';
