@@ -30,6 +30,7 @@ import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { getEventCacheAmount } from '@/lib/eventFinance';
+import { getEventStatus } from '@/components/utils/dateUtils';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { NeonGlass } from '@/components/design/NeonGlass';
 
@@ -102,6 +103,26 @@ export default function ClientDetailPage() {
     expenses.filter(e => clientEventIds.includes(e.event_id)),
     [expenses, clientEventIds]
   );
+
+  const getEventRevenue = useCallback((event) => {
+    const fromWork = clientWork
+      .filter(w => w.event_id === event.id)
+      .reduce((sum, w) => sum + (w.daily_cache || 0), 0);
+    return fromWork > 0 ? fromWork : getEventCacheAmount(event);
+  }, [clientWork]);
+
+  const chartInput = useMemo(() => ({
+    realized: clientEvents
+      .filter(e => e.payment_status === 'paid')
+      .map(e => ({ ...e, calculated_value: e.paid_amount || getEventRevenue(e) })),
+    receivable: clientEvents
+      .filter(e => e.payment_status !== 'paid' && getEventStatus(e) === 'completed')
+      .map(e => ({ ...e, calculated_value: getEventRevenue(e) })),
+    projected: clientEvents
+      .filter(e => ['scheduled', 'pending', 'confirmed'].includes(getEventStatus(e)))
+      .map(e => ({ ...e, calculated_value: getEventRevenue(e) })),
+    expenses: _clientExpenses.map(e => ({ date: e.expense_date || e.date, amount: e.amount })),
+  }), [clientEvents, _clientExpenses, getEventRevenue]);
 
   const stats = useMemo(() => {
     const getEventRevenue = (event) => {
@@ -324,7 +345,7 @@ export default function ClientDetailPage() {
 
         <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
           <div className="xl:col-span-3">
-            <ReportsChart data={{ events: clientEvents, work: clientWork }} />
+            <ReportsChart chartInput={chartInput} />
           </div>
           <div className="xl:col-span-2">
             <ReportEventList
