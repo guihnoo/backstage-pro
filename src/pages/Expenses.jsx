@@ -33,7 +33,7 @@ const CATEGORY_LABELS = {
   outros: 'Outros',
 };
 
-function MonthGroup({ monthKey, expenses, events, onEdit, onDelete, onMarkReimbursed, formatCurrency, primaryHex }) {
+function MonthGroup({ monthKey, expenses, events, onEdit, onDelete, onMarkReimbursed, formatCurrency, primaryHex: _primaryHex }) {
     const [open, setOpen] = useState(true);
     const total = expenses.reduce((s, e) => s + (e.amount || 0), 0);
     const reimbursable = expenses.filter(e => e.is_reimbursable && !e.reimbursed).reduce((s, e) => s + (e.amount || 0), 0);

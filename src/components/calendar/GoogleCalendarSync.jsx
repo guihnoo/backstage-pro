@@ -21,7 +21,6 @@ import { useAuth } from '@/lib/authContext';
 import { googleAuthStart, googleDisconnect, googleSyncNow, googleListCalendars, googleImportEvents, googleDedupeEvents } from '@/api/functions';
 import { Link } from 'react-router-dom';
 import appToast from '@/lib/appToast';
-
 import { formatGoogleOAuthError } from '@/lib/googleOAuthErrors';
 
 export default function GoogleCalendarSync() {
@@ -110,8 +109,6 @@ export default function GoogleCalendarSync() {
   };
 
   const handleDisconnect = async () => {
-    if (!confirm("Tem certeza que deseja desconectar do Google Calendar?")) return;
-    
     try {
       appToast.info("Desconectando do Google Calendar...");
       await googleDisconnect();
@@ -160,8 +157,6 @@ export default function GoogleCalendarSync() {
   };
 
   const handleImportEvents = async () => {
-    if (!confirm("Importar eventos do Google Calendar? Duplicatas serão ignoradas automaticamente.")) return;
-    
     setIsSyncing(true);
     try {
       appToast.info("Importando eventos do Google Calendar...");

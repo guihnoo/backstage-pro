@@ -1,6 +1,5 @@
 ﻿import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { parseISO, isValid } from 'date-fns';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import {
   X, Edit, Trash2, Phone, Mail, Calendar, TrendingUp,
-  Clock, DollarSign, User, Building2, MessageCircle,
+  Clock, DollarSign, User, MessageCircle,
   CheckCircle2, AlertCircle, ArrowRight, BarChart3,
   Activity, Target, Globe, ExternalLink
 } from 'lucide-react';

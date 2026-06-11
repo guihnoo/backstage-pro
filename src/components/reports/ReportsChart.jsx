@@ -121,7 +121,7 @@ export default function ReportsChart({ chartInput, onDataClick }) {
       .map(item => {
         let displayName;
         try {
-          const [year, month, day] = item.date.split('-');
+          const [_year, _month, _day] = item.date.split('-');
           displayName = format(parseISO(item.date), 'dd/MM', { locale: ptBR });
         } catch {
           displayName = item.date;

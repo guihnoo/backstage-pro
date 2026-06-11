@@ -8,6 +8,9 @@ export default [
   {
     ignores: [
       'dist',
+      'design-preview/**',
+      'playwright-report/**',
+      'test-results/**',
       'src/components/ui/**',
       'src/components/ai-elements/**',
       'src/lib/supabase.js',
@@ -53,6 +56,12 @@ export default [
       }],
       'react/prop-types': 'off',
       'react/display-name': 'off',
+    },
+  },
+  {
+    files: ['playwright.config.js', 'playwright.prod.config.js', 'vite.config.js', 'tailwind.config.js'],
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node },
     },
   },
 ]

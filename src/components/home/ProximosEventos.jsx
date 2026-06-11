@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { format, parseISO, differenceInCalendarDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Clock, MapPin, User, CheckCircle2, Loader2, ChevronRight, Plus } from 'lucide-react';
+import { Clock, MapPin, CheckCircle2, Loader2, ChevronRight, Plus } from 'lucide-react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { usePaymentToggle } from '@/lib/usePaymentToggle';
 import { useStatusToggle } from '@/lib/useStatusToggle';

@@ -9,7 +9,6 @@ import { AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft,
   Building,
-  Building2,
   User,
   Mail,
   Phone,

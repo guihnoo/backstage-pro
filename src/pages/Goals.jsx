@@ -6,12 +6,13 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
-import { Trophy, Zap, Star, TrendingUp, Award, Flame, Calendar, X, Pencil, Check, CheckCircle2, ChevronRight, Plus, Clock } from 'lucide-react';
+import { Trophy, Zap, Star, Award, Flame, Calendar, X, Pencil, Check, CheckCircle2, ChevronRight, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import appToast from '@/lib/appToast';
 
 import MeiDashboard from '@/components/goals/MeiDashboard';
 import LiveClockBar from '@/components/home/LiveClockBar';
+import StatValuePulse from '@/components/home/StatValuePulse';
 import EventDetailModal from '@/components/calendar/EventDetailModal';
 import { format, parseISO, differenceInCalendarDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -331,7 +332,7 @@ export default function Goals() {
     const newlyUnlocked = badges.find(b => b.unlocked && !seen.has(b.title));
     if (newlyUnlocked) {
       seen.add(newlyUnlocked.title);
-      try { localStorage.setItem(SEEN_BADGES_KEY, JSON.stringify([...seen])); } catch {}
+      try { localStorage.setItem(SEEN_BADGES_KEY, JSON.stringify([...seen])); } catch { /* quota / private mode */ }
       // Pequeno delay para deixar a página carregar primeiro
       setTimeout(() => setCelebrationBadge(newlyUnlocked), 600);
     }
@@ -565,24 +566,28 @@ export default function Goals() {
                   {
                     label: 'Recebido',
                     value: formatCurrency(stats.faturamento_pago),
+                    pulseValue: stats.faturamento_pago,
                     sub: `${Math.round(metaReceita > 0 ? Math.min((stats.faturamento_pago / metaReceita) * 100, 100) : 0)}% da meta`,
                     icon: '✅', color: '#39FF14', route: '/reports'
                   },
                   {
                     label: 'A Receber',
                     value: formatCurrency(stats.a_receber),
+                    pulseValue: stats.a_receber,
                     sub: stats.a_receber > 0 ? 'pendente de pagamento' : 'tudo em dia',
                     icon: '⏳', color: '#FFB700', route: '/reports'
                   },
                   {
                     label: 'Diárias no mês',
                     value: `${diariasMes} diária${diariasMes !== 1 ? 's' : ''}`,
+                    pulseValue: diariasMes,
                     sub: `meta: ${metaDiarias} dias trabalhados`,
                     icon: '📅', color: config.primaryHex, route: '/calendar'
                   },
                   {
                     label: 'Clientes Ativos',
                     value: `${stats.clientes_ativos}`,
+                    pulseValue: stats.clientes_ativos,
                     sub: 'empresas / contratantes',
                     icon: '👥', color: config.accentHex, route: '/clients'
                   },
@@ -599,9 +604,11 @@ export default function Goals() {
                   >
                     <span className="text-xl">{item.icon}</span>
                     <p className="text-xs text-slate-500 mt-2">{item.label}</p>
-                    <p className="text-lg font-black mt-0.5" style={{ color: item.color }}>
-                      {item.value}
-                    </p>
+                    <StatValuePulse value={item.pulseValue} glowColor={item.color}>
+                      <p className="text-lg font-black mt-0.5" style={{ color: item.color }}>
+                        {item.value}
+                      </p>
+                    </StatValuePulse>
                     <p className="text-[10px] text-slate-600 mt-0.5">{item.sub}</p>
                   </motion.button>
                 ))}

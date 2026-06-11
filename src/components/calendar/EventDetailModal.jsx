@@ -1,6 +1,6 @@
 ﻿import { useState, useMemo, useEffect } from 'react';
 import { getEventCacheAmount } from '@/lib/eventFinance';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,13 +16,11 @@ import {
   CheckCircle2,
   MapPin,
   FileText,
-  Download,
   Zap,
   Loader2,
   MessageCircle,
   ExternalLink,
   Receipt,
-  Send,
   ChevronDown,
   ChevronUp,
   AlertTriangle
@@ -46,11 +44,7 @@ import { useEvents } from '@/lib/useEvents';
 import { useExpenses } from '@/lib/useExpenses';
 import ExpenseForm from '@/components/expenses/ExpenseForm';
 import { useUserSettings } from '@/lib/useUserSettings';
-import {
-  parseISO,
-  differenceInDays,
-  format
-} from 'date-fns';
+import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 const EXPENSE_CATEGORY_LABELS = {

@@ -20,7 +20,7 @@ import {
   Building2,
 } from 'lucide-react';
 import { hardNavigate } from '@/lib/hardNavigate';
-import { formatDisplayDate, getEventStatus, getEventStatusConfig } from '../utils/dateUtils';
+import { formatDisplayDate, getEventStatusConfig } from '../utils/dateUtils';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import appToast from '@/lib/appToast';
@@ -48,7 +48,6 @@ export default function EventActionSheet({
 
   if (!event) return null;
 
-  const status = getEventStatus(event);
   const statusConfig = getEventStatusConfig(event);
   const StatusIcon = statusConfig.icon;
 

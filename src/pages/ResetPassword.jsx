@@ -3,7 +3,6 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, CheckCircle2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { AUTH_HERO_CATEGORY } from '@/lib/categoryGear';
 import { Button } from '@/components/ui/button';
@@ -23,7 +22,6 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [done, setDone] = useState(false);
-  const { isAuthenticated } = useAuth();
 
   // Se o usuário não tem sessão ativa (link expirado), manda pro login
   useEffect(() => {

@@ -117,7 +117,7 @@ export async function seedAuth(page) {
   // goto /login primeiro para que o Supabase inicialize sem sessão;
   // depois setamos localStorage via evaluate — evita a validação de token
   // que ocorre quando Supabase encontra a sessão já presente no boot.
-  await page.goto('/login', { waitUntil: 'domcontentloaded' });
+  await page.goto('/login', { waitUntil: 'domcontentloaded', timeout: 60_000 });
   await page.evaluate(
     ({ key, session }) => {
       localStorage.setItem(key, JSON.stringify(session));

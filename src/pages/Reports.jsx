@@ -49,6 +49,7 @@ import { applyAuto12Hours } from '@/lib/applyAuto12Hours';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import LiveClockBar from '@/components/home/LiveClockBar';
+import StatValuePulse from '@/components/home/StatValuePulse';
 const BrazilVisitedMap = lazy(() => import('@/components/reports/BrazilVisitedMap'));
 
 const ReportsSkeleton = () => (
@@ -85,7 +86,7 @@ const PERIOD_OPTIONS = [
 ];
 
 // Enhanced StatCard with comparison indicators
-const StatCard = ({ title, value, subtitle, icon: Icon, color, trend, onClick, isClickable = true }) => {
+const StatCard = ({ title, value, pulseValue, pulseColor, subtitle, icon: Icon, color, trend, onClick, isClickable = true }) => {
   const getTrendIcon = () => {
     if (!trend) return null;
     if (trend.change > 0) return <ArrowUp className="w-3 h-3 text-green-400" />;
@@ -111,7 +112,9 @@ const StatCard = ({ title, value, subtitle, icon: Icon, color, trend, onClick, i
         <div className="flex items-center justify-between mb-3">
           <div className="space-y-1">
             <p className="text-sm font-medium text-slate-400">{title}</p>
-            <p className={`text-2xl font-bold ${color}`}>{value}</p>
+            <StatValuePulse value={pulseValue ?? value} glowColor={pulseColor}>
+              <p className={`text-2xl font-bold ${color}`}>{value}</p>
+            </StatValuePulse>
           </div>
           <Icon className={`w-8 h-8 ${color} opacity-60`} />
         </div>
@@ -743,6 +746,8 @@ export default function ReportsPage() {
           <StatCard
             title="Faturamento"
             value={isVisible ? formatCurrency(processedData.current.realizedRevenue) : '•••••'}
+            pulseValue={processedData.current.realizedRevenue}
+            pulseColor="#39FF14"
             subtitle={`${processedData.current.paidEvents.length} pagamentos recebidos`}
             icon={DollarSign}
             color="text-green-400"
@@ -752,6 +757,8 @@ export default function ReportsPage() {
           <StatCard
             title="A Receber"
             value={isVisible ? formatCurrency(processedData.current.receivableRevenue) : '•••••'}
+            pulseValue={processedData.current.receivableRevenue}
+            pulseColor="#FFB700"
             subtitle={`${data.events?.filter(isReceivableEvent).length || 0} pendentes`}
             icon={Clock}
             color="text-amber-400"
@@ -761,6 +768,8 @@ export default function ReportsPage() {
           <StatCard
             title="Lucro Líquido"
             value={isVisible ? formatCurrency(processedData.current.netProfit) : '•••••'}
+            pulseValue={processedData.current.netProfit}
+            pulseColor={processedData.current.netProfit >= 0 ? '#39FF14' : '#FF4444'}
             subtitle="Receita - Despesas"
             icon={TrendingUp}
             color={processedData.current.netProfit >= 0 ? "text-green-400" : "text-red-400"}
@@ -770,6 +779,8 @@ export default function ReportsPage() {
           <StatCard
             title="Clientes Ativos"
             value={processedData.current.activeClientsCount}
+            pulseValue={processedData.current.activeClientsCount}
+            pulseColor="#A64AFF"
             subtitle={processedData.current.topClient ? `Top: ${processedData.current.topClient.name}` : 'Nenhum cliente'}
             icon={Users}
             color="text-purple-400"
@@ -794,9 +805,11 @@ export default function ReportsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-purple-300 mb-1">Projeção do Próximo Período</h3>
-                  <p className="text-3xl font-bold text-white">
-                    {isVisible ? formatCurrency(processedData.next.projectedRevenue) : '•••••'}
-                  </p>
+                  <StatValuePulse value={processedData.next.projectedRevenue} glowColor="#A64AFF">
+                    <p className="text-3xl font-bold text-white">
+                      {isVisible ? formatCurrency(processedData.next.projectedRevenue) : '•••••'}
+                    </p>
+                  </StatValuePulse>
                   <p className="text-sm text-slate-400 mt-1">
                     {processedData.next.scheduledEventsCount} eventos agendados
                   </p>

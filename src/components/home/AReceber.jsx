@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Wallet, ChevronRight, ChevronDown, AlertTriangle, CheckCircle2, X, Calendar, ExternalLink } from 'lucide-react';
+import { MessageCircle, Wallet, ChevronRight, ChevronDown, AlertTriangle, CheckCircle2, X, ExternalLink } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { hardNavigate } from '@/lib/hardNavigate';

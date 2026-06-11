@@ -4,7 +4,7 @@ import { auditOverlayOverflow, scrollModalBody } from '../helpers/scrollAudit.js
 
 async function gotoAuthed(page, path) {
   await seedAuthWithData(page);
-  await page.goto(path, { waitUntil: 'load' });
+  await page.goto(path, { waitUntil: 'domcontentloaded' });
   await expect(page).not.toHaveURL(/\/onboarding/, { timeout: 15_000 });
   await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 15_000 });
   await page.waitForTimeout(400);

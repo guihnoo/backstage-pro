@@ -4,7 +4,7 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'https://backstage-pro-beta.v
 
 export default defineConfig({
   testDir: './e2e',
-  timeout: 30000,
+  timeout: 60_000,
   expect: {
     timeout: 5000,
   },

@@ -166,10 +166,6 @@ function SectionTitle({ children }) {
   );
 }
 
-function Cell({ style, children }) {
-  return <View style={style}><Text>{children ?? ''}</Text></View>;
-}
-
 // ── Seção 1 — Diárias ──────────────────────────────────────────────────────────
 
 const COL1 = [
