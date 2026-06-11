@@ -22,6 +22,8 @@ import { getEventCacheAmount } from '@/lib/eventFinance';
 import { parseISO, differenceInDays, isValid } from 'date-fns';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
+import EventHeading from '@/components/events/EventHeading';
+import { Ellipsis } from '@/components/ui/overflowText';
 
 export default function ClientInsightsModal({ client, isOpen, onClose }) {
   const { events } = useEvents();
@@ -118,9 +120,10 @@ export default function ClientInsightsModal({ client, isOpen, onClose }) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent hideDefaultClose className="sm:max-w-2xl h-[90dvh] max-h-[90dvh] bg-slate-900/95 backdrop-blur-lg border-slate-700 text-white p-0 flex flex-col overflow-hidden">
         <DialogHeader className="p-4 sm:p-6 border-b border-slate-800 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-lg sm:text-xl font-bold text-white">
-              Insights: {client.name}
+          <div className="flex items-center justify-between gap-3 min-w-0">
+            <DialogTitle className="text-lg sm:text-xl font-bold text-white min-w-0 flex-1">
+              <span className="text-slate-400 font-normal">Insights: </span>
+              <Ellipsis as="span">{client.name}</Ellipsis>
             </DialogTitle>
             <Button variant="ghost" size="icon" onClick={onClose} className="h-10 w-10">
               <X className="w-5 h-5" />
@@ -212,11 +215,9 @@ export default function ClientInsightsModal({ client, isOpen, onClose }) {
                 </h3>
                 {insights.lastEvent ? (
                   <div className="space-y-3">
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-xs text-slate-400 mb-1">Último Evento</p>
-                      <p className="text-sm font-medium text-white">
-                        {insights.lastEvent.title}
-                      </p>
+                      <EventHeading event={insights.lastEvent} client={client} size="sm" />
                       <p className="text-xs text-slate-500 mt-1">
                         {formatDisplayDate(insights.lastEvent.start_date)}
                       </p>

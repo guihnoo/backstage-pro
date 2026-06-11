@@ -42,20 +42,21 @@ import EventForm from '@/components/calendar/EventForm';
 import EventDetailModal from '@/components/reports/EventDetailModal';
 import ReportEventList from '@/components/reports/ReportEventList';
 import ReportsChart from '@/components/reports/ReportsChart';
+import { ClampedText } from '@/components/ui/overflowText';
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
 
 const StatCard = ({ icon: Icon, title, value, iconStyle }) => (
-  <Card className="bg-[#161923]/60 border-[#23262f]">
-    <CardContent className="p-4 flex items-center gap-4">
-      <div className="p-3 rounded-lg" style={iconStyle}>
+  <Card className="bg-[#161923]/60 border-[#23262f] min-w-0 overflow-hidden">
+    <CardContent className="p-4 flex items-center gap-4 min-w-0">
+      <div className="p-3 rounded-lg flex-shrink-0" style={iconStyle}>
         <Icon className="w-6 h-6 text-white" />
       </div>
-      <div>
-        <p className="text-sm text-slate-300">{title}</p>
-        <p className="text-xl font-bold text-white">{value}</p>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm text-slate-300 truncate">{title}</p>
+        <p className="text-xl font-bold text-white truncate" title={typeof value === 'string' ? value : undefined}>{value}</p>
       </div>
     </CardContent>
   </Card>
@@ -285,7 +286,7 @@ export default function ClientDetailPage() {
                     className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-800/60 transition-colors group flex-1"
                   >
                     <Phone className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                    <span className="text-white group-hover:text-cyan-300 transition-colors">{client.phone}</span>
+                    <span className="text-white truncate min-w-0 group-hover:text-cyan-300 transition-colors" title={client.phone}>{client.phone}</span>
                   </a>
                   <button
                     type="button"
@@ -331,7 +332,9 @@ export default function ClientDetailPage() {
                     placeholder="Adicione observações sobre este cliente..."
                   />
                 ) : client.notes ? (
-                  <p className="text-slate-300 whitespace-pre-wrap text-sm">{client.notes}</p>
+                  <ClampedText lines={4} className="text-slate-300 text-sm">
+                    {client.notes}
+                  </ClampedText>
                 ) : (
                   <p className="text-slate-600 text-xs italic">Sem observações</p>
                 )}

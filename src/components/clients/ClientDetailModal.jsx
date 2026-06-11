@@ -22,8 +22,9 @@ import { formatDisplayDate, formatDateWithWeekday, getEventStatus, getEventStatu
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { ClientDraftBadge } from '@/components/clients/ClientDraftBadge';
+import EventHeading from '@/components/events/EventHeading';
 
-const EventTimelineItem = ({ event, isLast, workData, onClick }) => {
+const EventTimelineItem = ({ event, client, isLast, workData, onClick }) => {
   const { formatCurrency } = useFinancialVisibility();
 
   // Use event.status here, which will now be the calculated real status from clientData
@@ -51,11 +52,11 @@ const EventTimelineItem = ({ event, isLast, workData, onClick }) => {
           {/* Linha decorativa baseada no status */}
           <div className={`absolute left-0 top-0 bottom-0 w-1 ${statusConfig.color}`} />
 
-          <div className="flex items-start justify-between mb-3">
+          <div className="flex items-start justify-between mb-3 gap-2 min-w-0">
             <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-white text-base truncate">{event.title}</h4>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-1">
-                <p className="text-sm text-slate-400">
+              <EventHeading event={event} client={client} size="sm" />
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-1 min-w-0">
+                <p className="text-sm text-slate-400 truncate">
                   {formatDisplayDate(event.start_date)} - {formatDisplayDate(event.end_date)}
                 </p>
                 <Badge
@@ -459,7 +460,7 @@ export default function ClientDetailModal({
                                 onClick={() => handleEventClick(event)}>
 
                                 <div className="min-w-0 flex-1">
-                                  <p className="font-medium text-white truncate" title={event.title}>{event.title}</p>
+                                  <EventHeading event={event} client={client} size="sm" />
                                   <p className="text-sm text-slate-400 truncate">
                                     {formatDateWithWeekday(event.start_date)} - {formatDateWithWeekday(event.end_date)}
                                   </p>
@@ -543,7 +544,8 @@ export default function ClientDetailModal({
                               {clientData.events.map((event, index) =>
                                 <EventTimelineItem
                                   key={event.id}
-                                  event={event} // This event object now has its 'status' field updated with the real status
+                                  event={event}
+                                  client={client}
                                   isLast={index === clientData.events.length - 1}
                                   workData={clientData.workData}
                                   onClick={handleEventClick} />

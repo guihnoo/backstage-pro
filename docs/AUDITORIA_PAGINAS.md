@@ -79,10 +79,11 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página lista + filtros | [x] | 🟢 | `NeonPageShell min-h-full pb-24` ✅ |
+| Página lista + filtros | [x] | 🟢 | `NeonPageShell min-h-full pb-24` ✅; pull-to-refresh ✅ lapida |
+| Cards lista | [x] | 🟢 | `truncate` + `title` em nome/contato; `min-w-0 overflow-hidden` ✅ |
 | `ClientForm` (LOCKED) | [x] | 🟢 | `ScrollArea fill` ✅; Razão Social adicionado sessão 10 |
-| `ClientDetailModal` | [x] | 🟢 | `bp-modal-scroll` + `flex-shrink-0` header/footer ✅ |
-| `ClientInsightsModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
+| `ClientDetailModal` | [x] | 🟢 | `EventHeading` timeline + próximos eventos; header truncate ✅ |
+| `ClientInsightsModal` | [x] | 🟢 | `Ellipsis` no título; `EventHeading` último evento ✅ |
 | `ClientActionSheet` | [x] | 🟢 | `useAppScrollLock` + `bp-modal-scroll` ✅ |
 | `CompanySearchInput` (3 abas) | [x] | 🟢 | Pesquisar/CNPJ/NF-e — sessão 10 |
 
@@ -94,7 +95,7 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página | [x] | 🟢 | `NeonPageShell min-h-full pb-24` ✅; scroll via `main[data-app-scroll]` |
+| Página | [x] | 🟢 | Header truncate; `StatCard` valores truncados; notas com `ClampedText` ✅ |
 | `ReportEventList` | [x] | 🟢 | `ScrollArea h-[400px]` — card inline, correto ✅ |
 | `ClientForm` (LOCKED) | [x] | 🟢 | `ScrollArea fill` ✅ |
 | `EventForm` | [x] | 🟢 | `ScrollArea fill` ✅ |

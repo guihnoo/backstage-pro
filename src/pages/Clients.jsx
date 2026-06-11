@@ -48,6 +48,8 @@ import ClientInsightsModal from '@/components/clients/ClientInsightsModal';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
 
 import appToast from '@/lib/appToast';
+import { usePullToRefresh } from '@/lib/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
 
 
 const ClientsSkeleton = () => (
@@ -232,6 +234,13 @@ export default function ClientsPage() {
     refetchClients();
   }, [refetchClients]);
 
+  const refreshClientsList = useCallback(async () => {
+    await refetchClients();
+    appToast.success('Clientes atualizados');
+  }, [refetchClients]);
+
+  const { pullDistance, isRefreshing, threshold } = usePullToRefresh(refreshClientsList);
+
   const handleDeleteClient = useCallback((clientId) => {
     setConfirmDeleteId(clientId);
   }, []);
@@ -310,6 +319,12 @@ export default function ClientsPage() {
 
   return (
     <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-full pb-24">
+      <PullToRefreshIndicator
+        pullDistance={pullDistance}
+        isRefreshing={isRefreshing}
+        threshold={threshold}
+        primaryHex={config.primaryHex}
+      />
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -427,7 +442,7 @@ export default function ClientsPage() {
                 whileTap={{ scale: 0.98 }}
               >
                 <Card
-                  className="bg-[#161923]/60 border-[#23262f] cursor-pointer transition-all duration-300 hover:shadow-lg flex flex-col h-full border-l-4"
+                  className="bg-[#161923]/60 border-[#23262f] cursor-pointer transition-all duration-300 hover:shadow-lg flex flex-col h-full border-l-4 min-w-0 overflow-hidden"
                   style={{
                     ['--hover-border']: config.primaryHex,
                     borderLeftColor: client.brand_color || '#A64AFF',
@@ -464,11 +479,11 @@ export default function ClientsPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 min-w-0">
-                        <h3 className="font-bold text-white truncate">{client.name}</h3>
+                        <h3 className="font-bold text-white truncate min-w-0" title={client.name}>{client.name}</h3>
                         {client.profile_complete === false && <ClientDraftBadge />}
                       </div>
                       {client.contact_person && (
-                        <p className="text-sm text-slate-400 truncate">
+                        <p className="text-sm text-slate-400 truncate min-w-0" title={client.contact_person}>
                           {client.client_type === 'pessoa' ? '🏢 ' : ''}{client.contact_person}
                         </p>
                       )}
