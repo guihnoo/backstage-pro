@@ -157,13 +157,13 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type, onItemClick
                 if (item.event_ref) onItemClick?.(item.event_ref);
                 else if (item.client_id) { onClose?.(); hardNavigate(`/client-detail?id=${item.client_id}`); }
               }}
-              className={`flex items-center justify-between p-3 bg-slate-800/50 rounded-lg transition-colors ${isClickable ? 'cursor-pointer hover:bg-slate-700/60' : ''}`}
+              className={`flex items-center justify-between p-3 bg-slate-800/50 rounded-lg transition-colors gap-3 min-w-0 ${isClickable ? 'cursor-pointer hover:bg-slate-700/60' : ''}`}
             >
-              <div>
-                <p className="font-medium text-white">{item.title}</p>
-                <p className="text-sm text-slate-400">{item.subtitle}</p>
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-white truncate" title={item.title}>{item.title}</p>
+                <p className="text-sm text-slate-400 truncate" title={item.subtitle}>{item.subtitle}</p>
               </div>
-              <div className="text-right">
+              <div className="text-right flex-shrink-0">
                 <p className={`font-bold ${item.value < 0 ? 'text-red-400' : 'text-green-400'}`}>{formatCurrency(item.value)}</p>
                 {item.date && <p className="text-xs text-slate-500">{item.date}</p>}
                 {item.event_ref && <p className="text-[10px] text-slate-600 mt-0.5">Toque para detalhes</p>}

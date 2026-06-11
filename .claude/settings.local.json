@@ -124,7 +124,9 @@
       "Bash(dir .supabase)",
       "mcp__supabase__list_tables",
       "mcp__supabase__list_migrations",
-      "mcp__supabase__execute_sql"
+      "mcp__supabase__execute_sql",
+      "Bash(node -e \"const { generateVAPIDKeys } = require\\('web-push'\\); const k = generateVAPIDKeys\\(\\); console.log\\(JSON.stringify\\(k\\)\\);\")",
+      "Bash(npx web-push *)"
     ]
   },
   "enabledMcpjsonServers": [

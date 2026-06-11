@@ -22,8 +22,6 @@ import ReceiptAnalyzer from '@/components/expenses/ReceiptAnalyzer';
 import EmptyState from '@/components/layout/EmptyState';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import AnimatedStatValue from '@/components/home/AnimatedStatValue';
-import StatValuePulse from '@/components/home/StatValuePulse';
 
 const CATEGORY_LABELS = {
   transporte: 'Transporte',
@@ -106,22 +104,11 @@ const ExpensesSkeleton = () => (
     </div>
 );
 
-const StatCard = ({ title, numericValue, formatValue, maskedValue, onClick, active, primaryHex, accentHex, pulseColor }) => (
+const StatCard = ({ title, value, onClick, active, primaryHex, accentHex }) => (
     <motion.div whileTap={{ scale: 0.98 }} onClick={onClick} className="cursor-pointer">
         <NeonGlass primary={primaryHex} accent={accentHex} glow={active} className={`p-4 transition-transform duration-300 ${active ? 'scale-[1.02]' : ''}`}>
             <p className="text-[10px] font-mono uppercase tracking-wider text-[#7c8494] mb-2">{title}</p>
-            {numericValue != null && formatValue ? (
-                <StatValuePulse value={numericValue} glowColor={pulseColor || primaryHex}>
-                    <AnimatedStatValue
-                        value={numericValue}
-                        format={formatValue}
-                        className="text-2xl font-extrabold text-white block"
-                        style={active ? { color: accentHex, textShadow: `0 0 16px ${primaryHex}55` } : { textShadow: `0 0 12px ${primaryHex}22` }}
-                    />
-                </StatValuePulse>
-            ) : (
-                <p className="text-2xl font-extrabold text-white" style={active ? { color: accentHex, textShadow: `0 0 16px ${primaryHex}55` } : undefined}>{maskedValue}</p>
-            )}
+            <p className="text-2xl font-extrabold text-white" style={active ? { color: accentHex, textShadow: `0 0 16px ${primaryHex}55` } : undefined}>{value}</p>
         </NeonGlass>
     </motion.div>
 );
@@ -299,9 +286,9 @@ export default function ExpensesPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <StatCard primaryHex={config.primaryHex} accentHex={config.accentHex} title="Gasto Total" numericValue={isVisible ? expenseStats.total : null} formatValue={formatCurrency} maskedValue="•••••" pulseColor="#F87171" onClick={() => setStatusFilter('all')} active={statusFilter === 'all'} />
-                        <StatCard primaryHex={config.primaryHex} accentHex={config.accentHex} title="A Reembolsar" numericValue={isVisible ? expenseStats.reimbursable : null} formatValue={formatCurrency} maskedValue="•••••" pulseColor="#FBBF24" onClick={() => setStatusFilter('reimbursable')} active={statusFilter === 'reimbursable'} />
-                        <StatCard primaryHex={config.primaryHex} accentHex={config.accentHex} title="Reembolsado" numericValue={isVisible ? expenseStats.reimbursed : null} formatValue={formatCurrency} maskedValue="•••••" pulseColor="#34D399" onClick={() => setStatusFilter('reimbursed')} active={statusFilter === 'reimbursed'} />
+                        <StatCard primaryHex={config.primaryHex} accentHex={config.accentHex} title="Gasto Total" value={isVisible ? formatCurrency(expenseStats.total) : '•••••'} onClick={() => setStatusFilter('all')} active={statusFilter === 'all'} />
+                        <StatCard primaryHex={config.primaryHex} accentHex={config.accentHex} title="A Reembolsar" value={isVisible ? formatCurrency(expenseStats.reimbursable) : '•••••'} onClick={() => setStatusFilter('reimbursable')} active={statusFilter === 'reimbursable'} />
+                        <StatCard primaryHex={config.primaryHex} accentHex={config.accentHex} title="Reembolsado" value={isVisible ? formatCurrency(expenseStats.reimbursed) : '•••••'} onClick={() => setStatusFilter('reimbursed')} active={statusFilter === 'reimbursed'} />
                     </div>
 
                     <NeonGlass primary={config.primaryHex} className="p-4 space-y-3">

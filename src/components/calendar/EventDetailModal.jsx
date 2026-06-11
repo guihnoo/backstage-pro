@@ -365,9 +365,9 @@ export default function EventDetailModal({
                 {event.description && (
                   <div className="flex items-start gap-2">
                     <FileText className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <p className="text-sm text-slate-400">Descrição</p>
-                      <p className="text-white">{event.description}</p>
+                      <p className="text-white break-words">{event.description}</p>
                     </div>
                   </div>
                 )}
@@ -608,7 +608,7 @@ export default function EventDetailModal({
                           </div>
                         </div>
                         {work.notes && (
-                          <p className="text-sm text-slate-400 mt-2 italic">{work.notes}</p>
+                          <p className="text-sm text-slate-400 mt-2 italic break-words">{work.notes}</p>
                         )}
                       </div>
                     ))}

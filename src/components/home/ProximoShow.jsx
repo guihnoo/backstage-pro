@@ -9,6 +9,8 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import { format, parseISO, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import ModoPalcoActions from '@/components/home/ModoPalcoActions';
+import EventHeading from '@/components/events/EventHeading';
+import { ClampedText, Ellipsis } from '@/components/ui/overflowText';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { useStatusToggle } from '@/lib/useStatusToggle';
@@ -124,10 +126,10 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
 
       <div className="p-5 sm:p-8">
         {/* Header com Badge */}
-        <div className="flex items-start justify-between mb-5 sm:mb-6">
-          <div>
+        <div className="flex items-start justify-between mb-5 sm:mb-6 gap-3 min-w-0">
+          <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2 sm:mb-3">
-              <span className="text-2xl sm:text-3xl">{config.emoji}</span>
+              <span className="text-2xl sm:text-3xl flex-shrink-0">{config.emoji}</span>
               {live && (
                 <motion.span
                   animate={{ scale: [1, 1.1, 1] }}
@@ -139,15 +141,15 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
                 </motion.span>
               )}
             </div>
-            <h3 className="text-xl sm:text-3xl font-black text-white mb-1 leading-tight">{event.title}</h3>
+            <EventHeading event={event} client={event.clients} size="lg" className="mb-1" />
             {event.clients?.name ? (
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); hardNavigate(`/client-detail?id=${event.client_id}`); }}
-                className="text-sm text-slate-400 hover:text-cyan-300 transition-colors flex items-center gap-1.5 group"
+                className="text-sm text-slate-400 hover:text-cyan-300 transition-colors flex items-center gap-1.5 group max-w-full min-w-0"
               >
                 <User className="w-3 h-3 group-hover:text-cyan-400 flex-shrink-0" />
-                {event.clients.name}
+                <Ellipsis as="span" className="text-left">{event.clients.name}</Ellipsis>
               </button>
             ) : (
               <p className="text-sm text-slate-500">—</p>
@@ -264,8 +266,8 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
 
         {/* Descrição */}
         {event.description && (
-          <div className="bg-slate-900/50 rounded-lg p-4 mb-6 border border-slate-700/30">
-            <p className="text-sm text-slate-300">{event.description}</p>
+          <div className="bg-slate-900/50 rounded-lg p-4 mb-6 border border-slate-700/30 min-w-0">
+            <ClampedText lines={4} className="text-sm text-slate-300">{event.description}</ClampedText>
           </div>
         )}
 

@@ -201,13 +201,13 @@ export default function ProfileSimple() {
           </div>
         </motion.div>
 
-        <h1 className="text-xl font-black text-white">
+        <h1 className="text-xl font-black text-white truncate max-w-full px-2" title={profile?.name || user?.email?.split('@')[0]}>
           {profile?.name || user?.email?.split('@')[0]}
         </h1>
         <p className="text-sm mt-1" style={{ color: config.primaryHex }}>
           {config.label}
         </p>
-        <p className="text-xs text-slate-500 mt-0.5">{user?.email}</p>
+        <p className="text-xs text-slate-500 mt-0.5 break-all px-4">{user?.email}</p>
         </div>
       </motion.div>
 

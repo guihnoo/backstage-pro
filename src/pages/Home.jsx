@@ -130,14 +130,16 @@ export default function Home() {
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-3xl font-extrabold leading-tight tracking-tight"
+            className="text-3xl font-extrabold leading-tight tracking-tight truncate"
           >
             {greeting},{' '}
             <span
+              className="inline-block max-w-[min(100%,14rem)] truncate align-bottom"
               style={{
                 WebkitTextStroke: `1px ${config.primaryHex}`,
                 textShadow: `0 0 30px ${config.primaryHex}60`,
               }}
+              title={firstName}
             >
               {firstName}
             </span>

@@ -213,8 +213,8 @@ export default function ClientDetailPage() {
           Voltar para todos os clientes
         </button>
 
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 min-w-0">
+          <div className="flex items-center gap-4 min-w-0 flex-1">
             {client.logo_url ? (
               <img src={client.logo_url} alt="Logo" className="w-16 h-16 rounded-lg object-contain bg-white/10 p-1" />
             ) : (
@@ -232,9 +232,9 @@ export default function ClientDetailPage() {
                 }
               </div>
             )}
-            <div>
-              <div className="flex items-center gap-2 mb-0.5">
-                <h1 className="text-2xl font-bold text-white">{client.name}</h1>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 mb-0.5 min-w-0">
+                <h1 className="text-2xl font-bold text-white truncate min-w-0" title={client.name}>{client.name}</h1>
                 {client.client_type === 'pessoa' ? (
                   <span className="text-[11px] bg-purple-600/20 text-purple-300 border border-purple-500/30 rounded px-2 py-0.5">Pessoa</span>
                 ) : (
@@ -242,7 +242,7 @@ export default function ClientDetailPage() {
                 )}
               </div>
               {client.contact_person && (
-                <p className="text-slate-400">
+                <p className="text-slate-400 truncate min-w-0" title={client.contact_person}>
                   {client.client_type === 'pessoa' ? 'Empresa: ' : 'Contato: '}
                   {client.contact_person}
                 </p>

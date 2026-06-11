@@ -139,7 +139,7 @@ const MetricCard = ({ title, value, subtitle, icon: Icon, color = "slate", trend
         <div className="min-w-0">
           <p className="text-slate-400 text-xs uppercase font-medium mb-1">{title}</p>
           <p className={`text-2xl font-bold ${cc.value} truncate`}>{value}</p>
-          {subtitle && <p className="text-slate-500 text-xs mt-1">{subtitle}</p>}
+          {subtitle && <p className="text-slate-500 text-xs mt-1 truncate" title={subtitle}>{subtitle}</p>}
         </div>
         <Icon className={`w-8 h-8 ${cc.icon} opacity-60`} />
       </div>
@@ -455,16 +455,16 @@ export default function ClientDetailModal({
                             {clientData.upcomingEvents.slice(0, 3).map((event) =>
                               <div
                                 key={event.id}
-                                className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-700 cursor-pointer transition-all"
+                                className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-700 cursor-pointer transition-all gap-3 min-w-0"
                                 onClick={() => handleEventClick(event)}>
 
-                                <div>
-                                  <p className="font-medium text-white">{event.title}</p>
-                                  <p className="text-sm text-slate-400">
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-medium text-white truncate" title={event.title}>{event.title}</p>
+                                  <p className="text-sm text-slate-400 truncate">
                                     {formatDateWithWeekday(event.start_date)} - {formatDateWithWeekday(event.end_date)}
                                   </p>
                                 </div>
-                                <div className="text-right">
+                                <div className="text-right flex-shrink-0">
                                   {getEventCacheAmount(event) > 0 && (
                                     <p className="text-sm font-medium text-green-400">
                                       {formatCurrency(getEventCacheAmount(event))}
@@ -494,15 +494,15 @@ export default function ClientDetailModal({
                           </CardHeader>
                           <CardContent className="space-y-3">
                             {client.email &&
-                              <div className="flex items-center justify-between">
-                                <span className="text-slate-400">Email:</span>
-                                <span className="text-white font-medium">{client.email}</span>
+                              <div className="flex items-center justify-between gap-3 min-w-0">
+                                <span className="text-slate-400 flex-shrink-0">Email:</span>
+                                <span className="text-white font-medium break-all text-right min-w-0">{client.email}</span>
                               </div>
                             }
                             {client.phone &&
-                              <div className="flex items-center justify-between">
-                                <span className="text-slate-400">Telefone:</span>
-                                <span className="text-white font-medium">{client.phone}</span>
+                              <div className="flex items-center justify-between gap-3 min-w-0">
+                                <span className="text-slate-400 flex-shrink-0">Telefone:</span>
+                                <span className="text-white font-medium truncate min-w-0" title={client.phone}>{client.phone}</span>
                               </div>
                             }
                             {client.notes &&
