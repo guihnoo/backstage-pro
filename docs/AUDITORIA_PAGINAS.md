@@ -68,10 +68,12 @@
 | `DayBottomSheet` | [x] | 🟢 | `useAppScrollLock` + `bp-modal-scroll` ✅ |
 | `EventActionSheet` (mobile) | [x] | 🟢 | `useAppScrollLock` + `bp-modal-scroll` ✅ |
 | `EventHoursSheet` | [x] | 🟢 | `useAppScrollLock` + `bp-modal-scroll` ✅ |
-| `AlertsPanel` | [x] | 🟢 | inline ✅; cor CTA cyan corrigida sessão 19 |
+| `AlertsPanel` | [x] | 🟢 | `min-w-0` + `break-words` no body; títulos longos não extrapolam ✅ lapida |
+| `CalendarTodayStrip` | [x] | 🟢 | `EventHeading` (company name) + prop `clients`; location truncate correto ✅ lapida |
+| `EventDetailModal` client name | [x] | 🟢 | `max-w-[200px] sm:max-w-[300px]` — não corta nomes médios em mobile ✅ lapida |
 | Multi-eventos (inline) | [x] | 🟢 | `max-h-80 overflow-y-auto` + `useAppScrollLock` ✅ |
 
-**Testes:** calendar-navigation ✅ · event-form auth ✅
+**Testes:** calendar-navigation ✅ · event-form auth ✅ · 18 smoke ✅ (lapida `85d0c2e`)
 
 ---
 
