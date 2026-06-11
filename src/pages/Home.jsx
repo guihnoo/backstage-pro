@@ -1,19 +1,16 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig, getCategoryMotivation } from '@/lib/categoryConfig';
-import { useStats, useUpcomingEvent, usePaymentAlerts, useEvents } from '@/lib/useBackstageData';
-import { useDailyWork } from '@/lib/useDailyWork';
+import { useHomeDashboard } from '@/lib/useHomeDashboard';
 import { todayLocalISO, isDateBetween, getWorkForDate } from '@/components/utils/dateUtils';
 import { isCancelledEvent } from '@/lib/eventFinance';
 import ProximoShow from '@/components/home/ProximoShow';
-import EventDetailModal from '@/components/calendar/EventDetailModal';
 import MetaMensalBar from '@/components/home/MetaMensalBar';
 import QuickStats from '@/components/home/QuickStats';
 import AReceber from '@/components/home/AReceber';
 import AlertasBastidao from '@/components/home/AlertasBastidao';
-import { useReceivableByClient } from '@/lib/useReceivable';
 import PipelineFinanceiro from '@/components/home/PipelineFinanceiro';
 import ProximosEventos from '@/components/home/ProximosEventos';
 import ForecastWidget from '@/components/home/ForecastWidget';
@@ -23,6 +20,13 @@ import { NeonAtmosphere } from '@/components/design/NeonAtmosphere';
 import { LightingBeams } from '@/components/design/LightingBeams';
 import { NeonLevelBars } from '@/components/design/NeonLevelBars';
 import { NeonSectionFrame } from '@/components/design/NeonSectionFrame';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const EventDetailModal = lazy(() => import('@/components/calendar/EventDetailModal'));
+
+function SectionSkeleton({ className = 'h-28' }) {
+  return <Skeleton className={`w-full rounded-xl bg-slate-800/60 ${className}`} />;
+}
 
 export default function Home() {
   const { user, profile } = useAuth();
@@ -40,38 +44,30 @@ export default function Home() {
   })();
 
   const today = todayLocalISO();
-  const { stats, loading: statsLoading, refetch: refetchStats } = useStats(userId);
-  const { event: proximoEvento, loading: proximoLoading, refetch: refetchProximoEvento } = useUpcomingEvent(userId);
-  const { alerts, loading: alertsLoading, refetch: refetchAlerts } = usePaymentAlerts(userId);
-  const { dailyWork, refetch: refetchDailyWork } = useDailyWork();
   const {
-    rows: receivableRows,
+    stats,
+    proximoEvento,
+    alerts,
+    receivableRows,
     totalReceivable,
-    loading: receivableLoading,
+    upcomingEvents,
+    dailyWork,
+    loading,
+    refetch,
     markClientPaid,
-    refetch: refetchReceivable,
-  } = useReceivableByClient(userId);
-
-  const {
-    events: upcomingEvents,
-    loading: upcomingLoading,
-    refetch: refetchUpcoming,
-  } = useEvents(userId, { endAfter: today, limit: 30, ascending: true, excludeCancelled: true });
+  } = useHomeDashboard(userId);
 
   const proximosEventos = useMemo(
-    () => upcomingEvents.filter(e => !isCancelledEvent(e)).slice(0, 5),
+    () => upcomingEvents.filter((e) => !isCancelledEvent(e)).slice(0, 5),
     [upcomingEvents]
   );
 
   const forecastEvents = useMemo(
-    () => upcomingEvents.filter(e => !isCancelledEvent(e)),
+    () => upcomingEvents.filter((e) => !isCancelledEvent(e)),
     [upcomingEvents]
   );
 
-  const todayWork = useMemo(
-    () => getWorkForDate(dailyWork, today),
-    [dailyWork, today]
-  );
+  const todayWork = useMemo(() => getWorkForDate(dailyWork, today), [dailyWork, today]);
 
   const isShowToday = proximoEvento
     ? isDateBetween(
@@ -83,37 +79,24 @@ export default function Home() {
 
   const isLiveShift = Boolean(
     isShowToday &&
-    proximoEvento?.id &&
-    todayWork?.event_id === proximoEvento.id &&
-    todayWork?.entry_time &&
-    !todayWork?.exit_time
+      proximoEvento?.id &&
+      todayWork?.event_id === proximoEvento.id &&
+      todayWork?.entry_time &&
+      !todayWork?.exit_time
   );
 
   const palcoAtivo = isLiveShift || isShowToday;
   const hasAlerts = alerts.length > 0;
 
   const refreshCockpit = useCallback(() => {
-    refetchStats();
-    refetchProximoEvento();
-    refetchAlerts();
-    refetchReceivable();
-    refetchUpcoming();
-    refetchDailyWork();
-  }, [
-    refetchStats,
-    refetchProximoEvento,
-    refetchAlerts,
-    refetchReceivable,
-    refetchUpcoming,
-    refetchDailyWork,
-  ]);
+    refetch();
+  }, [refetch]);
 
   const handleMarkPaid = useCallback(
     async (clientId, paidAmount) => {
       await markClientPaid(clientId, paidAmount);
-      refreshCockpit();
     },
-    [markClientPaid, refreshCockpit]
+    [markClientPaid]
   );
 
   return (
@@ -199,36 +182,44 @@ export default function Home() {
 
       <div className="px-4 py-6 max-w-2xl mx-auto pb-28">
         <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Próximo show">
-          <ProximoShow
-            event={proximoEvento}
-            userCategory={categoryId}
-            isOnStage={isShowToday}
-            isLiveShift={isLiveShift}
-            isLoading={proximoLoading}
-            onViewEvent={setDetailEvent}
-            onRefresh={refreshCockpit}
-          />
+          {loading ? (
+            <SectionSkeleton className="h-36" />
+          ) : (
+            <ProximoShow
+              event={proximoEvento}
+              userCategory={categoryId}
+              isOnStage={isShowToday}
+              isLiveShift={isLiveShift}
+              isLoading={false}
+              onViewEvent={setDetailEvent}
+              onRefresh={refreshCockpit}
+            />
+          )}
         </NeonSectionFrame>
 
         {hasAlerts && (
           <AlertasBastidao
             alerts={alerts}
-            isLoading={alertsLoading}
+            isLoading={loading}
             primaryHex={config.primaryHex}
             accentHex={config.accentHex}
           />
         )}
 
-        <AReceber
-          rows={receivableRows}
-          totalReceivable={totalReceivable}
-          isLoading={receivableLoading}
-          onMarkPaid={handleMarkPaid}
-        />
+        {loading ? (
+          <SectionSkeleton className="h-32 mb-4" />
+        ) : (
+          <AReceber
+            rows={receivableRows}
+            totalReceivable={totalReceivable}
+            isLoading={false}
+            onMarkPaid={handleMarkPaid}
+          />
+        )}
 
         <QuickStats
           stats={stats}
-          isLoading={statsLoading}
+          isLoading={loading}
           primaryHex={config.primaryHex}
           accentHex={config.accentHex}
         />
@@ -236,60 +227,66 @@ export default function Home() {
         <MetaMensalBar
           profile={profile}
           stats={stats}
-          isLoading={statsLoading}
+          isLoading={loading}
           accentColor={config.primaryHex}
         />
 
         <PipelineFinanceiro
           stats={stats}
-          isLoading={statsLoading}
+          isLoading={loading}
           primaryHex={config.primaryHex}
           accentHex={config.accentHex}
         />
 
         <ForecastWidget
           events={forecastEvents}
-          isLoading={upcomingLoading}
+          isLoading={loading}
           primaryHex={config.primaryHex}
           accentHex={config.accentHex}
           onViewEvent={setDetailEvent}
         />
 
         <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Agenda">
-          <ProximosEventos
-            events={proximosEventos}
-            isLoading={upcomingLoading}
-            userCategory={categoryId}
-            onRefresh={refreshCockpit}
-            onViewEvent={setDetailEvent}
-          />
+          {loading ? (
+            <SectionSkeleton className="h-40" />
+          ) : (
+            <ProximosEventos
+              events={proximosEventos}
+              isLoading={false}
+              userCategory={categoryId}
+              onRefresh={refreshCockpit}
+              onViewEvent={setDetailEvent}
+            />
+          )}
         </NeonSectionFrame>
       </div>
 
       <FloatingActions />
 
       {detailEvent && (
-        <EventDetailModal
-          event={detailEvent}
-          client={detailEvent.clients || null}
-          onClose={() => setDetailEvent(null)}
-          onEdit={() => {
-            setDetailEvent(null);
-            hardNavigate('/calendar');
-          }}
-          onDelete={() => {
-            setDetailEvent(null);
-            refreshCockpit();
-          }}
-          onMarkPaid={() => {
-            setDetailEvent(null);
-            refreshCockpit();
-          }}
-          onAddWork={() => {
-            setDetailEvent(null);
-            hardNavigate('/calendar');
-          }}
-        />
+        <Suspense fallback={null}>
+          <EventDetailModal
+            event={detailEvent}
+            client={detailEvent.clients || null}
+            onClose={() => setDetailEvent(null)}
+            onEdit={() => {
+              setDetailEvent(null);
+              hardNavigate('/calendar');
+            }}
+            onDelete={() => {
+              setDetailEvent(null);
+              refreshCockpit();
+            }}
+            onMarkPaid={() => {
+              setDetailEvent(null);
+              refreshCockpit();
+            }}
+            onAddWork={() => {
+              setDetailEvent(null);
+              hardNavigate('/calendar');
+            }}
+          />
+        </Suspense>
       )}
     </div>
   );

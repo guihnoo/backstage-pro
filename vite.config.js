@@ -25,6 +25,13 @@ export default defineConfig({
         clientsClaim: true,
         importScripts: ['push-sw.js'],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globIgnores: [
+          '**/react-pdf.browser*.js',
+          '**/EventPDFDocument*.js',
+          '**/vendor-charts*.js',
+          '**/AI_Mentor*.js',
+          '**/BrazilVisitedMap*.js',
+        ],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
