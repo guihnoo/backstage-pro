@@ -15,7 +15,6 @@ import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
 import { NeonAtmosphere } from '@/components/design/NeonAtmosphere';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import { LightingBeams } from '@/components/design/LightingBeams';
-import BackstageLogo from '@/components/brand/BackstageLogo';
 
 const hero = getCategoryConfig(AUTH_HERO_CATEGORY);
 
@@ -46,11 +45,7 @@ export default function SignupNew() {
       <FloatingEquipment categoryId={AUTH_HERO_CATEGORY} primary={hero.primaryHex} />
       <div className="relative z-10 min-h-screen flex items-center justify-center px-5 py-10">
         <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
-          <div className="flex flex-col items-center mb-6">
-            <BackstageLogo size="lg" primary={hero.primaryHex} accent={hero.accentHex} showWordmark className="items-center" />
-            <h1 className="text-2xl font-black mt-5">Entre no backstage.</h1>
-            <p className="text-sm text-[#8a91a1] mt-2 font-mono">Crie sua conta de freelancer.</p>
-          </div>
+          <div className="text-center mb-6"><h1 className="text-3xl font-black">Entre no backstage.</h1><p className="text-sm text-[#8a91a1] mt-2 font-mono">Crie sua conta de freelancer.</p></div>
           <NeonGlass primary={hero.primaryHex} glow className="p-5 space-y-5">
             <SocialLoginButtons mode="signup" />
             {success ? <div className="text-center space-y-3 text-sm"><p>Confirme seu email para ativar a conta.</p><Button asChild variant="outline" className="w-full border-[#23262f] bg-transparent"><Link to="/login">Ir para login</Link></Button></div> : (
