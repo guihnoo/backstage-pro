@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { getOpenDialogElement } from '@/lib/portalContainer';
 import { Check, ChevronsUpDown, Plus, Building2, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -19,6 +20,7 @@ export default function ClientCombobox({
   value,
   onChange,
   onCreateClient,
+  onQuickCreateOpenChange,
   disabled = false,
   placeholder = 'Buscar cliente ou criar novo...',
 }) {
@@ -26,6 +28,19 @@ export default function ClientCombobox({
   const [query, setQuery] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [pendingName, setPendingName] = useState('');
+  const [portalContainer, setPortalContainer] = useState(undefined);
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setPortalContainer(undefined);
+      return;
+    }
+    setPortalContainer(getOpenDialogElement() || undefined);
+  }, [open]);
+
+  useEffect(() => {
+    onQuickCreateOpenChange?.(dialogOpen);
+  }, [dialogOpen, onQuickCreateOpenChange]);
 
   const selected = useMemo(() => clients.find((c) => c.id === value), [clients, value]);
 
@@ -80,7 +95,12 @@ export default function ClientCombobox({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-slate-900 border-slate-700" align="start">
+      <PopoverContent
+        container={portalContainer}
+        className="w-[var(--radix-popover-trigger-width)] p-0 bg-slate-900 border-slate-700"
+        align="start"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <Command shouldFilter>
           <CommandInput
             placeholder="Digite o nome para buscar ou criar..."
@@ -95,12 +115,13 @@ export default function ClientCombobox({
                 <CommandItem
                   key={client.id}
                   value={client.name}
+                  onMouseDown={(e) => e.preventDefault()}
                   onSelect={() => {
                     onChange(client.id);
                     setOpen(false);
                     setQuery('');
                   }}
-                  className="text-slate-200"
+                  className="text-slate-200 cursor-pointer"
                 >
                   <span
                     className="w-2.5 h-2.5 rounded-full mr-2 flex-shrink-0"
@@ -124,8 +145,9 @@ export default function ClientCombobox({
                 <CommandGroup>
                   <CommandItem
                     value={`criar-${trimmedQuery}`}
+                    onMouseDown={(e) => e.preventDefault()}
                     onSelect={handleOpenQuickCreate}
-                    className="text-cyan-300"
+                    className="text-cyan-300 cursor-pointer"
                   >
                     <Plus className="w-4 h-4 mr-2 flex-shrink-0" />
                     {`Criar "${trimmedQuery}"`}

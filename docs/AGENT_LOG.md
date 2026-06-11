@@ -502,6 +502,15 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+### FIX-EVENTFORM-COMBOBOX — Combobox inerte no modal — 2026-06-10
+- **Agente**: Cursor (Auto)
+- **Causa**: Popover/Select portados no `body` ficavam sob `inert` do Dialog Radix — cliques não registravam
+- **Fix**: `portalContainer.js`; Popover/Select portam dentro do dialog aberto; `Dialog.onInteractOutside` ignora popover; `EventForm` `modal={false}` ao abrir quick-create; toasts em falha de create; fallback `client_type` em `useClients`
+- **Teste**: `e2e/regression/event-form-client-combobox.spec.js` ✅
+- **Deploy**: Vercel `dpl_8kxBhiWDxwrxVBojCGhDVJtsWuQP` + migrations 021/022 confirmadas no Supabase
+
+---
+
 ### DEEP-AUDIT-S23 — Lapidação página a página (Home + Calendar + Reports) — 2026-06-10
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Metodologia**: 5 eixos por página — Segurança, Performance, Design/UX, Funcionalidade, Infra/Código

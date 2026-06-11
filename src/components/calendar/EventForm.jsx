@@ -62,6 +62,7 @@ export default function EventForm({
   const [loading, setLoading] = useState(false);
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [clientQuickCreateOpen, setClientQuickCreateOpen] = useState(false);
   const [formData, setFormData] = useState(defaultState);
 
   useEffect(() => {
@@ -110,9 +111,16 @@ export default function EventForm({
   );
 
   const handleCreateClient = useCallback(async (data) => {
-    const created = await createClient(data);
-    setExtraClients((prev) => [...prev, created]);
-    return created;
+    try {
+      const created = await createClient(data);
+      setExtraClients((prev) => [...prev, created]);
+      return created;
+    } catch (error) {
+      toast.error('Não foi possível criar o cliente.', {
+        description: error?.message || 'Verifique conexão e migração client_type no Supabase.',
+      });
+      throw error;
+    }
   }, [createClient]);
 
   const eventSummary = useMemo(() => {
@@ -256,7 +264,7 @@ export default function EventForm({
       onClose={() => setShowTemplateModal(false)}
       onSelectTemplate={handleSelectTemplate}
     />
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={onClose} modal={!clientQuickCreateOpen && !showTemplateModal}>
       <DialogContent className="sm:max-w-2xl bg-slate-900 border-slate-700 text-white p-0 flex flex-col overflow-hidden h-[95dvh] max-h-[95dvh]">
         <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 sm:pt-5 border-b border-slate-700 flex-shrink-0">
           <div className="flex items-center justify-between">
@@ -304,6 +312,7 @@ export default function EventForm({
                 value={formData.client_id}
                 onChange={handleClientChange}
                 onCreateClient={handleCreateClient}
+                onQuickCreateOpenChange={setClientQuickCreateOpen}
               />
             )}
           </div>

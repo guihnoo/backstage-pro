@@ -37,11 +37,23 @@ export function useClients() {
   const create = useCallback(async (data) => {
     const payload = { ...data, user_id: userId };
     delete payload.owner_id;
-    const { data: result, error: err } = await supabase
+
+    let { data: result, error: err } = await supabase
       .from('clients')
       .insert(payload)
       .select()
       .single();
+
+    if (err && payload.client_type && /client_type/i.test(err.message || '')) {
+      const fallback = { ...payload };
+      delete fallback.client_type;
+      ({ data: result, error: err } = await supabase
+        .from('clients')
+        .insert(fallback)
+        .select()
+        .single());
+    }
+
     if (err) throw err;
     setClients(prev => [...prev, result].sort((a, b) => a.name.localeCompare(b.name)));
     return result;
