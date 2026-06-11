@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, useMotionValue, animate } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   Calendar,
@@ -124,7 +124,7 @@ export default function ExpenseListItem({ expense, event, onEdit, onDelete, onMa
             <div className="flex items-center gap-4 text-sm text-slate-400 flex-wrap">
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5" />
-                <span>{format(new Date(expense.date || expense.expense_date), "dd/MM/yyyy", { locale: ptBR })}</span>
+                <span>{(expense.date || expense.expense_date) ? format(parseISO(expense.date || expense.expense_date), "dd/MM/yyyy", { locale: ptBR }) : '—'}</span>
               </div>
               {event && (
                 <button

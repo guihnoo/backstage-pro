@@ -13,8 +13,10 @@ Registro cronológico de tarefas executadas por agentes.
 - **`Expenses.jsx`**: `const CATEGORY_LABELS` estava entre `import` statements — movido para após todos os imports (ES module correto)
 - **`AI_Mentor.jsx`**: textarea do chat agora faz auto-resize ao digitar (`scrollHeight` até 120px); reseta ao enviar mensagem
 - **`Clients.jsx`**: lógica duplicada de formatação de número WhatsApp substituída por `formatWhatsAppNumber()` de `@/lib/whatsapp`
-- **Build**: Vite ✅ (30.68s) — sem warnings novos
-- **Arquivos**: `src/pages/ProfileSimple.jsx`, `src/pages/Goals.jsx`, `src/pages/Expenses.jsx`, `src/pages/AI_Mentor.jsx`, `src/pages/Clients.jsx`, `docs/RELATORIO_VIDA_APP.md`, `docs/AGENT_LOG.md`
+- **Bug timezone `ExpenseListItem.jsx`**: `new Date(expense.date)` → `parseISO(expense.date)` — datas de despesas exibiam 1 dia a menos no Brasil (UTC-3) pois JS trata `'YYYY-MM-DD'` como UTC midnight
+- **Bug timezone `ReportsChart.jsx`**: `new Date(Date.UTC(...))` → `parseISO(item.date)` — rótulos de eixo dos gráficos sofriam mesmo problema
+- **Build**: Vite ✅ (23.15s) — sem warnings novos
+- **Arquivos**: `src/pages/ProfileSimple.jsx`, `src/pages/Goals.jsx`, `src/pages/Expenses.jsx`, `src/pages/AI_Mentor.jsx`, `src/pages/Clients.jsx`, `src/components/expenses/ExpenseListItem.jsx`, `src/components/reports/ReportsChart.jsx`, `docs/RELATORIO_VIDA_APP.md`, `docs/AGENT_LOG.md`
 
 ---
 

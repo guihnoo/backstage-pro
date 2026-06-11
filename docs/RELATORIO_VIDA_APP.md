@@ -74,17 +74,20 @@ Ordem oficial após fix de scroll (2026-06-05):
 
 ## Changelog
 
-### 2026-06-11 (sessão S26) — Lapidação profissional: polish em 6 pontos
+### 2026-06-11 (sessão S26) — Lapidação profissional: 8 fixes de polish + 2 bugs timezone
 
-**Páginas/componentes polidos:** ProfileSimple, Goals, Expenses, Clients, AI_Mentor  
+**Páginas/componentes polidos:** ProfileSimple, Goals, Expenses, Clients, AI_Mentor, ExpenseListItem, ReportsChart  
 **Fixes de polish:**  
-- `ProfileSimple.jsx` — removido `overflow-hidden` do container do avatar (emoji da categoria estava sendo cortado por `overflow-hidden`)  
+- `ProfileSimple.jsx` — removido `overflow-hidden` do container do avatar (emoji da categoria estava sendo cortado)  
 - `ProfileSimple.jsx` — footer "v1.0 MVP" → "v1.0" (linguagem profissional)  
-- `Goals.jsx` — ícone `TrendingUp` em níveis já alcançados substituído por `CheckCircle2` (semântica correta: "concluído", não "em ascensão")  
-- `Expenses.jsx` — `const CATEGORY_LABELS` movido para após todos os `import` (código ES module correto)  
-- `AI_Mentor.jsx` — textarea do chat agora faz auto-resize ao digitar (antes ficava em 1 linha; agora cresce até 120px e reseta ao enviar)  
-- `Clients.jsx` — código WhatsApp duplicado (`phone.replace + length check`) substituído por `formatWhatsAppNumber()` já existente em `@/lib/whatsapp`  
-**Build:** Vite ✅ (30.68s)
+- `Goals.jsx` — ícone `TrendingUp` em níveis já alcançados → `CheckCircle2` (semântica correta)  
+- `Expenses.jsx` — `const CATEGORY_LABELS` movido para após todos os `import` (ES module correto)  
+- `AI_Mentor.jsx` — textarea do chat faz auto-resize ao digitar (antes fixo em 1 linha; cresce até 120px, reseta ao enviar)  
+- `Clients.jsx` — código WhatsApp duplicado substituído por `formatWhatsAppNumber()` de `@/lib/whatsapp`  
+**Bugs de timezone corrigidos:**  
+- `ExpenseListItem.jsx` — `new Date(expense.date)` → `parseISO(expense.date)`: no Brasil (UTC-3) as datas de despesas exibiam 1 dia a menos pois `new Date('YYYY-MM-DD')` interpreta como UTC midnight  
+- `ReportsChart.jsx` — `new Date(Date.UTC(...))` → `parseISO(item.date)`: rótulos dos eixos do gráfico também exibiam data incorreta no Brasil  
+**Build:** Vite ✅ (23.15s)
 
 ---
 

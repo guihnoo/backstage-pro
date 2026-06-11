@@ -7,7 +7,7 @@ import {
 } from 'recharts';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, TrendingUp, Wallet, LineChart as LineChartIcon } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 
@@ -122,7 +122,7 @@ export default function ReportsChart({ chartInput, onDataClick }) {
         let displayName;
         try {
           const [year, month, day] = item.date.split('-');
-          displayName = format(new Date(Date.UTC(+year, +month - 1, +day)), 'dd/MM', { locale: ptBR });
+          displayName = format(parseISO(item.date), 'dd/MM', { locale: ptBR });
         } catch {
           displayName = item.date;
         }
