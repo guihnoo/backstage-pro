@@ -74,6 +74,19 @@ Ordem oficial após fix de scroll (2026-06-05):
 
 ## Changelog
 
+### 2026-06-11 (sessão S24) — Bugfix crítico: criar evento/selecionar/criar cliente
+
+**Causa raiz:** `EventForm` abria via `useQueryAction` antes de `useClients()` terminar. Com `clients=[]` (estado inicial de loading) mostrava "Cadastre um cliente antes" — falso positivo que bloqueava o fluxo mesmo para quem já tinha clientes.  
+**Fixes:**  
+- `EventForm.jsx` + `Calendar.jsx` — prop `clientsLoading`; skeleton durante loading em vez de mensagem de erro prematura  
+- `ClientQuickCreateDialog.jsx` — `razao_social` removido do payload de INSERT (coluna não existe em `clients`; já vai para `notes` via `buildCompanyNotes`)  
+- `ClientForm.jsx` — botão submit era `type="submit"` fora do `<form>`; alterado para `type="button"` (comportamento correto em Safari/iOS)  
+- `companies` RLS — `auth.role() = 'authenticated'` deprecated → `TO authenticated` (migration `023_fix_companies_rls.sql` aplicada)  
+- Toasts sem acentos corrigidos em `ClientForm` e `EventForm`  
+**Build:** Vite ✅ (24.81s) | **Deploy:** Vercel push `e00ee14` + migration 023 Supabase ✅
+
+---
+
 ### 2026-06-10 (sessão 22) — Fixes client_type + EventForm + ClientDetail
 
 **client_type display polish:** `ClientDetail.jsx` — avatar purple com ícone `User` para pessoa, avatar gradient neon + inicial para empresa; badge "Pessoa"/"Empresa" ao lado do nome; label "Empresa:" / "Contato:" dinâmico para `contact_person`.  

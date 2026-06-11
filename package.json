@@ -9,6 +9,7 @@
     "dev:full": "concurrently -n api,web -c blue,green \"npm run dev:server\" \"npm run dev\"",
     "build": "vite build",
     "icons:generate": "node scripts/generate-pwa-icons.mjs",
+    "push:setup-cron": "node scripts/setup-push-cron.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "start:server": "node server/index.js",
