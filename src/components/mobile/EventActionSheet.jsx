@@ -139,7 +139,7 @@ export default function EventActionSheet({
                 <div className="flex items-center gap-2 text-slate-300">
                   <Calendar className="w-4 h-4 text-slate-500" />
                   <span>
-                    {formatDisplayDate(event.start_date)} - {formatDisplayDate(event.end_date)}
+                    {formatDisplayDate(event.start_date)}{event.end_date && event.end_date !== event.start_date ? ` - ${formatDisplayDate(event.end_date)}` : ''}
                   </span>
                 </div>
                 {getEventCacheAmount(event) > 0 && (

@@ -136,7 +136,7 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
       onClose?.(false);
     } catch (error) {
       console.error('Erro ao salvar registro de trabalho:', error);
-      toast.error('Nao foi possivel salvar o registro de trabalho.');
+      toast.error('Não foi possível salvar o registro de trabalho.');
     } finally {
       setLoading(false);
     }

@@ -502,6 +502,24 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+### DEEP-AUDIT-S23 — Lapidação página a página (Home + Calendar + Reports) — 2026-06-10
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Metodologia**: 5 eixos por página — Segurança, Performance, Design/UX, Funcionalidade, Infra/Código
+- **Bugs corrigidos**:
+  - `ProximoShow.jsx` — `parseISO(null)` crash + ícone `User` errado no grid Status → `isValid` guard + `CheckCircle2`/`Circle` semânticos
+  - `PipelineFinanceiro.jsx` — `stats.faturamento_pago + stats.a_receber` sem `?.` → variáveis locais com fallback `?? 0`
+  - `AReceber.jsx` — painel confirmação e expansão de eventos abriam simultaneamente → `setConfirming(null)` no `toggleExpand`
+  - `ForecastWidget.jsx` — deps `today`/`in30` ignoradas no `useMemo` → `todayMs = startOfDay(new Date()).getTime()` nas deps
+  - `calendar/EventDetailModal.jsx` — `window.location.reload()` após aplicar 12h → `onMarkPaid?.()` (refresh sem reload)
+  - `AlertsPanel.jsx` — `dismissedAlerts` local resetado em cada reload → `sessionStorage` para persistir na sessão
+  - `Calendar.jsx` — `workDays = monthWork.length` contava entradas brutas → `new Set` de datas únicas
+  - `Calendar.jsx` — `useMediaQuery` com `matches` nas deps → loop potencial → `useState(() => media.matches)` + listener via `e.matches`
+  - `EventForm.jsx` — sem validação data_fim < data_início → toast de erro adicionado
+  - `Reports.jsx` — `parseISO(event.paid_date)` sem null-check (3 pontos) → guards `? format(...) : '--'`
+- **Build**: Vite ✅ (17.89s)
+- **Arquivos**: `ProximoShow.jsx`, `PipelineFinanceiro.jsx`, `AReceber.jsx`, `ForecastWidget.jsx`, `calendar/EventDetailModal.jsx`, `AlertsPanel.jsx`, `Calendar.jsx`, `EventForm.jsx`, `Reports.jsx`
+- **Pendente**: Continuar auditoria — Clientes (clean), Despesas, Metas, Perfil, AI Mentor, componentes compartilhados
+
 ### PAGE-AUDIT-S22 — Fixes client_type display + EventForm + ClientDetail — 2026-06-10
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Arquivos modificados**:
@@ -514,3 +532,18 @@ Registro cronológico de tarefas executadas por agentes.
 - **Deploy**: Vercel prod ✅ `dpl_CSCrk4jRwwdQwJaVUjAy7ie7wBiX`; Supabase `ai-chat` + `analyze-receipt` ✅
 - **Auditoria página a página**: todas as rotas 🟢 — auditoria completa encerrada
 - **Notas**: EventForm scroll fix (`h-[95dvh]`), ClientCombobox "Criar" bug fix e ClientQuickCreateDialog rewrite (Empresa+Pessoa) foram feitos em sessões 20–21; sessão 22 completou o polish em `ClientDetail.jsx` e fechou a auditoria
+
+### DEEP-AUDIT-S23b — Lapidação página a página continuação (Goals + AI Mentor + mobile sheets) — 2026-06-10
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Metodologia**: Continuação da sessão DEEP-AUDIT-S23 — Goals, AI Mentor, ClientDetail, EventActionSheet, EventHoursSheet, NotesSheet, ClientInsightsModal, Clients, Onboarding
+- **Bugs corrigidos**:
+  - `Goals.jsx` — `parseISO(ev.start_date)` sem guard → `if (!ev.start_date) return null`
+  - `AI_Mentor.jsx` — `parseISO(conv.createdAt)` sem null-check → guard `conv.createdAt ?`
+  - `AI_Mentor.jsx` — `window.speechSynthesis` sem checar suporte do browser → guards `if (!window.speechSynthesis)`
+  - `DailyWorkModal.jsx` — toast sem acentos "Nao foi possivel salvar" → "Não foi possível salvar o registro de trabalho."
+  - `EventHoursSheet.jsx` — validação `exit_time <= entry_time` como string bloqueava turnos overnight (23:00→01:00) → removida comparação (calculateHours já trata via +24h)
+  - `EventActionSheet.jsx` — `formatDisplayDate(event.end_date)` quando null rendia traço sobrando " - " → condicional `event.end_date && event.end_date !== event.start_date`
+- **Componentes limpos (sem bug)**: `ClientDetail.jsx`, `NotesSheet.jsx`, `ClientInsightsModal.jsx`, `Clients.jsx`, `Onboarding.jsx`, `ProfileSimple.jsx`, `Expenses.jsx`
+- **Build**: Vite ✅ (22.85s)
+- **Arquivos**: `Goals.jsx`, `AI_Mentor.jsx`, `DailyWorkModal.jsx`, `EventHoursSheet.jsx`, `EventActionSheet.jsx`
+- **Deploy**: pendente (agrupado com sessão S23)

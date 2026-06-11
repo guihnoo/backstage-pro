@@ -41,7 +41,7 @@ function newConversation() {
 
 function ConversationItem({ conv, isActive, onSelect, onDelete }) {
   const preview = conv.messages?.[0]?.content?.slice(0, 55) || 'Conversa vazia';
-  const date = format(parseISO(conv.createdAt), "d MMM", { locale: ptBR });
+  const date = conv.createdAt ? format(parseISO(conv.createdAt), "d MMM", { locale: ptBR }) : '--';
 
   return (
     <motion.div
@@ -99,7 +99,7 @@ export default function AIMentorPage() {
 
   // TTS nas respostas do assistente
   useEffect(() => {
-    if (!isAudioEnabled || !messages.length) return;
+    if (!isAudioEnabled || !messages.length || !window.speechSynthesis) return;
     const last = messages[messages.length - 1];
     if (last?.role === 'assistant') {
       window.speechSynthesis.cancel();
@@ -113,7 +113,7 @@ export default function AIMentorPage() {
 
   const toggleAudio = useCallback(() => {
     setIsAudioEnabled(prev => {
-      if (prev) window.speechSynthesis.cancel();
+      if (prev && window.speechSynthesis) window.speechSynthesis.cancel();
       toast.success(!prev ? 'Áudio ativado' : 'Áudio desativado');
       return !prev;
     });

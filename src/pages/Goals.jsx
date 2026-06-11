@@ -687,6 +687,7 @@ export default function Goals() {
                 ) : (
                   <div className="space-y-2">
                     {upcomingEvents.map((ev, i) => {
+                      if (!ev.start_date) return null;
                       const days = differenceInCalendarDays(parseISO(ev.start_date), new Date());
                       const isUrgent = days <= 1;
                       const label = days === 0 ? 'Hoje' : days === 1 ? 'Amanhã' : `em ${days}d`;

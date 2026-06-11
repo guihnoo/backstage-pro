@@ -131,9 +131,7 @@ export default function EventHoursSheet({
         break;
       case 'exit_time':
         if (!value) newErrors.exit_time = 'Horário de saída é obrigatório';
-        else if (formData.entry_time && value <= formData.entry_time) {
-          newErrors.exit_time = 'Horário de saída deve ser depois do horário de entrada';
-        } else delete newErrors.exit_time;
+        else delete newErrors.exit_time;
         break;
       default:
         break;
