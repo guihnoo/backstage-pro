@@ -118,7 +118,9 @@
       "Bash(cat src/lib/portalContainer.js)",
       "Bash(cat src/lib/portalContainer.jsx)",
       "Bash(find src *)",
-      "Bash(curl *)"
+      "Bash(curl *)",
+      "Bash(start *)",
+      "Bash(powershell -Command \"\\(Get-Content 'C:\\\\Users\\\\monte\\\\OneDrive\\\\Documentos\\\\backstage-pro\\\\docs\\\\AGENT_LOG.md'\\).Count\")"
     ]
   },
   "enabledMcpjsonServers": [
