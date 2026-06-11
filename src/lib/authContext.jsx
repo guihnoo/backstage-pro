@@ -169,6 +169,13 @@ export function AuthProvider({ children }) {
     if (error) throw error;
   };
 
+  const resetPassword = async (email) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+    });
+    if (error) throw error;
+  };
+
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
@@ -206,6 +213,7 @@ export function AuthProvider({ children }) {
     signInWithOAuth,
     signInWithPassword,
     signUp,
+    resetPassword,
     signOut,
     updateProfile,
   };
