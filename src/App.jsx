@@ -3,6 +3,7 @@ import { RouterProvider } from 'react-router-dom';
 import { router } from '@/routes';
 import { Toaster as SonnerToaster } from 'sonner';
 import { isSupabaseConfigured } from '@/lib/supabase';
+import PwaUpdatePrompt from '@/components/pwa/PwaUpdatePrompt';
 
 function ConfigMissingScreen() {
   return (
@@ -28,6 +29,7 @@ function App() {
   return (
     <>
       <RouterProvider router={router} useTransitions={false} />
+      <PwaUpdatePrompt />
       <SonnerToaster position="top-center" richColors closeButton />
     </>
   );
