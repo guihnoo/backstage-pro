@@ -82,6 +82,8 @@ export default function AuthCallback() {
         return;
       }
 
+      // Recovery flow — redireciona para a página de redefinição de senha
+      const callbackType = params.get('type');
       const code = params.get('code');
 
       try {
@@ -111,6 +113,14 @@ export default function AuthCallback() {
         }
 
         applySession(session);
+
+        // Fluxo de recuperação de senha — vai para página de nova senha
+        if (callbackType === 'recovery') {
+          clearTimeout(timeoutId);
+          finishedRef.current = true;
+          hardNavigate('/reset-password', { replace: true });
+          return;
+        }
 
         const profile = await withTimeout(
           ensureUserProfile(session.user),

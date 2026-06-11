@@ -95,6 +95,7 @@ export const router = createBrowserRouter([
         ),
       },
       { path: '/auth/callback', lazy: wrapPage(() => import('./pages/AuthCallback')) },
+      { path: '/reset-password', lazy: wrapPage(() => import('./pages/ResetPassword')) },
       { path: '/privacidade', element: <PrivacyPolicyPage /> },
       { path: '/privacy', element: <PrivacyPolicyPage /> },
       { path: '/termos', element: <TermsOfServicePage /> },

@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { hardNavigate } from '@/lib/hardNavigate';
-import { motion } from 'framer-motion';
-import { Eye, EyeOff, AlertCircle, Mail } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Eye, EyeOff, AlertCircle, Mail, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
-import { supabase } from '@/lib/supabase';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { AUTH_HERO_CATEGORY } from '@/lib/categoryGear';
 import { Button } from '@/components/ui/button';
@@ -22,12 +21,14 @@ const hero = getCategoryConfig(AUTH_HERO_CATEGORY);
 
 function humanizeLoginError(message) {
   if (!message) return 'Erro ao entrar. Tente novamente.';
-  if (message === 'Invalid login credentials') return 'Email ou senha incorretos.';
+  if (message === 'Invalid login credentials') return 'invalid_credentials';
   if (message === 'Email not confirmed') return 'email_not_confirmed';
   if (message.toLowerCase().includes('email not confirmed')) return 'email_not_confirmed';
-  if (message.toLowerCase().includes('invalid login')) return 'Email ou senha incorretos.';
+  if (message.toLowerCase().includes('invalid login')) return 'invalid_credentials';
   if (message.toLowerCase().includes('too many requests')) return 'Muitas tentativas. Aguarde alguns minutos.';
-  if (message.toLowerCase().includes('network') || message.toLowerCase().includes('fetch')) return 'Sem conexão com o servidor. Verifique sua internet.';
+  if (message.toLowerCase().includes('network') || message.toLowerCase().includes('fetch')) {
+    return 'Sem conexão com o servidor. Verifique sua internet.';
+  }
   return message;
 }
 
@@ -37,9 +38,21 @@ export default function LoginNew() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [needsConfirmation, setNeedsConfirmation] = useState(false);
-  const [resendLoading, setResendLoading] = useState(false);
-  const { signInWithPassword, isAuthenticated, isOnboardingComplete, loading: authLoading } = useAuth();
+  const [errorType, setErrorType] = useState(null); // 'invalid_credentials' | 'email_not_confirmed'
+
+  // Forgot password
+  const [forgotMode, setForgotMode] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
+
+  const {
+    signInWithPassword,
+    resetPassword,
+    isAuthenticated,
+    isOnboardingComplete,
+    loading: authLoading,
+  } = useAuth();
 
   const [authBootTimedOut, setAuthBootTimedOut] = useState(false);
 
@@ -50,10 +63,7 @@ export default function LoginNew() {
   }, [isAuthenticated, isOnboardingComplete]);
 
   useEffect(() => {
-    if (!authLoading) {
-      setAuthBootTimedOut(false);
-      return undefined;
-    }
+    if (!authLoading) { setAuthBootTimedOut(false); return undefined; }
     const id = setTimeout(() => setAuthBootTimedOut(true), 10_000);
     return () => clearTimeout(id);
   }, [authLoading]);
@@ -75,14 +85,14 @@ export default function LoginNew() {
     e.preventDefault();
     if (!email || !password) return;
     setError(null);
-    setNeedsConfirmation(false);
+    setErrorType(null);
     try {
       setLoading(true);
       await signInWithPassword(email, password);
     } catch (err) {
       const result = humanizeLoginError(err.message);
-      if (result === 'email_not_confirmed') {
-        setNeedsConfirmation(true);
+      if (result === 'invalid_credentials' || result === 'email_not_confirmed') {
+        setErrorType(result);
       } else {
         setError(result);
       }
@@ -91,27 +101,101 @@ export default function LoginNew() {
     }
   };
 
-  const handleResendConfirmation = async () => {
-    if (!email) {
-      setError('Preencha seu email para reenviar a confirmação.');
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    const target = forgotEmail || email;
+    if (!target) {
+      toast.error('Informe seu email para redefinir a senha.');
       return;
     }
     try {
-      setResendLoading(true);
-      const { error: resendError } = await supabase.auth.resend({
-        type: 'signup',
-        email,
-        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
-      });
-      if (resendError) throw resendError;
-      toast.success('Email de confirmação reenviado! Verifique sua caixa de entrada.');
+      setForgotLoading(true);
+      await resetPassword(target);
+      setForgotSent(true);
     } catch (err) {
-      toast.error(err.message || 'Não foi possível reenviar. Tente novamente.');
+      toast.error(err.message || 'Não foi possível enviar o email.');
     } finally {
-      setResendLoading(false);
+      setForgotLoading(false);
     }
   };
 
+  // ── Forgot password panel ──────────────────────────────────────────────────
+  if (forgotMode) {
+    return (
+      <div className="min-h-screen bg-[#050609] text-white overflow-x-hidden relative">
+        <NeonAtmosphere primary={hero.primaryHex} accent={hero.accentHex} />
+        <StageBackdrop />
+        <SpotlightRays primary={hero.primaryHex} accent={hero.accentHex} />
+        <LightingBeams primary={hero.primaryHex} accent={hero.accentHex} />
+
+        <div className="relative z-10 min-h-screen flex flex-col justify-end px-5 pb-10 pt-16 max-w-lg mx-auto">
+          <button
+            type="button"
+            onClick={() => { setForgotMode(false); setForgotSent(false); setForgotEmail(''); }}
+            className="flex items-center gap-1.5 text-sm mb-6 font-mono"
+            style={{ color: hero.primaryHex }}
+          >
+            <ArrowLeft className="w-4 h-4" /> Voltar ao login
+          </button>
+
+          <h1 className="text-2xl font-extrabold">Redefinir senha</h1>
+          <p className="text-[#8a91a1] font-mono text-xs mt-2 mb-6">
+            Enviaremos um link para você criar uma nova senha.
+          </p>
+
+          <NeonGlass primary={hero.primaryHex} glow className="p-5 space-y-4">
+            {forgotSent ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4 text-center py-2">
+                <div className="w-14 h-14 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mx-auto">
+                  <Mail className="w-7 h-7 text-emerald-400" />
+                </div>
+                <p className="font-semibold text-white">Email enviado!</p>
+                <p className="text-sm text-slate-400">
+                  Verifique <span className="text-white font-mono">{forgotEmail || email}</span> e clique no link para definir sua nova senha.
+                </p>
+                <Button
+                  type="button"
+                  onClick={() => { setForgotMode(false); setForgotSent(false); }}
+                  className="w-full border-0 font-bold text-[#06070a]"
+                  style={{ background: `linear-gradient(135deg, ${hero.primaryHex}, ${hero.accentHex})` }}
+                >
+                  Voltar ao login
+                </Button>
+              </motion.div>
+            ) : (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div>
+                  <label className="block text-[10px] font-mono tracking-widest text-[#6b7283] mb-2 uppercase">E-mail</label>
+                  <Input
+                    type="email"
+                    value={forgotEmail || email}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    placeholder="você@empresa.com"
+                    className="bg-[#080a10]/80 border-0 text-white h-12 font-mono"
+                    style={{ boxShadow: `inset 0 0 0 1px ${hero.primaryHex}33` }}
+                    autoComplete="email"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  disabled={forgotLoading || !(forgotEmail || email)}
+                  className="w-full h-12 border-0 font-bold uppercase text-[#06070a]"
+                  style={{
+                    background: `linear-gradient(135deg, ${hero.primaryHex}, ${hero.accentHex})`,
+                    boxShadow: `0 0 26px ${hero.primaryHex}55`,
+                  }}
+                >
+                  {forgotLoading ? 'Enviando...' : 'Enviar link de redefinição'}
+                </Button>
+              </form>
+            )}
+          </NeonGlass>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Login principal ────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[#050609] text-white overflow-x-hidden relative">
       <NeonAtmosphere primary={hero.primaryHex} accent={hero.accentHex} />
@@ -131,50 +215,76 @@ export default function LoginNew() {
           <span className="text-[32px] font-black text-[#06070a]">B</span>
         </div>
 
-        <h1 className="text-3xl font-extrabold leading-tight">
-          Bem-vindo<br />de volta.
-        </h1>
+        <h1 className="text-3xl font-extrabold leading-tight">Bem-vindo<br />de volta.</h1>
         <p className="font-mono text-xs text-[#8a91a1] mt-2.5">O palco está esperando por você.</p>
 
         <NeonGlass primary={hero.primaryHex} glow className="mt-6 p-5 space-y-4">
-          {/* Email não confirmado */}
-          {needsConfirmation && (
-            <div className="bg-amber-500/15 border border-amber-500/40 rounded-xl p-4 space-y-3">
-              <div className="flex gap-2">
-                <Mail className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-semibold text-amber-300">Email não confirmado</p>
-                  <p className="text-xs text-amber-200/80 mt-0.5">
-                    Verifique sua caixa de entrada e clique no link de confirmação.
-                  </p>
-                </div>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleResendConfirmation}
-                disabled={resendLoading}
-                className="w-full border-amber-500/40 text-amber-300 hover:bg-amber-500/10 bg-transparent text-xs h-8"
+          {/* Erro: credenciais inválidas */}
+          <AnimatePresence>
+            {errorType === 'invalid_credentials' && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="bg-red-500/15 border border-red-500/40 rounded-xl p-4 space-y-2"
               >
-                {resendLoading ? 'Reenviando...' : 'Reenviar email de confirmação'}
-              </Button>
-            </div>
-          )}
+                <div className="flex gap-2">
+                  <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-red-300">Email ou senha incorretos</p>
+                    <p className="text-xs text-red-200/70 mt-0.5">
+                      Se você entrou com Google antes, use o botão abaixo.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setForgotMode(true)}
+                  className="text-xs underline underline-offset-2 font-mono"
+                  style={{ color: hero.primaryHex }}
+                >
+                  Esqueceu ou nunca definiu sua senha?
+                </button>
+              </motion.div>
+            )}
 
-          {/* Erro genérico */}
-          {error && (
-            <div className="bg-red-500/15 border border-red-500/40 rounded-xl p-3 flex gap-2">
-              <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
-              <p className="text-sm text-red-300">{error}</p>
-            </div>
-          )}
+            {/* Erro: email não confirmado */}
+            {errorType === 'email_not_confirmed' && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="bg-amber-500/15 border border-amber-500/40 rounded-xl p-4"
+              >
+                <div className="flex gap-2">
+                  <Mail className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-amber-300">Email não confirmado</p>
+                    <p className="text-xs text-amber-200/80 mt-0.5">
+                      Verifique sua caixa de entrada e clique no link de ativação.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Erro genérico */}
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="bg-red-500/15 border border-red-500/40 rounded-xl p-3 flex gap-2"
+              >
+                <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
+                <p className="text-sm text-red-300">{error}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-[10px] font-mono tracking-widest text-[#6b7283] mb-2 uppercase">
-                E-mail
-              </label>
+              <label className="block text-[10px] font-mono tracking-widest text-[#6b7283] mb-2 uppercase">E-mail</label>
               <Input
                 type="email"
                 value={email}
@@ -187,9 +297,16 @@ export default function LoginNew() {
             </div>
 
             <div>
-              <label className="block text-[10px] font-mono tracking-widest text-[#6b7283] mb-2 uppercase">
-                Senha
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-[10px] font-mono tracking-widest text-[#6b7283] uppercase">Senha</label>
+                <button
+                  type="button"
+                  onClick={() => setForgotMode(true)}
+                  className="text-[10px] font-mono underline underline-offset-2 text-[#6b7283] hover:text-slate-300 transition-colors"
+                >
+                  Esqueceu a senha?
+                </button>
+              </div>
               <div className="relative">
                 <Input
                   type={showPassword ? 'text' : 'password'}
