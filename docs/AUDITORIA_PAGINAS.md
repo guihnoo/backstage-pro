@@ -42,8 +42,15 @@
 | `FloatingActions` FAB | [x] | 🟢 | `z-40`, `bottom-[88px]` ✅ |
 | `NotificationCenter` | [x] | 🟡 | DropdownMenu — sem `useAppScrollLock`; aceitável para dropdown |
 | `ProximosEventos` | [x] | 🟢 | LOCKED ✅ |
+| Overflow texto longo | [x] | 🟢 | `overflowText`, `EventHeading`, truncate em alertas/forecast |
+| Pull-to-refresh | [x] | 🟢 | `usePullToRefresh` + indicador mobile |
+| `ForecastWidget` | [x] | 🟢 | `getEventDisplay` + truncate |
+| `AlertasBastidao` | [x] | 🟢 | Ellipsis + line-clamp descrição |
+| `MetaMensalBar` | [x] | 🟢 | CTA quando metas zeradas |
+| Banner offline | [x] | 🟢 | `OfflineBanner` global AppLayout |
+| Prefetch nav | [x] | 🟢 | `routePrefetch.js` hover/touch bottom nav |
 
-**Testes:** bottom-nav smoke ✅ · calendar-navigation ✅
+**Testes:** bottom-nav smoke ✅ · calendar-navigation ✅ · overflow-responsive `/` ✅
 
 ---
 

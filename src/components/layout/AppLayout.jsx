@@ -7,6 +7,8 @@ import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { checkCompletedEventsForAutoHours } from '@/lib/checkCompletedEventsForAutoHours';
 import AppTopBar, { getAppTopBarOffset } from '@/components/layout/AppTopBar';
+import OfflineBanner from '@/components/layout/OfflineBanner';
+import { prefetchRoute } from '@/lib/routePrefetch';
 
 const navItems = [
   { to: '.', match: '/', label: 'Home', icon: Home, end: true },
@@ -47,6 +49,7 @@ export default function AppLayout() {
   return (
     <div className="h-full bg-[#050609] text-white flex flex-col overflow-hidden">
       <AppTopBar />
+      <OfflineBanner />
       <main
         ref={mainRef}
         data-app-scroll
@@ -73,6 +76,9 @@ export default function AppLayout() {
                 end={end}
                 aria-label={label}
                 aria-current={active ? 'page' : undefined}
+                onPointerEnter={() => prefetchRoute(match)}
+                onTouchStart={() => prefetchRoute(match)}
+                onFocus={() => prefetchRoute(match)}
                 className="flex-1 flex justify-center min-h-[56px] min-w-0 bg-transparent border-0 p-0 cursor-pointer no-underline relative"
               >
                 {active && (

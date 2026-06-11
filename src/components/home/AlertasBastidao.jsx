@@ -4,6 +4,7 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import { openWhatsAppCharge, buildChargeMessage } from '@/lib/whatsapp';
 import appToast from '@/lib/appToast';
+import { Ellipsis, ClampedText } from '@/components/ui/overflowText';
 
 export default function AlertasBastidao({ alerts, isLoading, primaryHex = '#A64AFF', accentHex = '#FFB700' }) {
   if (isLoading) return <NeonGlass primary={primaryHex} className="mb-8 p-5"><div className="space-y-3">{[1, 2].map((i) => <div key={i} className="h-12 bg-[#1a1d27] rounded animate-pulse" />)}</div></NeonGlass>;
@@ -46,12 +47,12 @@ export default function AlertasBastidao({ alerts, isLoading, primaryHex = '#A64A
           <button
             type="button"
             onClick={() => hardNavigate(alert.clientId ? `/client-detail?id=${alert.clientId}` : '/clients')}
-            className="flex items-start gap-3 flex-1 text-left"
+            className="flex items-start gap-3 flex-1 min-w-0 text-left"
           >
-            <span>🚨</span>
-            <div className="flex-1">
-              <p className="font-semibold text-red-300 text-sm">{alert.title}</p>
-              <p className="text-xs text-red-400/80 mt-1">{alert.description}</p>
+            <span className="flex-shrink-0">🚨</span>
+            <div className="flex-1 min-w-0">
+              <Ellipsis as="p" className="font-semibold text-red-300 text-sm">{alert.title}</Ellipsis>
+              <ClampedText lines={2} className="text-xs text-red-400/80 mt-1">{alert.description}</ClampedText>
             </div>
             <ChevronRight className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
           </button>
@@ -79,12 +80,12 @@ export default function AlertasBastidao({ alerts, isLoading, primaryHex = '#A64A
           <button
             type="button"
             onClick={() => hardNavigate(alert.clientId ? `/client-detail?id=${alert.clientId}` : '/calendar')}
-            className="flex items-start gap-3 flex-1 text-left"
+            className="flex items-start gap-3 flex-1 min-w-0 text-left"
           >
-            <span>⏳</span>
-            <div className="flex-1">
-              <p className="font-semibold text-sm" style={{ color: accentHex }}>{alert.title}</p>
-              <p className="text-xs text-[#8a91a1] mt-1">{alert.description}</p>
+            <span className="flex-shrink-0">⏳</span>
+            <div className="flex-1 min-w-0">
+              <Ellipsis as="p" className="font-semibold text-sm" style={{ color: accentHex }}>{alert.title}</Ellipsis>
+              <ClampedText lines={2} className="text-xs text-[#8a91a1] mt-1">{alert.description}</ClampedText>
             </div>
             <ChevronRight className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: accentHex }} />
           </button>

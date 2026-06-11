@@ -21,6 +21,10 @@ import { LightingBeams } from '@/components/design/LightingBeams';
 import { NeonLevelBars } from '@/components/design/NeonLevelBars';
 import { NeonSectionFrame } from '@/components/design/NeonSectionFrame';
 import { Skeleton } from '@/components/ui/skeleton';
+import { usePullToRefresh } from '@/lib/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
+import { ClampedText } from '@/components/ui/overflowText';
+import appToast from '@/lib/appToast';
 
 const EventDetailModal = lazy(() => import('@/components/calendar/EventDetailModal'));
 
@@ -88,9 +92,12 @@ export default function Home() {
   const palcoAtivo = isLiveShift || isShowToday;
   const hasAlerts = alerts.length > 0;
 
-  const refreshCockpit = useCallback(() => {
-    refetch();
+  const refreshCockpit = useCallback(async () => {
+    await refetch();
+    appToast.success('Cockpit atualizado');
   }, [refetch]);
+
+  const { pullDistance, isRefreshing, threshold } = usePullToRefresh(refreshCockpit);
 
   const handleMarkPaid = useCallback(
     async (clientId, paidAmount) => {
@@ -101,6 +108,12 @@ export default function Home() {
 
   return (
     <div className="min-h-full overflow-x-clip bg-[#050609] text-white">
+      <PullToRefreshIndicator
+        pullDistance={pullDistance}
+        isRefreshing={isRefreshing}
+        threshold={threshold}
+        primaryHex={config.primaryHex}
+      />
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -168,15 +181,17 @@ export default function Home() {
                 )}
               </motion.div>
             ) : (
-              <motion.p
+              <motion.div
                 key="motivation"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="text-sm text-[#8a91a1] mt-2 italic font-mono"
+                className="mt-2"
               >
-                &ldquo;{motivation}&rdquo;
-              </motion.p>
+                <ClampedText lines={2} className="text-sm text-[#8a91a1] italic font-mono">
+                  &ldquo;{motivation}&rdquo;
+                </ClampedText>
+              </motion.div>
             )}
           </AnimatePresence>
         </div>

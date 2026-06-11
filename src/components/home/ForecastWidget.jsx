@@ -7,6 +7,7 @@ import { useFinancialVisibility } from '@/components/context/FinancialVisibility
 import { parseISO, addDays, isValid, differenceInCalendarDays, format, startOfDay } from 'date-fns';
 import { getEventCacheAmount, isCancelledEvent } from '@/lib/eventFinance';
 import { getEventStatus } from '@/components/utils/dateUtils';
+import { getEventDisplay } from '@/lib/eventDisplay';
 import { ptBR } from 'date-fns/locale';
 
 function getWeekLabel(daysFromNow) {
@@ -125,9 +126,19 @@ export default function ForecastWidget({ events = [], isLoading, primaryHex = '#
               </div>
               {/* Info */}
               <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-white font-medium truncate text-xs leading-tight">{ev.title}</p>
-                  <p className="text-[#5a6070] text-[10px] font-mono">
+                <div className="min-w-0 flex-1">
+                  {(() => {
+                    const { companyName, eventName, showEventSubtitle } = getEventDisplay(ev, ev.clients);
+                    return (
+                      <>
+                        <p className="text-white font-medium truncate text-xs leading-tight" title={companyName}>{companyName}</p>
+                        {showEventSubtitle && (
+                          <p className="text-[#7c8494] truncate text-[10px] leading-tight" title={eventName}>{eventName}</p>
+                        )}
+                      </>
+                    );
+                  })()}
+                  <p className="text-[#5a6070] text-[10px] font-mono truncate">
                     {format(parseISO(ev.start_date), "EEE d/MM", { locale: ptBR })}
                     {' · '}
                     <span style={{ color: accentHex }}>{getWeekLabel(ev.days)}</span>
