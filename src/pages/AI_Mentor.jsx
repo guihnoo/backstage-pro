@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/authContext';
 import { useEvents, useStats } from '@/lib/useBackstageData';
 import { useClients } from '@/lib/useClients';
 import { supabase } from '@/lib/supabase';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
 import MessageBubble from '@/components/ai/MessageBubble';
 import SmartSuggestions from '@/components/ai/SmartSuggestions';
 import { format, parseISO } from 'date-fns';
@@ -114,7 +114,7 @@ export default function AIMentorPage() {
   const toggleAudio = useCallback(() => {
     setIsAudioEnabled(prev => {
       if (prev && window.speechSynthesis) window.speechSynthesis.cancel();
-      toast.success(!prev ? 'Áudio ativado' : 'Áudio desativado');
+      appToast.success(!prev ? 'Áudio ativado' : 'Áudio desativado');
       return !prev;
     });
   }, []);
@@ -156,7 +156,7 @@ export default function AIMentorPage() {
     setCurrentConv(conv);
     setMessages([]);
     setHistoryOpen(false);
-    toast.success('Nova conversa iniciada');
+    appToast.success('Nova conversa iniciada');
   }, [conversations, persistConversations]);
 
   const handleDeleteConv = useCallback((id) => {
@@ -166,7 +166,7 @@ export default function AIMentorPage() {
       setCurrentConv(null);
       setMessages([]);
     }
-    toast.success('Conversa excluída');
+    appToast.success('Conversa excluída');
   }, [conversations, currentConv, persistConversations]);
 
   const handleSend = useCallback(async (overrideMsg) => {
@@ -224,7 +224,7 @@ export default function AIMentorPage() {
       ));
       setCurrentConv(finalConv);
     } catch (err) {
-      toast.error('Erro ao enviar mensagem', { description: err.message });
+      appToast.error('Erro ao enviar mensagem', { description: err.message });
       setMessages(updatedMessages.slice(0, -1)); // revert user message on error
     } finally {
       setLoading(false);

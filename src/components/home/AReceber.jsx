@@ -6,7 +6,8 @@ import { ptBR } from 'date-fns/locale';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { buildChargeMessage, openWhatsAppCharge } from '@/lib/whatsapp';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
+
 import { Input } from '@/components/ui/input';
 
 function ReceivableSkeleton() {
@@ -61,7 +62,7 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
 
   const handleCharge = (row) => {
     if (!row.phone) {
-      toast.error('Cliente sem telefone cadastrado. Adicione no perfil do cliente.');
+      appToast.error('Cliente sem telefone cadastrado. Adicione no perfil do cliente.');
       hardNavigate('/clients');
       return;
     }
@@ -71,7 +72,7 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
       totalAmount: row.totalAmount,
     });
     const ok = openWhatsAppCharge(row.phone, message);
-    if (!ok) toast.error('Não foi possível abrir o WhatsApp.');
+    if (!ok) appToast.error('Não foi possível abrir o WhatsApp.');
   };
 
   const openConfirm = (row) => {
@@ -92,9 +93,9 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
     setPaidAmounts(prev => { const n = { ...prev }; delete n[row.clientId]; return n; });
     try {
       await onMarkPaid?.(row.clientId, actualAmount);
-      toast.success(`Pagamento de ${row.clientName} marcado como recebido!`);
+      appToast.success(`Pagamento de ${row.clientName} marcado como recebido!`);
     } catch {
-      toast.error('Erro ao marcar pagamento. Tente novamente.');
+      appToast.error('Erro ao marcar pagamento. Tente novamente.');
     } finally {
       setMarking(null);
     }

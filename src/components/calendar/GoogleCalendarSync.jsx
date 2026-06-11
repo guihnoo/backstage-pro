@@ -20,7 +20,8 @@ import { UserSettings } from '@/api/entities';
 import { useAuth } from '@/lib/authContext';
 import { googleAuthStart, googleDisconnect, googleSyncNow, googleListCalendars, googleImportEvents, googleDedupeEvents } from '@/api/functions';
 import { Link } from 'react-router-dom';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
+
 import { formatGoogleOAuthError } from '@/lib/googleOAuthErrors';
 
 export default function GoogleCalendarSync() {
@@ -46,14 +47,14 @@ export default function GoogleCalendarSync() {
     const error = urlParams.get('error');
     const connected = urlParams.get('google_connected');
     if (error) {
-      toast.error('Falha ao conectar Google Calendar', {
+      appToast.error('Falha ao conectar Google Calendar', {
         description: formatGoogleOAuthError(error),
         duration: 8000,
       });
       window.history.replaceState({}, '', locationPathname);
     }
     if (connected === '1') {
-      toast.success('Google Calendar conectado com sucesso!');
+      appToast.success('Google Calendar conectado com sucesso!');
       window.history.replaceState({}, '', locationPathname);
       loadSettings();
     }
@@ -93,7 +94,7 @@ export default function GoogleCalendarSync() {
 
   const handleConnect = async () => {
     try {
-      toast.info("Redirecionando para autenticação do Google...");
+      appToast.info("Redirecionando para autenticação do Google...");
       const { data } = await googleAuthStart();
       
       if (data.success && data.authUrl) {
@@ -104,7 +105,7 @@ export default function GoogleCalendarSync() {
       }
     } catch (error) {
       console.error('Erro ao iniciar conexão:', error);
-      toast.error("Erro ao conectar com Google Calendar. Tente novamente.");
+      appToast.error("Erro ao conectar com Google Calendar. Tente novamente.");
     }
   };
 
@@ -112,14 +113,14 @@ export default function GoogleCalendarSync() {
     if (!confirm("Tem certeza que deseja desconectar do Google Calendar?")) return;
     
     try {
-      toast.info("Desconectando do Google Calendar...");
+      appToast.info("Desconectando do Google Calendar...");
       await googleDisconnect();
       await loadSettings();
       setCalendars([]);
-      toast.success("Desconectado com sucesso!");
+      appToast.success("Desconectado com sucesso!");
     } catch (error) {
       console.error('Erro ao desconectar:', error);
-      toast.error("Erro ao desconectar. Tente novamente.");
+      appToast.error("Erro ao desconectar. Tente novamente.");
     }
   };
 
@@ -128,7 +129,7 @@ export default function GoogleCalendarSync() {
     setLastSyncStatus(null);
     
     try {
-      toast.info("Sincronizando eventos com Google Calendar...");
+      appToast.info("Sincronizando eventos com Google Calendar...");
       const { data } = await googleSyncNow();
       
       if (data.success) {
@@ -142,7 +143,7 @@ export default function GoogleCalendarSync() {
           message: `Sincronização concluída: ${parts.join(', ')}.`,
           timestamp: new Date()
         });
-        toast.success("Sincronização concluída!", { description: parts.join(' · ') });
+        appToast.success("Sincronização concluída!", { description: parts.join(' · ') });
       } else {
         throw new Error(data.error || 'Erro desconhecido na sincronização');
       }
@@ -153,7 +154,7 @@ export default function GoogleCalendarSync() {
         message: error.message || 'Erro na sincronização',
         timestamp: new Date()
       });
-      toast.error("Erro na sincronização. Verifique sua conexão.");
+      appToast.error("Erro na sincronização. Verifique sua conexão.");
     }
     setIsSyncing(false);
   };
@@ -163,7 +164,7 @@ export default function GoogleCalendarSync() {
     
     setIsSyncing(true);
     try {
-      toast.info("Importando eventos do Google Calendar...");
+      appToast.info("Importando eventos do Google Calendar...");
       const { data } = await googleImportEvents({ days_back: 30, days_forward: 90 });
       
       if (data.success) {
@@ -172,13 +173,13 @@ export default function GoogleCalendarSync() {
           data.linked_count ? `${data.linked_count} vinculados` : null,
           data.skipped_count ? `${data.skipped_count} ignorados` : null,
         ].filter(Boolean).join(', ') || 'Nenhum evento novo';
-        toast.success('Importação concluída', { description: msg });
+        appToast.success('Importação concluída', { description: msg });
       } else {
         throw new Error(data.error || 'Erro na importação');
       }
     } catch (error) {
       console.error('Erro na importação:', error);
-      toast.error("Erro ao importar eventos. Tente novamente.");
+      appToast.error("Erro ao importar eventos. Tente novamente.");
     }
     setIsSyncing(false);
   };
@@ -189,14 +190,14 @@ export default function GoogleCalendarSync() {
     try {
       const { data } = await googleDedupeEvents();
       if (data.success) {
-        toast.success('Limpeza concluída', {
+        appToast.success('Limpeza concluída', {
           description: `${data.removed_count || 0} duplicata(s) removida(s).`,
         });
       } else {
         throw new Error(data.error || 'Erro na limpeza');
       }
     } catch (error) {
-      toast.error('Erro ao limpar duplicatas', { description: error.message });
+      appToast.error('Erro ao limpar duplicatas', { description: error.message });
     }
     setIsSyncing(false);
   };

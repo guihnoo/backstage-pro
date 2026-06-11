@@ -8,7 +8,8 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { Trophy, Zap, Star, TrendingUp, Award, Flame, Calendar, X, Pencil, Check, ChevronRight, Plus, Clock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
+
 import MeiDashboard from '@/components/goals/MeiDashboard';
 import LiveClockBar from '@/components/home/LiveClockBar';
 import EventDetailModal from '@/components/calendar/EventDetailModal';
@@ -229,16 +230,16 @@ export default function Goals() {
     const events = parseInt(goalForm.events);
     const revenue = parseFloat(goalForm.revenue);
     if (!events || events < 1 || !revenue || revenue < 0) {
-      toast.error('Preencha valores válidos para as metas.');
+      appToast.error('Preencha valores válidos para as metas.');
       return;
     }
     try {
       setSavingGoals(true);
       await updateProfile({ monthly_goal_events: events, monthly_goal_revenue: revenue });
-      toast.success('Metas atualizadas!');
+      appToast.success('Metas atualizadas!');
       setEditingGoals(false);
     } catch {
-      toast.error('Erro ao salvar metas.');
+      appToast.error('Erro ao salvar metas.');
     } finally {
       setSavingGoals(false);
     }

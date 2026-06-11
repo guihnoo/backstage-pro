@@ -47,7 +47,8 @@ import ClientActionSheet from '@/components/mobile/ClientActionSheet';
 import ClientInsightsModal from '@/components/clients/ClientInsightsModal';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
 
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
+
 
 const ClientsSkeleton = () => (
   <div className="space-y-6">
@@ -238,11 +239,11 @@ export default function ClientsPage() {
   const handleConfirmDeleteClient = useCallback(async () => {
     try {
       await deleteClient(confirmDeleteId);
-      toast.success("Cliente excluído com sucesso.");
+      appToast.success("Cliente excluído com sucesso.");
       setSelectedClient(null);
     } catch (err) {
       console.error("Erro ao excluir cliente:", err);
-      toast.error("Não foi possível excluir o cliente.", {
+      appToast.error("Não foi possível excluir o cliente.", {
         description: "Verifique se ele não possui eventos associados e tente novamente."
       });
     } finally {

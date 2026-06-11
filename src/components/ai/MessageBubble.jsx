@@ -3,7 +3,8 @@ import ReactMarkdown from 'react-markdown';
 import { Button } from "@/components/ui/button";
 import { Copy, Zap, CheckCircle2, AlertCircle, Loader2, ChevronRight, Clock, User } from 'lucide-react';
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import appToast from '@/lib/appToast';
+
 
 const FunctionDisplay = ({ toolCall }) => {
     const [expanded, setExpanded] = useState(false);
@@ -124,7 +125,7 @@ export default function MessageBubble({ message }) {
                                                     className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover/code:opacity-100 bg-slate-800 hover:bg-slate-700"
                                                     onClick={() => {
                                                         navigator.clipboard.writeText(String(children).replace(/\n$/, ''));
-                                                        toast.success('Código copiado');
+                                                        appToast.success('Código copiado');
                                                     }}
                                                 >
                                                     <Copy className="h-3 w-3 text-slate-400" />

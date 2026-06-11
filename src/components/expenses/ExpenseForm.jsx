@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, RefreshCw } from 'lucide-react';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
+
 import { normalizeDateString } from '@/components/utils/dateUtils';
 import { useExpenses } from '@/lib/useExpenses';
 
@@ -87,7 +88,7 @@ export default function ExpenseForm({
     e.preventDefault();
 
     if (!formData.title || !formData.amount || !formData.date) {
-      toast.error('Preencha título, valor e data da despesa.');
+      appToast.error('Preencha título, valor e data da despesa.');
       return;
     }
 
@@ -109,17 +110,17 @@ export default function ExpenseForm({
 
       if (expense?.id) {
         await updateExpense(expense.id, payload);
-        toast.success('Despesa atualizada com sucesso.');
+        appToast.success('Despesa atualizada com sucesso.');
       } else {
         await createExpense(payload);
-        toast.success('Despesa criada com sucesso.');
+        appToast.success('Despesa criada com sucesso.');
       }
 
       onSuccess?.();
       onOpenChange?.(false);
     } catch (error) {
       console.error('Erro ao salvar despesa:', error);
-      toast.error('Não foi possível salvar a despesa.');
+      appToast.error('Não foi possível salvar a despesa.');
     } finally {
       setLoading(false);
     }

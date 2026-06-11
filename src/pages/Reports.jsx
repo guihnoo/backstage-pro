@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, subMonths, isWithinInterval, parseISO, startOfYear, endOfYear, addMonths } from 'date-fns';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
 import { getEventStatus } from '@/components/utils/dateUtils';
 
 // Component imports
@@ -585,7 +585,7 @@ export default function ReportsPage() {
       payment_status: 'unpaid',
       auto_hours_applied: false,
     });
-    toast.info('Preencha as novas datas para o evento duplicado');
+    appToast.info('Preencha as novas datas para o evento duplicado');
   };
 
   const handleEventDelete = (eventId) => {
@@ -595,11 +595,11 @@ export default function ReportsPage() {
   const handleConfirmEventDelete = async () => {
     try {
       await deleteEvent(confirmDeleteEvent);
-      toast.success('Evento excluído com sucesso!');
+      appToast.success('Evento excluído com sucesso!');
       setSelectedEvent(null);
       refreshData();
     } catch (_e) {
-      toast.error('Erro ao excluir evento');
+      appToast.error('Erro ao excluir evento');
     } finally {
       setConfirmDeleteEvent(null);
     }
@@ -607,7 +607,7 @@ export default function ReportsPage() {
 
   const handleWorkEdit = () => {
     hardNavigate('/calendar');
-    toast.info('Edite o registro de trabalho diretamente na Agenda.');
+    appToast.info('Edite o registro de trabalho diretamente na Agenda.');
   };
 
   const handleWorkDelete = (workId) => {
@@ -617,10 +617,10 @@ export default function ReportsPage() {
   const handleConfirmWorkDelete = async () => {
     try {
       await deleteWork(confirmDeleteWork);
-      toast.success('Registro de trabalho excluído!');
+      appToast.success('Registro de trabalho excluído!');
       refreshData();
     } catch (_e) {
-      toast.error('Erro ao excluir registro');
+      appToast.error('Erro ao excluir registro');
     } finally {
       setConfirmDeleteWork(null);
     }
@@ -637,10 +637,10 @@ export default function ReportsPage() {
   const handleConfirmExpenseDelete = async () => {
     try {
       await deleteExpense(confirmDeleteExpense);
-      toast.success('Despesa excluída!');
+      appToast.success('Despesa excluída!');
       refreshData();
     } catch (_e) {
-      toast.error('Erro ao excluir despesa');
+      appToast.error('Erro ao excluir despesa');
     } finally {
       setConfirmDeleteExpense(null);
     }
@@ -649,7 +649,7 @@ export default function ReportsPage() {
   const handleApply12h = useCallback(
     async (event) => {
       if (!event?.id || !user?.id) {
-        toast.error('Não foi possível aplicar 12h automáticas.');
+        appToast.error('Não foi possível aplicar 12h automáticas.');
         return;
       }
       try {
@@ -659,19 +659,19 @@ export default function ReportsPage() {
           origin: 'manual_12h',
         });
         if (result.data?.success) {
-          toast.success('12 horas aplicadas automaticamente!', {
+          appToast.success('12 horas aplicadas automaticamente!', {
             description: `${result.data.daysCreated || 1} dia(s) registrado(s).`,
           });
           setSelectedEvent(null);
           await refreshData();
         } else {
-          toast.error('Erro ao aplicar horas', {
+          appToast.error('Erro ao aplicar horas', {
             description: result.data?.error || 'Tente novamente.',
           });
         }
       } catch (error) {
         console.error('Erro ao aplicar 12h:', error);
-        toast.error('Erro ao aplicar horas automáticas', {
+        appToast.error('Erro ao aplicar horas automáticas', {
           description: error.message || 'Tente novamente.',
         });
       }
@@ -787,7 +787,7 @@ export default function ReportsPage() {
           <Card
             className="bg-gradient-to-r from-purple-900/20 to-amber-900/20 border-purple-500/30 cursor-pointer hover:border-purple-400/50 transition-all"
             onClick={() => {
-              toast.info('Funcionalidade de projeções detalhadas em desenvolvimento!');
+              appToast.info('Funcionalidade de projeções detalhadas em desenvolvimento!');
             }}>
 
             <CardContent className="bg-emerald-950 p-6">
@@ -867,7 +867,7 @@ export default function ReportsPage() {
             expenses={processedData.current.expenses}
             period={selectedPeriod}
             onSliceClick={(category) => {
-              toast.info(`Visualizando despesas da categoria: ${category}`);
+              appToast.info(`Visualizando despesas da categoria: ${category}`);
               // Aqui poderia abrir um modal ou filtrar a lista
             }} />
 

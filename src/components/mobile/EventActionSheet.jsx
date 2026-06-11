@@ -23,7 +23,8 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import { formatDisplayDate, getEventStatus, getEventStatusConfig } from '../utils/dateUtils';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { getEventCacheAmount } from '@/lib/eventFinance';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
+
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
 
 export default function EventActionSheet({
@@ -55,7 +56,7 @@ export default function EventActionSheet({
     if (onApplyManual12h) {
       onApplyManual12h(event);
     } else {
-      toast.info('Aplicar 12h automáticas em breve.', {
+      appToast.info('Aplicar 12h automáticas em breve.', {
         description: 'Use "Registrar Horas" manualmente por enquanto.',
       });
     }

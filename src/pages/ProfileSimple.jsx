@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { createBackup } from '@/api/functions';
 import { uploadUserFile } from '@/lib/uploadFile';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
 import GoogleCalendarSync from '@/components/calendar/GoogleCalendarSync';
 import PushNotificationSettings from '@/components/notifications/PushNotificationSettings';
 import LiveClockBar from '@/components/home/LiveClockBar';
@@ -65,12 +65,12 @@ export default function ProfileSimple() {
     try {
       const result = await createBackup({});
       if (result?.data?.success) {
-        toast.success('Dados exportados!', { description: 'Arquivo JSON salvo no seu dispositivo.' });
+        appToast.success('Dados exportados!', { description: 'Arquivo JSON salvo no seu dispositivo.' });
       } else {
-        toast.error('Erro ao exportar', { description: result?.data?.error || 'Tente novamente.' });
+        appToast.error('Erro ao exportar', { description: result?.data?.error || 'Tente novamente.' });
       }
     } catch (err) {
-      toast.error('Erro ao exportar', { description: err.message });
+      appToast.error('Erro ao exportar', { description: err.message });
     } finally {
       setExporting(false);
     }
@@ -90,7 +90,7 @@ export default function ProfileSimple() {
       setTimeout(() => setSaved(false), 2500);
     } catch (err) {
       console.error('Erro ao salvar:', err);
-      toast.error('Erro ao salvar perfil.', { description: err?.message });
+      appToast.error('Erro ao salvar perfil.', { description: err?.message });
     } finally {
       setSaving(false);
     }
@@ -103,9 +103,9 @@ export default function ProfileSimple() {
     try {
       const { file_url } = await uploadUserFile(file, { folder: 'avatars' });
       await updateProfile({ avatar_url: file_url });
-      toast.success('Foto de perfil atualizada!');
+      appToast.success('Foto de perfil atualizada!');
     } catch (err) {
-      toast.error('Erro ao enviar foto', { description: err.message });
+      appToast.error('Erro ao enviar foto', { description: err.message });
     } finally {
       setUploadingPhoto(false);
       if (photoInputRef.current) photoInputRef.current.value = '';
@@ -123,7 +123,7 @@ export default function ProfileSimple() {
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden px-4 pt-6 pb-8"
+        className="relative overflow-hidden px-4 pt-2 pb-8"
         style={{ background: `linear-gradient(160deg, ${config.primaryHex}15, transparent)` }}
       >
         <motion.div
@@ -133,12 +133,12 @@ export default function ProfileSimple() {
           transition={{ duration: 3, repeat: Infinity }}
         />
 
-        <div className="max-w-2xl mx-auto flex items-start justify-between mb-4">
-          <div className="text-left">
+        <div className="max-w-2xl mx-auto mb-4 pr-28">
+          <LiveClockBar primaryHex={config.primaryHex} />
+          <div className="text-left mt-1">
             <p className="text-xs text-slate-500 uppercase tracking-wider">Seu perfil</p>
             <h1 className="text-xl font-black text-white">Configurações</h1>
           </div>
-          <LiveClockBar primaryHex={config.primaryHex} />
         </div>
 
         <div className="text-center">

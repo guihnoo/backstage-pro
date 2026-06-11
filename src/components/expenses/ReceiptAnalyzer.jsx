@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Camera, Upload, Loader2, Sparkles } from "lucide-react";
-import { toast } from "sonner";
+import appToast from '@/lib/appToast';
+
 import { UploadFile } from "@/api/integrations";
 import { analyzeReceipt } from "@/lib/analyzeReceiptApi";
 
@@ -40,7 +41,7 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
       if (!data.date) setData((prev) => ({ ...prev, date: todayIso() }));
     } catch (error) {
       console.error("Upload recibo:", error);
-      toast.error("Erro ao enviar recibo", { description: error.message || "Tente novamente." });
+      appToast.error("Erro ao enviar recibo", { description: error.message || "Tente novamente." });
       setUploading(false);
       return;
     }
@@ -58,9 +59,9 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
           category: extracted.category || prev.category,
           notes: extracted.notes || prev.notes,
         }));
-        toast.success("Recibo lido pela IA!", { description: "Verifique os dados e confirme." });
+        appToast.success("Recibo lido pela IA!", { description: "Verifique os dados e confirme." });
       } catch (err) {
-        toast.info("Recibo salvo. Preencha os dados manualmente.", {
+        appToast.info("Recibo salvo. Preencha os dados manualmente.", {
           description: err.message?.includes('configurado') ? 'OCR não configurado.' : 'IA indisponível no momento.',
         });
       } finally {

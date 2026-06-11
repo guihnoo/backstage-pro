@@ -38,7 +38,8 @@ import {
 } from 'lucide-react';
 import EventLocationSection from '@/components/events/EventLocationSection';
 import { useEvents } from '@/lib/useEvents';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
+
 import { hardNavigate } from '@/lib/hardNavigate';
 
 const InfoItem = ({ icon: Icon, label, value, color = 'text-slate-300', isCurrency = false, formatFn }) => {
@@ -170,9 +171,9 @@ const EventDetailModal = React.memo(function EventDetailModal({
         location_lat: patch.location_lat,
         location_lng: patch.location_lng,
       });
-      toast.success('Local do evento salvo');
+      appToast.success('Local do evento salvo');
     } catch (err) {
-      toast.error('Erro ao salvar local', { description: err.message });
+      appToast.error('Erro ao salvar local', { description: err.message });
     } finally {
       setSavingLocation(false);
     }

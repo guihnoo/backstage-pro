@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { toast } from 'sonner';
 import { RefreshCw } from 'lucide-react';
+import appToast from '@/lib/appToast';
 
 /**
  * Avisa quando há nova versão do app (service worker) e permite atualizar sem limpar cache manual.
@@ -15,16 +15,14 @@ export default function PwaUpdatePrompt() {
   useEffect(() => {
     if (!needRefresh) return;
 
-    toast('Nova versão disponível', {
+    appToast.action('Nova versão disponível', {
       id: 'pwa-update',
-      duration: Infinity,
       description: 'Toque em Atualizar para carregar as últimas melhorias.',
-      icon: <RefreshCw className="w-4 h-4" />,
+      type: 'info',
+      icon: RefreshCw,
       action: {
         label: 'Atualizar',
-        onClick: () => {
-          updateServiceWorker(true);
-        },
+        onClick: () => updateServiceWorker(true),
       },
       cancel: {
         label: 'Depois',

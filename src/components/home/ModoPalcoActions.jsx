@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { LogIn, LogOut, Clock, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
+
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/authContext';
 import { todayLocalISO } from '@/components/utils/dateUtils';
@@ -98,11 +99,11 @@ export default function ModoPalcoActions({ event, accentColor = '#00D9FF', onRef
 
       if (error) throw error;
       setRecord(data);
-      toast.success(`Entrada registrada às ${entryTime}`);
+      appToast.success(`Entrada registrada às ${entryTime}`);
       onRefresh?.();
     } catch (err) {
       console.error(err);
-      toast.error('Não foi possível registrar a entrada.');
+      appToast.error('Não foi possível registrar a entrada.');
     } finally {
       setSaving(false);
     }
@@ -131,11 +132,11 @@ export default function ModoPalcoActions({ event, accentColor = '#00D9FF', onRef
 
       if (error) throw error;
       setRecord(data);
-      toast.success(`Saída às ${exitTime} · ${worked.total}h · R$ ${cache.toLocaleString('pt-BR')}`);
+      appToast.success(`Saída às ${exitTime} · ${worked.total}h · R$ ${cache.toLocaleString('pt-BR')}`);
       onRefresh?.();
     } catch (err) {
       console.error(err);
-      toast.error('Não foi possível registrar a saída.');
+      appToast.error('Não foi possível registrar a saída.');
     } finally {
       setSaving(false);
     }

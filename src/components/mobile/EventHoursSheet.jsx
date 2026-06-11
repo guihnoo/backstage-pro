@@ -8,7 +8,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { uploadUserFile } from '@/lib/uploadFile';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { X, Clock, Camera, Loader2, AlertCircle, Save, Info, Calendar as CalendarIcon } from 'lucide-react';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
+
 import { normalizeDateString, formatDisplayDate } from '../utils/dateUtils';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
 
@@ -158,12 +159,12 @@ export default function EventHoursSheet({
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      toast.error('Por favor, selecione apenas arquivos de imagem.');
+      appToast.error('Por favor, selecione apenas arquivos de imagem.');
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Arquivo muito grande. Máximo 5MB.');
+      appToast.error('Arquivo muito grande. Máximo 5MB.');
       return;
     }
 
@@ -171,10 +172,10 @@ export default function EventHoursSheet({
     try {
       const { file_url } = await uploadUserFile(file, { folder: 'work-photos' });
       setFormData(prev => ({ ...prev, photo_url: file_url }));
-      toast.success('Foto enviada!');
+      appToast.success('Foto enviada!');
     } catch (error) {
       console.error('Erro no upload:', error);
-      toast.error('Erro ao fazer upload da foto.');
+      appToast.error('Erro ao fazer upload da foto.');
     } finally {
       setUploading(false);
     }
@@ -189,12 +190,12 @@ export default function EventHoursSheet({
     if (!validateField('date', formData.date) || 
         !validateField('entry_time', formData.entry_time) || 
         !validateField('exit_time', formData.exit_time)) {
-      toast.error('Por favor, corrija os erros');
+      appToast.error('Por favor, corrija os erros');
       return;
     }
 
     if (!event) {
-      toast.error('Nenhum evento selecionado');
+      appToast.error('Nenhum evento selecionado');
       return;
     }
 
@@ -220,10 +221,10 @@ export default function EventHoursSheet({
 
       if (existingWork?.id) {
         await update(existingWork.id, workData);
-        toast.success('Registro atualizado!');
+        appToast.success('Registro atualizado!');
       } else {
         await create(workData);
-        toast.success('Registro criado!');
+        appToast.success('Registro criado!');
       }
 
       if (onSave) {
@@ -232,7 +233,7 @@ export default function EventHoursSheet({
       onClose();
     } catch (error) {
       console.error('Erro ao salvar:', error);
-      toast.error('Erro ao salvar registro.');
+      appToast.error('Erro ao salvar registro.');
     } finally {
       setLoading(false);
     }

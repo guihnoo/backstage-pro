@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Camera, AlertCircle, Search, Calendar, ChevronDown, ChevronUp, Tag } from 'lucide-react';
 import { useExpenses } from '@/lib/useExpenses';
 import { useEvents } from '@/lib/useEvents';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
@@ -140,7 +140,7 @@ export default function ExpensesPage() {
     const handleFormSuccess = useCallback(() => {
         setShowForm(false);
         setEditingExpense(null);
-        toast.success(editingExpense ? "Despesa atualizada!" : "Despesa criada!");
+        appToast.success(editingExpense ? "Despesa atualizada!" : "Despesa criada!");
         refetchExpenses();
     }, [editingExpense, refetchExpenses]);
 
@@ -152,9 +152,9 @@ export default function ExpensesPage() {
     const handleMarkReimbursed = async (expense) => {
         try {
             await updateExpense(expense.id, { reimbursed: true });
-            toast.success(`"${expense.title}" marcado como reembolsado!`);
+            appToast.success(`"${expense.title}" marcado como reembolsado!`);
         } catch (err) {
-            toast.error('Erro ao atualizar despesa.');
+            appToast.error('Erro ao atualizar despesa.');
             console.error(err);
         }
     };
@@ -166,9 +166,9 @@ export default function ExpensesPage() {
     const handleConfirmDelete = async () => {
         try {
             await deleteExpenseById(confirmDelete);
-            toast.success("Despesa excluída com sucesso!");
+            appToast.success("Despesa excluída com sucesso!");
         } catch (err) {
-            toast.error("Erro ao excluir despesa.");
+            appToast.error("Erro ao excluir despesa.");
             console.error(err);
         } finally {
             setConfirmDelete(null);

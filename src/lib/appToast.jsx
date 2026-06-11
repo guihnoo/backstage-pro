@@ -72,23 +72,101 @@ function show(type, title, options = {}) {
   );
 }
 
+function ActionToastCard({ type = 'info', title, description, action, cancel, icon: IconOverride }) {
+  const Icon = IconOverride || ICONS[type] || Info;
+  const style = STYLES[type] || STYLES.info;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -12, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -8, scale: 0.98 }}
+      transition={{ type: 'spring', stiffness: 420, damping: 28 }}
+      className={`w-full max-w-[min(100vw-2rem,24rem)] rounded-xl border border-[#23262f] bg-[#0c0e14]/95 backdrop-blur-xl px-4 py-3 shadow-xl ${style.glow} ring-1 ${style.ring}`}
+    >
+      <div className="flex items-start gap-3">
+        <Icon className={`w-5 h-5 shrink-0 mt-0.5 ${style.icon}`} />
+        <div className="min-w-0 flex-1 text-left">
+          <p className="text-sm font-semibold text-white leading-snug">{title}</p>
+          {description ? (
+            <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{description}</p>
+          ) : null}
+        </div>
+      </div>
+      {(action || cancel) && (
+        <div className="flex gap-2 mt-3 justify-end">
+          {cancel ? (
+            <button
+              type="button"
+              onClick={() => {
+                cancel.onClick?.();
+                toast.dismiss();
+              }}
+              className="px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors min-h-[36px]"
+            >
+              {cancel.label || 'Cancelar'}
+            </button>
+          ) : null}
+          {action ? (
+            <button
+              type="button"
+              onClick={() => {
+                action.onClick?.();
+                toast.dismiss();
+              }}
+              className="px-3 py-1.5 text-xs font-semibold text-[#06070a] bg-[#EAB308] hover:bg-amber-400 rounded-lg transition-colors min-h-[36px]"
+            >
+              {action.label}
+            </button>
+          ) : null}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
 export const appToast = {
   success: (title, options) => show('success', title, options),
   error: (title, options) => show('error', title, options),
   info: (title, options) => show('info', title, options),
   warning: (title, options) => show('warning', title, options),
   loading: (title, options) => show('loading', title, { ...options, duration: Infinity }),
+  action: (title, options = {}) => {
+    const { description, action, cancel, id, duration = Infinity, type = 'info', icon } = options;
+    return toast.custom(
+      () => (
+        <ActionToastCard
+          type={type}
+          title={title}
+          description={description}
+          action={action}
+          cancel={cancel}
+          icon={icon}
+        />
+      ),
+      { duration, id }
+    );
+  },
   dismiss: (id) => toast.dismiss(id),
-  promise: (promise, messages) =>
-    toast.promise(promise, {
-      loading: messages.loading,
-      success: (data) =>
-        typeof messages.success === 'function' ? messages.success(data) : messages.success,
-      error: (err) =>
+  promise: async (promise, messages) => {
+    const loadingId = show('loading', messages.loading || 'Processando...', { duration: Infinity });
+    try {
+      const data = await promise;
+      toast.dismiss(loadingId);
+      const successMsg =
+        typeof messages.success === 'function' ? messages.success(data) : messages.success;
+      if (successMsg) show('success', successMsg);
+      return data;
+    } catch (err) {
+      toast.dismiss(loadingId);
+      const errorMsg =
         typeof messages.error === 'function'
           ? messages.error(err)
-          : messages.error || err?.message || 'Algo deu errado',
-    }),
+          : messages.error || err?.message || 'Algo deu errado';
+      show('error', errorMsg);
+      throw err;
+    }
+  },
 };
 
 export default appToast;

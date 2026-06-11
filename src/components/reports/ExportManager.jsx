@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FileText, Table, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
+
 import { exportReportCsv, exportReportPdf } from '@/lib/exportReport';
 
 const ExportManager = ({ data, period }) => {
@@ -14,18 +15,18 @@ const ExportManager = ({ data, period }) => {
     try {
       if (type === 'pdf') {
         exportReportPdf(data, period);
-        toast.success('PDF aberto para impressão.', {
+        appToast.success('PDF aberto para impressão.', {
           description: 'Use "Salvar como PDF" na janela de impressão.',
         });
       } else {
         exportReportCsv(data, period);
-        toast.success('Planilha exportada!', {
+        appToast.success('Planilha exportada!', {
           description: 'Arquivo CSV compatível com Excel.',
         });
       }
     } catch (error) {
       console.error('Export error:', error);
-      toast.error('Erro ao exportar relatório', {
+      appToast.error('Erro ao exportar relatório', {
         description: error.message || 'Tente novamente.',
       });
     } finally {

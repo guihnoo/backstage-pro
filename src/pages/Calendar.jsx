@@ -35,7 +35,7 @@ import { isCancelledEvent } from '@/lib/eventFinance';
 import AnimatedStatValue from '@/components/home/AnimatedStatValue';
 import CalendarPageHeader from '@/components/calendar/CalendarPageHeader';
 import CalendarTodayStrip from '@/components/calendar/CalendarTodayStrip';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
 import { Skeleton } from '@/components/ui/skeleton';
 import ExpenseForm from '@/components/expenses/ExpenseForm';
 import DrilldownModal from '@/components/reports/DrilldownModal';
@@ -277,7 +277,7 @@ export default function CalendarPage() {
       });
 
       if (eventsForDate.length === 0) {
-        toast.info(`Não há eventos para ${format(targetDate, "dd 'de' MMMM", { locale: ptBR })}`, {
+        appToast.info(`Não há eventos para ${format(targetDate, "dd 'de' MMMM", { locale: ptBR })}`, {
           description: 'Para registrar horas, você precisa primeiro criar um evento nesta data.',
           action: {
             label: 'Criar Evento',
@@ -397,7 +397,7 @@ export default function CalendarPage() {
         observacoes_md: event.observacoes_md,
       });
       setShowEventForm(true);
-      toast.info('Preencha as novas datas para o evento duplicado');
+      appToast.info('Preencha as novas datas para o evento duplicado');
     },
     [closeModals]
   );
@@ -442,11 +442,11 @@ export default function CalendarPage() {
   const handleConfirmWorkDelete = useCallback(async () => {
     try {
       await deleteDailyWorkEntry(confirmWork);
-      toast.success('Registro de horas excluído com sucesso!');
+      appToast.success('Registro de horas excluído com sucesso!');
       handleFormSuccess();
     } catch (err) {
       console.error('Erro ao excluir registro de trabalho:', err);
-      toast.error('Erro ao excluir o registro de horas.', { description: 'Por favor, tente novamente.' });
+      appToast.error('Erro ao excluir o registro de horas.', { description: 'Por favor, tente novamente.' });
     } finally {
       setConfirmWork(null);
     }
@@ -475,7 +475,7 @@ export default function CalendarPage() {
     (eventId) => {
       if (!eventId) return;
       const eventToDelete = events.find((e) => e.id === eventId);
-      if (!eventToDelete) { toast.error('Evento não encontrado para exclusão.'); return; }
+      if (!eventToDelete) { appToast.error('Evento não encontrado para exclusão.'); return; }
       setConfirmEvent(eventToDelete);
     },
     [events]
@@ -484,11 +484,11 @@ export default function CalendarPage() {
   const handleConfirmDeleteEvent = useCallback(async () => {
     try {
       await deleteEvent(confirmEvent.id);
-      toast.success(`Evento "${confirmEvent.title}" foi excluído com sucesso!`);
+      appToast.success(`Evento "${confirmEvent.title}" foi excluído com sucesso!`);
       handleFormSuccess();
     } catch (err) {
       console.error('Erro ao excluir evento:', err);
-      toast.error('Erro ao excluir o evento.', { description: 'Por favor, tente novamente.' });
+      appToast.error('Erro ao excluir o evento.', { description: 'Por favor, tente novamente.' });
     } finally {
       setConfirmEvent(null);
     }
@@ -502,7 +502,7 @@ export default function CalendarPage() {
         const updateData = { payment_status: newStatus };
         if (newStatus === 'paid') updateData.paid_date = new Date().toISOString().split('T')[0];
         await updateEvent(eventToUpdate.id, updateData);
-        toast.success(
+        appToast.success(
           newStatus === 'paid'
             ? `"${eventToUpdate.title}" marcado como pago!`
             : `"${eventToUpdate.title}" desmarcado — pagamento pendente`
@@ -510,7 +510,7 @@ export default function CalendarPage() {
         handleFormSuccess();
       } catch (err) {
         console.error('Erro ao atualizar status de pagamento:', err);
-        toast.error('Erro ao atualizar status de pagamento.');
+        appToast.error('Erro ao atualizar status de pagamento.');
       }
     },
     [handleFormSuccess, updateEvent]
@@ -560,12 +560,12 @@ export default function CalendarPage() {
           location_lat: captured.location_lat,
           location_lng: captured.location_lng,
         });
-        toast.success('Local registrado no evento', {
+        appToast.success('Local registrado no evento', {
           description: (captured.label || captured.location || '').slice(0, 80),
         });
         await refetchEvents();
       } catch (err) {
-        toast.error(err.message || 'Não foi possível registrar o local.');
+        appToast.error(err.message || 'Não foi possível registrar o local.');
         throw err;
       }
     },
@@ -575,7 +575,7 @@ export default function CalendarPage() {
   const handleEventActionSheetApplyManual12h = useCallback(
     async (event) => {
       if (!event?.id || !user?.id) {
-        toast.error('Nenhum evento selecionado para aplicar horas.');
+        appToast.error('Nenhum evento selecionado para aplicar horas.');
         return;
       }
       try {
@@ -585,19 +585,19 @@ export default function CalendarPage() {
           origin: 'manual_12h',
         });
         if (result.data?.success) {
-          toast.success('12 horas aplicadas automaticamente!', {
+          appToast.success('12 horas aplicadas automaticamente!', {
             description: `${result.data.daysCreated || 1} dia(s) registrado(s). Você pode editar depois.`,
           });
           setSelectedActionSheetEvent(null);
           handleFormSuccess();
         } else {
-          toast.error('Erro ao aplicar horas', {
+          appToast.error('Erro ao aplicar horas', {
             description: result.data?.error || 'Tente novamente.',
           });
         }
       } catch (error) {
         console.error('Erro ao aplicar 12h automáticas:', error);
-        toast.error('Erro ao aplicar horas automáticas', {
+        appToast.error('Erro ao aplicar horas automáticas', {
           description: error.message || 'Tente novamente.',
         });
       }
@@ -609,7 +609,7 @@ export default function CalendarPage() {
     async (workData) => {
       try {
         if (!mobileHoursEventData?.event) {
-          toast.error('Nenhum evento selecionado para registrar horas.');
+          appToast.error('Nenhum evento selecionado para registrar horas.');
           return;
         }
         const payload = {
@@ -626,16 +626,16 @@ export default function CalendarPage() {
 
         if (mobileHoursEventData.existingWork?.id) {
           await updateDailyWork(mobileHoursEventData.existingWork.id, payload);
-          toast.success('Horas atualizadas com sucesso!');
+          appToast.success('Horas atualizadas com sucesso!');
         } else {
           await createDailyWork(payload);
-          toast.success('Horas registradas com sucesso!');
+          appToast.success('Horas registradas com sucesso!');
         }
 
         handleFormSuccess();
       } catch (error) {
         console.error('Erro ao salvar horas:', error);
-        toast.error('Erro ao registrar horas');
+        appToast.error('Erro ao registrar horas');
       }
     },
     [mobileHoursEventData, handleFormSuccess, user, updateDailyWork, createDailyWork]
@@ -645,15 +645,15 @@ export default function CalendarPage() {
     async (notesData) => {
       try {
         if (!activeNotesEvent) {
-          toast.error('Nenhum evento selecionado para salvar observações.');
+          appToast.error('Nenhum evento selecionado para salvar observações.');
           return;
         }
         await updateEvent(activeNotesEvent.id, notesData);
-        toast.success('Observações salvas!');
+        appToast.success('Observações salvas!');
         handleFormSuccess();
       } catch (error) {
         console.error('Erro ao salvar observações:', error);
-        toast.error('Erro ao salvar observações');
+        appToast.error('Erro ao salvar observações');
       }
     },
     [activeNotesEvent, handleFormSuccess, updateEvent]

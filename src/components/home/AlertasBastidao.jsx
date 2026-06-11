@@ -3,7 +3,7 @@ import { AlertCircle, ChevronRight, MessageCircle } from 'lucide-react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import { openWhatsAppCharge, buildChargeMessage } from '@/lib/whatsapp';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
 
 export default function AlertasBastidao({ alerts, isLoading, primaryHex = '#A64AFF', accentHex = '#FFB700' }) {
   if (isLoading) return <NeonGlass primary={primaryHex} className="mb-8 p-5"><div className="space-y-3">{[1, 2].map((i) => <div key={i} className="h-12 bg-[#1a1d27] rounded animate-pulse" />)}</div></NeonGlass>;
@@ -17,7 +17,7 @@ export default function AlertasBastidao({ alerts, isLoading, primaryHex = '#A64A
 
   const handleWhatsApp = (e, alert) => {
     e.stopPropagation();
-    if (!alert.phone) { toast.error('Cliente sem telefone cadastrado.'); return; }
+    if (!alert.phone) { appToast.error('Cliente sem telefone cadastrado.'); return; }
     const message = buildChargeMessage({
       clientName: alert.clientName,
       events: [{ title: alert.eventTitle, start_date: alert.eventStartDate, amount: alert.amount }],

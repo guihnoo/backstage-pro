@@ -4,6 +4,7 @@ import { router } from '@/routes';
 import { Toaster as SonnerToaster } from 'sonner';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import PwaUpdatePrompt from '@/components/pwa/PwaUpdatePrompt';
+import { getAppTopBarOffset } from '@/components/layout/AppTopBar';
 
 function ConfigMissingScreen() {
   return (
@@ -33,7 +34,8 @@ function App() {
       <SonnerToaster
         position="top-center"
         closeButton
-        offset={16}
+        style={{ top: getAppTopBarOffset() }}
+        offset={8}
         toastOptions={{
           unstyled: true,
           classNames: {

@@ -15,7 +15,7 @@ import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
 import { NeonAtmosphere } from '@/components/design/NeonAtmosphere';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import { LightingBeams } from '@/components/design/LightingBeams';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
 
 const hero = getCategoryConfig(AUTH_HERO_CATEGORY);
 
@@ -105,7 +105,7 @@ export default function LoginNew() {
     e.preventDefault();
     const target = forgotEmail || email;
     if (!target) {
-      toast.error('Informe seu email para redefinir a senha.');
+      appToast.error('Informe seu email para redefinir a senha.');
       return;
     }
     try {
@@ -113,7 +113,7 @@ export default function LoginNew() {
       await resetPassword(target);
       setForgotSent(true);
     } catch (err) {
-      toast.error(err.message || 'Não foi possível enviar o email.');
+      appToast.error(err.message || 'Não foi possível enviar o email.');
     } finally {
       setForgotLoading(false);
     }

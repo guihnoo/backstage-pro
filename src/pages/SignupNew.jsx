@@ -16,7 +16,7 @@ import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
 import { NeonAtmosphere } from '@/components/design/NeonAtmosphere';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import { LightingBeams } from '@/components/design/LightingBeams';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
 
 const hero = getCategoryConfig(AUTH_HERO_CATEGORY);
 
@@ -79,9 +79,9 @@ export default function SignupNew() {
         options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
       });
       if (resendError) throw resendError;
-      toast.success('Email reenviado! Verifique sua caixa de entrada.');
+      appToast.success('Email reenviado! Verifique sua caixa de entrada.');
     } catch (err) {
-      toast.error(err.message || 'Não foi possível reenviar.');
+      appToast.error(err.message || 'Não foi possível reenviar.');
     } finally {
       setResendLoading(false);
     }

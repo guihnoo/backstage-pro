@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CalendarIcon, DollarSign, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
 import { useEvents } from '@/lib/useEvents';
 
 export default function PaymentConfirmModal({ event, isOpen, onClose, onSuccess }) {
@@ -27,7 +27,7 @@ export default function PaymentConfirmModal({ event, isOpen, onClose, onSuccess 
 
   const handleConfirm = async () => {
     if (!paidAmount || Number(paidAmount) <= 0) {
-      toast.error('Informe um valor valido para o pagamento.');
+      appToast.error('Informe um valor valido para o pagamento.');
       return;
     }
 
@@ -39,12 +39,12 @@ export default function PaymentConfirmModal({ event, isOpen, onClose, onSuccess 
         paid_date: format(paidDate, 'yyyy-MM-dd'),
       });
 
-      toast.success('Pagamento confirmado com sucesso!');
+      appToast.success('Pagamento confirmado com sucesso!');
       onSuccess?.();
       onClose?.();
     } catch (error) {
       console.error('Erro ao confirmar pagamento:', error);
-      toast.error('Erro ao confirmar pagamento. Tente novamente.');
+      appToast.error('Erro ao confirmar pagamento. Tente novamente.');
     } finally {
       setLoading(false);
     }

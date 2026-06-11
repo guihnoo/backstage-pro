@@ -15,7 +15,6 @@ import {
   CheckCircle2, AlertCircle, ArrowRight, BarChart3,
   Activity, Target, Globe, ExternalLink
 } from 'lucide-react';
-import { toast } from 'sonner';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useEvents } from '@/lib/useEvents';
 import { useDailyWork } from '@/lib/useDailyWork';

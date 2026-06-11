@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Clock, User, ChevronRight, Navigation, CheckCircle2, Loader2, Circle } from 'lucide-react';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
+
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { useCountdown } from '@/lib/useBackstageData';
 import { hardNavigate } from '@/lib/hardNavigate';
@@ -44,12 +45,12 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
         location_lat: captured.location_lat,
         location_lng: captured.location_lng,
       });
-      toast.success('Local registrado no evento', {
+      appToast.success('Local registrado no evento', {
         description: (captured.label || captured.location || '').slice(0, 80),
       });
       onRefresh?.();
     } catch (err) {
-      toast.error(err.message || 'Não foi possível registrar o local.');
+      appToast.error(err.message || 'Não foi possível registrar o local.');
     } finally {
       setLocationSaving(false);
     }

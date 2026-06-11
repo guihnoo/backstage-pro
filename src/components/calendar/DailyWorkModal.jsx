@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Clock, Loader2, Info } from 'lucide-react';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
 import { normalizeDateString, formatDisplayDate } from '@/components/utils/dateUtils';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { useAuth } from '@/lib/authContext';
@@ -99,12 +99,12 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
     e.preventDefault();
 
     if (!event?.id) {
-      toast.error('Nenhum evento selecionado para registrar horas.');
+      appToast.error('Nenhum evento selecionado para registrar horas.');
       return;
     }
 
     if (!formData.date || !formData.entry_time || !formData.exit_time) {
-      toast.error('Preencha data, entrada e saida.');
+      appToast.error('Preencha data, entrada e saida.');
       return;
     }
 
@@ -126,17 +126,17 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
 
       if (existingWork?.id) {
         await updateDailyWork(existingWork.id, payload);
-        toast.success('Registro atualizado com sucesso.');
+        appToast.success('Registro atualizado com sucesso.');
       } else {
         await createDailyWork(payload);
-        toast.success('Registro criado com sucesso.');
+        appToast.success('Registro criado com sucesso.');
       }
 
       onSuccess?.();
       onClose?.(false);
     } catch (error) {
       console.error('Erro ao salvar registro de trabalho:', error);
-      toast.error('Não foi possível salvar o registro de trabalho.');
+      appToast.error('Não foi possível salvar o registro de trabalho.');
     } finally {
       setLoading(false);
     }

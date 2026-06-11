@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { supabase } from './supabase';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
 
 export function usePaymentToggle() {
   const [toggling, setToggling] = useState(null);
@@ -17,14 +17,14 @@ export function usePaymentToggle() {
         .update(updateData)
         .eq('id', event.id);
       if (error) throw error;
-      toast.success(
+      appToast.success(
         newStatus === 'paid'
           ? `"${event.title}" marcado como pago!`
           : `"${event.title}" desmarcado — pagamento pendente`
       );
       onSuccess?.();
     } catch {
-      toast.error('Erro ao atualizar status de pagamento');
+      appToast.error('Erro ao atualizar status de pagamento');
     } finally {
       setToggling(null);
     }

@@ -10,7 +10,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Building2, User, DollarSign, X, AlertCircle, Phone, Mail, Globe, FileText, Camera, ImagePlus } from 'lucide-react';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
+
 import { useAuth } from '@/lib/authContext';
 import { useClients } from '@/lib/useClients';
 import { useCompanies } from '@/lib/useCompanies';
@@ -179,9 +180,9 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
     try {
       const { file_url } = await uploadUserFile(file, { folder: 'logos' });
       handleChange('logo_url', file_url);
-      toast.success('Logo enviada com sucesso!');
+      appToast.success('Logo enviada com sucesso!');
     } catch (err) {
-      toast.error('Erro ao enviar logo', { description: err.message });
+      appToast.error('Erro ao enviar logo', { description: err.message });
     } finally {
       setUploadingLogo(false);
       if (logoInputRef.current) logoInputRef.current.value = '';
@@ -194,7 +195,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
     // Validar campo obrigatório
     setTouched({ name: true });
     if (!validateField('name', formData.name)) {
-      toast.error('Por favor, preencha o nome do cliente');
+      appToast.error('Por favor, preencha o nome do cliente');
       return;
     }
 
@@ -208,7 +209,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
     });
 
     if (!isValid) {
-      toast.error('Por favor, corrija os erros no formulário');
+      appToast.error('Por favor, corrija os erros no formulário');
       return;
     }
 
@@ -216,7 +217,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
 
     try {
       if (!user?.id) {
-        toast.error('Sessão expirada. Faça login novamente.');
+        appToast.error('Sessão expirada. Faça login novamente.');
         return;
       }
 
@@ -261,10 +262,10 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
       let result;
       if (client?.id) {
         result = await updateClient(client.id, clientData);
-        toast.success('Cliente atualizado com sucesso!');
+        appToast.success('Cliente atualizado com sucesso!');
       } else {
         result = await createClient(clientData);
-        toast.success('Cliente criado com sucesso!');
+        appToast.success('Cliente criado com sucesso!');
       }
 
       if (onSuccess) {
@@ -288,12 +289,12 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
             default_daily_cache: formData.default_daily_cache === '' ? 0 : Number(formData.default_daily_cache),
           };
           const result = await updateClient(client.id, withoutColor);
-          toast.success('Cliente atualizado (cor será salva após atualização do banco).');
+          appToast.success('Cliente atualizado (cor será salva após atualização do banco).');
           onSuccess?.(result);
           return;
         } catch { /* fall through */ }
       }
-      toast.error('Erro ao salvar cliente.', {
+      appToast.error('Erro ao salvar cliente.', {
         description: error?.message || 'Ocorreu um problema. Por favor, tente novamente.',
       });
     } finally {

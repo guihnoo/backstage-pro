@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { supabase } from './supabase';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
 
 export function useStatusToggle() {
   const [toggling, setToggling] = useState(null);
@@ -14,10 +14,10 @@ export function useStatusToggle() {
         .update({ status: 'confirmed' })
         .eq('id', event.id);
       if (error) throw error;
-      toast.success(`"${event.title}" confirmado!`);
+      appToast.success(`"${event.title}" confirmado!`);
       onSuccess?.();
     } catch {
-      toast.error('Erro ao confirmar evento');
+      appToast.error('Erro ao confirmar evento');
     } finally {
       setToggling(null);
     }
