@@ -790,7 +790,7 @@ export default function ReportsPage() {
               appToast.info('Funcionalidade de projeções detalhadas em desenvolvimento!');
             }}>
 
-            <CardContent className="bg-emerald-950 p-6">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-purple-300 mb-1">Projeção do Próximo Período</h3>
