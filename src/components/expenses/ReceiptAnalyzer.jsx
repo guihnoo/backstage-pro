@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Camera, Upload, Loader2, Sparkles } from "lucide-react";
 import appToast from '@/lib/appToast';
-
+import { format } from 'date-fns';
 import { UploadFile } from "@/api/integrations";
 import { analyzeReceipt } from "@/lib/analyzeReceiptApi";
 
@@ -22,7 +22,7 @@ const CATEGORY_OPTIONS = [
   { value: "outros", label: "Outros" },
 ];
 
-const todayIso = () => new Date().toISOString().split("T")[0];
+const todayIso = () => format(new Date(), 'yyyy-MM-dd');
 
 export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
   const [previewUrl, setPreviewUrl] = useState("");

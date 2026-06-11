@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-11 (sessão S28)  
+**Última atualização:** 2026-06-11 (sessão S29)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último commit:** pendente nesta sessão — deploy testes reais  
 **Último deploy:** 2026-06-10 — `dpl_CSCrk4jRwwdQwJaVUjAy7ie7wBiX` → https://backstage-pro-beta.vercel.app  
@@ -45,6 +45,7 @@
 | Realtime sync multi-device | `RealtimeSyncProvider` + `realtimeBus` + `useRealtimeRefetch` — todos os hooks integrados; migração `028_enable_realtime.sql` criada (pendente `supabase db push`) |
 | Classes Tailwind dinâmicas | Corrigidas em S27: `FinancialSummary`, `CategoryPicker`, `ClientDetailModal` — mapas estáticos substituem interpolação `bg-${color}-X` |
 | Lapidação S28 | Auditoria completa: 10 componentes auditados, typo `PaymentConfirmModal` corrigido; todos componentes restantes confirmados limpos |
+| Lapidação S29 | 38 componentes auditados; `GoogleCalendarSync` 3× `window.confirm()` → `ConfirmDialog`; `ReceiptAnalyzer` timezone bug (`toISOString` → `format`) |
 
 ---
 

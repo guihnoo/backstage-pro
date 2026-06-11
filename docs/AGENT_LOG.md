@@ -628,3 +628,17 @@ Registro cronológico de tarefas executadas por agentes.
 - **Arquivos**: `EventForm.jsx`, `Calendar.jsx`, `ClientQuickCreateDialog.jsx`, `ClientForm.jsx`, `023_fix_companies_rls.sql`
 - **Build**: Vite ✅ (24.81s)
 - **Deploy**: Vercel prod ✅ (push `e00ee14`); migration 023 aplicada ao Supabase remoto
+
+---
+
+## 2026-06-11
+
+### AUDIT-S29 — Lapidação profissional: auditoria de componentes + 2 bug fixes ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Metodologia**: Varredura sistemática de todos os .jsx restantes (~35 componentes) procurando: classes Tailwind dinâmicas, bugs de timezone, `window.confirm()`, padrões de scroll incorretos, typos
+- **Bugs corrigidos**:
+  - `src/components/calendar/GoogleCalendarSync.jsx` — 3× `window.confirm()` bloqueante (handleDisconnect, handleImportEvents, handleDedupeEvents) → substituídos por `ConfirmDialog` com `pendingAction` state; build ✅ (40.32s)
+  - `src/components/expenses/ReceiptAnalyzer.jsx` — `const todayIso = () => new Date().toISOString().split("T")[0]` retornava data UTC (após 21h BRT mostrava amanhã) → `import { format } from 'date-fns'` + `format(new Date(), 'yyyy-MM-dd')`
+- **Componentes auditados e limpos** (sem issue encontrado): `QuickStats`, `PipelineFinanceiro`, `MetaMensalBar`, `ForecastWidget`, `AReceber`, `ProximoShow`, `LiveClockBar`, `AnimatedStatValue`, `StatValuePulse`, `ModoPalcoActions`, `EventLocationSection`, `LocationAutocomplete`, `EventHeading`, `CalendarTodayStrip`, `CalendarPageHeader`, `DayQuickActions`, `AlertsPanel`, `EventTemplateModal`, `ContinuousEventBar`, `ClientCombobox`, `ClientQuickCreateDialog`, `CompanySearchInput`, `ClientDraftBadge`, `NavigationSync`, `PwaLiveUpdater`, `PushNotificationSettings`, `PushSubscriptionSync`, `MessageBubble`, `QuickActions`, `SmartSuggestions`, `PaymentConfirmModal`, `ClientActionSheet`, `AuthCallback`, `ClientDetailedTable`, `ResetPassword`, `LoginNew`, `SignupNew`, `AppDataContext`
+- **Build**: Vite ✅ (confirmado após GoogleCalendarSync fix)
+- **Deploy**: pendente
