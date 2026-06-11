@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { checkCompletedEventsForAutoHours } from '@/lib/checkCompletedEventsForAutoHours';
 import AppTopBar, { getAppTopBarOffset } from '@/components/layout/AppTopBar';
+import { prefetchRoute } from '@/lib/routePrefetch';
 
 const navItems = [
   { to: '.', match: '/', label: 'Home', icon: Home, end: true },
@@ -73,6 +74,9 @@ export default function AppLayout() {
                 end={end}
                 aria-label={label}
                 aria-current={active ? 'page' : undefined}
+                onPointerEnter={() => prefetchRoute(match)}
+                onTouchStart={() => prefetchRoute(match)}
+                onFocus={() => prefetchRoute(match)}
                 className="flex-1 flex justify-center min-h-[56px] min-w-0 bg-transparent border-0 p-0 cursor-pointer no-underline relative"
               >
                 {active && (

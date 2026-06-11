@@ -44,11 +44,6 @@ export default defineConfig({
               networkTimeoutSeconds: 8,
             },
           },
-          {
-            urlPattern: ({ url }) => url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com',
-            handler: 'StaleWhileRevalidate',
-            options: { cacheName: 'google-fonts' },
-          },
         ],
       },
       devOptions: { enabled: false },

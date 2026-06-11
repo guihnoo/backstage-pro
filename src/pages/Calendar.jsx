@@ -33,6 +33,7 @@ import {
 } from '@/components/utils/dateUtils';
 import { isCancelledEvent } from '@/lib/eventFinance';
 import AnimatedStatValue from '@/components/home/AnimatedStatValue';
+import StatValuePulse from '@/components/home/StatValuePulse';
 import CalendarPageHeader from '@/components/calendar/CalendarPageHeader';
 import CalendarTodayStrip from '@/components/calendar/CalendarTodayStrip';
 import appToast from '@/lib/appToast';
@@ -99,6 +100,7 @@ const StatCard = ({
   subtext,
   icon: Icon,
   color,
+  pulseColor,
   onClick,
   loading = false,
 }) => (
@@ -113,11 +115,13 @@ const StatCard = ({
           {loading ? (
             <Skeleton className="h-7 sm:h-8 w-16" />
           ) : numericValue != null && formatValue ? (
-            <AnimatedStatValue
-              value={numericValue}
-              format={formatValue}
-              className={`text-xl sm:text-2xl font-bold ${color} truncate block`}
-            />
+            <StatValuePulse value={numericValue} glowColor={pulseColor || '#00D9FF'}>
+              <AnimatedStatValue
+                value={numericValue}
+                format={formatValue}
+                className={`text-xl sm:text-2xl font-bold ${color} truncate block`}
+              />
+            </StatValuePulse>
           ) : (
             <p className={`text-xl sm:text-2xl font-bold ${color} truncate`}>{value}</p>
           )}
@@ -1001,6 +1005,7 @@ export default function CalendarPage() {
             subtext={monthStats.totalEvents === 1 ? 'evento' : 'eventos'}
             icon={Calendar}
             color="text-purple-400"
+            pulseColor={config.primaryHex}
             onClick={handleEventsClick}
             loading={isLoading}
           />
@@ -1013,6 +1018,7 @@ export default function CalendarPage() {
             subtext={monthStats.workDays === 1 ? 'dia' : 'dias'}
             icon={CheckCircle2}
             color="text-green-400"
+            pulseColor="#39FF14"
             onClick={handleWorkDaysClick}
             loading={isLoading}
           />
@@ -1025,6 +1031,7 @@ export default function CalendarPage() {
             subtext="trabalhadas"
             icon={Clock}
             color="text-amber-400"
+            pulseColor="#FFB700"
             onClick={handleHoursClick}
             loading={isLoading}
           />
@@ -1037,6 +1044,7 @@ export default function CalendarPage() {
             subtext="estimada no mês"
             icon={TrendingUp}
             color="text-emerald-400"
+            pulseColor={config.accentHex}
             onClick={handleRevenueClick}
             loading={isLoading}
           />
@@ -1049,6 +1057,7 @@ export default function CalendarPage() {
             subtext={monthStats.uniqueClients === 1 ? 'cliente' : 'clientes'}
             icon={Users}
             color="text-purple-400"
+            pulseColor="#A64AFF"
             onClick={handleClientsClick}
             loading={isLoading}
           />
