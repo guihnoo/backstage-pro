@@ -6,7 +6,7 @@ import { Home, Calendar, Users, Receipt, BarChart2, Sparkles, Target } from 'luc
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { checkCompletedEventsForAutoHours } from '@/lib/checkCompletedEventsForAutoHours';
-import NotificationCenter from '@/components/notifications/NotificationCenter';
+import AppTopBar, { getAppTopBarOffset } from '@/components/layout/AppTopBar';
 
 const navItems = [
   { to: '.', match: '/', label: 'Home', icon: Home, end: true },
@@ -46,14 +46,15 @@ export default function AppLayout() {
 
   return (
     <div className="h-full bg-[#050609] text-white flex flex-col overflow-hidden">
-      <div className="fixed top-3 right-3 z-40" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
-        <NotificationCenter />
-      </div>
+      <AppTopBar />
       <main
         ref={mainRef}
         data-app-scroll
         className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
-        style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }}
+        style={{
+          paddingTop: getAppTopBarOffset(),
+          paddingBottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))',
+        }}
       >
         <Suspense fallback={<LoadingSpinner fullScreen text="Carregando..." />}>
           <Outlet key={location.pathname} />

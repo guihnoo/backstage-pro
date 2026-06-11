@@ -3,14 +3,36 @@ import { supabase } from './supabase';
 import { useAuth } from './authContext';
 import { syncEventToGoogleCalendar } from '@/lib/googleCalendarPush';
 
+function normalizeCoord(value) {
+  if (value === '' || value === undefined || value === null) return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function normalizeLocationFields(mapped) {
+  if ('location' in mapped) {
+    const loc = mapped.location;
+    mapped.location = typeof loc === 'string' ? loc.trim() || null : loc ?? null;
+  }
+  if ('location_city' in mapped) {
+    mapped.location_city = mapped.location_city?.trim?.() || mapped.location_city || null;
+  }
+  if ('location_state' in mapped) {
+    mapped.location_state = mapped.location_state?.trim?.() || mapped.location_state || null;
+  }
+  if ('location_lat' in mapped) mapped.location_lat = normalizeCoord(mapped.location_lat);
+  if ('location_lng' in mapped) mapped.location_lng = normalizeCoord(mapped.location_lng);
+}
+
 const mapPayloadToDb = (payload = {}) => {
-  const mapped = {
-    ...payload,
-    event_date: payload.event_date || payload.start_date || null,
-  };
+  const mapped = { ...payload };
 
   delete mapped.id;
   delete mapped.owner_id;
+  // Não enviar event_date em updates parciais — coluna legada pode não existir ou ser NOT NULL.
+  delete mapped.event_date;
+
+  normalizeLocationFields(mapped);
 
   return mapped;
 };

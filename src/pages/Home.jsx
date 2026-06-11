@@ -1,8 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
-import { hardNavigate } from '@/lib/hardNavigate';
 import { getCategoryConfig, getCategoryMotivation } from '@/lib/categoryConfig';
 import { useStats, useUpcomingEvent, usePaymentAlerts, useEvents } from '@/lib/useBackstageData';
 import { useDailyWork } from '@/lib/useDailyWork';
@@ -137,23 +135,12 @@ export default function Home() {
           animate={{ opacity: palcoAtivo ? [0.6, 1, 0.6] : 0.4 }}
           transition={{ duration: 2, repeat: Infinity }}
         />
-        <div className="relative z-10 px-4 pt-6 pb-5 max-w-2xl mx-auto">
-          <div className="flex items-start justify-between mb-5">
-            <div>
-              <LiveClockBar primaryHex={config.primaryHex} isLive={isLiveShift} />
-              <p className="text-xs font-semibold uppercase tracking-wider mt-1" style={{ color: config.primaryHex }}>
-                {config.emoji} {config.label}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => hardNavigate('/profile')}
-                className="w-9 h-9 rounded-full bg-[#0c0e14]/80 border border-[#23262f] flex items-center justify-center"
-              >
-                <Settings className="w-4 h-4 text-[#8a91a1]" />
-              </motion.button>
-            </div>
+        <div className="relative z-10 px-4 pt-2 pb-5 max-w-2xl mx-auto">
+          <div className="mb-5 pr-28">
+            <LiveClockBar primaryHex={config.primaryHex} isLive={isLiveShift} />
+            <p className="text-xs font-semibold uppercase tracking-wider mt-1" style={{ color: config.primaryHex }}>
+              {config.emoji} {config.label}
+            </p>
           </div>
           <motion.h1
             initial={{ opacity: 0, x: -10 }}

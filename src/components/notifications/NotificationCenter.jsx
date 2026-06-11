@@ -112,7 +112,7 @@ function NotificationItem({ notification, onDismiss, onNavigate, onViewEvent }) 
   );
 }
 
-export default function NotificationCenter() {
+export default function NotificationCenter({ compact = false }) {
   const { user, profile } = useAuth();
   const { events } = useEvents();
   const { clients } = useClients();
@@ -209,7 +209,9 @@ export default function NotificationCenter() {
         <Button
           variant="ghost"
           size="icon"
-          className="relative hover:bg-slate-800 text-slate-400 hover:text-white"
+          className={`relative hover:bg-slate-800 text-slate-400 hover:text-white ${
+            compact ? 'min-w-[44px] min-h-[44px] w-11 h-11' : ''
+          }`}
         >
           <Bell className="w-5 h-5" />
           {count > 0 && (

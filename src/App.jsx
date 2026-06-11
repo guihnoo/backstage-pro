@@ -30,7 +30,17 @@ function App() {
     <>
       <RouterProvider router={router} useTransitions={false} />
       <PwaUpdatePrompt />
-      <SonnerToaster position="top-center" richColors closeButton />
+      <SonnerToaster
+        position="top-center"
+        closeButton
+        offset={16}
+        toastOptions={{
+          unstyled: true,
+          classNames: {
+            toast: 'bg-transparent border-0 shadow-none p-0 w-full flex justify-center',
+          },
+        }}
+      />
     </>
   );
 }

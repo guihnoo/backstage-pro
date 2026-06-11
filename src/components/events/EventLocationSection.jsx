@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import LocationAutocomplete from '@/components/events/LocationAutocomplete';
 import { captureEventLocationFromGps, mapsUrlForCoords } from '@/lib/eventLocation';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
 
 /**
  * Seção de local do evento: busca por endereço OU check-in GPS no local.
@@ -42,11 +42,11 @@ export default function EventLocationSection({
         captured.accuracy != null
           ? ` Precisão ~${Math.round(captured.accuracy)}m.`
           : '';
-      toast.success('Local registrado via GPS', {
+      appToast.success('Local registrado via GPS', {
         description: `${(captured.label || captured.location || '').slice(0, 72)}${accuracyNote}`,
       });
     } catch (err) {
-      toast.error(err.message || 'Não foi possível registrar o local.');
+      appToast.error(err.message || 'Não foi possível registrar o local.');
     } finally {
       setGpsLoading(false);
     }
@@ -113,7 +113,7 @@ export default function EventLocationSection({
         Você pode informar o endereço agora ou registrar a posição exata quando estiver no local do evento.
         {location_lat != null && location_lng != null && (
           <span className="block text-slate-600 mt-0.5 font-mono">
-            {location_lat.toFixed(5)}, {location_lng.toFixed(5)}
+            {Number(location_lat).toFixed(5)}, {Number(location_lng).toFixed(5)}
             {location_state ? ` · ${location_state}` : ''}
           </span>
         )}

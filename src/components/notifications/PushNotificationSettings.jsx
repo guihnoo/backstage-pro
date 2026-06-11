@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Bell, BellOff, Loader2, Smartphone } from 'lucide-react';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
 import { useAuth } from '@/lib/authContext';
 import { supabase } from '@/lib/supabase';
 import { NeonGlass } from '@/components/design/NeonGlass';
@@ -62,18 +62,18 @@ export default function PushNotificationSettings() {
       if (!vapidReady) {
         await showTestNotification();
         await persistEnabled(true);
-        toast.success('Notificações locais ativadas', {
+        appToast.success('Notificações locais ativadas', {
           description: 'Push no servidor será configurado em breve.',
         });
         return;
       }
       await subscribeToPush(user.id);
       await persistEnabled(true);
-      toast.success('Alertas no celular ativados!', {
+      appToast.success('Alertas no celular ativados!', {
         description: 'Shows, pagamentos e metas importantes chegam aqui.',
       });
     } catch (err) {
-      toast.error('Não foi possível ativar', { description: err.message });
+      appToast.error('Não foi possível ativar', { description: err.message });
     } finally {
       setBusy(false);
     }
@@ -85,9 +85,9 @@ export default function PushNotificationSettings() {
     try {
       await unsubscribeFromPush(user.id);
       await persistEnabled(false);
-      toast.info('Notificações desativadas');
+      appToast.info('Notificações desativadas');
     } catch (err) {
-      toast.error('Erro ao desativar', { description: err.message });
+      appToast.error('Erro ao desativar', { description: err.message });
     } finally {
       setBusy(false);
     }

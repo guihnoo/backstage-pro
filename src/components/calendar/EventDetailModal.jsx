@@ -39,7 +39,7 @@ import { useDailyWork } from '@/lib/useDailyWork';
 import { applyAuto12Hours } from '@/api/functions';
 import { useStatusToggle } from '@/lib/useStatusToggle';
 import { openWhatsAppCharge, formatBRL, buildEventReport } from '@/lib/whatsapp';
-import { toast } from 'sonner';
+import appToast from '@/lib/appToast';
 import EventHeading from '@/components/events/EventHeading';
 import EventLocationSection from '@/components/events/EventLocationSection';
 import { useEvents } from '@/lib/useEvents';
@@ -113,16 +113,25 @@ export default function EventDetailModal({
     if (!event?.id) return;
     setSavingLocation(true);
     try {
-      await updateEvent(event.id, {
+      const updated = await updateEvent(event.id, {
         location: patch.location?.trim() || null,
         location_city: patch.location_city || null,
         location_state: patch.location_state || null,
         location_lat: patch.location_lat,
         location_lng: patch.location_lng,
       });
-      toast.success('Local do evento salvo');
+      if (updated) {
+        setLocDraft({
+          location: updated.location || '',
+          location_city: updated.location_city || '',
+          location_state: updated.location_state || '',
+          location_lat: updated.location_lat ?? null,
+          location_lng: updated.location_lng ?? null,
+        });
+      }
+      appToast.success('Local salvo', { description: 'Endereço atualizado no evento.' });
     } catch (err) {
-      toast.error('Erro ao salvar local', { description: err.message });
+      appToast.error('Erro ao salvar local', { description: err.message });
     } finally {
       setSavingLocation(false);
     }
@@ -131,7 +140,7 @@ export default function EventDetailModal({
   const handleShareWhatsApp = () => {
     const phone = client?.phone;
     if (!phone) {
-      toast.error('Cliente sem telefone cadastrado.');
+      appToast.error('Cliente sem telefone cadastrado.');
       return;
     }
     const dateStr = event.start_date
@@ -152,7 +161,7 @@ export default function EventDetailModal({
   const handleSendReport = () => {
     const phone = client?.phone;
     if (!phone) {
-      toast.error('Cliente sem telefone cadastrado.', {
+      appToast.error('Cliente sem telefone cadastrado.', {
         description: 'Adicione o telefone na página do cliente para enviar o relatório.',
       });
       return;
@@ -164,7 +173,7 @@ export default function EventDetailModal({
       expenses: eventExpenses,
     });
     const ok = openWhatsAppCharge(phone, message);
-    if (!ok) toast.error('Não foi possível abrir o WhatsApp.');
+    if (!ok) appToast.error('Não foi possível abrir o WhatsApp.');
   };
 
   const handleDownloadPDF = async () => {
@@ -203,10 +212,10 @@ export default function EventDetailModal({
       a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success('PDF gerado com sucesso!', { description: filename });
+      appToast.success('PDF gerado com sucesso!', { description: filename });
     } catch (err) {
       console.error('Erro ao gerar PDF:', err);
-      toast.error('Erro ao gerar PDF', { description: err.message });
+      appToast.error('Erro ao gerar PDF', { description: err.message });
     } finally {
       setGeneratingPDF(false);
     }
@@ -255,20 +264,20 @@ export default function EventDetailModal({
       const result = await applyAuto12Hours({ eventId: event.id, origin: 'manual_12h' });
       
       if (result.data.success) {
-        toast.success('12 horas aplicadas automaticamente!', {
+        appToast.success('12 horas aplicadas automaticamente!', {
           description: 'Você pode editar depois se necessário.',
           duration: 5000
         });
         onMarkPaid?.();
         onClose();
       } else {
-        toast.error('Erro ao aplicar horas', {
+        appToast.error('Erro ao aplicar horas', {
           description: result.data.error || 'Tente novamente.'
         });
       }
     } catch (error) {
       console.error('Erro ao aplicar 12h:', error);
-      toast.error('Erro ao aplicar horas automáticas', {
+      appToast.error('Erro ao aplicar horas automáticas', {
         description: error.message || 'Tente novamente.'
       });
     } finally {
