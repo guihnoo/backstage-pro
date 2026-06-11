@@ -121,7 +121,16 @@ const EventTimelineItem = ({ event, isLast, workData, onClick }) => {
   );
 };
 
-const MetricCard = ({ title, value, subtitle, icon: Icon, color = "slate", trend, onClick }) => (
+const METRIC_COLOR_CLASSES = {
+  purple: { value: 'text-purple-300', icon: 'text-purple-400' },
+  green:  { value: 'text-green-300',  icon: 'text-green-400'  },
+  amber:  { value: 'text-amber-300',  icon: 'text-amber-400'  },
+  slate:  { value: 'text-slate-300',  icon: 'text-slate-400'  },
+};
+
+const MetricCard = ({ title, value, subtitle, icon: Icon, color = "slate", trend, onClick }) => {
+  const cc = METRIC_COLOR_CLASSES[color] || METRIC_COLOR_CLASSES.slate;
+  return (
   <Card
     className={`bg-slate-800/50 border-slate-700 ${onClick ? 'hover:border-slate-600 cursor-pointer' : ''} transition-all`}
     onClick={onClick}>
@@ -130,10 +139,10 @@ const MetricCard = ({ title, value, subtitle, icon: Icon, color = "slate", trend
       <div className="flex items-center justify-between">
         <div className="min-w-0">
           <p className="text-slate-400 text-xs uppercase font-medium mb-1">{title}</p>
-          <p className={`text-2xl font-bold text-${color}-300 truncate`}>{value}</p>
+          <p className={`text-2xl font-bold ${cc.value} truncate`}>{value}</p>
           {subtitle && <p className="text-slate-500 text-xs mt-1">{subtitle}</p>}
         </div>
-        <Icon className={`w-8 h-8 text-${color}-400 opacity-60`} />
+        <Icon className={`w-8 h-8 ${cc.icon} opacity-60`} />
       </div>
       {trend &&
         <div className="flex items-center gap-1 mt-2 text-xs">
@@ -149,7 +158,8 @@ const MetricCard = ({ title, value, subtitle, icon: Icon, color = "slate", trend
       }
     </CardContent>
   </Card>
-);
+  );
+};
 
 export default function ClientDetailModal({
   client,
