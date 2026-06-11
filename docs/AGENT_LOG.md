@@ -656,3 +656,21 @@ Registro cronológico de tarefas executadas por agentes.
   - `Calendar.jsx` — `useUserSettings` + `useMemo` para `unsyncedCount`
 - **Edge Function**: `google-calendar` deployada no Supabase `cwtallnetgodoacuoaow` ✅
 - **Build**: Vite ✅ (34.83s)
+
+### PUSH-S30 — Push Notifications: ativação completa com VAPID ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Data**: 2026-06-11
+- **O que foi feito**:
+  - Identificado que `VITE_VAPID_PUBLIC_KEY` estava ausente do `.env.local` e da Vercel → app entrava em modo "notificação local" sem push server-side
+  - Rotacionados os VAPID keys (chave pública anterior inacessível nos secrets): gerado novo par via `web-push generate-vapid-keys`
+  - `VITE_VAPID_PUBLIC_KEY` adicionado a `.env.local`
+  - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` atualizados nos secrets do Supabase Edge Functions
+  - `VITE_VAPID_PUBLIC_KEY` substituído na variável de ambiente da Vercel (produção)
+  - Edge Functions `send-push-digest` e `send-push-test` reimplantadas para pegar novos secrets
+  - `push_subscriptions` e `push_sent_log` truncadas (assinaturas antigas inválidas com nova chave pública)
+  - Confirmado: cron jobs `send-push-digest-morning` (11h UTC / 8h BRT) e `send-push-digest-evening` (21h UTC / 18h BRT) ativos no pg_cron ✅
+  - Confirmado: `push-sw.js` em `/public` com handlers `push` e `notificationclick` ✅
+  - Confirmado: `027_push_digest_cron` + `028_enable_realtime` já aplicadas no DB ✅
+  - Migração 028 (Realtime) confirmada aplicada — `RELATORIO_VIDA_APP.md` atualizado
+- **Arquivos modificados**: `.env.local`, `docs/RELATORIO_VIDA_APP.md`, `docs/IDEIAS_PENDENTES.md`, `docs/AGENT_LOG.md`
+- **Próximo passo**: deploy na Vercel → ir em Perfil → Alertas no celular → Ativar para criar nova assinatura

@@ -42,11 +42,12 @@
 | Auditoria scroll/modais | Sessão 10 — rotas principais 🟢 (ver `AUDITORIA_PAGINAS.md`) |
 | Meta mensal = diárias únicas | `diarias_count` + UI Goals/Home/Perfil/IA/Onboarding ✅ |
 | Backup git automático | Hook `.cursor/hooks.json` + `npm run git:backup` ✅ |
-| Realtime sync multi-device | `RealtimeSyncProvider` + `realtimeBus` + `useRealtimeRefetch` — todos os hooks integrados; migração `028_enable_realtime.sql` criada (pendente `supabase db push`) |
+| Realtime sync multi-device | `RealtimeSyncProvider` + `realtimeBus` + `useRealtimeRefetch` — todos os hooks integrados; migração `028_enable_realtime.sql` **aplicada** ✅ |
 | Classes Tailwind dinâmicas | Corrigidas em S27: `FinancialSummary`, `CategoryPicker`, `ClientDetailModal` — mapas estáticos substituem interpolação `bg-${color}-X` |
 | Lapidação S28 | Auditoria completa: 10 componentes auditados, typo `PaymentConfirmModal` corrigido; todos componentes restantes confirmados limpos |
 | Lapidação S29 | 38 componentes auditados; `GoogleCalendarSync` 3× `window.confirm()` → `ConfirmDialog`; `ReceiptAnalyzer` timezone bug (`toISOString` → `format`) |
 | Google Calendar melhorias | Mapa fix (`.key` bug); matching fuzzy título→cliente; parser location→city/state; badge "fora de sinc" no header Agenda e em Configurações |
+| Push Notifications (S30) | VAPID keys rotacionados; `VITE_VAPID_PUBLIC_KEY` adicionado a `.env.local` e Vercel; Edge Functions `send-push-digest`+`send-push-test` reimplantadas; cron 8h/18h BRT ativo; `push_subscriptions` limpa (reativar no Perfil após deploy) |
 
 ---
 

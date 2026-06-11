@@ -33,7 +33,7 @@
 | 13 | Export PDF/CSV relatórios | ✅ | exportReport.js |
 | 14 | OCR recibo despesas (ReceiptAnalyzer) | ✅ | Gemini Vision via Edge Function `analyze-receipt`; auto-preenche form |
 | 15 | PWA offline refinado + sync estado | ⬜ | PWA_ROADMAP |
-| 16 | Push notifications | ⬜ | |
+| 16 | Push notifications | ✅ | VAPID keys + cron 8h/18h + service worker + UI Perfil; reativar no Perfil após próximo deploy |
 | 17 | Code-split **seguro** (sem travar rotas) | ✅ | Cursor Sprint PERF-SPA-LAZY — bundle principal ~263 KB; todas as rotas lazy + Suspense ✅ |
 | 18 | Dedupe eventos Google Calendar | 🟡 | Botão no Perfil — validar |
 
