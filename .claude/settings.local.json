@@ -120,7 +120,8 @@
       "Bash(find src *)",
       "Bash(curl *)",
       "Bash(start *)",
-      "Bash(powershell -Command \"\\(Get-Content 'C:\\\\Users\\\\monte\\\\OneDrive\\\\Documentos\\\\backstage-pro\\\\docs\\\\AGENT_LOG.md'\\).Count\")"
+      "Bash(powershell -Command \"\\(Get-Content 'C:\\\\Users\\\\monte\\\\OneDrive\\\\Documentos\\\\backstage-pro\\\\docs\\\\AGENT_LOG.md'\\).Count\")",
+      "Bash(dir .supabase)"
     ]
   },
   "enabledMcpjsonServers": [
