@@ -114,7 +114,10 @@
       "Bash(xxd)",
       "Bash(grep -v \"//\\\\|isArray\\\\|\\\\?\\\\.\")",
       "Bash(grep -n \"useMediaQuery\" src/components/hooks/useMediaQuery.jsx)",
-      "Bash(cat src/components/hooks/useMediaQuery.jsx)"
+      "Bash(cat src/components/hooks/useMediaQuery.jsx)",
+      "Bash(cat src/lib/portalContainer.js)",
+      "Bash(cat src/lib/portalContainer.jsx)",
+      "Bash(find src *)"
     ]
   },
   "enabledMcpjsonServers": [
