@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { checkCompletedEventsForAutoHours } from '@/lib/checkCompletedEventsForAutoHours';
 import AppTopBar, { getAppTopBarOffset } from '@/components/layout/AppTopBar';
+import OfflineBanner from '@/components/layout/OfflineBanner';
 import { prefetchRoute } from '@/lib/routePrefetch';
 
 const navItems = [
@@ -48,6 +49,7 @@ export default function AppLayout() {
   return (
     <div className="h-full bg-[#050609] text-white flex flex-col overflow-hidden">
       <AppTopBar />
+      <OfflineBanner />
       <main
         ref={mainRef}
         data-app-scroll
