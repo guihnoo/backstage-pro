@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState, useCallback } from 'react';
 import { supabase } from './supabase';
 import { useAuth } from './authContext';
+import { useRealtimeRefetch } from './useRealtimeRefetch';
 
 const mapPayloadToDb = (payload = {}) => {
   const mapped = {
@@ -39,13 +40,13 @@ export function useExpenses() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const refetch = useCallback(async () => {
+  const refetch = useCallback(async ({ silent = false } = {}) => {
     if (!userId) {
       setLoading(false);
       return;
     }
 
-    setLoading(true);
+    if (!silent) setLoading(true);
     setError(null);
 
     try {
@@ -60,9 +61,11 @@ export function useExpenses() {
     } catch (e) {
       setError(e.message);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [userId]);
+
+  useRealtimeRefetch('expenses', refetch);
 
   useEffect(() => {
     refetch();

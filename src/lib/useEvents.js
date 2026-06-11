@@ -2,6 +2,7 @@
 import { supabase } from './supabase';
 import { useAuth } from './authContext';
 import { syncEventToGoogleCalendar } from '@/lib/googleCalendarPush';
+import { useRealtimeRefetch } from './useRealtimeRefetch';
 
 function normalizeCoord(value) {
   if (value === '' || value === undefined || value === null) return null;
@@ -51,13 +52,13 @@ export function useEvents() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const refetch = useCallback(async () => {
+  const refetch = useCallback(async ({ silent = false } = {}) => {
     if (!userId) {
       setLoading(false);
       return;
     }
 
-    setLoading(true);
+    if (!silent) setLoading(true);
     setError(null);
 
     try {
@@ -72,9 +73,11 @@ export function useEvents() {
     } catch (e) {
       setError(e.message);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [userId]);
+
+  useRealtimeRefetch('events', refetch);
 
   useEffect(() => {
     refetch();

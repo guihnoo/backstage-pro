@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from './supabase';
 import { useAuth } from './authContext';
+import { useRealtimeRefetch } from './useRealtimeRefetch';
 
 export function useUserSettings() {
   const { user } = useAuth();
@@ -10,12 +11,12 @@ export function useUserSettings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const refetch = useCallback(async () => {
+  const refetch = useCallback(async ({ silent = false } = {}) => {
     if (!userId) {
       setLoading(false);
       return;
     }
-    setLoading(true);
+    if (!silent) setLoading(true);
     setError(null);
     try {
       const { data, error: err } = await supabase
@@ -28,9 +29,11 @@ export function useUserSettings() {
     } catch (e) {
       setError(e.message);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [userId]);
+
+  useRealtimeRefetch('user_settings', refetch);
 
   useEffect(() => {
     refetch();

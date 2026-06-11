@@ -3,8 +3,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { DollarSign, TrendingUp, TrendingDown, Hourglass, CircleDollarSign } from 'lucide-react';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 
+const COLOR_CLASSES = {
+  green:  { bg: 'bg-green-500/20',  text: 'text-green-400'  },
+  yellow: { bg: 'bg-yellow-500/20', text: 'text-yellow-400' },
+  red:    { bg: 'bg-red-500/20',    text: 'text-red-400'    },
+  cyan:   { bg: 'bg-cyan-500/20',   text: 'text-cyan-400'   },
+  purple: { bg: 'bg-purple-500/20', text: 'text-purple-400' },
+  blue:   { bg: 'bg-blue-500/20',   text: 'text-blue-400'   },
+};
+
 const StatCard = ({ icon, title, value, color, delay }) => {
   const Icon = icon;
+  const { bg, text } = COLOR_CLASSES[color] || COLOR_CLASSES.cyan;
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -15,8 +25,8 @@ const StatCard = ({ icon, title, value, color, delay }) => {
       <Card className="bg-slate-800/50 border-slate-700/80 h-full">
         <CardContent className="p-4">
           <div className="flex items-center gap-4">
-            <div className={`p-3 rounded-lg bg-${color}-500/20 flex-shrink-0`}>
-              <Icon className={`w-6 h-6 text-${color}-400`} />
+            <div className={`p-3 rounded-lg ${bg} flex-shrink-0`}>
+              <Icon className={`w-6 h-6 ${text}`} />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm text-slate-400 truncate">{title}</p>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from './supabase';
+import { useRealtimeRefetch } from './useRealtimeRefetch';
 import { differenceInDays, parseISO } from 'date-fns';
 import { todayLocalISO, countUniqueWorkDays } from '@/components/utils/dateUtils';
 import {
@@ -31,6 +32,8 @@ export function useStats(userId) {
   const [error, setError] = useState(null);
   const [version, setVersion] = useState(0);
   const refetch = useCallback(() => setVersion(v => v + 1), []);
+
+  useRealtimeRefetch(['events', 'daily_work', 'clients'], refetch);
 
   useEffect(() => {
     if (!userId) {
@@ -110,10 +113,8 @@ export function useStats(userId) {
     }
 
     fetchStats();
-    const interval = setInterval(fetchStats, 60000);
     return () => {
       cancelled = true;
-      clearInterval(interval);
     };
   }, [userId, version]);
 
@@ -125,13 +126,13 @@ export function useUpcomingEvent(userId) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const refetch = useCallback(async () => {
+  const refetch = useCallback(async ({ silent = false } = {}) => {
     if (!userId) {
       setLoading(false);
       return;
     }
 
-    setLoading(true);
+    if (!silent) setLoading(true);
     setError(null);
 
     try {
@@ -169,14 +170,14 @@ export function useUpcomingEvent(userId) {
     } catch (err) {
       setError(err.message);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [userId]);
 
+  useRealtimeRefetch('events', refetch);
+
   useEffect(() => {
     refetch();
-    const interval = setInterval(refetch, 60000);
-    return () => clearInterval(interval);
   }, [refetch]);
 
   return { event, loading, error, refetch };
@@ -189,6 +190,8 @@ export function useEvents(userId, options = {}) {
   const [version, setVersion] = useState(0);
 
   const refetch = useCallback(() => setVersion(v => v + 1), []);
+
+  useRealtimeRefetch('events', refetch);
 
   useEffect(() => {
     if (!userId) {
@@ -234,6 +237,10 @@ export function useClients(userId) {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [version, setVersion] = useState(0);
+  const refetch = useCallback(() => setVersion(v => v + 1), []);
+
+  useRealtimeRefetch('clients', refetch);
 
   useEffect(() => {
     if (!userId) {
@@ -259,9 +266,9 @@ export function useClients(userId) {
     }
 
     fetchClients();
-  }, [userId]);
+  }, [userId, version]);
 
-  return { clients, loading, error };
+  return { clients, loading, error, refetch };
 }
 
 export function usePaymentAlerts(userId) {
@@ -269,6 +276,8 @@ export function usePaymentAlerts(userId) {
   const [loading, setLoading] = useState(true);
   const [version, setVersion] = useState(0);
   const refetch = useCallback(() => setVersion(v => v + 1), []);
+
+  useRealtimeRefetch('events', refetch);
 
   useEffect(() => {
     if (!userId) {
@@ -373,6 +382,10 @@ export const MEI_DAS = {
 export function useMeiStats(userId) {
   const [annualRevenue, setAnnualRevenue] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [version, setVersion] = useState(0);
+  const refetch = useCallback(() => setVersion(v => v + 1), []);
+
+  useRealtimeRefetch('events', refetch);
 
   useEffect(() => {
     if (!userId) { setLoading(false); return; }
@@ -402,7 +415,7 @@ export function useMeiStats(userId) {
 
     fetch();
     return () => { cancelled = true; };
-  }, [userId]);
+  }, [userId, version]);
 
-  return { annualRevenue, loading };
+  return { annualRevenue, loading, refetch };
 }

@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState, useCallback } from 'react';
 import { supabase } from './supabase';
 import { useAuth } from './authContext';
+import { useRealtimeRefetch } from './useRealtimeRefetch';
 
 /** Mapeia payload da UI para colunas reais do Supabase (date, total_hours, notes). */
 export function mapPayloadToDb(payload = {}) {
@@ -56,13 +57,13 @@ export function useDailyWork() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const refetch = useCallback(async () => {
+  const refetch = useCallback(async ({ silent = false } = {}) => {
     if (!userId) {
       setLoading(false);
       return;
     }
 
-    setLoading(true);
+    if (!silent) setLoading(true);
     setError(null);
 
     try {
@@ -77,9 +78,11 @@ export function useDailyWork() {
     } catch (e) {
       setError(e.message);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [userId]);
+
+  useRealtimeRefetch('daily_work', refetch);
 
   useEffect(() => {
     refetch();

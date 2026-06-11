@@ -13,6 +13,7 @@ import OAuthUrlGuard from '@/components/auth/OAuthUrlGuard';
 import NavigationSync from '@/components/NavigationSync';
 import { AuthProvider } from '@/lib/authContext';
 import { AppDataProvider } from '@/components/context/AppDataContext';
+import { RealtimeSyncProvider } from '@/components/context/RealtimeSyncProvider';
 
 function RouteLoading() {
   return <LoadingSpinner fullScreen text="Carregando..." />;
@@ -65,11 +66,13 @@ function OnboardingRoute({ children }) {
 function RootShell() {
   return (
     <AuthProvider>
-      <AppDataProvider>
-        <NavigationSync />
-        <OAuthUrlGuard />
-        <Outlet />
-      </AppDataProvider>
+      <RealtimeSyncProvider>
+        <AppDataProvider>
+          <NavigationSync />
+          <OAuthUrlGuard />
+          <Outlet />
+        </AppDataProvider>
+      </RealtimeSyncProvider>
     </AuthProvider>
   );
 }
