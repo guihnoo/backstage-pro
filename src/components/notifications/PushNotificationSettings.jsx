@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Bell, BellOff, Loader2, Smartphone } from 'lucide-react';
+import { Bell, BellOff, Loader2, Smartphone, Send } from 'lucide-react';
 import appToast from '@/lib/appToast';
 import { useAuth } from '@/lib/authContext';
 import { supabase } from '@/lib/supabase';
@@ -11,17 +11,31 @@ import {
   subscribeToPush,
   unsubscribeFromPush,
   showTestNotification,
+  sendServerTestPush,
 } from '@/lib/pushNotifications';
+
+const PREF_ITEMS = [
+  { key: 'push_events', label: 'Shows', hint: 'Hoje e amanhã' },
+  { key: 'push_payments', label: 'Pagamentos', hint: 'Atrasados' },
+  { key: 'push_goals', label: 'Metas', hint: 'Quase na meta do mês' },
+];
 
 export default function PushNotificationSettings() {
   const { user, profile } = useAuth();
   const config = getCategoryConfig(profile?.category || 'lighting');
-  const [enabled, setEnabled] = useState(false);
+  const [prefs, setPrefs] = useState({
+    push_enabled: false,
+    push_events: true,
+    push_payments: true,
+    push_goals: false,
+  });
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [testing, setTesting] = useState(false);
   const supported = isPushSupported();
   const permission = getPushPermission();
   const vapidReady = Boolean(import.meta.env.VITE_VAPID_PUBLIC_KEY);
+  const enabled = prefs.push_enabled;
 
   useEffect(() => {
     if (!user?.id) {
@@ -33,26 +47,42 @@ export default function PushNotificationSettings() {
       try {
         const { data } = await supabase
           .from('user_settings')
-          .select('push_enabled')
+          .select('push_enabled, push_events, push_payments, push_goals')
           .eq('user_id', user.id)
           .maybeSingle();
-        if (!cancelled) setEnabled(Boolean(data?.push_enabled));
+        if (!cancelled && data) {
+          setPrefs({
+            push_enabled: Boolean(data.push_enabled),
+            push_events: data.push_events !== false,
+            push_payments: data.push_payments !== false,
+            push_goals: Boolean(data.push_goals),
+          });
+        }
       } catch {
-        if (!cancelled) setEnabled(false);
+        if (!cancelled) {
+          setPrefs((p) => ({ ...p, push_enabled: false }));
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [user?.id]);
 
-  const persistEnabled = async (value) => {
+  const persistPrefs = async (updates) => {
+    const next = { ...prefs, ...updates };
     const { error } = await supabase.from('user_settings').upsert(
-      { user_id: user.id, push_enabled: value, updated_at: new Date().toISOString() },
+      {
+        user_id: user.id,
+        ...next,
+        updated_at: new Date().toISOString(),
+      },
       { onConflict: 'user_id' }
     );
     if (error) throw error;
-    setEnabled(value);
+    setPrefs(next);
   };
 
   const handleEnable = async () => {
@@ -61,16 +91,17 @@ export default function PushNotificationSettings() {
     try {
       if (!vapidReady) {
         await showTestNotification();
-        await persistEnabled(true);
+        await persistPrefs({ push_enabled: true });
         appToast.success('Notificações locais ativadas', {
-          description: 'Push no servidor será configurado em breve.',
+          description: 'Configure VAPID na Vercel para push no servidor.',
         });
         return;
       }
       await subscribeToPush(user.id);
-      await persistEnabled(true);
+      await persistPrefs({ push_enabled: true });
+      await showTestNotification();
       appToast.success('Alertas no celular ativados!', {
-        description: 'Shows, pagamentos e metas importantes chegam aqui.',
+        description: 'Shows, pagamentos e metas chegam na barra do sistema.',
       });
     } catch (err) {
       appToast.error('Não foi possível ativar', { description: err.message });
@@ -84,12 +115,47 @@ export default function PushNotificationSettings() {
     setBusy(true);
     try {
       await unsubscribeFromPush(user.id);
-      await persistEnabled(false);
+      await persistPrefs({ push_enabled: false });
       appToast.info('Notificações desativadas');
     } catch (err) {
       appToast.error('Erro ao desativar', { description: err.message });
     } finally {
       setBusy(false);
+    }
+  };
+
+  const handlePrefToggle = async (key) => {
+    if (!enabled || !user?.id) return;
+    setBusy(true);
+    try {
+      await persistPrefs({ [key]: !prefs[key] });
+    } catch (err) {
+      appToast.error('Erro ao salvar preferência', { description: err.message });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleServerTest = async () => {
+    if (!vapidReady) {
+      try {
+        await showTestNotification();
+        appToast.success('Notificação local enviada');
+      } catch (err) {
+        appToast.error('Teste falhou', { description: err.message });
+      }
+      return;
+    }
+    setTesting(true);
+    try {
+      const result = await sendServerTestPush();
+      appToast.success('Push do servidor enviado!', {
+        description: result?.sent ? `${result.sent} dispositivo(s)` : undefined,
+      });
+    } catch (err) {
+      appToast.error('Teste do servidor falhou', { description: err.message });
+    } finally {
+      setTesting(false);
     }
   };
 
@@ -112,7 +178,7 @@ export default function PushNotificationSettings() {
             Alertas no celular
           </h2>
           <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-            Shows de hoje/amanhã e pagamentos atrasados — direto na barra do sistema.
+            Shows de hoje/amanhã e pagamentos atrasados — 8h e 18h (horário de Brasília).
           </p>
         </div>
       </div>
@@ -135,7 +201,7 @@ export default function PushNotificationSettings() {
         </p>
       )}
 
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-3 mb-4">
         <div className="flex items-center gap-2 text-sm text-slate-300">
           {enabled ? (
             <Bell className="w-4 h-4 text-emerald-400" />
@@ -166,6 +232,44 @@ export default function PushNotificationSettings() {
           )}
         </button>
       </div>
+
+      {enabled && (
+        <div className="space-y-3 border-t border-white/5 pt-4">
+          <p className="text-[10px] font-mono uppercase tracking-wider text-slate-500">Tipos de alerta</p>
+          {PREF_ITEMS.map(({ key, label, hint }) => (
+            <label
+              key={key}
+              className="flex items-center justify-between gap-3 cursor-pointer"
+            >
+              <span className="text-sm text-slate-300">
+                {label}
+                <span className="block text-[10px] text-slate-500">{hint}</span>
+              </span>
+              <input
+                type="checkbox"
+                checked={prefs[key]}
+                disabled={busy}
+                onChange={() => handlePrefToggle(key)}
+                className="h-4 w-4 rounded accent-amber-400"
+              />
+            </label>
+          ))}
+
+          <button
+            type="button"
+            disabled={testing || permission === 'denied'}
+            onClick={handleServerTest}
+            className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase border border-white/10 text-slate-300 hover:bg-white/5 disabled:opacity-50"
+          >
+            {testing ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className="w-3.5 h-3.5" />
+            )}
+            Testar notificação
+          </button>
+        </div>
+      )}
     </NeonGlass>
   );
 }

@@ -36,7 +36,10 @@ export async function subscribeToPush(userId) {
     throw new Error('Push ainda não configurado no servidor (VAPID).');
   }
 
-  const permission = await Notification.requestPermission();
+  let permission = Notification.permission;
+  if (permission === 'default') {
+    permission = await Notification.requestPermission();
+  }
   if (permission !== 'granted') {
     throw new Error('Permissão de notificação negada.');
   }
@@ -85,6 +88,27 @@ export async function unsubscribeFromPush(userId) {
       .eq('user_id', userId)
       .eq('endpoint', endpoint);
   }
+}
+
+/** Re-sincroniza subscription após atualização do PWA (sem pedir permissão de novo). */
+export async function ensurePushSubscription(userId) {
+  if (!userId || !isPushSupported() || !VAPID_PUBLIC) return false;
+  if (Notification.permission !== 'granted') return false;
+  try {
+    await subscribeToPush(userId);
+    return true;
+  } catch (err) {
+    console.warn('[push] ensurePushSubscription:', err?.message || err);
+    return false;
+  }
+}
+
+/** Dispara push real via Edge Function (valida VAPID + subscription no servidor). */
+export async function sendServerTestPush() {
+  const { data, error } = await supabase.functions.invoke('send-push-test', { body: {} });
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+  return data;
 }
 
 /** Teste local — mostra notificação sem servidor push */

@@ -14,6 +14,7 @@ import NavigationSync from '@/components/NavigationSync';
 import { AuthProvider } from '@/lib/authContext';
 import { AppDataProvider } from '@/components/context/AppDataContext';
 import { RealtimeSyncProvider } from '@/components/context/RealtimeSyncProvider';
+import PushSubscriptionSync from '@/components/notifications/PushSubscriptionSync';
 
 function RouteLoading() {
   return <LoadingSpinner fullScreen text="Carregando..." />;
@@ -68,6 +69,7 @@ function RootShell() {
     <AuthProvider>
       <RealtimeSyncProvider>
         <AppDataProvider>
+          <PushSubscriptionSync />
           <NavigationSync />
           <OAuthUrlGuard />
           <Outlet />

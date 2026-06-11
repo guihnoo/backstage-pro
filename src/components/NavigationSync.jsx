@@ -29,5 +29,19 @@ export default function NavigationSync() {
     return () => window.removeEventListener('popstate', onPopState);
   }, [navigate]);
 
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return;
+
+    const onMessage = (event) => {
+      const url = event.data?.url;
+      if (event.data?.type === 'backstage-navigate' && typeof url === 'string') {
+        navigate(url);
+      }
+    };
+
+    navigator.serviceWorker.addEventListener('message', onMessage);
+    return () => navigator.serviceWorker.removeEventListener('message', onMessage);
+  }, [navigate]);
+
   return null;
 }

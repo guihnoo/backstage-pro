@@ -21,16 +21,21 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const url = event.notification.data?.url || '/';
+  const path = event.notification.data?.url || '/';
+  const targetUrl = new URL(path, self.location.origin).href;
+
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
       for (const client of clients) {
-        if (client.url.includes(self.location.origin) && 'focus' in client) {
-          client.navigate(url);
-          return client.focus();
+        if (!client.url.startsWith(self.location.origin)) continue;
+        if ('focus' in client) {
+          if ('navigate' in client) {
+            return client.navigate(targetUrl).then(() => client.focus());
+          }
+          return client.focus().then(() => client.postMessage({ type: 'backstage-navigate', url: path }));
         }
       }
-      if (self.clients.openWindow) return self.clients.openWindow(url);
+      if (self.clients.openWindow) return self.clients.openWindow(targetUrl);
       return undefined;
     })
   );
