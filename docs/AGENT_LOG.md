@@ -20,6 +20,19 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+### POLISH-S27 — Correção de classes Tailwind dinâmicas + realtime sync + micro-polish ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`FinancialSummary.jsx`**: `bg-${color}-500/20` e `text-${color}-400` substituídos por mapa estático `COLOR_CLASSES` (6 cores: green/yellow/red/cyan/purple/blue) — classes não seriam geradas pelo PurgeCSS
+- **`CategoryPicker.jsx`**: `border-${color}-400`, `ring-${color}-500/50`, `shadow-${color}-500/20` extraídos para `selectedRingMap` com classes literais
+- **`ClientDetailModal.jsx`**: `text-${color}-300` e `text-${color}-400` substituídos por `METRIC_COLOR_CLASSES` lookup
+- **`DailyWorkModal.jsx`**: typo "saida" → "saída" no toast de validação
+- **Realtime sync** (Cursor): `RealtimeSyncProvider.jsx` + `realtimeBus.js` + `useRealtimeRefetch.js` — sincronização entre dispositivos via Supabase postgres_changes; todos os hooks principais integrados
+- **Migração**: `supabase/migrations/028_enable_realtime.sql` — habilita realtime nas 6 tabelas core; precisa de `supabase db push` para entrar em vigor
+- **Build**: Vite ✅ (21.70s) — sem warnings novos
+- **Arquivos modificados**: `FinancialSummary.jsx`, `CategoryPicker.jsx`, `ClientDetailModal.jsx`, `DailyWorkModal.jsx`
+
+---
+
 ### DEEP-AUDIT-S25 — Auditoria página a página (continuação) + 2 fixes ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Páginas auditadas**: Calendar.jsx, Reports.jsx, Clients.jsx, Expenses.jsx, ClientDetail.jsx (+ Home.jsx auditada em S24)

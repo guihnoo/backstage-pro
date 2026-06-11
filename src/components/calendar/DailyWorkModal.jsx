@@ -104,7 +104,7 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
     }
 
     if (!formData.date || !formData.entry_time || !formData.exit_time) {
-      appToast.error('Preencha data, entrada e saida.');
+      appToast.error('Preencha data, entrada e saída.');
       return;
     }
 

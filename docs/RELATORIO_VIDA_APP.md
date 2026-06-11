@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-11 (sessão S26)  
+**Última atualização:** 2026-06-11 (sessão S27)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último commit:** pendente nesta sessão — deploy testes reais  
 **Último deploy:** 2026-06-10 — `dpl_CSCrk4jRwwdQwJaVUjAy7ie7wBiX` → https://backstage-pro-beta.vercel.app  
@@ -42,6 +42,8 @@
 | Auditoria scroll/modais | Sessão 10 — rotas principais 🟢 (ver `AUDITORIA_PAGINAS.md`) |
 | Meta mensal = diárias únicas | `diarias_count` + UI Goals/Home/Perfil/IA/Onboarding ✅ |
 | Backup git automático | Hook `.cursor/hooks.json` + `npm run git:backup` ✅ |
+| Realtime sync multi-device | `RealtimeSyncProvider` + `realtimeBus` + `useRealtimeRefetch` — todos os hooks integrados; migração `028_enable_realtime.sql` criada (pendente `supabase db push`) |
+| Classes Tailwind dinâmicas | Corrigidas em S27: `FinancialSummary`, `CategoryPicker`, `ClientDetailModal` — mapas estáticos substituem interpolação `bg-${color}-X` |
 
 ---
 
@@ -73,6 +75,21 @@ Ordem oficial após fix de scroll (2026-06-05):
 ---
 
 ## Changelog
+
+### 2026-06-11 (sessão S27) — Correção de classes Tailwind dinâmicas + realtime sync
+
+**Componentes corrigidos (Tailwind PurgeCSS):**  
+- `FinancialSummary.jsx` — `bg-${color}-500/20` / `text-${color}-400` → `COLOR_CLASSES` mapa estático  
+- `CategoryPicker.jsx` — `border-${color}-400`, `ring-${color}-500/50`, `shadow-${color}-500/20` → `selectedRingMap` literal  
+- `ClientDetailModal.jsx` — `text-${color}-300/400` → `METRIC_COLOR_CLASSES` lookup  
+**Micro-polish:**  
+- `DailyWorkModal.jsx` — typo "saida" → "saída" no toast de validação  
+**Realtime sync (Cursor):**  
+- `RealtimeSyncProvider.jsx` + `realtimeBus.js` + `useRealtimeRefetch.js` — sync automático multi-device via Supabase postgres_changes  
+- Migração `028_enable_realtime.sql` criada — pendente `supabase db push` para ativar no banco  
+**Build:** Vite ✅ (21.70s)
+
+---
 
 ### 2026-06-11 (sessão S26) — Lapidação profissional: 8 fixes de polish + 2 bugs timezone
 
