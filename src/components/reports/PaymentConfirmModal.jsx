@@ -27,7 +27,7 @@ export default function PaymentConfirmModal({ event, isOpen, onClose, onSuccess 
 
   const handleConfirm = async () => {
     if (!paidAmount || Number(paidAmount) <= 0) {
-      appToast.error('Informe um valor valido para o pagamento.');
+      appToast.error('Informe um valor válido para o pagamento.');
       return;
     }
 

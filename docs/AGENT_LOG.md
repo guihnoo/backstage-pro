@@ -31,6 +31,25 @@ Registro cronológico de tarefas executadas por agentes.
 - **Build**: Vite ✅ (21.70s) — sem warnings novos
 - **Arquivos modificados**: `FinancialSummary.jsx`, `CategoryPicker.jsx`, `ClientDetailModal.jsx`, `DailyWorkModal.jsx`
 
+### AUDIT-S28 — Lapidação profissional: auditoria completa de componentes restantes ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Metodologia**: Leitura completa de cada componente com foco em classes Tailwind dinâmicas, bugs de fuso horário, typos em toasts, e problemas de UX/estrutura
+- **Fix**: `PaymentConfirmModal.jsx` — toast `'Informe um valor valido'` → `'Informe um valor válido'` (typo de acento)
+- **Componentes auditados e confirmados limpos**:
+  - `Onboarding.jsx` — flow de 5 steps correto, sem dinâmicas, sem bugs de timezone
+  - `reports/EventDetailModal.jsx` — SSOT `getEventCacheAmount`, `work.date` garantido pelo `mapRowFromDb` no `useDailyWork`
+  - `mobile/EventHoursSheet.jsx` — scroll via `.bp-modal-scroll`, z-index 90/95, validação robusta, turnos overnight OK
+  - `mobile/NotesSheet.jsx` — `ScrollArea fill`, `useAppScrollLock`, estrutura correta
+  - `clients/ClientForm.jsx` — validação completa, fallback gracioso para coluna `brand_color` ausente, `razao_social` via `notes`
+  - `reports/DrilldownModal.jsx` — export CSV correto, acessibilidade (role/tabIndex/onKeyDown)
+  - `reports/PaymentConfirmModal.jsx` — fix typo acima; `format(date, 'yyyy-MM-dd')` seguro
+  - `reports/ExportManager.jsx` — limpo, bem estruturado
+  - `reports/ReportEventList.jsx` — calcula valor via `dailyWork` por evento corretamente
+  - `calendar/BackstageCalendarGrid.jsx` — memoização correta, `Array.isArray` defensores, sem classes dinâmicas
+- **`useDailyWork.js`** — verificado: `mapRowFromDb` garante `.date` e `.work_date` sincronizados em todos os registros; consistência entre `EventHoursSheet` (salva `date`) e `DailyWorkModal` (salva `work_date`) é normalizada pelo `mapPayloadToDb`
+- **Build**: sem build nesta sessão (mudança mínima, apenas typo)
+- **Arquivos modificados**: `src/components/reports/PaymentConfirmModal.jsx`
+
 ---
 
 ### DEEP-AUDIT-S25 — Auditoria página a página (continuação) + 2 fixes ✅
