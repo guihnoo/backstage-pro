@@ -117,7 +117,8 @@
       "Bash(cat src/components/hooks/useMediaQuery.jsx)",
       "Bash(cat src/lib/portalContainer.js)",
       "Bash(cat src/lib/portalContainer.jsx)",
-      "Bash(find src *)"
+      "Bash(find src *)",
+      "Bash(curl *)"
     ]
   },
   "enabledMcpjsonServers": [
