@@ -228,7 +228,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
                       className="flex items-center gap-1 sm:gap-2 text-xs text-slate-300 hover:text-cyan-300 transition-colors group"
                     >
                       <Building2 className="w-3 h-3 text-slate-400 group-hover:text-cyan-400 flex-shrink-0" />
-                      <span className="truncate max-w-[150px] sm:max-w-none">{client.name}</span>
+                      <span className="truncate max-w-[200px] sm:max-w-[300px]">{client.name}</span>
                     </button>
                   )}
                 </div>

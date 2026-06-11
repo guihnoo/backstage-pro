@@ -147,13 +147,13 @@ export default function AlertsPanel({
             <Card className={`${alert.bgColor} border ${alert.borderColor} backdrop-blur-sm`}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <alert.icon className={`w-5 h-5 ${alert.color}`} />
-                    <div>
-                      <h3 className={`font-bold ${alert.color}`}>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <alert.icon className={`w-5 h-5 ${alert.color} flex-shrink-0`} />
+                    <div className="min-w-0">
+                      <h3 className={`font-bold ${alert.color} truncate`}>
                         {alert.title}
                       </h3>
-                      <p className="text-sm text-slate-300 mt-1">
+                      <p className="text-sm text-slate-300 mt-1 break-words">
                         {alert.body}
                       </p>
                     </div>

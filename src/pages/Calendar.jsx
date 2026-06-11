@@ -984,6 +984,7 @@ export default function CalendarPage() {
         <CalendarTodayStrip
           events={activeEvents}
           dailyWork={dailyWork}
+          clients={clients}
           primaryHex={config.primaryHex}
           accentHex={config.accentHex}
           onEventClick={handleEventClick}

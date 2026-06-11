@@ -9,6 +9,7 @@ import {
 } from '@/components/utils/dateUtils';
 import { isCancelledEvent } from '@/lib/eventFinance';
 import { NeonGlass } from '@/components/design/NeonGlass';
+import EventHeading from '@/components/events/EventHeading';
 
 function getTodayWorkForEvent(dailyWork, eventId, today) {
   return dailyWork.find(
@@ -19,6 +20,7 @@ function getTodayWorkForEvent(dailyWork, eventId, today) {
 export default function CalendarTodayStrip({
   events = [],
   dailyWork = [],
+  clients = [],
   primaryHex = '#A64AFF',
   accentHex = '#FFB700',
   onEventClick,
@@ -81,6 +83,7 @@ export default function CalendarTodayStrip({
 
         <div className="space-y-2">
           {todayEvents.map((event) => {
+            const client = clients.find((c) => c?.id === event.client_id);
             const work = getTodayWorkForEvent(dailyWork, event.id, today);
             const isLive = work?.entry_time && !work?.exit_time;
             const timeLabel = event.start_time
@@ -99,7 +102,7 @@ export default function CalendarTodayStrip({
                 }`}
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white truncate">{event.title}</p>
+                  <EventHeading event={event} client={client} size="sm" />
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5 text-[11px] text-slate-500">
                     {timeLabel && (
                       <span className="flex items-center gap-1">
@@ -108,9 +111,9 @@ export default function CalendarTodayStrip({
                       </span>
                     )}
                     {event.location && (
-                      <span className="flex items-center gap-1 truncate max-w-[160px]">
+                      <span className="flex items-center gap-1 min-w-0 max-w-[160px]">
                         <MapPin className="w-3 h-3 flex-shrink-0" />
-                        {event.location}
+                        <span className="truncate">{event.location}</span>
                       </span>
                     )}
                     {work?.entry_time && (
