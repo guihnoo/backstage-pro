@@ -556,3 +556,16 @@ Registro cronológico de tarefas executadas por agentes.
 - **Build**: Vite ✅ (22.85s)
 - **Arquivos**: `Goals.jsx`, `AI_Mentor.jsx`, `DailyWorkModal.jsx`, `EventHoursSheet.jsx`, `EventActionSheet.jsx`
 - **Deploy**: pendente (agrupado com sessão S23)
+
+### BUGFIX-S24 — Correção crítica: não conseguia criar evento/selecionar/criar cliente — 2026-06-10
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Causa raiz identificada**: EventForm abria via `useQueryAction` antes de `useClients()` terminar de carregar. Com `clients=[]` (estado inicial), mostrava "Cadastre um cliente antes" mesmo que o usuário tivesse clientes — falso positivo de conta sem clientes.
+- **Bugs corrigidos**:
+  - `EventForm.jsx` + `Calendar.jsx` — prop `clientsLoading` adicionada; durante loading mostra skeleton em vez de mensagem "Cadastre um cliente" (evita bloqueio falso)
+  - `ClientQuickCreateDialog.jsx` — `razao_social` era incluído diretamente no payload de INSERT mas a coluna não existe na tabela `clients` → campo removido do payload (já vai para `notes` via `buildCompanyNotes`)
+  - `ClientForm.jsx` — botão submit tinha `type="submit"` mas estava fora do `<form>` (após `</ScrollArea>`); alterado para `type="button"` para evitar comportamento indefinido em Safari/iOS
+  - `ClientForm.jsx` e `EventForm.jsx` — toasts sem acentos corrigidos
+  - `companies` RLS — políticas `auth.role() = 'authenticated'` deprecated → `TO authenticated` em `023_fix_companies_rls.sql`
+- **Arquivos**: `EventForm.jsx`, `Calendar.jsx`, `ClientQuickCreateDialog.jsx`, `ClientForm.jsx`, `023_fix_companies_rls.sql`
+- **Build**: Vite ✅ (24.81s)
+- **Deploy**: Vercel prod ✅ (push `e00ee14`); migration 023 aplicada ao Supabase remoto
