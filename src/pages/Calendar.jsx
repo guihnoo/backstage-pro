@@ -1116,6 +1116,7 @@ export default function CalendarPage() {
             }}
             event={editingEvent}
             clients={clients}
+            clientsLoading={clientsLoading}
             prefillData={prefillEventData}
             onSuccess={handleFormSuccess}
           />

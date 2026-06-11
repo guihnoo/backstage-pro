@@ -216,7 +216,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
 
     try {
       if (!user?.id) {
-        toast.error('Sessao expirada. Faca login novamente.');
+        toast.error('Sessão expirada. Faça login novamente.');
         return;
       }
 
@@ -713,7 +713,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
               Cancelar
             </Button>
             <Button
-              type="submit"
+              type="button"
               onClick={handleSubmit}
               disabled={loading || Object.keys(errors).length > 0}
               className="w-full sm:w-auto bg-cyan-600 hover:bg-cyan-700 text-white h-12 min-h-[44px] order-1 sm:order-2"

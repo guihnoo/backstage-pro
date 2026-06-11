@@ -51,6 +51,7 @@ export default function EventForm({
   onClose,
   event,
   clients = [],
+  clientsLoading = false,
   prefillData,
   initialData,
   onSuccess,
@@ -249,8 +250,8 @@ export default function EventForm({
       onClose?.(false);
     } catch (error) {
       console.error('Erro ao salvar evento:', error);
-      toast.error('Nao foi possivel salvar o evento.', {
-        description: error?.message || 'Verifique cliente, datas e conexao.',
+      toast.error('Não foi possível salvar o evento.', {
+        description: error?.message || 'Verifique cliente, datas e conexão.',
       });
     } finally {
       setLoading(false);
@@ -289,7 +290,9 @@ export default function EventForm({
           <div className="space-y-4 p-4 sm:p-6 pb-2">
           <div className="space-y-2">
             <Label>Cliente</Label>
-            {allClients.length === 0 ? (
+            {clientsLoading && allClients.length === 0 ? (
+              <div className="h-11 rounded-md bg-slate-800 border border-slate-700 animate-pulse" />
+            ) : allClients.length === 0 ? (
               <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 space-y-3">
                 <p className="text-sm text-amber-100">
                   Cadastre um cliente antes de criar um evento na agenda.

@@ -75,7 +75,6 @@ export default function ClientQuickCreateDialog({ open, onOpenChange, initialNam
         brand_color: pickDefaultClientColor(trimmed),
         profile_complete: clientType === 'empresa' ? !!selectedCompany : true,
         ...(clientType === 'pessoa' && companyRef.trim() && { contact_person: companyRef.trim() }),
-        ...(clientType === 'empresa' && razaoSocial && { razao_social: razaoSocial }),
         ...(clientType === 'empresa' && selectedCompany?.email && { email: selectedCompany.email }),
         ...(clientType === 'empresa' && selectedCompany?.phone && { phone: selectedCompany.phone }),
         ...(notes && { notes }),
