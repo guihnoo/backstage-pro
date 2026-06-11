@@ -515,7 +515,7 @@ export default function ReportsPage() {
         setModalData(activeClients.map((client) => ({
           title: client.name,
           subtitle: `${current.events.filter((e) => e.client_id === client.id).length} eventos no período`,
-          value: current.paidEvents.filter((e) => e.client_id === client.id).reduce((sum, e) => sum + e.paid_amount, 0),
+          value: current.paidEvents.filter((e) => e.client_id === client.id).reduce((sum, e) => sum + (e.paid_amount || 0), 0),
           client_id: client.id,
         })));
         break;

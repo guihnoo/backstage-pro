@@ -4,6 +4,19 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+## 2026-06-11
+
+### DEEP-AUDIT-S25 — Auditoria página a página (continuação) + 2 fixes ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Páginas auditadas**: Calendar.jsx, Reports.jsx, Clients.jsx, Expenses.jsx, ClientDetail.jsx (+ Home.jsx auditada em S24)
+- **Fix `Reports.jsx:518`**: `e.paid_amount` sem `|| 0` → NaN no modal "Clientes Ativos" ao clicar no KPI; corrigido para `(e.paid_amount || 0)`
+- **Fix `useMediaQuery.jsx`**: `matches` nas deps do useEffect causava cleanup/re-registro do listener a cada mudança de state; corrigido para `[query]` apenas (alinhado com versão inline em Calendar.jsx)
+- **Verificações limpas**: Calendar.jsx (useMediaQuery local correto, clientsLoading já fixado em S24, DailyWork payload correto), Clients.jsx (sem bugs), Expenses.jsx (sem bugs), ClientDetail.jsx (form só abre após isLoading=false → sem race condition)
+- **Build**: Vite ✅ (29.18s) — sem warnings novos
+- **Arquivos**: `src/pages/Reports.jsx`, `src/components/hooks/useMediaQuery.jsx`, `docs/RELATORIO_VIDA_APP.md`, `docs/AGENT_LOG.md`
+
+---
+
 ## 2026-06-10
 
 ### CLIENT-TYPE-S20 — Diferenciação Empresa / Pessoa nos clientes ✅

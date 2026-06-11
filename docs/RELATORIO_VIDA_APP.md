@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-10 (sessão 22)  
+**Última atualização:** 2026-06-11 (sessão S25)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último commit:** pendente nesta sessão — deploy testes reais  
 **Último deploy:** 2026-06-10 — `dpl_CSCrk4jRwwdQwJaVUjAy7ie7wBiX` → https://backstage-pro-beta.vercel.app  
@@ -73,6 +73,17 @@ Ordem oficial após fix de scroll (2026-06-05):
 ---
 
 ## Changelog
+
+### 2026-06-11 (sessão S25) — Deep audit S25: Calendar/Reports/Clients/Expenses + 2 fixes
+
+**Páginas auditadas:** Home.jsx (S24) ✅, Calendar.jsx ✅, Reports.jsx ✅, Clients.jsx ✅, Expenses.jsx ✅, ClientDetail.jsx ✅  
+**Fixes:**  
+- `Reports.jsx:518` — `e.paid_amount` sem guarda `|| 0` podia gerar NaN no modal "Clientes Ativos"; corrigido para `(e.paid_amount || 0)`  
+- `src/components/hooks/useMediaQuery.jsx` — `matches` estava nas deps do `useEffect` → cleanup + re-registro do listener a cada resize; corrigido para deps `[query]` apenas (padrão idêntico ao já usado inline em Calendar.jsx)  
+**Ausência de bugs críticos:** Calendar.jsx, Clients.jsx, Expenses.jsx, ClientDetail.jsx todos limpos  
+**Build:** Vite ✅ (29.18s)
+
+---
 
 ### 2026-06-11 (sessão S24) — Bugfix crítico: criar evento/selecionar/criar cliente
 
