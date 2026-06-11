@@ -112,7 +112,9 @@
       "Bash(findstr /i \"passed failed error\")",
       "Bash(git reset *)",
       "Bash(xxd)",
-      "Bash(grep -v \"//\\\\|isArray\\\\|\\\\?\\\\.\")"
+      "Bash(grep -v \"//\\\\|isArray\\\\|\\\\?\\\\.\")",
+      "Bash(grep -n \"useMediaQuery\" src/components/hooks/useMediaQuery.jsx)",
+      "Bash(cat src/components/hooks/useMediaQuery.jsx)"
     ]
   },
   "enabledMcpjsonServers": [
