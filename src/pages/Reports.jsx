@@ -472,11 +472,14 @@ export default function ReportsPage() {
         setModalTitle('Faturamento Realizado');
         setModalData(current.paidEvents.map((event) => {
           const client = data.clients.find((c) => c.id === event.client_id);
+          const paidDateStr = event.paid_date
+            ? format(parseISO(event.paid_date), 'dd/MM/yyyy')
+            : 'Data não registrada';
           return {
             title: event.title,
-            subtitle: `${client?.name || 'Cliente'} • ${format(parseISO(event.paid_date), 'dd/MM/yyyy')}`,
+            subtitle: `${client?.name || 'Cliente'} • ${paidDateStr}`,
             value: event.paid_amount,
-            date: format(parseISO(event.paid_date), 'dd/MM/yyyy'),
+            date: paidDateStr,
             event_ref: event
           };
         }));
@@ -489,7 +492,7 @@ export default function ReportsPage() {
           const eventDailyWork = data.dailyWork.filter((w) => w.event_id === event.id);
           return {
             title: event.title,
-            subtitle: `${client?.name || 'Cliente'} • Concluído em ${format(parseISO(event.end_date || event.start_date), 'dd/MM/yyyy')}`,
+            subtitle: `${client?.name || 'Cliente'} • Concluído em ${(event.end_date || event.start_date) ? format(parseISO(event.end_date || event.start_date), 'dd/MM/yyyy') : '--'}`,
             value: calculateEventReceivableAmount(event, eventDailyWork),
             event_ref: event
           };
@@ -875,7 +878,7 @@ export default function ReportsPage() {
           {chartFilter && (
             <div className="flex items-center justify-between bg-slate-800/50 p-2 rounded-lg">
               <p className="text-sm text-purple-300">
-                Filtro ativo: Mostrando eventos para <strong>{format(parseISO(chartFilter.date), 'dd/MM/yyyy')}</strong>
+                Filtro ativo: Mostrando eventos para <strong>{chartFilter.date ? format(parseISO(chartFilter.date), 'dd/MM/yyyy') : '--'}</strong>
               </p>
               <Button variant="ghost" size="sm" onClick={clearChartFilter} className="text-slate-400 hover:text-white">
                 <XCircle className="w-4 h-4 mr-2" />

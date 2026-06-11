@@ -4,7 +4,7 @@ import { TrendingUp, ChevronRight, CalendarDays } from 'lucide-react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
-import { parseISO, addDays, isValid, differenceInCalendarDays, format } from 'date-fns';
+import { parseISO, addDays, isValid, differenceInCalendarDays, format, startOfDay } from 'date-fns';
 import { getEventCacheAmount, isCancelledEvent } from '@/lib/eventFinance';
 import { getEventStatus } from '@/components/utils/dateUtils';
 import { ptBR } from 'date-fns/locale';
@@ -18,26 +18,26 @@ function getWeekLabel(daysFromNow) {
 export default function ForecastWidget({ events = [], isLoading, primaryHex = '#A64AFF', accentHex = '#FFB700', onViewEvent }) {
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const [showAll, setShowAll] = useState(false);
-  const today = new Date();
-  const in30 = addDays(today, 30);
+  const todayMs = startOfDay(new Date()).getTime();
 
   const upcoming = useMemo(() => {
+    const t = new Date(todayMs);
+    const t30 = addDays(t, 30);
     return events
       .filter(ev => {
         if (isCancelledEvent(ev)) return false;
         if (getEventStatus(ev) === 'completed') return false;
         const d = ev.start_date ? parseISO(ev.start_date) : null;
-        return d && isValid(d) && d >= today && d <= in30;
+        return d && isValid(d) && d >= t && d <= t30;
       })
       .map(ev => {
         const d = parseISO(ev.start_date);
-        const days = differenceInCalendarDays(d, today);
+        const days = differenceInCalendarDays(d, t);
         const value = getEventCacheAmount(ev);
         return { ...ev, days, value };
       })
       .sort((a, b) => a.days - b.days);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [events]);
+  }, [events, todayMs]);
 
   const totalProjected = useMemo(
     () => upcoming.reduce((sum, ev) => sum + ev.value, 0),

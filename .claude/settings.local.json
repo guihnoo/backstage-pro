@@ -111,7 +111,8 @@
       "Bash(npx playwright *)",
       "Bash(findstr /i \"passed failed error\")",
       "Bash(git reset *)",
-      "Bash(xxd)"
+      "Bash(xxd)",
+      "Bash(grep -v \"//\\\\|isArray\\\\|\\\\?\\\\.\")"
     ]
   },
   "enabledMcpjsonServers": [

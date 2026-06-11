@@ -173,11 +173,14 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
           </div>
 
           <div className="flex items-center gap-2 text-slate-300">
-            <User className="w-4 h-4 text-violet-400" />
+            {event.status === 'confirmed'
+              ? <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              : <Circle className="w-4 h-4 text-violet-400" />
+            }
             <div className="text-sm">
               <p className="text-slate-500 text-xs">Status</p>
-              <p className="font-semibold capitalize">
-                {event.status === 'confirmed' ? '✓ Confirmado' : '◷ Pendente'}
+              <p className="font-semibold">
+                {event.status === 'confirmed' ? 'Confirmado' : 'Pendente'}
               </p>
             </div>
           </div>

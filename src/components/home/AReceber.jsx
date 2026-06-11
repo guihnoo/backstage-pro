@@ -28,6 +28,7 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
   const [expanded, setExpanded] = useState(new Set());
 
   const toggleExpand = (clientId) => {
+    setConfirming(null);
     setExpanded(prev => {
       const next = new Set(prev);
       if (next.has(clientId)) next.delete(clientId);

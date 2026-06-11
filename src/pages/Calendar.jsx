@@ -53,17 +53,15 @@ import { captureEventLocationFromGps } from '@/lib/eventLocation';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
 
 const useMediaQuery = (query) => {
-  const [matches, setMatches] = useState(false);
+  const [matches, setMatches] = useState(() => window.matchMedia(query).matches);
 
   useEffect(() => {
     const media = window.matchMedia(query);
-    if (media.matches !== matches) {
-      setMatches(media.matches);
-    }
-    const listener = () => setMatches(media.matches);
+    setMatches(media.matches);
+    const listener = (e) => setMatches(e.matches);
     media.addEventListener('change', listener);
     return () => media.removeEventListener('change', listener);
-  }, [matches, query]);
+  }, [query]);
 
   return matches;
 };
@@ -710,7 +708,7 @@ export default function CalendarPage() {
     });
 
     const totalEvents = monthEvents.length;
-    const workDays = monthWork.length;
+    const workDays = new Set(monthWork.map(w => w.date?.substring(0, 10)).filter(Boolean)).size;
     const totalHours = monthWork.reduce((sum, work) => sum + (Number(work.total_hours) || 0), 0);
 
     // Receita: soma getEventCacheAmount por evento (usa daily_cache_value como campo primário)

@@ -259,8 +259,8 @@ export default function EventDetailModal({
           description: 'Você pode editar depois se necessário.',
           duration: 5000
         });
+        onMarkPaid?.();
         onClose();
-        window.location.reload();
       } else {
         toast.error('Erro ao aplicar horas', {
           description: result.data.error || 'Tente novamente.'

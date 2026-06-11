@@ -25,7 +25,14 @@ export default function AlertsPanel({
   className = '',
 }) {
   const [alerts, setAlerts] = useState([]);
-  const [dismissedAlerts, setDismissedAlerts] = useState(new Set());
+  const [dismissedAlerts, setDismissedAlerts] = useState(() => {
+    try {
+      const raw = sessionStorage.getItem('bp_dismissed_alerts');
+      return raw ? new Set(JSON.parse(raw)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
 
   // Gerar alertas baseados nas regras
   const generatedAlerts = useMemo(() => {
@@ -107,7 +114,11 @@ export default function AlertsPanel({
   }, [generatedAlerts]);
 
   const dismissAlert = (alertId) => {
-    setDismissedAlerts(prev => new Set([...prev, alertId]));
+    setDismissedAlerts(prev => {
+      const next = new Set([...prev, alertId]);
+      try { sessionStorage.setItem('bp_dismissed_alerts', JSON.stringify([...next])); } catch { /* ignore */ }
+      return next;
+    });
     setAlerts(prev => prev.filter(alert => alert.id !== alertId));
   };
 

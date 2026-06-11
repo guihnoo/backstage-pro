@@ -6,9 +6,11 @@ import { useFinancialVisibility } from '@/components/context/FinancialVisibility
 
 export default function PipelineFinanceiro({ stats, isLoading, primaryHex = '#A64AFF', accentHex = '#FFB700' }) {
   const { formatCurrency } = useFinancialVisibility();
-  const total = stats.faturamento_pago + stats.a_receber;
-  const percentualPago = total > 0 ? (stats.faturamento_pago / total) * 100 : 0;
-  const percentualPendente = total > 0 ? (stats.a_receber / total) * 100 : 0;
+  const pago = stats?.faturamento_pago ?? 0;
+  const aReceber = stats?.a_receber ?? 0;
+  const total = pago + aReceber;
+  const percentualPago = total > 0 ? (pago / total) * 100 : 0;
+  const percentualPendente = total > 0 ? (aReceber / total) * 100 : 0;
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
       <NeonGlass primary={primaryHex} accent={accentHex} glow className="p-5">
@@ -39,7 +41,7 @@ export default function PipelineFinanceiro({ stats, isLoading, primaryHex = '#A6
                 <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: primaryHex }} />
                 <div>
                   <p className="text-[#7c8494] text-xs font-mono uppercase">Recebido</p>
-                  <p className="font-bold">{formatCurrency(stats.faturamento_pago)}</p>
+                  <p className="font-bold">{formatCurrency(pago)}</p>
                 </div>
               </motion.button>
               <motion.button
@@ -51,7 +53,7 @@ export default function PipelineFinanceiro({ stats, isLoading, primaryHex = '#A6
                 <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: accentHex }} />
                 <div>
                   <p className="text-[#7c8494] text-xs font-mono uppercase">A Receber</p>
-                  <p className="font-bold">{formatCurrency(stats.a_receber)}</p>
+                  <p className="font-bold">{formatCurrency(aReceber)}</p>
                 </div>
               </motion.button>
             </div>

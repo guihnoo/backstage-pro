@@ -195,6 +195,11 @@ export default function EventForm({
       return;
     }
 
+    if (formData.end_date && formData.end_date < formData.start_date) {
+      toast.error('Data de término não pode ser anterior à data de início.');
+      return;
+    }
+
     const selectedClient = allClients.find((c) => c.id === formData.client_id);
     const eventTitle = formData.title.trim() || selectedClient?.name || 'Evento';
 
