@@ -21,6 +21,7 @@ import { useAuth } from '@/lib/authContext';
 import { googleAuthStart, googleDisconnect, googleSyncNow, googleListCalendars, googleImportEvents, googleDedupeEvents } from '@/api/functions';
 import { Link } from 'react-router-dom';
 import appToast from '@/lib/appToast';
+import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { formatGoogleOAuthError } from '@/lib/googleOAuthErrors';
 
 export default function GoogleCalendarSync() {
@@ -32,6 +33,7 @@ export default function GoogleCalendarSync() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [calendars, setCalendars] = useState([]);
   const [lastSyncStatus, setLastSyncStatus] = useState(null);
+  const [pendingAction, setPendingAction] = useState(null);
 
   useEffect(() => {
     if (user?.id) loadSettings();
@@ -180,7 +182,6 @@ export default function GoogleCalendarSync() {
   };
 
   const handleDedupeEvents = async () => {
-    if (!confirm('Remover eventos duplicados na agenda? Mantém o registro com Google vinculado ou com horas lançadas.')) return;
     setIsSyncing(true);
     try {
       const { data } = await googleDedupeEvents();
@@ -211,6 +212,7 @@ export default function GoogleCalendarSync() {
   const isConnected = settings?.google_calendar_connected;
 
   return (
+    <>
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -239,7 +241,7 @@ export default function GoogleCalendarSync() {
             </div>
             
             {isConnected ? (
-              <Button variant="destructive" onClick={handleDisconnect} size="sm" className="w-full sm:w-auto shrink-0">
+              <Button variant="destructive" onClick={() => setPendingAction('disconnect')} size="sm" className="w-full sm:w-auto shrink-0">
                 Desconectar
               </Button>
             ) : (
@@ -304,8 +306,8 @@ export default function GoogleCalendarSync() {
                   Sincronizar Agora
                 </Button>
                 
-                <Button 
-                  onClick={handleImportEvents}
+                <Button
+                  onClick={() => setPendingAction('import')}
                   disabled={isSyncing}
                   variant="outline"
                   className="bg-slate-700 border-slate-600 hover:bg-slate-600 flex-1"
@@ -317,7 +319,7 @@ export default function GoogleCalendarSync() {
 
               <Button
                 type="button"
-                onClick={handleDedupeEvents}
+                onClick={() => setPendingAction('dedupe')}
                 disabled={isSyncing}
                 variant="outline"
                 className="w-full border-amber-600/40 text-amber-200 hover:bg-amber-500/10"
@@ -370,5 +372,34 @@ export default function GoogleCalendarSync() {
         </CardContent>
       </Card>
     </motion.div>
+
+      <ConfirmDialog
+        open={!!pendingAction}
+        onOpenChange={(open) => { if (!open) setPendingAction(null); }}
+        title={
+          pendingAction === 'disconnect' ? 'Desconectar Google Calendar?' :
+          pendingAction === 'import' ? 'Importar eventos do Google?' :
+          'Limpar duplicatas da agenda?'
+        }
+        description={
+          pendingAction === 'disconnect' ? 'Você perderá a sincronização com o Google Calendar.' :
+          pendingAction === 'import' ? 'Eventos dos últimos 30 dias e próximos 90 dias serão importados. Duplicatas serão ignoradas automaticamente.' :
+          'Mantém o registro com Google vinculado ou com horas lançadas. Outros duplicados serão removidos.'
+        }
+        confirmLabel={
+          pendingAction === 'disconnect' ? 'Desconectar' :
+          pendingAction === 'import' ? 'Importar' :
+          'Limpar'
+        }
+        destructive={pendingAction === 'disconnect' || pendingAction === 'dedupe'}
+        onConfirm={() => {
+          const action = pendingAction;
+          setPendingAction(null);
+          if (action === 'disconnect') handleDisconnect();
+          else if (action === 'import') handleImportEvents();
+          else if (action === 'dedupe') handleDedupeEvents();
+        }}
+      />
+    </>
   );
 }
