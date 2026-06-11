@@ -14,6 +14,7 @@ import { createBackup } from '@/api/functions';
 import { uploadUserFile } from '@/lib/uploadFile';
 import { toast } from 'sonner';
 import GoogleCalendarSync from '@/components/calendar/GoogleCalendarSync';
+import PushNotificationSettings from '@/components/notifications/PushNotificationSettings';
 import LiveClockBar from '@/components/home/LiveClockBar';
 import { useStats } from '@/lib/useBackstageData';
 
@@ -382,6 +383,11 @@ export default function ProfileSimple() {
             )}
           </motion.button>
         </NeonGlass>
+        </motion.div>
+
+        {/* Alertas no celular */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.31 }}>
+          <PushNotificationSettings />
         </motion.div>
 
         {/* Google Calendar */}

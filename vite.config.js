@@ -10,9 +10,18 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      includeAssets: ['icon.svg', 'icon-192x192.png', 'icon-512x512.png'],
+      includeAssets: [
+        'icon.svg',
+        'icon-maskable.svg',
+        'icon-192x192.png',
+        'icon-512x512.png',
+        'icon-maskable-512.png',
+        'apple-touch-icon.png',
+        'push-sw.js',
+      ],
       manifest: false,
       workbox: {
+        importScripts: ['push-sw.js'],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         navigateFallback: '/index.html',
         runtimeCaching: [

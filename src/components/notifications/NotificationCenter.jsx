@@ -13,19 +13,12 @@ import { useAuth } from '@/lib/authContext';
 import { useStats } from '@/lib/useBackstageData';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
-import { getEventCacheAmount } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { openWhatsAppCharge, buildChargeMessage } from '@/lib/whatsapp';
-import {
-  differenceInDays,
-  parseISO,
-  isValid,
-  format,
-  addDays,
-  startOfDay,
-} from 'date-fns';
+import { differenceInDays, parseISO, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { buildUserNotifications } from '@/lib/notificationRules';
 
 const DISMISSED_KEY = 'backstage_dismissed_notifications';
 
@@ -39,96 +32,6 @@ function getDismissed() {
 
 function saveDismissed(set) {
   localStorage.setItem(DISMISSED_KEY, JSON.stringify([...set]));
-}
-
-// Gera lista estável de notificações a partir dos dados do usuário
-function buildNotifications({ events, clients, profile, diariasCount = 0, today, formatCurrency }) {
-  const todayStr = today.toISOString().split('T')[0];
-  const tomorrow = addDays(today, 1);
-  const tomorrowStr = tomorrow.toISOString().split('T')[0];
-  const clientMap = new Map((clients || []).map(c => [c.id, c]));
-  const notes = [];
-
-  for (const ev of events || []) {
-    const startStr = ev.start_date?.split('T')[0];
-    const endStr = ev.end_date?.split('T')[0] || startStr;
-    if (!startStr) continue;
-
-    const clientName = clientMap.get(ev.client_id)?.name || 'Cliente';
-
-    // Evento hoje → urgent
-    if (startStr <= todayStr && endStr >= todayStr) {
-      notes.push({
-        id: `today:${ev.id}`,
-        type: 'today_event',
-        priority: 'urgent',
-        title: `⚡ Hoje em cena: ${ev.title}`,
-        message: `Você tem um show hoje com ${clientName}.`,
-        action_url: '/calendar',
-        event_ref: ev,
-        created_date: todayStr,
-      });
-    }
-    // Evento amanhã → high
-    else if (startStr === tomorrowStr) {
-      notes.push({
-        id: `tomorrow:${ev.id}`,
-        type: 'event_reminder',
-        priority: 'high',
-        title: `📅 Show amanhã: ${ev.title}`,
-        message: `Lembre de confirmar com ${clientName}.`,
-        action_url: '/calendar',
-        event_ref: ev,
-        created_date: todayStr,
-      });
-    }
-
-    // Pagamento pendente de evento já encerrado → high/urgent
-    const endDate = endStr ? parseISO(endStr) : null;
-    const isPast = endDate && isValid(endDate) && startOfDay(endDate) < startOfDay(today);
-    const unpaid = ev.payment_status !== 'paid';
-
-    if (isPast && unpaid) {
-      const daysLate = differenceInDays(today, endDate);
-      const isUrgent = daysLate > 7;
-      const amount = getEventCacheAmount(ev);
-      const amountLabel = formatCurrency ? formatCurrency(amount) : `R$ ${amount.toLocaleString('pt-BR')}`;
-      notes.push({
-        id: `payment:${ev.id}`,
-        type: 'payment_reminder',
-        priority: isUrgent ? 'urgent' : 'high',
-        title: `💰 Pagamento pendente: ${ev.title}`,
-        message: `${clientName} · ${amountLabel} · ${daysLate} dia${daysLate !== 1 ? 's' : ''} em atraso.`,
-        action_url: '/reports',
-        event_ref: ev,
-        created_date: todayStr,
-        phone: clientMap.get(ev.client_id)?.phone || null,
-        clientName,
-        amount,
-      });
-    }
-  }
-
-  // Meta mensal de diárias quase batida
-  const metaDiarias = Number(profile?.monthly_goal_events) || 10;
-  const count = Number(diariasCount) || 0;
-  const remaining = metaDiarias - count;
-
-  if (metaDiarias > 0 && remaining > 0 && remaining <= 2) {
-    notes.push({
-      id: `goal:diarias:${todayStr.slice(0, 7)}`,
-      type: 'goal_reminder',
-      priority: 'medium',
-      title: `🎯 Meta quase lá!`,
-      message: `Falta${remaining === 1 ? '' : 'm'} só ${remaining} diária${remaining !== 1 ? 's' : ''} para bater sua meta do mês.`,
-      action_url: '/goals',
-      created_date: todayStr,
-    });
-  }
-
-  // Ordenação: urgent → high → medium
-  const order = { urgent: 0, high: 1, medium: 2, low: 3 };
-  return notes.sort((a, b) => (order[a.priority] ?? 3) - (order[b.priority] ?? 3));
 }
 
 const PRIORITY_STYLES = {
@@ -239,17 +142,23 @@ export default function NotificationCenter() {
     }
   }, [isOpen]);
 
-  const allNotifications = useMemo(() =>
-    buildNotifications({
+  const allNotifications = useMemo(() => {
+    const base = buildUserNotifications({
       events,
       clients,
       profile,
       diariasCount: stats?.diarias_count ?? 0,
       today: new Date(),
       formatCurrency,
-    }),
-    [events, clients, profile, stats?.diarias_count, formatCurrency]
-  );
+    });
+    return base.map((n) => {
+      if (n.type === 'today_event') return { ...n, title: `⚡ Hoje em cena: ${n.title.replace('Hoje em cena: ', '')}` };
+      if (n.type === 'event_reminder') return { ...n, title: `📅 ${n.title}` };
+      if (n.type === 'payment_reminder') return { ...n, title: `💰 ${n.title}` };
+      if (n.type === 'goal_reminder') return { ...n, title: `🎯 ${n.title}` };
+      return n;
+    });
+  }, [events, clients, profile, stats?.diarias_count, formatCurrency]);
 
   const visible = useMemo(() =>
     allNotifications.filter(n => !dismissed.has(n.id)),
