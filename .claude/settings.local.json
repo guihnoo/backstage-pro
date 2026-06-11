@@ -121,7 +121,10 @@
       "Bash(curl *)",
       "Bash(start *)",
       "Bash(powershell -Command \"\\(Get-Content 'C:\\\\Users\\\\monte\\\\OneDrive\\\\Documentos\\\\backstage-pro\\\\docs\\\\AGENT_LOG.md'\\).Count\")",
-      "Bash(dir .supabase)"
+      "Bash(dir .supabase)",
+      "mcp__supabase__list_tables",
+      "mcp__supabase__list_migrations",
+      "mcp__supabase__execute_sql"
     ]
   },
   "enabledMcpjsonServers": [
