@@ -147,7 +147,7 @@ export default function ProfileSimple() {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.1 }}
-          className="relative inline-block mb-4 max-w-full overflow-hidden"
+          className="relative inline-block mb-4 max-w-full"
         >
           <input
             ref={photoInputRef}
@@ -469,7 +469,7 @@ export default function ProfileSimple() {
           {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
           {exporting ? 'Exportando...' : 'Exportar meus dados'}
         </button>
-        <p className="text-center text-slate-700 text-xs pb-2 font-mono">Backstage Pro v1.0 MVP</p>
+        <p className="text-center text-slate-700 text-xs pb-2 font-mono">Backstage Pro v1.0</p>
       </div>
     </NeonPageShell>
   );

@@ -31,7 +31,7 @@ import {
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { getEventStatus } from '@/components/utils/dateUtils';
 import { getEventCacheAmount } from '@/lib/eventFinance';
-import { openWhatsAppCharge, buildChargeMessage } from '@/lib/whatsapp';
+import { openWhatsAppCharge, buildChargeMessage, formatWhatsAppNumber } from '@/lib/whatsapp';
 import { useMediaQuery } from '@/components/hooks/useMediaQuery';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
@@ -274,9 +274,8 @@ export default function ClientsPage() {
             });
             openWhatsAppCharge(client.phone, msg);
           } else {
-            const cleanPhone = client.phone.replace(/\D/g, '');
-            const whatsappNumber = cleanPhone.length > 11 ? cleanPhone : `55${cleanPhone}`;
-            window.open(`https://wa.me/${whatsappNumber}`, '_blank');
+            const number = formatWhatsAppNumber(client.phone);
+            if (number) window.open(`https://wa.me/${number}`, '_blank');
           }
         }
         break;

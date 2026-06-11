@@ -6,6 +6,18 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-11
 
+### POLISH-S26 — Lapidação profissional: 6 melhorias de polish ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`ProfileSimple.jsx`**: removido `overflow-hidden` do container do avatar → emoji da categoria era cortado; footer "v1.0 MVP" → "v1.0"
+- **`Goals.jsx`**: ícone `TrendingUp` em níveis já superados → `CheckCircle2` (semântica: "concluído"); importado `CheckCircle2` do lucide-react
+- **`Expenses.jsx`**: `const CATEGORY_LABELS` estava entre `import` statements — movido para após todos os imports (ES module correto)
+- **`AI_Mentor.jsx`**: textarea do chat agora faz auto-resize ao digitar (`scrollHeight` até 120px); reseta ao enviar mensagem
+- **`Clients.jsx`**: lógica duplicada de formatação de número WhatsApp substituída por `formatWhatsAppNumber()` de `@/lib/whatsapp`
+- **Build**: Vite ✅ (30.68s) — sem warnings novos
+- **Arquivos**: `src/pages/ProfileSimple.jsx`, `src/pages/Goals.jsx`, `src/pages/Expenses.jsx`, `src/pages/AI_Mentor.jsx`, `src/pages/Clients.jsx`, `docs/RELATORIO_VIDA_APP.md`, `docs/AGENT_LOG.md`
+
+---
+
 ### DEEP-AUDIT-S25 — Auditoria página a página (continuação) + 2 fixes ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Páginas auditadas**: Calendar.jsx, Reports.jsx, Clients.jsx, Expenses.jsx, ClientDetail.jsx (+ Home.jsx auditada em S24)

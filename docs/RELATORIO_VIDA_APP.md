@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-11 (sessão S25)  
+**Última atualização:** 2026-06-11 (sessão S26)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último commit:** pendente nesta sessão — deploy testes reais  
 **Último deploy:** 2026-06-10 — `dpl_CSCrk4jRwwdQwJaVUjAy7ie7wBiX` → https://backstage-pro-beta.vercel.app  
@@ -73,6 +73,20 @@ Ordem oficial após fix de scroll (2026-06-05):
 ---
 
 ## Changelog
+
+### 2026-06-11 (sessão S26) — Lapidação profissional: polish em 6 pontos
+
+**Páginas/componentes polidos:** ProfileSimple, Goals, Expenses, Clients, AI_Mentor  
+**Fixes de polish:**  
+- `ProfileSimple.jsx` — removido `overflow-hidden` do container do avatar (emoji da categoria estava sendo cortado por `overflow-hidden`)  
+- `ProfileSimple.jsx` — footer "v1.0 MVP" → "v1.0" (linguagem profissional)  
+- `Goals.jsx` — ícone `TrendingUp` em níveis já alcançados substituído por `CheckCircle2` (semântica correta: "concluído", não "em ascensão")  
+- `Expenses.jsx` — `const CATEGORY_LABELS` movido para após todos os `import` (código ES module correto)  
+- `AI_Mentor.jsx` — textarea do chat agora faz auto-resize ao digitar (antes ficava em 1 linha; agora cresce até 120px e reseta ao enviar)  
+- `Clients.jsx` — código WhatsApp duplicado (`phone.replace + length check`) substituído por `formatWhatsAppNumber()` já existente em `@/lib/whatsapp`  
+**Build:** Vite ✅ (30.68s)
+
+---
 
 ### 2026-06-11 (sessão S25) — Deep audit S25: Calendar/Reports/Clients/Expenses + 2 fixes
 

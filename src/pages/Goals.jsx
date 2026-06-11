@@ -6,7 +6,7 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
-import { Trophy, Zap, Star, TrendingUp, Award, Flame, Calendar, X, Pencil, Check, ChevronRight, Plus, Clock } from 'lucide-react';
+import { Trophy, Zap, Star, TrendingUp, Award, Flame, Calendar, X, Pencil, Check, CheckCircle2, ChevronRight, Plus, Clock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import appToast from '@/lib/appToast';
 
@@ -785,7 +785,7 @@ export default function Goals() {
                       </span>
                     )}
                     {reached && !isCurrent && (
-                      <TrendingUp className="w-4 h-4 text-slate-600 flex-shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-slate-500 flex-shrink-0" />
                     )}
                   </motion.div>
                 );

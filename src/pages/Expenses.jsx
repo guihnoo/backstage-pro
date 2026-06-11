@@ -14,6 +14,14 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import LiveClockBar from '@/components/home/LiveClockBar';
 import { NeonGlass } from '@/components/design/NeonGlass';
+import { format, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import ExpenseForm from '@/components/expenses/ExpenseForm';
+import ExpenseListItem from '@/components/expenses/ExpenseListItem';
+import ReceiptAnalyzer from '@/components/expenses/ReceiptAnalyzer';
+import EmptyState from '@/components/layout/EmptyState';
+import ConfirmDialog from '@/components/layout/ConfirmDialog';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const CATEGORY_LABELS = {
   transporte: 'Transporte',
@@ -24,15 +32,6 @@ const CATEGORY_LABELS = {
   manutencao: 'Manutenção',
   outros: 'Outros',
 };
-import { format, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-
-import ExpenseForm from '@/components/expenses/ExpenseForm';
-import ExpenseListItem from '@/components/expenses/ExpenseListItem';
-import ReceiptAnalyzer from '@/components/expenses/ReceiptAnalyzer';
-import EmptyState from '@/components/layout/EmptyState';
-import ConfirmDialog from '@/components/layout/ConfirmDialog';
-import { Skeleton } from '@/components/ui/skeleton';
 
 function MonthGroup({ monthKey, expenses, events, onEdit, onDelete, onMarkReimbursed, formatCurrency, primaryHex }) {
     const [open, setOpen] = useState(true);

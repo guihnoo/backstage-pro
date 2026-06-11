@@ -228,7 +228,10 @@ export default function AIMentorPage() {
       setMessages(updatedMessages.slice(0, -1)); // revert user message on error
     } finally {
       setLoading(false);
-      textareaRef.current?.focus();
+      if (textareaRef.current) {
+        textareaRef.current.style.height = '';
+        textareaRef.current.focus();
+      }
     }
   }, [input, loading, currentConv, conversations, messages, financialContext, persistConversations]);
 
@@ -381,12 +384,16 @@ export default function AIMentorPage() {
             <textarea
               ref={textareaRef}
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                setInput(e.target.value);
+                e.target.style.height = 'auto';
+                e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+              }}
               onKeyDown={handleKeyDown}
               placeholder="Pergunte sobre seus dados financeiros…"
               disabled={loading}
               rows={1}
-              className="flex-1 bg-[#0e1018] border border-[#23262f] rounded-xl px-4 py-3 text-white text-base md:text-sm placeholder:text-[#4a5060] focus:outline-none resize-none min-h-[48px] max-h-[120px] transition-colors"
+              className="flex-1 bg-[#0e1018] border border-[#23262f] rounded-xl px-4 py-3 text-white text-base md:text-sm placeholder:text-[#4a5060] focus:outline-none resize-none min-h-[48px] max-h-[120px] overflow-y-auto transition-colors"
               style={{ borderColor: input ? `${config.primaryHex}40` : undefined }}
             />
             <Button
