@@ -21,9 +21,12 @@ export default defineConfig({
       ],
       manifest: false,
       workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
         importScripts: ['push-sw.js'],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
           {
             urlPattern: ({ url }) => url.hostname.endsWith('supabase.co'),

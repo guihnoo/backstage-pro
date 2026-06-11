@@ -3,7 +3,7 @@ import { RouterProvider } from 'react-router-dom';
 import { router } from '@/routes';
 import { Toaster as SonnerToaster } from 'sonner';
 import { isSupabaseConfigured } from '@/lib/supabase';
-import PwaUpdatePrompt from '@/components/pwa/PwaUpdatePrompt';
+import PwaLiveUpdater from '@/components/pwa/PwaLiveUpdater';
 import { getAppTopBarOffset } from '@/components/layout/AppTopBar';
 
 function ConfigMissingScreen() {
@@ -30,7 +30,7 @@ function App() {
   return (
     <>
       <RouterProvider router={router} useTransitions={false} />
-      <PwaUpdatePrompt />
+      <PwaLiveUpdater />
       <SonnerToaster
         position="top-center"
         closeButton
