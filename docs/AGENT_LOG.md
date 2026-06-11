@@ -642,3 +642,17 @@ Registro cronológico de tarefas executadas por agentes.
 - **Componentes auditados e limpos** (sem issue encontrado): `QuickStats`, `PipelineFinanceiro`, `MetaMensalBar`, `ForecastWidget`, `AReceber`, `ProximoShow`, `LiveClockBar`, `AnimatedStatValue`, `StatValuePulse`, `ModoPalcoActions`, `EventLocationSection`, `LocationAutocomplete`, `EventHeading`, `CalendarTodayStrip`, `CalendarPageHeader`, `DayQuickActions`, `AlertsPanel`, `EventTemplateModal`, `ContinuousEventBar`, `ClientCombobox`, `ClientQuickCreateDialog`, `CompanySearchInput`, `ClientDraftBadge`, `NavigationSync`, `PwaLiveUpdater`, `PushNotificationSettings`, `PushSubscriptionSync`, `MessageBubble`, `QuickActions`, `SmartSuggestions`, `PaymentConfirmModal`, `ClientActionSheet`, `AuthCallback`, `ClientDetailedTable`, `ResetPassword`, `LoginNew`, `SignupNew`, `AppDataContext`
 - **Build**: Vite ✅ (confirmado após GoogleCalendarSync fix)
 - **Deploy**: pendente
+
+### GCAL-IMPROVEMENTS — Mapa + Sync Google Calendar melhorias ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Bugs corrigidos**:
+  - `BrazilVisitedMap.jsx` l.339 — `activeCityData.key === latestCityKey` (propriedade inexistente) → `activeCityKey === latestCityKey`; badge "📍 Mais recente" agora aparece no tooltip
+- **Melhorias Google Calendar sync** (Edge Function `google-calendar` + frontend):
+  - `findOrCreateClientByName` — matching fuzzy: além de exact ilike, testa se o nome do cliente existente está contido no título do GCal ou vice-versa (min 4 chars); evita criar clientes rascunho duplicados quando o GCal title é "Amarrok Show SP" e o cliente é "Amarrok Comunicação"
+  - Títulos vazios/genéricos ("Evento Google") não criam cliente
+  - `parseLocationForCity` — nova função na Edge Fn; extrai `location_city` e `location_state` do campo `location` do Google Calendar usando regex com 27 siglas de estado BR; eventos importados agora preenchem `location_city`/`location_state` → aparecem como pontos no mapa
+  - `GoogleCalendarSync.jsx` — badge amber "X eventos não sincronizados" antes das ações quando `settings.google_calendar_connected = true` e existem eventos sem `google_event_id`
+  - `CalendarPageHeader.jsx` — badge amber "X fora de sinc" no header da Agenda; clique redireciona para `/profile?tab=google`
+  - `Calendar.jsx` — `useUserSettings` + `useMemo` para `unsyncedCount`
+- **Edge Function**: `google-calendar` deployada no Supabase `cwtallnetgodoacuoaow` ✅
+- **Build**: Vite ✅ (34.83s)

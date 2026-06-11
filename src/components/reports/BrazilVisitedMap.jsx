@@ -336,7 +336,7 @@ export default function BrazilVisitedMap({ events = [] }) {
                   Última vez: {new Date(activeCityData.lastDate + 'T12:00:00').toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}
                 </p>
               )}
-              {activeCityData.key === latestCityKey && (
+              {activeCityKey === latestCityKey && (
                 <p className="text-violet-400 text-[10px] mt-0.5">📍 Mais recente</p>
               )}
             </motion.div>

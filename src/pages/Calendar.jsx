@@ -48,6 +48,7 @@ import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { applyAuto12Hours } from '@/lib/applyAuto12Hours';
+import { useUserSettings } from '@/lib/useUserSettings';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { captureEventLocationFromGps } from '@/lib/eventLocation';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
@@ -136,6 +137,12 @@ export default function CalendarPage() {
   const { dailyWork, loading: dailyWorkLoading, refetch: refetchDailyWork, create: createDailyWork, update: updateDailyWork, delete: deleteDailyWorkEntry } = useDailyWork();
   const { expenses, loading: expensesLoading, refetch: refetchExpenses } = useExpenses();
   const { formatCurrency } = useFinancialVisibility();
+  const { settings: userSettings } = useUserSettings();
+
+  const unsyncedCount = useMemo(() => {
+    if (!userSettings?.google_calendar_connected) return 0;
+    return events.filter((e) => !e.google_event_id && e.status !== 'cancelado').length;
+  }, [events, userSettings?.google_calendar_connected]);
 
   const isLoading = eventsLoading || clientsLoading || dailyWorkLoading || expensesLoading;
   const isDataReady = Array.isArray(events) && Array.isArray(clients) && Array.isArray(dailyWork) && Array.isArray(expenses);
@@ -931,11 +938,13 @@ export default function CalendarPage() {
           currentDate={currentDate}
           primaryHex={config.primaryHex}
           isLive={isLiveShiftToday}
+          unsyncedCount={unsyncedCount}
           onPreviousMonth={goToPreviousMonth}
           onNextMonth={goToNextMonth}
           onGoToToday={goToToday}
           onNewEvent={() => handleNewEvent()}
           onRegisterWork={() => handleQuickWorkEntry()}
+          onSyncNow={() => hardNavigate('/profile?tab=google')}
         />
 
         {!clientsLoading && clients.length === 0 && (

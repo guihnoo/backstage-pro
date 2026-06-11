@@ -90,12 +90,70 @@ async function pushOneEvent(svc: ReturnType<typeof serviceClient>, userId: strin
   return googleEventId;
 }
 
+const BR_STATES = new Set([
+  'AC','AL','AM','AP','BA','CE','DF','ES','GO','MA',
+  'MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN',
+  'RO','RR','RS','SC','SE','SP','TO',
+]);
+
+function parseLocationForCity(location: string): { city: string | null; state: string | null } {
+  if (!location) return { city: null, state: null };
+  const statesPattern = Array.from(BR_STATES).join('|');
+  // Matches "City, SP" / "City - SP" / "City/SP" / "City SP" near end of string
+  const re = new RegExp(
+    `([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\\s]{1,40}?)\\s*[,\\-\\/\\s]\\s*(${statesPattern})(?:\\b|,|$|\\s)`,
+    'i'
+  );
+  const m = location.match(re);
+  if (m) {
+    const state = m[2].toUpperCase();
+    if (BR_STATES.has(state)) {
+      const raw = m[1].trim();
+      const cityParts = raw.split(',');
+      const city = cityParts[cityParts.length - 1].trim().replace(/^\d+\s*/, '');
+      return { city: city.length >= 2 ? city : null, state };
+    }
+  }
+  return { city: null, state: null };
+}
+
+function normalizeForMatch(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function findOrCreateClientByName(svc: any, userId: string, name: string) {
   const trimmed = name.trim();
-  if (!trimmed) return null;
-  const { data: existing } = await svc.from('clients').select('id, name').eq('user_id', userId).ilike('name', trimmed).maybeSingle();
-  if (existing?.id) return existing.id;
+  // Ignore empty or generic fallback titles
+  if (!trimmed || trimmed === 'Evento Google') return null;
+
+  // 1. Exact match (case-insensitive)
+  const { data: exact } = await svc
+    .from('clients').select('id, name')
+    .eq('user_id', userId).ilike('name', trimmed).maybeSingle();
+  if (exact?.id) return exact.id;
+
+  // 2. Partial/fuzzy: load all clients, match if one name is contained in the other
+  const { data: allClients } = await svc
+    .from('clients').select('id, name').eq('user_id', userId);
+  if (allClients?.length) {
+    const normTitle = normalizeForMatch(trimmed);
+    for (const client of allClients) {
+      const normClient = normalizeForMatch(client.name);
+      if (normClient.length < 4 || normTitle.length < 4) continue;
+      if (normTitle.includes(normClient) || normClient.includes(normTitle)) {
+        return client.id;
+      }
+    }
+  }
+
+  // 3. Create draft client
   const { data: created, error } = await svc.from('clients').insert({
     user_id: userId,
     name: trimmed,
@@ -172,6 +230,7 @@ async function importGoogleEventsForUser(
     }
 
     const clientId = await findOrCreateClientByName(svc, userId, summary);
+    const { city: parsedCity, state: parsedState } = parseLocationForCity(g.location || '');
     const { error } = await svc.from('events').insert({
       user_id: userId,
       client_id: clientId,
@@ -181,6 +240,8 @@ async function importGoogleEventsForUser(
       start_time: g.start?.dateTime ? start.slice(11, 16) : null,
       end_time: g.end?.dateTime ? end.slice(11, 16) : null,
       location: g.location || null,
+      location_city: parsedCity,
+      location_state: parsedState,
       google_event_id: g.id,
       google_calendar_id: settings.google_calendar_id || 'primary',
       google_synced_at: new Date().toISOString(),

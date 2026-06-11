@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Plus, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Clock, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import LiveClockBar from '@/components/home/LiveClockBar';
@@ -9,11 +9,13 @@ export default function CalendarPageHeader({
   currentDate,
   primaryHex,
   isLive = false,
+  unsyncedCount = 0,
   onPreviousMonth,
   onNextMonth,
   onGoToToday,
   onNewEvent,
   onRegisterWork,
+  onSyncNow,
 }) {
   return (
     <div className="flex flex-col gap-3">
@@ -22,7 +24,20 @@ export default function CalendarPageHeader({
           <h1 className="text-2xl sm:text-3xl font-bold text-white font-display truncate">Agenda</h1>
           <p className="text-sm text-slate-400 truncate">Gerencie shows, horas e cachê do mês.</p>
         </div>
-        <LiveClockBar primaryHex={primaryHex} isLive={isLive} />
+        <div className="flex items-center gap-2 shrink-0">
+          {unsyncedCount > 0 && (
+            <button
+              type="button"
+              onClick={onSyncNow}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border border-amber-500/50 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 transition-colors"
+              title={`${unsyncedCount} evento${unsyncedCount === 1 ? '' : 's'} sem sincronizar com Google Calendar`}
+            >
+              <RefreshCw className="w-3 h-3" />
+              {unsyncedCount} fora de sinc
+            </button>
+          )}
+          <LiveClockBar primaryHex={primaryHex} isLive={isLive} />
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

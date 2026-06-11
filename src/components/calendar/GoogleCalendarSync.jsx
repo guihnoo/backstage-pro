@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,10 +14,12 @@ import {
   ExternalLink,
   Loader2,
   Download,
-  Settings
+  Settings,
+  AlertCircle,
 } from 'lucide-react';
 import { UserSettings } from '@/api/entities';
 import { useAuth } from '@/lib/authContext';
+import { useEvents } from '@/lib/useEvents';
 import { googleAuthStart, googleDisconnect, googleSyncNow, googleListCalendars, googleImportEvents, googleDedupeEvents } from '@/api/functions';
 import { Link } from 'react-router-dom';
 import appToast from '@/lib/appToast';
@@ -26,6 +28,7 @@ import { formatGoogleOAuthError } from '@/lib/googleOAuthErrors';
 
 export default function GoogleCalendarSync() {
   const { user } = useAuth();
+  const { events } = useEvents();
   const location = useLocation();
   const locationPathname = location.pathname;
   const [settings, setSettings] = useState(null);
@@ -34,6 +37,11 @@ export default function GoogleCalendarSync() {
   const [calendars, setCalendars] = useState([]);
   const [lastSyncStatus, setLastSyncStatus] = useState(null);
   const [pendingAction, setPendingAction] = useState(null);
+
+  const unsyncedCount = useMemo(() => {
+    if (!settings?.google_calendar_connected) return 0;
+    return events.filter((e) => !e.google_event_id && e.status !== 'cancelado').length;
+  }, [events, settings?.google_calendar_connected]);
 
   useEffect(() => {
     if (user?.id) loadSettings();
@@ -291,10 +299,21 @@ export default function GoogleCalendarSync() {
                 </div>
               )}
 
+              {/* Indicador de eventos não sincronizados */}
+              {unsyncedCount > 0 && (
+                <Alert className="border-amber-500/40 bg-amber-500/10">
+                  <AlertCircle className="w-4 h-4 text-amber-400" />
+                  <AlertDescription className="text-amber-200 text-sm">
+                    <strong>{unsyncedCount} evento{unsyncedCount === 1 ? '' : 's'}</strong> do app ainda não enviado{unsyncedCount === 1 ? '' : 's'} ao Google Calendar.
+                    {' '}Clique em <strong>Sincronizar Agora</strong> para enviar.
+                  </AlertDescription>
+                </Alert>
+              )}
+
               {/* Ações de Sincronização */}
               <div className="flex flex-col sm:flex-row gap-3">
-                <Button 
-                  onClick={handleSyncNow} 
+                <Button
+                  onClick={handleSyncNow}
                   disabled={isSyncing}
                   className="bg-green-600 hover:bg-green-700 flex-1"
                 >

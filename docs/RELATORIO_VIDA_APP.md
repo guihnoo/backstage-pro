@@ -46,6 +46,7 @@
 | Classes Tailwind dinâmicas | Corrigidas em S27: `FinancialSummary`, `CategoryPicker`, `ClientDetailModal` — mapas estáticos substituem interpolação `bg-${color}-X` |
 | Lapidação S28 | Auditoria completa: 10 componentes auditados, typo `PaymentConfirmModal` corrigido; todos componentes restantes confirmados limpos |
 | Lapidação S29 | 38 componentes auditados; `GoogleCalendarSync` 3× `window.confirm()` → `ConfirmDialog`; `ReceiptAnalyzer` timezone bug (`toISOString` → `format`) |
+| Google Calendar melhorias | Mapa fix (`.key` bug); matching fuzzy título→cliente; parser location→city/state; badge "fora de sinc" no header Agenda e em Configurações |
 
 ---
 
