@@ -16,6 +16,7 @@ import { NeonAtmosphere } from '@/components/design/NeonAtmosphere';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import { LightingBeams } from '@/components/design/LightingBeams';
 import appToast from '@/lib/appToast';
+import BackstageLogo from '@/components/brand/BackstageLogo';
 
 const hero = getCategoryConfig(AUTH_HERO_CATEGORY);
 
@@ -205,17 +206,9 @@ export default function LoginNew() {
       <FloatingEquipment categoryId={AUTH_HERO_CATEGORY} primary={hero.primaryHex} />
 
       <div className="relative z-10 min-h-screen flex flex-col justify-end px-5 pb-10 pt-16 max-w-lg mx-auto">
-        <div
-          className="w-[62px] h-[62px] rounded-[18px] grid place-items-center mb-4"
-          style={{
-            background: `conic-gradient(from 210deg, ${hero.primaryHex}, ${hero.accentHex})`,
-            boxShadow: `0 0 34px ${hero.primaryHex}66`,
-          }}
-        >
-          <span className="text-[32px] font-black text-[#06070a]">B</span>
-        </div>
+        <BackstageLogo size={62} showWordmark subtitle="Gestão de eventos" className="mb-4" />
 
-        <h1 className="text-3xl font-extrabold leading-tight">Bem-vindo<br />de volta.</h1>
+        <h1 className="text-3xl font-extrabold leading-tight mt-2">Bem-vindo<br />de volta.</h1>
         <p className="font-mono text-xs text-[#8a91a1] mt-2.5">O palco está esperando por você.</p>
 
         <NeonGlass primary={hero.primaryHex} glow className="mt-6 p-5 space-y-4">

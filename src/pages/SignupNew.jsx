@@ -17,6 +17,7 @@ import { NeonAtmosphere } from '@/components/design/NeonAtmosphere';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import { LightingBeams } from '@/components/design/LightingBeams';
 import appToast from '@/lib/appToast';
+import BackstageLogo from '@/components/brand/BackstageLogo';
 
 const hero = getCategoryConfig(AUTH_HERO_CATEGORY);
 
@@ -98,6 +99,7 @@ export default function SignupNew() {
       <div className="relative z-10 min-h-screen flex items-center justify-center px-5 py-10">
         <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
           <div className="text-center mb-6">
+            <BackstageLogo size={56} showWordmark subtitle="Crie sua conta" className="justify-center mb-5" />
             <h1 className="text-3xl font-black">Entre no backstage.</h1>
             <p className="text-sm text-[#8a91a1] mt-2 font-mono">Crie sua conta de freelancer.</p>
           </div>

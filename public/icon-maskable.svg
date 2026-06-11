@@ -1,5 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Backstage Pro">
+  <defs>
+    <linearGradient id="brand" x1="20%" y1="12%" x2="80%" y2="88%">
+      <stop offset="0%" stop-color="#00D9FF"/>
+      <stop offset="50%" stop-color="#5B8DFF"/>
+      <stop offset="100%" stop-color="#A64AFF"/>
+    </linearGradient>
+    <linearGradient id="beam" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#00D9FF" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#A64AFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
   <rect width="512" height="512" fill="#050609"/>
-  <rect x="96" y="96" width="320" height="320" rx="48" fill="#EAB308"/>
-  <text x="256" y="310" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="140" font-weight="800" fill="#050609">B</text>
+  <path d="M256 120 L200 280 L312 280 Z" fill="url(#beam)" opacity="0.35"/>
+  <path
+    d="M196 188h64c36 0 56 18 56 44 0 20-10 34-26 40 22 6 36 24 36 48 0 34-28 54-66 54H196V188zm40 36v40h24c14 0 22-6 22-18s-8-22-22-22h-24zm0 80v58h30c24 0 36-10 36-26s-12-32-36-32h-30z"
+    fill="url(#brand)"
+  />
+  <rect x="180" y="388" width="152" height="6" rx="3" fill="#00D9FF" opacity="0.4"/>
 </svg>

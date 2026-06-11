@@ -1,5 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#050609"/>
-  <rect x="140" y="140" width="232" height="232" rx="32" fill="#EAB308"/>
-  <text x="256" y="290" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="120" font-weight="800" fill="#050609">B</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Backstage Pro">
+  <defs>
+    <linearGradient id="brand" x1="20%" y1="12%" x2="80%" y2="88%">
+      <stop offset="0%" stop-color="#00D9FF"/>
+      <stop offset="50%" stop-color="#5B8DFF"/>
+      <stop offset="100%" stop-color="#A64AFF"/>
+    </linearGradient>
+    <linearGradient id="beam" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#00D9FF" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#A64AFF" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="50%" cy="58%" r="42%">
+      <stop offset="0%" stop-color="#00D9FF" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#050609" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="108" fill="#050609"/>
+  <rect width="512" height="512" rx="108" fill="url(#halo)"/>
+  <path d="M256 72 L168 248 L344 248 Z" fill="url(#beam)" opacity="0.4"/>
+  <path
+    d="M176 156h80c44 0 68 22 68 54 0 24-12 40-32 48 26 8 42 28 42 58 0 40-32 64-82 64H176V156zm48 44v48h30c18 0 28-8 28-22s-10-26-28-26h-30zm0 96v72h36c28 0 44-12 44-32s-16-40-44-40h-36z"
+    fill="url(#brand)"
+  />
+  <rect x="156" y="404" width="200" height="8" rx="4" fill="#00D9FF" opacity="0.45"/>
+  <rect x="196" y="420" width="120" height="4" rx="2" fill="#A64AFF" opacity="0.35"/>
 </svg>

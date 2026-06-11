@@ -3,6 +3,8 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import { ChevronRight } from 'lucide-react';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
+import AnimatedStatValue from '@/components/home/AnimatedStatValue';
+import StatValuePulse from '@/components/home/StatValuePulse';
 
 export default function PipelineFinanceiro({ stats, isLoading, primaryHex = '#A64AFF', accentHex = '#FFB700' }) {
   const { formatCurrency } = useFinancialVisibility();
@@ -27,9 +29,29 @@ export default function PipelineFinanceiro({ stats, isLoading, primaryHex = '#A6
         </div>
         {isLoading ? <div className="h-8 bg-[#1a1d27] rounded animate-pulse" /> : (
           <div className="space-y-3">
-            <div className="flex gap-2 h-10 rounded-lg overflow-hidden bg-[#0c0e14]/80 p-1 border border-[#23262f]">
-              {percentualPago > 0 && <motion.div initial={{ width: 0 }} animate={{ width: `${percentualPago}%` }} className="rounded flex items-center justify-center text-xs font-bold text-[#06070a]" style={{ background: `linear-gradient(90deg, ${primaryHex}, ${primaryHex}cc)` }}>{percentualPago > 10 && `${percentualPago.toFixed(0)}%`}</motion.div>}
-              {percentualPendente > 0 && <motion.div initial={{ width: 0 }} animate={{ width: `${percentualPendente}%` }} transition={{ delay: 0.2 }} className="rounded flex items-center justify-center text-xs font-bold text-[#06070a]" style={{ background: `linear-gradient(90deg, ${accentHex}, ${accentHex}cc)` }}>{percentualPendente > 10 && `${percentualPendente.toFixed(0)}%`}</motion.div>}
+            <div key={`${pago}-${aReceber}`} className="flex gap-2 h-10 rounded-lg overflow-hidden bg-[#0c0e14]/80 p-1 border border-[#23262f]">
+              {percentualPago > 0 && (
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${percentualPago}%` }}
+                  transition={{ duration: 0.7, ease: 'easeOut' }}
+                  className="rounded flex items-center justify-center text-xs font-bold text-[#06070a]"
+                  style={{ background: `linear-gradient(90deg, ${primaryHex}, ${primaryHex}cc)` }}
+                >
+                  {percentualPago > 10 && `${percentualPago.toFixed(0)}%`}
+                </motion.div>
+              )}
+              {percentualPendente > 0 && (
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${percentualPendente}%` }}
+                  transition={{ duration: 0.7, ease: 'easeOut', delay: 0.15 }}
+                  className="rounded flex items-center justify-center text-xs font-bold text-[#06070a]"
+                  style={{ background: `linear-gradient(90deg, ${accentHex}, ${accentHex}cc)` }}
+                >
+                  {percentualPendente > 10 && `${percentualPendente.toFixed(0)}%`}
+                </motion.div>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <motion.button
@@ -41,7 +63,13 @@ export default function PipelineFinanceiro({ stats, isLoading, primaryHex = '#A6
                 <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: primaryHex }} />
                 <div>
                   <p className="text-[#7c8494] text-xs font-mono uppercase">Recebido</p>
-                  <p className="font-bold">{formatCurrency(pago)}</p>
+                  <StatValuePulse value={pago} glowColor={primaryHex}>
+                    <AnimatedStatValue
+                      value={pago}
+                      format={formatCurrency}
+                      className="font-bold block"
+                    />
+                  </StatValuePulse>
                 </div>
               </motion.button>
               <motion.button
@@ -53,7 +81,13 @@ export default function PipelineFinanceiro({ stats, isLoading, primaryHex = '#A6
                 <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: accentHex }} />
                 <div>
                   <p className="text-[#7c8494] text-xs font-mono uppercase">A Receber</p>
-                  <p className="font-bold">{formatCurrency(aReceber)}</p>
+                  <StatValuePulse value={aReceber} glowColor={accentHex}>
+                    <AnimatedStatValue
+                      value={aReceber}
+                      format={formatCurrency}
+                      className="font-bold block"
+                    />
+                  </StatValuePulse>
                 </div>
               </motion.button>
             </div>
@@ -61,7 +95,19 @@ export default function PipelineFinanceiro({ stats, isLoading, primaryHex = '#A6
         )}
         <div className="pt-4 mt-4 border-t border-[#23262f]">
           <p className="text-[#7c8494] text-xs font-mono uppercase mb-2">Total Pipeline</p>
-          <p className="text-3xl font-extrabold" style={{ background: `linear-gradient(90deg, ${primaryHex}, ${accentHex})`, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>{formatCurrency(total)}</p>
+          <StatValuePulse value={total} glowColor={primaryHex}>
+            <AnimatedStatValue
+              value={total}
+              format={formatCurrency}
+              className="text-3xl font-extrabold block"
+              style={{
+                background: `linear-gradient(90deg, ${primaryHex}, ${accentHex})`,
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                color: 'transparent',
+              }}
+            />
+          </StatValuePulse>
         </div>
       </NeonGlass>
     </motion.div>

@@ -4,6 +4,7 @@ import { NeonGlass } from '@/components/design/NeonGlass';
 import { ChevronRight } from 'lucide-react';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import AnimatedStatValue from '@/components/home/AnimatedStatValue';
+import StatValuePulse from '@/components/home/StatValuePulse';
 
 const statConfigs = [
   { key: 'faturamento_pago', label: 'Recebido', icon: '✅', route: '/reports', hint: 'Ver relatórios', financial: true },
@@ -43,12 +44,14 @@ export default function QuickStats({ stats, isLoading, primaryHex = '#A64AFF', a
               {isLoading ? (
                 <div className="h-6 bg-[#1a1d27] rounded animate-pulse" />
               ) : (
-                <AnimatedStatValue
-                  value={value}
-                  format={displayFormat}
-                  className="text-lg font-extrabold text-white leading-tight block"
-                  style={{ textShadow: `0 0 20px ${primaryHex}33` }}
-                />
+                <StatValuePulse value={value} glowColor={primaryHex}>
+                  <AnimatedStatValue
+                    value={value}
+                    format={displayFormat}
+                    className="text-lg font-extrabold text-white leading-tight block"
+                    style={{ textShadow: `0 0 20px ${primaryHex}33` }}
+                  />
+                </StatValuePulse>
               )}
               <p className="text-[9px] text-[#4a5060] mt-1 font-mono">{config.hint} →</p>
             </NeonGlass>
