@@ -304,9 +304,13 @@ Deno.serve(async (req) => {
     const jwtSecret = getEnv('SUPABASE_JWT_SECRET', getEnv('SUPABASE_SERVICE_ROLE_KEY'));
 
     if (action === 'auth-start') {
+      const clientId = getEnv('GOOGLE_CLIENT_ID');
+      if (!clientId) {
+        return jsonResponse({ success: false, error: 'GOOGLE_CLIENT_ID não configurado nos Supabase Secrets.' }, 500);
+      }
       const state = await signState(user.id, jwtSecret);
       const params = new URLSearchParams({
-        client_id: getEnv('GOOGLE_CLIENT_ID'),
+        client_id: clientId,
         redirect_uri: getRedirectUri(),
         response_type: 'code',
         scope: GOOGLE_SCOPES,
@@ -398,6 +402,8 @@ Deno.serve(async (req) => {
     return jsonResponse({ success: false, error: `Ação desconhecida: ${action}` }, 400);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Erro interno';
-    return jsonResponse({ success: false, error: message }, 500);
+    // "não conectado" is a precondition failure, not a server error
+    const status = /não conectado/i.test(message) ? 400 : 500;
+    return jsonResponse({ success: false, error: message }, status);
   }
 });

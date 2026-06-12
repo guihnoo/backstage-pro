@@ -221,9 +221,15 @@ export default function PushNotificationSettings() {
       )}
 
       {!vapidReady && supported && (
-        <p className="text-xs text-amber-400/90 bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 mb-3">
-          Push do servidor indisponível neste build. Peça suporte ou reinstale o app após atualização.
-        </p>
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 mb-3 space-y-1">
+          <p className="text-xs font-semibold text-amber-300">Notificações push pendentes de configuração</p>
+          <p className="text-xs text-amber-400/90">
+            A variável <code className="font-mono bg-slate-800 px-1 rounded">VITE_VAPID_PUBLIC_KEY</code> não está no build de produção.
+          </p>
+          <p className="text-xs text-amber-400/80">
+            Acesse <strong>Vercel → Project → Settings → Environment Variables</strong>, adicione a chave e faça um novo deploy. Depois, reabra o app e toque em "Ativar alertas".
+          </p>
+        </div>
       )}
 
       {permission === 'denied' && (

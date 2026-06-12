@@ -5,6 +5,10 @@ const OAUTH_ERROR_MESSAGES = {
   missing_refresh_token:
     'O Google não devolveu permissão offline. Desconecte, aguarde alguns segundos e conecte outra vez (aceite todas as permissões).',
   token_exchange_failed: 'Falha ao validar o código com o Google. Verifique redirect URI e secrets no Supabase.',
+  invalid_client:
+    'GOOGLE_CLIENT_ID ou GOOGLE_CLIENT_SECRET não configurados no Supabase. Vá em Supabase → Edge Functions → Manage Secrets e adicione as chaves do Google Cloud.',
+  unauthorized_client:
+    'OAuth app não autorizado no Google Cloud. Verifique se o app está em modo "Em produção" ou se o e-mail do usuário está na lista de testadores.',
 };
 
 export function formatGoogleOAuthError(rawError) {

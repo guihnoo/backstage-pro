@@ -1,7 +1,22 @@
-import { useMemo, useState } from 'react';
+import { Component, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Map } from 'lucide-react';
+import { Map, MapPin } from 'lucide-react';
 import brazilMap from '@svg-maps/brazil';
+
+class BrazilMapErrorBoundary extends Component {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="rounded-xl border border-slate-700/50 bg-slate-900/40 p-6 text-center text-sm text-slate-400">
+          Mapa indisponível — recarregue a página.
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const STATE_NAMES = Object.fromEntries(
   brazilMap.locations.map((loc) => [loc.id.toUpperCase(), loc.name])
@@ -134,6 +149,12 @@ function normalizeStateCode(raw) {
 function inferCityFromLocation(location = '') {
   const text = String(location || '').trim();
   if (!text) return '';
+
+  const tailUf = text.match(/([^,/\-–]+)[,\s/\-–]+([A-Za-z]{2})\s*$/);
+  if (tailUf && STATE_NAMES[tailUf[2].toUpperCase()]) {
+    return tailUf[1].trim();
+  }
+
   const parts = text.split(',').map((p) => p.trim()).filter(Boolean);
   if (parts.length >= 2) {
     const last = parts[parts.length - 1];
@@ -149,20 +170,86 @@ function normalizeCityName(name = '') {
   return name.trim().replace(/\s+/g, ' ');
 }
 
-export default function BrazilVisitedMap({ events = [] }) {
-  const [activeUf, setActiveUf] = useState(null);
-  const [activeCityKey, setActiveCityKey] = useState(null);
+function stripAccents(value = '') {
+  return String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
 
-  const { visited, countsByState, cities, citiesByState, latestCityKey } = useMemo(() => {
+function lookupCityCoords(cityName) {
+  if (!cityName) return null;
+  const target = stripAccents(cityName).toLowerCase();
+  for (const [name, coords] of Object.entries(CITY_FALLBACK)) {
+    if (stripAccents(name).toLowerCase() === target) return coords;
+  }
+  return null;
+}
+
+/** Centro aproximado de cada UF a partir do path SVG */
+function pathCentroid(pathD) {
+  const nums = pathD.match(/-?\d+\.?\d*/g)?.map(Number) || [];
+  if (nums.length < 2) return null;
+  let sumX = 0;
+  let sumY = 0;
+  let pairs = 0;
+  for (let i = 0; i + 1 < nums.length; i += 2) {
+    sumX += nums[i];
+    sumY += nums[i + 1];
+    pairs += 1;
+  }
+  if (!pairs) return null;
+  return { x: sumX / pairs, y: sumY / pairs };
+}
+
+const STATE_CENTROIDS = Object.fromEntries(
+  brazilMap.locations.map((loc) => [loc.id.toUpperCase(), pathCentroid(loc.path)])
+);
+
+function jitterFromKey(key, base, spread = 14) {
+  let hash = 0;
+  for (let i = 0; i < key.length; i += 1) {
+    hash = (hash * 31 + key.charCodeAt(i)) | 0;
+  }
+  const angle = ((hash % 360) * Math.PI) / 180;
+  const radius = (Math.abs(hash) % spread) + 5;
+  return {
+    x: base.x + Math.cos(angle) * radius,
+    y: base.y + Math.sin(angle) * radius,
+  };
+}
+
+function resolveCityCoords({ cityName, uf, cityKey, lat, lng }) {
+  if (lat != null && lng != null) {
+    return latlngToSvg(Number(lat), Number(lng));
+  }
+  const fallback = lookupCityCoords(cityName);
+  if (fallback) return latlngToSvg(fallback[0], fallback[1]);
+  if (uf && STATE_CENTROIDS[uf]) {
+    return jitterFromKey(cityKey, STATE_CENTROIDS[uf]);
+  }
+  return null;
+}
+
+function eventTitle(ev) {
+  return ev.title || ev.name || ev.client_name || 'Evento';
+}
+
+function BrazilVisitedMapInner({ events = [] }) {
+  const [activeUf, setActiveUf] = useState(null);
+  const [pinnedCityKey, setPinnedCityKey] = useState(null);
+  const [hoverCityKey, setHoverCityKey] = useState(null);
+
+  const { visited, countsByState, cities, citiesByState, latestCityKey, sortedCityEntries } = useMemo(() => {
     const stateSet = new Set();
     const stateCounts = {};
-    const cityMap = {};     // key → { name, uf, x, y, count, lastDate }
-    const byState = {};     // uf → cityKey[]
+    const cityMap = {};
+    const byState = {};
     let latestDate = null;
     let latestKey = null;
 
     for (const ev of events) {
-      // --- State ---
+      if (ev.status === 'cancelado') continue;
+
       let uf = normalizeStateCode(ev.location_state);
       if (!uf) uf = inferStateFromLocation(ev.location);
 
@@ -171,32 +258,45 @@ export default function BrazilVisitedMap({ events = [] }) {
         stateCounts[uf] = (stateCounts[uf] || 0) + 1;
       }
 
-      // --- City ---
-      const cityName = normalizeCityName(
+      let cityName = normalizeCityName(
         ev.location_city || inferCityFromLocation(ev.location) || ''
       );
+      if (!cityName && uf) {
+        cityName = STATE_NAMES[uf] || uf;
+      }
       if (!cityName && !uf) continue;
 
       const cityKey = uf ? `${uf}:${cityName}` : cityName;
       const evDate = ev.start_date || ev.end_date || null;
 
-      // Resolve coordinates: GPS first, fallback lookup, otherwise skip dot
-      let coords = null;
-      if (ev.location_lat != null && ev.location_lng != null) {
-        coords = latlngToSvg(Number(ev.location_lat), Number(ev.location_lng));
-      } else {
-        const fallback = CITY_FALLBACK[cityName];
-        if (fallback) coords = latlngToSvg(fallback[0], fallback[1]);
-      }
+      const coords = resolveCityCoords({
+        cityName,
+        uf,
+        cityKey,
+        lat: ev.location_lat,
+        lng: ev.location_lng,
+      });
 
       if (!cityMap[cityKey]) {
-        cityMap[cityKey] = { name: cityName, uf, coords, count: 0, lastDate: null };
+        cityMap[cityKey] = {
+          key: cityKey,
+          name: cityName,
+          uf,
+          coords,
+          count: 0,
+          lastDate: null,
+          events: [],
+        };
       }
       cityMap[cityKey].count += 1;
+      cityMap[cityKey].events.push({
+        id: ev.id,
+        title: eventTitle(ev),
+        date: evDate,
+      });
       if (evDate && (!cityMap[cityKey].lastDate || evDate > cityMap[cityKey].lastDate)) {
         cityMap[cityKey].lastDate = evDate;
       }
-      // Upgrade coords if GPS becomes available
       if (coords && !cityMap[cityKey].coords) {
         cityMap[cityKey].coords = coords;
       }
@@ -206,12 +306,26 @@ export default function BrazilVisitedMap({ events = [] }) {
         if (!byState[uf].includes(cityKey)) byState[uf].push(cityKey);
       }
 
-      // Track most recent
       if (evDate && (!latestDate || evDate > latestDate)) {
         latestDate = evDate;
         latestKey = cityKey;
       }
     }
+
+    for (const entry of Object.values(cityMap)) {
+      if (!entry.coords) {
+        entry.coords = resolveCityCoords({
+          cityName: entry.name,
+          uf: entry.uf,
+          cityKey: entry.key,
+        });
+      }
+      entry.events.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    }
+
+    const sortedCityEntries = Object.entries(cityMap).sort(
+      (a, b) => b[1].count - a[1].count || a[1].name.localeCompare(b[1].name, 'pt-BR')
+    );
 
     return {
       visited: stateSet,
@@ -219,6 +333,7 @@ export default function BrazilVisitedMap({ events = [] }) {
       cities: cityMap,
       citiesByState: byState,
       latestCityKey: latestKey,
+      sortedCityEntries,
     };
   }, [events]);
 
@@ -232,18 +347,34 @@ export default function BrazilVisitedMap({ events = [] }) {
     ? citiesByState[focus].map((k) => cities[k]).filter(Boolean).sort((a, b) => b.count - a.count)
     : [];
 
+  const activeCityKey = pinnedCityKey || hoverCityKey;
   const activeCityData = activeCityKey ? cities[activeCityKey] : null;
 
-  // Dots that have SVG coordinates
+  const listFilterUf = focus;
+  const visibleCityEntries = listFilterUf
+    ? sortedCityEntries.filter(([, c]) => c.uf === listFilterUf)
+    : sortedCityEntries;
+
   const cityDots = Object.entries(cities).filter(([, c]) => c.coords);
+
+  const selectCity = (key) => {
+    setPinnedCityKey((prev) => (prev === key ? null : key));
+    const city = cities[key];
+    if (city?.uf) setActiveUf(city.uf);
+  };
+
+  const selectState = (uf) => {
+    setPinnedCityKey(null);
+    setActiveUf((prev) => (prev === uf ? null : uf));
+  };
 
   return (
     <div className="rounded-xl border border-slate-700/50 bg-slate-900/40 p-4">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
+      <div className="flex items-center justify-between mb-1 gap-3 flex-wrap">
         <h3 className="text-sm font-semibold text-white flex items-center gap-2">
           <Map className="w-4 h-4 text-cyan-400" />
-          Mapa do Brasil — locais visitados
+          Mapa interativo — onde você trabalhou
         </h3>
         <div className="flex items-center gap-2 text-xs font-mono">
           <span className="text-cyan-300">{stateCount}/{totalStates} estados · {pct}%</span>
@@ -255,6 +386,9 @@ export default function BrazilVisitedMap({ events = [] }) {
           )}
         </div>
       </div>
+      <p className="text-[11px] text-slate-500 mb-3">
+        Estados e cidades com eventos cadastrados. Toque no mapa ou na lista para ver detalhes.
+      </p>
 
       {/* SVG Map */}
       <div className="relative">
@@ -291,10 +425,10 @@ export default function BrazilVisitedMap({ events = [] }) {
                 transition={{ duration: 0.2 }}
                 className="cursor-pointer outline-none"
                 onMouseEnter={() => active && setActiveUf(uf)}
-                onMouseLeave={() => setActiveUf(null)}
+                onMouseLeave={() => !pinnedCityKey && setActiveUf(null)}
                 onFocus={() => active && setActiveUf(uf)}
-                onBlur={() => setActiveUf(null)}
-                onClick={() => active && setActiveUf((prev) => (prev === uf ? null : uf))}
+                onBlur={() => !pinnedCityKey && setActiveUf(null)}
+                onClick={() => active && selectState(uf)}
                 tabIndex={active ? 0 : -1}
                 aria-label={`${loc.name}${active ? `, ${countsByState[uf]} evento(s)` : ', não visitado'}`}
               />
@@ -311,9 +445,9 @@ export default function BrazilVisitedMap({ events = [] }) {
             return (
               <g
                 key={key}
-                onMouseEnter={() => setActiveCityKey(key)}
-                onMouseLeave={() => setActiveCityKey(null)}
-                onClick={() => setActiveCityKey((prev) => (prev === key ? null : key))}
+                onMouseEnter={() => setHoverCityKey(key)}
+                onMouseLeave={() => setHoverCityKey(null)}
+                onClick={() => selectCity(key)}
                 className="cursor-pointer"
                 style={{ isolation: 'isolate' }}
               >
@@ -352,15 +486,15 @@ export default function BrazilVisitedMap({ events = [] }) {
           })}
         </svg>
 
-        {/* Tooltip: city hover */}
+        {/* Tooltip: cidade selecionada ou em hover */}
         <AnimatePresence>
-          {activeCityData && !focus && (
+          {activeCityData && (
             <motion.div
               key="city-tip"
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 6 }}
-              className="absolute bottom-2 left-2 right-2 sm:left-auto sm:right-2 sm:w-52 rounded-lg border border-cyan-500/30 bg-slate-950/90 backdrop-blur px-3 py-2 text-xs pointer-events-none"
+              className="absolute bottom-2 left-2 right-2 sm:left-auto sm:right-2 sm:w-64 max-h-40 overflow-y-auto rounded-lg border border-cyan-500/30 bg-slate-950/95 backdrop-blur px-3 py-2 text-xs pointer-events-none"
             >
               <p className="font-semibold text-white">{activeCityData.name}</p>
               {activeCityData.uf && (
@@ -371,11 +505,30 @@ export default function BrazilVisitedMap({ events = [] }) {
               </p>
               {activeCityData.lastDate && (
                 <p className="text-slate-500 text-[10px] mt-0.5">
-                  Última vez: {new Date(activeCityData.lastDate + 'T12:00:00').toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}
+                  Última vez:{' '}
+                  {new Date(activeCityData.lastDate + 'T12:00:00').toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                  })}
                 </p>
               )}
               {activeCityKey === latestCityKey && (
-                <p className="text-violet-400 text-[10px] mt-0.5">📍 Mais recente</p>
+                <p className="text-violet-400 text-[10px] mt-0.5">Mais recente</p>
+              )}
+              {activeCityData.events?.length > 0 && (
+                <ul className="mt-2 pt-2 border-t border-slate-700/60 space-y-1">
+                  {activeCityData.events.slice(0, 4).map((item) => (
+                    <li key={item.id || item.title} className="text-slate-300 truncate">
+                      {item.title}
+                    </li>
+                  ))}
+                  {activeCityData.events.length > 4 && (
+                    <li className="text-slate-500 text-[10px]">
+                      +{activeCityData.events.length - 4} evento(s)
+                    </li>
+                  )}
+                </ul>
               )}
             </motion.div>
           )}
@@ -436,36 +589,81 @@ export default function BrazilVisitedMap({ events = [] }) {
 
       {/* Empty state */}
       {stateCount === 0 && (
-        <p className="text-xs text-slate-500 mt-3 text-center">
-          Adicione endereços nos eventos para iluminar o mapa.
-        </p>
-      )}
-
-      {/* Mobile city list — cities without visible dots (no coords) */}
-      {cityCount > 0 && cityDots.length < cityCount && (
-        <div className="mt-3 pt-3 border-t border-slate-700/40">
-          <p className="text-[10px] text-slate-500 uppercase tracking-wide mb-2">
-            Cidades sem coordenadas GPS
+        <div className="mt-4 flex flex-col items-center gap-2 rounded-lg border border-slate-700/40 bg-slate-800/30 p-4 text-center">
+          <MapPin className="w-5 h-5 text-cyan-500/60" />
+          <p className="text-sm text-slate-300 font-medium">
+            {events.length === 0
+              ? 'Nenhum evento cadastrado ainda.'
+              : 'Seus eventos ainda não têm localização.'}
           </p>
-          <div className="flex flex-wrap gap-1.5">
-            {Object.entries(cities)
-              .filter(([, c]) => !c.coords)
-              .map(([key, c]) => (
-                <span key={key} className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300">
-                  {c.name}
-                  {c.count > 1 && <span className="text-slate-500 ml-1">{c.count}×</span>}
-                </span>
-              ))}
-          </div>
+          <p className="text-xs text-slate-500 leading-relaxed max-w-xs">
+            {events.length === 0
+              ? 'Adicione eventos com cidade/estado para ver o mapa iluminado.'
+              : 'Edite seus eventos e preencha o campo "Local" com cidade e estado (ex: São Paulo, SP) para os estados aparecerem no mapa.'}
+          </p>
         </div>
       )}
 
-      {/* Mobile hint */}
-      {(stateCount > 0 || cityCount > 0) && (
-        <p className="text-[11px] text-slate-500 mt-2 text-center">
-          Toque nos estados ou cidades para ver detalhes.
-        </p>
+      {/* Lista interativa de cidades */}
+      {cityCount > 0 && (
+        <div className="mt-4 pt-3 border-t border-slate-700/40">
+          <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+            <p className="text-[10px] text-slate-500 uppercase tracking-wide">
+              {listFilterUf
+                ? `Cidades em ${STATE_NAMES[listFilterUf] || listFilterUf}`
+                : 'Suas cidades'}
+            </p>
+            {listFilterUf && (
+              <button
+                type="button"
+                onClick={() => setActiveUf(null)}
+                className="text-[10px] text-cyan-400 hover:text-cyan-300"
+              >
+                Ver todas
+              </button>
+            )}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+            {visibleCityEntries.map(([key, city]) => {
+              const isSelected = pinnedCityKey === key;
+              const isLatest = key === latestCityKey;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => selectCity(key)}
+                  className={`text-left rounded-lg border px-3 py-2 transition-colors ${
+                    isSelected
+                      ? 'border-cyan-500/60 bg-cyan-500/10'
+                      : 'border-slate-700/60 bg-slate-800/40 hover:border-slate-600'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium text-white truncate">{city.name}</p>
+                      {city.uf && (
+                        <p className="text-[10px] text-slate-500">{STATE_NAMES[city.uf] || city.uf}</p>
+                      )}
+                    </div>
+                    <span className="text-[11px] font-mono text-cyan-400 flex-shrink-0">{city.count}×</span>
+                  </div>
+                  {isLatest && (
+                    <span className="text-[10px] text-violet-400 mt-1 inline-block">Mais recente</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       )}
     </div>
+  );
+}
+
+export default function BrazilVisitedMap(props) {
+  return (
+    <BrazilMapErrorBoundary>
+      <BrazilVisitedMapInner {...props} />
+    </BrazilMapErrorBoundary>
   );
 }
