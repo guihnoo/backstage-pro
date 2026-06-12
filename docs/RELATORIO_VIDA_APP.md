@@ -3,9 +3,9 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-11 (sessão S31)  
+**Última atualização:** 2026-06-11 (sessão S32)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** `e26d418` — lapida(ai-mentor): pb-safe no input do chat para iOS  
+**Último commit:** `(S32 PWA offline)` — pwa: usePWA hook + install prompt + OfflineBanner reconectado  
 **Último deploy:** 2026-06-11 — `e26d418` → https://backstage-pro-beta.vercel.app  
 **Edge Functions:** `ai-chat` + `analyze-receipt` deployadas no Supabase ✅  
 **Supabase ref:** `cwtallnetgodoacuoaow`
@@ -49,6 +49,7 @@
 | Google Calendar melhorias | Mapa fix (`.key` bug); matching fuzzy título→cliente; parser location→city/state; badge "fora de sinc" no header Agenda e em Configurações |
 | Push Notifications (S30) | VAPID keys rotacionados; `VITE_VAPID_PUBLIC_KEY` adicionado a `.env.local` e Vercel; Edge Functions `send-push-digest`+`send-push-test` reimplantadas; cron 8h/18h BRT ativo; `push_subscriptions` limpa (reativar no Perfil após deploy) |
 | Lapidação Sprint (S31) | **Sprint completa — 8/8 páginas `done`** — Cursor: Home, Clientes, Despesas, Relatórios, Metas; Claude Code: Agenda (`85d0c2e`), Despesas fix client lookup (`cad4b34`), Perfil pull-to-refresh (`c43302b`), IA Mentor pb-safe iOS (`e26d418`) |
+| PWA offline refinado (S32) | `usePWA` hook (install prompt + isInstalled + isOnline); `InstallPwaCard` em Perfil (dismissível, persiste localStorage); `OfflineBanner` com estado "Conexão restaurada — puxe para atualizar" 3s + dispara `backstage:reconnect` CustomEvent |
 
 ---
 

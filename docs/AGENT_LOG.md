@@ -6,6 +6,14 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-11
 
+### PWA-S32 — PWA offline refinado + sync estado (#15) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/hooks/usePWA.js`** (novo): captura `beforeinstallprompt`, expõe `isInstallable`, `isInstalled`, `isOnline`, `installApp()`
+- **`src/components/pwa/InstallPwaCard.jsx`** (novo): card dismissível "Instalar como app" — mostra só quando `isInstallable && !isInstalled`; persiste dismiss em `localStorage`
+- **`src/components/layout/OfflineBanner.jsx`**: estado "Conexão restaurada — puxe para atualizar" por 3s após voltar online + dispara `window.dispatchEvent(new CustomEvent('backstage:reconnect'))`
+- **`src/pages/ProfileSimple.jsx`**: import + `<InstallPwaCard>` antes do botão Exportar
+- **Build**: Vite ✅ (31s) · **Deploy**: pendente
+
 ### LAPIDA-S31 — Sprint lapidação completa: Agenda + Despesas fix + Perfil + IA Mentor ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Sprint status**: 8/8 páginas `done` (Cursor: Home, Clientes, Despesas, Relatórios, Metas — Claude: Agenda, Despesas fix, Perfil, IA Mentor)

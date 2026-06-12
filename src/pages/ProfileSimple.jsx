@@ -19,6 +19,7 @@ import LiveClockBar from '@/components/home/LiveClockBar';
 import { useStats } from '@/lib/useBackstageData';
 import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
+import InstallPwaCard from '@/components/pwa/InstallPwaCard';
 
 export default function ProfileSimple() {
   const { user, profile, signOut, updateProfile } = useAuth();
@@ -464,6 +465,8 @@ export default function ProfileSimple() {
           )}
         </NeonGlass>
         </motion.div>
+
+        <InstallPwaCard primaryHex={config.primaryHex} />
 
         <button
           onClick={handleExportData}
