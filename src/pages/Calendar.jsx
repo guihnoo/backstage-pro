@@ -979,6 +979,7 @@ export default function CalendarPage() {
           dailyWork={dailyWork}
           onRegisterWork={handleQuickWorkEntry}
           onLocationCheckIn={handleEventLocationCheckIn}
+          onOpenEvent={setSelectedEvent}
         />
 
         <CalendarTodayStrip

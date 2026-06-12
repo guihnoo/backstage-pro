@@ -7,8 +7,10 @@ import {
   Timer,
   Clock,
   MapPin,
+  ClipboardList,
+  AlertCircle,
 } from 'lucide-react';
-import { normalizeDateString, getEventsForDate, getWorkForDate } from '../utils/dateUtils';
+import { normalizeDateString, getEventsForDate, getWorkForDate, getEventStatus } from '../utils/dateUtils';
 
 function eventNeedsLocation(event) {
   if (!event) return false;
@@ -22,6 +24,7 @@ export default function AlertsPanel({
   dailyWork = [],
   onRegisterWork,
   onLocationCheckIn,
+  onOpenEvent,
   className = '',
 }) {
   const [alerts, setAlerts] = useState([]);
@@ -106,8 +109,75 @@ export default function AlertsPanel({
       }
     }
 
+    // Regra CRM: Horas pendentes em eventos recentes (últimos 14 dias)
+    const fourteenDaysAgo = new Date(today);
+    fourteenDaysAgo.setDate(today.getDate() - 14);
+    const fourteenAgoStr = normalizeDateString(fourteenDaysAgo);
+
+    const eventsNeedingHours = events.filter((event) => {
+      const st = getEventStatus(event);
+      if (st !== 'completed' && st !== 'archived') return false;
+      if (event.auto_hours_applied) return false;
+      const endStr = event.end_date || event.start_date || '';
+      if (!endStr || endStr < fourteenAgoStr) return false;
+      return !dailyWork.some((w) => w.event_id === event.id);
+    });
+
+    if (eventsNeedingHours.length > 0 && !dismissedAlerts.has('crm_pending_hours')) {
+      const first = eventsNeedingHours[0];
+      const count = eventsNeedingHours.length;
+      newAlerts.push({
+        id: 'crm_pending_hours',
+        kind: 'crm',
+        title: count === 1
+          ? 'Horas não registradas'
+          : `${count} eventos sem horas`,
+        body: count === 1
+          ? `"${first.title || 'Evento'}" ainda não tem horas lançadas.`
+          : `${count} eventos recentes aguardam lançamento de horas.`,
+        icon: ClipboardList,
+        color: 'text-purple-400',
+        bgColor: 'bg-purple-500/10',
+        borderColor: 'border-purple-500/30',
+        cta: {
+          label: 'Ver evento',
+          action: () => onOpenEvent?.(first),
+        },
+      });
+    }
+
+    // Regra CRM: Pagamentos vencidos
+    const overdueEvents = events.filter((event) => {
+      if (!event.payment_due_date) return false;
+      if (event.payment_status === 'paid') return false;
+      return event.payment_due_date < todayStr;
+    });
+
+    if (overdueEvents.length > 0 && !dismissedAlerts.has('crm_overdue_payment')) {
+      const first = overdueEvents[0];
+      const count = overdueEvents.length;
+      newAlerts.push({
+        id: 'crm_overdue_payment',
+        kind: 'crm',
+        title: count === 1
+          ? 'Pagamento vencido'
+          : `${count} pagamentos vencidos`,
+        body: count === 1
+          ? `"${first.title || 'Evento'}" com vencimento em ${new Date(first.payment_due_date + 'T12:00:00').toLocaleDateString('pt-BR')}.`
+          : `${count} eventos com pagamento vencido aguardam confirmação.`,
+        icon: AlertCircle,
+        color: 'text-red-400',
+        bgColor: 'bg-red-500/10',
+        borderColor: 'border-red-500/30',
+        cta: {
+          label: 'Ver evento',
+          action: () => onOpenEvent?.(first),
+        },
+      });
+    }
+
     return newAlerts;
-  }, [events, dailyWork, dismissedAlerts, onRegisterWork, onLocationCheckIn]);
+  }, [events, dailyWork, dismissedAlerts, onRegisterWork, onLocationCheckIn, onOpenEvent]);
 
   useEffect(() => {
     setAlerts(generatedAlerts);
