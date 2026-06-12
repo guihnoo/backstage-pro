@@ -98,6 +98,9 @@ export default function GoogleCalendarSync() {
     } catch (error) {
       console.error('Erro ao carregar calendários:', error);
       setCalendars([]);
+      appToast.info('Lista de calendários indisponível', {
+        description: 'Reconecte o Google Calendar em Perfil para atualizar permissões.',
+      });
     }
   };
 
@@ -106,15 +109,21 @@ export default function GoogleCalendarSync() {
       appToast.info("Redirecionando para autenticação do Google...");
       const { data } = await googleAuthStart();
       
-      if (data.success && data.authUrl) {
-        // Redirecionar o usuário para a URL de autorização do Google
+      if (data?.success && data.authUrl) {
         window.location.href = data.authUrl;
-      } else {
-        throw new Error(data.error || 'Erro desconhecido ao obter URL de autorização');
+        return;
       }
+      throw new Error(data?.error || 'Não foi possível obter a URL de autorização do Google.');
     } catch (error) {
       console.error('Erro ao iniciar conexão:', error);
-      appToast.error("Erro ao conectar com Google Calendar. Tente novamente.");
+      const msg = error.message || '';
+      const hint = /GOOGLE_CLIENT|não configurado|FunctionsFetchError|Failed to fetch/i.test(msg)
+        ? 'Verifique se as Edge Functions e secrets GOOGLE_* estão no Supabase.'
+        : msg;
+      appToast.error('Erro ao conectar com Google Calendar', {
+        description: hint || 'Tente novamente em alguns instantes.',
+        duration: 8000,
+      });
     }
   };
 

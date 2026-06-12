@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
+﻿import { useState, useMemo, useCallback } from 'react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import {
   getEventCacheAmount,
@@ -54,7 +54,7 @@ import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
 import EventHeading from '@/components/events/EventHeading';
 import { Ellipsis } from '@/components/ui/overflowText';
-const BrazilVisitedMap = lazy(() => import('@/components/reports/BrazilVisitedMap'));
+import BrazilVisitedMap from '@/components/reports/BrazilVisitedMap';
 
 const ReportsSkeleton = () => (
   <div className="p-4 md:p-6 space-y-6">
@@ -824,9 +824,7 @@ export default function ReportsPage() {
 
         </div>
 
-        <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl bg-slate-800/60" />}>
-          <BrazilVisitedMap events={events} />
-        </Suspense>
+        <BrazilVisitedMap events={events} />
 
         {/* Projeção para o Próximo Período */}
         {processedData.next.projectedRevenue > 0 &&

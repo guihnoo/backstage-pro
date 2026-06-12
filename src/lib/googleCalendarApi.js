@@ -7,7 +7,20 @@ async function invokeGoogleCalendar(action, extra = {}) {
   const { data, error } = await supabase.functions.invoke('google-calendar', {
     body: { action, ...extra },
   });
-  if (error) return { data: { success: false, error: error.message } };
+  if (error) {
+    const ctx = error.context;
+    let detail = error.message;
+    if (ctx && typeof ctx.json === 'function') {
+      try {
+        const body = await ctx.json();
+        if (body?.error) detail = body.error;
+      } catch {
+        /* ignore parse */
+      }
+    }
+    return { data: { success: false, error: detail } };
+  }
+  if (data?.error) return { data: { success: false, error: data.error } };
   return { data: data ?? { success: false, error: 'Resposta vazia' } };
 }
 

@@ -90,10 +90,9 @@ export default function PushNotificationSettings() {
     setBusy(true);
     try {
       if (!vapidReady) {
-        await showTestNotification();
-        await persistPrefs({ push_enabled: true });
-        appToast.success('Notificações locais ativadas', {
-          description: 'Configure VAPID na Vercel para push no servidor.',
+        appToast.error('Push não configurado no servidor', {
+          description:
+            'A variável VITE_VAPID_PUBLIC_KEY precisa estar no build de produção. Use "Testar notificação" após corrigir.',
         });
         return;
       }
@@ -192,6 +191,12 @@ export default function PushNotificationSettings() {
       {iosHint && supported && (
         <p className="text-xs text-cyan-300/80 bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-3 mb-3">
           No iPhone: adicione o Backstage à Tela de Início antes de ativar notificações.
+        </p>
+      )}
+
+      {!vapidReady && supported && (
+        <p className="text-xs text-amber-400/90 bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 mb-3">
+          Push do servidor indisponível neste build. Peça suporte ou reinstale o app após atualização.
         </p>
       )}
 

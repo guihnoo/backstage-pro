@@ -377,6 +377,9 @@ allow_dynamic_registration = false
 [functions.send-push-digest]
 verify_jwt = false
 
+[functions.google-calendar-callback]
+verify_jwt = false
+
 [edge_runtime]
 enabled = true
 # Supported request policies: `oneshot`, `per_worker`.

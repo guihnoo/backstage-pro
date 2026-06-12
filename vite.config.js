@@ -30,7 +30,6 @@ export default defineConfig({
           '**/EventPDFDocument*.js',
           '**/vendor-charts*.js',
           '**/AI_Mentor*.js',
-          '**/BrazilVisitedMap*.js',
         ],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//],

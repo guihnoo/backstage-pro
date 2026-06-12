@@ -7,8 +7,16 @@ const STATE_NAMES = Object.fromEntries(
   brazilMap.locations.map((loc) => [loc.id.toUpperCase(), loc.name])
 );
 
-// Equirectangular projection over the @svg-maps/brazil viewBox (507.2 × 518.17)
-const BOUNDS = { west: -73.99, east: -28.85, north: 5.27, south: -33.75, w: 507.2, h: 518.17 };
+// Equirectangular projection — dimensões alinhadas ao viewBox real do pacote (@svg-maps/brazil v2)
+const VIEWBOX_PARTS = brazilMap.viewBox.split(/\s+/).map(Number);
+const BOUNDS = {
+  west: -73.99,
+  east: -28.85,
+  north: 5.27,
+  south: -33.75,
+  w: VIEWBOX_PARTS[2] || 613,
+  h: VIEWBOX_PARTS[3] || 639,
+};
 
 function latlngToSvg(lat, lng) {
   const x = (lng - BOUNDS.west) / (BOUNDS.east - BOUNDS.west) * BOUNDS.w;
@@ -99,6 +107,10 @@ const CITY_FALLBACK = {
   'Presidente Prudente': [-22.12, -51.39],
 };
 
+const STATE_NAME_TO_UF = Object.fromEntries(
+  Object.entries(STATE_NAMES).map(([uf, name]) => [name.toUpperCase(), uf])
+);
+
 function inferStateFromLocation(location = '') {
   const text = String(location).toUpperCase();
   for (const uf of Object.keys(STATE_NAMES)) {
@@ -107,6 +119,30 @@ function inferStateFromLocation(location = '') {
     if (name && text.includes(name)) return uf;
   }
   return null;
+}
+
+function normalizeStateCode(raw) {
+  if (!raw) return null;
+  const trimmed = String(raw).trim();
+  const upper = trimmed.toUpperCase();
+  if (/^[A-Z]{2}$/.test(upper) && STATE_NAMES[upper]) return upper;
+  const byName = STATE_NAME_TO_UF[upper];
+  if (byName) return byName;
+  return inferStateFromLocation(trimmed);
+}
+
+function inferCityFromLocation(location = '') {
+  const text = String(location || '').trim();
+  if (!text) return '';
+  const parts = text.split(',').map((p) => p.trim()).filter(Boolean);
+  if (parts.length >= 2) {
+    const last = parts[parts.length - 1];
+    if (/^[A-Za-z]{2}$/.test(last) || STATE_NAME_TO_UF[last.toUpperCase()]) {
+      return parts.length >= 3 ? parts[parts.length - 2] : parts[0];
+    }
+  }
+  if (parts.length === 1 && !/\d{5}/.test(parts[0])) return parts[0];
+  return '';
 }
 
 function normalizeCityName(name = '') {
@@ -127,7 +163,7 @@ export default function BrazilVisitedMap({ events = [] }) {
 
     for (const ev of events) {
       // --- State ---
-      let uf = ev.location_state?.toUpperCase() || null;
+      let uf = normalizeStateCode(ev.location_state);
       if (!uf) uf = inferStateFromLocation(ev.location);
 
       if (uf) {
@@ -136,8 +172,10 @@ export default function BrazilVisitedMap({ events = [] }) {
       }
 
       // --- City ---
-      const cityName = normalizeCityName(ev.location_city || '');
-      if (!cityName) continue;
+      const cityName = normalizeCityName(
+        ev.location_city || inferCityFromLocation(ev.location) || ''
+      );
+      if (!cityName && !uf) continue;
 
       const cityKey = uf ? `${uf}:${cityName}` : cityName;
       const evDate = ev.start_date || ev.end_date || null;
