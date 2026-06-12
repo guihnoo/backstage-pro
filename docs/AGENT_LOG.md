@@ -6,6 +6,16 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-12
 
+### GOALS-S33 — Histórico mensal dos últimos 4 meses ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/pages/Goals.jsx`** (`2c660e2`): `monthlyHistory` useMemo — computa receita paga por mês dos últimos 4 meses via `allEvents` (já carregado); grid 2×2 na aba Metas com mini barra de progresso vs `metaReceita`; aparece somente quando há dados
+- **Build**: Vite ✅ (44s) · **Deploy**: push `2c660e2`
+
+### REPORTS-S33 — Modal de projeção do próximo período ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/pages/Reports.jsx`** (`2f0cae9`): `showProjection` state; Dialog com lista de eventos agendados/confirmados do próximo período (título, data, cliente, valor), total projetado, clique abre `EventDetailModal`; substituiu toast "em desenvolvimento"
+- **Build**: Vite ✅ (27s) · **Deploy**: push `2f0cae9`
+
 ### WHATSAPP-S33 — Fix CRM: botão "Cobrar" usa buildChargeMessage ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/components/calendar/EventDetailModal.jsx`** (`6949f70`):

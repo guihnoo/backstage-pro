@@ -55,6 +55,8 @@
 | IA Mentor polish (S33) | `TypingDots` component: 3 pontos animados Framer Motion substituem spinner+texto; `CATEGORY_HINTS` map: empty state hint dinâmico por categoria (audio/lighting/photo/video/dj/…) usando `profile.category` |
 | Manual do usuário (S33) | `docs/MANUAL_USUARIO.md` + rota `/help` in-app (`AppHelp.jsx` + `userManualContent.js`); link no Perfil → "Abrir manual do app" |
 | Fix CRM WhatsApp (S33) | `handleChargeWhatsApp` no `EventDetailModal` — usa `buildChargeMessage` profissional em vez de lista genérica de detalhes do evento (`6949f70`) |
+| Projeção detalhada (S33) | `Reports.jsx` (`2f0cae9`): Dialog "Projeção do Próximo Período" — lista eventos agendados com valor, data, cliente; clique abre EventDetailModal |
+| Histórico mensal metas (S33) | `Goals.jsx` (`2c660e2`): grid 2×2 na aba Metas mostrando receita paga + barra de progresso vs meta dos últimos 4 meses |
 
 ---
 
