@@ -260,6 +260,7 @@ export default function ReportsPage() {
 
   const [selectedPeriod, setSelectedPeriod] = useState('this_month');
   const [selectedView, setSelectedView] = useState('overview');
+  const [showProjection, setShowProjection] = useState(false);
 
   // Modal states
   const [modalOpen, setModalOpen] = useState(false);
@@ -831,9 +832,7 @@ export default function ReportsPage() {
         {processedData.next.projectedRevenue > 0 &&
           <Card
             className="bg-gradient-to-r from-purple-900/20 to-amber-900/20 border-purple-500/30 cursor-pointer hover:border-purple-400/50 transition-all"
-            onClick={() => {
-              appToast.info('Funcionalidade de projeções detalhadas em desenvolvimento!');
-            }}>
+            onClick={() => setShowProjection(true)}>
 
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
