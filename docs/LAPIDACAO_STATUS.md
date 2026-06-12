@@ -8,7 +8,9 @@
 | Despesas | `/expenses` | Cursor+Claude | `done` | `fe02530` | pull-refresh, truncate, EventHeading, ClampedText; client lookup fix |
 | Relatórios | `/reports` | Cursor | `done` | `adf337a` | pull-refresh, EventHeading, truncate KPIs |
 | Metas | `/goals` | Cursor | `done` | `3b7e588` | pull-refresh, EventHeading, truncate |
-| Perfil | `/profile` | Claude Code | `done` | — | pull-to-refresh; truncate já existia |
-| IA Mentor | `/ai-mentor` | Claude Code | `done` | — | pb-safe input; MessageBubble/SmartSuggestions auditados |
+| Perfil | `/profile` | Claude Code | `done` | `c43302b` | pull-to-refresh; truncate já existia |
+| IA Mentor | `/ai-mentor` | Claude Code | `done` | `e26d418` | pb-safe input; MessageBubble/SmartSuggestions auditados |
+
+**Sprint lapidação:** concluído (8/8 páginas). Próxima fase: manual interativo, feedback usuário, inbox owner.
 
 **Legenda:** `pending` · `in_progress` · `review` · `done`
