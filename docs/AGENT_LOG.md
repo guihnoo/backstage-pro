@@ -6,6 +6,20 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-12
 
+### WHATSAPP-S33 — Fix CRM: botão "Cobrar" usa buildChargeMessage ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/calendar/EventDetailModal.jsx`** (`6949f70`):
+  - Import `buildChargeMessage` adicionado
+  - `handleChargeWhatsApp()` criado — usa `buildChargeMessage({ clientName, events, totalAmount })` → mensagem profissional "Olá [cliente], passando para lembrar sobre o pagamento do show..."
+  - Botão WhatsApp do painel CRM trocado de `handleShareWhatsApp` → `handleChargeWhatsApp`
+- **Build**: Vite ✅ (26s) · **Deploy**: git push pendente
+
+### LAPIDACAO-S33 — Feedback+Inbox encerrado; AppHelp confirmado ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- `Feedback + Inbox owner` → `done` (confirmado: FeedbackModal, AdminFeedbacks, rota, link Perfil, AppTopBar badge)
+- `AppHelp.jsx` + `userManualContent.js` + `appVersion.js` criados pelo Cursor; build ok
+- `IA Mentor` LAPIDACAO atualizado para commit `2b955b9` (S33)
+
 ### MANUAL-S33 — docs/MANUAL_USUARIO.md criado ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`docs/MANUAL_USUARIO.md`** (novo): manual completo do usuário — Home, Agenda, Clientes, Despesas, Relatórios, Metas, IA Mentor, Perfil, PWA offline, push notifications, atalhos e gestos, segurança

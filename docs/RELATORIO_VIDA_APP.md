@@ -53,7 +53,8 @@
 | CRM automatizado (S32) | Painel "Próximos Passos" em `EventDetailModal` para eventos concluídos: checklist horas (12h auto / manual) + pagamento (marcar pago / WhatsApp cobrança); badge "Evento fechado 🎉" quando tudo ok; remove botão redundante do footer |
 | Alertas CRM proativos (S32) | `AlertsPanel`: 2 novas regras — "Horas pendentes" (eventos últimos 14 dias sem horas) + "Pagamentos vencidos" (payment_due_date passado + unpaid); botão "Ver evento" abre `EventDetailModal` via `onOpenEvent` prop |
 | IA Mentor polish (S33) | `TypingDots` component: 3 pontos animados Framer Motion substituem spinner+texto; `CATEGORY_HINTS` map: empty state hint dinâmico por categoria (audio/lighting/photo/video/dj/…) usando `profile.category` |
-| Manual do usuário (S33) | `docs/MANUAL_USUARIO.md` criado — cobre todas as rotas, gestos, CRM, IA Mentor, Modo Palco, PWA offline, push notifications, Perfil |
+| Manual do usuário (S33) | `docs/MANUAL_USUARIO.md` + rota `/help` in-app (`AppHelp.jsx` + `userManualContent.js`); link no Perfil → "Abrir manual do app" |
+| Fix CRM WhatsApp (S33) | `handleChargeWhatsApp` no `EventDetailModal` — usa `buildChargeMessage` profissional em vez de lista genérica de detalhes do evento (`6949f70`) |
 
 ---
 
