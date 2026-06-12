@@ -14,6 +14,7 @@ import {
   Trash2,
   Plus,
   CheckCircle2,
+  Circle,
   MapPin,
   FileText,
   Zap,
@@ -23,7 +24,9 @@ import {
   Receipt,
   ChevronDown,
   ChevronUp,
-  AlertTriangle
+  AlertTriangle,
+  ClipboardCheck,
+  PartyPopper
 } from 'lucide-react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import {
@@ -308,39 +311,124 @@ export default function EventDetailModal({
         <ScrollArea fill className="px-6">
           <div className="space-y-6 py-6">
             
-            {/* Quick Actions para evento concluído */}
-            {status === 'completed' && !event.auto_hours_applied && (
-              <Card className="bg-gradient-to-r from-purple-900/30 to-purple-800/30 border-purple-700/50">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Zap className="w-5 h-5 text-purple-400" />
-                    <div>
-                      <h4 className="font-bold text-purple-200">Ação Rápida Disponível</h4>
-                      <p className="text-sm text-purple-300/80">
-                        Aplique 12h automaticamente sem precisar registrar manualmente
-                      </p>
+            {/* CRM: Próximos Passos — painel de fechamento para eventos concluídos */}
+            {(status === 'completed' || status === 'archived') && (() => {
+              const horasDone = eventWork.length > 0 || Boolean(event.auto_hours_applied);
+              const pagamentoDone = event.payment_status === 'paid';
+              const allDone = horasDone && pagamentoDone;
+
+              if (allDone) {
+                return (
+                  <Card className="bg-gradient-to-r from-emerald-900/20 to-emerald-800/20 border-emerald-700/40">
+                    <CardContent className="p-4 flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                        <PartyPopper className="w-5 h-5 text-emerald-400" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-bold text-emerald-300 text-sm">Evento fechado</p>
+                        <p className="text-xs text-emerald-400/70 mt-0.5">
+                          {totals.totalHours > 0 ? `${totals.totalHours}h registradas` : 'Horas OK'}
+                          {' · Pagamento confirmado'}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              }
+
+              return (
+                <Card className="bg-slate-800/60 border-amber-700/40">
+                  <CardHeader className="pb-2 pt-4 px-4">
+                    <CardTitle className="text-sm flex items-center gap-2 text-amber-300">
+                      <ClipboardCheck className="w-4 h-4" />
+                      Próximos passos
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-4 pb-4 space-y-3">
+                    {/* Horas */}
+                    <div className="flex items-center gap-3">
+                      {horasDone
+                        ? <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+                        : <Circle className="w-5 h-5 text-slate-500 flex-shrink-0" />
+                      }
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm font-medium ${horasDone ? 'text-slate-400 line-through' : 'text-white'}`}>
+                          Registrar horas trabalhadas
+                        </p>
+                        {horasDone && totals.totalHours > 0 && (
+                          <p className="text-xs text-emerald-400">{totals.totalHours}h · {formatCurrency(totals.totalEarned)}</p>
+                        )}
+                      </div>
+                      {!horasDone && (
+                        <div className="flex gap-1.5 flex-shrink-0">
+                          <Button
+                            size="sm"
+                            onClick={handleApply12Hours}
+                            disabled={applying12h}
+                            className="h-7 px-2 text-xs bg-purple-600 hover:bg-purple-700"
+                          >
+                            {applying12h
+                              ? <Loader2 className="w-3 h-3 animate-spin" />
+                              : <><Zap className="w-3 h-3 mr-1" />12h</>
+                            }
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={onAddWork}
+                            className="h-7 px-2 text-xs border-slate-600 hover:bg-slate-700"
+                          >
+                            <Plus className="w-3 h-3 mr-1" />
+                            Manual
+                          </Button>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                  <Button
-                    onClick={handleApply12Hours}
-                    disabled={applying12h}
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                  >
-                    {applying12h ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Aplicando 12h...
-                      </>
-                    ) : (
-                      <>
-                        <Zap className="w-4 h-4 mr-2" />
-                        Aplicar 12h Automáticas
-                      </>
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+
+                    {/* Pagamento */}
+                    <div className="flex items-center gap-3">
+                      {pagamentoDone
+                        ? <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+                        : <Circle className="w-5 h-5 text-slate-500 flex-shrink-0" />
+                      }
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm font-medium ${pagamentoDone ? 'text-slate-400 line-through' : 'text-white'}`}>
+                          Confirmar recebimento
+                        </p>
+                        {!pagamentoDone && event.payment_due_date && (
+                          <p className="text-xs text-amber-400">
+                            Vence {formatDisplayDate(event.payment_due_date)}
+                          </p>
+                        )}
+                      </div>
+                      {!pagamentoDone && (
+                        <div className="flex gap-1.5 flex-shrink-0">
+                          <Button
+                            size="sm"
+                            onClick={onMarkPaid}
+                            className="h-7 px-2 text-xs bg-emerald-700 hover:bg-emerald-600"
+                          >
+                            <CheckCircle2 className="w-3 h-3 mr-1" />
+                            Pago
+                          </Button>
+                          {client?.phone && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={handleShareWhatsApp}
+                              className="h-7 px-2 text-xs border-green-700/50 text-green-400 hover:bg-green-900/20"
+                              title="Cobrar via WhatsApp"
+                            >
+                              <MessageCircle className="w-3 h-3" />
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })()}
 
             {/* Informações Básicas */}
             <Card className="bg-slate-800/50 border-slate-700">
@@ -648,16 +736,6 @@ export default function EventDetailModal({
                 : <CheckCircle2 className="w-4 h-4 mr-2" />
               }
               Confirmar
-            </Button>
-          )}
-          {status === 'completed' && event.payment_status !== 'paid' && (
-            <Button
-              onClick={onMarkPaid}
-              variant="outline"
-              className="flex-1 min-w-[140px] border-green-700 hover:bg-green-900/20 text-green-400"
-            >
-              <CheckCircle2 className="w-4 h-4 mr-2" />
-              Marcar como Pago
             </Button>
           )}
           <Button
