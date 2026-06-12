@@ -9,6 +9,7 @@ import { checkCompletedEventsForAutoHours } from '@/lib/checkCompletedEventsForA
 import AppTopBar, { getAppTopBarOffset } from '@/components/layout/AppTopBar';
 import OfflineBanner from '@/components/layout/OfflineBanner';
 import { prefetchRoute } from '@/lib/routePrefetch';
+import AppTour from '@/components/tour/AppTour';
 
 const navItems = [
   { to: '.', match: '/', label: 'Home', icon: Home, end: true },
@@ -48,6 +49,7 @@ export default function AppLayout() {
 
   return (
     <div className="h-full bg-[#050609] text-white flex flex-col overflow-hidden">
+      <AppTour />
       <AppTopBar />
       <OfflineBanner />
       <main
@@ -63,7 +65,11 @@ export default function AppLayout() {
           <Outlet key={location.pathname} />
         </Suspense>
       </main>
-      <nav className="fixed bottom-0 left-0 right-0 z-30" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+      <nav
+        data-tour="bottom-nav"
+        className="fixed bottom-0 left-0 right-0 z-30"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
         <div className="absolute inset-0 bg-[#050609]/95 backdrop-blur-xl border-t border-[#23262f]" />
         <motion.div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent 10%, ${config.primaryHex}50 50%, transparent 90%)` }} />
         <div className="relative z-10 flex items-stretch justify-around px-0.5 max-w-2xl mx-auto">
@@ -74,6 +80,7 @@ export default function AppLayout() {
                 key={match}
                 to={to}
                 end={end}
+                data-tour={match === '/calendar' ? 'nav-calendar' : undefined}
                 aria-label={label}
                 aria-current={active ? 'page' : undefined}
                 onPointerEnter={() => prefetchRoute(match)}

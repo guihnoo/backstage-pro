@@ -115,6 +115,7 @@ export default function Home() {
         primaryHex={config.primaryHex}
       />
       <motion.header
+        data-tour="home-header"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="relative overflow-hidden"
@@ -241,12 +242,14 @@ export default function Home() {
           accentHex={config.accentHex}
         />
 
-        <MetaMensalBar
-          profile={profile}
-          stats={stats}
-          isLoading={loading}
-          accentColor={config.primaryHex}
-        />
+        <div data-tour="home-meta">
+          <MetaMensalBar
+            profile={profile}
+            stats={stats}
+            isLoading={loading}
+            accentColor={config.primaryHex}
+          />
+        </div>
 
         <PipelineFinanceiro
           stats={stats}

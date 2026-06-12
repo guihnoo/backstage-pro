@@ -40,7 +40,11 @@ export function FloatingActions() {
   };
 
   return (
-    <div className="fixed right-5 z-40" style={{ bottom: 'calc(88px + env(safe-area-inset-bottom, 0px))' }}>
+    <div
+      data-tour="fab-actions"
+      className="fixed right-5 z-40"
+      style={{ bottom: 'calc(88px + env(safe-area-inset-bottom, 0px))' }}
+    >
       <AnimatePresence>
         {isOpen && (
           <motion.div

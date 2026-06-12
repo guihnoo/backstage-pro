@@ -29,6 +29,7 @@ export function fakeProfile() {
     email: 'e2e-test@backstage.local',
     category: 'lighting',
     onboarding_complete: true,
+    tour_completed_at: new Date().toISOString(),
     phone: '',
     city: 'São Paulo',
     state: 'SP',

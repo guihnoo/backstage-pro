@@ -17,7 +17,7 @@
 | Feature | Status | Notas |
 |---------|--------|-------|
 | Feedback + Inbox owner | `in_progress` | migration `029`; Perfil + `/admin/feedbacks` |
-| Tour primeiro login | `pending` | após feedback estável |
-| Manual do usuário | `pending` | após tour |
+| Tour primeiro login | `done` | driver.js; `tour_completed_at` em profiles; rever em Perfil |
+| Manual do usuário | `pending` | próximo passo Fase 2 |
 
 **Legenda:** `pending` · `in_progress` · `review` · `done`

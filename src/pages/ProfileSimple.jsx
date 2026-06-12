@@ -8,7 +8,7 @@ import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import {
   User, Phone, MapPin, Mail, LogOut, Save, Loader2, CheckCircle, Eye, EyeOff, Download,
-  DollarSign, Target, Calendar, Camera, MessageCircle, Inbox, ChevronRight,
+  DollarSign, Target, Calendar, Camera, MessageCircle, Inbox, ChevronRight, Compass,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import FeedbackModal from '@/components/feedback/FeedbackModal';
@@ -24,6 +24,7 @@ import { useStats } from '@/lib/useBackstageData';
 import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
 import InstallPwaCard from '@/components/pwa/InstallPwaCard';
+import { requestAppTour } from '@/lib/appTourBus';
 
 export default function ProfileSimple() {
   const { user, profile, signOut, updateProfile } = useAuth();
@@ -405,6 +406,31 @@ export default function ProfileSimple() {
         {/* Google Calendar */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }}>
           <GoogleCalendarSync />
+        </motion.div>
+
+        {/* Ajuda do app */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.322 }}>
+        <NeonGlass primary={config.primaryHex} className="p-5 space-y-3">
+          <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider font-mono">Ajuda do app</h2>
+          <p className="text-xs text-slate-500">
+            Rever o tour guiado pela Home, navegação e atalhos principais.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              hardNavigate('/');
+              window.setTimeout(() => requestAppTour(), 400);
+            }}
+            className="w-full flex items-center justify-between gap-3 py-3 px-4 rounded-xl border transition-colors hover:bg-slate-800/40 min-w-0"
+            style={{ borderColor: `${config.primaryHex}35` }}
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <Compass className="w-5 h-5 shrink-0" style={{ color: config.primaryHex }} />
+              <span className="text-sm font-semibold text-white">Rever tour do app</span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-600 shrink-0" />
+          </button>
+        </NeonGlass>
         </motion.div>
 
         {/* Suporte & feedback */}

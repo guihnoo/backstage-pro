@@ -30,7 +30,10 @@ export default function AppTopBar() {
         className="flex items-center justify-end gap-1 px-3 max-w-2xl mx-auto w-full"
         style={{ minHeight: TOP_BAR_HEIGHT }}
       >
-        <div className="pointer-events-auto flex items-center gap-1 rounded-full bg-[#050609]/80 backdrop-blur-md border border-[#23262f]/80 pl-1 pr-0.5 py-0.5 shadow-lg shadow-black/30">
+        <div
+          data-tour="top-bar"
+          className="pointer-events-auto flex items-center gap-1 rounded-full bg-[#050609]/80 backdrop-blur-md border border-[#23262f]/80 pl-1 pr-0.5 py-0.5 shadow-lg shadow-black/30"
+        >
           <NotificationCenter compact />
           {owner && (
             <Link
