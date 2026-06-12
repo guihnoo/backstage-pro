@@ -1032,6 +1032,73 @@ export default function ReportsPage() {
         destructive
         onConfirm={handleConfirmExpenseDelete}
       />
+
+      {/* Modal de Projeção do Próximo Período */}
+      <Dialog open={showProjection} onOpenChange={setShowProjection}>
+        <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-lg max-h-[85dvh] flex flex-col overflow-hidden p-0">
+          <DialogHeader className="px-6 pt-6 pb-3 flex-shrink-0">
+            <DialogTitle className="text-lg font-bold text-purple-300">
+              Projeção — Próximo Período
+            </DialogTitle>
+            <DialogDescription className="text-slate-400 text-sm">
+              Eventos confirmados ainda não realizados
+            </DialogDescription>
+          </DialogHeader>
+          <div className="bp-modal-scroll px-6 pb-6 space-y-4">
+            {/* Total projetado */}
+            <div className="flex items-center justify-between p-4 rounded-xl bg-purple-900/20 border border-purple-500/30">
+              <div>
+                <p className="text-xs text-purple-300 uppercase tracking-wider font-mono mb-0.5">Total projetado</p>
+                <p className="text-2xl font-black text-white">
+                  {isVisible ? formatCurrency(processedData.next.projectedRevenue) : '•••••'}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-slate-500">{processedData.next.scheduledEventsCount} evento{processedData.next.scheduledEventsCount !== 1 ? 's' : ''}</p>
+                {processedData.current.realizedRevenue > 0 && (
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    vs {isVisible ? formatCurrency(processedData.current.realizedRevenue) : '•••'} atual
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Lista de eventos */}
+            {processedData.next.events
+              .filter(e => e.calculatedStatus === 'scheduled' || e.calculatedStatus === 'confirmed')
+              .sort((a, b) => (a.start_date || '').localeCompare(b.start_date || ''))
+              .map(event => {
+                const client = data.clients.find(c => c.id === event.client_id);
+                const value = getEventCacheAmount(event);
+                const dateStr = event.start_date
+                  ? new Date(event.start_date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
+                  : '—';
+                return (
+                  <div
+                    key={event.id}
+                    className="flex items-center gap-3 py-3 border-b border-slate-800/60 last:border-0 cursor-pointer hover:bg-slate-800/30 rounded-lg px-2 -mx-2 transition-colors"
+                    onClick={() => { setShowProjection(false); setSelectedEvent(event); }}
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center flex-shrink-0 text-sm font-bold text-slate-400">
+                      {dateStr.split(' ')[0]}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-white truncate">{event.title}</p>
+                      <p className="text-xs text-slate-500 truncate">{client?.name || 'Sem cliente'} · {dateStr}</p>
+                    </div>
+                    <p className="text-sm font-bold flex-shrink-0" style={{ color: config.primaryHex }}>
+                      {isVisible ? formatCurrency(value) : '•••'}
+                    </p>
+                  </div>
+                );
+              })
+            }
+            {processedData.next.scheduledEventsCount === 0 && (
+              <p className="text-center text-slate-500 text-sm py-6">Nenhum evento agendado para o próximo período.</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </NeonPageShell>
   );
 }
