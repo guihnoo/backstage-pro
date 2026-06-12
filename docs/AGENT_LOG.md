@@ -12,7 +12,7 @@ Registro cronológico de tarefas executadas por agentes.
 - **`src/components/pwa/InstallPwaCard.jsx`** (novo): card dismissível "Instalar como app" — mostra só quando `isInstallable && !isInstalled`; persiste dismiss em `localStorage`
 - **`src/components/layout/OfflineBanner.jsx`**: estado "Conexão restaurada — puxe para atualizar" por 3s após voltar online + dispara `window.dispatchEvent(new CustomEvent('backstage:reconnect'))`
 - **`src/pages/ProfileSimple.jsx`**: import + `<InstallPwaCard>` antes do botão Exportar
-- **Build**: Vite ✅ (31s) · **Deploy**: pendente
+- **Build**: Vite ✅ (31s) · **Deploy**: `f2a6708` → https://backstage-pro-beta.vercel.app ✅
 
 ### LAPIDA-S31 — Sprint lapidação completa: Agenda + Despesas fix + Perfil + IA Mentor ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)

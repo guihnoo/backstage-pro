@@ -5,8 +5,8 @@
 
 **Última atualização:** 2026-06-11 (sessão S32)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** `(S32 PWA offline)` — pwa: usePWA hook + install prompt + OfflineBanner reconectado  
-**Último deploy:** 2026-06-11 — `e26d418` → https://backstage-pro-beta.vercel.app  
+**Último commit:** `f2a6708` — pwa: usePWA hook + install prompt card + OfflineBanner reconectado  
+**Último deploy:** 2026-06-11 — `f2a6708` → https://backstage-pro-beta.vercel.app  
 **Edge Functions:** `ai-chat` + `analyze-receipt` deployadas no Supabase ✅  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
