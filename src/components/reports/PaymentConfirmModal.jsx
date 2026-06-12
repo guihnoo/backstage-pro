@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import appToast from '@/lib/appToast';
 import { useEvents } from '@/lib/useEvents';
+import { Ellipsis } from '@/components/ui/overflowText';
 
 export default function PaymentConfirmModal({ event, isOpen, onClose, onSuccess }) {
   const { update: updateEvent } = useEvents();
@@ -63,9 +64,9 @@ export default function PaymentConfirmModal({ event, isOpen, onClose, onSuccess 
         </DialogHeader>
 
         <div className="bp-modal-scroll px-6 space-y-4">
-          <div className="space-y-2">
+          <div className="space-y-2 min-w-0">
             <p className="text-sm text-slate-400">Evento:</p>
-            <p className="font-semibold text-white">{event.title}</p>
+            <Ellipsis className="font-semibold text-white">{event.title}</Ellipsis>
           </div>
 
           <div className="space-y-2">

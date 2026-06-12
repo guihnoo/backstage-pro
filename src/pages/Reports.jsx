@@ -50,6 +50,10 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import LiveClockBar from '@/components/home/LiveClockBar';
 import StatValuePulse from '@/components/home/StatValuePulse';
+import { usePullToRefresh } from '@/lib/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
+import EventHeading from '@/components/events/EventHeading';
+import { Ellipsis } from '@/components/ui/overflowText';
 const BrazilVisitedMap = lazy(() => import('@/components/reports/BrazilVisitedMap'));
 
 const ReportsSkeleton = () => (
@@ -103,23 +107,23 @@ const StatCard = ({ title, value, pulseValue, pulseColor, subtitle, icon: Icon, 
 
   return (
     <Card
-      className={`bg-slate-900/50 border-slate-800 transition-all ${
+      className={`bg-slate-900/50 border-slate-800 transition-all min-w-0 overflow-hidden ${
         isClickable && onClick ? 'hover:border-purple-400/50 cursor-pointer hover:shadow-lg hover:shadow-purple-500/10' : ''
       }`}
       onClick={onClick}
     >
       <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-3">
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-slate-400">{title}</p>
+        <div className="flex items-center justify-between mb-3 gap-2 min-w-0">
+          <div className="space-y-1 min-w-0 flex-1">
+            <p className="text-sm font-medium text-slate-400 truncate">{title}</p>
             <StatValuePulse value={pulseValue ?? value} glowColor={pulseColor}>
-              <p className={`text-2xl font-bold ${color}`}>{value}</p>
+              <p className={`text-2xl font-bold truncate ${color}`} title={typeof value === 'string' ? value : undefined}>{value}</p>
             </StatValuePulse>
           </div>
-          <Icon className={`w-8 h-8 ${color} opacity-60`} />
+          <Icon className={`w-8 h-8 flex-shrink-0 ${color} opacity-60`} />
         </div>
-        <div className="flex items-center justify-between">
-          {subtitle && <p className="text-xs text-slate-500 truncate flex-1">{subtitle}</p>}
+        <div className="flex items-center justify-between gap-2 min-w-0">
+          {subtitle && <p className="text-xs text-slate-500 truncate flex-1 min-w-0" title={subtitle}>{subtitle}</p>}
           {trend && (
             <div className={`flex items-center gap-1 text-xs ${getTrendColor()}`}>
               {getTrendIcon()}
@@ -160,8 +164,19 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type, onItemClick
               className={`flex items-center justify-between p-3 bg-slate-800/50 rounded-lg transition-colors gap-3 min-w-0 ${isClickable ? 'cursor-pointer hover:bg-slate-700/60' : ''}`}
             >
               <div className="min-w-0 flex-1">
-                <p className="font-medium text-white truncate" title={item.title}>{item.title}</p>
-                <p className="text-sm text-slate-400 truncate" title={item.subtitle}>{item.subtitle}</p>
+                {item.event_ref ? (
+                  <>
+                    <EventHeading event={item.event_ref} client={item.client} size="sm" />
+                    {item.subtitle && (
+                      <p className="text-sm text-slate-400 truncate mt-0.5" title={item.subtitle}>{item.subtitle}</p>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <p className="font-medium text-white truncate" title={item.title}>{item.title}</p>
+                    <p className="text-sm text-slate-400 truncate" title={item.subtitle}>{item.subtitle}</p>
+                  </>
+                )}
               </div>
               <div className="text-right flex-shrink-0">
                 <p className={`font-bold ${item.value < 0 ? 'text-red-400' : 'text-green-400'}`}>{formatCurrency(item.value)}</p>
@@ -179,8 +194,10 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type, onItemClick
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-2xl max-h-[90dvh] flex flex-col overflow-hidden p-0">
-        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
-          <DialogTitle className="text-xl font-bold text-purple-300">{title}</DialogTitle>
+        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0 min-w-0">
+          <DialogTitle className="text-xl font-bold text-purple-300 min-w-0">
+            <Ellipsis>{title}</Ellipsis>
+          </DialogTitle>
           <DialogDescription className="text-slate-400">
             Detalhamento dos registros que compõem esta métrica
           </DialogDescription>
@@ -233,6 +250,13 @@ export default function ReportsPage() {
   const refreshData = useCallback(async () => {
     await Promise.all([refetchEvents(), refetchClients(), refetchDailyWork(), refetchExpenses()]);
   }, [refetchEvents, refetchClients, refetchDailyWork, refetchExpenses]);
+
+  const pullRefreshReports = useCallback(async () => {
+    await refreshData();
+    appToast.success('Relatórios atualizados');
+  }, [refreshData]);
+
+  const { pullDistance, isRefreshing, threshold } = usePullToRefresh(pullRefreshReports);
 
   const [selectedPeriod, setSelectedPeriod] = useState('this_month');
   const [selectedView, setSelectedView] = useState('overview');
@@ -483,7 +507,8 @@ export default function ReportsPage() {
             subtitle: `${client?.name || 'Cliente'} • ${paidDateStr}`,
             value: event.paid_amount,
             date: paidDateStr,
-            event_ref: event
+            event_ref: event,
+            client,
           };
         }));
         break;
@@ -497,7 +522,8 @@ export default function ReportsPage() {
             title: event.title,
             subtitle: `${client?.name || 'Cliente'} • Concluído em ${(event.end_date || event.start_date) ? format(parseISO(event.end_date || event.start_date), 'dd/MM/yyyy') : '--'}`,
             value: calculateEventReceivableAmount(event, eventDailyWork),
-            event_ref: event
+            event_ref: event,
+            client,
           };
         }));
         break;
@@ -698,6 +724,8 @@ export default function ReportsPage() {
           icon={AlertCircle}
           title="Erro ao Carregar Dados"
           description="Não foi possível carregar os dados para o relatório."
+          action={refreshData}
+          actionLabel="Tentar Novamente"
         />
       </div>
     );
@@ -705,6 +733,12 @@ export default function ReportsPage() {
 
   return (
     <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="pb-24">
+      <PullToRefreshIndicator
+        pullDistance={pullDistance}
+        isRefreshing={isRefreshing}
+        threshold={threshold}
+        primaryHex={config.primaryHex}
+      />
       <div className="p-4 md:p-6 space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -889,8 +923,8 @@ export default function ReportsPage() {
         {/* Events List - AGORA FILTRÁVEL e com MODAL */}
         <div className="space-y-2">
           {chartFilter && (
-            <div className="flex items-center justify-between bg-slate-800/50 p-2 rounded-lg">
-              <p className="text-sm text-purple-300">
+            <div className="flex items-center justify-between bg-slate-800/50 p-2 rounded-lg gap-2 min-w-0">
+              <p className="text-sm text-purple-300 truncate min-w-0 flex-1">
                 Filtro ativo: Mostrando eventos para <strong>{chartFilter.date ? format(parseISO(chartFilter.date), 'dd/MM/yyyy') : '--'}</strong>
               </p>
               <Button variant="ghost" size="sm" onClick={clearChartFilter} className="text-slate-400 hover:text-white">
