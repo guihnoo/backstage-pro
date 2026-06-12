@@ -3,10 +3,10 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-11 (sessão S30)  
+**Última atualização:** 2026-06-11 (sessão S31)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** pendente nesta sessão — deploy testes reais  
-**Último deploy:** 2026-06-10 — `dpl_CSCrk4jRwwdQwJaVUjAy7ie7wBiX` → https://backstage-pro-beta.vercel.app  
+**Último commit:** `e26d418` — lapida(ai-mentor): pb-safe no input do chat para iOS  
+**Último deploy:** 2026-06-11 — `e26d418` → https://backstage-pro-beta.vercel.app  
 **Edge Functions:** `ai-chat` + `analyze-receipt` deployadas no Supabase ✅  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
@@ -48,6 +48,7 @@
 | Lapidação S29 | 38 componentes auditados; `GoogleCalendarSync` 3× `window.confirm()` → `ConfirmDialog`; `ReceiptAnalyzer` timezone bug (`toISOString` → `format`) |
 | Google Calendar melhorias | Mapa fix (`.key` bug); matching fuzzy título→cliente; parser location→city/state; badge "fora de sinc" no header Agenda e em Configurações |
 | Push Notifications (S30) | VAPID keys rotacionados; `VITE_VAPID_PUBLIC_KEY` adicionado a `.env.local` e Vercel; Edge Functions `send-push-digest`+`send-push-test` reimplantadas; cron 8h/18h BRT ativo; `push_subscriptions` limpa (reativar no Perfil após deploy) |
+| Lapidação Sprint (S31) | **Sprint completa — 8/8 páginas `done`** — Cursor: Home, Clientes, Despesas, Relatórios, Metas; Claude Code: Agenda (`85d0c2e`), Despesas fix client lookup (`cad4b34`), Perfil pull-to-refresh (`c43302b`), IA Mentor pb-safe iOS (`e26d418`) |
 
 ---
 
@@ -79,6 +80,19 @@ Ordem oficial após fix de scroll (2026-06-05):
 ---
 
 ## Changelog
+
+### 2026-06-11 (sessão S31) — Lapidação Sprint completa (8/8 páginas)
+
+**Sprint lapidação** — todas as 8 rotas auditadas e polidas:
+- Cursor: Home, Clientes, Despesas (`fe02530`), Relatórios (`adf337a`), Metas (`3b7e588`)
+- Claude Code: Agenda (`85d0c2e`) — EventHeading TodayStrip + AlertsPanel break-words
+- Claude Code: Despesas fix (`cad4b34`) — client lookup correto em `ExpenseListItem` (`event.clients` undefined → `useClients` + prop `client`)
+- Claude Code: Perfil (`c43302b`) — pull-to-refresh adicionado (consistente com demais páginas)
+- Claude Code: IA Mentor (`e26d418`) — `pb-safe` no input do chat (home indicator iOS)
+
+**Build:** Vite ✅ · **Smoke:** 18/18 ✅ · **Deploy:** `e26d418` → https://backstage-pro-beta.vercel.app
+
+---
 
 ### 2026-06-11 (sessão S27) — Correção de classes Tailwind dinâmicas + realtime sync
 

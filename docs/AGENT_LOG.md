@@ -6,6 +6,22 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-11
 
+### LAPIDA-S31 — Sprint lapidação completa: Agenda + Despesas fix + Perfil + IA Mentor ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Sprint status**: 8/8 páginas `done` (Cursor: Home, Clientes, Despesas, Relatórios, Metas — Claude: Agenda, Despesas fix, Perfil, IA Mentor)
+- **`ExpenseListItem.jsx` + `Expenses.jsx`** (`cad4b34`): `event.clients` era sempre undefined (useEvents não faz JOIN); adicionado `useClients` em Expenses, client resolvido por `client_id` no MonthGroup e passado como prop
+- **`ProfileSimple.jsx`** (`c43302b`): `usePullToRefresh(refetchStats)` + `PullToRefreshIndicator` — pull-to-refresh consistente com todas as outras páginas
+- **`AI_Mentor.jsx`** (`e26d418`): `pb-safe` no footer do chat — input ficava sob o home indicator do iPhone sem a safe area
+- **Build**: Vite ✅ (36-50s) · **Smoke**: 18/18 ✅ · **Deploy**: 3× Vercel prod
+- **Arquivos**: `src/pages/Expenses.jsx`, `src/components/expenses/ExpenseListItem.jsx`, `src/pages/ProfileSimple.jsx`, `src/pages/AI_Mentor.jsx`, `docs/LAPIDACAO_STATUS.md`, `docs/AUDITORIA_PAGINAS.md`
+
+---
+
+### PUSH-S30 — Push Notifications: infraestrutura completa ✅ (sessão anterior)
+- **Ver**: commit `85d0c2e` (Agenda lapidação) + sessão S30 no RELATORIO
+
+---
+
 ### POLISH-S26 — Lapidação profissional: 6 melhorias de polish ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`ProfileSimple.jsx`**: removido `overflow-hidden` do container do avatar → emoji da categoria era cortado; footer "v1.0 MVP" → "v1.0"
