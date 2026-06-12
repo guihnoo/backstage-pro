@@ -427,7 +427,7 @@ export default function EventDetailModal({
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={handleShareWhatsApp}
+                              onClick={handleChargeWhatsApp}
                               className="h-7 px-2 text-xs border-green-700/50 text-green-400 hover:bg-green-900/20"
                               title="Cobrar via WhatsApp"
                             >
