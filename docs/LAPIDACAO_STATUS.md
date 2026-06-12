@@ -5,7 +5,7 @@
 | Home | `/` | Cursor | `done` | `b5cbd32` | overflow, pull-refresh, offline, prefetch |
 | Agenda | `/calendar` | Claude Code | `done` | `85d0c2e` | EventHeading no TodayStrip, break-words AlertsPanel, client name modal |
 | Clientes | `/clients` | Cursor | `done` | `027516c` | overflow, pull-refresh, EventHeading, truncate |
-| Despesas | `/expenses` | — | `pending` | — | |
+| Despesas | `/expenses` | Cursor | `done` | `fe02530` | pull-refresh, truncate, EventHeading, ClampedText |
 | Relatórios | `/reports` | — | `pending` | — | |
 | Metas | `/goals` | — | `pending` | — | |
 | Perfil | `/profile` | — | `pending` | — | |
