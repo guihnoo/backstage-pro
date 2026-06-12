@@ -134,7 +134,9 @@
       "Bash(find src/components/notifications -name \"*.jsx\")",
       "Bash(find src/components/calendar -name \"GoogleCalendar*\")",
       "Bash(grep -v \"//\\\\|setActiveTab\\\\|activeTab ===\\\\|tab.label\\\\|tab.id\\\\|whitespace\")",
-      "Bash(npm list *)"
+      "Bash(npm list *)",
+      "mcp__supabase__list_projects",
+      "mcp__supabase__get_logs"
     ]
   },
   "enabledMcpjsonServers": [
