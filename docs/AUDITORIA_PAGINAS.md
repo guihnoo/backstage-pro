@@ -110,7 +110,7 @@
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
 | Página | [x] | 🟢 | `NeonPageShell pb-24` ✅; pull-to-refresh ✅; StatCard/MonthGroup truncate ✅ |
-| `ExpenseListItem` | [x] | 🟢 | `EventHeading` no evento vinculado; `ClampedText` em notas ✅ |
+| `ExpenseListItem` | [x] | 🟢 | `EventHeading` c/ client lookup correto (`useClients` → prop `client`); `ClampedText` em notas ✅ |
 | `ExpenseForm` (LOCKED) | [x] | 🟢 | `ScrollArea fill` ✅; select evento com truncate ✅ |
 | `ReceiptAnalyzer` | [x] | 🟢 | OCR Gemini Vision — Edge Function `analyze-receipt` ✅ |
 
@@ -122,13 +122,12 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página (`reports.jsx`) | [x] | 🟢 | `NeonPageShell pb-24` ✅; `LiveClockBar` adicionado sessão 18 |
+| Página (`Reports.jsx`) | [x] | 🟢 | pull-to-refresh ✅; KPI StatCards truncate ✅; erro com retry ✅ |
+| `ReportEventList` | [x] | 🟢 | `EventHeading` + título truncado ✅ |
+| `KPIDetailModal` | [x] | 🟢 | `EventHeading` em itens de evento; título `Ellipsis` ✅ |
 | `EventDetailModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
+| `PaymentConfirmModal` | [x] | 🟢 | título do evento com `Ellipsis` ✅ |
 | `DrilldownModal` | [x] | 🟢 | `bp-modal-scroll` ✅ |
-| `KPIDetailModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
-| `PaymentConfirmModal` | [x] | 🟢 | `bp-modal-scroll` ✅ |
-| `EventListModal` | [x] | 🟢 | `ScrollArea fill` + `flex-shrink-0` header ✅ |
-| `DashboardCustomizer` | [x] | 🟢 | Removido no purge sessão 16 — não existe mais no src |
 | `BrazilVisitedMap` | [x] | 🟢 | Lazy subcomponent OK |
 | `ExportManager` PDF/CSV | [x] | 🟢 | Implementado |
 

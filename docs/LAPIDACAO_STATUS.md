@@ -5,8 +5,8 @@
 | Home | `/` | Cursor | `done` | `b5cbd32` | overflow, pull-refresh, offline, prefetch |
 | Agenda | `/calendar` | Claude Code | `done` | `85d0c2e` | EventHeading no TodayStrip, break-words AlertsPanel, client name modal |
 | Clientes | `/clients` | Cursor | `done` | `027516c` | overflow, pull-refresh, EventHeading, truncate |
-| Despesas | `/expenses` | Cursor | `done` | `fe02530` | pull-refresh, truncate, EventHeading, ClampedText |
-| Relatórios | `/reports` | — | `pending` | — | |
+| Despesas | `/expenses` | Cursor+Claude | `done` | `fe02530` | pull-refresh, truncate, EventHeading, ClampedText; client lookup fix |
+| Relatórios | `/reports` | Cursor | `in_progress` | — | pull-refresh, EventHeading, truncate KPIs |
 | Metas | `/goals` | — | `pending` | — | |
 | Perfil | `/profile` | — | `pending` | — | |
 | IA Mentor | `/ai-mentor` | — | `pending` | — | |

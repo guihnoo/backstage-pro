@@ -45,7 +45,7 @@ const categoryColors = {
   outros: 'bg-slate-500/20 text-slate-300 border-slate-400/30',
 };
 
-export default function ExpenseListItem({ expense, event, onEdit, onDelete, onMarkReimbursed }) {
+export default function ExpenseListItem({ expense, event, client, onEdit, onDelete, onMarkReimbursed }) {
   const { isVisible, formatCurrency } = useFinancialVisibility();
   const { profile } = useAuth();
   const config = getCategoryConfig(profile?.category || 'lighting');
@@ -136,7 +136,7 @@ export default function ExpenseListItem({ expense, event, onEdit, onDelete, onMa
                   title={event.client_id ? 'Ver página do cliente' : 'Ver na agenda'}
                 >
                   <Building className="w-3.5 h-3.5 flex-shrink-0" />
-                  <EventHeading event={event} client={event.clients} size="sm" className="text-left min-w-0" />
+                  <EventHeading event={event} client={client ?? event?.clients} size="sm" className="text-left min-w-0" />
                   <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                 </button>
               )}

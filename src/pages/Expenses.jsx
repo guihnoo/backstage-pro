@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Camera, AlertCircle, Search, Calendar, ChevronDown, ChevronUp, Tag } from 'lucide-react';
 import { useExpenses } from '@/lib/useExpenses';
 import { useEvents } from '@/lib/useEvents';
+import { useClients } from '@/lib/useClients';
 import appToast from '@/lib/appToast';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -36,7 +37,7 @@ const CATEGORY_LABELS = {
   outros: 'Outros',
 };
 
-function MonthGroup({ monthKey, expenses, events, onEdit, onDelete, onMarkReimbursed, formatCurrency, primaryHex: _primaryHex }) {
+function MonthGroup({ monthKey, expenses, events, clients, onEdit, onDelete, onMarkReimbursed, formatCurrency, primaryHex: _primaryHex }) {
     const [open, setOpen] = useState(true);
     const total = expenses.reduce((s, e) => s + (e.amount || 0), 0);
     const reimbursable = expenses.filter(e => e.is_reimbursable && !e.reimbursed).reduce((s, e) => s + (e.amount || 0), 0);
@@ -76,16 +77,21 @@ function MonthGroup({ monthKey, expenses, events, onEdit, onDelete, onMarkReimbu
                         exit={{ opacity: 0, height: 0 }}
                         className="space-y-3 overflow-hidden"
                     >
-                        {expenses.map(expense => (
+                        {expenses.map(expense => {
+                            const ev = events.find(e => e.id === expense.event_id);
+                            const client = ev ? (clients || []).find(c => c.id === ev.client_id) : undefined;
+                            return (
                             <ExpenseListItem
                                 key={expense.id}
                                 expense={expense}
-                                event={events.find(e => e.id === expense.event_id)}
+                                event={ev}
+                                client={client}
                                 onEdit={onEdit}
                                 onDelete={onDelete}
                                 onMarkReimbursed={onMarkReimbursed}
                             />
-                        ))}
+                            );
+                        })}
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -119,6 +125,7 @@ const StatCard = ({ title, value, onClick, active, primaryHex, accentHex }) => (
 export default function ExpensesPage() {
     const { expenses, loading: expensesLoading, error: expensesError, refetch: refetchExpenses, update: updateExpense, delete: deleteExpenseById } = useExpenses();
     const { events } = useEvents();
+    const { clients } = useClients();
     const { profile } = useAuth();
     const config = getCategoryConfig(profile?.category || 'lighting');
     const { isVisible, formatCurrency } = useFinancialVisibility();
@@ -391,6 +398,7 @@ export default function ExpensesPage() {
                                     monthKey={monthKey}
                                     expenses={monthExpenses}
                                     events={events}
+                                    clients={clients}
                                     onEdit={handleEdit}
                                     onDelete={handleDelete}
                                     onMarkReimbursed={handleMarkReimbursed}
