@@ -3,9 +3,9 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-11 (sessão S32)  
+**Última atualização:** 2026-06-12 (sessão S33)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** `6b92cab` — feat(crm): alertas CRM proativos no AlertsPanel  
+**Último commit:** pendente — feat(ia-mentor): typing dots + hint por categoria  
 **Último deploy:** 2026-06-11 — `6b92cab` → https://backstage-pro-beta.vercel.app  
 **Edge Functions:** `ai-chat` + `analyze-receipt` deployadas no Supabase ✅  
 **Supabase ref:** `cwtallnetgodoacuoaow`
@@ -52,6 +52,7 @@
 | PWA offline refinado (S32) | `usePWA` hook (install prompt + isInstalled + isOnline); `InstallPwaCard` em Perfil (dismissível, persiste localStorage); `OfflineBanner` com estado "Conexão restaurada — puxe para atualizar" 3s + dispara `backstage:reconnect` CustomEvent |
 | CRM automatizado (S32) | Painel "Próximos Passos" em `EventDetailModal` para eventos concluídos: checklist horas (12h auto / manual) + pagamento (marcar pago / WhatsApp cobrança); badge "Evento fechado 🎉" quando tudo ok; remove botão redundante do footer |
 | Alertas CRM proativos (S32) | `AlertsPanel`: 2 novas regras — "Horas pendentes" (eventos últimos 14 dias sem horas) + "Pagamentos vencidos" (payment_due_date passado + unpaid); botão "Ver evento" abre `EventDetailModal` via `onOpenEvent` prop |
+| IA Mentor polish (S33) | `TypingDots` component: 3 pontos animados Framer Motion substituem spinner+texto; `CATEGORY_HINTS` map: empty state hint dinâmico por categoria (audio/lighting/photo/video/dj/…) usando `profile.category` |
 
 ---
 

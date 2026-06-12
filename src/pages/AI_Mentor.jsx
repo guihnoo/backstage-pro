@@ -21,6 +21,44 @@ import { useFinancialVisibility } from '@/components/context/FinancialVisibility
 const STORAGE_KEY = 'backstage_ai_conversations';
 const MAX_HISTORY = 20;
 
+const CATEGORY_HINTS = {
+  audio:      'Pergunte sobre cachês PA/FOH, diárias, contratos pendentes e metas.',
+  lighting:   'Pergunte sobre cachês de rig, diárias, clientes e metas do mês.',
+  photo:      'Pergunte sobre cachês de sessão, cobranças, clientes e receita.',
+  video:      'Pergunte sobre cachês de produção, projetos, clientes e metas.',
+  dj:         'Pergunte sobre fechamentos de gig, cachês, agenda e cobranças.',
+  production: 'Pergunte sobre projetos, orçamentos, clientes e metas.',
+  stage:      'Pergunte sobre diárias, cachês, palcos e clientes.',
+  security:   'Pergunte sobre diárias, cachês, eventos e cobranças.',
+  catering:   'Pergunte sobre contratos, cachês, clientes e metas.',
+  other:      'Pergunte sobre diárias, cachês, clientes e metas do mês.',
+};
+const DEFAULT_HINT = 'Pergunte sobre diárias, cachês, clientes, cobranças e metas do mês.';
+
+function TypingDots({ color }) {
+  return (
+    <div className="flex items-start gap-2 px-4 py-1 max-w-2xl mx-auto">
+      <div
+        className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+        style={{ background: `${color}20` }}
+      >
+        <Sparkles className="w-3.5 h-3.5" style={{ color }} />
+      </div>
+      <div className="flex items-center gap-1.5 bg-slate-800/80 border border-slate-700/50 rounded-2xl rounded-tl-sm px-4 py-3">
+        {[0, 1, 2].map((i) => (
+          <motion.span
+            key={i}
+            animate={{ opacity: [0.25, 1, 0.25], scale: [0.85, 1.1, 0.85] }}
+            transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2, ease: 'easeInOut' }}
+            className="block w-1.5 h-1.5 rounded-full"
+            style={{ background: color }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function loadConversations() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
   catch { return []; }
@@ -349,7 +387,7 @@ export default function AIMentorPage() {
               </div>
               <h2 className="text-xl font-bold text-white mb-1">Olá, {firstName}!</h2>
               <p className="text-[#7c8494] text-sm mb-6 max-w-xs">
-                Sou seu mentor financeiro. Pergunte sobre diárias, cachês, clientes, cobranças e metas do mês.
+                {CATEGORY_HINTS[profile?.category] ?? DEFAULT_HINT}
               </p>
               <SmartSuggestions userData={financialContext} onSuggestionClick={(s) => handleSend(s)} />
             </motion.div>
@@ -367,12 +405,7 @@ export default function AIMentorPage() {
                   </motion.div>
                 ))}
               </AnimatePresence>
-              {loading && (
-                <div className="flex items-center gap-2 px-4 py-2 text-[#5a6070] text-sm">
-                  <Loader2 className="w-4 h-4 animate-spin" style={{ color: config.primaryHex }} />
-                  <span>Gerando resposta…</span>
-                </div>
-              )}
+              {loading && <TypingDots color={config.primaryHex} />}
               <div ref={messagesEndRef} />
             </div>
           )}

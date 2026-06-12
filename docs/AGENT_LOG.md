@@ -4,6 +4,17 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+## 2026-06-12
+
+### IAMENTOR-S33 — IA Mentor polish: typing dots + hint por categoria ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/pages/AI_Mentor.jsx`**:
+  - `TypingDots` component inline: 3 pontos `motion.span` com `animate={{ opacity: [0.25,1,0.25], scale: [0.85,1.1,0.85] }}` delay escalonado → substitui `<Loader2 animate-spin> Gerando resposta…`
+  - `CATEGORY_HINTS` map (audio/lighting/photo/video/dj/production/stage/security/catering/other) + `DEFAULT_HINT` → empty state usa `CATEGORY_HINTS[profile?.category] ?? DEFAULT_HINT`
+- **Build**: Vite ✅ (31s) · **Deploy**: pendente
+
+---
+
 ## 2026-06-11
 
 ### CRM2-S32 — Alertas CRM proativos no AlertsPanel ✅

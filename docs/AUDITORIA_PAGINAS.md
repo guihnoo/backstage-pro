@@ -168,6 +168,8 @@
 | Sheet histórico | [x] | 🟢 | `flex flex-col` + SheetHeader/botão `flex-shrink-0` + `flex-1 overflow-y-auto` ✅ |
 | `MessageBubble` | [x] | 🟢 | `max-w-[85%]`; código `overflow-x-auto`; JSON `max-h-48 overflow-auto` ✅ |
 | `SmartSuggestions` | [x] | 🟢 | `grid cols-1/2`; icon `flex-shrink-0`; texto wraps naturalmente ✅ |
+| Typing dots animation | [x] | 🟢 | `TypingDots` com 3 pontos Framer Motion (substituiu Loader2 + texto) ✅ S33 |
+| Empty state por categoria | [x] | 🟢 | `CATEGORY_HINTS[profile?.category]` — hint personalizado por categoria ✅ S33 |
 
 ---
 
