@@ -152,7 +152,7 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página ProfileSimple | [x] | 🟢 | `NeonPageShell min-h-full pb-28` ✅ |
+| Página ProfileSimple | [x] | 🟢 | `NeonPageShell min-h-full pb-28` ✅; pull-to-refresh (`refetchStats`) ✅ lapida |
 | `GoogleCalendarSync` | [x] | 🟡 | OAuth E2E manual pendente |
 | Template fechamento PDF | [x] | 🟢 | sessão 10 — campos nome/subtítulo/PIX ✅ |
 | Visibilidade financeira | [x] | 🟢 | Supabase sync ✅ |

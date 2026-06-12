@@ -17,10 +17,13 @@ import GoogleCalendarSync from '@/components/calendar/GoogleCalendarSync';
 import PushNotificationSettings from '@/components/notifications/PushNotificationSettings';
 import LiveClockBar from '@/components/home/LiveClockBar';
 import { useStats } from '@/lib/useBackstageData';
+import { usePullToRefresh } from '@/lib/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
 
 export default function ProfileSimple() {
   const { user, profile, signOut, updateProfile } = useAuth();
-  const { stats } = useStats(user?.id);
+  const { stats, refetch: refetchStats } = useStats(user?.id);
+  const { pullDistance, isRefreshing, threshold } = usePullToRefresh(refetchStats);
   const { isVisible, toggleVisibility } = useFinancialVisibility();
   const categoryId = profile?.category || 'lighting';
 
@@ -119,6 +122,7 @@ export default function ProfileSimple() {
 
   return (
     <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-full pb-28">
+      <PullToRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={threshold} primaryHex={config.primaryHex} />
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}

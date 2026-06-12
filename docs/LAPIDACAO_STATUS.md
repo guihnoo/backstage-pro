@@ -8,7 +8,7 @@
 | Despesas | `/expenses` | Cursor+Claude | `done` | `fe02530` | pull-refresh, truncate, EventHeading, ClampedText; client lookup fix |
 | Relatórios | `/reports` | Cursor | `done` | `adf337a` | pull-refresh, EventHeading, truncate KPIs |
 | Metas | `/goals` | Cursor | `done` | `3b7e588` | pull-refresh, EventHeading, truncate |
-| Perfil | `/profile` | Claude Code | `in_progress` | — | |
+| Perfil | `/profile` | Claude Code | `done` | — | pull-to-refresh; truncate já existia |
 | IA Mentor | `/ai-mentor` | — | `pending` | — | |
 
 **Legenda:** `pending` · `in_progress` · `review` · `done`
