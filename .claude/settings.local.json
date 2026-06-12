@@ -128,7 +128,11 @@
       "Bash(node -e \"const { generateVAPIDKeys } = require\\('web-push'\\); const k = generateVAPIDKeys\\(\\); console.log\\(JSON.stringify\\(k\\)\\);\")",
       "Bash(npx web-push *)",
       "Bash(git pull *)",
-      "Bash(vercel --prod --yes)"
+      "Bash(vercel --prod --yes)",
+      "Bash(find src/pages -name \"Profile*\")",
+      "Bash(find src/components/profile -name \"*.jsx\")",
+      "Bash(find src/components/notifications -name \"*.jsx\")",
+      "Bash(find src/components/calendar -name \"GoogleCalendar*\")"
     ]
   },
   "enabledMcpjsonServers": [
