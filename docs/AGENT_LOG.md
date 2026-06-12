@@ -6,6 +6,15 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-11
 
+### CRM2-S32 — Alertas CRM proativos no AlertsPanel ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/calendar/AlertsPanel.jsx`** (`6b92cab`): 2 novas regras CRM
+  - "Horas pendentes": eventos concluídos nos últimos 14 dias sem `dailyWork` e sem `auto_hours_applied`
+  - "Pagamentos vencidos": eventos com `payment_due_date` passado e `payment_status !== 'paid'`
+  - Prop `onOpenEvent` adicionada — abre `EventDetailModal` ao clicar "Ver evento"
+- **`src/pages/Calendar.jsx`**: passa `onOpenEvent={setSelectedEvent}` ao AlertsPanel
+- **Build**: Vite ✅ (35s) · **Deploy**: `6b92cab` → https://backstage-pro-beta.vercel.app ✅
+
 ### CRM-S32 — Painel "Próximos Passos" no EventDetailModal (#6) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/components/calendar/EventDetailModal.jsx`** (`b9363ce`): substituiu card "Ação Rápida" (só 12h) por painel CRM completo para eventos concluídos/arquivados
