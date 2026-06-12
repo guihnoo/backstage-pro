@@ -329,7 +329,11 @@ function BrazilVisitedMapInner({ events = [] }) {
   };
 
   return (
-    <div className="rounded-xl border border-slate-700/50 bg-slate-900/40 p-4">
+    <div
+      className="rounded-xl border border-slate-700/50 bg-slate-900/40 p-4"
+      data-tour="reports-map"
+      data-testid="brazil-visited-map"
+    >
       {/* Header */}
       <div className="flex items-center justify-between mb-1 gap-3 flex-wrap">
         <h3 className="text-sm font-semibold text-white flex items-center gap-2">

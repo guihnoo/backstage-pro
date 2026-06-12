@@ -123,6 +123,11 @@ async function main() {
       daily_cache_value: 700,
       status: 'confirmed',
       user_id: userId,
+      location: 'Estúdio Demo, São Paulo, SP',
+      location_city: 'São Paulo',
+      location_state: 'SP',
+      location_lat: -23.5505,
+      location_lng: -46.6333,
     },
     {
       title: 'Demo Campanha Y',
@@ -132,6 +137,11 @@ async function main() {
       daily_cache_value: 1500,
       status: 'pending',
       user_id: userId,
+      location: 'Arena Demo, Rio de Janeiro, RJ',
+      location_city: 'Rio de Janeiro',
+      location_state: 'RJ',
+      location_lat: -22.9068,
+      location_lng: -43.1729,
     },
   ];
 
@@ -160,6 +170,39 @@ async function main() {
     console.log(`[seed] Eventos criados: ${createdEvents?.map((e) => e.title).join(', ')}`);
   } else {
     console.log('[seed] Eventos demo já existem — pulando criação.');
+  }
+
+  const locationPatches = [
+    {
+      title: 'Demo Gravação X',
+      location: 'Estúdio Demo, São Paulo, SP',
+      location_city: 'São Paulo',
+      location_state: 'SP',
+      location_lat: -23.5505,
+      location_lng: -46.6333,
+    },
+    {
+      title: 'Demo Campanha Y',
+      location: 'Arena Demo, Rio de Janeiro, RJ',
+      location_city: 'Rio de Janeiro',
+      location_state: 'RJ',
+      location_lat: -22.9068,
+      location_lng: -43.1729,
+    },
+  ];
+
+  for (const patch of locationPatches) {
+    const row = insertedEvents.find((e) => e.title === patch.title);
+    if (!row?.id) continue;
+    const { title, ...fields } = patch;
+    const { error: locErr } = await supabase
+      .from('events')
+      .update(fields)
+      .eq('id', row.id)
+      .eq('user_id', userId);
+    if (locErr) {
+      console.warn(`[seed] Aviso: não foi possível atualizar local de "${title}":`, locErr.message);
+    }
   }
 
   // ----- Daily Work -----
