@@ -9,7 +9,7 @@
 | Relatórios | `/reports` | Cursor | `done` | `adf337a` | pull-refresh, EventHeading, truncate KPIs |
 | Metas | `/goals` | Cursor | `done` | `3b7e588` | pull-refresh, EventHeading, truncate |
 | Perfil | `/profile` | Claude Code | `done` | `c43302b` | pull-to-refresh; truncate já existia |
-| IA Mentor | `/ai-mentor` | Claude Code | `done` | `e26d418` | pb-safe input; MessageBubble/SmartSuggestions auditados |
+| IA Mentor | `/ai-mentor` | Claude Code | `done` | `2b955b9` | pb-safe input; TypingDots animation; CATEGORY_HINTS por categoria |
 
 **Sprint lapidação:** concluído (8/8 páginas).
 
