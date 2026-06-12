@@ -6,6 +6,12 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-12
 
+### MANUAL-S33 — docs/MANUAL_USUARIO.md criado ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`docs/MANUAL_USUARIO.md`** (novo): manual completo do usuário — Home, Agenda, Clientes, Despesas, Relatórios, Metas, IA Mentor, Perfil, PWA offline, push notifications, atalhos e gestos, segurança
+- **`docs/LAPIDACAO_STATUS.md`**: Manual do usuário → `done`
+- **Build**: N/A (docs only)
+
 ### IAMENTOR-S33 — IA Mentor polish: typing dots + hint por categoria ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/pages/AI_Mentor.jsx`**:

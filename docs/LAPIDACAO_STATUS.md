@@ -18,6 +18,6 @@
 |---------|--------|-------|
 | Feedback + Inbox owner | `in_progress` | migration `029`; Perfil + `/admin/feedbacks` |
 | Tour primeiro login | `done` | driver.js; `tour_completed_at` em profiles; rever em Perfil |
-| Manual do usuário | `pending` | próximo passo Fase 2 |
+| Manual do usuário | `done` | `docs/MANUAL_USUARIO.md` — todas as rotas, gestos, CRM, IA, PWA, push |
 
 **Legenda:** `pending` · `in_progress` · `review` · `done`
