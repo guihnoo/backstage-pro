@@ -139,8 +139,10 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página | [x] | 🟢 | `NeonPageShell min-h-full pb-24` ✅ |
-| Badge bottom sheet | [x] | 🟢 | `useAppScrollLock` + `bp-modal-scroll` ✅ |
+| Página (`Goals.jsx`) | [x] | 🟢 | pull-to-refresh ✅; StatCards/CircularProgress truncate ✅; nível preview `min-w-0` ✅ |
+| Próximos Shows | [x] | 🟢 | `EventHeading` + data truncada ✅ |
+| `MeiDashboard` | [x] | 🟢 | alert banner e valores financeiros truncate ✅ |
+| Badge bottom sheet | [x] | 🟢 | `useAppScrollLock` + `bp-modal-scroll`; título `Ellipsis` ✅ |
 | `BadgeCelebration` overlay | [x] | 🟢 | `useAppScrollLock` ✅; auto-fecha em 4s |
 | `EventDetailModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
 

@@ -113,7 +113,9 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
           className={`flex items-start gap-3 p-4 rounded-xl border bg-gradient-to-r ${threshold.bg} ${threshold.border}`}
         >
           <alertMsg.icon className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: alertMsg.color }} />
-          <p className="text-sm font-semibold" style={{ color: alertMsg.color }}>{alertMsg.text}</p>
+          <p className="text-sm font-semibold min-w-0 flex-1 truncate" style={{ color: alertMsg.color }}>
+            {alertMsg.text}
+          </p>
         </motion.div>
       )}
 
@@ -163,16 +165,16 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
           </div>
 
           {/* Stats column */}
-          <div className="flex-1 space-y-3">
-            <div>
+          <div className="flex-1 min-w-0 space-y-3">
+            <div className="min-w-0">
               <p className="text-xs text-slate-400 mb-0.5">Faturado</p>
-              <p className="text-xl font-black text-white">
+              <p className="text-xl font-black text-white truncate">
                 {loading ? '—' : formatCurrency(annualRevenue)}
               </p>
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-xs text-slate-400 mb-0.5">Margem restante</p>
-              <p className="text-lg font-bold" style={{ color: threshold.color }}>
+              <p className="text-lg font-bold truncate" style={{ color: threshold.color }}>
                 {loading ? '—' : formatCurrency(remaining)}
               </p>
             </div>

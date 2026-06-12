@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/authContext';
 import { useStats, useEvents, useMeiStats } from '@/lib/useBackstageData';
@@ -17,6 +17,10 @@ import EventDetailModal from '@/components/calendar/EventDetailModal';
 import { format, parseISO, differenceInCalendarDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
+import { usePullToRefresh } from '@/lib/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
+import EventHeading from '@/components/events/EventHeading';
+import { Ellipsis } from '@/components/ui/overflowText';
 
 const SEEN_BADGES_KEY = 'backstage_seen_badges';
 
@@ -129,9 +133,9 @@ function CircularProgress({ value, max, size = 120, color, label, sublabel }) {
           <span className="text-2xl font-black text-white">{Math.round(pct)}%</span>
         </div>
       </div>
-      <div className="text-center">
-        <p className="text-sm font-bold text-white">{label}</p>
-        <p className="text-xs text-slate-500">{sublabel}</p>
+      <div className="text-center min-w-0 max-w-[7rem]">
+        <Ellipsis as="p" className="text-sm font-bold text-white">{label}</Ellipsis>
+        <Ellipsis as="p" className="text-xs text-slate-500">{sublabel}</Ellipsis>
       </div>
     </div>
   );
@@ -149,7 +153,7 @@ function BadgeCard({ icon: Icon, title, description, unlocked, color, progress, 
       whileHover={{ scale: unlocked ? 1.04 : 1.02 }}
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
-      className={`p-4 rounded-xl border transition-all cursor-pointer ${
+      className={`p-4 rounded-xl border transition-all cursor-pointer min-w-0 ${
         unlocked
           ? 'bg-slate-800/60 border-slate-700/50'
           : 'bg-slate-900/30 border-slate-800/30'
@@ -166,8 +170,8 @@ function BadgeCard({ icon: Icon, title, description, unlocked, color, progress, 
       >
         <Icon className="w-5 h-5" style={{ color: unlocked ? color : '#4b5563' }} />
       </div>
-      <p className="text-sm font-bold text-white leading-tight">{title}</p>
-      <p className="text-xs text-slate-500 mt-0.5">{description}</p>
+      <Ellipsis as="p" className="text-sm font-bold text-white leading-tight">{title}</Ellipsis>
+      <Ellipsis as="p" className="text-xs text-slate-500 mt-0.5">{description}</Ellipsis>
       {unlocked ? (
         <p className="text-xs font-bold mt-2" style={{ color }}>✓ Desbloqueado</p>
       ) : showProgress ? (
@@ -247,17 +251,31 @@ export default function Goals() {
   };
 
   // Stats reais
-  const { stats, loading: statsLoading } = useStats(userId);
+  const { stats, loading: statsLoading, refetch: refetchStats } = useStats(userId);
 
   // MEI anual
-  const { annualRevenue, loading: meiLoading } = useMeiStats(userId);
+  const { annualRevenue, loading: meiLoading, refetch: refetchMei } = useMeiStats(userId);
 
   // Total de eventos histórico (para nível) — todos os tempos, só completados
-  const { events: allEvents } = useEvents(userId, { status: 'completed' });
+  const { events: allEvents, refetch: refetchAllEvents } = useEvents(userId, { status: 'completed' });
 
   // Próximos shows agendados
   const today = new Date().toISOString().split('T')[0];
-  const { events: upcomingEvents } = useEvents(userId, { from: today, limit: 4, ascending: true });
+  const { events: upcomingEvents, refetch: refetchUpcoming } = useEvents(userId, { from: today, limit: 4, ascending: true });
+
+  const refreshData = useCallback(async () => {
+    refetchStats();
+    refetchMei();
+    refetchAllEvents();
+    refetchUpcoming();
+  }, [refetchStats, refetchMei, refetchAllEvents, refetchUpcoming]);
+
+  const pullRefreshGoals = useCallback(async () => {
+    await refreshData();
+    appToast.success('Metas atualizadas');
+  }, [refreshData]);
+
+  const { pullDistance, isRefreshing, threshold } = usePullToRefresh(pullRefreshGoals);
 
   const totalEvents = allEvents.length;
   const levelInfo = getLevelInfo(totalEvents);
@@ -356,6 +374,12 @@ export default function Goals() {
       )}
     </AnimatePresence>
     <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-full pb-24">
+      <PullToRefreshIndicator
+        pullDistance={pullDistance}
+        isRefreshing={isRefreshing}
+        threshold={threshold}
+        primaryHex={config.primaryHex}
+      />
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -390,10 +414,10 @@ export default function Goals() {
           className="mt-4 mb-5 p-5 rounded-2xl border border-slate-800/50 bg-slate-900/40"
           style={{ boxShadow: `0 0 40px ${levelInfo.color}10` }}
         >
-          <div className="flex items-center justify-between mb-3">
-            <div>
+          <div className="flex items-center justify-between mb-3 gap-3 min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-xs text-slate-500 uppercase tracking-wide mb-0.5">Nível atual</p>
-              <h2 className="text-lg font-black" style={{ color: levelInfo.color }}>
+              <h2 className="text-lg font-black truncate" style={{ color: levelInfo.color }}>
                 {levelInfo.emoji} {levelInfo.title}
               </h2>
               <p className="text-xs text-slate-400 mt-0.5">{totalEvents} evento{totalEvents !== 1 ? 's' : ''} concluído{totalEvents !== 1 ? 's' : ''} no total</p>
@@ -600,16 +624,16 @@ export default function Goals() {
                     transition={{ delay: i * 0.05 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => hardNavigate(item.route)}
-                    className="bg-slate-900/40 border border-slate-800/40 rounded-xl p-4 text-left hover:border-slate-700/60 transition-colors cursor-pointer"
+                    className="bg-slate-900/40 border border-slate-800/40 rounded-xl p-4 text-left hover:border-slate-700/60 transition-colors cursor-pointer min-w-0"
                   >
                     <span className="text-xl">{item.icon}</span>
-                    <p className="text-xs text-slate-500 mt-2">{item.label}</p>
+                    <Ellipsis as="p" className="text-xs text-slate-500 mt-2">{item.label}</Ellipsis>
                     <StatValuePulse value={item.pulseValue} glowColor={item.color}>
-                      <p className="text-lg font-black mt-0.5" style={{ color: item.color }}>
+                      <p className="text-lg font-black mt-0.5 min-w-0 truncate" style={{ color: item.color }}>
                         {item.value}
                       </p>
                     </StatValuePulse>
-                    <p className="text-[10px] text-slate-600 mt-0.5">{item.sub}</p>
+                    <Ellipsis as="p" className="text-[10px] text-slate-600 mt-0.5">{item.sub}</Ellipsis>
                   </motion.button>
                 ))}
               </div>
@@ -715,10 +739,8 @@ export default function Goals() {
                             style={{ background: isUrgent ? '#FFB700' : config.primaryHex, boxShadow: `0 0 6px ${isUrgent ? '#FFB700' : config.primaryHex}80` }}
                           />
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-white truncate">{ev.title}</p>
-                            <p className="text-[10px] font-mono text-slate-500 truncate">
-                              {ev.clients?.name && <span className="text-slate-600">{ev.clients.name}</span>}
-                              {ev.clients?.name && ' · '}
+                            <EventHeading event={ev} client={ev.clients} size="sm" />
+                            <p className="text-[10px] font-mono text-slate-500 truncate mt-0.5">
                               {format(parseISO(ev.start_date), "EEE d/MM", { locale: ptBR })}
                             </p>
                           </div>
@@ -781,7 +803,7 @@ export default function Goals() {
                       {reached ? level.emoji : '🔒'}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-white text-sm">{level.title}</p>
+                      <Ellipsis as="p" className="font-bold text-white text-sm">{level.title}</Ellipsis>
                       <p className="text-xs text-slate-500">{level.req}+ eventos concluídos</p>
                     </div>
                     {isCurrent && (
@@ -879,8 +901,8 @@ export default function Goals() {
                     <Icon className="w-7 h-7" style={{ color: selectedBadge.unlocked ? selectedBadge.color : '#4b5563' }} />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-lg font-bold text-white break-words">{selectedBadge.title}</h3>
-                    <p className="text-sm text-slate-400 break-words">{selectedBadge.description}</p>
+                    <Ellipsis as="h3" className="text-lg font-bold text-white">{selectedBadge.title}</Ellipsis>
+                    <Ellipsis as="p" className="text-sm text-slate-400">{selectedBadge.description}</Ellipsis>
                   </div>
                 </div>
                 <button onClick={() => setSelectedBadge(null)} className="text-slate-600 hover:text-slate-400 transition-colors shrink-0">
