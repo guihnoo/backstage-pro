@@ -7,7 +7,7 @@
 | Clientes | `/clients` | Cursor | `done` | `027516c` | overflow, pull-refresh, EventHeading, truncate |
 | Despesas | `/expenses` | Cursor+Claude | `done` | `fe02530` | pull-refresh, truncate, EventHeading, ClampedText; client lookup fix |
 | Relatórios | `/reports` | Cursor | `done` | `adf337a` | pull-refresh, EventHeading, truncate KPIs |
-| Metas | `/goals` | Cursor | `in_progress` | — | pull-refresh, EventHeading, truncate |
+| Metas | `/goals` | Cursor | `done` | `3b7e588` | pull-refresh, EventHeading, truncate |
 | Perfil | `/profile` | Claude Code | `in_progress` | — | |
 | IA Mentor | `/ai-mentor` | — | `pending` | — | |
 
