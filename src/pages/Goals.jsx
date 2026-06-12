@@ -343,6 +343,29 @@ export default function Goals() {
     },
   ], [totalEvents, stats, diariasMes, metaDiarias, metaReceita, config]);
 
+  // Histórico mensal dos últimos 4 meses (receita paga, via allEvents)
+  const monthlyHistory = useMemo(() => {
+    const now = new Date();
+    return [3, 2, 1, 0].map(monthsBack => {
+      const d = new Date(now.getFullYear(), now.getMonth() - monthsBack, 1);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const monthStr = `${year}-${month}`;
+      const label = d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
+      const monthEvents = allEvents.filter(e =>
+        e.payment_status === 'paid' && (e.start_date || '').startsWith(monthStr)
+      );
+      const revenue = monthEvents.reduce((sum, e) =>
+        sum + (Number(e.paid_amount) > 0
+          ? Number(e.paid_amount)
+          : (Number(e.actual_revenue) || Number(e.estimated_revenue) || Number(e.daily_cache_value) || 0)), 0);
+      const pct = metaReceita > 0 ? Math.min((revenue / metaReceita) * 100, 100) : null;
+      const hit = metaReceita > 0 && revenue >= metaReceita;
+      const isCurrent = monthsBack === 0;
+      return { monthStr, label, revenue, pct, hit, isCurrent };
+    });
+  }, [allEvents, metaReceita]);
+
   // Detecta badges recém-desbloqueados
   useEffect(() => {
     if (!badges.length) return;
@@ -753,6 +776,41 @@ export default function Goals() {
                   </div>
                 )}
               </div>
+
+              {/* Histórico mensal */}
+              {monthlyHistory.some(m => m.revenue > 0) && (
+                <div className="bg-slate-900/40 border border-slate-800/50 rounded-2xl p-5">
+                  <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-4">Histórico Recente</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {monthlyHistory.map(({ label, revenue, pct, hit, isCurrent }) => (
+                      <div
+                        key={label}
+                        className={`p-3 rounded-xl border ${isCurrent ? 'border-slate-600/60 bg-slate-800/50' : 'border-slate-800/40 bg-slate-900/30'}`}
+                      >
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider capitalize mb-1">
+                          {label}{isCurrent ? ' · atual' : ''}
+                        </p>
+                        <p className="text-sm font-bold text-white">
+                          {isVisible ? formatCurrency(revenue) : '•••'}
+                        </p>
+                        {pct !== null && (
+                          <div className="mt-2">
+                            <div className="h-1 rounded-full bg-slate-700/60">
+                              <div
+                                className="h-1 rounded-full transition-all duration-500"
+                                style={{ width: `${pct}%`, background: hit ? '#10b981' : config.primaryHex }}
+                              />
+                            </div>
+                            <p className="text-[10px] text-slate-600 mt-1">
+                              {Math.round(pct)}% da meta {hit ? '✅' : ''}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
 
