@@ -1,7 +1,10 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Settings } from 'lucide-react';
+import { Settings, Inbox } from 'lucide-react';
 import { motion } from 'framer-motion';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
+import { useAuth } from '@/lib/authContext';
+import { isAppOwner } from '@/lib/isAppOwner';
+import { useOwnerFeedbacks } from '@/lib/useFeedback';
 
 const TOP_BAR_HEIGHT = '3.25rem';
 
@@ -11,7 +14,11 @@ export function getAppTopBarOffset() {
 
 export default function AppTopBar() {
   const { pathname } = useLocation();
+  const { user, profile } = useAuth();
+  const owner = isAppOwner(user, profile);
+  const { newCount } = useOwnerFeedbacks(owner);
   const onProfile = pathname === '/profile';
+  const onInbox = pathname === '/admin/feedbacks';
 
   return (
     <header
@@ -25,6 +32,23 @@ export default function AppTopBar() {
       >
         <div className="pointer-events-auto flex items-center gap-1 rounded-full bg-[#050609]/80 backdrop-blur-md border border-[#23262f]/80 pl-1 pr-0.5 py-0.5 shadow-lg shadow-black/30">
           <NotificationCenter compact />
+          {owner && (
+            <Link
+              to="/admin/feedbacks"
+              aria-label="Inbox de feedback"
+              aria-current={onInbox ? 'page' : undefined}
+              className="relative flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full text-[#8a91a1] hover:text-white hover:bg-[#1a1d26] transition-colors"
+            >
+              <motion.span whileTap={{ scale: 0.9 }} className="flex items-center justify-center">
+                <Inbox className="w-5 h-5" />
+              </motion.span>
+              {newCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-cyan-500 text-[#050609] text-[9px] font-black flex items-center justify-center">
+                  {newCount > 9 ? '9+' : newCount}
+                </span>
+              )}
+            </Link>
+          )}
           <Link
             to="/profile"
             aria-label="Perfil e configurações"

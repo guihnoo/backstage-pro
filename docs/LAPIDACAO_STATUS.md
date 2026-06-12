@@ -11,6 +11,13 @@
 | Perfil | `/profile` | Claude Code | `done` | `c43302b` | pull-to-refresh; truncate já existia |
 | IA Mentor | `/ai-mentor` | Claude Code | `done` | `e26d418` | pb-safe input; MessageBubble/SmartSuggestions auditados |
 
-**Sprint lapidação:** concluído (8/8 páginas). Próxima fase: manual interativo, feedback usuário, inbox owner.
+**Sprint lapidação:** concluído (8/8 páginas).
+
+**Fase 2 (em andamento):**
+| Feature | Status | Notas |
+|---------|--------|-------|
+| Feedback + Inbox owner | `in_progress` | migration `029`; Perfil + `/admin/feedbacks` |
+| Tour primeiro login | `pending` | após feedback estável |
+| Manual do usuário | `pending` | após tour |
 
 **Legenda:** `pending` · `in_progress` · `review` · `done`

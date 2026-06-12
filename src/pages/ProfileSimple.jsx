@@ -8,8 +8,12 @@ import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import {
   User, Phone, MapPin, Mail, LogOut, Save, Loader2, CheckCircle, Eye, EyeOff, Download,
-  DollarSign, Target, Calendar, Camera
+  DollarSign, Target, Calendar, Camera, MessageCircle, Inbox, ChevronRight,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import FeedbackModal from '@/components/feedback/FeedbackModal';
+import { isAppOwner } from '@/lib/isAppOwner';
+import { useOwnerFeedbacks } from '@/lib/useFeedback';
 import { createBackup } from '@/api/functions';
 import { uploadUserFile } from '@/lib/uploadFile';
 import appToast from '@/lib/appToast';
@@ -46,7 +50,10 @@ export default function ProfileSimple() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const photoInputRef = useRef(null);
+  const owner = isAppOwner(user, profile);
+  const { newCount: ownerNewFeedbacks } = useOwnerFeedbacks(owner);
 
   useEffect(() => {
     if (profile) {
@@ -400,6 +407,47 @@ export default function ProfileSimple() {
           <GoogleCalendarSync />
         </motion.div>
 
+        {/* Suporte & feedback */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.325 }}>
+        <NeonGlass primary={config.primaryHex} className="p-5 space-y-3">
+          <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider font-mono">Suporte & Feedback</h2>
+          <p className="text-xs text-slate-500">
+            Encontrou um bug, tem uma ideia ou precisa de ajuda? Sua mensagem vai direto para a equipe.
+          </p>
+          <button
+            type="button"
+            onClick={() => setFeedbackOpen(true)}
+            className="w-full flex items-center justify-between gap-3 py-3 px-4 rounded-xl border transition-colors hover:bg-slate-800/40 min-w-0"
+            style={{ borderColor: `${config.primaryHex}35` }}
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <MessageCircle className="w-5 h-5 shrink-0" style={{ color: config.primaryHex }} />
+              <span className="text-sm font-semibold text-white">Enviar feedback</span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-600 shrink-0" />
+          </button>
+          {owner && (
+            <Link
+              to="/admin/feedbacks"
+              className="w-full flex items-center justify-between gap-3 py-3 px-4 rounded-xl border border-slate-700/50 hover:bg-slate-800/40 transition-colors min-w-0"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <Inbox className="w-5 h-5 text-cyan-400 shrink-0" />
+                <span className="text-sm font-semibold text-white">Inbox de feedback</span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {ownerNewFeedbacks > 0 && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400">
+                    {ownerNewFeedbacks} novo{ownerNewFeedbacks !== 1 ? 's' : ''}
+                  </span>
+                )}
+                <ChevronRight className="w-4 h-4 text-slate-600" />
+              </div>
+            </Link>
+          )}
+        </NeonGlass>
+        </motion.div>
+
         {/* Configurações */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.33 }}>
         <NeonGlass primary={config.primaryHex} className="p-5">
@@ -478,6 +526,12 @@ export default function ProfileSimple() {
         </button>
         <p className="text-center text-slate-700 text-xs pb-2 font-mono">Backstage Pro v1.0</p>
       </div>
+
+      <FeedbackModal
+        open={feedbackOpen}
+        onClose={() => setFeedbackOpen(false)}
+        primaryHex={config.primaryHex}
+      />
     </NeonPageShell>
   );
 }

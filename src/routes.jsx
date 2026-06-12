@@ -133,6 +133,7 @@ export const router = createBrowserRouter([
           { path: 'goals', lazy: wrapPage(() => import('./pages/Goals')) },
           { path: 'profile', lazy: wrapPage(() => import('./pages/ProfileSimple')) },
           { path: 'ai-mentor', lazy: wrapPage(() => import('./pages/AI_Mentor')) },
+          { path: 'admin/feedbacks', lazy: wrapPage(() => import('./pages/AdminFeedbacks')) },
         ],
       },
       { path: '*', element: <NotFoundRedirect /> },

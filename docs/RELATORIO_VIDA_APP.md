@@ -5,8 +5,8 @@
 
 **Última atualização:** 2026-06-11 (sessão S32)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** `f2a6708` — pwa: usePWA hook + install prompt card + OfflineBanner reconectado  
-**Último deploy:** 2026-06-11 — `f2a6708` → https://backstage-pro-beta.vercel.app  
+**Último commit:** `b9363ce` — feat(crm): painel "Próximos Passos" no EventDetailModal  
+**Último deploy:** 2026-06-11 — `b9363ce` → https://backstage-pro-beta.vercel.app  
 **Edge Functions:** `ai-chat` + `analyze-receipt` deployadas no Supabase ✅  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
@@ -50,6 +50,7 @@
 | Push Notifications (S30) | VAPID keys rotacionados; `VITE_VAPID_PUBLIC_KEY` adicionado a `.env.local` e Vercel; Edge Functions `send-push-digest`+`send-push-test` reimplantadas; cron 8h/18h BRT ativo; `push_subscriptions` limpa (reativar no Perfil após deploy) |
 | Lapidação Sprint (S31) | **Sprint completa — 8/8 páginas `done`** — Cursor: Home, Clientes, Despesas, Relatórios, Metas; Claude Code: Agenda (`85d0c2e`), Despesas fix client lookup (`cad4b34`), Perfil pull-to-refresh (`c43302b`), IA Mentor pb-safe iOS (`e26d418`) |
 | PWA offline refinado (S32) | `usePWA` hook (install prompt + isInstalled + isOnline); `InstallPwaCard` em Perfil (dismissível, persiste localStorage); `OfflineBanner` com estado "Conexão restaurada — puxe para atualizar" 3s + dispara `backstage:reconnect` CustomEvent |
+| CRM automatizado (S32) | Painel "Próximos Passos" em `EventDetailModal` para eventos concluídos: checklist horas (12h auto / manual) + pagamento (marcar pago / WhatsApp cobrança); badge "Evento fechado 🎉" quando tudo ok; remove botão redundante do footer |
 
 ---
 

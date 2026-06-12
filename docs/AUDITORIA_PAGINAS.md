@@ -176,7 +176,8 @@
 | Componente | Scroll | Status | Notas |
 |------------|--------|--------|-------|
 | `ConfirmDialog` | [x] | 🟢 | `AlertDialogContent` com `overflow-y-auto overscroll-contain` ✅ |
-| `FeedbackModal` | [x] | 🟢 | `bp-modal-scroll` ✅ |
+| `FeedbackModal` | [x] | 🟢 | Perfil → Suporte; tipos, rating, screenshot; `bp-modal-scroll` ✅ |
+| Inbox owner `/admin/feedbacks` | [x] | 🟢 | RLS `profiles.role=owner`; filtros + notas internas ✅ |
 | `NotificationCenter` | [x] | 🟡 | DropdownMenu, scroll lock não necessário — aceitável |
 | `StatDetailModal` | [x] | 🟢 | Removido — arquivo inexistente no src (purge anterior); referência limpa ✅ |
 

@@ -6,6 +6,15 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-11
 
+### CRM-S32 — Painel "Próximos Passos" no EventDetailModal (#6) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/calendar/EventDetailModal.jsx`** (`b9363ce`): substituiu card "Ação Rápida" (só 12h) por painel CRM completo para eventos concluídos/arquivados
+  - Pendências: checklist horas (botões "12h Auto" e "Manual") + pagamento ("Pago" + "WhatsApp cobrança")
+  - Tudo feito: badge verde "Evento fechado 🎉" com resumo de horas e valor ganho
+  - Removido botão redundante "Marcar como Pago" do DialogFooter
+- **Imports adicionados**: `Circle`, `ClipboardCheck`, `PartyPopper`
+- **Build**: Vite ✅ (50s) · **Deploy**: `b9363ce` → https://backstage-pro-beta.vercel.app ✅
+
 ### PWA-S32 — PWA offline refinado + sync estado (#15) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/hooks/usePWA.js`** (novo): captura `beforeinstallprompt`, expõe `isInstallable`, `isInstalled`, `isOnline`, `installApp()`

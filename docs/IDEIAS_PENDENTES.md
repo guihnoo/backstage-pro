@@ -16,7 +16,7 @@
 | 3 | Cards/páginas/modais **sem rolagem** — corrigir todos | ✅ | Sessão 10 — todos os padrões validados |
 | 4 | Gráficos financeiros animados no dashboard | ✅ | Sprint C1 — AreaChart + gradientes + AnimatePresence |
 | 5 | Relógios dinâmicos / dados em tempo real na Home | ✅ | Cursor sessão 15 — `LiveClockBar`, `AnimatedStatValue`, `useLiveClock` |
-| 6 | Modais CRM automatizados (fluxos inteligentes) | ⬜ | |
+| 6 | Modais CRM automatizados (fluxos inteligentes) | ✅ | S32: painel "Próximos Passos" em `EventDetailModal` — checklist horas+pagamento, "Evento fechado 🎉" quando tudo ok (`b9363ce`) |
 | 7 | Celebração ao desbloquear badge (Goals) | ✅ | `BadgeCelebration` implementado — partículas + auto-close |
 
 ---
