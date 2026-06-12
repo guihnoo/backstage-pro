@@ -16,8 +16,8 @@
 **Fase 2 (em andamento):**
 | Feature | Status | Notas |
 |---------|--------|-------|
-| Feedback + Inbox owner | `in_progress` | migration `029`; Perfil + `/admin/feedbacks` |
+| Feedback + Inbox owner | `done` | `FeedbackModal` + `AdminFeedbacks` + rota `/admin/feedbacks` + link Perfil (owner-only) + AppTopBar badge |
 | Tour primeiro login | `done` | driver.js; `tour_completed_at` em profiles; rever em Perfil |
-| Manual do usuário | `done` | `docs/MANUAL_USUARIO.md` — todas as rotas, gestos, CRM, IA, PWA, push |
+| Manual do usuário | `done` | `docs/MANUAL_USUARIO.md` + rota in-app `/help` |
 
 **Legenda:** `pending` · `in_progress` · `review` · `done`

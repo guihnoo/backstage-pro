@@ -39,7 +39,7 @@ import { useAuth } from '@/lib/authContext';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { applyAuto12Hours } from '@/api/functions';
 import { useStatusToggle } from '@/lib/useStatusToggle';
-import { openWhatsAppCharge, formatBRL, buildEventReport } from '@/lib/whatsapp';
+import { openWhatsAppCharge, formatBRL, buildEventReport, buildChargeMessage } from '@/lib/whatsapp';
 import appToast from '@/lib/appToast';
 import EventHeading from '@/components/events/EventHeading';
 import EventLocationSection from '@/components/events/EventLocationSection';
@@ -153,6 +153,18 @@ export default function EventDetailModal({
     if (event.location) parts.push(`📍 ${event.location}`);
     if (value > 0) parts.push(`💰 ${formatBRL(value)}`);
     openWhatsAppCharge(phone, parts.join('\n'));
+  };
+
+  const handleChargeWhatsApp = () => {
+    const phone = client?.phone;
+    if (!phone) { appToast.error('Cliente sem telefone cadastrado.'); return; }
+    const value = getEventCacheAmount(event);
+    const message = buildChargeMessage({
+      clientName: client?.name,
+      events: [{ title: event.title, start_date: event.start_date, amount: value }],
+      totalAmount: value,
+    });
+    openWhatsAppCharge(phone, message);
   };
 
   const handleSendReport = () => {

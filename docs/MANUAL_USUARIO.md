@@ -138,7 +138,7 @@ Seu assistente financeiro personalizado. Usa os dados reais do app (agenda, desp
 | **Metas & Precificação** | Valor da diária, meta de receita, meta de diárias |
 | **Alertas no celular** | Ativa/desativa push notifications |
 | **Google Calendar** | Conecta conta Google para sync bidirecional |
-| **Ajuda do app** | Reinicia o tour guiado pela Home |
+| **Ajuda do app** | Manual completo (`/help`) e tour guiado pela Home |
 | **Suporte & Feedback** | Envia mensagem diretamente para a equipe |
 | **Visibilidade Financeira** | Oculta valores em todo o app (modo privado) |
 | **Instalar como app** | Aparece quando o browser suporta PWA; instala no homescreen |
