@@ -6,6 +6,23 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-12
 
+### BUG-FIX-S34 — Correção de 3 features quebradas: Mapa, Push, Google Calendar ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Diagnóstico via logs Supabase (cwtallnetgodoacuoaow)**:
+  - `google-calendar` → 500 consistente (GOOGLE_CLIENT_ID/SECRET ausentes nos Secrets)
+  - `send-push-test` → 400 "Nenhum dispositivo inscrito" (VITE_VAPID_PUBLIC_KEY ausente no Vercel → frontend bloqueia subscription)
+  - `BrazilVisitedMap` → SVG renderiza vazio (eventos sem location_state/location_city)
+- **`src/components/reports/BrazilVisitedMap.jsx`**: `BrazilMapErrorBoundary` class component; renomeia inner para `BrazilVisitedMapInner`; export default com boundary; empty state melhorado (split: sem eventos vs eventos sem localização) com ícone `MapPin` e texto acionável
+- **`src/components/notifications/PushNotificationSettings.jsx`**: warning `!vapidReady` expandido — mostra nome da variável `VITE_VAPID_PUBLIC_KEY` e instrução de onde configurar no Vercel Dashboard
+- **`src/lib/googleOAuthErrors.js`**: adiciona `invalid_client` e `unauthorized_client` ao mapa de erros com mensagens apontando para Supabase Secrets e GCP Console
+- **`supabase/functions/google-calendar/index.ts`**: guarda-chuva `auth-start` valida `GOOGLE_CLIENT_ID` antes de prosseguir; catch global retorna 400 para "não conectado" (evita 500 enganoso em `list-calendars`)
+- **Deploy edge function**: `npx supabase functions deploy google-calendar --project-ref cwtallnetgodoacuoaow` ✅ (v25)
+- **Ações pendentes do usuário** (infra — não pode ser feito por código):
+  1. **Supabase Secrets**: `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` → Supabase Dashboard → Edge Functions → Manage Secrets
+  2. **Vercel env**: `VITE_VAPID_PUBLIC_KEY=BGxgZes1QsJBP5pbOjKmV8ys6WVwAFOiZvZ4K5QBmetvv_qBF7xcuPs6GLh_xl0OSQk_mJl_9pacLWVqNkLO29E` → Vercel Project → Settings → Environment Variables → Production → re-deploy
+  3. **GCP Console**: verificar redirect URI `https://cwtallnetgodoacuoaow.supabase.co/functions/v1/google-calendar-callback` autorizado; publicar app (sair de Modo Teste) ou adicionar e-mail como testador
+- **Build**: n/a (edge function) · **Git backup**: `chore(auto):` ✅
+
 ### GOALS-S33 — Histórico mensal dos últimos 4 meses ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/pages/Goals.jsx`** (`2c660e2`): `monthlyHistory` useMemo — computa receita paga por mês dos últimos 4 meses via `allEvents` (já carregado); grid 2×2 na aba Metas com mini barra de progresso vs `metaReceita`; aparece somente quando há dados

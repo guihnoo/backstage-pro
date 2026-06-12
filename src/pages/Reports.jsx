@@ -277,8 +277,8 @@ export default function ReportsPage() {
   const [confirmDeleteWork, setConfirmDeleteWork] = useState(null);
   const [confirmDeleteExpense, setConfirmDeleteExpense] = useState(null);
 
-  // Define isDataReady and hasError here
-  const isDataReady = !loading.events && !loading.clients && !loading.dailyWork && !loading.expenses;
+  const eventsReady = !loading.events;
+  const isDataReady = eventsReady && !loading.clients && !loading.dailyWork && !loading.expenses;
   const hasError = error.events || error.clients || error.dailyWork || error.expenses;
 
   // Calculate date ranges for current and previous periods
@@ -713,8 +713,7 @@ export default function ReportsPage() {
     hardNavigate(`/client-detail?id=${clientId}`);
   };
 
-  // Loading and Error States
-  if (!isDataReady) {
+  if (!eventsReady) {
     return <ReportsSkeleton />;
   }
 
@@ -776,7 +775,18 @@ export default function ReportsPage() {
           ))}
         </div>
 
-        {/* Enhanced KPI Cards with Click Handlers */}
+        <BrazilVisitedMap events={events} />
+
+        {!isDataReady ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Skeleton className="h-32 rounded-lg" />
+            <Skeleton className="h-32 rounded-lg" />
+            <Skeleton className="h-32 rounded-lg" />
+            <Skeleton className="h-32 rounded-lg" />
+          </div>
+        ) : (
+        <>
+        {/* Enhanced KPI Cards with Click Handlers — após clientes/despesas */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 group">
           <StatCard
             title="Faturamento"
@@ -823,8 +833,6 @@ export default function ReportsPage() {
             onClick={() => handleKPIClick('clientes')} />
 
         </div>
-
-        <BrazilVisitedMap events={events} />
 
         {/* Projeção para o Próximo Período */}
         {processedData.next.projectedRevenue > 0 &&
@@ -954,6 +962,8 @@ export default function ReportsPage() {
             description="Não há eventos correspondentes à data selecionada no gráfico." />
 
         }
+        </>
+        )}
       </div>
 
       {/* Modal de detalhes dos KPIs */}

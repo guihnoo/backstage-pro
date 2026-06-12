@@ -1,4 +1,5 @@
-﻿import { useEffect, useState, useCallback } from 'react';
+﻿import { useEffect, useState, useCallback, useRef } from 'react';
+import { backfillEventLocations } from '@/lib/backfillEventLocations';
 import { supabase } from './supabase';
 import { useAuth } from './authContext';
 import { syncEventToGoogleCalendar } from '@/lib/googleCalendarPush';
@@ -79,6 +80,8 @@ export function useEvents() {
 
   useRealtimeRefetch('events', refetch);
 
+  const locationBackfillDone = useRef(false);
+
   useEffect(() => {
     refetch();
   }, [refetch]);
@@ -120,6 +123,19 @@ export function useEvents() {
     syncEventToGoogleCalendar(id, 'upsert');
     return mapped;
   }, []);
+
+  useEffect(() => {
+    if (!userId || loading || locationBackfillDone.current) return;
+    locationBackfillDone.current = true;
+
+    (async () => {
+      if (!events.length) return;
+      const { updated } = await backfillEventLocations(events, update);
+      if (updated > 0) {
+        await refetch({ silent: true });
+      }
+    })();
+  }, [userId, loading, events, update, refetch]);
 
   const remove = useCallback(async (id) => {
     const existing = events.find((e) => e.id === id);

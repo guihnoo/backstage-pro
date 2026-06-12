@@ -2,6 +2,13 @@ import { Component, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Map, MapPin } from 'lucide-react';
 import brazilMap from '@svg-maps/brazil';
+import {
+  BRAZIL_STATE_NAMES,
+  inferCityFromLocation,
+  inferStateFromLocation,
+  normalizeCityName,
+  normalizeStateCode,
+} from '@/lib/parseEventLocation';
 
 class BrazilMapErrorBoundary extends Component {
   state = { hasError: false };
@@ -18,9 +25,10 @@ class BrazilMapErrorBoundary extends Component {
   }
 }
 
-const STATE_NAMES = Object.fromEntries(
-  brazilMap.locations.map((loc) => [loc.id.toUpperCase(), loc.name])
-);
+const STATE_NAMES = {
+  ...BRAZIL_STATE_NAMES,
+  ...Object.fromEntries(brazilMap.locations.map((loc) => [loc.id.toUpperCase(), loc.name])),
+};
 
 // Equirectangular projection — dimensões alinhadas ao viewBox real do pacote (@svg-maps/brazil v2)
 const VIEWBOX_PARTS = brazilMap.viewBox.split(/\s+/).map(Number);
@@ -121,54 +129,6 @@ const CITY_FALLBACK = {
   'Franca': [-20.54, -47.40],
   'Presidente Prudente': [-22.12, -51.39],
 };
-
-const STATE_NAME_TO_UF = Object.fromEntries(
-  Object.entries(STATE_NAMES).map(([uf, name]) => [name.toUpperCase(), uf])
-);
-
-function inferStateFromLocation(location = '') {
-  const text = String(location).toUpperCase();
-  for (const uf of Object.keys(STATE_NAMES)) {
-    if (new RegExp(`\\b${uf}\\b`).test(text)) return uf;
-    const name = STATE_NAMES[uf]?.toUpperCase();
-    if (name && text.includes(name)) return uf;
-  }
-  return null;
-}
-
-function normalizeStateCode(raw) {
-  if (!raw) return null;
-  const trimmed = String(raw).trim();
-  const upper = trimmed.toUpperCase();
-  if (/^[A-Z]{2}$/.test(upper) && STATE_NAMES[upper]) return upper;
-  const byName = STATE_NAME_TO_UF[upper];
-  if (byName) return byName;
-  return inferStateFromLocation(trimmed);
-}
-
-function inferCityFromLocation(location = '') {
-  const text = String(location || '').trim();
-  if (!text) return '';
-
-  const tailUf = text.match(/([^,/\-–]+)[,\s/\-–]+([A-Za-z]{2})\s*$/);
-  if (tailUf && STATE_NAMES[tailUf[2].toUpperCase()]) {
-    return tailUf[1].trim();
-  }
-
-  const parts = text.split(',').map((p) => p.trim()).filter(Boolean);
-  if (parts.length >= 2) {
-    const last = parts[parts.length - 1];
-    if (/^[A-Za-z]{2}$/.test(last) || STATE_NAME_TO_UF[last.toUpperCase()]) {
-      return parts.length >= 3 ? parts[parts.length - 2] : parts[0];
-    }
-  }
-  if (parts.length === 1 && !/\d{5}/.test(parts[0])) return parts[0];
-  return '';
-}
-
-function normalizeCityName(name = '') {
-  return name.trim().replace(/\s+/g, ' ');
-}
 
 function stripAccents(value = '') {
   return String(value)
