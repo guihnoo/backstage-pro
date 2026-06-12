@@ -20,6 +20,8 @@ import { useFinancialVisibility } from '@/components/context/FinancialVisibility
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonGlass } from '@/components/design/NeonGlass';
+import EventHeading from '@/components/events/EventHeading';
+import { ClampedText } from '@/components/ui/overflowText';
 
 const SNAP_WIDTH = 130;
 
@@ -115,7 +117,7 @@ export default function ExpenseListItem({ expense, event, onEdit, onDelete, onMa
         <NeonGlass primary={config.primaryHex} className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex flex-col sm:flex-row sm:items-center gap-x-4 gap-y-2 mb-2">
-              <p className="text-lg font-bold text-white truncate">{expense.title}</p>
+              <p className="text-lg font-bold text-white truncate min-w-0" title={expense.title}>{expense.title}</p>
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge className={categoryColors[expense.category] || categoryColors.outros}>{CATEGORY_LABELS[expense.category] || expense.category}</Badge>
                 {statusBadge}
@@ -130,11 +132,11 @@ export default function ExpenseListItem({ expense, event, onEdit, onDelete, onMa
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); hardNavigate(event.client_id ? `/client-detail?id=${event.client_id}` : '/calendar'); }}
-                  className="flex items-center gap-1.5 hover:text-cyan-300 transition-colors group"
+                  className="flex items-center gap-1.5 hover:text-cyan-300 transition-colors group min-w-0 max-w-full"
                   title={event.client_id ? 'Ver página do cliente' : 'Ver na agenda'}
                 >
-                  <Building className="w-3.5 h-3.5" />
-                  <span className="truncate">{event.title}</span>
+                  <Building className="w-3.5 h-3.5 flex-shrink-0" />
+                  <EventHeading event={event} client={event.clients} size="sm" className="text-left min-w-0" />
                   <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                 </button>
               )}
@@ -146,9 +148,9 @@ export default function ExpenseListItem({ expense, event, onEdit, onDelete, onMa
               )}
             </div>
             {(expense.description || expense.notes) && (
-              <p className="text-xs text-slate-500 mt-1.5 italic line-clamp-2">
+              <ClampedText lines={2} className="text-xs text-slate-500 mt-1.5 italic">
                 {[expense.description, expense.notes].filter(Boolean).join(' · ')}
-              </p>
+              </ClampedText>
             )}
           </div>
 

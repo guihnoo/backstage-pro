@@ -189,13 +189,13 @@ export default function ExpenseForm({
               <div className="space-y-2">
                 <Label>Evento (opcional)</Label>
                 <Select value={formData.event_id || ''} onValueChange={(value) => setField('event_id', value)}>
-                  <SelectTrigger className="bg-slate-800 border-slate-700">
+                  <SelectTrigger className="bg-slate-800 border-slate-700 min-w-0 truncate">
                     <SelectValue placeholder="Sem vínculo" />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
+                  <SelectContent className="bg-slate-800 border-slate-700 max-w-[min(100vw-2rem,24rem)]">
                     {events.map((evt) => (
-                      <SelectItem key={evt.id} value={evt.id}>
-                        {evt.title}
+                      <SelectItem key={evt.id} value={evt.id} title={evt.title}>
+                        <span className="truncate block">{evt.title}</span>
                       </SelectItem>
                     ))}
                   </SelectContent>

@@ -109,9 +109,10 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página | [x] | 🟢 | `NeonPageShell min-h-full pb-24` ✅; MonthGroup animação OK |
-| `ExpenseForm` (LOCKED) | [x] | 🟢 | `ScrollArea fill` ✅ |
-| `ReceiptAnalyzer` | [x] | 🟢 | OCR Gemini Vision implementado — Edge Function `analyze-receipt` + auto-preenchimento ✅ |
+| Página | [x] | 🟢 | `NeonPageShell pb-24` ✅; pull-to-refresh ✅; StatCard/MonthGroup truncate ✅ |
+| `ExpenseListItem` | [x] | 🟢 | `EventHeading` no evento vinculado; `ClampedText` em notas ✅ |
+| `ExpenseForm` (LOCKED) | [x] | 🟢 | `ScrollArea fill` ✅; select evento com truncate ✅ |
+| `ReceiptAnalyzer` | [x] | 🟢 | OCR Gemini Vision — Edge Function `analyze-receipt` ✅ |
 
 **Testes:** expense-form auth ✅ · app-routes-navigation ✅
 

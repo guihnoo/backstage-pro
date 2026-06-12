@@ -22,6 +22,9 @@ import ReceiptAnalyzer from '@/components/expenses/ReceiptAnalyzer';
 import EmptyState from '@/components/layout/EmptyState';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { usePullToRefresh } from '@/lib/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
+import { Ellipsis } from '@/components/ui/overflowText';
 
 const CATEGORY_LABELS = {
   transporte: 'Transporte',
@@ -51,18 +54,18 @@ function MonthGroup({ monthKey, expenses, events, onEdit, onDelete, onMarkReimbu
             <button
                 type="button"
                 onClick={() => setOpen(v => !v)}
-                className="w-full flex items-center justify-between px-1 py-2 group"
+                className="w-full flex items-center justify-between px-1 py-2 group gap-2 min-w-0"
             >
-                <div className="flex items-center gap-2">
-                    {open ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
-                    <span className="text-sm font-bold text-slate-300">{label}</span>
-                    <span className="text-[11px] text-slate-600 font-mono">({expenses.length})</span>
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                    {open ? <ChevronUp className="w-4 h-4 text-slate-500 flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-slate-500 flex-shrink-0" />}
+                    <span className="text-sm font-bold text-slate-300 truncate" title={label}>{label}</span>
+                    <span className="text-[11px] text-slate-600 font-mono flex-shrink-0">({expenses.length})</span>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-shrink-0">
                     {reimbursable > 0 && (
-                        <span className="text-[11px] font-mono text-amber-400">{formatCurrency(reimbursable)} a reimb.</span>
+                        <span className="text-[11px] font-mono text-amber-400 truncate max-w-[8rem] sm:max-w-none" title={`${formatCurrency(reimbursable)} a reembolsar`}>{formatCurrency(reimbursable)} a reimb.</span>
                     )}
-                    <span className="text-sm font-bold text-red-300">{formatCurrency(total)}</span>
+                    <span className="text-sm font-bold text-red-300 truncate max-w-[6rem] sm:max-w-none" title={formatCurrency(total)}>{formatCurrency(total)}</span>
                 </div>
             </button>
             <AnimatePresence initial={false}>
@@ -105,10 +108,10 @@ const ExpensesSkeleton = () => (
 );
 
 const StatCard = ({ title, value, onClick, active, primaryHex, accentHex }) => (
-    <motion.div whileTap={{ scale: 0.98 }} onClick={onClick} className="cursor-pointer">
-        <NeonGlass primary={primaryHex} accent={accentHex} glow={active} className={`p-4 transition-transform duration-300 ${active ? 'scale-[1.02]' : ''}`}>
-            <p className="text-[10px] font-mono uppercase tracking-wider text-[#7c8494] mb-2">{title}</p>
-            <p className="text-2xl font-extrabold text-white" style={active ? { color: accentHex, textShadow: `0 0 16px ${primaryHex}55` } : undefined}>{value}</p>
+    <motion.div whileTap={{ scale: 0.98 }} onClick={onClick} className="cursor-pointer min-w-0">
+        <NeonGlass primary={primaryHex} accent={accentHex} glow={active} className={`p-4 transition-transform duration-300 min-w-0 overflow-hidden ${active ? 'scale-[1.02]' : ''}`}>
+            <p className="text-[10px] font-mono uppercase tracking-wider text-[#7c8494] mb-2 truncate">{title}</p>
+            <p className="text-2xl font-extrabold text-white truncate" title={typeof value === 'string' ? value : undefined} style={active ? { color: accentHex, textShadow: `0 0 16px ${primaryHex}55` } : undefined}>{value}</p>
         </NeonGlass>
     </motion.div>
 );
@@ -184,6 +187,13 @@ export default function ExpensesPage() {
         setShowForm(true);
     };
 
+    const refreshExpenses = useCallback(async () => {
+        await refetchExpenses();
+        appToast.success('Despesas atualizadas');
+    }, [refetchExpenses]);
+
+    const { pullDistance, isRefreshing, threshold } = usePullToRefresh(refreshExpenses);
+
     const allExpenses = useMemo(() => Array.isArray(expenses) ? expenses : [], [expenses]);
 
     // Eventos que têm pelo menos uma despesa
@@ -251,6 +261,8 @@ export default function ExpensesPage() {
                     icon={AlertCircle}
                     title="Erro ao carregar despesas"
                     description="Não foi possível buscar as informações de despesas. Tente novamente mais tarde."
+                    action={refetchExpenses}
+                    actionLabel="Tentar Novamente"
                 />
             </NeonPageShell>
         );
@@ -259,6 +271,12 @@ export default function ExpensesPage() {
     return (
         <>
             <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-full pb-24">
+                <PullToRefreshIndicator
+                    pullDistance={pullDistance}
+                    isRefreshing={isRefreshing}
+                    threshold={threshold}
+                    primaryHex={config.primaryHex}
+                />
                 <div className="p-4 md:p-6 space-y-6">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                         <div className="flex items-start justify-between sm:block gap-2">
@@ -308,18 +326,20 @@ export default function ExpensesPage() {
                           <div className="flex items-center gap-2">
                               <Calendar className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
                               <Select value={eventFilter} onValueChange={setEventFilter}>
-                                  <SelectTrigger className="h-8 text-xs bg-[#080a10]/80 border-[#23262f] text-slate-300 flex-1">
+                                  <SelectTrigger className="h-8 text-xs bg-[#080a10]/80 border-[#23262f] text-slate-300 flex-1 min-w-0 truncate">
                                       <SelectValue placeholder="Filtrar por evento…" />
                                   </SelectTrigger>
-                                  <SelectContent className="bg-slate-900 border-slate-700 text-white">
+                                  <SelectContent className="bg-slate-900 border-slate-700 text-white max-w-[min(100vw-2rem,24rem)]">
                                       <SelectItem value="all">Todos os eventos</SelectItem>
                                       <SelectItem value="no-event">Sem evento vinculado</SelectItem>
-                                      {eventsWithExpenses.map(ev => (
-                                          <SelectItem key={ev.id} value={ev.id}>
-                                              {ev.title}
-                                              {ev.start_date ? ` · ${format(parseISO(ev.start_date), 'dd/MM/yy', { locale: ptBR })}` : ''}
+                                      {eventsWithExpenses.map(ev => {
+                                          const label = `${ev.title}${ev.start_date ? ` · ${format(parseISO(ev.start_date), 'dd/MM/yy', { locale: ptBR })}` : ''}`;
+                                          return (
+                                          <SelectItem key={ev.id} value={ev.id} title={label}>
+                                              <Ellipsis as="span">{label}</Ellipsis>
                                           </SelectItem>
-                                      ))}
+                                          );
+                                      })}
                                   </SelectContent>
                               </Select>
                           </div>
