@@ -170,7 +170,10 @@ export default function GoogleCalendarSync() {
         message: error.message || 'Erro na sincronização',
         timestamp: new Date()
       });
-      appToast.error("Erro na sincronização. Verifique sua conexão.");
+      appToast.error('Erro na sincronização', {
+        description: error.message || 'Verifique sua conexão com o Google.',
+        duration: 8000,
+      });
     }
     setIsSyncing(false);
   };

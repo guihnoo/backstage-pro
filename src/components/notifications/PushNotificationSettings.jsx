@@ -51,8 +51,34 @@ export default function PushNotificationSettings() {
           .eq('user_id', user.id)
           .maybeSingle();
         if (!cancelled && data) {
+          let pushEnabled = Boolean(data.push_enabled);
+          if (pushEnabled && vapidReady && isPushSupported()) {
+            try {
+              const reg = await navigator.serviceWorker.getRegistration();
+              const sub = await reg?.pushManager?.getSubscription();
+              const { count } = await supabase
+                .from('push_subscriptions')
+                .select('*', { count: 'exact', head: true })
+                .eq('user_id', user.id);
+              if (!sub || (count ?? 0) === 0) {
+                pushEnabled = false;
+                await supabase.from('user_settings').upsert(
+                  {
+                    user_id: user.id,
+                    push_enabled: false,
+                    updated_at: new Date().toISOString(),
+                  },
+                  { onConflict: 'user_id' }
+                );
+              }
+            } catch {
+              /* usuário reativa no perfil */
+            }
+          } else if (pushEnabled && !vapidReady) {
+            pushEnabled = false;
+          }
           setPrefs({
-            push_enabled: Boolean(data.push_enabled),
+            push_enabled: pushEnabled,
             push_events: data.push_events !== false,
             push_payments: data.push_payments !== false,
             push_goals: Boolean(data.push_goals),
