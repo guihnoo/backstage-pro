@@ -132,7 +132,9 @@
       "Bash(find src/pages -name \"Profile*\")",
       "Bash(find src/components/profile -name \"*.jsx\")",
       "Bash(find src/components/notifications -name \"*.jsx\")",
-      "Bash(find src/components/calendar -name \"GoogleCalendar*\")"
+      "Bash(find src/components/calendar -name \"GoogleCalendar*\")",
+      "Bash(grep -v \"//\\\\|setActiveTab\\\\|activeTab ===\\\\|tab.label\\\\|tab.id\\\\|whitespace\")",
+      "Bash(npm list *)"
     ]
   },
   "enabledMcpjsonServers": [
