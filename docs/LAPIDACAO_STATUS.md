@@ -9,6 +9,6 @@
 | Relatórios | `/reports` | Cursor | `done` | `adf337a` | pull-refresh, EventHeading, truncate KPIs |
 | Metas | `/goals` | Cursor | `done` | `3b7e588` | pull-refresh, EventHeading, truncate |
 | Perfil | `/profile` | Claude Code | `done` | — | pull-to-refresh; truncate já existia |
-| IA Mentor | `/ai-mentor` | — | `pending` | — | |
+| IA Mentor | `/ai-mentor` | Claude Code | `done` | — | pb-safe input; MessageBubble/SmartSuggestions auditados |
 
 **Legenda:** `pending` · `in_progress` · `review` · `done`

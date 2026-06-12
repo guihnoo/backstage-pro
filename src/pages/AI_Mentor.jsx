@@ -379,7 +379,7 @@ export default function AIMentorPage() {
         </div>
 
         {/* Input */}
-        <div className="border-t border-[#23262f] px-4 py-3 flex-shrink-0">
+        <div className="border-t border-[#23262f] px-4 py-3 flex-shrink-0 pb-safe">
           <div className="flex items-end gap-2 max-w-2xl mx-auto">
             <textarea
               ref={textareaRef}
