@@ -83,6 +83,7 @@
 | 42 | Período "Esta Semana" nos Relatórios | 2026-06-12 | ✅ `PERIOD_OPTIONS` + case `this_week` em `Reports.jsx` |
 | 43 | Export ICS no ExportManager dos Relatórios | 2026-06-12 | ✅ Botão ICS azul em `ExportManager.jsx`; exporta eventos do período filtrado |
 | 44 | Vista Semanal na Agenda (Week View) | 2026-06-12 | ✅ Toggle Grid/Semana/Lista; 7 colunas scroll-x mobile; banner hoje; cor do evento; horário; +N mais; resumo semanal |
+| 45 | Vista "Próximos Shows" na Agenda | 2026-06-13 | ✅ Botão ⚡ — lista futuros agrupados (Hoje/Amanhã/Esta semana/…) com countdown, valor, indicador vencido/pago |
 
 ---
 

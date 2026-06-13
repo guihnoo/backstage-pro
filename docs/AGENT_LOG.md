@@ -4,6 +4,18 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+## 2026-06-13
+
+### CALENDAR-S41 — Vista "Próximos Shows" + week view clicável ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/pages/Calendar.jsx`**:
+  - 4º botão toggle `Zap` (âmbar) → `viewMode='upcoming'`
+  - `upcomingGroups` useMemo: filtra activeEvents ≥ hoje sem filtro de status; grupos: Hoje/Amanhã/Esta semana/Próxima semana/Próximos 30 dias/Mais adiante
+  - Cards com countdown relativo, data, horário, cliente, valor colorido (âmbar=pendente, vermelho=vencido, verde=pago)
+  - Cabeçalho do dia na vista semanal virou `<button>` → `handleDayClick(day)`; hint "+" no hover
+  - Imports: `differenceInCalendarDays, isBefore` (date-fns); `Zap` (lucide)
+- **Build**: Vite ✅ · **Git backup**: auto-wip `cab8ad4`
+
 ## 2026-06-12
 
 ### CALENDAR-S40 — Vista Semanal (Week View) + polish completo ✅

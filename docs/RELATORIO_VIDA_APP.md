@@ -88,6 +88,20 @@ Ordem oficial após fix de scroll (2026-06-05):
 
 ## Changelog
 
+### 2026-06-13 (sessão S41) — Próximos Shows + melhorias week view
+
+**Calendar.jsx — Vista "Próximos Shows" (⚡):**
+- 4º botão no toggle (Zap icon, cor âmbar); `viewMode === 'upcoming'`
+- `upcomingGroups` useMemo — filtra `activeEvents` a partir de hoje, sem filtro de status, ordena cronologicamente; agrupa em: Hoje / Amanhã / Esta semana / Próxima semana / Próximos 30 dias / Mais adiante
+- Cards com: countdown relativo ("Hoje", "Amanhã", "em Xd"), data dd/MM, horário, cliente, valor colorido por estado (âmbar=pendente, vermelho=vencido, verde=pago)
+- Imports adicionados: `differenceInCalendarDays, isBefore` (date-fns); `Zap` (lucide)
+
+**Calendar.jsx — Melhorias week view:**
+- Cabeçalho de cada dia virou `<button>` clicável → `handleDayClick(day)` abre QuickActions para criar evento naquela data; hint "+" aparece no hover
+- Build Vite ✅
+
+---
+
 ### 2026-06-12 (sessão S40) — Vista Semanal na Agenda
 
 **Calendar.jsx — Vista Semanal (Week View) + polish:**
