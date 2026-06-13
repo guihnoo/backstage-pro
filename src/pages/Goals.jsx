@@ -208,7 +208,7 @@ function getLevelInfo(eventsCount) {
 
 export default function Goals() {
   const { user, profile, updateProfile } = useAuth();
-  const { formatCurrency } = useFinancialVisibility();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
   const userId = user?.id;
   const categoryId = profile?.category || 'lighting';
   const config = getCategoryConfig(categoryId);
@@ -365,6 +365,37 @@ export default function Goals() {
       return { monthStr, label, revenue, pct, hit, isCurrent };
     });
   }, [allEvents, metaReceita]);
+
+  const goalStreak = useMemo(() => {
+    if (!metaReceita) return 0;
+    const now = new Date();
+    let streak = 0;
+    for (let i = 1; i <= 24; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const rev = allEvents
+        .filter(e => e.payment_status === 'paid' && (e.start_date || '').startsWith(monthStr))
+        .reduce((s, e) => s + (Number(e.paid_amount) || 0), 0);
+      if (rev >= metaReceita) streak++;
+      else break;
+    }
+    return streak;
+  }, [allEvents, metaReceita]);
+
+  const eventsNeededForGoal = useMemo(() => {
+    if (!metaReceita || stats.faturamento_pago >= metaReceita) return null;
+    const remaining = metaReceita - stats.faturamento_pago;
+    const paidLast3 = allEvents.filter(e => {
+      if (e.payment_status !== 'paid') return false;
+      const now = new Date();
+      const cutoff = new Date(now.getFullYear(), now.getMonth() - 3, 1).toISOString().slice(0, 7);
+      return (e.start_date || '') >= cutoff;
+    });
+    if (paidLast3.length === 0) return null;
+    const avgPerEvent = paidLast3.reduce((s, e) => s + (Number(e.paid_amount) || 0), 0) / paidLast3.length;
+    if (avgPerEvent <= 0) return null;
+    return { remaining, avg: avgPerEvent, count: Math.ceil(remaining / avgPerEvent) };
+  }, [allEvents, metaReceita, stats.faturamento_pago]);
 
   // Detecta badges recém-desbloqueados
   useEffect(() => {
@@ -776,6 +807,32 @@ export default function Goals() {
                   </div>
                 )}
               </div>
+
+              {/* Streak + Projeção */}
+              {(goalStreak > 0 || eventsNeededForGoal) && (
+                <div className="grid grid-cols-2 gap-3">
+                  {goalStreak > 0 && (
+                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 text-center">
+                      <span className="text-2xl">🔥</span>
+                      <p className="text-xl font-black text-amber-400">{goalStreak}</p>
+                      <p className="text-[11px] text-amber-400/80 leading-tight">
+                        {goalStreak === 1 ? 'mês seguido' : 'meses seguidos'} batendo a meta
+                      </p>
+                    </div>
+                  )}
+                  {eventsNeededForGoal && (
+                    <div className={`bg-slate-900/40 border border-slate-700/50 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 text-center ${!goalStreak ? 'col-span-2' : ''}`}>
+                      <p className="text-2xl font-black text-white">{eventsNeededForGoal.count}</p>
+                      <p className="text-[11px] text-slate-400 leading-tight">
+                        {eventsNeededForGoal.count === 1 ? 'show ainda' : 'shows ainda'} para bater a meta
+                      </p>
+                      <p className="text-[10px] text-slate-600 mt-0.5">
+                        média {isVisible ? formatCurrency(eventsNeededForGoal.avg) : '•••'}/show
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Histórico mensal */}
               {monthlyHistory.some(m => m.revenue > 0) && (
