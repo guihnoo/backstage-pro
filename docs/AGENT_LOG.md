@@ -6,6 +6,15 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-13
 
+### GOALS-S43 — Streak de meses + projeção "shows para bater meta" ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/pages/Goals.jsx`**:
+  - Desestrutura `isVisible` de `useFinancialVisibility` (antes só `formatCurrency`)
+  - `goalStreak` useMemo: conta meses consecutivos (até 24 para trás, pulando o mês atual) em que `paid revenue >= metaReceita`
+  - `eventsNeededForGoal` useMemo: `remaining = metaReceita - stats.faturamento_pago`; `avgPerEvent` = média dos 3 últimos meses pagos; retorna `{ remaining, avg, count: ceil(remaining/avg) }` ou `null` quando já bateu ou sem histórico
+  - UI: grid `grid-cols-2` com card âmbar de streak (🔥, contagem, label) + card "X shows ainda para bater a meta" com média por show, inseridos entre a lista de próximos eventos e o histórico mensal — o card de projeção expande para `col-span-2` quando não há streak
+- **Build**: Vite ✅ (60s, sem erros novos) · **Git backup**: auto-wip ✅
+
 ### CALENDAR-S41 — Vista "Próximos Shows" + week view clicável ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/pages/Calendar.jsx`**:
