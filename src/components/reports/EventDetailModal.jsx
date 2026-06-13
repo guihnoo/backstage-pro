@@ -35,6 +35,7 @@ import {
   MapPin,
   Loader2,
   ExternalLink,
+  Star,
 } from 'lucide-react';
 import EventLocationSection from '@/components/events/EventLocationSection';
 import { useEvents } from '@/lib/useEvents';
@@ -135,6 +136,10 @@ const EventDetailModal = React.memo(function EventDetailModal({
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
   const { update: updateEvent } = useEvents();
   const [savingLocation, setSavingLocation] = useState(false);
+  const [savingRating, setSavingRating] = useState(false);
+  const [ratingDraft, setRatingDraft] = useState(null);
+  const [ratingNotesDraft, setRatingNotesDraft] = useState('');
+  const [ratingHover, setRatingHover] = useState(0);
   const [locDraft, setLocDraft] = useState({
     location: '',
     location_city: '',
@@ -152,6 +157,8 @@ const EventDetailModal = React.memo(function EventDetailModal({
       location_lat: event.location_lat ?? null,
       location_lng: event.location_lng ?? null,
     });
+    setRatingDraft(event.client_rating ?? null);
+    setRatingNotesDraft(event.client_rating_notes || '');
   }, [event?.id, event?.location, event?.location_city, event?.location_state, event?.location_lat, event?.location_lng]);
 
   const locationDirty =
@@ -159,6 +166,19 @@ const EventDetailModal = React.memo(function EventDetailModal({
     (locDraft.location !== (event.location || '') ||
       locDraft.location_lat !== (event.location_lat ?? null) ||
       locDraft.location_lng !== (event.location_lng ?? null));
+
+  const saveRating = async (stars, notes) => {
+    if (!event?.id) return;
+    setSavingRating(true);
+    try {
+      await updateEvent(event.id, { client_rating: stars, client_rating_notes: notes || null });
+      appToast.success('Avaliação salva');
+    } catch {
+      appToast.error('Erro ao salvar avaliação');
+    } finally {
+      setSavingRating(false);
+    }
+  };
 
   const persistLocation = async (patch = locDraft) => {
     if (!event?.id) return;
@@ -340,6 +360,55 @@ const EventDetailModal = React.memo(function EventDetailModal({
                   </h3>
                   <div className="bg-slate-800/40 border border-slate-700/60 rounded-lg px-4 py-3">
                     <p className="text-sm text-slate-300 whitespace-pre-wrap break-words leading-relaxed">{event.observacoes_md}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Avaliação do cliente — só para eventos concluídos com cliente */}
+              {event.status === 'completed' && event.client_id && (
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-white text-sm sm:text-base flex items-center gap-2">
+                    <Star className="w-4 h-4 text-amber-400" />
+                    Avaliação do cliente
+                  </h3>
+                  <div className="bg-slate-800/40 border border-slate-700/60 rounded-lg px-4 py-3 space-y-3">
+                    {/* Estrelas */}
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => { setRatingDraft(star); saveRating(star, ratingNotesDraft); }}
+                          onMouseEnter={() => setRatingHover(star)}
+                          onMouseLeave={() => setRatingHover(0)}
+                          className="p-0.5 transition-transform hover:scale-110"
+                          title={`${star} estrela${star > 1 ? 's' : ''}`}
+                        >
+                          <Star
+                            className="w-6 h-6 transition-colors"
+                            fill={(ratingHover || ratingDraft || 0) >= star ? '#fbbf24' : 'none'}
+                            stroke={(ratingHover || ratingDraft || 0) >= star ? '#fbbf24' : '#64748b'}
+                          />
+                        </button>
+                      ))}
+                      {ratingDraft && (
+                        <span className="ml-2 text-xs text-amber-400 font-medium">
+                          {['', 'Ruim', 'Regular', 'Bom', 'Ótimo', 'Excelente'][ratingDraft]}
+                        </span>
+                      )}
+                      {savingRating && <Loader2 className="w-4 h-4 text-slate-500 animate-spin ml-2" />}
+                    </div>
+                    {/* Nota de avaliação */}
+                    {ratingDraft && (
+                      <textarea
+                        value={ratingNotesDraft}
+                        onChange={e => setRatingNotesDraft(e.target.value)}
+                        onBlur={() => ratingDraft && saveRating(ratingDraft, ratingNotesDraft)}
+                        placeholder="Observação sobre o cliente (opcional)…"
+                        rows={2}
+                        className="w-full bg-slate-700/50 border border-slate-600/60 rounded-md px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 resize-none focus:outline-none focus:ring-1 focus:ring-amber-500/50"
+                      />
+                    )}
                   </div>
                 </div>
               )}

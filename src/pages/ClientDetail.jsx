@@ -24,6 +24,7 @@ import {
   MessageCircle,
   CalendarDays,
   MapPin,
+  Star,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -113,6 +114,12 @@ export default function ClientDetailPage() {
   );
 
   const clientEventIds = useMemo(() => clientEvents.map(e => e.id), [clientEvents]);
+
+  const avgRating = useMemo(() => {
+    const rated = clientEvents.filter(e => e.client_rating != null);
+    if (rated.length === 0) return null;
+    return (rated.reduce((s, e) => s + e.client_rating, 0) / rated.length).toFixed(1);
+  }, [clientEvents]);
 
   const clientWork = useMemo(() =>
     dailyWork.filter(w => clientEventIds.includes(w.event_id)),
@@ -364,6 +371,19 @@ export default function ClientDetailPage() {
             <StatCard icon={DollarSign} title="Receita Total" value={formatCurrency(stats.totalRevenue)} iconStyle={{ background: 'linear-gradient(135deg, #10b981, #34d399)' }} />
             <StatCard icon={Clock} title="Total de Horas" value={`${stats.totalHours}h`} iconStyle={{ background: 'linear-gradient(135deg, #f59e0b, #fbbf24)' }} />
             <StatCard icon={PieChart} title="Receita Média / Evento" value={formatCurrency(stats.avgRevenuePerEvent)} iconStyle={{ background: `linear-gradient(135deg, ${config.primaryHex}99, ${config.accentHex})` }} />
+            {avgRating && (
+              <div className="col-span-2 flex items-center gap-2 px-4 py-3 rounded-xl bg-amber-900/20 border border-amber-700/30">
+                <div className="flex items-center gap-0.5">
+                  {[1,2,3,4,5].map(s => (
+                    <Star key={s} className="w-4 h-4" fill={parseFloat(avgRating) >= s ? '#fbbf24' : 'none'} stroke={parseFloat(avgRating) >= s ? '#fbbf24' : '#475569'} />
+                  ))}
+                </div>
+                <span className="text-sm font-bold text-amber-300">{avgRating}</span>
+                <span className="text-xs text-slate-500">
+                  média de {clientEvents.filter(e => e.client_rating != null).length} avaliação{clientEvents.filter(e => e.client_rating != null).length > 1 ? 'ões' : ''}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
