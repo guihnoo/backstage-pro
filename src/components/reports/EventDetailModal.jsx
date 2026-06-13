@@ -332,6 +332,18 @@ const EventDetailModal = React.memo(function EventDetailModal({
                 </CardContent>
               </Card>
 
+              {event.observacoes_md && (
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-white text-sm sm:text-base flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-slate-400" />
+                    Observações
+                  </h3>
+                  <div className="bg-slate-800/40 border border-slate-700/60 rounded-lg px-4 py-3">
+                    <p className="text-sm text-slate-300 whitespace-pre-wrap break-words leading-relaxed">{event.observacoes_md}</p>
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-4">
                 <h3 className="font-semibold text-white text-sm sm:text-base">Registros de Trabalho ({dailyWork.length})</h3>
                 {dailyWork.length > 0 ? (
