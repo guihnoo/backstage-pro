@@ -12,6 +12,7 @@ import {
   normalizeTitleKey,
   pickDefaultClientColor,
 } from '../_shared/googleCalendar.ts';
+import { pickDuplicateIdsToRemove } from '../_shared/googleEventDedupe.ts';
 
 function serviceClient() {
   return createClient(getEnv('SUPABASE_URL'), getEnv('SUPABASE_SERVICE_ROLE_KEY'));
@@ -265,28 +266,11 @@ async function dedupeEventsForUser(svc: any, userId: string) {
   const { data: workRows } = await svc.from('daily_work').select('event_id').eq('user_id', userId);
   const withWork = new Set((workRows ?? []).map((w: { event_id: string }) => w.event_id));
 
-  const groups = new Map<string, Array<Record<string, unknown>>>();
-  for (const ev of events ?? []) {
-    const clientName = (ev as { clients?: { name?: string } }).clients?.name || '';
-    const key = `${ev.start_date}|${normalizeTitleKey(String(clientName || ev.title))}`;
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key)!.push(ev as Record<string, unknown>);
-  }
-
+  const toRemove = pickDuplicateIdsToRemove(events ?? [], withWork);
   let removed = 0;
-  for (const group of groups.values()) {
-    if (group.length <= 1) continue;
-    group.sort((a, b) => {
-      const score = (e: Record<string, unknown>) =>
-        (e.google_event_id ? 4 : 0) + (withWork.has(String(e.id)) ? 2 : 0);
-      return score(b) - score(a);
-    });
-    for (let i = 1; i < group.length; i++) {
-      const dup = group[i];
-      if (withWork.has(String(dup.id))) continue;
-      await svc.from('events').delete().eq('id', dup.id).eq('user_id', userId);
-      removed++;
-    }
+  for (const id of toRemove) {
+    await svc.from('events').delete().eq('id', id).eq('user_id', userId);
+    removed++;
   }
   return { removed_count: removed };
 }

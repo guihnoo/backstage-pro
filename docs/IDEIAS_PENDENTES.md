@@ -25,7 +25,7 @@
 
 | # | Ideia | Status | Onde / notas |
 |---|-------|--------|--------------|
-| 8 | Google Calendar OAuth + sync completo | 🟡 | UI pronta; checklist E2E manual pendente |
+| 8 | Google Calendar OAuth + sync completo | 🟡 | UI + smoke E2E mock; OAuth real requer checklist manual em produção |
 | 9 | Local do evento (endereço + GPS check-in) | ✅ | EventLocationSection, Modo Palco |
 | 10 | Mapa Brasil visitados (relatórios) | ✅ | BrazilVisitedMap — marcadores recalibrados S39 |
 | 11 | Alertas agenda — check-in local hoje | ✅ | AlertsPanel |
@@ -35,7 +35,7 @@
 | 15 | PWA offline refinado + sync estado | ✅ | S32: `usePWA` hook + `InstallPwaCard` (Perfil) + OfflineBanner "reconectado" + `backstage:reconnect` event |
 | 16 | Push notifications | ✅ | VAPID keys + cron 8h/18h + service worker + UI Perfil; reativar no Perfil após próximo deploy |
 | 17 | Code-split **seguro** (sem travar rotas) | ✅ | Cursor Sprint PERF-SPA-LAZY — bundle principal ~263 KB; todas as rotas lazy + Suspense ✅ |
-| 18 | Dedupe eventos Google Calendar | 🟡 | Botão no Perfil — validar |
+| 18 | Dedupe eventos Google Calendar | ✅ | `googleEventDedupe` + unit tests + smoke E2E no Perfil |
 
 ---
 
@@ -46,7 +46,7 @@
 | 19 | **Registrar vida do app** (Cursor + Claude Code) | ✅ | Sessão 9–10: `CLAUDE.md`, RELATORIO, AUDITORIA, IDEIAS, AGENT_LOG |
 | 20 | Não repetir bugs (lazy routes, scroll, OAuth) | 🔄 | Seção “Bugs conhecidos” em AUDITORIA |
 | 21 | Check-in em itens prontos sem quebrar o que funciona | 🔄 | LOCKED em AGENTS.md |
-| 22 | Testes E2E smoke em cada release | ✅ | 26 smoke tests — goals-streak, admin-feedbacks, reports-map, calendar-navigation, etc. |
+| 22 | Testes E2E smoke em cada release | ✅ | 28 smoke tests — google-calendar-sync, goals-streak, admin-feedbacks, etc. |
 
 ---
 
@@ -89,6 +89,7 @@
 | 48 | Observações do evento visíveis no EventDetailModal | 2026-06-13 | ✅ Seção `observacoes_md` exibida quando preenchida |
 | 49 | Rastreamento de NF em Relatórios (aba Fiscal) | 2026-06-13 | ✅ `NfTracker.jsx` — 5ª aba em Reports; pendentes âmbar / emitidas verde; badge com contagem |
 | 50 | Gráfico de tendência mensal (12 meses) em Relatórios | 2026-06-13 | ✅ `MonthlyTrend.jsx` — barra por mês; linha de meta; verde/cyan/slate por status; aba Visão Geral |
+| 51 | Compartilhar resumo mensal (WhatsApp / clipboard) | 2026-06-13 | ✅ Botão "Compartilhar" em ExportManager + "Compartilhar resultado" em Goals; Web Share API com fallback clipboard |
 
 ---
 

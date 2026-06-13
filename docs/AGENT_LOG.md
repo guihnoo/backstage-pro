@@ -6,6 +6,17 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-13
 
+### SHARE-S46 — Compartilhar resumo mensal (Web Share API) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/reports/ExportManager.jsx`**:
+  - Import `Share2` + `ptBR`; função `buildShareText(data, period)` computa receita, despesas, lucro, shows, clientes do período
+  - Botão "Compartilhar" (roxo) → `navigator.share({ text })` em mobile; fallback `clipboard.writeText` em desktop com toast "Resumo copiado!"
+- **`src/pages/Goals.jsx`**:
+  - Import `Share2`; botão "Compartilhar resultado" inline abaixo da mensagem de incentivo (visível quando `faturamento_pago > 0 || diariasMes > 0`)
+  - Texto inclui: receita/meta com %, diárias/meta com %, a receber, streak 🔥 se > 0; header `*Metas de Junho de 2026*`
+  - Mesma lógica: `navigator.share` → fallback clipboard
+- **Build**: Vite ✅ (49s) · **Git backup**: auto-wip ✅
+
 ### REPORTS-S45 — Gráfico de tendência de 12 meses (MonthlyTrend) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/components/reports/MonthlyTrend.jsx`** (NOVO):
