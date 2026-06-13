@@ -263,6 +263,17 @@ export default function EventDetailModal({
     return { total, reimbursable };
   }, [eventExpenses]);
 
+  const profitSummary = useMemo(() => {
+    if (!event) return null;
+    const revenue = Number(event.paid_amount) > 0
+      ? Number(event.paid_amount)
+      : getEventCacheAmount(event) || 0;
+    if (revenue <= 0 && expenseTotals.total <= 0) return null;
+    const profit = revenue - expenseTotals.total;
+    const margin = revenue > 0 ? (profit / revenue) * 100 : null;
+    return { revenue, expenses: expenseTotals.total, profit, margin };
+  }, [event, expenseTotals.total]);
+
   if (!event) return null;
 
   const status = getEventStatus(event);
@@ -670,6 +681,50 @@ export default function EventDetailModal({
                 </CardContent>
               )}
             </Card>
+
+            {/* Resultado Líquido */}
+            {profitSummary && (
+              <Card className="bg-slate-800/50 border-slate-700">
+                <CardContent className="pt-4 pb-4">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Resultado do Show</p>
+                  <div className="grid grid-cols-3 gap-3 text-center">
+                    <div>
+                      <p className="text-[10px] text-slate-500 mb-1">Receita</p>
+                      <p className="text-sm font-bold text-cyan-300">{formatCurrency(profitSummary.revenue)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-slate-500 mb-1">Despesas</p>
+                      <p className="text-sm font-bold text-red-400">{formatCurrency(profitSummary.expenses)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-slate-500 mb-1">Lucro</p>
+                      <p className={`text-sm font-bold ${profitSummary.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {formatCurrency(profitSummary.profit)}
+                      </p>
+                    </div>
+                  </div>
+                  {profitSummary.margin !== null && profitSummary.expenses > 0 && (
+                    <div className="mt-3">
+                      <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+                        <span>Margem de lucro</span>
+                        <span className={profitSummary.margin >= 0 ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold'}>
+                          {Math.round(profitSummary.margin)}%
+                        </span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-slate-700/60 overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-700"
+                          style={{
+                            width: `${Math.max(0, Math.min(100, profitSummary.margin))}%`,
+                            background: profitSummary.margin >= 70 ? '#10b981' : profitSummary.margin >= 40 ? '#f59e0b' : '#ef4444',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             {/* Registros de Trabalho */}
             {eventWork.length > 0 && (

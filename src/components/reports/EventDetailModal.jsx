@@ -284,11 +284,35 @@ const EventDetailModal = React.memo(function EventDetailModal({
               )}
 
               <Card className="bg-slate-800/40 border-slate-700">
-                <CardContent className="p-3 sm:p-4 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 text-center">
-                  <InfoItem icon={DollarSign} label="Receita Bruta" value={stats.totalRevenue || 0} isCurrency color="text-green-300" />
-                  <InfoItem icon={FileText} label="Despesas" value={stats.totalExpenses || 0} isCurrency color="text-amber-400" />
-                  <InfoItem icon={DollarSign} label="Receita Líquida" value={stats.netRevenue || 0} isCurrency color="text-cyan-300" />
-                  <InfoItem icon={Clock} label="Total Horas" value={`${stats.totalHours?.toFixed(1) || 0}h`} color="text-slate-300" />
+                <CardContent className="p-3 sm:p-4 space-y-3">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 text-center">
+                    <InfoItem icon={DollarSign} label="Receita Bruta" value={stats.totalRevenue || 0} isCurrency color="text-green-300" />
+                    <InfoItem icon={FileText} label="Despesas" value={stats.totalExpenses || 0} isCurrency color="text-amber-400" />
+                    <InfoItem icon={DollarSign} label="Receita Líquida" value={stats.netRevenue || 0} isCurrency color={stats.netRevenue >= 0 ? 'text-cyan-300' : 'text-red-400'} />
+                    <InfoItem icon={Clock} label="Total Horas" value={`${stats.totalHours?.toFixed(1) || 0}h`} color="text-slate-300" />
+                  </div>
+                  {stats.totalExpenses > 0 && stats.totalRevenue > 0 && (() => {
+                    const margin = ((stats.netRevenue / stats.totalRevenue) * 100);
+                    return (
+                      <div>
+                        <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+                          <span>Margem de lucro</span>
+                          <span className={margin >= 0 ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold'}>
+                            {Math.round(margin)}%
+                          </span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-slate-700/60 overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-700"
+                            style={{
+                              width: `${Math.max(0, Math.min(100, margin))}%`,
+                              background: margin >= 70 ? '#10b981' : margin >= 40 ? '#f59e0b' : '#ef4444',
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </CardContent>
               </Card>
 
