@@ -6,6 +6,34 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-13
 
+### WORK-S50 — R$/hora por show + aba Trabalho em Relatórios ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/calendar/EventDetailModal.jsx`**:
+  - `totals` useMemo agora inclui `hourlyRate = totalEarned / totalHours`
+  - Card "Registros de Trabalho": header mostra R$/hora total (amber) + resumo de horas/ganho
+  - Por registro: taxa diária (R$/hora do dia) ao lado do valor, em amber/70
+  - Ambos respeitam `isVisible` (máscara financeira)
+- **`src/components/reports/WorkAnalytics.jsx`** (NOVO):
+  - 4 KPI cards: Horas trabalhadas / Taxa média/hora / Total ganho / Shows registrados
+  - BarChart (recharts) de horas por mês — últimos 6 meses
+  - Ranking top-10 shows por R$/hora com barra proporcional + nome do cliente
+- **`src/pages/Reports.jsx`**:
+  - Import `WorkAnalytics`, ícone `Briefcase`
+  - Nova aba "Trabalho" entre Despesas e Atividade; badge com contagem de registros do período
+  - Conteúdo: `<WorkAnalytics work={processedData.current.work} events={data.events} clients={data.clients} />`
+- **Build**: Vite ✅ (44s) · **Git backup**: auto-wip ✅
+
+### GOALS-S49 — Painel Anual em Metas (barras mensais + projeção dezembro) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/pages/Goals.jsx`**:
+  - `yearlyPanel` useMemo: itera os 12 meses do ano atual; para cada mês calcula `revenue` (paid), `pct` vs meta, `hit`, `isCurrent`, `isFuture`
+  - Stats: `totalYear` (acumulado), `projected` (totalYear + avgPerMonth × meses restantes), `monthsHit`
+  - UI: seção "2026 em Resumo" no final da aba Metas, visível quando `totalYear > 0`
+  - 12 barras verticais com altura proporcional ao % da meta: verde=bateu, cyan=parcial, slate=vazio/futuro; mês atual com `animate-pulse`
+  - Labels de mês abaixo de cada barra (8px mono); mês atual em cyan
+  - Grid 2 colunas: "Recebido em 2026" + "Projeção dezembro" (só quando há meses futuros); respeita `isVisible`
+- **Build**: Vite ✅ (50s) · **Git backup**: auto-wip ✅
+
 ### PROFIT-S48 — Resultado líquido por show (margem de lucro) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/components/calendar/EventDetailModal.jsx`**:

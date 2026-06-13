@@ -242,7 +242,8 @@ export default function EventDetailModal({
     const totalHours = eventWork.reduce((sum, w) => sum + (w.total_hours || 0), 0);
     const totalOvertime = eventWork.reduce((sum, w) => sum + (w.overtime_hours || 0), 0);
     const totalEarned = eventWork.reduce((sum, w) => sum + (w.daily_cache || 0), 0);
-    return { totalHours, totalOvertime, totalEarned };
+    const hourlyRate = totalHours > 0 && totalEarned > 0 ? totalEarned / totalHours : null;
+    return { totalHours, totalOvertime, totalEarned, hourlyRate };
   }, [eventWork]);
 
   const estimatedValue = useMemo(() => {
@@ -729,46 +730,74 @@ export default function EventDetailModal({
             {/* Registros de Trabalho */}
             {eventWork.length > 0 && (
               <Card className="bg-slate-800/50 border-slate-700">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-cyan-400" />
-                    Registros de Trabalho ({eventWork.length})
-                  </CardTitle>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-cyan-400" />
+                      Registros de Trabalho ({eventWork.length})
+                    </CardTitle>
+                    {totals.hourlyRate && (
+                      <div className="text-right">
+                        <p className="text-[10px] text-slate-400 uppercase tracking-wide">R$/hora</p>
+                        <p className="text-amber-400 font-bold text-sm">
+                          {isVisible ? formatCurrency(totals.hourlyRate) : '••••'}/h
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  {totals.totalHours > 0 && (
+                    <div className="flex gap-4 mt-1 text-xs text-slate-400">
+                      <span>{totals.totalHours}h trabalhadas</span>
+                      {totals.totalOvertime > 0 && <span className="text-orange-400">{totals.totalOvertime}h extra</span>}
+                      {totals.totalEarned > 0 && <span className="text-green-400">{isVisible ? formatCurrency(totals.totalEarned) : '••••'} total</span>}
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {eventWork.map((work, idx) => (
-                      <div
-                        key={work.id || idx}
-                        className="p-3 bg-slate-900/50 rounded-lg border border-slate-700"
-                      >
-                        <div className="flex justify-between items-start mb-2">
-                          <p className="font-medium text-white">
-                            {formatDisplayDate(work.date)}
-                          </p>
-                          <p className="text-green-400 font-bold">
-                            {formatCurrency(work.daily_cache || 0)}
-                          </p>
+                    {eventWork.map((work, idx) => {
+                      const dayRate = work.total_hours > 0 && work.daily_cache > 0
+                        ? work.daily_cache / work.total_hours : null;
+                      return (
+                        <div
+                          key={work.id || idx}
+                          className="p-3 bg-slate-900/50 rounded-lg border border-slate-700"
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <p className="font-medium text-white">
+                              {formatDisplayDate(work.date)}
+                            </p>
+                            <div className="text-right">
+                              <p className="text-green-400 font-bold">
+                                {formatCurrency(work.daily_cache || 0)}
+                              </p>
+                              {dayRate && (
+                                <p className="text-[10px] text-amber-400/70">
+                                  {isVisible ? formatCurrency(dayRate) : '••••'}/h
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2 text-sm">
+                            <div>
+                              <p className="text-slate-400">Entrada</p>
+                              <p className="text-white">{work.entry_time || '-'}</p>
+                            </div>
+                            <div>
+                              <p className="text-slate-400">Saída</p>
+                              <p className="text-white">{work.exit_time || '-'}</p>
+                            </div>
+                            <div>
+                              <p className="text-slate-400">Horas</p>
+                              <p className="text-cyan-400 font-medium">{work.total_hours || 0}h</p>
+                            </div>
+                          </div>
+                          {work.notes && (
+                            <p className="text-sm text-slate-400 mt-2 italic break-words">{work.notes}</p>
+                          )}
                         </div>
-                        <div className="grid grid-cols-3 gap-2 text-sm">
-                          <div>
-                            <p className="text-slate-400">Entrada</p>
-                            <p className="text-white">{work.entry_time || '-'}</p>
-                          </div>
-                          <div>
-                            <p className="text-slate-400">Saída</p>
-                            <p className="text-white">{work.exit_time || '-'}</p>
-                          </div>
-                          <div>
-                            <p className="text-slate-400">Horas</p>
-                            <p className="text-cyan-400 font-medium">{work.total_hours || 0}h</p>
-                          </div>
-                        </div>
-                        {work.notes && (
-                          <p className="text-sm text-slate-400 mt-2 italic break-words">{work.notes}</p>
-                        )}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>

@@ -92,6 +92,8 @@
 | 51 | Compartilhar resumo mensal (WhatsApp / clipboard) | 2026-06-13 | ✅ Botão "Compartilhar" em ExportManager + "Compartilhar resultado" em Goals; Web Share API com fallback clipboard |
 | 52 | Busca global (eventos + clientes) acessível de qualquer tela | 2026-06-13 | ✅ `GlobalSearch.jsx` — overlay full-screen, ícone 🔍 na TopBar; busca normalizada sem acentos |
 | 53 | Resultado líquido por show (receita − despesas + margem %) | 2026-06-13 | ✅ Card "Resultado do Show" no EventDetailModal (Agenda e Relatórios); barra de margem colorida |
+| 54 | Painel anual em Metas (barras mensais + projeção dezembro) | 2026-06-13 | ✅ `yearlyPanel` useMemo; 12 barras + pulse no mês atual; total do ano + projeção linear |
+| 55 | Taxa horária (R$/hora) por show nos registros de trabalho | 2026-06-13 | ✅ `hourlyRate` em `totals` useMemo no EventDetailModal; header + por registro; aba "Trabalho" em Reports com `WorkAnalytics.jsx` |
 
 ---
 

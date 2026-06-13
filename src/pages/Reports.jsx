@@ -26,6 +26,7 @@ import {
   XCircle,
   Activity,
   Receipt,
+  Briefcase,
 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, subMonths, isWithinInterval, parseISO, startOfYear, endOfYear, addMonths, startOfWeek, endOfWeek, subWeeks, addWeeks } from 'date-fns';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
@@ -57,6 +58,7 @@ import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
 import ActivityHeatmap from '@/components/reports/ActivityHeatmap';
 import NfTracker from '@/components/reports/NfTracker';
 import MonthlyTrend from '@/components/reports/MonthlyTrend';
+import WorkAnalytics from '@/components/reports/WorkAnalytics';
 import EventHeading from '@/components/events/EventHeading';
 import { Ellipsis } from '@/components/ui/overflowText';
 import BrazilVisitedMap from '@/components/reports/BrazilVisitedMap';
@@ -881,6 +883,7 @@ export default function ReportsPage() {
             { id: 'overview', label: 'Visão Geral', icon: BarChart3, count: null },
             { id: 'clients', label: 'Clientes', icon: Users, count: data.clients.length },
             { id: 'expenses', label: 'Despesas', icon: DollarSign, count: processedData.current.expenses.length },
+            { id: 'work', label: 'Trabalho', icon: Briefcase, count: processedData.current.work.length || null },
             { id: 'activity', label: 'Atividade', icon: Activity, count: null },
             {
               id: 'fiscal', label: 'Fiscal', icon: Receipt,
@@ -947,6 +950,14 @@ export default function ReportsPage() {
               appToast.info(`Visualizando despesas da categoria: ${category}`);
             }} />
         }
+
+        {selectedView === 'work' && (
+          <WorkAnalytics
+            work={processedData.current.work}
+            events={data.events}
+            clients={data.clients}
+          />
+        )}
 
         {selectedView === 'activity' && (
           <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
