@@ -26,8 +26,10 @@ import appToast from '@/lib/appToast';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { formatGoogleOAuthError } from '@/lib/googleOAuthErrors';
 import { isCancelledEvent } from '@/lib/eventFinance';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 export default function GoogleCalendarSync() {
+  const theme = useCategoryTheme();
   const { user } = useAuth();
   const { events } = useEvents();
   const location = useLocation();
@@ -223,7 +225,7 @@ export default function GoogleCalendarSync() {
     return (
       <Card className="bg-slate-800/50 border-slate-700 min-w-0 overflow-hidden">
         <CardContent className="p-6 text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-cyan-400 mx-auto mb-4" />
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" style={theme.accentStyle} />
           <p className="text-slate-400">Carregando configurações...</p>
         </CardContent>
       </Card>

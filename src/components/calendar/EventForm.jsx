@@ -19,6 +19,7 @@ import { resolveEventColor } from '@/lib/brandColors';
 import { useClients } from '@/lib/useClients';
 import ClientCombobox from '@/components/clients/ClientCombobox';
 import EventLocationSection from '@/components/events/EventLocationSection';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 const PAYMENT_MODELS = [
   { value: 'HORAS_EXTRAS', label: 'Horas Extras' },
@@ -59,6 +60,7 @@ export default function EventForm({
   onSuccess,
 }) {
   const { user, profile } = useAuth();
+  const theme = useCategoryTheme();
   const { create: createEvent, update: updateEvent } = useEvents();
   const { create: createClient } = useClients();
   const [extraClients, setExtraClients] = useState([]);
@@ -282,7 +284,7 @@ export default function EventForm({
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowTemplateModal(true)}
-                className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-400/10 gap-1.5 text-xs"
+                className="bp-hover-primary hover:bg-[color-mix(in_srgb,var(--bp-primary)_10%,transparent)] gap-1.5 text-xs"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 Usar template
@@ -407,11 +409,14 @@ export default function EventForm({
           </div>
 
           {eventSummary && (
-            <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-cyan-900/20 border border-cyan-700/30 text-sm">
+            <div
+              className="flex items-center justify-between px-4 py-3 rounded-xl border text-sm"
+              style={theme.activeSurfaceStyle}
+            >
               <span className="text-slate-400">
                 {eventSummary.days} {eventSummary.days === 1 ? 'dia' : 'dias'} × R$ {Number(formData.daily_cache_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </span>
-              <span className="font-bold text-cyan-300">
+              <span className="font-bold" style={theme.accentStyle}>
                 = R$ {eventSummary.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </span>
             </div>
@@ -459,7 +464,12 @@ export default function EventForm({
             <Button type="button" variant="outline" onClick={() => onClose?.(false)} disabled={loading} className="h-11">
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading} className="bg-cyan-600 hover:bg-cyan-700 text-white h-11">
+            <Button
+              type="submit"
+              disabled={loading}
+              className="text-white h-11 border-0 hover:brightness-110 active:brightness-95 transition-[filter]"
+              style={theme.primaryStyle}
+            >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : event?.id ? 'Atualizar' : 'Criar'}
             </Button>
           </div>

@@ -26,7 +26,9 @@ test('vista semanal exibe colunas dos 7 dias e eventos mockados', async ({ page 
   await page.getByTitle('Vista semanal').click();
   const weekGrid = page.locator('.grid.grid-cols-7');
   await expect(weekGrid).toBeVisible({ timeout: 10_000 });
-  await expect(weekGrid.getByRole('button', { name: 'E2E Show Demo' })).toBeVisible();
+  const eventBtn = weekGrid.getByRole('button', { name: 'E2E Show Demo' });
+  await eventBtn.scrollIntoViewIfNeeded();
+  await expect(eventBtn).toBeVisible({ timeout: 10_000 });
 });
 
 test('vista semanal persiste após recarregar a página', async ({ page }) => {

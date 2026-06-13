@@ -8,15 +8,18 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
 } from '@/components/ui/alert-dialog';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 export default function ConfirmDialog({ open, onOpenChange, title, description, confirmLabel = 'Confirmar', cancelLabel = 'Cancelar', onConfirm, destructive = false }) {
+  const theme = useCategoryTheme();
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="bg-slate-900 border-slate-700 text-white max-w-sm mx-4">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-white">{title}</AlertDialogTitle>
           {description && (
-            <AlertDialogDescription className="text-slate-400">
+            <AlertDialogDescription className="text-[#a0a8b8]">
               {description}
             </AlertDialogDescription>
           )}
@@ -27,9 +30,12 @@ export default function ConfirmDialog({ open, onOpenChange, title, description, 
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className={destructive
-              ? 'bg-red-600 hover:bg-red-700 text-white border-0'
-              : 'bg-cyan-600 hover:bg-cyan-700 text-white border-0'}
+            className={
+              destructive
+                ? 'bg-red-600 hover:bg-red-700 text-white border-0'
+                : 'text-white border-0 hover:brightness-110 active:brightness-95 transition-[filter]'
+            }
+            style={destructive ? undefined : theme.primaryStyle}
           >
             {confirmLabel}
           </AlertDialogAction>

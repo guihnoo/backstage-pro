@@ -342,7 +342,10 @@ export default function ClientDetailModal({
                           Pessoa
                         </span>
                       ) : (
-                        <span className="text-[11px] bg-cyan-600/10 text-cyan-400 border border-cyan-500/20 rounded px-2 py-0.5 flex-shrink-0">
+                        <span
+                          className="text-[11px] rounded px-2 py-0.5 flex-shrink-0"
+                          style={{ background: `${config.primaryHex}18`, color: config.primaryHex, border: `1px solid ${config.primaryHex}33` }}
+                        >
                           Empresa
                         </span>
                       )}
@@ -378,7 +381,7 @@ export default function ClientDetailModal({
                   </>
                 )}
                 {client.invoice_portal_url && (
-                  <Button variant="outline" size="sm" onClick={() => window.open(client.invoice_portal_url, '_blank')} className="bg-slate-800/50 border-slate-700 hover:bg-slate-700 text-cyan-300 hover:text-cyan-200 flex-1 min-w-[120px] h-10">
+                  <Button variant="outline" size="sm" onClick={() => window.open(client.invoice_portal_url, '_blank')} className="bg-slate-800/50 border-slate-700 hover:bg-slate-700 flex-1 min-w-[120px] h-10" style={{ color: config.primaryHex }}>
                     <Globe className="w-4 h-4 mr-2" /> Portal NF-e
                   </Button>
                 )}

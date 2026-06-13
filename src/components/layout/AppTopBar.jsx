@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Settings, Inbox, Search } from 'lucide-react';
+import { Inbox, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
 import { useAuth } from '@/lib/authContext';
 import { isAppOwner } from '@/lib/isAppOwner';
 import { useOwnerFeedbacks } from '@/lib/useFeedback';
 import GlobalSearch from '@/components/layout/GlobalSearch';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 const TOP_BAR_HEIGHT = '3.25rem';
 
@@ -14,14 +15,47 @@ export function getAppTopBarOffset() {
   return `calc(${TOP_BAR_HEIGHT} + env(safe-area-inset-top, 0px))`;
 }
 
+function ProfileAvatar({ profile, primaryHex, active }) {
+  const initial = (profile?.name || profile?.email || 'P').charAt(0).toUpperCase();
+
+  return (
+    <span
+      className="flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold overflow-hidden transition-all"
+      style={{
+        background: profile?.avatar_url ? 'transparent' : `${primaryHex}22`,
+        color: primaryHex,
+        boxShadow: active ? `0 0 0 2px ${primaryHex}` : `0 0 0 1.5px ${primaryHex}55`,
+      }}
+    >
+      {profile?.avatar_url ? (
+        <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+      ) : (
+        initial
+      )}
+    </span>
+  );
+}
+
 export default function AppTopBar() {
   const { pathname } = useLocation();
   const { user, profile } = useAuth();
+  const theme = useCategoryTheme();
   const owner = isAppOwner(user, profile);
   const { newCount } = useOwnerFeedbacks(owner);
   const onProfile = pathname === '/profile';
   const onInbox = pathname === '/admin/feedbacks';
   const [searchOpen, setSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   return (
     <>
@@ -41,7 +75,8 @@ export default function AppTopBar() {
           >
             <button
               type="button"
-              aria-label="Busca global"
+              aria-label="Busca global (Ctrl+K)"
+              title="Buscar (Ctrl+K)"
               onClick={() => setSearchOpen(true)}
               className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full text-[#8a91a1] hover:text-white hover:bg-[#1a1d26] transition-colors"
             >
@@ -61,7 +96,10 @@ export default function AppTopBar() {
                 <Inbox className="w-5 h-5" />
               </motion.span>
               {newCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-cyan-500 text-[#050609] text-[9px] font-black flex items-center justify-center">
+                <span
+                  className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 rounded-full text-[#050609] text-[9px] font-black flex items-center justify-center"
+                  style={{ backgroundColor: theme.primaryHex }}
+                >
                   {newCount > 9 ? '9+' : newCount}
                 </span>
               )}
@@ -71,10 +109,10 @@ export default function AppTopBar() {
             to="/profile"
             aria-label="Perfil e configurações"
             aria-current={onProfile ? 'page' : undefined}
-            className="relative flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full text-[#8a91a1] hover:text-white hover:bg-[#1a1d26] transition-colors"
+            className="relative flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full hover:bg-[#1a1d26] transition-colors"
           >
             <motion.span whileTap={{ scale: 0.9 }} className="flex items-center justify-center">
-              <Settings className="w-5 h-5" />
+              <ProfileAvatar profile={profile} primaryHex={theme.primaryHex} active={onProfile} />
             </motion.span>
           </Link>
           </div>

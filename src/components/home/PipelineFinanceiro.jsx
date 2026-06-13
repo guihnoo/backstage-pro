@@ -21,7 +21,7 @@ export default function PipelineFinanceiro({ stats, isLoading, primaryHex = '#A6
           <button
             type="button"
             onClick={() => hardNavigate('/reports')}
-            className="text-xs text-[#7c8494] hover:text-cyan-400 flex items-center gap-1 transition-colors"
+            className="text-xs text-[#7c8494] flex items-center gap-1 transition-colors bp-hover-primary"
           >
             Ver relatório
             <ChevronRight className="w-3.5 h-3.5" />

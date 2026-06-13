@@ -284,7 +284,7 @@ export default function ExpensesPage() {
                     threshold={threshold}
                     primaryHex={config.primaryHex}
                 />
-                <div className="p-4 md:p-6 space-y-6">
+                <div className="p-4 md:p-6 space-y-6 max-w-2xl xl:max-w-6xl mx-auto w-full min-w-0">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                         <div className="flex items-start justify-between sm:block gap-2">
                             <div>
@@ -359,7 +359,7 @@ export default function ExpensesPage() {
                               <button
                                   type="button"
                                   onClick={() => setCategoryFilter('all')}
-                                  className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${categoryFilter === 'all' ? 'border-cyan-500/60 bg-cyan-500/15 text-cyan-300' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
+                                  className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${categoryFilter === 'all' ? 'bp-chip-active' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
                               >
                                   Todas
                               </button>
@@ -368,7 +368,7 @@ export default function ExpensesPage() {
                                       key={cat}
                                       type="button"
                                       onClick={() => setCategoryFilter(cat === categoryFilter ? 'all' : cat)}
-                                      className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${categoryFilter === cat ? 'border-cyan-500/60 bg-cyan-500/15 text-cyan-300' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
+                                      className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${categoryFilter === cat ? 'bp-chip-active' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
                                   >
                                       {CATEGORY_LABELS[cat] || cat}
                                   </button>

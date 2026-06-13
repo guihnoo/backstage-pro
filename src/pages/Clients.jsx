@@ -129,6 +129,18 @@ export default function ClientsPage() {
       );
       const pendingRevenue = completedUnpaidEvents.reduce((sum, e) => sum + getEventRevenue(e), 0);
 
+      const completedEvents = clientEvents.filter(e => getEventStatus(e) === 'completed');
+      const completedPaid = completedEvents.filter(e => e.payment_status === 'paid').length;
+      const paymentPct = completedEvents.length > 0 ? Math.round((completedPaid / completedEvents.length) * 100) : null;
+      const paymentScore = paymentPct === null ? null : {
+        pct: paymentPct,
+        label: paymentPct >= 90 ? 'Excelente' : paymentPct >= 70 ? 'Bom' : paymentPct >= 40 ? 'Regular' : 'Atenção',
+        colorClass: paymentPct >= 90 ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10'
+          : paymentPct >= 70 ? 'text-blue-400 border-blue-500/30 bg-blue-500/10'
+          : paymentPct >= 40 ? 'text-amber-400 border-amber-500/30 bg-amber-500/10'
+          : 'text-red-400 border-red-500/30 bg-red-500/10',
+      };
+
       const sixMonthsAgo = new Date();
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
       
@@ -155,6 +167,7 @@ export default function ClientsPage() {
           pendingRevenue,
           isActive,
           lastEventDate: lastEvent?.start_date,
+          paymentScore,
           unpaidEvents: completedUnpaidEvents.map(e => ({
             id: e.id,
             title: e.title,
@@ -328,7 +341,7 @@ export default function ClientsPage() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="space-y-6 p-4 md:p-6"
+        className="space-y-6 p-4 md:p-6 max-w-2xl xl:max-w-6xl mx-auto w-full min-w-0"
       >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -423,7 +436,7 @@ export default function ClientsPage() {
                   key={opt.key}
                   type="button"
                   onClick={() => setSortBy(opt.key)}
-                  className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${sortBy === opt.key ? 'border-cyan-500/60 bg-cyan-500/15 text-cyan-300' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
+                  className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${sortBy === opt.key ? 'bp-chip-active' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
                 >
                   {opt.label}
                 </button>
@@ -535,6 +548,27 @@ export default function ClientsPage() {
                           <p className="font-bold text-amber-400 text-lg">{formatCurrency(client.stats.pendingRevenue)}</p>
                         </div>
                       </div>
+                      {client.stats.paymentScore && (
+                        <div className="mt-3 flex items-center justify-between">
+                          <p className="text-[11px] text-slate-500">Confiabilidade</p>
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-16 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                              <div
+                                className="h-full rounded-full"
+                                style={{
+                                  width: `${client.stats.paymentScore.pct}%`,
+                                  backgroundColor: client.stats.paymentScore.pct >= 90 ? '#34d399'
+                                    : client.stats.paymentScore.pct >= 70 ? '#60a5fa'
+                                    : client.stats.paymentScore.pct >= 40 ? '#fbbf24' : '#f87171'
+                                }}
+                              />
+                            </div>
+                            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full border ${client.stats.paymentScore.colorClass}`}>
+                              {client.stats.paymentScore.label}
+                            </span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                     
                     {(client.email || client.phone) && (

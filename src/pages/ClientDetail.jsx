@@ -173,12 +173,23 @@ export default function ClientDetailPage() {
     const paidAmount = paidEvents.reduce((sum, e) => sum + (e.paid_amount || getEventRevenue(e)), 0);
     const unpaidAmount = unpaidEvents.reduce((sum, e) => sum + getEventRevenue(e), 0);
 
+    const completedEvents = clientEvents.filter(e => getEventStatus(e) === 'completed');
+    const completedPaid = completedEvents.filter(e => e.payment_status === 'paid').length;
+    const paymentPct = completedEvents.length > 0 ? Math.round((completedPaid / completedEvents.length) * 100) : null;
+    const paymentScore = paymentPct === null ? null : {
+      pct: paymentPct,
+      label: paymentPct >= 90 ? 'Excelente' : paymentPct >= 70 ? 'Bom' : paymentPct >= 40 ? 'Regular' : 'Atenção',
+      hex: paymentPct >= 90 ? '#34d399' : paymentPct >= 70 ? '#60a5fa' : paymentPct >= 40 ? '#fbbf24' : '#f87171',
+      textColor: paymentPct >= 90 ? 'text-emerald-400' : paymentPct >= 70 ? 'text-blue-400' : paymentPct >= 40 ? 'text-amber-400' : 'text-red-400',
+    };
+
     return {
       totalEvents: clientEvents.length,
       totalHours: totalHours.toFixed(1),
       totalRevenue,
       paidAmount,
       unpaidAmount,
+      paymentScore,
       avgRevenuePerEvent: clientEvents.length > 0 ? totalRevenue / clientEvents.length : 0,
       unpaidEventsWithAmounts: unpaidEvents.map(e => ({
         id: e.id,
@@ -310,7 +321,10 @@ export default function ClientDetailPage() {
                 {client.client_type === 'pessoa' ? (
                   <span className="text-[11px] bg-purple-600/20 text-purple-300 border border-purple-500/30 rounded px-2 py-0.5">Pessoa</span>
                 ) : (
-                  <span className="text-[11px] bg-cyan-600/10 text-cyan-400 border border-cyan-500/20 rounded px-2 py-0.5">Empresa</span>
+                  <span
+                    className="text-[11px] rounded px-2 py-0.5"
+                    style={{ background: `${config.primaryHex}18`, color: config.primaryHex, border: `1px solid ${config.primaryHex}33` }}
+                  >Empresa</span>
                 )}
               </div>
               {client.contact_person && (
@@ -355,7 +369,7 @@ export default function ClientDetailPage() {
                   className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-800/60 transition-colors group"
                 >
                   <Mail className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                  <span className="text-white break-all group-hover:text-cyan-300 transition-colors">{client.email}</span>
+                  <span className="text-white break-all group-hover:[color:var(--client-primary)] transition-colors" style={{ '--client-primary': config.primaryHex }}>{client.email}</span>
                 </a>
               )}
               {client.phone && (
@@ -365,7 +379,7 @@ export default function ClientDetailPage() {
                     className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-800/60 transition-colors group flex-1"
                   >
                     <Phone className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                    <span className="text-white truncate min-w-0 group-hover:text-cyan-300 transition-colors" title={client.phone}>{client.phone}</span>
+                    <span className="text-white truncate min-w-0 group-hover:[color:var(--client-primary)] transition-colors" style={{ '--client-primary': config.primaryHex }} title={client.phone}>{client.phone}</span>
                   </a>
                   <button
                     type="button"
@@ -389,7 +403,7 @@ export default function ClientDetailPage() {
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Observações</span>
                   {!editingNotes ? (
-                    <button onClick={() => { setNotesValue(client.notes || ''); setEditingNotes(true); }} className="text-slate-500 hover:text-cyan-400 transition-colors p-0.5">
+                    <button onClick={() => { setNotesValue(client.notes || ''); setEditingNotes(true); }} className="text-slate-500 bp-hover-primary transition-colors p-0.5">
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                   ) : (
@@ -407,7 +421,7 @@ export default function ClientDetailPage() {
                   <textarea
                     value={notesValue}
                     onChange={e => setNotesValue(e.target.value)}
-                    className="w-full bg-slate-800/60 border border-slate-700 focus:border-cyan-500/50 rounded-lg p-2 text-sm text-white resize-none min-h-[80px] outline-none transition-colors"
+                    className="w-full bg-slate-800/60 border border-slate-700 rounded-lg p-2 text-sm text-white resize-none min-h-[80px] outline-none transition-colors bp-focus-input"
                     placeholder="Adicione observações sobre este cliente..."
                   />
                 ) : client.notes ? (
@@ -522,7 +536,7 @@ export default function ClientDetailPage() {
           <CardHeader>
             <CardTitle className="text-slate-50 text-lg font-semibold tracking-tight flex items-center gap-2">Resumo Financeiro</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+          <CardContent className={`grid gap-6 text-center ${stats.paymentScore ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-1 md:grid-cols-3'}`}>
             <div>
               <p className="text-sm text-slate-300">FATURAMENTO PAGO</p>
               <p className="text-2xl font-bold text-green-400">{formatCurrency(stats.paidAmount)}</p>
@@ -535,6 +549,21 @@ export default function ClientDetailPage() {
               <p className="text-sm text-slate-300">FATURAMENTO TOTAL</p>
               <p className="text-2xl font-bold text-white">{formatCurrency(stats.totalRevenue)}</p>
             </div>
+            {stats.paymentScore && (
+              <div>
+                <p className="text-sm text-slate-300">CONFIABILIDADE</p>
+                <p className={`text-2xl font-bold ${stats.paymentScore.textColor}`}>
+                  {stats.paymentScore.label}
+                </p>
+                <div className="mt-2 h-1.5 bg-slate-700 rounded-full overflow-hidden mx-auto max-w-[80px]">
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{ width: `${stats.paymentScore.pct}%`, backgroundColor: stats.paymentScore.hex }}
+                  />
+                </div>
+                <p className="text-xs text-slate-500 mt-1">{stats.paymentScore.pct}% dos shows pagos</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 

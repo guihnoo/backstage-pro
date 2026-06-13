@@ -23,6 +23,7 @@ import { openWhatsAppCharge, buildChargeMessage } from '@/lib/whatsapp';
 import { differenceInDays, parseISO, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { buildUserNotifications } from '@/lib/notificationRules';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 const DISMISSED_KEY = 'backstage_dismissed_notifications';
 
@@ -53,7 +54,7 @@ const TYPE_ICONS = {
   work_reminder: Clock,
 };
 
-function NotificationItem({ notification, onDismiss, onNavigate, onViewEvent }) {
+function NotificationItem({ notification, onDismiss, onNavigate, onViewEvent, primaryStyle }) {
   const Icon = TYPE_ICONS[notification.type] || Bell;
   const styleClass = PRIORITY_STYLES[notification.priority] || PRIORITY_STYLES.low;
 
@@ -95,7 +96,8 @@ function NotificationItem({ notification, onDismiss, onNavigate, onViewEvent }) 
                   size="sm"
                   variant="outline"
                   onClick={() => { onViewEvent ? onViewEvent(notification) : onNavigate(notification.action_url); onDismiss(notification.id); }}
-                  className="h-8 px-2.5 text-xs bg-cyan-600 hover:bg-cyan-700 border-cyan-500 text-white"
+                  className="h-8 px-2.5 text-xs text-white border-0 hover:brightness-110 transition-[filter]"
+                  style={primaryStyle}
                 >
                   Ver
                 </Button>
@@ -118,6 +120,7 @@ function NotificationItem({ notification, onDismiss, onNavigate, onViewEvent }) 
 
 export default function NotificationCenter({ compact = false }) {
   const { user, profile } = useAuth();
+  const theme = useCategoryTheme();
   const { events, delete: deleteEvent, refetch: refetchEvents } = useEvents();
   const { clients } = useClients();
   const { stats } = useStats(user?.id);
@@ -275,6 +278,7 @@ export default function NotificationCenter({ compact = false }) {
                   onDismiss={handleDismiss}
                   onNavigate={handleNavigate}
                   onViewEvent={handleViewEvent}
+                  primaryStyle={theme.primaryStyle}
                 />
               ))
             ) : (

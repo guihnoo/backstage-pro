@@ -7,6 +7,7 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import EventHeading from '@/components/events/EventHeading';
 
 const STATUS_LABEL = {
@@ -24,6 +25,7 @@ function normalize(s) {
 export default function GlobalSearch({ isOpen, onClose }) {
   const [query, setQuery] = useState('');
   const inputRef = useRef(null);
+  const theme = useCategoryTheme();
   const { events = [] } = useEvents();
   const { clients = [] } = useClients();
 
@@ -90,6 +92,9 @@ export default function GlobalSearch({ isOpen, onClose }) {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
           className="fixed inset-0 z-[110] bg-black/70 backdrop-blur-sm flex flex-col"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Busca global"
           onClick={onClose}
         >
           <motion.div
@@ -108,7 +113,9 @@ export default function GlobalSearch({ isOpen, onClose }) {
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 placeholder="Buscar eventos, clientes, locais…"
-                className="flex-1 bg-transparent text-white placeholder:text-slate-500 text-base outline-none caret-cyan-400"
+                aria-label="Termo de busca"
+                className="flex-1 bg-transparent text-white placeholder:text-slate-500 text-base outline-none"
+                style={{ caretColor: theme.primaryHex }}
                 autoComplete="off"
                 autoCorrect="off"
                 spellCheck={false}

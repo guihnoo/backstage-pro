@@ -1,7 +1,7 @@
 import { Suspense, useEffect, useRef } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import LoadingSpinner from '@/components/layout/LoadingSpinner';
-import { motion } from 'framer-motion';
+import RouteSkeleton from '@/components/layout/RouteSkeleton';
+import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { Home, Calendar, Users, Receipt, BarChart2, Sparkles, Target } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
@@ -47,8 +47,19 @@ export default function AppLayout() {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
+  const themeVars = {
+    '--bp-primary': config.primaryHex,
+    '--bp-accent': config.accentHex,
+    '--bp-glow': config.bgGlow,
+    '--bp-muted': '#8a91a1',
+  };
+
   return (
-    <div className="h-full bg-[#050609] text-white flex flex-col overflow-hidden">
+    <MotionConfig reducedMotion="user" transition={{ duration: 0.22, ease: 'easeOut' }}>
+    <div
+      className="h-full bg-[#050609] text-white flex flex-col overflow-hidden"
+      style={themeVars}
+    >
       <AppTour />
       <AppTopBar />
       <OfflineBanner />
@@ -61,9 +72,20 @@ export default function AppLayout() {
           paddingBottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))',
         }}
       >
-        <Suspense fallback={<LoadingSpinner fullScreen text="Carregando..." />}>
-          <Outlet key={location.pathname} />
-        </Suspense>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+            className="min-h-full"
+          >
+            <Suspense fallback={<RouteSkeleton />}>
+              <Outlet />
+            </Suspense>
+          </motion.div>
+        </AnimatePresence>
       </main>
       <nav
         data-tour="bottom-nav"
@@ -103,8 +125,13 @@ export default function AppLayout() {
                   />
                 )}
                 <motion.div whileTap={{ scale: 0.88 }} className="flex flex-col items-center gap-0.5 py-3 px-0.5 w-full min-w-0">
-                  <Icon className="w-[18px] h-[18px] shrink-0 transition-transform" style={{ color: active ? config.primaryHex : '#5f6678', transform: active ? 'translateY(-1px)' : 'none' }} />
-                  <span className="text-[8px] font-mono uppercase leading-none truncate max-w-full transition-colors" style={{ color: active ? config.primaryHex : '#5f6678' }}>{label}</span>
+                  <Icon className="w-[18px] h-[18px] shrink-0 transition-transform" style={{ color: active ? config.primaryHex : '#8a91a1', transform: active ? 'translateY(-1px)' : 'none' }} />
+                  <span
+                    className="hidden min-[380px]:block text-[10px] font-mono uppercase leading-tight truncate max-w-full transition-colors"
+                    style={{ color: active ? config.primaryHex : '#8a91a1' }}
+                  >
+                    {label}
+                  </span>
                 </motion.div>
               </Link>
             );
@@ -112,5 +139,6 @@ export default function AppLayout() {
         </div>
       </nav>
     </div>
+    </MotionConfig>
   );
 }

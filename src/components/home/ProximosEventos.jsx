@@ -10,6 +10,7 @@ import { useFinancialVisibility } from '@/components/context/FinancialVisibility
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { getEventDisplay } from '@/lib/eventDisplay';
 import { resolveEventColor } from '@/lib/brandColors';
+import { getCategoryConfig } from '@/lib/categoryConfig';
 
 function getTimeGroup(daysFromToday) {
   if (daysFromToday === 0) return 'Hoje';
@@ -26,7 +27,8 @@ const statusConfig = {
   cancelled: { label: 'Cancelado', color: 'bg-red-600/20 border-red-500/30 text-red-300' }
 };
 
-export default function ProximosEventos({ events, isLoading, onRefresh, onViewEvent }) {
+export default function ProximosEventos({ events, isLoading, onRefresh, onViewEvent, userCategory }) {
+  const config = getCategoryConfig(userCategory || 'lighting');
   const proximosEventos = events.slice(0, 6);
   const { togglePayment, toggling: togglingPayment } = usePaymentToggle();
   const { confirmEvent, toggling: togglingStatus } = useStatusToggle();
@@ -69,14 +71,23 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="mb-8 p-6 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/30 text-center"
+        className="mb-8 p-6 rounded-xl border text-center"
+        style={{
+          background: `linear-gradient(to right, ${config.primaryHex}14, ${config.accentHex}10)`,
+          borderColor: `${config.primaryHex}40`,
+        }}
       >
-        <p className="text-blue-300 font-semibold">📅 Nenhum evento próximo</p>
-        <p className="text-sm text-blue-400/70 mt-1 mb-4">Crie seu primeiro evento para começar!</p>
+        <p className="font-semibold" style={{ color: config.primaryHex }}>📅 Nenhum evento próximo</p>
+        <p className="text-sm text-slate-400 mt-1 mb-4">Crie seu primeiro evento para começar!</p>
         <motion.button
           whileTap={{ scale: 0.96 }}
           onClick={() => hardNavigate('/calendar')}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-600/20 border border-cyan-500/40 text-cyan-300 text-sm font-semibold hover:bg-cyan-600/30 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border transition-colors hover:brightness-110"
+          style={{
+            background: `${config.primaryHex}22`,
+            borderColor: `${config.primaryHex}55`,
+            color: config.primaryHex,
+          }}
         >
           <Plus className="w-4 h-4" /> Criar evento
         </motion.button>
@@ -91,7 +102,7 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
         <button
           type="button"
           onClick={() => hardNavigate('/calendar')}
-          className="text-xs text-slate-500 hover:text-cyan-400 flex items-center gap-1 transition-colors"
+          className="text-xs text-slate-500 flex items-center gap-1 transition-colors bp-hover-primary"
         >
           Ver agenda <ChevronRight className="w-3.5 h-3.5" />
         </button>
@@ -102,13 +113,18 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
             return (
               <div key={`h-${item.label}`} className={`flex items-center gap-2 ${idx > 0 ? 'mt-4' : 'mt-0'} mb-2`}>
                 <span className={`text-[10px] font-bold uppercase tracking-widest font-mono ${
-                  item.label === 'Hoje' ? 'text-cyan-400' :
+                  item.label === 'Hoje' ? 'bp-text-primary' :
                   item.label === 'Amanhã' ? 'text-amber-400' :
                   'text-[#5a6070]'
                 }`}>
                   {item.label}
                 </span>
-                {item.label === 'Hoje' && <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />}
+                {item.label === 'Hoje' && (
+                  <span
+                    className="w-1.5 h-1.5 rounded-full animate-pulse"
+                    style={{ backgroundColor: config.primaryHex }}
+                  />
+                )}
                 <div className="flex-1 h-px bg-[#1e2030]" />
               </div>
             );
@@ -140,7 +156,7 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
               onClick={() => onViewEvent ? onViewEvent(event) : hardNavigate('/calendar')}
               className={`p-4 rounded-lg border transition-all group cursor-pointer ${
                 item.days === 0
-                  ? 'bg-cyan-950/30 border-cyan-700/30 hover:border-cyan-600/50'
+                  ? 'bp-today-surface-soft hover:brightness-110'
                   : 'bg-slate-900/50 border-slate-700/30 hover:border-slate-600/50'
               }`}
             >
@@ -149,7 +165,10 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: barColor, boxShadow: `0 0 5px ${barColor}80` }} />
                     <div className="min-w-0">
-                      <h4 className="font-semibold text-white truncate group-hover:text-cyan-300 transition-colors">
+                      <h4
+                        className="font-semibold text-white truncate transition-colors group-hover:[color:var(--event-primary)]"
+                        style={{ '--event-primary': config.primaryHex }}
+                      >
                         {display.companyName}
                       </h4>
                       {display.showEventSubtitle && (
@@ -185,7 +204,7 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
                 <div className="flex flex-col items-end gap-2 flex-shrink-0">
                   <div className="text-right">
                     <p className="text-xs text-slate-500 mb-0.5">{formattedDate.toUpperCase()}</p>
-                    <p className="font-bold text-cyan-400 tabular-nums">
+                    <p className="font-bold tabular-nums" style={{ color: config.primaryHex }}>
                       {isVisible ? formatCurrency(cacheValue) : '•••'}
                     </p>
                   </div>

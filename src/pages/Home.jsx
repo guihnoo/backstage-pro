@@ -16,7 +16,7 @@ import ProximosEventos from '@/components/home/ProximosEventos';
 import ForecastWidget from '@/components/home/ForecastWidget';
 import FloatingActions from '@/components/home/FloatingActions';
 import LiveClockBar from '@/components/home/LiveClockBar';
-import { NeonAtmosphere } from '@/components/design/NeonAtmosphere';
+import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { LightingBeams } from '@/components/design/LightingBeams';
 import { NeonLevelBars } from '@/components/design/NeonLevelBars';
 import { NeonSectionFrame } from '@/components/design/NeonSectionFrame';
@@ -131,7 +131,7 @@ export default function Home() {
   );
 
   return (
-    <div className="min-h-full overflow-x-clip bg-[#050609] text-white">
+    <NeonPageShell primary={config.primaryHex} accent={config.accentHex} stage={palcoAtivo}>
       <PullToRefreshIndicator
         pullDistance={pullDistance}
         isRefreshing={isRefreshing}
@@ -149,7 +149,6 @@ export default function Home() {
             : 'linear-gradient(180deg, #11131c 0%, #050609 100%)',
         }}
       >
-        <NeonAtmosphere primary={config.primaryHex} accent={config.accentHex} stage={palcoAtivo} />
         {isLiveShift && <LightingBeams primary={config.primaryHex} accent={config.accentHex} />}
         <motion.div
           className="absolute top-0 left-0 right-0 h-0.5 z-10"
@@ -222,7 +221,7 @@ export default function Home() {
         </div>
       </motion.header>
 
-      <div className="px-4 py-6 max-w-2xl mx-auto pb-28">
+      <div className="px-4 py-6 max-w-2xl xl:max-w-6xl mx-auto w-full min-w-0 pb-28">
         <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Próximo show">
           {loading ? (
             <SectionSkeleton className="h-36" />
@@ -359,6 +358,6 @@ export default function Home() {
         destructive
         onConfirm={handleConfirmDeleteEvent}
       />
-    </div>
+    </NeonPageShell>
   );
 }

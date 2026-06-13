@@ -21,9 +21,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ColorGridPicker from '@/components/ui/ColorGridPicker';
 import { pickDefaultClientColor, DEFAULT_CLIENT_COLOR } from '@/lib/brandColors';
 import CompanySearchInput from './CompanySearchInput';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 export default function ClientForm({ client, onSuccess, onCancel }) {
   const { user } = useAuth();
+  const theme = useCategoryTheme();
   const { create: createClient, update: updateClient } = useClients();
   const { upsertCompany } = useCompanies();
   const [loading, setLoading] = useState(false);
@@ -310,7 +312,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
             <DialogTitle className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
               {formData.client_type === 'pessoa'
                 ? <User className="w-5 h-5 text-purple-400 flex-shrink-0" />
-                : <Building2 className="w-5 h-5 text-cyan-400 flex-shrink-0" />
+                : <Building2 className="w-5 h-5 flex-shrink-0" style={{ color: theme.primaryHex }} />
               }
               {client ? 'Editar Cliente' : 'Novo Cliente'}
             </DialogTitle>
@@ -333,9 +335,10 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                 onClick={() => handleChange('client_type', 'empresa')}
                 className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors ${
                   formData.client_type === 'empresa'
-                    ? 'bg-cyan-600 text-white'
+                    ? 'text-white'
                     : 'bg-slate-800/60 text-slate-400 hover:text-slate-200'
                 }`}
+                style={formData.client_type === 'empresa' ? theme.primaryStyle : undefined}
               >
                 <Building2 className="w-4 h-4" />
                 Empresa
@@ -374,7 +377,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
               <h3 className="text-base sm:text-lg font-medium text-white flex items-center gap-2">
                 {formData.client_type === 'pessoa'
                   ? <User className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400 flex-shrink-0" />
-                  : <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 flex-shrink-0" />
+                  : <Building2 className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" style={theme.accentStyle} />
                 }
                 Informações Básicas
               </h3>
@@ -717,7 +720,8 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
               type="button"
               onClick={handleSubmit}
               disabled={loading || Object.keys(errors).length > 0}
-              className="w-full sm:w-auto bg-cyan-600 hover:bg-cyan-700 text-white h-12 min-h-[44px] order-1 sm:order-2"
+              className="w-full sm:w-auto text-white h-12 min-h-[44px] order-1 sm:order-2 border-0 hover:brightness-110 active:brightness-95 transition-[filter]"
+              style={theme.primaryStyle}
             >
               {loading ? (
                 <>

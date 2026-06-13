@@ -37,7 +37,7 @@ const DEFAULT_HINT = 'Pergunte sobre diárias, cachês, clientes, cobranças e m
 
 function TypingDots({ color }) {
   return (
-    <div className="flex items-start gap-2 px-4 py-1 max-w-2xl mx-auto">
+    <div className="flex items-start gap-2 px-4 py-1 max-w-2xl xl:max-w-6xl mx-auto w-full">
       <div
         className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
         style={{ background: `${color}20` }}
@@ -77,21 +77,25 @@ function newConversation() {
   };
 }
 
-function ConversationItem({ conv, isActive, onSelect, onDelete }) {
+function ConversationItem({ conv, isActive, onSelect, onDelete, primaryHex }) {
   const preview = conv.messages?.[0]?.content?.slice(0, 55) || 'Conversa vazia';
   const date = conv.createdAt ? format(parseISO(conv.createdAt), "d MMM", { locale: ptBR }) : '--';
 
   return (
     <motion.div
       whileTap={{ scale: 0.98 }}
-      className={`group w-full text-left p-3 rounded-xl transition-all flex items-start gap-2 cursor-pointer ${
+      className={`group w-full text-left p-3 rounded-xl transition-all flex items-start gap-2 cursor-pointer border ${
         isActive
-          ? 'bg-cyan-600/20 border border-cyan-500/40'
-          : 'bg-slate-800/50 border border-transparent hover:border-slate-700'
+          ? ''
+          : 'bg-slate-800/50 border-transparent hover:border-slate-700'
       }`}
+      style={isActive ? { background: `${primaryHex}22`, borderColor: `${primaryHex}55` } : undefined}
       onClick={() => onSelect(conv)}
     >
-      <MessageSquare className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isActive ? 'text-cyan-400' : 'text-slate-500'}`} />
+      <MessageSquare
+        className="w-4 h-4 mt-0.5 flex-shrink-0"
+        style={{ color: isActive ? primaryHex : '#64748b' }}
+      />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-white truncate">{conv.name}</p>
         <p className="text-xs text-slate-500 truncate mt-0.5">{preview}</p>
@@ -101,7 +105,7 @@ function ConversationItem({ conv, isActive, onSelect, onDelete }) {
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onDelete(conv.id); }}
-          className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-500 hover:text-red-400 transition-all"
+          className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-1 min-w-[28px] min-h-[28px] text-slate-500 hover:text-red-400 transition-all"
           title="Excluir conversa"
         >
           <Trash2 className="w-3 h-3" />
@@ -292,7 +296,7 @@ export default function AIMentorPage() {
           className="px-4 pt-4 pb-3 border-b border-[#23262f] flex-shrink-0"
           style={{ background: `linear-gradient(135deg, ${config.primaryHex}10, transparent)` }}
         >
-          <div className="flex items-start justify-between max-w-2xl mx-auto">
+          <div className="flex items-start justify-between max-w-2xl xl:max-w-6xl mx-auto w-full">
             <div>
               <p className="text-xs text-slate-500 uppercase tracking-wider">Mentor financeiro</p>
               <h1 className="text-lg font-black text-white flex items-center gap-2">
@@ -303,7 +307,7 @@ export default function AIMentorPage() {
             <LiveClockBar primaryHex={config.primaryHex} />
           </div>
           {stats && (
-            <div className="flex flex-wrap gap-2 mt-3 max-w-2xl mx-auto">
+            <div className="flex flex-wrap gap-2 mt-3 max-w-2xl xl:max-w-6xl mx-auto w-full">
               {metaDiarias > 0 && (
                 <span
                   className="text-[10px] font-mono px-2.5 py-1 rounded-full border"
@@ -336,7 +340,8 @@ export default function AIMentorPage() {
               variant="ghost"
               size="icon"
               onClick={toggleAudio}
-              className={`w-8 h-8 ${isAudioEnabled ? 'text-cyan-400' : 'text-[#5a6070]'}`}
+              className={`w-8 h-8 ${isAudioEnabled ? '' : 'text-[#5a6070]'}`}
+              style={isAudioEnabled ? { color: config.primaryHex } : undefined}
               title={isAudioEnabled ? 'Desativar áudio' : 'Ativar leitura em voz alta'}
             >
               {isAudioEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
@@ -392,7 +397,7 @@ export default function AIMentorPage() {
               <SmartSuggestions userData={financialContext} onSuggestionClick={(s) => handleSend(s)} />
             </motion.div>
           ) : (
-            <div className="space-y-2 max-w-2xl mx-auto">
+            <div className="space-y-2 max-w-2xl xl:max-w-6xl mx-auto w-full">
               <AnimatePresence>
                 {messages.map((msg, i) => (
                   <motion.div
@@ -413,7 +418,7 @@ export default function AIMentorPage() {
 
         {/* Input */}
         <div className="border-t border-[#23262f] px-4 py-3 flex-shrink-0 pb-safe">
-          <div className="flex items-end gap-2 max-w-2xl mx-auto">
+          <div className="flex items-end gap-2 max-w-2xl xl:max-w-6xl mx-auto w-full">
             <textarea
               ref={textareaRef}
               value={input}
@@ -476,6 +481,7 @@ export default function AIMentorPage() {
                   isActive={currentConv?.id === conv.id}
                   onSelect={handleSelectConv}
                   onDelete={handleDeleteConv}
+                  primaryHex={config.primaryHex}
                 />
               ))
             )}

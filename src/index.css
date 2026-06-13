@@ -220,6 +220,20 @@ body:has([role="alertdialog"][data-state="open"]) [data-app-scroll] {
   touch-action: none;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse,
+  .animate-spin,
+  .animate-bounce {
+    animation: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Corpo rolável padrão dentro de modais flex */
 .bp-modal-scroll {
   flex: 1 1 0%;
@@ -227,4 +241,46 @@ body:has([role="alertdialog"][data-state="open"]) [data-app-scroll] {
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Tokens de categoria (--bp-primary definido em AppLayout) */
+.bp-focus-input:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--bp-primary) 60%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bp-primary) 30%, transparent);
+}
+
+.bp-chip-active {
+  border-color: color-mix(in srgb, var(--bp-primary) 60%, transparent) !important;
+  background: color-mix(in srgb, var(--bp-primary) 12%, transparent) !important;
+  color: var(--bp-primary) !important;
+}
+
+.bp-chip-badge-active {
+  background: color-mix(in srgb, var(--bp-primary) 20%, transparent) !important;
+  color: var(--bp-primary) !important;
+}
+
+.bp-view-active {
+  background: color-mix(in srgb, var(--bp-primary) 30%, transparent) !important;
+  color: var(--bp-primary) !important;
+}
+
+.bp-today-surface {
+  background: color-mix(in srgb, var(--bp-primary) 12%, transparent);
+  border-color: color-mix(in srgb, var(--bp-primary) 50%, transparent);
+}
+
+.bp-today-surface-soft {
+  background: color-mix(in srgb, var(--bp-primary) 8%, transparent);
+  border-color: color-mix(in srgb, var(--bp-primary) 35%, transparent);
+}
+
+.bp-text-primary {
+  color: var(--bp-primary);
+}
+
+.bp-hover-primary:hover {
+  color: var(--bp-primary);
+  border-color: color-mix(in srgb, var(--bp-primary) 40%, transparent);
 }

@@ -46,7 +46,8 @@ export default function CalendarTodayStrip({
           <button
             type="button"
             onClick={onNewEvent}
-            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-slate-700 text-cyan-300 hover:bg-cyan-500/10 transition-colors"
+            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-slate-700 transition-colors bp-hover-primary hover:bg-[color-mix(in_srgb,var(--bp-primary)_10%,transparent)]"
+            style={{ color: primaryHex }}
           >
             <Plus className="w-3.5 h-3.5" />
             Agendar
@@ -75,7 +76,7 @@ export default function CalendarTodayStrip({
           <button
             type="button"
             onClick={onRegisterWork}
-            className="text-[10px] font-mono text-slate-500 hover:text-cyan-400 transition-colors"
+            className="text-[10px] font-mono text-slate-500 transition-colors bp-hover-primary"
           >
             Registrar horas →
           </button>

@@ -12,6 +12,7 @@ import {
   CalendarCheck,
 } from 'lucide-react';
 import { normalizeDateString, getEventsForDate, getWorkForDate, getEventStatus } from '../utils/dateUtils';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 function eventNeedsLocation(event) {
   if (!event) return false;
@@ -28,6 +29,7 @@ export default function AlertsPanel({
   onOpenEvent,
   className = '',
 }) {
+  const theme = useCategoryTheme();
   const [alerts, setAlerts] = useState([]);
   const [dismissedAlerts, setDismissedAlerts] = useState(() => {
     try {
@@ -76,9 +78,7 @@ export default function AlertsPanel({
         title: 'Registrar local do evento',
         body: `"${eventMissingLocation.title || 'Seu evento de hoje'}" ainda não tem local. Faça check-in GPS no venue.`,
         icon: MapPin,
-        color: 'text-cyan-400',
-        bgColor: 'bg-cyan-500/10',
-        borderColor: 'border-cyan-500/30',
+        accentHex: theme.primaryHex,
         cta: {
           label: 'Check-in GPS',
           action: () => onLocationCheckIn?.(eventMissingLocation),
@@ -208,7 +208,7 @@ export default function AlertsPanel({
     }
 
     return newAlerts;
-  }, [events, dailyWork, dismissedAlerts, onRegisterWork, onLocationCheckIn, onOpenEvent]);
+  }, [events, dailyWork, dismissedAlerts, onRegisterWork, onLocationCheckIn, onOpenEvent, theme.primaryHex]);
 
   useEffect(() => {
     setAlerts(generatedAlerts);
@@ -245,13 +245,30 @@ export default function AlertsPanel({
             exit={{ opacity: 0, height: 0, y: -10 }}
             transition={{ duration: 0.3 }}
           >
-            <Card className={`${alert.bgColor} border ${alert.borderColor} backdrop-blur-sm`}>
+            <Card
+              className={
+                alert.accentHex
+                  ? 'backdrop-blur-sm border'
+                  : `${alert.bgColor} border ${alert.borderColor} backdrop-blur-sm`
+              }
+              style={
+                alert.accentHex
+                  ? { background: `${alert.accentHex}1a`, borderColor: `${alert.accentHex}4d` }
+                  : undefined
+              }
+            >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <alert.icon className={`w-5 h-5 ${alert.color} flex-shrink-0`} />
+                    <alert.icon
+                      className={`w-5 h-5 flex-shrink-0 ${alert.color ?? ''}`}
+                      style={alert.accentHex ? { color: alert.accentHex } : undefined}
+                    />
                     <div className="min-w-0">
-                      <h3 className={`font-bold ${alert.color} truncate`}>
+                      <h3
+                        className={`font-bold truncate ${alert.color ?? ''}`}
+                        style={alert.accentHex ? { color: alert.accentHex } : undefined}
+                      >
                         {alert.title}
                       </h3>
                       <p className="text-sm text-slate-300 mt-1 break-words">
@@ -274,33 +291,30 @@ export default function AlertsPanel({
                     <Button
                       size="sm"
                       onClick={() => executeAction(alert)}
-                      className={{
-                        'text-green-400':  'bg-green-500/20 hover:bg-green-500/30 text-green-300 border-green-400/30',
-                        'text-cyan-400':   'bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border-cyan-400/30',
-                        'text-amber-400':  'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border-amber-400/30',
-                        'text-indigo-400': 'bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border-indigo-400/30',
-                        'text-purple-400': 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border-purple-400/30',
-                        'text-red-400':    'bg-red-500/20 hover:bg-red-500/30 text-red-300 border-red-400/30',
-                      }[alert.color] ?? 'bg-slate-700/60 hover:bg-slate-700 text-slate-300 border-slate-600'}
+                      className={
+                        alert.accentHex
+                          ? 'border'
+                          : {
+                              'text-green-400':  'bg-green-500/20 hover:bg-green-500/30 text-green-300 border-green-400/30',
+                              'text-amber-400':  'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border-amber-400/30',
+                              'text-indigo-400': 'bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border-indigo-400/30',
+                              'text-purple-400': 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border-purple-400/30',
+                              'text-red-400':    'bg-red-500/20 hover:bg-red-500/30 text-red-300 border-red-400/30',
+                            }[alert.color] ?? 'bg-slate-700/60 hover:bg-slate-700 text-slate-300 border-slate-600'
+                      }
+                      style={
+                        alert.accentHex
+                          ? {
+                              background: `${alert.accentHex}33`,
+                              borderColor: `${alert.accentHex}55`,
+                              color: alert.accentHex,
+                            }
+                          : undefined
+                      }
                       variant="outline"
                     >
                       {alert.cta.label}
                     </Button>
                   )}
                   <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => dismissAlert(alert.id)}
-                    className="border-slate-600 text-slate-400 hover:bg-slate-800"
-                  >
-                    Dispensar
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </AnimatePresence>
-    </div>
-  );
-}
+            

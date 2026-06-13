@@ -30,6 +30,18 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
   const eventDateStr = getEventDateStr(event);
   const { countdown } = useCountdown(eventDateStr);
   const config = getCategoryConfig(userCategory);
+  const gradientBg = { background: `linear-gradient(to right, ${config.primaryHex}, ${config.accentHex})` };
+  const gradientText = {
+    backgroundImage: `linear-gradient(to right, ${config.primaryHex}, ${config.accentHex})`,
+    WebkitBackgroundClip: 'text',
+    backgroundClip: 'text',
+    color: 'transparent',
+  };
+  const primarySurface = {
+    borderColor: `${config.primaryHex}66`,
+    background: `${config.primaryHex}1a`,
+    color: config.primaryHex,
+  };
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const { confirmEvent, toggling } = useStatusToggle();
   const { update: updateEvent } = useEvents();
@@ -80,7 +92,7 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
         className="mb-8 p-5 sm:p-8 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50 text-center"
       >
         <div className="text-6xl mb-4">🎭</div>
-        <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+        <h2 className="text-2xl font-bold mb-2" style={gradientText}>
           Palco Limpo
         </h2>
         <p className="text-slate-400 mb-5">
@@ -89,7 +101,8 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
         <motion.button
           whileTap={{ scale: 0.96 }}
           onClick={() => hardNavigate('/calendar?action=new-event')}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-violet-600 text-white text-sm font-semibold hover:shadow-lg hover:shadow-cyan-500/30 transition-all"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-semibold hover:shadow-lg transition-all"
+          style={{ ...gradientBg, boxShadow: `0 8px 24px ${config.primaryHex}30` }}
         >
           <Navigation className="w-4 h-4" />
           Criar próximo show
@@ -146,9 +159,9 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); hardNavigate(`/client-detail?id=${event.client_id}`); }}
-                className="text-sm text-slate-400 hover:text-cyan-300 transition-colors flex items-center gap-1.5 group max-w-full min-w-0"
+                className="text-sm text-slate-400 transition-colors flex items-center gap-1.5 group max-w-full min-w-0 bp-hover-primary"
               >
-                <User className="w-3 h-3 group-hover:text-cyan-400 flex-shrink-0" />
+                <User className="w-3 h-3 flex-shrink-0 bp-text-primary opacity-70 group-hover:opacity-100" />
                 <Ellipsis as="span" className="text-left">{event.clients.name}</Ellipsis>
               </button>
             ) : (
@@ -160,7 +173,7 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
         {/* Info Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="flex items-center gap-2 text-slate-300">
-            <Clock className="w-4 h-4 text-cyan-400" />
+            <Clock className="w-4 h-4 flex-shrink-0" style={{ color: config.primaryHex }} />
             <div className="text-sm">
               <p className="text-slate-500 text-xs">Horário</p>
               <p className="font-semibold">{formattedTime}</p>
@@ -209,7 +222,8 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
                 whileTap={{ scale: 0.98 }}
                 disabled={locationSaving}
                 onClick={handleGpsCheckIn}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-cyan-500/40 bg-cyan-500/10 text-cyan-200 font-semibold text-sm hover:bg-cyan-500/20 transition-all disabled:opacity-60"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border font-semibold text-sm hover:brightness-110 transition-all disabled:opacity-60"
+                style={primarySurface}
               >
                 {locationSaving ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -230,7 +244,7 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
               <div className="flex justify-center gap-4">
                 {countdown.days > 0 && (
                   <div className="text-center">
-                    <div className="text-2xl font-black text-cyan-400">{countdown.days}</div>
+                    <div className="text-2xl font-black" style={{ color: config.primaryHex }}>{countdown.days}</div>
                     <div className="text-xs text-slate-500">dia{countdown.days !== 1 ? 's' : ''}</div>
                   </div>
                 )}
@@ -238,7 +252,7 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
                   <>
                     <div className="text-slate-600">:</div>
                     <div className="text-center">
-                      <div className="text-2xl font-black text-cyan-400">
+                      <div className="text-2xl font-black" style={{ color: config.primaryHex }}>
                         {String(countdown.hours).padStart(2, '0')}
                       </div>
                       <div className="text-xs text-slate-500">horas</div>
@@ -249,7 +263,7 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
                   <>
                     <div className="text-slate-600">:</div>
                     <div className="text-center">
-                      <div className="text-2xl font-black text-cyan-400">
+                      <div className="text-2xl font-black" style={{ color: config.primaryHex }}>
                         {String(countdown.minutes).padStart(2, '0')}
                       </div>
                       <div className="text-xs text-slate-500">min</div>
@@ -277,7 +291,8 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onViewEvent ? onViewEvent(event) : hardNavigate('/calendar')}
-            className="flex-1 min-w-[120px] px-4 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-600 text-white font-semibold hover:shadow-lg hover:shadow-cyan-500/50 transition-all flex items-center justify-center gap-2"
+            className="flex-1 min-w-[120px] px-4 py-3 rounded-lg text-white font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+            style={{ ...gradientBg, boxShadow: `0 4px 16px ${config.primaryHex}40` }}
           >
             <span>Ver Detalhes</span>
             <ChevronRight className="w-4 h-4" />
@@ -309,7 +324,7 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
                   : `https://maps.google.com/?q=${encodeURIComponent(event.location)}`;
                 window.open(url, '_blank');
               }}
-              className="px-4 py-3 rounded-lg border border-slate-700 text-slate-300 font-semibold hover:border-cyan-500/50 hover:bg-cyan-500/10 transition-all flex items-center gap-2"
+              className="px-4 py-3 rounded-lg border border-slate-700 text-slate-300 font-semibold bp-hover-primary hover:bg-[color-mix(in_srgb,var(--bp-primary)_10%,transparent)] transition-all flex items-center gap-2"
             >
               <Navigation className="w-4 h-4 text-amber-400" />
               Rota

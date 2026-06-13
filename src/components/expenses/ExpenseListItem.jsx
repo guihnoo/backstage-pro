@@ -132,7 +132,7 @@ export default function ExpenseListItem({ expense, event, client, onEdit, onDele
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); hardNavigate(event.client_id ? `/client-detail?id=${event.client_id}` : '/calendar'); }}
-                  className="flex items-center gap-1.5 hover:text-cyan-300 transition-colors group min-w-0 max-w-full"
+                  className="flex items-center gap-1.5 transition-colors group min-w-0 max-w-full bp-hover-primary"
                   title={event.client_id ? 'Ver página do cliente' : 'Ver na agenda'}
                 >
                   <Building className="w-3.5 h-3.5 flex-shrink-0" />
@@ -141,7 +141,7 @@ export default function ExpenseListItem({ expense, event, client, onEdit, onDele
                 </button>
               )}
               {expense.receipt_url && (
-                <a href={expense.receipt_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-cyan-400 hover:text-cyan-300">
+                <a href={expense.receipt_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:opacity-80 transition-opacity" style={{ color: config.primaryHex }}>
                   <LinkIcon className="w-3.5 h-3.5" />
                   <span>Ver Recibo</span>
                 </a>

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 export default function EmptyState({
   icon: Icon,
@@ -10,6 +11,8 @@ export default function EmptyState({
   secondaryAction,
   secondaryActionLabel
 }) {
+  const theme = useCategoryTheme();
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -18,7 +21,10 @@ export default function EmptyState({
     >
       {Icon && (
         <div className="mb-4 sm:mb-6">
-          <Icon className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 text-slate-600 mx-auto" />
+          <Icon
+            className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 mx-auto opacity-40"
+            style={{ color: theme.primaryHex }}
+          />
         </div>
       )}
       
@@ -37,7 +43,8 @@ export default function EmptyState({
           {action && (
             <Button
               onClick={action}
-              className="bg-cyan-600 hover:bg-cyan-700 text-white h-12 min-h-[44px] px-6 sm:px-8 w-full sm:w-auto"
+              className="text-white h-12 min-h-[44px] px-6 sm:px-8 w-full sm:w-auto border-0 hover:brightness-110 active:brightness-95 transition-[filter]"
+              style={theme.primaryStyle}
             >
               {actionLabel || 'Começar'}
             </Button>

@@ -146,7 +146,7 @@ export default function ProfileSimple() {
           transition={{ duration: 3, repeat: Infinity }}
         />
 
-        <div className="max-w-2xl mx-auto mb-4 pr-28">
+        <div className="max-w-2xl xl:max-w-6xl mx-auto mb-4 pr-28">
           <LiveClockBar primaryHex={config.primaryHex} />
           <div className="text-left mt-1">
             <p className="text-xs text-slate-500 uppercase tracking-wider">Seu perfil</p>
@@ -224,7 +224,7 @@ export default function ProfileSimple() {
         </div>
       </motion.div>
 
-      <div className="px-4 max-w-2xl mx-auto space-y-4 w-full min-w-0">
+      <div className="px-4 max-w-2xl xl:max-w-6xl mx-auto space-y-4 w-full min-w-0">
 
         {/* Dados pessoais */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
@@ -358,7 +358,7 @@ export default function ProfileSimple() {
               <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">{label}</label>
               {hint && <p className="text-[10px] text-slate-600 mb-1.5">{hint}</p>}
               {key === 'monthly_goal_events' && stats?.diarias_count != null && (
-                <p className="text-[10px] text-cyan-400/80 mb-1.5">Este mês: {stats.diarias_count} diária{stats.diarias_count !== 1 ? 's' : ''} registrada{stats.diarias_count !== 1 ? 's' : ''}</p>
+                <p className="text-[10px] mb-1.5" style={{ color: `${config.primaryHex}cc` }}>Este mês: {stats.diarias_count} diária{stats.diarias_count !== 1 ? 's' : ''} registrada{stats.diarias_count !== 1 ? 's' : ''}</p>
               )}
               <div className="relative">
                 <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
@@ -468,12 +468,15 @@ export default function ProfileSimple() {
               className="w-full flex items-center justify-between gap-3 py-3 px-4 rounded-xl border border-slate-700/50 hover:bg-slate-800/40 transition-colors min-w-0"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <Inbox className="w-5 h-5 text-cyan-400 shrink-0" />
+                <Inbox className="w-5 h-5 shrink-0" style={{ color: config.primaryHex }} />
                 <span className="text-sm font-semibold text-white">Inbox de feedback</span>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {ownerNewFeedbacks > 0 && (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400">
+                  <span
+                    className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                    style={{ background: `${config.primaryHex}33`, color: config.primaryHex }}
+                  >
                     {ownerNewFeedbacks} novo{ownerNewFeedbacks !== 1 ? 's' : ''}
                   </span>
                 )}
@@ -494,7 +497,7 @@ export default function ProfileSimple() {
           >
             <div className="flex items-center gap-3 min-w-0 flex-1">
               {isVisible
-                ? <Eye className="w-4 h-4 text-cyan-400 shrink-0" />
+                ? <Eye className="w-4 h-4 shrink-0" style={{ color: config.primaryHex }} />
                 : <EyeOff className="w-4 h-4 text-slate-500 shrink-0" />
               }
               <div className="text-left min-w-0">

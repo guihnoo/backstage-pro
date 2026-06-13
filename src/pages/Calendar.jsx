@@ -1193,7 +1193,7 @@ export default function CalendarPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por título, cliente ou local…"
-            className="w-full bg-slate-800/60 border border-slate-700/60 rounded-lg pl-9 pr-9 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500/60 focus:ring-1 focus:ring-cyan-500/30 transition-colors"
+            className="w-full bg-slate-800/60 border border-slate-700/60 rounded-lg pl-9 pr-9 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none bp-focus-input transition-colors"
           />
           {searchQuery && (
             <button
@@ -1221,12 +1221,12 @@ export default function CalendarPage() {
               onClick={() => setStatusFilter(key)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold transition-all border ${
                 statusFilter === key
-                  ? 'bg-cyan-600/20 border-cyan-500/60 text-cyan-300'
+                  ? 'bp-chip-active'
                   : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:border-slate-600 hover:text-slate-300'
               }`}
             >
               {label}
-              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${statusFilter === key ? 'bg-cyan-500/20 text-cyan-300' : 'bg-slate-700 text-slate-500'}`}>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${statusFilter === key ? 'bp-chip-badge-active' : 'bg-slate-700 text-slate-500'}`}>
                 {count}
               </span>
             </button>
@@ -1237,7 +1237,7 @@ export default function CalendarPage() {
                 type="button"
                 onClick={() => setViewMode('grid')}
                 title="Vista em grade mensal"
-                className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-cyan-600/30 text-cyan-300' : 'text-slate-500 hover:text-slate-300'}`}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bp-view-active' : 'text-slate-500 hover:text-slate-300'}`}
               >
                 <LayoutGrid className="w-4 h-4" />
               </button>
@@ -1245,7 +1245,7 @@ export default function CalendarPage() {
                 type="button"
                 onClick={() => { setViewMode('week'); setWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 })); }}
                 title="Vista semanal"
-                className={`p-1.5 rounded-md transition-colors ${viewMode === 'week' ? 'bg-cyan-600/30 text-cyan-300' : 'text-slate-500 hover:text-slate-300'}`}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'week' ? 'bp-view-active' : 'text-slate-500 hover:text-slate-300'}`}
               >
                 <CalendarDays className="w-4 h-4" />
               </button>
@@ -1253,7 +1253,7 @@ export default function CalendarPage() {
                 type="button"
                 onClick={() => setViewMode('list')}
                 title="Vista em lista"
-                className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-cyan-600/30 text-cyan-300' : 'text-slate-500 hover:text-slate-300'}`}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bp-view-active' : 'text-slate-500 hover:text-slate-300'}`}
               >
                 <List className="w-4 h-4" />
               </button>
@@ -1304,13 +1304,13 @@ export default function CalendarPage() {
               const todayActive = todayEvents.filter(ev => ev.status !== 'cancelled');
               if (!weekContainsToday || todayActive.length === 0) return null;
               return (
-                <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-cyan-900/25 border border-cyan-700/40">
-                  <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse flex-shrink-0" />
+                <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl border bp-today-surface">
+                  <div className="w-2 h-2 rounded-full animate-pulse flex-shrink-0" style={{ background: config.primaryHex }} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-cyan-300">
+                    <p className="text-sm font-semibold bp-text-primary">
                       Hoje — {todayActive.length} show{todayActive.length > 1 ? 's' : ''}
                     </p>
-                    <p className="text-xs text-cyan-400/70 truncate">
+                    <p className="text-xs truncate opacity-70 bp-text-primary">
                       {todayActive.map(ev => ev.title).join(' · ')}
                     </p>
                   </div>
@@ -1343,7 +1343,7 @@ export default function CalendarPage() {
               <button
                 type="button"
                 onClick={() => setWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 }))}
-                className="text-xs px-3 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700/60 text-slate-400 hover:text-cyan-300 hover:border-cyan-600/40 transition-colors"
+                className="text-xs px-3 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700/60 text-slate-400 bp-hover-primary transition-colors"
               >
                 Hoje
               </button>
@@ -1363,7 +1363,7 @@ export default function CalendarPage() {
                       key={iso}
                       className={`flex flex-col rounded-xl border transition-colors min-h-[120px] ${
                         isToday
-                          ? 'bg-cyan-900/20 border-cyan-600/50'
+                          ? 'bp-today-surface-soft'
                           : 'bg-slate-800/40 border-slate-700/50'
                       }`}
                     >
@@ -1371,14 +1371,14 @@ export default function CalendarPage() {
                       <button
                         type="button"
                         onClick={() => handleDayClick(day)}
-                        className={`px-2 pt-2 pb-1 border-b text-left w-full group ${isToday ? 'border-cyan-700/40' : 'border-slate-700/40'}`}
+                        className={`px-2 pt-2 pb-1 border-b text-left w-full group ${isToday ? 'bp-today-surface' : 'border-slate-700/40'}`}
                         title={`Novo evento em ${format(day, "d 'de' MMM", { locale: ptBR })}`}
                       >
-                        <p className={`text-[10px] font-semibold uppercase tracking-wide ${isToday ? 'text-cyan-400' : 'text-slate-500'}`}>
+                        <p className={`text-[10px] font-semibold uppercase tracking-wide ${isToday ? 'bp-text-primary' : 'text-slate-500'}`}>
                           {format(day, 'EEE', { locale: ptBR })}
                         </p>
                         <div className="flex items-center justify-between">
-                          <p className={`text-lg font-bold leading-none ${isToday ? 'text-cyan-300' : 'text-slate-300'}`}>
+                          <p className={`text-lg font-bold leading-none ${isToday ? 'bp-text-primary' : 'text-slate-300'}`}>
                             {format(day, 'd')}
                           </p>
                           <span className="opacity-0 group-hover:opacity-60 text-slate-400 text-base leading-none transition-opacity">+</span>

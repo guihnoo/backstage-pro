@@ -72,7 +72,7 @@ export default function ForecastWidget({ events = [], isLoading, primaryHex = '#
           <button
             type="button"
             onClick={() => hardNavigate('/calendar')}
-            className="text-xs text-[#7c8494] hover:text-cyan-400 flex items-center gap-1 transition-colors"
+            className="text-xs text-[#7c8494] flex items-center gap-1 transition-colors bp-hover-primary"
           >
             Ver agenda <ChevronRight className="w-3.5 h-3.5" />
           </button>
@@ -156,7 +156,7 @@ export default function ForecastWidget({ events = [], isLoading, primaryHex = '#
             <button
               type="button"
               onClick={() => setShowAll(v => !v)}
-              className="text-[10px] text-[#5a6070] font-mono pl-5 hover:text-cyan-400 transition-colors"
+              className="text-[10px] text-[#5a6070] font-mono pl-5 transition-colors bp-hover-primary"
             >
               {showAll
                 ? '↑ Mostrar menos'

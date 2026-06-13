@@ -59,6 +59,10 @@ import ActivityHeatmap from '@/components/reports/ActivityHeatmap';
 import NfTracker from '@/components/reports/NfTracker';
 import MonthlyTrend from '@/components/reports/MonthlyTrend';
 import WorkAnalytics from '@/components/reports/WorkAnalytics';
+import CashflowForecast from '@/components/reports/CashflowForecast';
+import CategoryBreakdown from '@/components/reports/CategoryBreakdown';
+import ReceivablesAging from '@/components/reports/ReceivablesAging';
+import IRSummary from '@/components/reports/IRSummary';
 import EventHeading from '@/components/events/EventHeading';
 import { Ellipsis } from '@/components/ui/overflowText';
 import BrazilVisitedMap from '@/components/reports/BrazilVisitedMap';
@@ -757,7 +761,7 @@ export default function ReportsPage() {
         threshold={threshold}
         primaryHex={config.primaryHex}
       />
-      <div className="p-4 md:p-6 space-y-8">
+      <div className="p-4 md:p-6 space-y-8 max-w-2xl xl:max-w-6xl mx-auto w-full min-w-0">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex-1 min-w-0">
@@ -786,7 +790,7 @@ export default function ReportsPage() {
               key={opt.value}
               type="button"
               onClick={() => setSelectedPeriod(opt.value)}
-              className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${selectedPeriod === opt.value ? 'border-purple-500/60 bg-purple-500/15 text-purple-300' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
+              className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${selectedPeriod === opt.value ? 'bp-chip-active' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
             >
               {opt.label}
             </button>
@@ -915,6 +919,11 @@ export default function ReportsPage() {
         {/* Content based on selected view */}
         {selectedView === 'overview' && (
           <div className="space-y-6">
+            <ReceivablesAging
+              events={data.events}
+              clients={data.clients}
+              work={data.dailyWork}
+            />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <ReportsChart
                 chartInput={processedData.chartInput}
@@ -927,6 +936,16 @@ export default function ReportsPage() {
               events={data.events}
               goalRevenue={Number(profile?.monthly_goal_revenue) || 0}
             />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <CashflowForecast
+                events={data.events}
+                work={data.dailyWork}
+              />
+              <CategoryBreakdown
+                events={processedData.current.events}
+                work={processedData.current.work}
+              />
+            </div>
           </div>
         )}
 
@@ -966,11 +985,18 @@ export default function ReportsPage() {
         )}
 
         {selectedView === 'fiscal' && (
-          <NfTracker
-            events={data.events}
-            clients={data.clients}
-            onOpenEvent={(ev) => setSelectedEvent(ev)}
-          />
+          <div>
+            <NfTracker
+              events={data.events}
+              clients={data.clients}
+              onOpenEvent={(ev) => setSelectedEvent(ev)}
+            />
+            <IRSummary
+              events={data.events}
+              expenses={data.expenses}
+              work={data.dailyWork}
+            />
+          </div>
         )}
 
         {/* Events List - AGORA FILTRÁVEL e com MODAL */}

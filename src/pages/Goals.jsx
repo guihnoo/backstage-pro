@@ -484,7 +484,7 @@ export default function Goals() {
           animate={{ opacity: [0.4, 0.8, 0.4] }}
           transition={{ duration: 3, repeat: Infinity }}
         />
-        <div className="max-w-2xl mx-auto flex items-start justify-between">
+        <div className="max-w-2xl xl:max-w-6xl mx-auto flex items-start justify-between">
           <div>
             <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Sua Evolução</p>
             <h1 className="text-2xl font-black text-white">Metas & Conquistas</h1>
@@ -494,7 +494,7 @@ export default function Goals() {
         </div>
       </motion.div>
 
-      <div className="px-4 max-w-2xl mx-auto">
+      <div className="px-4 max-w-2xl xl:max-w-6xl mx-auto w-full min-w-0">
         {/* Nível preview (sempre visível) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -576,7 +576,7 @@ export default function Goals() {
                     <button
                       type="button"
                       onClick={openGoalEdit}
-                      className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-cyan-400 transition-colors px-2 py-1 rounded-lg hover:bg-cyan-400/10"
+                      className="flex items-center gap-1.5 text-xs text-slate-500 transition-colors px-2 py-1 rounded-lg bp-hover-primary hover:bg-[color-mix(in_srgb,var(--bp-primary)_10%,transparent)]"
                     >
                       <Pencil className="w-3.5 h-3.5" />
                       Editar metas
@@ -592,7 +592,10 @@ export default function Goals() {
                       exit={{ opacity: 0, height: 0 }}
                       className="overflow-hidden mb-5"
                     >
-                      <div className="grid grid-cols-2 gap-3 p-4 rounded-xl border border-cyan-500/20 bg-cyan-500/5">
+                      <div
+                        className="grid grid-cols-2 gap-3 p-4 rounded-xl border"
+                        style={{ borderColor: `${config.primaryHex}33`, background: `${config.primaryHex}0d` }}
+                      >
                         <div>
                           <label className="block text-xs text-slate-400 mb-1.5">Diárias/mês</label>
                           <Input
@@ -619,7 +622,8 @@ export default function Goals() {
                             type="button"
                             onClick={saveGoals}
                             disabled={savingGoals}
-                            className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg text-xs font-bold bg-cyan-500 text-black hover:bg-cyan-400 transition-colors disabled:opacity-50"
+                            className="flex-1 flex items-center justify-center gap-1.5 h-9 rounded-lg text-xs font-bold text-white hover:brightness-110 transition-[filter] disabled:opacity-50"
+                            style={{ backgroundColor: config.primaryHex }}
                           >
                             <Check className="w-3.5 h-3.5" />
                             {savingGoals ? 'Salvando...' : 'Salvar'}
@@ -819,7 +823,7 @@ export default function Goals() {
                   <button
                     type="button"
                     onClick={() => hardNavigate('/calendar')}
-                    className="flex items-center gap-1 text-xs text-slate-500 hover:text-cyan-400 transition-colors"
+                    className="flex items-center gap-1 text-xs text-slate-500 transition-colors bp-hover-primary"
                   >
                     Ver agenda <ChevronRight className="w-3 h-3" />
                   </button>
@@ -971,13 +975,13 @@ export default function Goals() {
                                 : hit
                                 ? '#10b981'
                                 : pct > 0
-                                ? '#22d3ee'
+                                ? config.accentHex
                                 : '#1e293b',
                               opacity: isFuture ? 0.3 : 1,
                             }}
                           />
                         </div>
-                        <span className={`text-[8px] font-mono capitalize ${isCurrent ? 'text-cyan-400 font-bold' : 'text-slate-600'}`}>
+                        <span className={`text-[8px] font-mono capitalize ${isCurrent ? 'bp-text-primary font-bold' : 'text-slate-600'}`}>
                           {label}
                         </span>
                       </div>

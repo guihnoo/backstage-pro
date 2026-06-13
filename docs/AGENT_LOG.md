@@ -6,6 +6,109 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-13
 
+### IR-S55 — Resumo de IR (Imposto de Renda) na aba Fiscal ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/reports/IRSummary.jsx`** (NOVO):
+  - Seletor de ano (auto-detecta anos com dados); disclaimer de contador
+  - 4 KPIs: Receita bruta / Despesas / Lucro líquido (+ margem %) / Shows pagos
+  - Despesas por categoria (ordenado por valor)
+  - Tabela mês a mês colapsável: Receita / Despesas / Lucro por mês + linha de totais
+  - Botão Compartilhar: Web Share API → clipboard fallback com formato WhatsApp/contador
+  - Respeita `isVisible` em todos os valores
+- **`src/pages/Reports.jsx`**: `IRSummary` na aba Fiscal abaixo de `NfTracker`; passa `data.expenses` e `data.dailyWork`
+- **Build**: Vite ✅ · **Git backup**: auto-wip ✅
+
+
+### SCORE-S54 — Score de Confiabilidade de Pagamento por Cliente ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/pages/Clients.jsx`**: `paymentScore` no useMemo; card mostra barra + badge Excelente/Bom/Regular/Atenção
+- **`src/pages/ClientDetail.jsx`**: `paymentScore` no stats; 4ª coluna no Resumo Financeiro com barra + "X% dos shows pagos"
+- Faixas: ≥90% Excelente (emerald) · ≥70% Bom (blue) · ≥40% Regular (amber) · <40% Atenção (red)
+- **Build**: Vite ✅ · **Git backup**: auto-wip ✅
+
+### AGING-S53 — Aging de Recebíveis com cobrança via WhatsApp ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/reports/ReceivablesAging.jsx`** (NOVO):
+  - Filtra eventos `completed` + não pagos com valor > 0; ordena por mais atrasado
+  - 4 buckets: 0–30 / 31–60 / 61–90 / 90+ dias com cores (amarelo → vermelho)
+  - Header colapsável: total em aberto + pills por bucket; expande para lista individual
+  - Por evento: título, cliente, dias em atraso, valor, botão "Cobrar" (WhatsApp direto ou clipboard)
+  - Usa `buildChargeMessage` + `openWhatsAppCharge` de `@/lib/whatsapp`; invisível quando tudo pago
+- **`src/pages/Reports.jsx`**: no topo da aba Visão Geral, acima do grid de gráficos
+- **Build**: Vite ✅ (37s) · **Git backup**: auto-wip ✅
+
+### CATEGORY-S52 — Análise de Receita por Categoria em Relatórios ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/reports/CategoryBreakdown.jsx`** (NOVO):
+  - Agrupa eventos (não cancelados) por `category`; receita considera apenas pagos
+  - Por categoria: emoji + label + contagem de shows + receita total + média/show + R$/hora (se work records)
+  - Barra horizontal proporcional à maior categoria, cor do `getCategoryConfig`
+  - Respeita `isVisible`; oculto se não há categorias com eventos
+- **`src/pages/Reports.jsx`**: `CategoryBreakdown` ao lado do `CashflowForecast` em grid 2 colunas (lg) na aba Visão Geral
+- **Build**: Vite ✅ (30s) · **Git backup**: auto-wip ✅
+
+### CASHFLOW-S51 — Previsão de Caixa (próximos 90 dias) em Relatórios ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/reports/CashflowForecast.jsx`** (NOVO):
+  - 3 KPI pills: A receber em 30 / 60 / 90 dias
+  - Agrupa eventos futuros (+ concluídos não pagos) em 3 meses com total por mês
+  - Por evento: título, data, status colorido (Confirmado/Agendado/Pendente/A receber), valor
+  - Barra de proporção por mês vs total 90 dias; legenda de cores; empty state
+  - Respeita `isVisible` (máscara financeira)
+- **`src/pages/Reports.jsx`**: importa `CashflowForecast`; renderiza na aba "Visão Geral" abaixo de `MonthlyTrend`
+- **Build**: Vite ✅ (73s) · **Git backup**: auto-wip ✅
+
+### DESIGN-S51 — Fase 1 lapidação visual (Cursor Agent) ✅
+- **Agente**: Cursor (Auto) — faixa paralela ao Claude
+- `useCategoryTheme`, `RouteSkeleton`, `NeonPageShell` na Home, nav legível, avatar no top bar, Ctrl+K
+- E2E: `calendar-navigation.spec.js` scroll fix na vista semanal
+- **Auto-backup**: `8e75166`+
+
+### DESIGN-S52 — Fase 2 motion + desktop + tema (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `AppLayout`: `MotionConfig reducedMotion="user"`, `AnimatePresence` fade entre rotas, CSS vars `--bp-*`
+- `ConfirmDialog`: CTA primário temático (não-destrutivo)
+- `index.css`: `prefers-reduced-motion` desliga pulse/spin
+- `Clients.jsx`, `Expenses.jsx`, `Home.jsx`: `xl:max-w-6xl` em desktop
+- **Auto-backup**: `b18babc`+
+
+### DESIGN-S53 — Fase 3 cyan → tema + chips bp-* (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `index.css`: utilitários `bp-chip-active`, `bp-view-active`, `bp-today-surface`, `bp-text-primary`, `bp-hover-primary`, `bp-focus-input`
+- `Calendar.jsx`: filtros, vistas e destaque “hoje” com classes `bp-*`
+- `Reports.jsx`: wrapper wide + chips de período temáticos
+- `Goals.jsx`: `xl:max-w-6xl`; painel editar metas, links e barras anuais sem cyan fixo
+- `Clients.jsx`: chips de ordenação temáticos
+- `ClientForm.jsx`: toggle empresa + submit + ícones via `useCategoryTheme`
+- `Expenses.jsx`: filtros de categoria com `bp-chip-active`
+- **Testes**: unit 29/29 ✅ · build ✅ · smoke E2E 28/28 ✅
+
+### DESIGN-S54 — Fase 4 componentes-chave + desktop wide (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `EventForm.jsx`: template, resumo financeiro e submit via `useCategoryTheme`
+- `ProximoShow.jsx`: empty state, countdown, CTAs e GPS com gradiente da categoria
+- `NotificationCenter.jsx`: botão “Ver” temático
+- `ProfileSimple.jsx`: `xl:max-w-6xl`; hints, inbox e visibilidade financeira sem cyan
+- `AI_Mentor.jsx`: `xl:max-w-6xl`; ícone de áudio com cor da categoria
+
+### DESIGN-S55 — Fase 5 widgets Home + strip agenda (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `ProximosEventos.jsx`: usa `userCategory` da Home; empty state, “Hoje”, cards e valores temáticos
+- `AReceber.jsx`: gradiente e links com `useCategoryTheme` + `bp-hover-primary`
+- `ForecastWidget.jsx`, `PipelineFinanceiro.jsx`: links com `bp-hover-primary`
+- `CalendarTodayStrip.jsx`: CTA “Registrar horas” e link com cor da categoria
+- **Testes**: unit 29/29 ✅ · build ✅
+
+### DESIGN-S56 — Fase 6 detalhe cliente + relatórios mapa/heatmap (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `ClientDetail.jsx`, `ClientDetailModal.jsx`: badge Empresa, hovers e notas com `bp-hover-primary` / `bp-focus-input`
+- `ExpenseListItem.jsx`: links cliente/recibo temáticos via `primaryHex`
+- `GoogleCalendarSync.jsx`, `AlertsPanel.jsx`: `useCategoryTheme()` — loader, links e alerta GPS
+- `MonthlyTrend.jsx`: barras, tooltip e legenda com `primaryHex` (substitui `#22d3ee`)
+- `ActivityHeatmap.jsx`: células com opacidade de `primaryHex` via `getCategoryConfig`
+- `BrazilVisitedMap.jsx`: header, stats, painel UF/cidade, empty state e chips sem cyan
+- **Testes**: unit 29/29 ✅ · build ✅ · smoke E2E (pendente nesta rodada)
+
 ### WORK-S50 — R$/hora por show + aba Trabalho em Relatórios ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/components/calendar/EventDetailModal.jsx`**:

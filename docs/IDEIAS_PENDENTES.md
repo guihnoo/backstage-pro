@@ -94,6 +94,11 @@
 | 53 | Resultado líquido por show (receita − despesas + margem %) | 2026-06-13 | ✅ Card "Resultado do Show" no EventDetailModal (Agenda e Relatórios); barra de margem colorida |
 | 54 | Painel anual em Metas (barras mensais + projeção dezembro) | 2026-06-13 | ✅ `yearlyPanel` useMemo; 12 barras + pulse no mês atual; total do ano + projeção linear |
 | 55 | Taxa horária (R$/hora) por show nos registros de trabalho | 2026-06-13 | ✅ `hourlyRate` em `totals` useMemo no EventDetailModal; header + por registro; aba "Trabalho" em Reports com `WorkAnalytics.jsx` |
+| 56 | Previsão de Caixa — próximos 90 dias com eventos a receber | 2026-06-13 | ✅ `CashflowForecast.jsx` — KPIs 30/60/90 dias, agrupamento por mês, status colorido, barra proporcional; aba Visão Geral de Reports |
+| 57 | Análise de receita por categoria de evento | 2026-06-13 | ✅ `CategoryBreakdown.jsx` — ranking por categoria com barra colorida, receita/show, R$/hora; grid ao lado do CashflowForecast |
+| 58 | Aging de recebíveis — cobrar clientes inadimplentes via WhatsApp | 2026-06-13 | ✅ `ReceivablesAging.jsx` — buckets 0–90+ dias, colapsável, botão Cobrar com mensagem pronta; topo da Visão Geral de Reports |
+| 59 | Score de confiabilidade de pagamento por cliente | 2026-06-13 | ✅ `paymentScore` (pct pagos/concluídos) em Clients.jsx (barra+badge no card) e ClientDetail.jsx (4ª coluna no Resumo Financeiro) |
+| 60 | Resumo de IR — receita, despesas e lucro líquido anual para declaração | 2026-06-13 | ✅ `IRSummary.jsx` — KPIs 4 colunas, despesas por categoria, tabela mês a mês colapsável, seletor de ano, compartilhar; aba Fiscal de Reports |
 
 ---
 
