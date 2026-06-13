@@ -138,7 +138,11 @@
       "mcp__supabase__list_projects",
       "mcp__supabase__get_logs",
       "mcp__supabase__deploy_edge_function",
-      "Bash(dir \"C:\\\\Users\\\\monte\\\\.vercel\\\\\" 2>nul)"
+      "Bash(dir \"C:\\\\Users\\\\monte\\\\.vercel\\\\\" 2>nul)",
+      "Bash(dir \"C:\\\\Users\\\\monte\\\\OneDrive\\\\Documentos\\\\backstage-pro\\\\src\\\\components\\\\calendar\" /B)",
+      "Bash(findstr /i \"action\\\\|detail\")",
+      "Bash(Get-Content \"C:\\\\Users\\\\monte\\\\OneDrive\\\\Documentos\\\\backstage-pro\\\\src\\\\components\\\\reports\\\\BrazilVisitedMap.jsx\")",
+      "Bash(Select-Object -Skip 155)"
     ]
   },
   "enabledMcpjsonServers": [

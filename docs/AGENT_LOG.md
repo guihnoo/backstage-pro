@@ -6,6 +6,48 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-12
 
+### CALENDAR-S40 — Vista Semanal (Week View) na Agenda ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/pages/Calendar.jsx`**:
+  - Novo botão `CalendarDays` no toggle de visualização (entre Grade e Lista); clique define `viewMode='week'` e reinicia `weekStart` na semana atual
+  - State `weekStart` (useMemo `weekDays` + `weekEventsByDay`)
+  - JSX week view: header com ← / →, label "D Mmm – D Mmm AAAA", botão "Hoje"; grid `grid-cols-7`; cada coluna tem cabeçalho dia curto + número; hoje destacado `cyan`; eventos como botões clicáveis com dot de status; clique → `handleEventClick`
+  - Imports adicionados: `CalendarDays, ChevronLeft, ChevronRight` (lucide); `addWeeks, subWeeks, startOfWeek, endOfWeek, eachDayOfInterval` (date-fns)
+- **Build**: Vite ✅ zero erros · **Git backup**: ✅
+
+### REPORTS-S38 — ExportManager ICS + período "Esta Semana" ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/reports/ExportManager.jsx`**: botão ICS (azul, `CalendarDays` icon) exporta `data.events` do período com `exportCalendarIcs`; label derivado de `period.start`; toast com contagem
+- **`src/pages/Reports.jsx`**: PERIOD_OPTIONS agora inclui `{ value: 'this_week', label: 'Esta Semana' }` no topo; imports `startOfWeek/endOfWeek/subWeeks/addWeeks`; case `this_week` no switch define current/previous/next week com `weekStartsOn: 0`
+- **Build**: Vite ✅ · **Git backup**: ✅
+
+### CALENDAR-S37 — UX polish: AlertsPanel cores + ClientDetail próximos eventos + quick-pay na lista ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/calendar/AlertsPanel.jsx`**: fix bug — CTA button usava ternário que só tratava `green`/`cyan` e caía em âmbar para `indigo`, `purple`, `red`; substituído por lookup object `{ 'text-green-400': ..., 'text-cyan-400': ..., ... }[alert.color]` — alertas "Show amanhã", "Horas pendentes" e "Pagamento vencido" agora têm botão na cor correta
+- **`src/pages/ClientDetail.jsx`**: seção "Próximos Shows" aparece antes do Resumo Financeiro quando há eventos futuros; lista eventos futuros com barra de cor, data, local, badge status, valor; mostra até 4 + contador "+N futuros"
+- **`src/pages/Calendar.jsx`**: vista lista refatorada — item era `<button>` (HTML inválido para nesting); agora `<div>` com 2 buttons internos (data+título → open modal, separados); botão `BadgeCheck` aparece quando `status=completed|confirmed` + `payment_status=unpaid` → chama `handleMarkPaid` diretamente sem abrir modal; badge "Pago" com estilo emerald quando já pago
+- **Build**: Vite ✅ · **Git backup**: ✅
+
+### CALENDAR-S36 — Export ICS (iCal) na Agenda ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/lib/exportReport.js`**: função `exportCalendarIcs(events, clients, label)` — gera arquivo `.ics` válido (RFC 5545); suporte a eventos com/sem horário (DTSTART VALUE=DATE vs TZID=America/Sao_Paulo); DTEND calculado corretamente (+1 dia para all-day); STATUS mapeado (pending→TENTATIVE, completed→CONFIRMED, cancelled→CANCELLED); inclui LOCATION e DESCRIPTION com nome do cliente
+- **`src/pages/Calendar.jsx`**: import `Download` + `exportCalendarIcs`; `handleExportIcs` exporta `filteredEvents` (respeita busca + filtro de status); botão ícone `Download` ao lado do toggle Grid/Lista; toast de sucesso com contagem + orientação de uso
+- **Build**: Vite ✅ · **Git backup**: ✅
+
+### CALENDAR-S35 — Busca + Vista Lista + Duplicar + Agendar Show por cliente ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/calendar/EventDetailModal.jsx`**: import `Copy`; prop `onDuplicate` adicionada à assinatura; botão `Copy` no rodapé antes do lixeira (guarda `onDuplicate &&`)
+- **`src/pages/Calendar.jsx`**:
+  - `searchQuery` state + campo de busca (ícone Search + botão X para limpar) acima dos filtros de status — filtra por título, nome do cliente e local
+  - Lista de resultados abaixo do grid quando `searchQuery` está ativa — eventos ordenados por data com badge de status dark-mode
+  - `viewMode` state (`'grid' | 'list'`) + toggle LayoutGrid/List no canto direito dos filtros
+  - Vista em lista: `listViewGroups` useMemo — eventos agrupados por mês, cada linha mostra cor, dia da semana abreviado, título, cliente, badge status
+  - `handleDuplicateEvent` agora inclui `location`, `location_city`, `location_state`, `location_lat`, `location_lng` no prefill
+- **`src/components/mobile/ClientActionSheet.jsx`**: botão "Agendar Novo Show" → `hardNavigate('/calendar?action=new-event&client_id=xxx')`
+- **`src/components/clients/ClientDetailModal.jsx`**: botão "Agendar Show" no footer + `Plus` icon
+- **`src/pages/Calendar.jsx`**: `useLocation` + `useNavigate`; `useEffect` lê `client_id` do URL quando `action=new-event` e injeta no `prefillEventData`; corrigido: resultados de busca só aparecem no modo grid
+- **Build**: Vite ✅ (35s) · **Git backup**: ✅
+
 ### BUG-FIX-S34 — Correção de 3 features quebradas: Mapa, Push, Google Calendar ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Diagnóstico via logs Supabase (cwtallnetgodoacuoaow)**:
@@ -46,6 +88,16 @@ Registro cronológico de tarefas executadas por agentes.
 - `Feedback + Inbox owner` → `done` (confirmado: FeedbackModal, AdminFeedbacks, rota, link Perfil, AppTopBar badge)
 - `AppHelp.jsx` + `userManualContent.js` + `appVersion.js` criados pelo Cursor; build ok
 - `IA Mentor` LAPIDACAO atualizado para commit `2b955b9` (S33)
+
+### MAP-S39 — Fix BrazilVisitedMap: marcadores em posições incorretas ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Bug 1 (principal)**: `BOUNDS.east = -28.85` estava errado — essa longitude fica no Oceano Atlântico, leste do Brasil. O extremo real do Brasil é -34.79° (Ponta do Seixas, PB). O bound errado fazia com que a fórmula `x = (lng - west) / (east - west) * w` usasse denominador 45.14° em vez de 39.20°, deslocando todos os marcadores para a esquerda do mapa.
+- **Bug 2**: `pathCentroid()` calculava o centro dos estados somando TODOS os números do SVG path string (inclusive offsets relativos `l`/`m` que não são coordenadas absolutas), gerando centroids incorretos usados como fallback de cidades sem GPS.
+- **Correções em `src/components/reports/BrazilVisitedMap.jsx`**:
+  - `BOUNDS.east` corrigido de -28.85 para -34.79 (extremo leste real do Brasil)
+  - `pathCentroid` removida; `STATE_CENTROIDS` substituído por `STATE_GEO_CENTROIDS` — lookup de lat/lng geográficos reais dos 27 estados, convertido via `latlngToSvg` calibrada
+- **Calibração**: script Node.js parseou os SVG paths reais do pacote, calculou bboxes por estado, regressão linear com 27 pontos → confirmou east=-34.79 como melhor fit (erro médio ≤ 8px por estado)
+- **Build**: Vite ✅ (33s) · **Git backup**: ✅
 
 ### MANUAL-S33 — docs/MANUAL_USUARIO.md criado ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)

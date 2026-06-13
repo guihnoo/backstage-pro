@@ -3,11 +3,10 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-12 (sessão S33)  
+**Última atualização:** 2026-06-12 (sessão S40)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último commit:** pendente — feat(ia-mentor): typing dots + hint por categoria  
-**Último deploy:** 2026-06-11 — `6b92cab` → https://backstage-pro-beta.vercel.app  
-**Edge Functions:** `ai-chat` + `analyze-receipt` deployadas no Supabase ✅  
+**Último deploy:** 2026-06-12 — auto (git:backup S34) → https://backstage-pro-beta.vercel.app  
+**Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` (v25) deployadas no Supabase ✅  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
 ---
@@ -18,7 +17,7 @@
 |------|--------|
 | Core (eventos, clientes, despesas, horas) | Funcional |
 | Clientes — Empresa vs Pessoa | `client_type` coluna DB; toggle visual em form/combobox/cards/modais ✅ sessão 20–22 |
-| Google Calendar OAuth + sync | Configurado (modo Teste no GCP); validar E2E com usuário |
+| Google Calendar OAuth + sync | Token expirado limpo (S34); edge function v25; usuário deve reconectar |
 | UX cores / hierarquia empresa | Implementado (`brandColors`, `EventHeading`) |
 | Combobox cliente + geocode local | Implementado; criar Pessoa inline ✅ |
 | Local do evento (endereço + GPS check-in) | `EventLocationSection` — criar, detalhe, action sheet |
@@ -26,7 +25,7 @@
 | Scroll / modais / z-index | Corrigido (v1–v3); popovers/select `z-[110]` dentro de dialogs |
 | Badge rascunho (clientes) | Cards + modal detalhe + filtro **Rascunhos** |
 | OAuth Google callback | Redirect `/profile?google_connected=1`; toast ao detectar query |
-| Mapa Brasil (relatórios) | SVG interativo `@svg-maps/brazil`, lazy load + chunk dedicado |
+| Mapa Brasil (relatórios) | SVG interativo `@svg-maps/brazil`; marcadores calibrados (S39 — east fix -28.85→-34.79) |
 | Alertas agenda (local GPS) | `AlertsPanel` montado em `Calendar.jsx` — lembrete check-in para eventos de hoje sem local |
 | Modo Palco — check-in GPS | Botão em `ProximoShow` quando `isOnStage` e sem local |
 | Rotas lazy (code-split) | **Reativado** — AppLayout usa `<Suspense>` + `wrapPage` lazy; Sprint A+B |
@@ -88,6 +87,46 @@ Ordem oficial após fix de scroll (2026-06-05):
 ---
 
 ## Changelog
+
+### 2026-06-12 (sessão S40) — Vista Semanal na Agenda
+
+**Calendar.jsx — Vista Semanal (Week View):**
+- Novo modo `viewMode === 'week'` — terceiro botão no toggle (ícone `CalendarDays` entre Grade e Lista)
+- `weekStart` state (dom a sáb, `weekStartsOn: 0`); `weekDays` + `weekEventsByDay` useMemos
+- Navegação: botões ← → + botão "Hoje" recentra na semana atual; label "D de Mmm – D de Mmm AAAA"
+- 7 colunas (`grid-cols-7`): cabeçalho com dia curto (Dom/Seg…) + número; hoje destacado com borda `cyan`
+- Eventos como botões clicáveis com dot de status (amber/blue/emerald/red) + título truncado
+- Clique abre `EventDetailModal` via `handleEventClick` — mesma flow do Grid e da Lista
+- Build Vite ✅ zero erros
+
+---
+
+### 2026-06-12 (sessão S37) — UX polish: quick-pay, próximos eventos por cliente, ICS export
+
+**Export ICS (iCal) na Agenda (S36):**
+- `exportCalendarIcs` em `exportReport.js` — gera ICS válido (RFC 5545); eventos com/sem horário; DTEND correto; STATUS mapeado
+- Botão `Download` ao lado do toggle Grid/Lista — exporta `filteredEvents` do momento; toast com orientação
+
+**UX polish (S37):**
+- `AlertsPanel` — fix: botão CTA agora usa cor correta para todos os tipos de alerta (indigo, purple, red estavam caindo em âmbar)
+- `ClientDetail.jsx` — seção "Próximos Shows" aparece antes do Resumo Financeiro quando há eventos futuros com esse cliente
+- `Calendar.jsx` (vista lista) — botão `BadgeCheck` inline em eventos concluídos/confirmados e não pagos; chama `handleMarkPaid` sem abrir modal; lista item refatorado de `<button>` inválido para `<div>` + buttons internos
+
+**Build:** Vite ✅
+
+---
+
+### 2026-06-12 (sessão S35) — Busca + Vista Lista + Duplicar na Agenda
+
+**Agenda — três melhorias de UX:**
+- **Busca de eventos**: campo de texto com ícone Search + botão X acima dos filtros; filtra título, nome do cliente e local em tempo real
+- **Lista de resultados**: quando busca está ativa, exibe resultados de todos os meses abaixo do grid em ordem cronológica com badge de status
+- **Vista em lista**: toggle Grid/Lista no canto direito dos filtros — lista exibe eventos agrupados por mês com dia abreviado, título, cliente e badge status
+- **Duplicar via EventDetailModal**: botão `Copy` adicionado no rodapé (ao lado do lixeira); prefill agora inclui campos de localização
+
+**Build:** Vite ✅ (40s)
+
+---
 
 ### 2026-06-11 (sessão S31) — Lapidação Sprint completa (8/8 páginas)
 

@@ -27,7 +27,7 @@
 |---|-------|--------|--------------|
 | 8 | Google Calendar OAuth + sync completo | 🟡 | UI pronta; checklist E2E manual pendente |
 | 9 | Local do evento (endereço + GPS check-in) | ✅ | EventLocationSection, Modo Palco |
-| 10 | Mapa Brasil visitados (relatórios) | ✅ | BrazilVisitedMap |
+| 10 | Mapa Brasil visitados (relatórios) | ✅ | BrazilVisitedMap — marcadores recalibrados S39 |
 | 11 | Alertas agenda — check-in local hoje | ✅ | AlertsPanel |
 | 12 | Busca inteligente empresas / CNPJ compartilhado | ✅ | migrations 020 + Edge Function + NF-e XML sessão 10 |
 | 13 | Export PDF/CSV relatórios | ✅ | exportReport.js |
@@ -73,6 +73,16 @@
 | 32 | Expenses: agrupar despesas por mês | 2026-06-09 | ✅ `MonthGroup` com collapse animado |
 | 33 | Criar empresa inline no EventForm com busca CNPJ | 2026-06-09 | ✅ `ClientQuickCreateDialog` + `ClientCombobox` |
 | 34 | Diferenciar **Empresa** vs **Pessoa** no cadastro de clientes | 2026-06-10 | ✅ Migration `022_clients_type.sql` + toggle em `ClientForm`, `ClientCombobox`, `ClientDetailModal`, `ClientDetail.jsx`, `Clients.jsx`, `ClientQuickCreateDialog` |
+| 35 | Busca de eventos na Agenda (título, cliente, local) | 2026-06-12 | ✅ `searchQuery` state + campo Search + lista de resultados cross-mês em `Calendar.jsx` |
+| 36 | Vista em lista na Agenda (alternativa ao grid mensal) | 2026-06-12 | ✅ Toggle Grid/Lista + `listViewGroups` useMemo + render condicional em `Calendar.jsx` |
+| 37 | Botão Duplicar evento no modal de detalhe | 2026-06-12 | ✅ `Copy` icon + `onDuplicate` prop em `EventDetailModal`; prefill inclui localização |
+| 38 | Agendar show diretamente de um cliente | 2026-06-12 | ✅ Botão "Agendar Show" em `ClientDetailModal` + "Agendar Novo Show" em `ClientActionSheet`; Calendar lê `?client_id=` e pré-seleciona |
+| 39 | Export ICS da Agenda (importar no Google/Apple Calendar) | 2026-06-12 | ✅ `exportCalendarIcs` em `exportReport.js`; botão ↓ ao lado do toggle Grid/Lista; exporta eventos filtrados |
+| 40 | Próximos Shows por cliente em ClientDetail | 2026-06-12 | ✅ Seção indigo antes do Resumo Financeiro; lista até 4 eventos futuros com data, local, badge, valor |
+| 41 | Marcar evento como Pago diretamente na lista do calendário | 2026-06-12 | ✅ Botão `BadgeCheck` inline na vista lista para eventos concluídos/confirmados não pagos |
+| 42 | Período "Esta Semana" nos Relatórios | 2026-06-12 | ✅ `PERIOD_OPTIONS` + case `this_week` em `Reports.jsx` |
+| 43 | Export ICS no ExportManager dos Relatórios | 2026-06-12 | ✅ Botão ICS azul em `ExportManager.jsx`; exporta eventos do período filtrado |
+| 44 | Vista Semanal na Agenda (Week View) | 2026-06-12 | ✅ Toggle Grid/Semana/Lista; 7 colunas; hoje destacado; dot status; nav prev/next/hoje |
 
 ---
 
