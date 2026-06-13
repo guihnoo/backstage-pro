@@ -56,6 +56,7 @@ import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
 import ActivityHeatmap from '@/components/reports/ActivityHeatmap';
 import NfTracker from '@/components/reports/NfTracker';
+import MonthlyTrend from '@/components/reports/MonthlyTrend';
 import EventHeading from '@/components/events/EventHeading';
 import { Ellipsis } from '@/components/ui/overflowText';
 import BrazilVisitedMap from '@/components/reports/BrazilVisitedMap';
@@ -910,15 +911,19 @@ export default function ReportsPage() {
 
         {/* Content based on selected view */}
         {selectedView === 'overview' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ReportsChart
-              chartInput={processedData.chartInput}
-              period={selectedPeriod}
-              onDataClick={handleChartClick} // NOVO: Passando handler para o gráfico
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ReportsChart
+                chartInput={processedData.chartInput}
+                period={selectedPeriod}
+                onDataClick={handleChartClick}
+              />
+              <FinancialSummary stats={processedData.current} />
+            </div>
+            <MonthlyTrend
+              events={data.events}
+              goalRevenue={Number(profile?.monthly_goal_revenue) || 0}
             />
-            <FinancialSummary
-              stats={processedData.current} />
-
           </div>
         )}
 

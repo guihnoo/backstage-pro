@@ -623,6 +623,14 @@ export default function ClientsPage() {
           onClose={() => setActionSheetClient(null)}
           onViewDetails={handleActionSheetViewDetails}
           onContact={handleActionSheetContact}
+          onEdit={(client) => {
+            setActionSheetClient(null);
+            handleEditClient(client);
+          }}
+          onDelete={(clientId) => {
+            setActionSheetClient(null);
+            handleDeleteClient(clientId);
+          }}
         />
 
         {insightsClient && (

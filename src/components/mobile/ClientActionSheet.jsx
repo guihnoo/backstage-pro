@@ -11,7 +11,9 @@ import {
   MessageCircle,
   Calendar,
   TrendingUp,
-  Plus
+  Plus,
+  Edit,
+  Trash2,
 } from 'lucide-react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
@@ -23,7 +25,9 @@ export default function ClientActionSheet({
   isOpen, 
   onClose, 
   onViewDetails,
-  onContact
+  onContact,
+  onEdit,
+  onDelete,
 }) {
   const { formatCurrency } = useFinancialVisibility();
   useAppScrollLock(Boolean(isOpen && client));
@@ -163,6 +167,29 @@ export default function ClientActionSheet({
                 <Plus className="w-4 h-4 mr-2" />
                 Agendar Novo Show
               </Button>
+
+              <div className="grid grid-cols-2 gap-2">
+                {onEdit && (
+                  <Button
+                    variant="outline"
+                    onClick={() => onEdit(client)}
+                    className="h-12 min-h-[44px] bg-slate-800 border-slate-700 hover:bg-slate-700 text-white font-medium"
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Editar
+                  </Button>
+                )}
+                {onDelete && (
+                  <Button
+                    variant="outline"
+                    onClick={() => onDelete(client.id)}
+                    className="h-12 min-h-[44px] bg-red-950/40 border-red-800/60 hover:bg-red-900/30 text-red-400 font-medium"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Excluir
+                  </Button>
+                )}
+              </div>
 
               {(client.email || client.phone) && (
                 <>

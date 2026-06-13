@@ -25,8 +25,12 @@ import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
 import { ClampedText } from '@/components/ui/overflowText';
 import appToast from '@/lib/appToast';
+import ConfirmDialog from '@/components/layout/ConfirmDialog';
+import { useEvents } from '@/lib/useEvents';
+import { useClients } from '@/lib/useClients';
 
 const EventDetailModal = lazy(() => import('@/components/calendar/EventDetailModal'));
+const EventForm = lazy(() => import('@/components/calendar/EventForm'));
 
 function SectionSkeleton({ className = 'h-28' }) {
   return <Skeleton className={`w-full rounded-xl bg-slate-800/60 ${className}`} />;
@@ -35,6 +39,11 @@ function SectionSkeleton({ className = 'h-28' }) {
 export default function Home() {
   const { user, profile } = useAuth();
   const [detailEvent, setDetailEvent] = useState(null);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [showEventForm, setShowEventForm] = useState(false);
+  const [confirmDeleteEventId, setConfirmDeleteEventId] = useState(null);
+  const { clients } = useClients();
+  const { delete: deleteEvent } = useEvents();
   const userId = user?.id;
   const categoryId = profile?.category || 'lighting';
   const config = getCategoryConfig(categoryId);
@@ -96,6 +105,21 @@ export default function Home() {
     await refetch();
     appToast.success('Cockpit atualizado');
   }, [refetch]);
+
+  const handleConfirmDeleteEvent = useCallback(async () => {
+    if (!confirmDeleteEventId) return;
+    try {
+      await deleteEvent(confirmDeleteEventId);
+      appToast.success('Evento excluído com sucesso.');
+      setDetailEvent(null);
+      await refetch();
+    } catch (err) {
+      console.error('Erro ao excluir evento:', err);
+      appToast.error('Não foi possível excluir o evento.');
+    } finally {
+      setConfirmDeleteEventId(null);
+    }
+  }, [confirmDeleteEventId, deleteEvent, refetch]);
 
   const { pullDistance, isRefreshing, threshold } = usePullToRefresh(refreshCockpit);
 
@@ -289,14 +313,12 @@ export default function Home() {
             event={detailEvent}
             client={detailEvent.clients || null}
             onClose={() => setDetailEvent(null)}
-            onEdit={() => {
+            onEdit={(event) => {
               setDetailEvent(null);
-              hardNavigate('/calendar');
+              setEditingEvent(event);
+              setShowEventForm(true);
             }}
-            onDelete={() => {
-              setDetailEvent(null);
-              refreshCockpit();
-            }}
+            onDelete={(eventId) => setConfirmDeleteEventId(eventId)}
             onMarkPaid={() => {
               setDetailEvent(null);
               refreshCockpit();
@@ -308,6 +330,35 @@ export default function Home() {
           />
         </Suspense>
       )}
+
+      {showEventForm && (
+        <Suspense fallback={null}>
+          <EventForm
+            isOpen={showEventForm}
+            clients={clients}
+            event={editingEvent}
+            onClose={() => {
+              setShowEventForm(false);
+              setEditingEvent(null);
+            }}
+            onSuccess={async () => {
+              setShowEventForm(false);
+              setEditingEvent(null);
+              await refetch();
+            }}
+          />
+        </Suspense>
+      )}
+
+      <ConfirmDialog
+        open={!!confirmDeleteEventId}
+        onOpenChange={(open) => !open && setConfirmDeleteEventId(null)}
+        title="Excluir evento?"
+        description="O evento será removido permanentemente da sua agenda."
+        confirmLabel="Excluir"
+        destructive
+        onConfirm={handleConfirmDeleteEvent}
+      />
     </div>
   );
 }

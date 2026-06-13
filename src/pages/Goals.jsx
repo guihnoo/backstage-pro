@@ -14,6 +14,10 @@ import MeiDashboard from '@/components/goals/MeiDashboard';
 import LiveClockBar from '@/components/home/LiveClockBar';
 import StatValuePulse from '@/components/home/StatValuePulse';
 import EventDetailModal from '@/components/calendar/EventDetailModal';
+import EventForm from '@/components/calendar/EventForm';
+import ConfirmDialog from '@/components/layout/ConfirmDialog';
+import { useEvents as useEventsStore } from '@/lib/useEvents';
+import { useClients } from '@/lib/useClients';
 import { format, parseISO, differenceInCalendarDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
@@ -216,7 +220,12 @@ export default function Goals() {
   const [activeTab, setActiveTab] = useState('metas');
   const [celebrationBadge, setCelebrationBadge] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [showEventForm, setShowEventForm] = useState(false);
+  const [confirmDeleteEventId, setConfirmDeleteEventId] = useState(null);
   const seenRef = useRef(getSeenBadges());
+  const { clients } = useClients();
+  const { delete: deleteEvent } = useEventsStore();
 
   const [editingGoals, setEditingGoals] = useState(false);
   const [savingGoals, setSavingGoals] = useState(false);
@@ -275,6 +284,21 @@ export default function Goals() {
     await refreshData();
     appToast.success('Metas atualizadas');
   }, [refreshData]);
+
+  const handleConfirmDeleteEvent = useCallback(async () => {
+    if (!confirmDeleteEventId) return;
+    try {
+      await deleteEvent(confirmDeleteEventId);
+      appToast.success('Evento excluído com sucesso.');
+      setSelectedEvent(null);
+      await refreshData();
+    } catch (err) {
+      console.error('Erro ao excluir evento:', err);
+      appToast.error('Não foi possível excluir o evento.');
+    } finally {
+      setConfirmDeleteEventId(null);
+    }
+  }, [confirmDeleteEventId, deleteEvent, refreshData]);
 
   const { pullDistance, isRefreshing, threshold } = usePullToRefresh(pullRefreshGoals);
 
@@ -1044,12 +1068,47 @@ export default function Goals() {
         event={selectedEvent}
         client={selectedEvent.clients || null}
         onClose={() => setSelectedEvent(null)}
-        onEdit={() => { setSelectedEvent(null); hardNavigate('/calendar'); }}
-        onDelete={() => setSelectedEvent(null)}
-        onMarkPaid={() => setSelectedEvent(null)}
-        onAddWork={() => { setSelectedEvent(null); hardNavigate('/calendar'); }}
+        onEdit={(event) => {
+          setSelectedEvent(null);
+          setEditingEvent(event);
+          setShowEventForm(true);
+        }}
+        onDelete={(eventId) => setConfirmDeleteEventId(eventId)}
+        onMarkPaid={() => {
+          setSelectedEvent(null);
+          refreshData();
+        }}
+        onAddWork={() => {
+          setSelectedEvent(null);
+          hardNavigate('/calendar');
+        }}
       />
     )}
+    {showEventForm && (
+      <EventForm
+        isOpen={showEventForm}
+        clients={clients}
+        event={editingEvent}
+        onClose={() => {
+          setShowEventForm(false);
+          setEditingEvent(null);
+        }}
+        onSuccess={async () => {
+          setShowEventForm(false);
+          setEditingEvent(null);
+          await refreshData();
+        }}
+      />
+    )}
+    <ConfirmDialog
+      open={!!confirmDeleteEventId}
+      onOpenChange={(open) => !open && setConfirmDeleteEventId(null)}
+      title="Excluir evento?"
+      description="O evento será removido permanentemente da sua agenda."
+      confirmLabel="Excluir"
+      destructive
+      onConfirm={handleConfirmDeleteEvent}
+    />
     </>
   );
 }

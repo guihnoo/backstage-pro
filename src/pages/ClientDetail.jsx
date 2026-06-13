@@ -25,6 +25,7 @@ import {
   CalendarDays,
   MapPin,
   Star,
+  Trash2,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -48,6 +49,8 @@ import EventDetailModal from '@/components/reports/EventDetailModal';
 import ReportEventList from '@/components/reports/ReportEventList';
 import ReportsChart from '@/components/reports/ReportsChart';
 import { ClampedText } from '@/components/ui/overflowText';
+import ConfirmDialog from '@/components/layout/ConfirmDialog';
+import appToast from '@/lib/appToast';
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -71,8 +74,8 @@ export default function ClientDetailPage() {
   const query = useQuery();
   const clientId = query.get('id');
 
-  const { clients, loading: clientsLoading, refetch: refetchClients, update: updateClient } = useClients();
-  const { events, loading: eventsLoading, refetch: refetchEvents } = useEvents();
+  const { clients, loading: clientsLoading, refetch: refetchClients, update: updateClient, delete: deleteClient } = useClients();
+  const { events, loading: eventsLoading, refetch: refetchEvents, delete: deleteEvent } = useEvents();
   const { dailyWork, loading: dailyWorkLoading, refetch: refetchDailyWork } = useDailyWork();
   const { expenses, loading: expensesLoading, refetch: refetchExpenses } = useExpenses();
   const { formatCurrency } = useFinancialVisibility();
@@ -83,6 +86,9 @@ export default function ClientDetailPage() {
   const [showEventForm, setShowEventForm] = useState(false);
   const [showEventDetail, setShowEventDetail] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [confirmDeleteClient, setConfirmDeleteClient] = useState(false);
+  const [confirmDeleteEventId, setConfirmDeleteEventId] = useState(null);
   const [editingNotes, setEditingNotes] = useState(false);
   const [notesValue, setNotesValue] = useState('');
   const [savingNotes, setSavingNotes] = useState(false);
@@ -198,6 +204,46 @@ export default function ClientDetailPage() {
     setShowEventDetail(true);
   };
 
+  const handleEditEvent = useCallback((event) => {
+    setShowEventDetail(false);
+    setEditingEvent(event);
+    setShowEventForm(true);
+  }, []);
+
+  const handleDeleteEvent = useCallback((eventId) => {
+    setConfirmDeleteEventId(eventId);
+  }, []);
+
+  const handleConfirmDeleteEvent = useCallback(async () => {
+    if (!confirmDeleteEventId) return;
+    try {
+      await deleteEvent(confirmDeleteEventId);
+      appToast.success('Evento excluído com sucesso.');
+      handleSuccess();
+    } catch (err) {
+      console.error('Erro ao excluir evento:', err);
+      appToast.error('Não foi possível excluir o evento.');
+    } finally {
+      setConfirmDeleteEventId(null);
+    }
+  }, [confirmDeleteEventId, deleteEvent, handleSuccess]);
+
+  const handleConfirmDeleteClient = useCallback(async () => {
+    if (!client?.id) return;
+    try {
+      await deleteClient(client.id);
+      appToast.success('Cliente excluído com sucesso.');
+      hardNavigate('/clients');
+    } catch (err) {
+      console.error('Erro ao excluir cliente:', err);
+      appToast.error('Não foi possível excluir o cliente.', {
+        description: 'Verifique se não há eventos associados.',
+      });
+    } finally {
+      setConfirmDeleteClient(false);
+    }
+  }, [client?.id, deleteClient]);
+
   const saveNotes = useCallback(async () => {
     if (!client?.id) return;
     setSavingNotes(true);
@@ -275,15 +321,23 @@ export default function ClientDetailPage() {
               )}
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button variant="outline" onClick={() => setShowClientForm(true)} className="bg-background text-slate-950 px-4 py-2 text-sm font-medium inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input hover:bg-accent hover:text-accent-foreground h-10">
               <Edit className="w-4 h-4 mr-2" />
               Editar Cliente
             </Button>
             <Button
+              variant="outline"
+              onClick={() => setConfirmDeleteClient(true)}
+              className="border-red-800/60 text-red-400 hover:bg-red-900/20 h-10"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Excluir
+            </Button>
+            <Button
               className="border-0 text-[#06070a] font-bold"
               style={{ background: `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})` }}
-              onClick={() => setShowEventForm(true)}
+              onClick={() => { setEditingEvent(null); setShowEventForm(true); }}
             >
               <Plus className="w-4 h-4 mr-2" />
               Novo Evento
@@ -398,7 +452,7 @@ export default function ClientDetailPage() {
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => setShowEventForm(true)}
+                  onClick={() => { setEditingEvent(null); setShowEventForm(true); }}
                   className="h-7 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/30 px-2"
                 >
                   <Plus className="w-3 h-3 mr-1" /> Novo
@@ -508,10 +562,16 @@ export default function ClientDetailPage() {
           <EventForm
             isOpen={showEventForm}
             clients={clients}
-            event={null}
-            onClose={() => setShowEventForm(false)}
-            onSuccess={handleSuccess}
-            initialData={{ client_id: clientId }}
+            event={editingEvent}
+            onClose={() => {
+              setShowEventForm(false);
+              setEditingEvent(null);
+            }}
+            onSuccess={() => {
+              setEditingEvent(null);
+              handleSuccess();
+            }}
+            initialData={editingEvent ? undefined : { client_id: clientId }}
           />
         )}
         {showEventDetail && selectedEvent && (
@@ -522,13 +582,33 @@ export default function ClientDetailPage() {
             dailyWork={dailyWork.filter(w => w.event_id === selectedEvent.id)}
             expenses={expenses.filter(e => e.event_id === selectedEvent.id)}
             onPaymentUpdate={handleSuccess}
-            onDelete={handleSuccess}
+            onEdit={handleEditEvent}
+            onDelete={handleDeleteEvent}
             onWorkEdit={handleSuccess}
             onAddExpense={handleSuccess}
             onExpenseEdit={handleSuccess}
           />
         )}
       </AnimatePresence>
+
+      <ConfirmDialog
+        open={confirmDeleteClient}
+        onOpenChange={setConfirmDeleteClient}
+        title="Excluir cliente?"
+        description="Esta ação não pode ser desfeita. Verifique se o cliente não possui eventos associados."
+        confirmLabel="Excluir"
+        destructive
+        onConfirm={handleConfirmDeleteClient}
+      />
+      <ConfirmDialog
+        open={!!confirmDeleteEventId}
+        onOpenChange={(open) => !open && setConfirmDeleteEventId(null)}
+        title="Excluir evento?"
+        description="O evento e registros vinculados serão removidos permanentemente."
+        confirmLabel="Excluir"
+        destructive
+        onConfirm={handleConfirmDeleteEvent}
+      />
     </>
   </NeonPageShell>
   );

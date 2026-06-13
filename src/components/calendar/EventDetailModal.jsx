@@ -731,7 +731,7 @@ export default function EventDetailModal({
             Registrar Horas
           </Button>
           <Button
-            onClick={onEdit}
+            onClick={() => onEdit?.(event)}
             variant="outline"
             className="flex-1 min-w-[80px] border-slate-700 hover:bg-slate-800"
           >
@@ -805,7 +805,7 @@ export default function EventDetailModal({
             </Button>
           )}
           <Button
-            onClick={onDelete}
+            onClick={() => onDelete?.(event?.id)}
             variant="outline"
             className="flex-shrink-0 border-red-700 hover:bg-red-900/20 text-red-400"
           >

@@ -6,6 +6,20 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-13
 
+### REPORTS-S44 — Aba Fiscal: rastreamento de Nota Fiscal por evento ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/reports/NfTracker.jsx`** (NOVO):
+  - Recebe `events`, `clients`, `onOpenEvent`
+  - Filtra eventos com valor > 0 e não cancelados; separa `pending` (sem `nf_number`) e `issued` (com `nf_number`)
+  - 3 cards de resumo: Emitidas / Pendentes / Valor pendente
+  - Seção âmbar "Sem Nota Fiscal" + seção verde "NF Emitida"; ambas colapsáveis (5 + "Ver mais N")
+  - Clique em ExternalLink → `onOpenEvent(ev)` → abre `EventDetailModal` do Reports
+- **`src/pages/Reports.jsx`**:
+  - Import `NfTracker` + `Receipt` (lucide)
+  - 5ª aba "Fiscal" com badge = contagem de eventos sem NF
+  - Render `<NfTracker>` quando `selectedView === 'fiscal'`
+- **Build**: Vite ✅ (44s) · **Git backup**: auto-wip ✅
+
 ### GOALS-S43 — Streak de meses + projeção "shows para bater meta" ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/pages/Goals.jsx`**:

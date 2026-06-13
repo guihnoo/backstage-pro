@@ -87,6 +87,7 @@
 | 46 | Mapa de atividade anual (heatmap) em Relatórios | 2026-06-13 | ✅ Aba "Atividade" em Reports — grade 52×7 estilo GitHub; tooltip; legenda de escala |
 | 47 | Avaliação de cliente por evento (1-5 estrelas) | 2026-06-13 | ✅ Migration 031; widget estrelas em EventDetailModal (concluídos); média em ClientDetail |
 | 48 | Observações do evento visíveis no EventDetailModal | 2026-06-13 | ✅ Seção `observacoes_md` exibida quando preenchida |
+| 49 | Rastreamento de NF em Relatórios (aba Fiscal) | 2026-06-13 | ✅ `NfTracker.jsx` — 5ª aba em Reports; pendentes âmbar / emitidas verde; badge com contagem |
 
 ---
 
