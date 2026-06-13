@@ -22,11 +22,12 @@ export function fakeSession() {
   };
 }
 
-export function fakeProfile() {
+export function fakeProfile(overrides = {}) {
   return {
     id: E2E_USER_ID,
     name: 'E2E Test',
     email: 'e2e-test@backstage.local',
+    role: 'user',
     category: 'lighting',
     onboarding_complete: true,
     tour_completed_at: new Date().toISOString(),
@@ -39,7 +40,12 @@ export function fakeProfile() {
     monthly_goal_events: 8,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
+    ...overrides,
   };
+}
+
+export function fakeOwnerProfile() {
+  return fakeProfile({ role: 'owner', email: 'owner@backstage.local', name: 'E2E Owner' });
 }
 
 function wantsSingleObject(headers) {
@@ -54,8 +60,8 @@ function mergeProfileUpdate(profile, payload) {
   return { ...profile, ...row, updated_at: new Date().toISOString() };
 }
 
-export async function installProfileMock(page) {
-  let profileState = fakeProfile();
+export async function installProfileMock(page, initialProfile = fakeProfile()) {
+  let profileState = initialProfile;
 
   await page.route(/\/rest\/v1\/profiles(\?|$)/, async (route) => {
     const method = route.request().method();
@@ -112,8 +118,8 @@ export async function disableServiceWorkerForE2E(page) {
   });
 }
 
-export async function seedAuth(page) {
-  await installProfileMock(page);
+export async function seedAuth(page, profileOverrides) {
+  await installProfileMock(page, fakeProfile(profileOverrides || {}));
   await disableServiceWorkerForE2E(page);
   // goto /login primeiro para que o Supabase inicialize sem sessão;
   // depois setamos localStorage via evaluate — evita a validação de token
@@ -125,4 +131,8 @@ export async function seedAuth(page) {
     },
     { key: AUTH_KEY, session: fakeSession() }
   );
+}
+
+export async function seedOwnerAuth(page) {
+  await seedAuth(page, { role: 'owner', email: 'owner@backstage.local', name: 'E2E Owner' });
 }
