@@ -6,14 +6,18 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-12
 
-### CALENDAR-S40 — Vista Semanal (Week View) na Agenda ✅
+### CALENDAR-S40 — Vista Semanal (Week View) + polish completo ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/pages/Calendar.jsx`**:
-  - Novo botão `CalendarDays` no toggle de visualização (entre Grade e Lista); clique define `viewMode='week'` e reinicia `weekStart` na semana atual
-  - State `weekStart` (useMemo `weekDays` + `weekEventsByDay`)
-  - JSX week view: header com ← / →, label "D Mmm – D Mmm AAAA", botão "Hoje"; grid `grid-cols-7`; cada coluna tem cabeçalho dia curto + número; hoje destacado `cyan`; eventos como botões clicáveis com dot de status; clique → `handleEventClick`
-  - Imports adicionados: `CalendarDays, ChevronLeft, ChevronRight` (lucide); `addWeeks, subWeeks, startOfWeek, endOfWeek, eachDayOfInterval` (date-fns)
-- **Build**: Vite ✅ zero erros · **Git backup**: ✅
+  - Novo botão `CalendarDays` no toggle (entre Grade e Lista); `viewMode='week'` reinicia `weekStart` na semana atual
+  - State `weekStart`; useMemos `weekDays` + `weekEventsByDay`
+  - Grid `grid-cols-7` em `overflow-x-auto` com `min-w-[560px]` — scroll horizontal em mobile
+  - Cabeçalho: ← / →, label "D Mmm – D Mmm AAAA", botão "Hoje"; hoje destacado com borda cyan
+  - Cards de evento: `ev.color` como borda esquerda colorida; horário de início abaixo do título; máx 3 por dia + "+N mais"; cancelados com opacity + tachado
+  - Banner "Hoje" com pulse cyan quando a semana contém o dia atual e há shows ativos
+  - Card resumo semanal: número de shows ativos + valor bruto
+  - Imports: `CalendarDays, ChevronLeft, ChevronRight` (lucide); `addWeeks, subWeeks, startOfWeek, endOfWeek, eachDayOfInterval` (date-fns)
+- **Build**: Vite ✅ · **Git backup**: ✅ (auto-wip `15cb2f8`)
 
 ### REPORTS-S38 — ExportManager ICS + período "Esta Semana" ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)

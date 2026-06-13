@@ -142,7 +142,8 @@
       "Bash(dir \"C:\\\\Users\\\\monte\\\\OneDrive\\\\Documentos\\\\backstage-pro\\\\src\\\\components\\\\calendar\" /B)",
       "Bash(findstr /i \"action\\\\|detail\")",
       "Bash(Get-Content \"C:\\\\Users\\\\monte\\\\OneDrive\\\\Documentos\\\\backstage-pro\\\\src\\\\components\\\\reports\\\\BrazilVisitedMap.jsx\")",
-      "Bash(Select-Object -Skip 155)"
+      "Bash(Select-Object -Skip 155)",
+      "Bash(git stash *)"
     ]
   },
   "enabledMcpjsonServers": [

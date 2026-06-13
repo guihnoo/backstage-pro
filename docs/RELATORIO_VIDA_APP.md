@@ -90,13 +90,16 @@ Ordem oficial após fix de scroll (2026-06-05):
 
 ### 2026-06-12 (sessão S40) — Vista Semanal na Agenda
 
-**Calendar.jsx — Vista Semanal (Week View):**
+**Calendar.jsx — Vista Semanal (Week View) + polish:**
 - Novo modo `viewMode === 'week'` — terceiro botão no toggle (ícone `CalendarDays` entre Grade e Lista)
 - `weekStart` state (dom a sáb, `weekStartsOn: 0`); `weekDays` + `weekEventsByDay` useMemos
 - Navegação: botões ← → + botão "Hoje" recentra na semana atual; label "D de Mmm – D de Mmm AAAA"
-- 7 colunas (`grid-cols-7`): cabeçalho com dia curto (Dom/Seg…) + número; hoje destacado com borda `cyan`
-- Eventos como botões clicáveis com dot de status (amber/blue/emerald/red) + título truncado
-- Clique abre `EventDetailModal` via `handleEventClick` — mesma flow do Grid e da Lista
+- 7 colunas em `overflow-x-auto` + `min-w-[560px]` — scroll horizontal em mobile, legível em desktop
+- Cabeçalho com dia curto (Dom/Seg…) + número; hoje destacado com borda `cyan`
+- Eventos: `ev.color` como `border-left` colorida (estilo Google Calendar); horário abaixo do título; máx 3 por dia + "+N mais"; cancelados com `opacity-50` e tachado
+- Banner "Hoje" com pulso cyan — aparece quando a semana exibida contém hoje e há shows ativos
+- Card de resumo semanal: contagem de shows ativos + valor bruto da semana
+- Clique em qualquer evento abre `EventDetailModal` via `handleEventClick`
 - Build Vite ✅ zero erros
 
 ---
