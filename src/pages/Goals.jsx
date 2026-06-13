@@ -21,6 +21,7 @@ import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
 import EventHeading from '@/components/events/EventHeading';
 import { Ellipsis } from '@/components/ui/overflowText';
+import { computeEventsNeededForGoal, computeGoalStreak } from '@/lib/goalMetrics';
 
 const SEEN_BADGES_KEY = 'backstage_seen_badges';
 
@@ -366,36 +367,15 @@ export default function Goals() {
     });
   }, [allEvents, metaReceita]);
 
-  const goalStreak = useMemo(() => {
-    if (!metaReceita) return 0;
-    const now = new Date();
-    let streak = 0;
-    for (let i = 1; i <= 24; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      const rev = allEvents
-        .filter(e => e.payment_status === 'paid' && (e.start_date || '').startsWith(monthStr))
-        .reduce((s, e) => s + (Number(e.paid_amount) || 0), 0);
-      if (rev >= metaReceita) streak++;
-      else break;
-    }
-    return streak;
-  }, [allEvents, metaReceita]);
+  const goalStreak = useMemo(
+    () => computeGoalStreak(allEvents, metaReceita),
+    [allEvents, metaReceita],
+  );
 
-  const eventsNeededForGoal = useMemo(() => {
-    if (!metaReceita || stats.faturamento_pago >= metaReceita) return null;
-    const remaining = metaReceita - stats.faturamento_pago;
-    const paidLast3 = allEvents.filter(e => {
-      if (e.payment_status !== 'paid') return false;
-      const now = new Date();
-      const cutoff = new Date(now.getFullYear(), now.getMonth() - 3, 1).toISOString().slice(0, 7);
-      return (e.start_date || '') >= cutoff;
-    });
-    if (paidLast3.length === 0) return null;
-    const avgPerEvent = paidLast3.reduce((s, e) => s + (Number(e.paid_amount) || 0), 0) / paidLast3.length;
-    if (avgPerEvent <= 0) return null;
-    return { remaining, avg: avgPerEvent, count: Math.ceil(remaining / avgPerEvent) };
-  }, [allEvents, metaReceita, stats.faturamento_pago]);
+  const eventsNeededForGoal = useMemo(
+    () => computeEventsNeededForGoal(allEvents, metaReceita, stats.faturamento_pago),
+    [allEvents, metaReceita, stats.faturamento_pago],
+  );
 
   // Detecta badges recém-desbloqueados
   useEffect(() => {
