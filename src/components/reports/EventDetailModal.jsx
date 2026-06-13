@@ -314,6 +314,9 @@ const EventDetailModal = React.memo(function EventDetailModal({
                     <InfoItem icon={Calendar} label="Vencimento" value={event.payment_due_date ? formatFullDate(event.payment_due_date) : null} />
                   )}
                   {event.paid_amount > 0 && <InfoItem icon={DollarSign} label="Valor Recebido" value={event.paid_amount} isCurrency />}
+                  {event.nf_number && (
+                    <InfoItem icon={FileText} label="Nota Fiscal" value={`NF ${event.nf_number}${event.nf_issued_at ? ` · ${formatFullDate(event.nf_issued_at)}` : ''}`} color="text-emerald-400" />
+                  )}
                 </div>
               </div>
 

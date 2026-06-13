@@ -10,7 +10,8 @@ import {
   ArrowUp,
   ArrowDown,
   Eye,
-  ExternalLink
+  ExternalLink,
+  Star,
 } from 'lucide-react';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { Badge } from '@/components/ui/badge';
@@ -64,6 +65,12 @@ export default function ClientDetailedTable({ data, onClientClick }) {
         // Último evento (mais recente)
         const lastEvent = clientEvents.sort((a, b) => new Date(b.start_date) - new Date(a.start_date))[0];
 
+        // Avaliação média
+        const ratedEvents = clientEvents.filter(e => e.client_rating != null);
+        const avgRating = ratedEvents.length > 0
+          ? ratedEvents.reduce((s, e) => s + e.client_rating, 0) / ratedEvents.length
+          : null;
+
         return {
             id: client.id,
             name: client.name,
@@ -82,6 +89,7 @@ export default function ClientDetailedTable({ data, onClientClick }) {
             totalExpenses,
             revenuePerHour,
             profitMargin,
+            avgRating,
             lastEventDate: lastEvent?.start_date || null,
             lastEventTitle: lastEvent?.title || 'Nenhum evento'
         };
@@ -220,7 +228,7 @@ export default function ClientDetailedTable({ data, onClientClick }) {
                             <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 flex-shrink-0" />
                           </button>
                           <p className="text-sm text-slate-400 truncate">{client.contact_person}</p>
-                          <div className="flex gap-1 mt-1">
+                          <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                             {client.completedEventsCount > 0 && (
                               <Badge className="bg-green-500/20 text-green-300 border-green-400/50 text-xs px-1 py-0">
                                 {client.completedEventsCount} concluídos
@@ -230,6 +238,12 @@ export default function ClientDetailedTable({ data, onClientClick }) {
                               <Badge className="bg-blue-500/20 text-blue-300 border-blue-400/50 text-xs px-1 py-0">
                                 {client.scheduledEventsCount} agendados
                               </Badge>
+                            )}
+                            {client.avgRating != null && (
+                              <span className="flex items-center gap-0.5 text-[11px] text-amber-400 font-medium">
+                                <Star className="w-3 h-3" fill="#fbbf24" stroke="#fbbf24" />
+                                {client.avgRating.toFixed(1)}
+                              </span>
                             )}
                           </div>
                         </div>

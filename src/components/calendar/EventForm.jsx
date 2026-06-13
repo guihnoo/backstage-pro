@@ -44,6 +44,8 @@ const defaultState = {
   location_lat: null,
   location_lng: null,
   observacoes_md: '',
+  nf_number: '',
+  nf_issued_at: '',
 };
 
 export default function EventForm({
@@ -90,6 +92,8 @@ export default function EventForm({
       location_lat: seed.location_lat ?? null,
       location_lng: seed.location_lng ?? null,
       observacoes_md: seed.observacoes_md || '',
+      nf_number: seed.nf_number || '',
+      nf_issued_at: seed.nf_issued_at ? seed.nf_issued_at.slice(0, 10) : '',
     });
     if (!isOpen) setExtraClients([]);
   }, [isOpen, event, prefillData, initialData]);
@@ -236,6 +240,8 @@ export default function EventForm({
         location_lat: formData.location_lat,
         location_lng: formData.location_lng,
         observacoes_md: formData.observacoes_md || null,
+        nf_number: formData.nf_number?.trim() || null,
+        nf_issued_at: formData.nf_issued_at || null,
       };
 
       if (event?.id) {
@@ -410,6 +416,27 @@ export default function EventForm({
               </span>
             </div>
           )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Nº Nota Fiscal</Label>
+              <Input
+                placeholder="Ex: 000123"
+                value={formData.nf_number}
+                onChange={(e) => setField('nf_number', e.target.value)}
+                className="bg-slate-800 border-slate-700"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Data de emissão NF</Label>
+              <Input
+                type="date"
+                value={formData.nf_issued_at}
+                onChange={(e) => setField('nf_issued_at', e.target.value)}
+                className="bg-slate-800 border-slate-700"
+              />
+            </div>
+          </div>
 
           <div className="space-y-2">
             <Label>Observações</Label>
