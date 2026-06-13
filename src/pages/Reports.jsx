@@ -25,6 +25,7 @@ import {
   Minus,
   XCircle,
   Activity,
+  Receipt,
 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, subMonths, isWithinInterval, parseISO, startOfYear, endOfYear, addMonths, startOfWeek, endOfWeek, subWeeks, addWeeks } from 'date-fns';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
@@ -54,6 +55,7 @@ import StatValuePulse from '@/components/home/StatValuePulse';
 import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
 import ActivityHeatmap from '@/components/reports/ActivityHeatmap';
+import NfTracker from '@/components/reports/NfTracker';
 import EventHeading from '@/components/events/EventHeading';
 import { Ellipsis } from '@/components/ui/overflowText';
 import BrazilVisitedMap from '@/components/reports/BrazilVisitedMap';
@@ -879,6 +881,10 @@ export default function ReportsPage() {
             { id: 'clients', label: 'Clientes', icon: Users, count: data.clients.length },
             { id: 'expenses', label: 'Despesas', icon: DollarSign, count: processedData.current.expenses.length },
             { id: 'activity', label: 'Atividade', icon: Activity, count: null },
+            {
+              id: 'fiscal', label: 'Fiscal', icon: Receipt,
+              count: data.events.filter(e => e.status !== 'cancelled' && !e.nf_number && (Number(e.paid_amount) > 0 || Number(e.estimated_revenue) > 0 || Number(e.actual_revenue) > 0)).length || null,
+            },
           ].map((view) => (
             <button
               key={view.id}
@@ -941,6 +947,14 @@ export default function ReportsPage() {
           <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
             <ActivityHeatmap events={data.events} />
           </div>
+        )}
+
+        {selectedView === 'fiscal' && (
+          <NfTracker
+            events={data.events}
+            clients={data.clients}
+            onOpenEvent={(ev) => setSelectedEvent(ev)}
+          />
         )}
 
         {/* Events List - AGORA FILTRÁVEL e com MODAL */}
