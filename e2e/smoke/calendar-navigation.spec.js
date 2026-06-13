@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { seedAuth } from '../helpers/fakeAuth.js';
+import { seedAuthWithData } from '../helpers/dataMocks.js';
 
 test('calendar nao fica preso em Carregando apos navegacao', async ({ page }) => {
   await seedAuth(page);
@@ -15,4 +16,15 @@ test('calendar nao fica preso em Carregando apos navegacao', async ({ page }) =>
     .or(page.getByRole('button', { name: /tentar novamente/i }));
 
   await expect(calendarShell.first()).toBeVisible({ timeout: 10_000 });
+});
+
+test('vista semanal exibe colunas dos 7 dias e eventos mockados', async ({ page }) => {
+  await seedAuthWithData(page);
+  await page.goto('/calendar', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 15_000 });
+
+  await page.getByTitle('Vista semanal').click();
+  const weekGrid = page.locator('.grid.grid-cols-7');
+  await expect(weekGrid).toBeVisible({ timeout: 10_000 });
+  await expect(weekGrid.getByRole('button', { name: 'E2E Show Demo' })).toBeVisible();
 });

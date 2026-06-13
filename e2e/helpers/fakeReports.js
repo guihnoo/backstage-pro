@@ -32,6 +32,20 @@ export function fakeReportEvents() {
       location_lat: -22.9752,
       location_lng: -43.3926,
     },
+    {
+      id: 'e2e-event-cancelled-mg',
+      user_id: E2E_USER_ID,
+      title: 'Show cancelado BH',
+      start_date: '2026-03-01',
+      end_date: '2026-03-01',
+      status: 'cancelled',
+      payment_status: 'pending',
+      location: 'Mineirão, Belo Horizonte, MG',
+      location_city: 'Belo Horizonte',
+      location_state: 'MG',
+      location_lat: -19.8658,
+      location_lng: -43.9711,
+    },
   ];
 }
 

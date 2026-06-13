@@ -23,11 +23,14 @@ import {
   X,
   LayoutGrid,
   List,
+  CalendarDays,
   Download,
   BadgeCheck,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { exportCalendarIcs } from '@/lib/exportReport';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, parseISO, isValid } from 'date-fns';
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, parseISO, isValid, addWeeks, subWeeks, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import BackstageCalendarGrid from '@/components/calendar/BackstageCalendarGrid';
 import EventForm from '@/components/calendar/EventForm';
@@ -151,7 +154,7 @@ export default function CalendarPage() {
 
   const unsyncedCount = useMemo(() => {
     if (!userSettings?.google_calendar_connected) return 0;
-    return events.filter((e) => !e.google_event_id && e.status !== 'cancelado').length;
+    return events.filter((e) => !e.google_event_id && !isCancelledEvent(e)).length;
   }, [events, userSettings?.google_calendar_connected]);
 
   const isLoading = eventsLoading || clientsLoading || dailyWorkLoading || expensesLoading;
@@ -179,6 +182,7 @@ export default function CalendarPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState('grid');
+  const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 0 }));
   const [confirmWork, setConfirmWork] = useState(null);
   const [confirmEvent, setConfirmEvent] = useState(null);
 
@@ -232,6 +236,20 @@ export default function CalendarPage() {
     }
     return groups;
   }, [filteredEvents]);
+
+  const weekDays = useMemo(() =>
+    eachDayOfInterval({ start: weekStart, end: endOfWeek(weekStart, { weekStartsOn: 0 }) }),
+    [weekStart]
+  );
+
+  const weekEventsByDay = useMemo(() => {
+    const map = new Map();
+    for (const day of weekDays) {
+      const iso = format(day, 'yyyy-MM-dd');
+      map.set(iso, filteredEvents.filter(ev => (ev.start_date || '').slice(0, 10) === iso));
+    }
+    return map;
+  }, [weekDays, filteredEvents]);
 
   const todayStr = todayLocalISO();
   const isLiveShiftToday = useMemo(() => {
@@ -1177,10 +1195,18 @@ export default function CalendarPage() {
               <button
                 type="button"
                 onClick={() => setViewMode('grid')}
-                title="Vista em grade"
+                title="Vista em grade mensal"
                 className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-cyan-600/30 text-cyan-300' : 'text-slate-500 hover:text-slate-300'}`}
               >
                 <LayoutGrid className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => { setViewMode('week'); setWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 })); }}
+                title="Vista semanal"
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'week' ? 'bg-cyan-600/30 text-cyan-300' : 'text-slate-500 hover:text-slate-300'}`}
+              >
+                <CalendarDays className="w-4 h-4" />
               </button>
               <button
                 type="button"
@@ -1202,7 +1228,7 @@ export default function CalendarPage() {
           </div>
         </div>
 
-        {/* Grade ou Lista */}
+        {/* Grade, Semana ou Lista */}
         {viewMode === 'grid' ? (
           <Card className="bg-slate-900/50 border-slate-800 overflow-hidden">
             <CardContent className="p-0">
@@ -1219,6 +1245,140 @@ export default function CalendarPage() {
               />
             </CardContent>
           </Card>
+        ) : viewMode === 'week' ? (
+          <div className="space-y-3">
+            {/* Banner "Hoje" — aparece apenas quando a semana exibida contém hoje */}
+            {(() => {
+              const todayIso = format(new Date(), 'yyyy-MM-dd');
+              const weekContainsToday = weekDays.some(d => format(d, 'yyyy-MM-dd') === todayIso);
+              const todayEvents = weekEventsByDay.get(todayIso) || [];
+              const todayActive = todayEvents.filter(ev => ev.status !== 'cancelled');
+              if (!weekContainsToday || todayActive.length === 0) return null;
+              return (
+                <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-cyan-900/25 border border-cyan-700/40">
+                  <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-cyan-300">
+                      Hoje — {todayActive.length} show{todayActive.length > 1 ? 's' : ''}
+                    </p>
+                    <p className="text-xs text-cyan-400/70 truncate">
+                      {todayActive.map(ev => ev.title).join(' · ')}
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Navegação semanal */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setWeekStart(w => subWeeks(w, 1))}
+                  className="p-1.5 rounded-lg bg-slate-800/60 border border-slate-700/60 text-slate-400 hover:text-slate-200 hover:border-slate-600 transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWeekStart(addWeeks(weekStart, 1))}
+                  className="p-1.5 rounded-lg bg-slate-800/60 border border-slate-700/60 text-slate-400 hover:text-slate-200 hover:border-slate-600 transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+              <p className="text-sm font-medium text-slate-300 capitalize">
+                {format(weekStart, "d 'de' MMM", { locale: ptBR })} –{' '}
+                {format(endOfWeek(weekStart, { weekStartsOn: 0 }), "d 'de' MMM yyyy", { locale: ptBR })}
+              </p>
+              <button
+                type="button"
+                onClick={() => setWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 }))}
+                className="text-xs px-3 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700/60 text-slate-400 hover:text-cyan-300 hover:border-cyan-600/40 transition-colors"
+              >
+                Hoje
+              </button>
+            </div>
+
+            {/* Colunas dos 7 dias — scroll horizontal em mobile */}
+            <div className="overflow-x-auto -mx-4 px-4 pb-1">
+              <div className="grid grid-cols-7 gap-1.5 min-w-[560px]">
+                {weekDays.map((day) => {
+                  const iso = format(day, 'yyyy-MM-dd');
+                  const isToday = iso === format(new Date(), 'yyyy-MM-dd');
+                  const dayEvents = weekEventsByDay.get(iso) || [];
+                  const visibleEvents = dayEvents.slice(0, 3);
+                  const overflow = dayEvents.length - 3;
+                  return (
+                    <div
+                      key={iso}
+                      className={`flex flex-col rounded-xl border transition-colors min-h-[120px] ${
+                        isToday
+                          ? 'bg-cyan-900/20 border-cyan-600/50'
+                          : 'bg-slate-800/40 border-slate-700/50'
+                      }`}
+                    >
+                      {/* Cabeçalho do dia */}
+                      <div className={`px-2 pt-2 pb-1 border-b ${isToday ? 'border-cyan-700/40' : 'border-slate-700/40'}`}>
+                        <p className={`text-[10px] font-semibold uppercase tracking-wide ${isToday ? 'text-cyan-400' : 'text-slate-500'}`}>
+                          {format(day, 'EEE', { locale: ptBR })}
+                        </p>
+                        <p className={`text-lg font-bold leading-none ${isToday ? 'text-cyan-300' : 'text-slate-300'}`}>
+                          {format(day, 'd')}
+                        </p>
+                      </div>
+
+                      {/* Eventos do dia */}
+                      <div className="flex flex-col gap-1 p-1.5 flex-1">
+                        {visibleEvents.map((ev) => {
+                          const evColor = ev.color || '#6366f1';
+                          const timeLabel = ev.start_time ? ev.start_time.slice(0, 5) : null;
+                          const isCancelled = ev.status === 'cancelled';
+                          return (
+                            <button
+                              key={ev.id}
+                              type="button"
+                              onClick={() => handleEventClick(ev)}
+                              style={{ borderLeftColor: evColor }}
+                              className={`w-full text-left rounded-md px-1.5 py-1 text-[11px] leading-tight font-medium text-slate-200 bg-slate-700/60 hover:bg-slate-700 border border-slate-600/40 border-l-2 transition-colors flex flex-col gap-0.5 ${isCancelled ? 'opacity-50 line-through' : ''}`}
+                            >
+                              <span className="truncate">{ev.title}</span>
+                              {timeLabel && (
+                                <span className="text-[10px] text-slate-400">{timeLabel}</span>
+                              )}
+                            </button>
+                          );
+                        })}
+                        {overflow > 0 && (
+                          <p className="text-[10px] text-slate-500 text-center mt-0.5">
+                            +{overflow} mais
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Resumo da semana */}
+            {(() => {
+              const allWeekEvents = weekDays.flatMap(d => weekEventsByDay.get(format(d, 'yyyy-MM-dd')) || []);
+              const activeEvents = allWeekEvents.filter(ev => ev.status !== 'cancelled');
+              const weekTotal = activeEvents.reduce((s, ev) => s + getEventCacheAmount(ev), 0);
+              if (activeEvents.length === 0) return null;
+              return (
+                <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-800/40 border border-slate-700/50 text-sm">
+                  <span className="text-slate-400">
+                    <span className="font-semibold text-slate-200">{activeEvents.length}</span> show{activeEvents.length > 1 ? 's' : ''} na semana
+                  </span>
+                  {weekTotal > 0 && (
+                    <span className="text-emerald-400 font-semibold">{formatCurrency(weekTotal)}</span>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
         ) : (
           <div className="space-y-4">
             {filteredEvents.length === 0 ? (

@@ -25,6 +25,7 @@ import { Link } from 'react-router-dom';
 import appToast from '@/lib/appToast';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { formatGoogleOAuthError } from '@/lib/googleOAuthErrors';
+import { isCancelledEvent } from '@/lib/eventFinance';
 
 export default function GoogleCalendarSync() {
   const { user } = useAuth();
@@ -40,7 +41,7 @@ export default function GoogleCalendarSync() {
 
   const unsyncedCount = useMemo(() => {
     if (!settings?.google_calendar_connected) return 0;
-    return events.filter((e) => !e.google_event_id && e.status !== 'cancelado').length;
+    return events.filter((e) => !e.google_event_id && !isCancelledEvent(e)).length;
   }, [events, settings?.google_calendar_connected]);
 
   useEffect(() => {

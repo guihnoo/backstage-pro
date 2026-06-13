@@ -4,7 +4,8 @@ import { getEventStatus } from '@/components/utils/dateUtils';
 const UNPAID_STATUSES = new Set(['pending', 'unpaid', 'partial']);
 
 export function isCancelledEvent(event) {
-  return event?.status === 'cancelled';
+  const status = event?.status;
+  return status === 'cancelled' || status === 'cancelado';
 }
 
 export function isReceivableEvent(event) {

@@ -11,6 +11,7 @@ import {
 } from '@/lib/parseEventLocation';
 import { latlngToSvg, STATE_CENTROIDS } from '@/lib/brazilMapProjection';
 import { requestMapTour } from '@/lib/appTourBus';
+import { isCancelledEvent } from '@/lib/eventFinance';
 
 class BrazilMapErrorBoundary extends Component {
   state = { hasError: false };
@@ -164,6 +165,11 @@ function BrazilVisitedMapInner({ events = [] }) {
   const [pinnedCityKey, setPinnedCityKey] = useState(null);
   const [hoverCityKey, setHoverCityKey] = useState(null);
 
+  const activeEvents = useMemo(
+    () => events.filter((ev) => !isCancelledEvent(ev)),
+    [events]
+  );
+
   const { visited, countsByState, cities, citiesByState, latestCityKey, sortedCityEntries } = useMemo(() => {
     const stateSet = new Set();
     const stateCounts = {};
@@ -173,7 +179,7 @@ function BrazilVisitedMapInner({ events = [] }) {
     let latestKey = null;
 
     for (const ev of events) {
-      if (ev.status === 'cancelado') continue;
+      if (isCancelledEvent(ev)) continue;
 
       let uf = normalizeStateCode(ev.location_state);
       if (!uf) uf = inferStateFromLocation(ev.location);
@@ -616,13 +622,17 @@ function BrazilVisitedMapInner({ events = [] }) {
         <div className="mt-4 flex flex-col items-center gap-2 rounded-lg border border-slate-700/40 bg-slate-800/30 p-4 text-center">
           <MapPin className="w-5 h-5 text-cyan-500/60" />
           <p className="text-sm text-slate-300 font-medium">
-            {events.length === 0
-              ? 'Nenhum evento cadastrado ainda.'
+            {activeEvents.length === 0
+              ? events.length === 0
+                ? 'Nenhum evento cadastrado ainda.'
+                : 'Nenhum evento ativo no mapa.'
               : 'Seus eventos ainda não têm localização.'}
           </p>
           <p className="text-xs text-slate-500 leading-relaxed max-w-xs">
-            {events.length === 0
-              ? 'Adicione eventos com cidade/estado para ver o mapa iluminado.'
+            {activeEvents.length === 0
+              ? events.length === 0
+                ? 'Adicione eventos com cidade/estado para ver o mapa iluminado.'
+                : 'Eventos cancelados não aparecem aqui. Cadastre shows com local na Agenda.'
               : 'Edite seus eventos e preencha o campo "Local" com cidade e estado (ex: São Paulo, SP) para os estados aparecerem no mapa.'}
           </p>
         </div>
