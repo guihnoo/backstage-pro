@@ -80,7 +80,13 @@ export default function AppLayout() {
                 key={match}
                 to={to}
                 end={end}
-                data-tour={match === '/calendar' ? 'nav-calendar' : undefined}
+                data-tour={
+                  match === '/calendar'
+                    ? 'nav-calendar'
+                    : match === '/reports'
+                      ? 'nav-reports'
+                      : undefined
+                }
                 aria-label={label}
                 aria-current={active ? 'page' : undefined}
                 onPointerEnter={() => prefetchRoute(match)}

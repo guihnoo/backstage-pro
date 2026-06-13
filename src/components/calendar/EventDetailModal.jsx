@@ -26,7 +26,8 @@ import {
   ChevronUp,
   AlertTriangle,
   ClipboardCheck,
-  PartyPopper
+  PartyPopper,
+  Copy
 } from 'lucide-react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import {
@@ -66,6 +67,7 @@ export default function EventDetailModal({
   onClose,
   onEdit,
   onDelete,
+  onDuplicate,
   onAddWork,
   onMarkPaid
 }) {
@@ -790,6 +792,16 @@ export default function EventDetailModal({
               title={`Ver detalhes de ${client.name || 'cliente'}`}
             >
               <ExternalLink className="w-4 h-4" />
+            </Button>
+          )}
+          {onDuplicate && (
+            <Button
+              onClick={() => onDuplicate(event)}
+              variant="outline"
+              className="flex-shrink-0 border-slate-700 hover:bg-slate-800 text-slate-300"
+              title="Duplicar evento"
+            >
+              <Copy className="w-4 h-4" />
             </Button>
           )}
           <Button

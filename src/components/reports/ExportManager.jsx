@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { FileText, Table, Loader2 } from 'lucide-react';
+import { FileText, Table, Loader2, CalendarDays } from 'lucide-react';
 import appToast from '@/lib/appToast';
 
-import { exportReportCsv, exportReportPdf } from '@/lib/exportReport';
+import { exportReportCsv, exportReportPdf, exportCalendarIcs } from '@/lib/exportReport';
+import { format } from 'date-fns';
 
 const ExportManager = ({ data, period }) => {
   const [exporting, setExporting] = useState(null);
@@ -17,6 +18,17 @@ const ExportManager = ({ data, period }) => {
         exportReportPdf(data, period);
         appToast.success('PDF aberto para impressão.', {
           description: 'Use "Salvar como PDF" na janela de impressão.',
+        });
+      } else if (type === 'ics') {
+        const events = data?.events || [];
+        if (events.length === 0) {
+          appToast.error('Nenhum evento no período para exportar.');
+          return;
+        }
+        const label = period?.start ? format(new Date(period.start), 'yyyy-MM') : format(new Date(), 'yyyy-MM');
+        exportCalendarIcs(events, data?.clients || [], label);
+        appToast.success(`${events.length} evento(s) exportado(s) como ICS`, {
+          description: 'Abra o .ics para importar no Google Calendar ou Apple Calendar.',
         });
       } else {
         exportReportCsv(data, period);
@@ -61,6 +73,20 @@ const ExportManager = ({ data, period }) => {
           <Table className="w-4 h-4" />
         )}
         Excel
+      </Button>
+      <Button
+        onClick={() => handleExport('ics')}
+        variant="outline"
+        disabled={!!exporting}
+        className="border-blue-400/50 text-blue-400 hover:bg-blue-400/10 flex items-center gap-2 justify-center w-full sm:w-auto"
+        title="Exportar eventos como ICS — importável no Google Calendar, Apple Calendar etc."
+      >
+        {exporting === 'ics' ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <CalendarDays className="w-4 h-4" />
+        )}
+        ICS
       </Button>
     </div>
   );

@@ -12,7 +12,7 @@ import {
   X, Edit, Trash2, Phone, Mail, Calendar, TrendingUp,
   Clock, DollarSign, User, MessageCircle,
   CheckCircle2, AlertCircle, ArrowRight, BarChart3,
-  Activity, Target, Globe, ExternalLink
+  Activity, Target, Globe, ExternalLink, Plus
 } from 'lucide-react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useEvents } from '@/lib/useEvents';
@@ -651,7 +651,7 @@ export default function ClientDetailModal({
                 <Trash2 className="w-4 h-4 mr-2" />
                 Excluir Cliente
               </Button>
-              <div className="flex gap-3 w-full sm:w-auto order-1 sm:order-2">
+              <div className="flex gap-3 w-full sm:w-auto order-1 sm:order-2 flex-wrap">
                 <Button variant="outline" onClick={onClose} className="sm:flex-none bg-transparent border-slate-600 hover:bg-slate-800">
                   Fechar
                 </Button>
@@ -662,6 +662,14 @@ export default function ClientDetailModal({
                 >
                   <ExternalLink className="w-4 h-4 mr-2" />
                   Página Completa
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => { onClose(); hardNavigate(`/calendar?action=new-event&client_id=${client.id}`); }}
+                  className="sm:flex-none border-emerald-700/60 hover:bg-emerald-900/20 text-emerald-400"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Agendar Show
                 </Button>
                 <Button
                   onClick={() => onEdit(client)}

@@ -10,8 +10,10 @@ import {
   Phone,
   MessageCircle,
   Calendar,
-  TrendingUp
+  TrendingUp,
+  Plus
 } from 'lucide-react';
+import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
 
@@ -152,6 +154,14 @@ export default function ClientActionSheet({
               >
                 <Eye className="w-4 h-4 mr-2" />
                 Ver Detalhes Completos
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => hardNavigate(`/calendar?action=new-event&client_id=${client.id}`)}
+                className="w-full h-12 min-h-[44px] bg-slate-800 border-slate-700 hover:bg-slate-700 text-emerald-400 font-medium"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Agendar Novo Show
               </Button>
 
               {(client.email || client.phone) && (

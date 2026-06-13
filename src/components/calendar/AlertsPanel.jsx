@@ -9,6 +9,7 @@ import {
   MapPin,
   ClipboardList,
   AlertCircle,
+  CalendarCheck,
 } from 'lucide-react';
 import { normalizeDateString, getEventsForDate, getWorkForDate, getEventStatus } from '../utils/dateUtils';
 
@@ -107,6 +108,36 @@ export default function AlertsPanel({
           }
         });
       }
+    }
+
+    // Regra: Show amanhã — lembrete de preparação
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    const tomorrowStr = normalizeDateString(tomorrow);
+    const tomorrowEvents = events.filter((event) => {
+      const st = getEventStatus(event);
+      if (st === 'completed' || st === 'archived' || st === 'cancelled') return false;
+      return (event.start_date || '').startsWith(tomorrowStr);
+    });
+    if (tomorrowEvents.length > 0 && !dismissedAlerts.has('tomorrow_reminder')) {
+      const first = tomorrowEvents[0];
+      const count = tomorrowEvents.length;
+      newAlerts.push({
+        id: 'tomorrow_reminder',
+        kind: 'upcoming',
+        title: count === 1 ? 'Show amanhã' : `${count} shows amanhã`,
+        body: count === 1
+          ? `"${first.title || 'Evento'}" está agendado para amanhã${first.start_time ? ` às ${first.start_time.slice(0, 5)}` : ''}.`
+          : `${count} eventos agendados para amanhã. Revise sua agenda e equipamentos.`,
+        icon: CalendarCheck,
+        color: 'text-indigo-400',
+        bgColor: 'bg-indigo-500/10',
+        borderColor: 'border-indigo-500/30',
+        cta: {
+          label: 'Ver evento',
+          action: () => onOpenEvent?.(first),
+        },
+      });
     }
 
     // Regra CRM: Horas pendentes em eventos recentes (últimos 14 dias)
@@ -243,13 +274,14 @@ export default function AlertsPanel({
                     <Button
                       size="sm"
                       onClick={() => executeAction(alert)}
-                      className={
-                        alert.color === 'text-green-400'
-                          ? 'bg-green-500/20 hover:bg-green-500/30 text-green-300 border-green-400/30'
-                          : alert.color === 'text-cyan-400'
-                            ? 'bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border-cyan-400/30'
-                            : 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border-amber-400/30'
-                      }
+                      className={{
+                        'text-green-400':  'bg-green-500/20 hover:bg-green-500/30 text-green-300 border-green-400/30',
+                        'text-cyan-400':   'bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border-cyan-400/30',
+                        'text-amber-400':  'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border-amber-400/30',
+                        'text-indigo-400': 'bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border-indigo-400/30',
+                        'text-purple-400': 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border-purple-400/30',
+                        'text-red-400':    'bg-red-500/20 hover:bg-red-500/30 text-red-300 border-red-400/30',
+                      }[alert.color] ?? 'bg-slate-700/60 hover:bg-slate-700 text-slate-300 border-slate-600'}
                       variant="outline"
                     >
                       {alert.cta.label}

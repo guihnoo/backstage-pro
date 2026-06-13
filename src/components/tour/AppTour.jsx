@@ -4,7 +4,7 @@ import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import './appTour.css';
 import { useAuth } from '@/lib/authContext';
-import { buildAppTourSteps } from '@/lib/appTourSteps';
+import { buildAppTourSteps, buildMapTourSteps } from '@/lib/appTourSteps';
 import {
   registerTourStarter,
   unregisterTourStarter,
@@ -45,10 +45,12 @@ export default function AppTour() {
   }, [profile?.tour_completed_at, updateProfile]);
 
   const startTour = useCallback(
-    ({ persist = true } = {}) => {
+    ({ persist = true, variant = 'full' } = {}) => {
       driverRef.current?.destroy();
 
-      const steps = filterReadySteps(buildAppTourSteps());
+      const steps = filterReadySteps(
+        variant === 'map' ? buildMapTourSteps() : buildAppTourSteps({ pathname })
+      );
       if (steps.length === 0) return;
 
       const driverObj = driver({
@@ -76,11 +78,11 @@ export default function AppTour() {
       driverRef.current = driverObj;
       driverObj.drive();
     },
-    [markTourComplete]
+    [markTourComplete, pathname]
   );
 
   useEffect(() => {
-    registerTourStarter(() => startTour({ persist: false }));
+    registerTourStarter((options = {}) => startTour({ persist: false, ...options }));
     return () => {
       unregisterTourStarter();
       driverRef.current?.destroy();
@@ -88,7 +90,10 @@ export default function AppTour() {
   }, [startTour]);
 
   useEffect(() => {
-    const onManualStart = () => startTour({ persist: false });
+    const onManualStart = (event) => {
+      const variant = event?.detail?.variant === 'map' ? 'map' : 'full';
+      startTour({ persist: false, variant });
+    };
     window.addEventListener(APP_TOUR_START_EVENT, onManualStart);
     return () => window.removeEventListener(APP_TOUR_START_EVENT, onManualStart);
   }, [startTour]);

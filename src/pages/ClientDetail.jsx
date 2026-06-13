@@ -21,8 +21,12 @@ import {
   Pencil,
   Check,
   X,
-  MessageCircle
+  MessageCircle,
+  CalendarDays,
+  MapPin,
 } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { openWhatsAppCharge, buildChargeMessage } from '@/lib/whatsapp';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -92,6 +96,20 @@ export default function ClientDetailPage() {
   const clientEvents = useMemo(() =>
     events.filter(e => e.client_id === clientId).sort((a, b) => new Date(b.start_date) - new Date(a.start_date)),
     [events, clientId]
+  );
+
+  const todayIso = useMemo(() => new Date().toISOString().slice(0, 10), []);
+
+  const upcomingEvents = useMemo(() =>
+    clientEvents
+      .filter(e => {
+        if (!e.start_date) return false;
+        const st = getEventStatus(e);
+        if (st === 'cancelled' || st === 'archived') return false;
+        return e.start_date >= todayIso;
+      })
+      .sort((a, b) => (a.start_date > b.start_date ? 1 : -1)),
+    [clientEvents, todayIso]
   );
 
   const clientEventIds = useMemo(() => clientEvents.map(e => e.id), [clientEvents]);
@@ -348,6 +366,83 @@ export default function ClientDetailPage() {
             <StatCard icon={PieChart} title="Receita Média / Evento" value={formatCurrency(stats.avgRevenuePerEvent)} iconStyle={{ background: `linear-gradient(135deg, ${config.primaryHex}99, ${config.accentHex})` }} />
           </div>
         </div>
+
+        {upcomingEvents.length > 0 && (
+          <Card className="bg-indigo-950/30 border-indigo-700/30">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-indigo-300 flex items-center gap-2">
+                  <CalendarDays className="w-4 h-4" />
+                  Próximos Shows ({upcomingEvents.length})
+                </h3>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setShowEventForm(true)}
+                  className="h-7 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/30 px-2"
+                >
+                  <Plus className="w-3 h-3 mr-1" /> Novo
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {upcomingEvents.slice(0, 4).map((ev) => {
+                  const statusStyles = {
+                    pending:   'bg-amber-500/15 text-amber-400 border-amber-500/30',
+                    confirmed: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
+                    completed: 'bg-green-500/15 text-green-400 border-green-500/30',
+                  };
+                  const statusLabels = { pending: 'Pendente', confirmed: 'Confirmado', completed: 'Concluído' };
+                  const st = getEventStatus(ev);
+                  const dateLabel = ev.start_date
+                    ? format(parseISO(ev.start_date), "d 'de' MMM", { locale: ptBR })
+                    : '—';
+                  const amount = getEventRevenue(ev);
+                  return (
+                    <button
+                      key={ev.id}
+                      type="button"
+                      onClick={() => handleEventClick(ev)}
+                      className="w-full text-left flex items-center gap-3 bg-slate-800/50 hover:bg-slate-800 rounded-lg px-3 py-2.5 transition-colors"
+                    >
+                      <div
+                        className="w-1 self-stretch rounded-full flex-shrink-0"
+                        style={{ backgroundColor: ev.color || '#6366f1' }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-200 truncate">{ev.title}</p>
+                        <p className="text-xs text-slate-500 flex items-center gap-1.5 truncate">
+                          <span>{dateLabel}</span>
+                          {ev.start_time && <span>{ev.start_time.slice(0, 5)}</span>}
+                          {ev.location_city && (
+                            <>
+                              <MapPin className="w-3 h-3 flex-shrink-0" />
+                              <span className="truncate">{ev.location_city}</span>
+                            </>
+                          )}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full border ${statusStyles[st] || 'bg-slate-700 text-slate-400 border-slate-600'}`}>
+                          {statusLabels[st] || st}
+                        </span>
+                        {amount > 0 && (
+                          <span className="text-[10px] text-emerald-400 font-medium">
+                            {formatCurrency(amount)}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+                {upcomingEvents.length > 4 && (
+                  <p className="text-xs text-center text-slate-600 pt-1">
+                    +{upcomingEvents.length - 4} evento{upcomingEvents.length - 4 === 1 ? '' : 's'} futuros
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="bg-slate-900/50 border-slate-800">
           <CardHeader>

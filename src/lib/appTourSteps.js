@@ -5,11 +5,15 @@ export const TOUR_SELECTORS = {
   fab: '[data-tour="fab-actions"]',
   bottomNav: '[data-tour="bottom-nav"]',
   navCalendar: '[data-tour="nav-calendar"]',
+  navReports: '[data-tour="nav-reports"]',
+  reportsMap: '[data-tour="reports-map"]',
   topBar: '[data-tour="top-bar"]',
 };
 
-export function buildAppTourSteps() {
-  return [
+export function buildAppTourSteps({ pathname = '/' } = {}) {
+  const onReportsPage = pathname === '/reports' || pathname.startsWith('/reports/');
+
+  const steps = [
     {
       popover: {
         title: 'Bem-vindo ao Backstage Pro',
@@ -69,6 +73,33 @@ export function buildAppTourSteps() {
         align: 'center',
       },
     },
+  ];
+
+  if (onReportsPage) {
+    steps.push({
+      element: TOUR_SELECTORS.reportsMap,
+      popover: {
+        title: 'Mapa interativo',
+        description:
+          'Veja em quais estados e cidades você já trabalhou. Toque nos estados ou na lista de cidades para abrir os eventos de cada local.',
+        side: 'top',
+        align: 'center',
+      },
+    });
+  } else {
+    steps.push({
+      element: TOUR_SELECTORS.navReports,
+      popover: {
+        title: 'Relatórios',
+        description:
+          'KPIs financeiros, gráficos e o mapa do Brasil com os locais dos seus shows. Preencha cidade/estado no evento para marcar o mapa.',
+        side: 'top',
+        align: 'center',
+      },
+    });
+  }
+
+  steps.push(
     {
       element: TOUR_SELECTORS.topBar,
       popover: {
@@ -84,6 +115,42 @@ export function buildAppTourSteps() {
         title: 'Pronto para o palco',
         description:
           'Explore no seu ritmo. Você pode rever este tour a qualquer momento em Perfil → Ajuda do app.',
+        side: 'over',
+        align: 'center',
+      },
+    }
+  );
+
+  return steps;
+}
+
+/** Tour curto só do mapa — iniciado em Relatórios. */
+export function buildMapTourSteps() {
+  return [
+    {
+      popover: {
+        title: 'Seu histórico geográfico',
+        description:
+          'Cada evento com cidade, estado ou GPS ilumina o mapa. Quanto mais completo o local no cadastro, mais preciso fica o pin.',
+        side: 'over',
+        align: 'center',
+      },
+    },
+    {
+      element: TOUR_SELECTORS.reportsMap,
+      popover: {
+        title: 'Mapa interativo',
+        description:
+          'Estados visitados ficam em ciano. Toque nos pins ou na lista "Suas cidades" para ver os shows de cada lugar.',
+        side: 'top',
+        align: 'center',
+      },
+    },
+    {
+      popover: {
+        title: 'Dica rápida',
+        description:
+          'Na Agenda, use check-in por GPS ou preencha "Local" como "Cidade, UF" ao criar ou duplicar eventos.',
         side: 'over',
         align: 'center',
       },

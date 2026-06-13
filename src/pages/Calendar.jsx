@@ -2,6 +2,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useQueryAction } from '@/lib/useQueryAction';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/authContext';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
@@ -17,8 +18,15 @@ import {
   Clock,
   AlertCircle,
   CheckCircle2,
-  TrendingUp
+  TrendingUp,
+  Search,
+  X,
+  LayoutGrid,
+  List,
+  Download,
+  BadgeCheck,
 } from 'lucide-react';
+import { exportCalendarIcs } from '@/lib/exportReport';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, parseISO, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import BackstageCalendarGrid from '@/components/calendar/BackstageCalendarGrid';
@@ -130,6 +138,8 @@ const StatCard = ({
 );
 
 export default function CalendarPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { user, profile, loading: authLoading } = useAuth();
   const config = getCategoryConfig(profile?.category || 'lighting');
   const { events, loading: eventsLoading, error: eventsError, refetch: refetchEvents, update: updateEvent, delete: deleteEvent } = useEvents();
@@ -167,6 +177,8 @@ export default function CalendarPage() {
   const [prefilledEventIdForExpense, setPrefilledEventIdForExpense] = useState(null);
 
   const [statusFilter, setStatusFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState('grid');
   const [confirmWork, setConfirmWork] = useState(null);
   const [confirmEvent, setConfirmEvent] = useState(null);
 
@@ -190,10 +202,36 @@ export default function CalendarPage() {
   );
 
   const filteredEvents = useMemo(() => {
-    if (statusFilter === 'all') return activeEvents;
-    if (statusFilter === 'paid') return activeEvents.filter((e) => e.payment_status === 'paid');
-    return activeEvents.filter((e) => e.status === statusFilter);
-  }, [activeEvents, statusFilter]);
+    let base = activeEvents;
+    if (statusFilter === 'paid') base = base.filter((e) => e.payment_status === 'paid');
+    else if (statusFilter !== 'all') base = base.filter((e) => e.status === statusFilter);
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const cmap = new Map(clients.map(c => [c.id, c]));
+      base = base.filter((e) => {
+        const title = (e.title || '').toLowerCase();
+        const clientName = (cmap.get(e.client_id)?.name || '').toLowerCase();
+        const location = (e.location || '').toLowerCase();
+        return title.includes(q) || clientName.includes(q) || location.includes(q);
+      });
+    }
+    return base;
+  }, [activeEvents, statusFilter, searchQuery, clients]);
+
+  const listViewGroups = useMemo(() => {
+    const sorted = [...filteredEvents].sort((a, b) => (a.start_date > b.start_date ? 1 : -1));
+    const groups = [];
+    let currentMonth = null;
+    for (const ev of sorted) {
+      const monthKey = (ev.start_date || '').slice(0, 7);
+      if (monthKey !== currentMonth) {
+        currentMonth = monthKey;
+        groups.push({ monthKey, label: monthKey ? format(parseISO(`${monthKey}-01`), "MMMM 'de' yyyy", { locale: ptBR }) : 'Sem data', events: [] });
+      }
+      groups[groups.length - 1].events.push(ev);
+    }
+    return groups;
+  }, [filteredEvents]);
 
   const todayStr = todayLocalISO();
   const isLiveShiftToday = useMemo(() => {
@@ -209,6 +247,17 @@ export default function CalendarPage() {
     setShowEventForm(true);
     setEditingEvent(null);
   }, []));
+
+  // Abre o formulário com cliente pré-selecionado quando ?action=new-event&client_id=xxx
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const clientId = params.get('client_id');
+    const action = params.get('action');
+    if (action === 'new-event' && clientId) {
+      setPrefillEventData((prev) => ({ ...(prev || {}), client_id: clientId }));
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.search, location.pathname, navigate]);
 
   const clientMap = useMemo(() => new Map(clients.map(c => [c.id, c])), [clients]);
   const eventMap = useMemo(() => new Map(events.map(e => [e.id, e])), [events]);
@@ -402,6 +451,11 @@ export default function CalendarPage() {
         cache_valor_base: event.cache_valor_base,
         color: event.color,
         observacoes_md: event.observacoes_md,
+        location: event.location,
+        location_city: event.location_city,
+        location_state: event.location_state,
+        location_lat: event.location_lat,
+        location_lng: event.location_lng,
       });
       setShowEventForm(true);
       appToast.info('Preencha as novas datas para o evento duplicado');
@@ -665,6 +719,22 @@ export default function CalendarPage() {
     },
     [activeNotesEvent, handleFormSuccess, updateEvent]
   );
+
+  const handleExportIcs = useCallback(() => {
+    if (filteredEvents.length === 0) {
+      appToast.error('Nenhum evento para exportar.');
+      return;
+    }
+    try {
+      exportCalendarIcs(filteredEvents, clients, format(currentDate, 'yyyy-MM'));
+      appToast.success(`${filteredEvents.length} evento(s) exportado(s) como ICS`, {
+        description: 'Abra o arquivo .ics para importar no Google Calendar, Apple Calendar etc.',
+      });
+    } catch (err) {
+      appToast.error('Erro ao exportar ICS.');
+      console.error(err);
+    }
+  }, [filteredEvents, clients, currentDate]);
 
   const monthStats = useMemo(() => {
     if (!isDataReady) {
@@ -1056,7 +1126,28 @@ export default function CalendarPage() {
           />
         </div>
 
-        {/* Filtros de status */}
+        {/* Busca de eventos */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Buscar por título, cliente ou local…"
+            className="w-full bg-slate-800/60 border border-slate-700/60 rounded-lg pl-9 pr-9 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500/60 focus:ring-1 focus:ring-cyan-500/30 transition-colors"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Filtros de status + toggle de vista */}
         <div className="flex items-center gap-2 flex-wrap">
           {[
             { key: 'all', label: 'Todos', count: activeEvents.length },
@@ -1081,24 +1172,183 @@ export default function CalendarPage() {
               </span>
             </button>
           ))}
+          <div className="ml-auto flex items-center gap-2">
+            <div className="flex items-center gap-1 bg-slate-800/60 border border-slate-700/60 rounded-lg p-0.5">
+              <button
+                type="button"
+                onClick={() => setViewMode('grid')}
+                title="Vista em grade"
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-cyan-600/30 text-cyan-300' : 'text-slate-500 hover:text-slate-300'}`}
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                title="Vista em lista"
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-cyan-600/30 text-cyan-300' : 'text-slate-500 hover:text-slate-300'}`}
+              >
+                <List className="w-4 h-4" />
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={handleExportIcs}
+              title="Exportar agenda como ICS (iCal / Google Calendar)"
+              className="p-1.5 rounded-lg bg-slate-800/60 border border-slate-700/60 text-slate-500 hover:text-slate-300 hover:border-slate-600 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        {/* Grid do Calendário */}
-        <Card className="bg-slate-900/50 border-slate-800 overflow-hidden">
-          <CardContent className="p-0">
-            <BackstageCalendarGrid
-              currentDate={currentDate}
-              events={filteredEvents}
-              clients={clients}
-              dailyWork={dailyWork}
-              selectedDate={selectedDate}
-              onDateSelect={handleDayClick}
-              onEventClick={handleEventClick}
-              onEventQuickLog={handleQuickLogForEvent}
-              loading={false}
-            />
-          </CardContent>
-        </Card>
+        {/* Grade ou Lista */}
+        {viewMode === 'grid' ? (
+          <Card className="bg-slate-900/50 border-slate-800 overflow-hidden">
+            <CardContent className="p-0">
+              <BackstageCalendarGrid
+                currentDate={currentDate}
+                events={filteredEvents}
+                clients={clients}
+                dailyWork={dailyWork}
+                selectedDate={selectedDate}
+                onDateSelect={handleDayClick}
+                onEventClick={handleEventClick}
+                onEventQuickLog={handleQuickLogForEvent}
+                loading={false}
+              />
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {filteredEvents.length === 0 ? (
+              <div className="text-center py-12 text-slate-500 text-sm">
+                Nenhum evento encontrado
+              </div>
+            ) : listViewGroups.map(({ monthKey, label, events: monthEvents }) => (
+              <div key={monthKey}>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-1 mb-2 capitalize">
+                  {label}
+                </p>
+                <div className="space-y-1.5">
+                  {monthEvents.map((ev) => {
+                    const cl = clientMap.get(ev.client_id);
+                    const isPaid = ev.payment_status === 'paid';
+                    const canQuickPay = (ev.status === 'completed' || ev.status === 'confirmed') && !isPaid;
+                    const statusBadge = isPaid
+                      ? { label: 'Pago', cls: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' }
+                      : ({
+                          pending:   { label: 'Pendente',   cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
+                          confirmed: { label: 'Confirmado', cls: 'bg-blue-500/15 text-blue-400 border-blue-500/30' },
+                          completed: { label: 'Concluído',  cls: 'bg-green-500/15 text-green-400 border-green-500/30' },
+                          cancelled: { label: 'Cancelado',  cls: 'bg-red-500/15 text-red-400 border-red-500/30' },
+                        }[ev.status] || { label: ev.status, cls: 'bg-slate-700 text-slate-400 border-slate-600' });
+                    const dayLabel = ev.start_date ? format(parseISO(ev.start_date), "EEE d", { locale: ptBR }) : '—';
+                    const timeLabel = ev.start_time ? ev.start_time.slice(0, 5) : null;
+                    const amount = getEventCacheAmount(ev);
+                    return (
+                      <div
+                        key={ev.id}
+                        className="w-full bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 rounded-lg px-4 py-3 flex items-center gap-3 transition-colors"
+                      >
+                        <div
+                          className="w-1 self-stretch rounded-full flex-shrink-0"
+                          style={{ backgroundColor: ev.color || '#6366f1' }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleEventClick(ev)}
+                          className="w-10 text-center flex-shrink-0 hover:opacity-70 transition-opacity"
+                        >
+                          <p className="text-xs text-slate-500 capitalize">{dayLabel.split(' ')[0]}</p>
+                          <p className="text-base font-bold text-slate-200 leading-none">{dayLabel.split(' ')[1]}</p>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleEventClick(ev)}
+                          className="flex-1 min-w-0 text-left"
+                        >
+                          <p className="text-sm font-medium text-slate-200 truncate">{ev.title}</p>
+                          <p className="text-xs text-slate-500 truncate">
+                            {timeLabel && <span className="mr-1">{timeLabel}</span>}
+                            {cl && cl.name}
+                          </p>
+                        </button>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {canQuickPay && (
+                            <button
+                              type="button"
+                              onClick={() => handleMarkPaid(ev)}
+                              title="Marcar como pago"
+                              className="p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+                            >
+                              <BadgeCheck className="w-4 h-4" />
+                            </button>
+                          )}
+                          <div className="flex flex-col items-end gap-1">
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full border ${statusBadge.cls}`}>
+                              {statusBadge.label}
+                            </span>
+                            {amount > 0 && (
+                              <span className="text-[10px] text-emerald-400 font-medium">
+                                {formatCurrency(amount)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Resultados de busca — lista cronológica (apenas no modo grid) */}
+        {viewMode === 'grid' && searchQuery.trim() && (
+          <div className="space-y-2">
+            <p className="text-xs text-slate-500 font-medium px-1">
+              {filteredEvents.length === 0
+                ? 'Nenhum evento encontrado'
+                : `${filteredEvents.length} evento${filteredEvents.length > 1 ? 's' : ''} encontrado${filteredEvents.length > 1 ? 's' : ''}`}
+            </p>
+            {[...filteredEvents]
+              .sort((a, b) => (a.start_date > b.start_date ? 1 : -1))
+              .map((ev) => {
+                const cl = clientMap.get(ev.client_id);
+                const statusBadge = {
+                  pending:   { label: 'Pendente',   cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
+                  confirmed: { label: 'Confirmado', cls: 'bg-blue-500/15 text-blue-400 border-blue-500/30' },
+                  completed: { label: 'Concluído',  cls: 'bg-green-500/15 text-green-400 border-green-500/30' },
+                  cancelled: { label: 'Cancelado',  cls: 'bg-red-500/15 text-red-400 border-red-500/30' },
+                }[ev.status] || { label: ev.status, cls: 'bg-slate-700 text-slate-400 border-slate-600' };
+                return (
+                  <button
+                    key={ev.id}
+                    type="button"
+                    onClick={() => handleEventClick(ev)}
+                    className="w-full text-left bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 rounded-lg px-4 py-3 flex items-center gap-3 transition-colors"
+                  >
+                    <div
+                      className="w-1 self-stretch rounded-full flex-shrink-0"
+                      style={{ backgroundColor: ev.color || '#6366f1' }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-200 truncate">{ev.title}</p>
+                      <p className="text-xs text-slate-500 truncate">
+                        {ev.start_date ? format(parseISO(ev.start_date), "d 'de' MMM yyyy", { locale: ptBR }) : '—'}
+                        {cl ? ` · ${cl.name}` : ''}
+                      </p>
+                    </div>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full border flex-shrink-0 ${statusBadge.cls}`}>
+                      {statusBadge.label}
+                    </span>
+                  </button>
+                );
+              })}
+          </div>
+        )}
       </motion.div>
 
       {/* Ações Rápidas Desktop */}

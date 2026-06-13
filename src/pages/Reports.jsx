@@ -25,7 +25,7 @@ import {
   Minus,
   XCircle
 } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, subMonths, isWithinInterval, parseISO, startOfYear, endOfYear, addMonths } from 'date-fns';
+import { format, startOfMonth, endOfMonth, subMonths, isWithinInterval, parseISO, startOfYear, endOfYear, addMonths, startOfWeek, endOfWeek, subWeeks, addWeeks } from 'date-fns';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import appToast from '@/lib/appToast';
 import { getEventStatus } from '@/components/utils/dateUtils';
@@ -81,12 +81,13 @@ const ReportsSkeleton = () => (
 
 // Period options for reports
 const PERIOD_OPTIONS = [
+  { value: 'this_week', label: 'Esta Semana' },
   { value: 'this_month', label: 'Este Mês' },
   { value: 'last_month', label: 'Mês Passado' },
   { value: 'last_3_months', label: 'Últimos 3 Meses' },
   { value: 'last_6_months', label: 'Últimos 6 Meses' },
   { value: 'this_year', label: 'Este Ano' },
-  { value: 'all_time', label: 'Todo o Período' }
+  { value: 'all_time', label: 'Todo o Período' },
 ];
 
 // Enhanced StatCard with comparison indicators
@@ -287,6 +288,16 @@ export default function ReportsPage() {
     let currentStart, currentEnd, previousStart, previousEnd, nextStart, nextEnd;
 
     switch (selectedPeriod) {
+      case 'this_week': {
+        const weekOpts = { weekStartsOn: 0 }; // domingo
+        currentStart = startOfWeek(now, weekOpts);
+        currentEnd = endOfWeek(now, weekOpts);
+        previousStart = startOfWeek(subWeeks(now, 1), weekOpts);
+        previousEnd = endOfWeek(subWeeks(now, 1), weekOpts);
+        nextStart = startOfWeek(addWeeks(now, 1), weekOpts);
+        nextEnd = endOfWeek(addWeeks(now, 1), weekOpts);
+        break;
+      }
       case 'this_month':
         currentStart = startOfMonth(now);
         currentEnd = endOfMonth(now);

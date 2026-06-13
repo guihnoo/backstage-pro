@@ -1,6 +1,6 @@
-import { Component, useMemo, useState } from 'react';
+import { Component, useCallback, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Map, MapPin } from 'lucide-react';
+import { Map, MapPin, HelpCircle } from 'lucide-react';
 import brazilMap from '@svg-maps/brazil';
 import {
   BRAZIL_STATE_NAMES,
@@ -9,6 +9,8 @@ import {
   normalizeCityName,
   normalizeStateCode,
 } from '@/lib/parseEventLocation';
+import { latlngToSvg, STATE_CENTROIDS } from '@/lib/brazilMapProjection';
+import { requestMapTour } from '@/lib/appTourBus';
 
 class BrazilMapErrorBoundary extends Component {
   state = { hasError: false };
@@ -29,23 +31,6 @@ const STATE_NAMES = {
   ...BRAZIL_STATE_NAMES,
   ...Object.fromEntries(brazilMap.locations.map((loc) => [loc.id.toUpperCase(), loc.name])),
 };
-
-// Equirectangular projection — dimensões alinhadas ao viewBox real do pacote (@svg-maps/brazil v2)
-const VIEWBOX_PARTS = brazilMap.viewBox.split(/\s+/).map(Number);
-const BOUNDS = {
-  west: -73.99,
-  east: -28.85,
-  north: 5.27,
-  south: -33.75,
-  w: VIEWBOX_PARTS[2] || 613,
-  h: VIEWBOX_PARTS[3] || 639,
-};
-
-function latlngToSvg(lat, lng) {
-  const x = (lng - BOUNDS.west) / (BOUNDS.east - BOUNDS.west) * BOUNDS.w;
-  const y = (BOUNDS.north - lat) / (BOUNDS.north - BOUNDS.south) * BOUNDS.h;
-  return { x, y };
-}
 
 // Approximate center coords for major Brazilian cities (fallback when no GPS)
 const CITY_FALLBACK = {
@@ -144,26 +129,6 @@ function lookupCityCoords(cityName) {
   }
   return null;
 }
-
-/** Centro aproximado de cada UF a partir do path SVG */
-function pathCentroid(pathD) {
-  const nums = pathD.match(/-?\d+\.?\d*/g)?.map(Number) || [];
-  if (nums.length < 2) return null;
-  let sumX = 0;
-  let sumY = 0;
-  let pairs = 0;
-  for (let i = 0; i + 1 < nums.length; i += 2) {
-    sumX += nums[i];
-    sumY += nums[i + 1];
-    pairs += 1;
-  }
-  if (!pairs) return null;
-  return { x: sumX / pairs, y: sumY / pairs };
-}
-
-const STATE_CENTROIDS = Object.fromEntries(
-  brazilMap.locations.map((loc) => [loc.id.toUpperCase(), pathCentroid(loc.path)])
-);
 
 function jitterFromKey(key, base, spread = 14) {
   let hash = 0;
@@ -317,15 +282,68 @@ function BrazilVisitedMapInner({ events = [] }) {
 
   const cityDots = Object.entries(cities).filter(([, c]) => c.coords);
 
+  const cityListRef = useRef(null);
+
+  // ── Zoom ──────────────────────────────────────────────────────────────────
+  const SVG_W = 613, SVG_H = 639;
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+
+  const vbW = SVG_W / zoom;
+  const vbH = SVG_H / zoom;
+  const dynamicViewBox = `${pan.x} ${pan.y} ${vbW} ${vbH}`;
+
+  const zoomAt = useCallback((newZoom, cx, cy) => {
+    const z = Math.max(1, Math.min(6, newZoom));
+    const w = SVG_W / z;
+    const h = SVG_H / z;
+    setZoom(z);
+    setPan({
+      x: Math.max(0, Math.min(cx - w / 2, SVG_W - w)),
+      y: Math.max(0, Math.min(cy - h / 2, SVG_H - h)),
+    });
+  }, []);
+
+  const resetZoom = useCallback(() => { setZoom(1); setPan({ x: 0, y: 0 }); }, []);
+
+  const handleWheel = useCallback((e) => {
+    e.preventDefault();
+    const delta = e.deltaY < 0 ? 0.6 : -0.6;
+    zoomAt(zoom + delta, pan.x + vbW / 2, pan.y + vbH / 2);
+  }, [zoom, pan.x, pan.y, vbW, vbH, zoomAt]);
+  // ──────────────────────────────────────────────────────────────────────────
+
   const selectCity = (key) => {
-    setPinnedCityKey((prev) => (prev === key ? null : key));
+    const isDeselect = pinnedCityKey === key;
+    setPinnedCityKey(isDeselect ? null : key);
     const city = cities[key];
+    if (isDeselect) {
+      if (city?.uf && STATE_CENTROIDS[city.uf]) {
+        zoomAt(2.5, STATE_CENTROIDS[city.uf].x, STATE_CENTROIDS[city.uf].y);
+      } else {
+        resetZoom();
+      }
+      return;
+    }
     if (city?.uf) setActiveUf(city.uf);
+    if (city?.coords) zoomAt(4, city.coords.x, city.coords.y);
+    requestAnimationFrame(() => {
+      cityListRef.current
+        ?.querySelector(`[data-city-key="${CSS.escape(key)}"]`)
+        ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    });
   };
 
   const selectState = (uf) => {
     setPinnedCityKey(null);
-    setActiveUf((prev) => (prev === uf ? null : uf));
+    if (activeUf === uf) {
+      setActiveUf(null);
+      resetZoom();
+    } else {
+      setActiveUf(uf);
+      const c = STATE_CENTROIDS[uf];
+      if (c) zoomAt(2.5, c.x, c.y);
+    }
   };
 
   return (
@@ -340,7 +358,16 @@ function BrazilVisitedMapInner({ events = [] }) {
           <Map className="w-4 h-4 text-cyan-400" />
           Mapa interativo — onde você trabalhou
         </h3>
-        <div className="flex items-center gap-2 text-xs font-mono">
+        <div className="flex items-center gap-2 text-xs font-mono flex-wrap justify-end">
+          <button
+            type="button"
+            onClick={() => requestMapTour()}
+            className="inline-flex items-center gap-1 text-[10px] text-slate-500 hover:text-cyan-400 transition-colors font-sans normal-case tracking-normal"
+            aria-label="Como usar o mapa interativo"
+          >
+            <HelpCircle className="w-3.5 h-3.5" />
+            Como usar
+          </button>
           <span className="text-cyan-300">{stateCount}/{totalStates} estados · {pct}%</span>
           {cityCount > 0 && (
             <>
@@ -356,11 +383,40 @@ function BrazilVisitedMapInner({ events = [] }) {
 
       {/* SVG Map */}
       <div className="relative">
+        {/* Controles de zoom */}
+        {stateCount > 0 && (
+          <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
+            <button
+              type="button"
+              onClick={() => zoomAt(zoom + 0.8, pan.x + vbW / 2, pan.y + vbH / 2)}
+              disabled={zoom >= 6}
+              className="w-7 h-7 rounded-md bg-slate-800/90 border border-slate-600/60 text-slate-200 hover:text-white hover:bg-slate-700 text-base font-bold flex items-center justify-center backdrop-blur disabled:opacity-30 select-none"
+              aria-label="Aproximar"
+            >+</button>
+            <button
+              type="button"
+              onClick={() => zoomAt(zoom - 0.8, pan.x + vbW / 2, pan.y + vbH / 2)}
+              disabled={zoom <= 1}
+              className="w-7 h-7 rounded-md bg-slate-800/90 border border-slate-600/60 text-slate-200 hover:text-white hover:bg-slate-700 text-base font-bold flex items-center justify-center backdrop-blur disabled:opacity-30 select-none"
+              aria-label="Afastar"
+            >−</button>
+            {zoom > 1.05 && (
+              <button
+                type="button"
+                onClick={resetZoom}
+                className="w-7 h-7 rounded-md bg-slate-800/90 border border-slate-600/60 text-slate-400 hover:text-white hover:bg-slate-700 text-[9px] font-semibold flex items-center justify-center backdrop-blur select-none"
+                aria-label="Ver Brasil completo"
+              >fit</button>
+            )}
+          </div>
+        )}
         <svg
-          viewBox={brazilMap.viewBox}
+          viewBox={dynamicViewBox}
           className="w-full h-auto max-h-[min(52vh,360px)] mx-auto"
           role="img"
           aria-label="Mapa interativo do Brasil com estados e cidades visitadas"
+          onWheel={handleWheel}
+          style={{ touchAction: 'none', cursor: zoom > 1 ? 'grab' : 'default' }}
         >
           {/* State fills */}
           {brazilMap.locations.map((loc) => {
@@ -450,86 +506,90 @@ function BrazilVisitedMapInner({ events = [] }) {
           })}
         </svg>
 
-        {/* Tooltip: cidade selecionada ou em hover */}
-        <AnimatePresence>
-          {activeCityData && (
-            <motion.div
-              key="city-tip"
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 6 }}
-              className="absolute bottom-2 left-2 right-2 sm:left-auto sm:right-2 sm:w-64 max-h-40 overflow-y-auto rounded-lg border border-cyan-500/30 bg-slate-950/95 backdrop-blur px-3 py-2 text-xs pointer-events-none"
-            >
-              <p className="font-semibold text-white">{activeCityData.name}</p>
-              {activeCityData.uf && (
-                <p className="text-slate-400 text-[10px]">{STATE_NAMES[activeCityData.uf] || activeCityData.uf}</p>
-              )}
-              <p className="text-cyan-300 mt-0.5">
-                {activeCityData.count} evento{activeCityData.count === 1 ? '' : 's'}
-              </p>
-              {activeCityData.lastDate && (
-                <p className="text-slate-500 text-[10px] mt-0.5">
-                  Última vez:{' '}
-                  {new Date(activeCityData.lastDate + 'T12:00:00').toLocaleDateString('pt-BR', {
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric',
-                  })}
-                </p>
-              )}
-              {activeCityKey === latestCityKey && (
-                <p className="text-violet-400 text-[10px] mt-0.5">Mais recente</p>
-              )}
-              {activeCityData.events?.length > 0 && (
-                <ul className="mt-2 pt-2 border-t border-slate-700/60 space-y-1">
-                  {activeCityData.events.slice(0, 4).map((item) => (
-                    <li key={item.id || item.title} className="text-slate-300 truncate">
-                      {item.title}
-                    </li>
-                  ))}
-                  {activeCityData.events.length > 4 && (
-                    <li className="text-slate-500 text-[10px]">
-                      +{activeCityData.events.length - 4} evento(s)
-                    </li>
-                  )}
-                </ul>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+      </div>
 
-        {/* Tooltip: state hover (with cities list) */}
-        <AnimatePresence>
-          {focus && (
-            <motion.div
-              key="state-tip"
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 6 }}
-              className="absolute bottom-2 left-2 right-2 sm:left-auto sm:right-2 sm:w-60 rounded-lg border border-cyan-500/30 bg-slate-950/90 backdrop-blur px-3 py-2.5 text-xs"
-            >
-              <p className="font-semibold text-cyan-200">{STATE_NAMES[focus]}</p>
-              <p className="text-slate-400 mt-0.5">
-                {countsByState[focus]} evento{countsByState[focus] === 1 ? '' : 's'}
-              </p>
-              {focusCities.length > 0 && (
-                <div className="mt-2 pt-2 border-t border-slate-700/60 space-y-1">
-                  <p className="text-[10px] text-slate-500 uppercase tracking-wide mb-1">Cidades</p>
-                  {focusCities.slice(0, 6).map((c) => (
-                    <div key={c.name} className="flex items-center justify-between gap-2">
-                      <span className="text-white truncate">{c.name}</span>
-                      <span className="text-cyan-400 flex-shrink-0 font-mono">{c.count}×</span>
+      {/* Painel de informações abaixo do mapa — sem sobreposição */}
+      <AnimatePresence>
+        {(activeCityData || focus) && (
+          <motion.div
+            key={activeCityData ? `city-${activeCityKey}` : `state-${focus}`}
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.15 }}
+            className="mt-2 rounded-lg border border-cyan-500/25 bg-slate-900/80 px-3 py-2.5 text-xs"
+          >
+            {activeCityData ? (
+              <div className="flex items-start gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                    <span className="font-semibold text-white">{activeCityData.name}</span>
+                    {activeCityData.uf && (
+                      <span className="text-slate-400 text-[10px]">{STATE_NAMES[activeCityData.uf] || activeCityData.uf}</span>
+                    )}
+                    <span className="text-cyan-300">{activeCityData.count} evento{activeCityData.count === 1 ? '' : 's'}</span>
+                    {activeCityKey === latestCityKey && (
+                      <span className="text-violet-400 text-[10px]">★ mais recente</span>
+                    )}
+                  </div>
+                  {activeCityData.lastDate && (
+                    <p className="text-slate-500 text-[10px]">
+                      Última vez:{' '}
+                      {new Date(activeCityData.lastDate + 'T12:00:00').toLocaleDateString('pt-BR', {
+                        day: '2-digit', month: 'short', year: 'numeric',
+                      })}
+                    </p>
+                  )}
+                  {activeCityData.events?.length > 0 && (
+                    <div className="mt-1.5 pt-1.5 border-t border-slate-700/50 flex flex-wrap gap-x-3 gap-y-0.5">
+                      {activeCityData.events.slice(0, 6).map((item) => (
+                        <span key={item.id || item.title} className="text-slate-300 truncate text-[11px]">{item.title}</span>
+                      ))}
+                      {activeCityData.events.length > 6 && (
+                        <span className="text-slate-500 text-[10px]">+{activeCityData.events.length - 6} mais</span>
+                      )}
                     </div>
-                  ))}
-                  {focusCities.length > 6 && (
-                    <p className="text-slate-500 text-[10px]">+{focusCities.length - 6} mais</p>
                   )}
                 </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+                <button
+                  type="button"
+                  onClick={() => { setPinnedCityKey(null); resetZoom(); }}
+                  className="text-slate-500 hover:text-white flex-shrink-0 text-lg leading-none mt-[-2px]"
+                  aria-label="Fechar"
+                >×</button>
+              </div>
+            ) : (
+              <div className="flex items-start gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                    <span className="font-semibold text-cyan-200">{STATE_NAMES[focus]}</span>
+                    <span className="text-slate-400">{countsByState[focus]} evento{countsByState[focus] === 1 ? '' : 's'}</span>
+                  </div>
+                  {focusCities.length > 0 && (
+                    <div className="mt-1 pt-1 border-t border-slate-700/50 flex flex-wrap gap-x-4 gap-y-0.5">
+                      {focusCities.slice(0, 8).map((c) => (
+                        <span key={c.name} className="text-[11px]">
+                          <span className="text-white">{c.name}</span>
+                          <span className="text-cyan-400 font-mono ml-1">{c.count}×</span>
+                        </span>
+                      ))}
+                      {focusCities.length > 8 && (
+                        <span className="text-slate-500 text-[10px]">+{focusCities.length - 8} mais</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setActiveUf(null); resetZoom(); }}
+                  className="text-slate-500 hover:text-white flex-shrink-0 text-lg leading-none mt-[-2px]"
+                  aria-label="Fechar"
+                >×</button>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Legend */}
       {(stateCount > 0 || cityCount > 0) && (
@@ -587,7 +647,10 @@ function BrazilVisitedMapInner({ events = [] }) {
               </button>
             )}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+          <div
+            ref={cityListRef}
+            className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1"
+          >
             {visibleCityEntries.map(([key, city]) => {
               const isSelected = pinnedCityKey === key;
               const isLatest = key === latestCityKey;
@@ -595,6 +658,7 @@ function BrazilVisitedMapInner({ events = [] }) {
                 <button
                   key={key}
                   type="button"
+                  data-city-key={key}
                   onClick={() => selectCity(key)}
                   className={`text-left rounded-lg border px-3 py-2 transition-colors ${
                     isSelected

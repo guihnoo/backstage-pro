@@ -158,6 +158,87 @@ export function exportReportCsv(data, period) {
   downloadBlob(`backstage-relatorio-${safeLabel}.csv`, csv, 'text/csv;charset=utf-8');
 }
 
+function formatIcsDate(dateStr, timeStr) {
+  if (!dateStr) return null;
+  const d = dateStr.replace(/-/g, '');
+  if (timeStr) {
+    const t = timeStr.slice(0, 5).replace(':', '') + '00';
+    return `${d}T${t}`;
+  }
+  return d;
+}
+
+function escapeIcsText(str) {
+  return (str || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+}
+
+export function exportCalendarIcs(events = [], clients = [], label = '') {
+  const clientMap = new Map((clients || []).map((c) => [c.id, c]));
+  const now = new Date().toISOString().replace(/[-:.]/g, '').slice(0, 15) + 'Z';
+
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Backstage Pro//PT-BR',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'X-WR-CALNAME:Backstage Pro',
+    'X-WR-TIMEZONE:America/Sao_Paulo',
+  ];
+
+  for (const event of events) {
+    const client = clientMap.get(event.client_id);
+    const summary = escapeIcsText(event.title || 'Sem título');
+
+    const descParts = [];
+    if (client?.name) descParts.push(`Cliente: ${client.name}`);
+    if (event.notes) descParts.push(event.notes);
+    const description = escapeIcsText(descParts.join('\n'));
+
+    const location = escapeIcsText(
+      [event.location, event.location_city, event.location_state].filter(Boolean).join(', ')
+    );
+
+    const startStr = event.start_date;
+    const endStr = event.end_date || event.start_date;
+
+    let dtstart, dtend;
+    if (event.start_time) {
+      dtstart = `DTSTART;TZID=America/Sao_Paulo:${formatIcsDate(startStr, event.start_time)}`;
+    } else {
+      dtstart = `DTSTART;VALUE=DATE:${formatIcsDate(startStr, null)}`;
+    }
+
+    if (event.end_time) {
+      dtend = `DTEND;TZID=America/Sao_Paulo:${formatIcsDate(endStr, event.end_time)}`;
+    } else {
+      const d = new Date((endStr || startStr) + 'T12:00:00');
+      d.setDate(d.getDate() + 1);
+      const nextDay = d.toISOString().slice(0, 10).replace(/-/g, '');
+      dtend = `DTEND;VALUE=DATE:${nextDay}`;
+    }
+
+    const icsStatus =
+      event.status === 'cancelled' ? 'CANCELLED' : event.status === 'completed' ? 'CONFIRMED' : 'TENTATIVE';
+
+    lines.push('BEGIN:VEVENT');
+    lines.push(`UID:event-${event.id}@backstage.pro`);
+    lines.push(`DTSTAMP:${now}`);
+    lines.push(dtstart);
+    lines.push(dtend);
+    lines.push(`SUMMARY:${summary}`);
+    if (description) lines.push(`DESCRIPTION:${description}`);
+    if (location) lines.push(`LOCATION:${location}`);
+    lines.push(`STATUS:${icsStatus}`);
+    lines.push('END:VEVENT');
+  }
+
+  lines.push('END:VCALENDAR');
+
+  const safeLabel = (label || '').replace(/[^\d]/g, '').slice(0, 6) || 'agenda';
+  downloadBlob(`backstage-agenda-${safeLabel}.ics`, lines.join('\r\n'), 'text/calendar;charset=utf-8');
+}
+
 export function exportReportPdf(data, period) {
   const label = periodLabel(period);
   const summary = buildSummaryRows(data);
