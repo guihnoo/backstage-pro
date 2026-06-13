@@ -6,7 +6,7 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
-import { Trophy, Zap, Star, Award, Flame, Calendar, X, Pencil, Check, CheckCircle2, ChevronRight, Plus } from 'lucide-react';
+import { Trophy, Zap, Star, Award, Flame, Calendar, X, Pencil, Check, CheckCircle2, ChevronRight, Plus, Share2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import appToast from '@/lib/appToast';
 
@@ -741,6 +741,45 @@ export default function Goals() {
                   </div>
                 );
               })()}
+
+              {/* Compartilhar resultado */}
+              {(stats.faturamento_pago > 0 || diariasMes > 0) && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const mes = format(new Date(), "MMMM 'de' yyyy", { locale: ptBR });
+                    const mesLabel = mes.charAt(0).toUpperCase() + mes.slice(1);
+                    const fmt = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 });
+                    const pctR = metaReceita > 0 ? Math.round((stats.faturamento_pago / metaReceita) * 100) : null;
+                    const pctD = metaDiarias > 0 ? Math.round((diariasMes / metaDiarias) * 100) : null;
+                    const lines = [
+                      `🎯 *Metas de ${mesLabel}*`,
+                      '',
+                      metaReceita > 0
+                        ? `💰 Receita: *${fmt(stats.faturamento_pago)}* / ${fmt(metaReceita)} (${pctR}%)`
+                        : `💰 Receita recebida: *${fmt(stats.faturamento_pago)}*`,
+                      metaDiarias > 0
+                        ? `📅 Diárias: *${diariasMes}* / ${metaDiarias} (${pctD}%)`
+                        : `📅 Diárias: *${diariasMes}*`,
+                      stats.a_receber > 0 ? `⏳ A receber: ${fmt(stats.a_receber)}` : null,
+                      goalStreak > 0 ? `🔥 ${goalStreak} ${goalStreak === 1 ? 'mês seguido' : 'meses seguidos'} batendo a meta!` : null,
+                      '',
+                      '_Backstage Pro_',
+                    ].filter(l => l !== null).join('\n');
+                    if (navigator.share) {
+                      try { await navigator.share({ text: lines }); }
+                      catch (e) { if (e.name !== 'AbortError') appToast.error('Erro ao compartilhar'); }
+                    } else {
+                      await navigator.clipboard.writeText(lines);
+                      appToast.success('Resumo copiado!', { description: 'Cole no WhatsApp ou onde preferir.' });
+                    }
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-slate-700/60 text-slate-400 hover:text-white hover:border-slate-600 transition-colors text-sm font-medium"
+                >
+                  <Share2 className="w-4 h-4" />
+                  Compartilhar resultado
+                </button>
+              )}
 
               {/* Próximos shows */}
               <div className="bg-slate-900/40 border border-slate-800/50 rounded-2xl p-5">

@@ -1,15 +1,67 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { FileText, Table, Loader2, CalendarDays } from 'lucide-react';
+import { FileText, Table, Loader2, CalendarDays, Share2 } from 'lucide-react';
 import appToast from '@/lib/appToast';
 
 import { exportReportCsv, exportReportPdf, exportCalendarIcs } from '@/lib/exportReport';
 import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
+function buildShareText(data, period) {
+  const events = data?.events || [];
+  const expenses = data?.expenses || [];
+  const clients = data?.clients || [];
+
+  const revenue = events
+    .filter(e => e.payment_status === 'paid')
+    .reduce((s, e) => s + (Number(e.paid_amount) || 0), 0);
+  const totalExpenses = expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+  const profit = revenue - totalExpenses;
+  const active = events.filter(e => e.status !== 'cancelled');
+  const completed = events.filter(e => e.status === 'completed').length;
+  const scheduled = events.filter(e => e.status === 'scheduled' || e.status === 'confirmed').length;
+  const uniqueClients = new Set(active.map(e => e.client_id).filter(Boolean)).size;
+
+  const fmt = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 });
+
+  const label = period?.start
+    ? format(new Date(period.start), "MMMM 'de' yyyy", { locale: ptBR })
+    : format(new Date(), "MMMM 'de' yyyy", { locale: ptBR });
+
+  const lines = [
+    `📊 *Relatório — ${label.charAt(0).toUpperCase() + label.slice(1)}*`,
+    '',
+    `💰 Receita recebida: *${fmt(revenue)}*`,
+    totalExpenses > 0 ? `💸 Despesas: ${fmt(totalExpenses)}` : null,
+    totalExpenses > 0 ? `📈 Lucro: *${fmt(profit)}*` : null,
+    '',
+    `📅 Shows: *${active.length}* (${completed} concluídos${scheduled > 0 ? `, ${scheduled} agendados` : ''})`,
+    uniqueClients > 0 ? `👥 Clientes ativos: ${uniqueClients}` : null,
+    '',
+    '_Gerado pelo Backstage Pro_',
+  ].filter(l => l !== null);
+
+  return lines.join('\n');
+}
 
 const ExportManager = ({ data, period }) => {
   const [exporting, setExporting] = useState(null);
 
   if (!data) return null;
+
+  const handleShare = async () => {
+    const text = buildShareText(data, period);
+    if (navigator.share) {
+      try {
+        await navigator.share({ text });
+      } catch (e) {
+        if (e.name !== 'AbortError') appToast.error('Erro ao compartilhar');
+      }
+    } else {
+      await navigator.clipboard.writeText(text);
+      appToast.success('Resumo copiado!', { description: 'Cole no WhatsApp ou onde preferir.' });
+    }
+  };
 
   const handleExport = async (type) => {
     setExporting(type);
@@ -48,6 +100,16 @@ const ExportManager = ({ data, period }) => {
 
   return (
     <div className="flex flex-col sm:flex-row gap-2">
+      <Button
+        onClick={handleShare}
+        variant="outline"
+        disabled={!!exporting}
+        className="border-purple-400/50 text-purple-300 hover:bg-purple-400/10 flex items-center gap-2 justify-center w-full sm:w-auto"
+        title="Compartilhar resumo via WhatsApp ou copiar"
+      >
+        <Share2 className="w-4 h-4" />
+        Compartilhar
+      </Button>
       <Button
         onClick={() => handleExport('pdf')}
         variant="outline"
