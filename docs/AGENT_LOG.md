@@ -6,6 +6,24 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-13
 
+### SEARCH-S47 — Busca global (overlay full-screen, TopBar) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/layout/GlobalSearch.jsx`** (NOVO):
+  - Overlay `z-[110]` com `AnimatePresence`; fecha com Esc ou clique no backdrop
+  - `useAppScrollLock(isOpen)` — trava scroll enquanto aberto
+  - Filtra `useEvents()` + `useClients()` em memória; normaliza texto (remove acentos) com `normalize('NFD')`
+  - Busca eventos por: título, local, city, nome e contato do cliente
+  - Busca clientes por: nome, contact_person, email, telefone
+  - Resultados agrupados: Shows (6 max) + Clientes (4 max); estado vazio "nenhum resultado"
+  - Card de evento: barra colorida `ev.color`, `EventHeading`, data, city, badge de status
+  - Card de cliente: avatar/logo ou inicial, nome, contato
+  - Clique em show → `hardNavigate('/calendar')` + `onClose`; clique em cliente → `hardNavigate('/client-detail?id=...')`
+- **`src/components/layout/AppTopBar.jsx`**:
+  - Import `useState`, `Search` (lucide), `GlobalSearch`
+  - State `searchOpen`; botão 🔍 à esquerda de NotificationCenter; abre overlay ao clicar
+  - `<GlobalSearch isOpen={searchOpen} onClose={...} />` renderizado fora do `<header>` (fragment)
+- **Build**: Vite ✅ · **Git backup**: auto-wip ✅
+
 ### SHARE-S46 — Compartilhar resumo mensal (Web Share API) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/components/reports/ExportManager.jsx`**:

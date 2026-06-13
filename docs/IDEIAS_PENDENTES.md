@@ -90,6 +90,7 @@
 | 49 | Rastreamento de NF em Relatórios (aba Fiscal) | 2026-06-13 | ✅ `NfTracker.jsx` — 5ª aba em Reports; pendentes âmbar / emitidas verde; badge com contagem |
 | 50 | Gráfico de tendência mensal (12 meses) em Relatórios | 2026-06-13 | ✅ `MonthlyTrend.jsx` — barra por mês; linha de meta; verde/cyan/slate por status; aba Visão Geral |
 | 51 | Compartilhar resumo mensal (WhatsApp / clipboard) | 2026-06-13 | ✅ Botão "Compartilhar" em ExportManager + "Compartilhar resultado" em Goals; Web Share API com fallback clipboard |
+| 52 | Busca global (eventos + clientes) acessível de qualquer tela | 2026-06-13 | ✅ `GlobalSearch.jsx` — overlay full-screen, ícone 🔍 na TopBar; busca normalizada sem acentos |
 
 ---
 

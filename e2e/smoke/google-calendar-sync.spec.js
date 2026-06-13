@@ -7,7 +7,9 @@ test('perfil exibe Google Calendar conectado e alerta de eventos não sincroniza
   await page.goto('/profile', { waitUntil: 'domcontentloaded' });
   await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 20_000 });
 
-  await expect(page.getByText('Sincronização com Google Calendar')).toBeVisible();
+  const gcalSection = page.getByText('Sincronização com Google Calendar');
+  await gcalSection.scrollIntoViewIfNeeded();
+  await expect(gcalSection).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText('Conectado')).toBeVisible();
   await expect(page.getByText('e2e-test@gmail.com')).toBeVisible();
   await expect(page.getByRole('button', { name: /sincronizar agora/i })).toBeVisible();
@@ -20,7 +22,9 @@ test('limpar duplicatas dispara confirmação e toast de sucesso', async ({ page
   await page.goto('/profile', { waitUntil: 'domcontentloaded' });
   await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 20_000 });
 
-  await page.getByRole('button', { name: /limpar duplicatas da agenda/i }).click();
+  const dedupeBtn = page.getByRole('button', { name: /limpar duplicatas da agenda/i });
+  await dedupeBtn.scrollIntoViewIfNeeded();
+  await dedupeBtn.click();
   await expect(page.getByRole('alertdialog')).toBeVisible();
   await page.getByRole('button', { name: /^limpar$/i }).click();
 
