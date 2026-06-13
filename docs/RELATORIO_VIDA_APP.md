@@ -88,6 +88,28 @@ Ordem oficial após fix de scroll (2026-06-05):
 
 ## Changelog
 
+### 2026-06-13 (sessão S42) — Avaliação de cliente + heatmap atividade + observações
+
+**Migration 031 — `client_rating` + `client_rating_notes` em `events`:**
+- Colunas opcionais (smallint 1-5 com CHECK + text)
+
+**EventDetailModal:**
+- Widget de 5 estrelas para eventos com `status === 'completed'`; salva via `updateEvent` ao clicar; textarea de observação aparece após dar nota; label textual (Ruim / Regular / Bom / Ótimo / Excelente)
+- Seção "Observações" exibe `observacoes_md` quando preenchida
+
+**ClientDetail:**
+- `avgRating` useMemo — média das avaliações de todos os eventos do cliente
+- Card âmbar com estrelas preenchidas + valor numérico + contagem de avaliações
+
+**Reports — ActivityHeatmap:**
+- Nova aba "Atividade" com grade 52 semanas × 7 dias (estilo GitHub)
+- Intensidade de cor por volume de shows; tooltip hover; legenda de escala
+- `ActivityHeatmap.jsx` em `src/components/reports/`
+
+**Build:** Vite ✅
+
+---
+
 ### 2026-06-13 (sessão S41) — Próximos Shows + melhorias week view
 
 **Calendar.jsx — Vista "Próximos Shows" (⚡):**

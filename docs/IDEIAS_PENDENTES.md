@@ -85,6 +85,8 @@
 | 44 | Vista Semanal na Agenda (Week View) | 2026-06-12 | ✅ Toggle Grid/Semana/Lista; 7 colunas scroll-x mobile; banner hoje; cor do evento; horário; +N mais; resumo semanal |
 | 45 | Vista "Próximos Shows" na Agenda | 2026-06-13 | ✅ Botão ⚡ — lista futuros agrupados (Hoje/Amanhã/Esta semana/…) com countdown, valor, indicador vencido/pago |
 | 46 | Mapa de atividade anual (heatmap) em Relatórios | 2026-06-13 | ✅ Aba "Atividade" em Reports — grade 52×7 estilo GitHub; tooltip; legenda de escala |
+| 47 | Avaliação de cliente por evento (1-5 estrelas) | 2026-06-13 | ✅ Migration 031; widget estrelas em EventDetailModal (concluídos); média em ClientDetail |
+| 48 | Observações do evento visíveis no EventDetailModal | 2026-06-13 | ✅ Seção `observacoes_md` exibida quando preenchida |
 
 ---
 
