@@ -118,7 +118,15 @@ Registro cronológico de tarefas executadas por agentes.
 - **`src/pages/Calendar.jsx`**: import `Download` + `exportCalendarIcs`; `handleExportIcs` exporta `filteredEvents` (respeita busca + filtro de status); botão ícone `Download` ao lado do toggle Grid/Lista; toast de sucesso com contagem + orientação de uso
 - **Build**: Vite ✅ · **Git backup**: ✅
 
-### CALENDAR-S35 — Busca + Vista Lista + Duplicar + Agendar Show por cliente ✅
+### S43 — Cursor: QA release + checklist OAuth + docs ✅
+- **Agente**: Cursor (Antigravity-Engine)
+- **Código recente**: `f67ab29` notifications CRUD · `d2b8d50` dedupe GCal + GlobalSearch · `15b7ac0` share + alertas
+- **Edge**: `google-calendar` redeploy com `_shared/googleEventDedupe.ts`
+- **Testes**: 26 unit + 28 smoke E2E ✅ (`npm run test:e2e:smoke`)
+- **Deploy**: Vercel `dpl_9Xvk7A1ANiF2RqNWcBWeGQAQ3NqY` → https://backstage-pro-beta.vercel.app
+- **Docs**: `RELATORIO_VIDA_APP.md` — seção checklist OAuth GCP+app; sessão S43 no changelog
+- **Próximo (usuário)**: itens #23–#24 IDEIAS — rotacionar secret + publicar OAuth app no GCP; executar checklist manual
+
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/components/calendar/EventDetailModal.jsx`**: import `Copy`; prop `onDuplicate` adicionada à assinatura; botão `Copy` no rodapé antes do lixeira (guarda `onDuplicate &&`)
 - **`src/pages/Calendar.jsx`**:

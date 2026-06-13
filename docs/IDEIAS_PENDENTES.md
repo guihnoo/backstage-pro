@@ -25,7 +25,7 @@
 
 | # | Ideia | Status | Onde / notas |
 |---|-------|--------|--------------|
-| 8 | Google Calendar OAuth + sync completo | 🟡 | UI + smoke E2E mock; OAuth real requer checklist manual em produção |
+| 8 | Google Calendar OAuth + sync completo | 🟡 | UI + dedupe + smoke E2E ✅; checklist manual em `RELATORIO_VIDA_APP.md` § OAuth |
 | 9 | Local do evento (endereço + GPS check-in) | ✅ | EventLocationSection, Modo Palco |
 | 10 | Mapa Brasil visitados (relatórios) | ✅ | BrazilVisitedMap — marcadores recalibrados S39 |
 | 11 | Alertas agenda — check-in local hoje | ✅ | AlertsPanel |

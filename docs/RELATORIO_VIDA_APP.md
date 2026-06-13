@@ -3,10 +3,11 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-12 (sessão S40)  
+**Última atualização:** 2026-06-13 (sessão S43 — Cursor)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último deploy:** 2026-06-12 — auto (git:backup S34) → https://backstage-pro-beta.vercel.app  
-**Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` (v25) deployadas no Supabase ✅  
+**Último deploy:** 2026-06-13 — `dpl_9Xvk7A1ANiF2RqNWcBWeGQAQ3NqY` (commit `15b7ac0`)  
+**Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` (dedupe refatorado) deployadas no Supabase ✅  
+**Smoke E2E:** 28/28 passando (`npm run test:e2e:smoke`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
 ---
@@ -17,7 +18,10 @@
 |------|--------|
 | Core (eventos, clientes, despesas, horas) | Funcional |
 | Clientes — Empresa vs Pessoa | `client_type` coluna DB; toggle visual em form/combobox/cards/modais ✅ sessão 20–22 |
-| Google Calendar OAuth + sync | Token expirado limpo (S34); edge function v25; usuário deve reconectar |
+| Google Calendar OAuth + sync | UI + dedupe + smoke E2E mock ✅; **OAuth real pendente** (GCP Testing → Production + reconectar no Perfil) |
+| Editar/excluir eventos (todas as telas) | Home, Metas, Agenda, Relatórios, ClientDetail, **NotificationCenter** ✅ |
+| Dedupe Google Calendar | `googleEventDedupe` (unit + edge + smoke Perfil) ✅ |
+| Busca global | `GlobalSearch.jsx` na TopBar — eventos + clientes ✅ |
 | UX cores / hierarquia empresa | Implementado (`brandColors`, `EventHeading`) |
 | Combobox cliente + geocode local | Implementado; criar Pessoa inline ✅ |
 | Local do evento (endereço + GPS check-in) | `EventLocationSection` — criar, detalhe, action sheet |
@@ -86,7 +90,68 @@ Ordem oficial após fix de scroll (2026-06-05):
 
 ---
 
+## Checklist OAuth Google Calendar (manual — produção)
+
+Use este roteiro para fechar o item **#8** em `IDEIAS_PENDENTES.md`.
+
+### Pré-requisitos (infra — uma vez)
+
+| # | Onde | Ação |
+|---|------|------|
+| A | [Supabase → Edge Functions → Secrets](https://supabase.com/dashboard/project/cwtallnetgodoacuoaow/settings/functions) | `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` preenchidos |
+| B | [Google Cloud Console → APIs & Services → Credentials](https://console.cloud.google.com/apis/credentials) | OAuth 2.0 Client ID do tipo **Web** |
+| C | Mesmo client no GCP | **Authorized redirect URI** exatamente: `https://cwtallnetgodoacuoaow.supabase.co/functions/v1/google-calendar-callback` |
+| D | GCP → OAuth consent screen | Sair de **Testing** → **In production** **ou** adicionar seu e-mail em **Test users** (#24) |
+| E | Segurança (#23) | Rotacionar `GOOGLE_CLIENT_SECRET` no GCP → atualizar secret no Supabase → nunca commitar `client_secret_*.json` |
+
+### Fluxo E2E no app (15 min)
+
+1. Abrir https://backstage-pro-beta.vercel.app/profile (logado)
+2. Rolar até **Sincronização com Google Calendar** → **Conectar ao Google**
+3. Autorizar no Google (aceitar escopos de calendário + e-mail)
+4. Esperar redirect para `/profile?google_connected=1` + toast verde
+5. Confirmar badge **Conectado** + e-mail Google visível
+6. **Sincronizar Agora** — toast com contadores (importados / vinculados / enviados)
+7. **Importar Eventos** — confirmação → toast de sucesso
+8. Se houver duplicatas pós-import: **Limpar duplicatas da agenda** → confirmar → toast com `N duplicata(s) removida(s)`
+9. Na **Agenda**, verificar badge âmbar “eventos não sincronizados” some após sync
+10. **Desconectar** → status **Desconectado**; reconectar deve funcionar sem `missing_refresh_token`
+
+### Erros comuns → mensagem no app
+
+| Sintoma | Causa provável | Fix |
+|---------|----------------|-----|
+| `invalid_client` | Secrets ausentes no Supabase | Passo A |
+| `redirect_uri_mismatch` | URI errada no GCP | Passo C |
+| `unauthorized_client` / `access_denied` | App em Testing sem testador | Passo D |
+| `missing_refresh_token` | Reconexão sem revogar antes | Desconectar, aguardar 10s, conectar de novo |
+| 400 "não conectado" em list-calendars | Token expirado / desconectado | Reconectar no Perfil |
+
+### Automação existente
+
+- Smoke mock: `e2e/smoke/google-calendar-sync.spec.js` (UI conectada + dedupe)
+- Unit dedupe: `src/lib/googleEventDedupe.test.js` (4 casos)
+
+---
+
 ## Changelog
+
+### 2026-06-13 (sessão S43) — Cursor: notificações, dedupe GCal, busca global, QA
+
+**NotificationCenter:** editar/excluir evento real (`EventForm` + `ConfirmDialog` + `deleteEvent`) — commit `f67ab29`
+
+**Google Calendar dedupe:**
+- `src/lib/googleEventDedupe.js` + 4 unit tests
+- `supabase/functions/_shared/googleEventDedupe.ts` — edge refatorada e redeployada
+- Smoke E2E `google-calendar-sync.spec.js` (2 testes)
+
+**Outros na sessão:** `GlobalSearch` TopBar, compartilhar resumo Goals/Reports, `.gitignore` playwright-report
+
+**QA:** 26 unit + **28 smoke E2E** ✅ · Deploy Vercel `dpl_9Xvk7A1ANiF2RqNWcBWeGQAQ3NqY`
+
+**Pendente:** checklist OAuth manual acima (itens A–E)
+
+---
 
 ### 2026-06-13 (sessão S42) — Avaliação de cliente + heatmap atividade + observações
 
@@ -415,12 +480,7 @@ Ordem oficial após fix de scroll (2026-06-05):
 - `googleOAuthErrors.js`: mensagens pt-BR para erros OAuth no Perfil
 - Lazy load: `Clients`, `Expenses`, `ClientDetail` (bundle principal ~402 KB)
 
-**Checklist OAuth E2E (manual):**
-1. Perfil → Conectar ao Google → autorizar → redirect `/profile?google_connected=1` + toast verde
-2. Badge **Conectado** + e-mail Google visível
-3. **Sincronizar Agora** / **Importar Eventos** sem erro 401
-4. **Limpar duplicatas da agenda** (se houver dupes pós-import)
-5. Desconectar → status **Desconectado**
+**Checklist OAuth E2E (manual):** ver seção **Checklist OAuth Google Calendar** neste arquivo (pré-requisitos GCP + 10 passos no app).
 
 ---
 
