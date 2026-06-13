@@ -12,6 +12,7 @@ import {
 import { latlngToSvg, STATE_CENTROIDS } from '@/lib/brazilMapProjection';
 import { requestMapTour } from '@/lib/appTourBus';
 import { isCancelledEvent } from '@/lib/eventFinance';
+import { Link } from 'react-router-dom';
 
 class BrazilMapErrorBoundary extends Component {
   state = { hasError: false };
@@ -635,6 +636,12 @@ function BrazilVisitedMapInner({ events = [] }) {
                 : 'Eventos cancelados não aparecem aqui. Cadastre shows com local na Agenda.'
               : 'Edite seus eventos e preencha o campo "Local" com cidade e estado (ex: São Paulo, SP) para os estados aparecerem no mapa.'}
           </p>
+          <Link
+            to="/calendar"
+            className="mt-1 text-xs font-medium text-cyan-400 hover:text-cyan-300 transition-colors"
+          >
+            Ir para Agenda →
+          </Link>
         </div>
       )}
 

@@ -49,6 +49,10 @@ export function fakeReportEvents() {
   ];
 }
 
+export function fakeReportEventsCancelledOnly() {
+  return fakeReportEvents().filter((e) => e.status === 'cancelled');
+}
+
 function jsonList(route, rows) {
   return route.fulfill({
     status: 200,
@@ -58,8 +62,7 @@ function jsonList(route, rows) {
 }
 
 /** Mocks mínimos para a página de Relatórios (eventos com localização para o mapa). */
-export async function installReportsMocks(page) {
-  const events = fakeReportEvents();
+export async function installReportsMocks(page, events = fakeReportEvents()) {
 
   await page.route(/\/rest\/v1\/events(\?|$)/, async (route) => {
     const method = route.request().method();

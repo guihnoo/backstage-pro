@@ -28,9 +28,10 @@ import {
   BadgeCheck,
   ChevronLeft,
   ChevronRight,
+  Zap,
 } from 'lucide-react';
 import { exportCalendarIcs } from '@/lib/exportReport';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, parseISO, isValid, addWeeks, subWeeks, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, parseISO, isValid, addWeeks, subWeeks, startOfWeek, endOfWeek, eachDayOfInterval, differenceInCalendarDays, isBefore } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import BackstageCalendarGrid from '@/components/calendar/BackstageCalendarGrid';
 import EventForm from '@/components/calendar/EventForm';
@@ -181,10 +182,23 @@ export default function CalendarPage() {
 
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState('grid');
+  const [viewMode, setViewMode] = useState(() => {
+    try {
+      const stored = localStorage.getItem('backstage:calendar-view-mode');
+      return ['grid', 'week', 'list'].includes(stored) ? stored : 'grid';
+    } catch {
+      return 'grid';
+    }
+  });
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 0 }));
   const [confirmWork, setConfirmWork] = useState(null);
   const [confirmEvent, setConfirmEvent] = useState(null);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('backstage:calendar-view-mode', viewMode);
+    } catch { /* quota / private mode */ }
+  }, [viewMode]);
 
   const [drilldownOpen, setDrilldownOpen] = useState(false);
   const [drilldownTitle, setDrilldownTitle] = useState('');
@@ -250,6 +264,33 @@ export default function CalendarPage() {
     }
     return map;
   }, [weekDays, filteredEvents]);
+
+  const upcomingGroups = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayIso = format(today, 'yyyy-MM-dd');
+    const upcoming = activeEvents
+      .filter(ev => (ev.start_date || '') >= todayIso)
+      .sort((a, b) => (a.start_date > b.start_date ? 1 : -1));
+
+    const groups = [];
+    for (const ev of upcoming) {
+      const evDate = parseISO(ev.start_date);
+      const diff = differenceInCalendarDays(evDate, today);
+      let groupKey, groupLabel;
+      if (diff === 0)        { groupKey = 'hoje';         groupLabel = 'Hoje'; }
+      else if (diff === 1)   { groupKey = 'amanha';       groupLabel = 'Amanhã'; }
+      else if (diff <= 7)    { groupKey = 'esta_semana';  groupLabel = 'Esta semana'; }
+      else if (diff <= 14)   { groupKey = 'proxima';      groupLabel = 'Próxima semana'; }
+      else if (diff <= 30)   { groupKey = 'este_mes';     groupLabel = 'Nos próximos 30 dias'; }
+      else                   { groupKey = 'futuro';       groupLabel = 'Mais adiante'; }
+
+      let g = groups.find(x => x.key === groupKey);
+      if (!g) { g = { key: groupKey, label: groupLabel, events: [] }; groups.push(g); }
+      g.events.push({ ev, diff });
+    }
+    return groups;
+  }, [activeEvents]);
 
   const todayStr = todayLocalISO();
   const isLiveShiftToday = useMemo(() => {
@@ -1216,6 +1257,14 @@ export default function CalendarPage() {
               >
                 <List className="w-4 h-4" />
               </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('upcoming')}
+                title="Próximos shows"
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'upcoming' ? 'bg-amber-600/30 text-amber-300' : 'text-slate-500 hover:text-slate-300'}`}
+              >
+                <Zap className="w-4 h-4" />
+              </button>
             </div>
             <button
               type="button"
@@ -1319,14 +1368,22 @@ export default function CalendarPage() {
                       }`}
                     >
                       {/* Cabeçalho do dia */}
-                      <div className={`px-2 pt-2 pb-1 border-b ${isToday ? 'border-cyan-700/40' : 'border-slate-700/40'}`}>
+                      <button
+                        type="button"
+                        onClick={() => handleDayClick(day)}
+                        className={`px-2 pt-2 pb-1 border-b text-left w-full group ${isToday ? 'border-cyan-700/40' : 'border-slate-700/40'}`}
+                        title={`Novo evento em ${format(day, "d 'de' MMM", { locale: ptBR })}`}
+                      >
                         <p className={`text-[10px] font-semibold uppercase tracking-wide ${isToday ? 'text-cyan-400' : 'text-slate-500'}`}>
                           {format(day, 'EEE', { locale: ptBR })}
                         </p>
-                        <p className={`text-lg font-bold leading-none ${isToday ? 'text-cyan-300' : 'text-slate-300'}`}>
-                          {format(day, 'd')}
-                        </p>
-                      </div>
+                        <div className="flex items-center justify-between">
+                          <p className={`text-lg font-bold leading-none ${isToday ? 'text-cyan-300' : 'text-slate-300'}`}>
+                            {format(day, 'd')}
+                          </p>
+                          <span className="opacity-0 group-hover:opacity-60 text-slate-400 text-base leading-none transition-opacity">+</span>
+                        </div>
+                      </button>
 
                       {/* Eventos do dia */}
                       <div className="flex flex-col gap-1 p-1.5 flex-1">
@@ -1378,6 +1435,67 @@ export default function CalendarPage() {
                 </div>
               );
             })()}
+          </div>
+        ) : viewMode === 'upcoming' ? (
+          <div className="space-y-4">
+            {upcomingGroups.length === 0 ? (
+              <div className="text-center py-12 text-slate-500 text-sm">
+                Nenhum show agendado a partir de hoje
+              </div>
+            ) : upcomingGroups.map(({ key, label, events: upEvents }) => (
+              <div key={key}>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-1 mb-2">
+                  {label}
+                </p>
+                <div className="space-y-1.5">
+                  {upEvents.map(({ ev, diff }) => {
+                    const cl = clientMap.get(ev.client_id);
+                    const isPaid = ev.payment_status === 'paid';
+                    const evColor = ev.color || '#6366f1';
+                    const timeLabel = ev.start_time ? ev.start_time.slice(0, 5) : null;
+                    const amount = getEventCacheAmount(ev);
+                    const isOverdue = ev.payment_due_date && isBefore(parseISO(ev.payment_due_date), new Date()) && !isPaid;
+                    const diffLabel = diff === 0 ? 'Hoje' : diff === 1 ? 'Amanhã' : `em ${diff}d`;
+                    return (
+                      <button
+                        key={ev.id}
+                        type="button"
+                        onClick={() => handleEventClick(ev)}
+                        className="w-full text-left bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 rounded-lg px-4 py-3 flex items-center gap-3 transition-colors"
+                      >
+                        <div className="w-1 self-stretch rounded-full flex-shrink-0" style={{ backgroundColor: evColor }} />
+                        <div className="w-12 text-center flex-shrink-0">
+                          <p className="text-[10px] font-bold uppercase text-amber-400">{diffLabel}</p>
+                          <p className="text-xs text-slate-500 capitalize mt-0.5">
+                            {format(parseISO(ev.start_date), 'dd/MM', { locale: ptBR })}
+                          </p>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-slate-200 truncate">{ev.title}</p>
+                          <p className="text-xs text-slate-500 truncate">
+                            {timeLabel && <span className="mr-1">{timeLabel}</span>}
+                            {cl && cl.name}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                          {amount > 0 && (
+                            <span className={`text-xs font-semibold ${isPaid ? 'text-emerald-400' : isOverdue ? 'text-red-400' : 'text-amber-400'}`}>
+                              {formatCurrency(amount)}
+                            </span>
+                          )}
+                          {isOverdue && (
+                            <span className="text-[10px] text-red-400 font-medium">vencido</span>
+                          )}
+                          {isPaid && (
+                            <span className="text-[10px] text-emerald-400">pago ✓</span>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <div className="space-y-4">

@@ -28,3 +28,16 @@ test('vista semanal exibe colunas dos 7 dias e eventos mockados', async ({ page 
   await expect(weekGrid).toBeVisible({ timeout: 10_000 });
   await expect(weekGrid.getByRole('button', { name: 'E2E Show Demo' })).toBeVisible();
 });
+
+test('vista semanal persiste após recarregar a página', async ({ page }) => {
+  await seedAuthWithData(page);
+  await page.goto('/calendar', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 15_000 });
+
+  await page.getByTitle('Vista semanal').click();
+  await expect(page.locator('.grid.grid-cols-7')).toBeVisible({ timeout: 10_000 });
+
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 15_000 });
+  await expect(page.locator('.grid.grid-cols-7')).toBeVisible({ timeout: 10_000 });
+});
