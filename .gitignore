@@ -35,3 +35,7 @@ agent-review/incoming/*
 # Auto-git backup (estado local)
 .cursor/.last-auto-git
 .cursor/PAUSE_AUTO_GIT
+
+# Playwright
+playwright-report/
+test-results/

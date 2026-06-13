@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -9,12 +9,16 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Bell, Clock, Calendar, DollarSign, Target, X, Zap, MessageCircle } from 'lucide-react';
 import EventDetailModal from '@/components/calendar/EventDetailModal';
+import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { useAuth } from '@/lib/authContext';
 import { useStats } from '@/lib/useBackstageData';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { hardNavigate } from '@/lib/hardNavigate';
+import appToast from '@/lib/appToast';
+
+const EventForm = lazy(() => import('@/components/calendar/EventForm'));
 import { openWhatsAppCharge, buildChargeMessage } from '@/lib/whatsapp';
 import { differenceInDays, parseISO, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -114,13 +118,16 @@ function NotificationItem({ notification, onDismiss, onNavigate, onViewEvent }) 
 
 export default function NotificationCenter({ compact = false }) {
   const { user, profile } = useAuth();
-  const { events } = useEvents();
+  const { events, delete: deleteEvent, refetch: refetchEvents } = useEvents();
   const { clients } = useClients();
   const { stats } = useStats(user?.id);
   const { formatCurrency } = useFinancialVisibility();
   const [dismissed, setDismissed] = useState(() => getDismissed());
   const [isOpen, setIsOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [showEventForm, setShowEventForm] = useState(false);
+  const [confirmDeleteEventId, setConfirmDeleteEventId] = useState(null);
 
   // Limpa dismissed antigos (> 3 dias) a cada abertura
   useEffect(() => {
@@ -198,6 +205,21 @@ export default function NotificationCenter({ compact = false }) {
     }
   }, [handleNavigate]);
 
+  const handleConfirmDeleteEvent = useCallback(async () => {
+    if (!confirmDeleteEventId) return;
+    try {
+      await deleteEvent(confirmDeleteEventId);
+      appToast.success('Evento excluído com sucesso.');
+      setSelectedEvent(null);
+      await refetchEvents();
+    } catch (err) {
+      console.error('Erro ao excluir evento:', err);
+      appToast.error('Não foi possível excluir o evento.');
+    } finally {
+      setConfirmDeleteEventId(null);
+    }
+  }, [confirmDeleteEventId, deleteEvent, refetchEvents]);
+
   if (!user?.id) return null;
 
   const count = visible.length;
@@ -268,15 +290,53 @@ export default function NotificationCenter({ compact = false }) {
     </DropdownMenu>
 
     {selectedEvent && (
-      <EventDetailModal
-        event={selectedEvent}
-        client={selectedEvent.clients || null}
-        onClose={() => setSelectedEvent(null)}
-        onEdit={() => { setSelectedEvent(null); hardNavigate('/calendar'); }}
-        onDelete={() => setSelectedEvent(null)}
-        onMarkPaid={() => setSelectedEvent(null)}
-      />
+      <Suspense fallback={null}>
+        <EventDetailModal
+          event={selectedEvent}
+          client={selectedEvent.clients || null}
+          onClose={() => setSelectedEvent(null)}
+          onEdit={(event) => {
+            setSelectedEvent(null);
+            setEditingEvent(event);
+            setShowEventForm(true);
+          }}
+          onDelete={(eventId) => setConfirmDeleteEventId(eventId)}
+          onMarkPaid={async () => {
+            setSelectedEvent(null);
+            await refetchEvents();
+          }}
+        />
+      </Suspense>
     )}
+
+    {showEventForm && (
+      <Suspense fallback={null}>
+        <EventForm
+          isOpen={showEventForm}
+          clients={clients}
+          event={editingEvent}
+          onClose={() => {
+            setShowEventForm(false);
+            setEditingEvent(null);
+          }}
+          onSuccess={async () => {
+            setShowEventForm(false);
+            setEditingEvent(null);
+            await refetchEvents();
+          }}
+        />
+      </Suspense>
+    )}
+
+    <ConfirmDialog
+      open={!!confirmDeleteEventId}
+      onOpenChange={(open) => !open && setConfirmDeleteEventId(null)}
+      title="Excluir evento?"
+      description="O evento será removido permanentemente da sua agenda."
+      confirmLabel="Excluir"
+      destructive
+      onConfirm={handleConfirmDeleteEvent}
+    />
     </>
   );
 }
