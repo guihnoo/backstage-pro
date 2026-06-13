@@ -23,7 +23,8 @@ import {
   ArrowUp,
   ArrowDown,
   Minus,
-  XCircle
+  XCircle,
+  Activity,
 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, subMonths, isWithinInterval, parseISO, startOfYear, endOfYear, addMonths, startOfWeek, endOfWeek, subWeeks, addWeeks } from 'date-fns';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
@@ -52,6 +53,7 @@ import LiveClockBar from '@/components/home/LiveClockBar';
 import StatValuePulse from '@/components/home/StatValuePulse';
 import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
+import ActivityHeatmap from '@/components/reports/ActivityHeatmap';
 import EventHeading from '@/components/events/EventHeading';
 import { Ellipsis } from '@/components/ui/overflowText';
 import BrazilVisitedMap from '@/components/reports/BrazilVisitedMap';
@@ -876,6 +878,7 @@ export default function ReportsPage() {
             { id: 'overview', label: 'Visão Geral', icon: BarChart3, count: null },
             { id: 'clients', label: 'Clientes', icon: Users, count: data.clients.length },
             { id: 'expenses', label: 'Despesas', icon: DollarSign, count: processedData.current.expenses.length },
+            { id: 'activity', label: 'Atividade', icon: Activity, count: null },
           ].map((view) => (
             <button
               key={view.id}
@@ -931,10 +934,14 @@ export default function ReportsPage() {
             period={selectedPeriod}
             onSliceClick={(category) => {
               appToast.info(`Visualizando despesas da categoria: ${category}`);
-              // Aqui poderia abrir um modal ou filtrar a lista
             }} />
-
         }
+
+        {selectedView === 'activity' && (
+          <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
+            <ActivityHeatmap events={data.events} />
+          </div>
+        )}
 
         {/* Events List - AGORA FILTRÁVEL e com MODAL */}
         <div className="space-y-2">
