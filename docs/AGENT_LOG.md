@@ -6,6 +6,16 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-13
 
+### PROFIT-S48 — Resultado líquido por show (margem de lucro) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/calendar/EventDetailModal.jsx`**:
+  - `profitSummary` useMemo: revenue / expenses / profit / margin — nulo quando ambos zerados
+  - Card "Resultado do Show": grid 3 colunas Receita/Despesas/Lucro + barra de margem (verde≥70%, âmbar≥40%, vermelho<40%)
+  - Posicionado entre card de Despesas e Registros de Trabalho
+- **`src/components/reports/EventDetailModal.jsx`**:
+  - Grid de InfoItems refatorado para `space-y-3` wrapper; barra de margem adicionada; `netRevenue` vermelho quando negativo
+- **Build**: Vite ✅ (38s) · **Git backup**: auto-wip ✅
+
 ### SEARCH-S47 — Busca global (overlay full-screen, TopBar) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/components/layout/GlobalSearch.jsx`** (NOVO):

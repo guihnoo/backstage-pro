@@ -401,6 +401,37 @@ export default function Goals() {
     [allEvents, metaReceita, stats.faturamento_pago],
   );
 
+  const yearlyPanel = useMemo(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const currentMonthIndex = now.getMonth(); // 0-based
+
+    const months = Array.from({ length: 12 }, (_, i) => {
+      const monthStr = `${year}-${String(i + 1).padStart(2, '0')}`;
+      const revenue = allEvents
+        .filter(e => e.payment_status === 'paid' && (e.start_date || '').startsWith(monthStr))
+        .reduce((s, e) => s + (Number(e.paid_amount) || 0), 0);
+      const isCurrent = i === currentMonthIndex;
+      const isFuture = i > currentMonthIndex;
+      const hit = metaReceita > 0 && revenue >= metaReceita && !isFuture;
+      const pct = metaReceita > 0 && !isFuture ? Math.min((revenue / metaReceita) * 100, 100) : 0;
+      const label = new Date(year, i, 1).toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
+      return { monthStr, label, revenue, pct, hit, isCurrent, isFuture };
+    });
+
+    const pastMonths = months.filter(m => !m.isFuture && !m.isCurrent);
+    const totalYear = months.reduce((s, m) => s + m.revenue, 0);
+    const monthsElapsed = currentMonthIndex + 1;
+    const monthsWithRevenue = pastMonths.filter(m => m.revenue > 0).length;
+    const avgPerMonth = monthsWithRevenue > 0
+      ? pastMonths.reduce((s, m) => s + m.revenue, 0) / monthsWithRevenue
+      : 0;
+    const projected = totalYear + avgPerMonth * Math.max(0, 12 - monthsElapsed);
+    const monthsHit = months.filter(m => m.hit).length;
+
+    return { months, totalYear, projected, monthsHit, monthsElapsed };
+  }, [allEvents, metaReceita]);
+
   // Detecta badges recém-desbloqueados
   useEffect(() => {
     if (!badges.length) return;
@@ -908,6 +939,67 @@ export default function Goals() {
                         )}
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Painel Anual */}
+              {yearlyPanel.totalYear > 0 && (
+                <div className="bg-slate-900/40 border border-slate-800/50 rounded-2xl p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">
+                      {new Date().getFullYear()} em Resumo
+                    </h3>
+                    {yearlyPanel.monthsHit > 0 && (
+                      <span className="text-[11px] font-bold text-emerald-400">
+                        {yearlyPanel.monthsHit} {yearlyPanel.monthsHit === 1 ? 'mês bateu' : 'meses bateram'} a meta
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Barras mensais */}
+                  <div className="flex items-end gap-1 h-14 mb-3">
+                    {yearlyPanel.months.map(({ label, pct, hit, isCurrent, isFuture }) => (
+                      <div key={label} className="flex-1 flex flex-col items-center gap-0.5">
+                        <div className="w-full flex items-end" style={{ height: 40 }}>
+                          <div
+                            className={`w-full rounded-t-sm transition-all duration-700 ${isCurrent ? 'animate-pulse' : ''}`}
+                            style={{
+                              height: isFuture ? 3 : `${Math.max(pct, isFuture ? 0 : 4)}%`,
+                              background: isFuture
+                                ? '#1e293b'
+                                : hit
+                                ? '#10b981'
+                                : pct > 0
+                                ? '#22d3ee'
+                                : '#1e293b',
+                              opacity: isFuture ? 0.3 : 1,
+                            }}
+                          />
+                        </div>
+                        <span className={`text-[8px] font-mono capitalize ${isCurrent ? 'text-cyan-400 font-bold' : 'text-slate-600'}`}>
+                          {label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Stats anuais */}
+                  <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-800/60">
+                    <div>
+                      <p className="text-[10px] text-slate-500 uppercase tracking-wider">Recebido em {new Date().getFullYear()}</p>
+                      <p className="text-base font-black text-white mt-0.5">
+                        {isVisible ? formatCurrency(yearlyPanel.totalYear) : '•••'}
+                      </p>
+                    </div>
+                    {yearlyPanel.projected > yearlyPanel.totalYear && (
+                      <div>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider">Projeção dezembro</p>
+                        <p className="text-base font-black text-emerald-400 mt-0.5">
+                          {isVisible ? formatCurrency(yearlyPanel.projected) : '•••'}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
