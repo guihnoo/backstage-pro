@@ -88,6 +88,7 @@
 | 47 | Avaliação de cliente por evento (1-5 estrelas) | 2026-06-13 | ✅ Migration 031; widget estrelas em EventDetailModal (concluídos); média em ClientDetail |
 | 48 | Observações do evento visíveis no EventDetailModal | 2026-06-13 | ✅ Seção `observacoes_md` exibida quando preenchida |
 | 49 | Rastreamento de NF em Relatórios (aba Fiscal) | 2026-06-13 | ✅ `NfTracker.jsx` — 5ª aba em Reports; pendentes âmbar / emitidas verde; badge com contagem |
+| 50 | Gráfico de tendência mensal (12 meses) em Relatórios | 2026-06-13 | ✅ `MonthlyTrend.jsx` — barra por mês; linha de meta; verde/cyan/slate por status; aba Visão Geral |
 
 ---
 

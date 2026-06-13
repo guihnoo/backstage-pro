@@ -6,6 +6,22 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-13
 
+### REPORTS-S45 — Gráfico de tendência de 12 meses (MonthlyTrend) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/reports/MonthlyTrend.jsx`** (NOVO):
+  - Recebe `events`, `goalRevenue`, `onMonthClick`; usa `recharts` (BarChart já no bundle)
+  - Agrupa eventos pagos (`payment_status === 'paid'`) por mês nos últimos 12 meses via `subMonths`
+  - Cores: verde = atingiu meta, cyan = abaixo, slate = sem shows
+  - `ReferenceLine` tracejada âmbar para `goalRevenue` quando definido
+  - Tooltip customizado: valor formatado, meta, contagem de shows; legenda de cores
+  - Suporte a `isVisible` (toggle financeiro): exibe '•••' quando desativado
+  - Cabeçalho com total recebido nos 12 meses + contagem de meses ativos
+- **`src/pages/Reports.jsx`**:
+  - Import `MonthlyTrend`
+  - Aba `overview` refatorada para `space-y-6` wrapper; gráfico mensal aparece abaixo do grid `ReportsChart + FinancialSummary`
+  - Passa `profile.monthly_goal_revenue` como `goalRevenue`
+- **Build**: Vite ✅ (53s) · **Git backup**: auto-wip ✅
+
 ### REPORTS-S44 — Aba Fiscal: rastreamento de Nota Fiscal por evento ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/components/reports/NfTracker.jsx`** (NOVO):
