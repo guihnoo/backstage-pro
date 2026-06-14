@@ -5,7 +5,7 @@
 
 **Última atualização:** 2026-06-14 (sessões S69–S74 — Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último deploy:** 2026-06-14 — commit `b315a8c` (anterior); deploy desta sessão em andamento  
+**Último deploy:** 2026-06-14 — `dpl_B3ge4BopmjUZaFswdcbcUxUDaL3d` (commit `48967fc`)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` (dedupe refatorado) deployadas no Supabase ✅  
 **Smoke E2E:** 28/28 passando (`npm run test:e2e:smoke`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`
