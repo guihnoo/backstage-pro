@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, AlertCircle, Mail, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
-import { AUTH_HERO_CATEGORY } from '@/lib/categoryGear';
+import { AUTH_HERO_CATEGORY, AUTH_HERO_CSS_VARS } from '@/lib/categoryGear';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import StageBackdrop from '@/components/auth/StageBackdrop';
@@ -123,7 +123,7 @@ export default function LoginNew() {
   // ── Forgot password panel ──────────────────────────────────────────────────
   if (forgotMode) {
     return (
-      <div className="min-h-screen bg-[#050609] text-white overflow-x-hidden relative">
+      <div className="min-h-screen bg-[#050609] text-white overflow-x-hidden relative" style={AUTH_HERO_CSS_VARS}>
         <NeonAtmosphere primary={hero.primaryHex} accent={hero.accentHex} />
         <StageBackdrop />
         <SpotlightRays primary={hero.primaryHex} accent={hero.accentHex} />
@@ -133,7 +133,7 @@ export default function LoginNew() {
           <button
             type="button"
             onClick={() => { setForgotMode(false); setForgotSent(false); setForgotEmail(''); }}
-            className="flex items-center gap-1.5 text-sm mb-6 font-mono"
+            className="flex items-center gap-1.5 text-sm mb-6 font-mono bp-focus-ring rounded-sm"
             style={{ color: hero.primaryHex }}
           >
             <ArrowLeft className="w-4 h-4" /> Voltar ao login
@@ -157,7 +157,7 @@ export default function LoginNew() {
                 <Button
                   type="button"
                   onClick={() => { setForgotMode(false); setForgotSent(false); }}
-                  className="w-full border-0 font-bold text-[#06070a]"
+                  className="w-full border-0 font-bold text-[#06070a] bp-focus-ring focus-visible:ring-0"
                   style={{ background: `linear-gradient(135deg, ${hero.primaryHex}, ${hero.accentHex})` }}
                 >
                   Voltar ao login
@@ -172,7 +172,7 @@ export default function LoginNew() {
                     value={forgotEmail || email}
                     onChange={(e) => setForgotEmail(e.target.value)}
                     placeholder="você@empresa.com"
-                    className="bg-[#080a10]/80 border-0 text-white h-12 font-mono"
+                    className="bg-[#080a10]/80 border-0 text-white h-12 font-mono bp-focus-input focus-visible:ring-0"
                     style={{ boxShadow: `inset 0 0 0 1px ${hero.primaryHex}33` }}
                     autoComplete="email"
                   />
@@ -180,7 +180,7 @@ export default function LoginNew() {
                 <Button
                   type="submit"
                   disabled={forgotLoading || !(forgotEmail || email)}
-                  className="w-full h-12 border-0 font-bold uppercase text-[#06070a]"
+                  className="w-full h-12 border-0 font-bold uppercase text-[#06070a] bp-focus-ring focus-visible:ring-0"
                   style={{
                     background: `linear-gradient(135deg, ${hero.primaryHex}, ${hero.accentHex})`,
                     boxShadow: `0 0 26px ${hero.primaryHex}55`,
@@ -198,7 +198,7 @@ export default function LoginNew() {
 
   // ── Login principal ────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#050609] text-white overflow-x-hidden relative">
+    <div className="min-h-screen bg-[#050609] text-white overflow-x-hidden relative" style={AUTH_HERO_CSS_VARS}>
       <NeonAtmosphere primary={hero.primaryHex} accent={hero.accentHex} />
       <StageBackdrop />
       <SpotlightRays primary={hero.primaryHex} accent={hero.accentHex} />
@@ -233,7 +233,7 @@ export default function LoginNew() {
                 <button
                   type="button"
                   onClick={() => setForgotMode(true)}
-                  className="text-xs underline underline-offset-2 font-mono"
+                  className="text-xs underline underline-offset-2 font-mono bp-focus-ring rounded-sm"
                   style={{ color: hero.primaryHex }}
                 >
                   Esqueceu ou nunca definiu sua senha?
@@ -283,7 +283,7 @@ export default function LoginNew() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="você@empresa.com"
-                className="bg-[#080a10]/80 border-0 text-white h-12 font-mono"
+                className="bg-[#080a10]/80 border-0 text-white h-12 font-mono bp-focus-input focus-visible:ring-0"
                 style={{ boxShadow: `inset 0 0 0 1px ${hero.primaryHex}33` }}
                 autoComplete="email"
               />
@@ -295,7 +295,7 @@ export default function LoginNew() {
                 <button
                   type="button"
                   onClick={() => setForgotMode(true)}
-                  className="text-[10px] font-mono underline underline-offset-2 text-[#6b7283] hover:text-slate-300 transition-colors"
+                  className="text-[10px] font-mono underline underline-offset-2 text-[#6b7283] hover:text-slate-300 transition-colors bp-focus-ring rounded-sm"
                 >
                   Esqueceu a senha?
                 </button>
@@ -306,14 +306,14 @@ export default function LoginNew() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="bg-[#080a10]/80 border-0 text-white pr-10 h-12 font-mono"
+                  className="bg-[#080a10]/80 border-0 text-white pr-10 h-12 font-mono bp-focus-input focus-visible:ring-0"
                   style={{ boxShadow: `inset 0 0 0 1px ${hero.primaryHex}33` }}
                   autoComplete="current-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b7283]"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b7283] bp-focus-ring rounded-sm p-0.5"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -323,7 +323,7 @@ export default function LoginNew() {
             <Button
               type="submit"
               disabled={loading || !email || !password}
-              className="w-full h-12 border-0 font-bold uppercase text-[#06070a]"
+              className="w-full h-12 border-0 font-bold uppercase text-[#06070a] bp-focus-ring focus-visible:ring-0"
               style={{
                 background: `linear-gradient(135deg, ${hero.primaryHex}, ${hero.accentHex})`,
                 boxShadow: `0 0 26px ${hero.primaryHex}55`,
@@ -343,7 +343,7 @@ export default function LoginNew() {
 
           <p className="text-center text-sm text-[#8a91a1] font-mono">
             Novo por aqui?{' '}
-            <Link to="/signup" style={{ color: hero.primaryHex }} className="font-semibold">
+            <Link to="/signup" style={{ color: hero.primaryHex }} className="font-semibold bp-focus-ring rounded-sm">
               Criar conta
             </Link>
           </p>

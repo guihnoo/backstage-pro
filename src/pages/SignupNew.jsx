@@ -6,7 +6,7 @@ import { Eye, EyeOff, AlertCircle, Mail, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
 import { supabase } from '@/lib/supabase';
 import { getCategoryConfig } from '@/lib/categoryConfig';
-import { AUTH_HERO_CATEGORY } from '@/lib/categoryGear';
+import { AUTH_HERO_CATEGORY, AUTH_HERO_CSS_VARS } from '@/lib/categoryGear';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import StageBackdrop from '@/components/auth/StageBackdrop';
@@ -89,7 +89,7 @@ export default function SignupNew() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050609] text-white overflow-x-hidden relative">
+    <div className="min-h-screen bg-[#050609] text-white overflow-x-hidden relative" style={AUTH_HERO_CSS_VARS}>
       <NeonAtmosphere primary={hero.primaryHex} accent={hero.accentHex} />
       <StageBackdrop />
       <SpotlightRays primary={hero.primaryHex} accent={hero.accentHex} />
@@ -132,12 +132,12 @@ export default function SignupNew() {
                     size="sm"
                     onClick={handleResend}
                     disabled={resendLoading}
-                    className="w-full border-slate-700 text-slate-300 hover:bg-slate-800 bg-transparent text-xs"
+                    className="w-full border-slate-700 text-slate-300 hover:bg-slate-800 bg-transparent text-xs bp-focus-ring focus-visible:ring-0"
                   >
                     {resendLoading ? 'Reenviando...' : 'Reenviar email'}
                   </Button>
-                  <Button asChild variant="outline" className="w-full border-[#23262f] bg-transparent">
-                    <Link to="/login">
+                  <Button asChild variant="outline" className="w-full border-[#23262f] bg-transparent bp-focus-ring focus-visible:ring-0">
+                    <Link to="/login" className="bp-focus-ring">
                       <CheckCircle2 className="w-4 h-4 mr-2 text-emerald-400" />
                       Já confirmei — Ir para login
                     </Link>
@@ -158,7 +158,7 @@ export default function SignupNew() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="bg-[#080a10]/80 border-0 text-white h-12 font-mono"
+                    className="bg-[#080a10]/80 border-0 text-white h-12 font-mono bp-focus-input focus-visible:ring-0"
                     style={{ boxShadow: `inset 0 0 0 1px ${hero.primaryHex}33` }}
                     autoComplete="email"
                   />
@@ -171,11 +171,11 @@ export default function SignupNew() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Mínimo 6 caracteres"
-                      className="bg-[#080a10]/80 border-0 text-white pr-10 h-12 font-mono"
+                      className="bg-[#080a10]/80 border-0 text-white pr-10 h-12 font-mono bp-focus-input focus-visible:ring-0"
                       style={{ boxShadow: `inset 0 0 0 1px ${hero.primaryHex}33` }}
                       autoComplete="new-password"
                     />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b7283]">
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b7283] bp-focus-ring rounded-sm p-0.5">
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
@@ -186,7 +186,7 @@ export default function SignupNew() {
                 <Button
                   type="submit"
                   disabled={loading || !email || password.length < 6}
-                  className="w-full h-12 border-0 font-bold uppercase text-[#06070a]"
+                  className="w-full h-12 border-0 font-bold uppercase text-[#06070a] bp-focus-ring focus-visible:ring-0"
                   style={{ background: `linear-gradient(135deg, ${hero.primaryHex}, ${hero.accentHex})` }}
                 >
                   {loading ? 'Criando conta...' : 'Criar conta'}
@@ -196,7 +196,7 @@ export default function SignupNew() {
 
             <p className="text-center text-sm text-[#8a91a1] font-mono">
               Já tem conta?{' '}
-              <Link to="/login" style={{ color: hero.primaryHex }}>Entrar</Link>
+              <Link to="/login" style={{ color: hero.primaryHex }} className="bp-focus-ring rounded-sm">Entrar</Link>
             </p>
           </NeonGlass>
         </motion.div>

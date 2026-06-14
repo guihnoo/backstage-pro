@@ -236,3 +236,40 @@ export function buildReactivationMessage({ clientName, techName, lastEventTitle,
   if (tech) lines.push(``, `— ${tech}`);
   return lines.join('\n');
 }
+
+/**
+ * Gera mensagem de disponibilidade mensal para compartilhar com clientes.
+ * @param {object} opts
+ * @param {string}   opts.monthLabel  — Ex: "Julho de 2026"
+ * @param {number[]} opts.freeDays    — Dias livres (1-31)
+ * @param {Array}    opts.bookedShows — [{ day, title }]
+ * @param {string}   [opts.techName]
+ */
+export function buildAvailabilityMessage({ monthLabel, freeDays, bookedShows, techName }) {
+  const lines = [
+    `📅 *Disponibilidade — ${monthLabel}*`,
+    ``,
+  ];
+
+  if (freeDays.length > 0) {
+    lines.push(`✅ *Dias disponíveis:*`);
+    lines.push(freeDays.join(', '));
+    lines.push(``);
+  } else {
+    lines.push(`❌ Sem dias disponíveis neste mês.`);
+    lines.push(``);
+  }
+
+  if (bookedShows.length > 0) {
+    lines.push(`📌 *Já agendado:*`);
+    bookedShows.forEach(s => {
+      lines.push(`• Dia ${s.day} — ${s.title}`);
+    });
+    lines.push(``);
+  }
+
+  lines.push(`Para agendar, é só me chamar! 🎶`);
+  if (techName) lines.push(`— ${techName}`);
+
+  return lines.join('\n');
+}

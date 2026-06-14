@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Eye, EyeOff, CheckCircle2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { getCategoryConfig } from '@/lib/categoryConfig';
-import { AUTH_HERO_CATEGORY } from '@/lib/categoryGear';
+import { AUTH_HERO_CATEGORY, AUTH_HERO_CSS_VARS } from '@/lib/categoryGear';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NeonAtmosphere } from '@/components/design/NeonAtmosphere';
@@ -50,7 +50,7 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050609] text-white overflow-x-hidden relative">
+    <div className="min-h-screen bg-[#050609] text-white overflow-x-hidden relative" style={AUTH_HERO_CSS_VARS}>
       <NeonAtmosphere primary={hero.primaryHex} accent={hero.accentHex} />
       <StageBackdrop />
       <SpotlightRays primary={hero.primaryHex} accent={hero.accentHex} />
@@ -70,7 +70,7 @@ export default function ResetPassword() {
               <p className="text-sm text-slate-400">Sua nova senha foi salva com sucesso.</p>
               <Button
                 onClick={() => hardNavigate('/', { replace: true })}
-                className="w-full h-12 border-0 font-bold text-[#06070a]"
+                className="w-full h-12 border-0 font-bold text-[#06070a] bp-focus-ring focus-visible:ring-0"
                 style={{ background: `linear-gradient(135deg, ${hero.primaryHex}, ${hero.accentHex})` }}
               >
                 Ir para o app
@@ -93,11 +93,11 @@ export default function ResetPassword() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Mínimo 6 caracteres"
-                    className="bg-[#080a10]/80 border-0 text-white pr-10 h-12 font-mono"
+                    className="bg-[#080a10]/80 border-0 text-white pr-10 h-12 font-mono bp-focus-input focus-visible:ring-0"
                     style={{ boxShadow: `inset 0 0 0 1px ${hero.primaryHex}33` }}
                     autoComplete="new-password"
                   />
-                  <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b7283]">
+                  <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b7283] bp-focus-ring rounded-sm p-0.5">
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
@@ -110,7 +110,7 @@ export default function ResetPassword() {
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
                   placeholder="Repita a senha"
-                  className="bg-[#080a10]/80 border-0 text-white h-12 font-mono"
+                  className="bg-[#080a10]/80 border-0 text-white h-12 font-mono bp-focus-input focus-visible:ring-0"
                   style={{ boxShadow: `inset 0 0 0 1px ${hero.primaryHex}33` }}
                   autoComplete="new-password"
                 />
@@ -122,7 +122,7 @@ export default function ResetPassword() {
               <Button
                 type="submit"
                 disabled={loading || password.length < 6 || password !== confirm}
-                className="w-full h-12 border-0 font-bold uppercase text-[#06070a]"
+                className="w-full h-12 border-0 font-bold uppercase text-[#06070a] bp-focus-ring focus-visible:ring-0"
                 style={{
                   background: `linear-gradient(135deg, ${hero.primaryHex}, ${hero.accentHex})`,
                   boxShadow: `0 0 26px ${hero.primaryHex}55`,

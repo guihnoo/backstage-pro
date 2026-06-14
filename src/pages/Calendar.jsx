@@ -29,6 +29,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Zap,
+  Share2,
 } from 'lucide-react';
 import { exportCalendarIcs } from '@/lib/exportReport';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, parseISO, isValid, addWeeks, subWeeks, startOfWeek, endOfWeek, eachDayOfInterval, differenceInCalendarDays, isBefore } from 'date-fns';
@@ -54,6 +55,7 @@ import ExpenseForm from '@/components/expenses/ExpenseForm';
 import DrilldownModal from '@/components/reports/DrilldownModal';
 import DayQuickActions from '@/components/calendar/DayQuickActions';
 import AlertsPanel from '@/components/calendar/AlertsPanel';
+import AvailabilityShareModal from '@/components/calendar/AvailabilityShareModal';
 import EventActionSheet from '@/components/mobile/EventActionSheet';
 import EventHoursSheet from '@/components/mobile/EventHoursSheet';
 import NotesSheet from '@/components/mobile/NotesSheet';
@@ -183,6 +185,7 @@ export default function CalendarPage() {
 
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showAvailability, setShowAvailability] = useState(false);
   const [viewMode, setViewMode] = useState(() => {
     try {
       const stored = localStorage.getItem('backstage:calendar-view-mode');
@@ -1269,6 +1272,14 @@ export default function CalendarPage() {
             </div>
             <button
               type="button"
+              onClick={() => setShowAvailability(true)}
+              title="Compartilhar disponibilidade via WhatsApp"
+              className="p-1.5 rounded-lg bg-slate-800/60 border border-slate-700/60 text-slate-500 hover:text-green-400 hover:border-green-600/40 transition-colors"
+            >
+              <Share2 className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
               onClick={handleExportIcs}
               title="Exportar agenda como ICS (iCal / Google Calendar)"
               className="p-1.5 rounded-lg bg-slate-800/60 border border-slate-700/60 text-slate-500 hover:text-slate-300 hover:border-slate-600 transition-colors"
@@ -1642,6 +1653,14 @@ export default function CalendarPage() {
         }}
         onNewEvent={handleQuickAddEvent}
         onNewWork={handleQuickAddWork}
+      />
+
+      {/* Disponibilidade */}
+      <AvailabilityShareModal
+        open={showAvailability}
+        onClose={() => setShowAvailability(false)}
+        events={events}
+        clients={clients}
       />
 
       {/* Modals */}

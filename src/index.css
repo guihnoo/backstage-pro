@@ -290,8 +290,10 @@ body:has([role="alertdialog"][data-state="open"]) [data-app-scroll] {
   border-color: color-mix(in srgb, var(--bp-primary) 35%, transparent);
 }
 
-/* Entidade "Pessoa física" — semântico, independente da categoria do profissional */
+/* Fallback de marca (lighting) + entidade Pessoa — AppLayout sobrescreve --bp-primary/--bp-accent */
 :root {
+  --bp-primary: #A64AFF;
+  --bp-accent: #FFB700;
   --bp-person: #8b5cf6;
   --bp-person-contrast: #ffffff;
 }

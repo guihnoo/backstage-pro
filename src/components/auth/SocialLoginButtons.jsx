@@ -58,7 +58,7 @@ export default function SocialLoginButtons({ mode = 'login' }) {
         animate={{ opacity: 1, y: 0 }}
         onClick={handleGoogleLogin}
         disabled={loading}
-        className="relative w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border font-medium text-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed bg-white text-gray-900 border-white/90 hover:bg-gray-100 shadow-sm shadow-white/10"
+        className="relative w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border font-medium text-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed bg-white text-gray-900 border-white/90 hover:bg-gray-100 shadow-sm shadow-white/10 bp-focus-ring"
       >
         {loading ? (
           <Loader2 className="w-5 h-5 animate-spin text-gray-500" />

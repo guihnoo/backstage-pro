@@ -24,6 +24,15 @@ Registro cronológico de tarefas executadas por agentes.
   - Botão verde no footer para `event.payment_status === 'paid'`
 - **Build**: Vite ✅ · **Git backup**: auto-wip ✅
 
+### WEEKDAY-BREAKDOWN-S73 — Desempenho por Dia da Semana em Relatórios ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/reports/WeekdayBreakdown.jsx`** (NOVO):
+  - Recharts BarChart Dom→Sáb; receita paga e shows por dia da semana
+  - 3 KPIs: + Receita (violeta), + Shows (verde), Mais Livre (slate)
+  - Tooltip: receita + shows + média por show; cores de intensidade
+  - Grid 2 colunas ao lado de SeasonalityChart na aba Atividade
+- **Build**: Vite ✅ · **Git backup**: auto-wip ✅
+
 ### INACTIVE-CLIENTS-S72 — Painel de Clientes Inativos com Reativação WhatsApp ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/lib/whatsapp.js`**: `buildReactivationMessage()` — mensagem calorosa de reengajamento
