@@ -289,3 +289,48 @@ body:has([role="alertdialog"][data-state="open"]) [data-app-scroll] {
   background: color-mix(in srgb, var(--bp-primary) 14%, transparent);
   border-color: color-mix(in srgb, var(--bp-primary) 35%, transparent);
 }
+
+/* Entidade "Pessoa física" — semântico, independente da categoria do profissional */
+:root {
+  --bp-person: #8b5cf6;
+  --bp-person-contrast: #ffffff;
+}
+
+.bp-person-text {
+  color: var(--bp-person);
+}
+
+.bp-person-icon {
+  color: var(--bp-person);
+}
+
+.bp-person-badge {
+  background: color-mix(in srgb, var(--bp-person) 22%, transparent);
+  color: color-mix(in srgb, var(--bp-person) 88%, white);
+  border: 1px solid color-mix(in srgb, var(--bp-person) 45%, transparent);
+}
+
+.bp-person-avatar {
+  background: color-mix(in srgb, var(--bp-person) 38%, #0f172a);
+  color: color-mix(in srgb, var(--bp-person) 75%, white);
+}
+
+.bp-person-pin {
+  background: var(--bp-person);
+  border: 2px solid #0f172a;
+}
+
+.bp-person-btn-active {
+  background: var(--bp-person) !important;
+  color: var(--bp-person-contrast) !important;
+}
+
+.bp-person-surface {
+  background: color-mix(in srgb, var(--bp-person) 14%, transparent);
+  border-color: color-mix(in srgb, var(--bp-person) 40%, transparent);
+}
+
+.bp-focus-ring:focus-visible {
+  outline: 2px solid var(--bp-primary);
+  outline-offset: 2px;
+}
