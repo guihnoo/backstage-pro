@@ -169,7 +169,8 @@ export default function EventActionSheet({
                 {canApplyAuto12h && (
                   <Button
                     onClick={handleApply12Hours}
-                    className="w-full h-14 min-h-[44px] bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-medium text-base justify-start px-4"
+                    className="w-full h-14 min-h-[44px] text-white font-medium text-base justify-start px-4 hover:opacity-90"
+                    style={{ background: `linear-gradient(to right, ${primary}, ${theme.accentHex})` }}
                   >
                     <Zap className="w-5 h-5 mr-3" />
                     <div className="text-left">

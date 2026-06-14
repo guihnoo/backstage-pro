@@ -4,6 +4,21 @@ import { Sunrise, TrendingUp, TrendingDown, CalendarDays } from 'lucide-react';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { getEventStatus } from '@/components/utils/dateUtils';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
+
+function hexToRgb(hex) {
+  const h = hex.replace('#', '');
+  return {
+    r: parseInt(h.slice(0, 2), 16),
+    g: parseInt(h.slice(2, 4), 16),
+    b: parseInt(h.slice(4, 6), 16),
+  };
+}
+
+function rgbaHex(hex, alpha) {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
 
 const MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
@@ -26,6 +41,7 @@ const CustomTooltip = ({ active, payload, label, formatCurrency, isVisible }) =>
 
 export default function SeasonalityChart({ events = [] }) {
   const { formatCurrency, isVisible } = useFinancialVisibility();
+  const { primaryHex } = useCategoryTheme();
 
   const { monthlyData, bestMonth, worstMonth, bestCount, years } = useMemo(() => {
     const byMonth = Array.from({ length: 12 }, (_, i) => ({
@@ -150,11 +166,11 @@ export default function SeasonalityChart({ events = [] }) {
                     fill={isBest
                       ? '#34d399'
                       : intensity > 0.6
-                        ? '#6366f1'
+                        ? primaryHex
                         : intensity > 0.3
-                          ? '#4f46e5'
+                          ? rgbaHex(primaryHex, 0.65)
                           : intensity > 0
-                            ? '#3730a3'
+                            ? rgbaHex(primaryHex, 0.35)
                             : '#1e293b'
                     }
                   />
@@ -172,11 +188,11 @@ export default function SeasonalityChart({ events = [] }) {
           <span>Sem dados</span>
         </div>
         <div className="flex items-center gap-1">
-          <span className="w-2.5 h-2.5 rounded-sm bg-[#3730a3] inline-block" />
+          <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ backgroundColor: rgbaHex(primaryHex, 0.35) }} />
           <span>Baixo</span>
         </div>
         <div className="flex items-center gap-1">
-          <span className="w-2.5 h-2.5 rounded-sm bg-[#6366f1] inline-block" />
+          <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ backgroundColor: primaryHex }} />
           <span>Alto</span>
         </div>
         <div className="flex items-center gap-1">

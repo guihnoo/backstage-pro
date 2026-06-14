@@ -4,6 +4,23 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+## 2026-06-14
+
+### SMART-INSIGHTS-S69 — Insights Inteligentes em Relatórios ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/reports/SmartInsights.jsx`** (NOVO):
+  - 7 regras de insight baseadas em dados reais (sem IA/API):
+    1. **Inadimplência** — shows concluídos há >7 dias sem pagamento (vermelho, prioridade máxima)
+    2. **Agenda vazia** — nenhum show nos próximos 30 dias (âmbar) / **Agenda cheia** — 5+ shows (verde)
+    3. **Crescimento/Queda** — receita paga vs mês anterior (±20%)
+    4. **Concentração** — cliente único com >50% da receita (âmbar)
+    5. **Melhor mês chegando** — avisa se mês histórico campeão está nos próximos 2 meses (amarelo)
+    6. **Meta** — 80-99%: "quase lá!" / 100%+: "batida!" (índigo/verde)
+    7. **Taxa horária** — R$150+/hora exibe conquista (cyan)
+  - Top 3 mais urgentes por prioridade; grid responsivo 1→2→3 colunas; CTA navegável
+- **`src/pages/Reports.jsx`**: `SmartInsights` no topo da aba "Visão Geral" antes de ReceivablesAging
+- **Build**: Vite ✅ · **Git backup**: auto-wip ✅
+
 ## 2026-06-13
 
 ### SEASONALITY-S68 — Gráfico de Sazonalidade de Receita ✅
@@ -273,6 +290,17 @@ Registro cronológico de tarefas executadas por agentes.
 - `Calendar.jsx`: StatCards `bp-text-primary`; fallbacks de cor de evento → `DEFAULT_EVENT_COLOR`
 - `ClientCombobox.jsx`, `Clients.jsx`: fallback `brand_color` via `AUTH_HERO_PRIMARY`
 - `categoryGear.js`: exporta `AUTH_HERO_THEME`, `AUTH_HERO_PRIMARY`, `AUTH_HERO_ACCENT`; fallback `getCategoryConfig` → `lighting`
+- **Testes**: unit 29/29 ✅ · build ✅
+
+### DESIGN-S64 — Relatórios, AI Mentor e fallbacks de evento (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `SeasonalityChart`, `TopClients`, `WorkAnalytics`, `FinancialSummary`, `ClientDetailedTable`, `ExportManager`: cores via `useCategoryTheme` / classes `bp-*`
+- `EventActionSheet`, `EventDetailModal`: CTA "12h" com gradiente/cor da categoria
+- `GlobalSearch`, `ClientDetail`: fallback de cor de evento → `DEFAULT_EVENT_COLOR`
+- `SmartSuggestions`, `QuickActions`: chips/ações com `themePrimary` / `primaryAccent`
+- `Goals`: tiers e badges com `AUTH_HERO_PRIMARY` / `AUTH_HERO_ACCENT`
+- `ClientInsightsModal`: KPIs com `config.primaryHex`
+- `useFeedback.js`: status "Novo" via `AUTH_HERO_PRIMARY`
 - **Testes**: unit 29/29 ✅ · build ✅
 
 ### WORK-S50 — R$/hora por show + aba Trabalho em Relatórios ✅

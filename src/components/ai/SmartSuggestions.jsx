@@ -27,9 +27,7 @@ export default function SmartSuggestions({ userData, onSuggestionClick }) {
       {
         icon: TrendingUp,
         text: 'Mostre um resumo do mês passado',
-        color: 'text-purple-400',
-        bgColor: 'bg-purple-500/10',
-        borderColor: 'border-purple-500/30'
+        themePrimary: true,
       },
       {
         icon: Users,
@@ -110,9 +108,7 @@ export default function SmartSuggestions({ userData, onSuggestionClick }) {
       contextual.push({
         icon: TrendingUp,
         text: `Trabalhei ${diariasMes} diária${diariasMes !== 1 ? 's' : ''} este mês — como estou em relação ao mercado?`,
-        color: 'text-purple-400',
-        bgColor: 'bg-purple-500/10',
-        borderColor: 'border-purple-500/30'
+        themePrimary: true,
       });
     }
 

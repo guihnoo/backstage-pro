@@ -150,7 +150,7 @@ export default function ClientInsightsModal({ client, isOpen, onClose }) {
                   </div>
                   <div>
                     <p className="text-xs text-slate-400 mb-1">Média/Evento</p>
-                    <p className="text-xl font-bold text-purple-400">
+                    <p className="text-xl font-bold" style={{ color: config.primaryHex }}>
                       {formatCurrency(insights.avgRevenuePerEvent)}
                     </p>
                   </div>
@@ -174,7 +174,7 @@ export default function ClientInsightsModal({ client, isOpen, onClose }) {
             <Card className="bg-slate-800/50 border-slate-700">
               <CardContent className="p-4 sm:p-5">
                 <h3 className="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 text-purple-400" />
+                  <BarChart3 className="w-4 h-4 bp-text-primary" />
                   Estatísticas de Eventos
                 </h3>
                 <div className="space-y-3">
@@ -243,7 +243,7 @@ export default function ClientInsightsModal({ client, isOpen, onClose }) {
                     )}
                     <div>
                       <p className="text-xs text-slate-400 mb-1">Total de Horas Trabalhadas</p>
-                      <p className="text-lg font-bold text-purple-400">
+                      <p className="text-lg font-bold" style={{ color: config.primaryHex }}>
                         {insights.totalHours.toFixed(1)}h
                       </p>
                     </div>

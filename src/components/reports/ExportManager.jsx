@@ -6,6 +6,7 @@ import appToast from '@/lib/appToast';
 import { exportReportCsv, exportReportPdf, exportCalendarIcs } from '@/lib/exportReport';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 function buildShareText(data, period) {
   const events = data?.events || [];
@@ -45,6 +46,7 @@ function buildShareText(data, period) {
 }
 
 const ExportManager = ({ data, period }) => {
+  const { primaryHex } = useCategoryTheme();
   const [exporting, setExporting] = useState(null);
 
   if (!data) return null;
@@ -104,7 +106,12 @@ const ExportManager = ({ data, period }) => {
         onClick={handleShare}
         variant="outline"
         disabled={!!exporting}
-        className="border-purple-400/50 text-purple-300 hover:bg-purple-400/10 flex items-center gap-2 justify-center w-full sm:w-auto"
+        className="flex items-center gap-2 justify-center w-full sm:w-auto hover:opacity-90"
+        style={{
+          borderColor: `${primaryHex}80`,
+          color: primaryHex,
+          backgroundColor: `${primaryHex}14`,
+        }}
         title="Compartilhar resumo via WhatsApp ou copiar"
       >
         <Share2 className="w-4 h-4" />

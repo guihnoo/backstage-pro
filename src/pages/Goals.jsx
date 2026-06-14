@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/authContext';
 import { useStats, useEvents, useMeiStats } from '@/lib/useBackstageData';
 import { getCategoryConfig } from '@/lib/categoryConfig';
+import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
@@ -205,10 +206,10 @@ function BadgeCard({ icon: Icon, title, description, unlocked, color, progress, 
 // ─── Nível do profissional ───────────────────────────────────
 function getLevelInfo(eventsCount) {
   if (eventsCount >= 100) return { title: 'Lenda do Palco', emoji: '👑', color: '#FFD700', next: null };
-  if (eventsCount >= 50) return { title: 'Astro do Backstage', emoji: '⭐', color: '#A64AFF', next: 100 };
+  if (eventsCount >= 50) return { title: 'Astro do Backstage', emoji: '⭐', color: AUTH_HERO_PRIMARY, next: 100 };
   if (eventsCount >= 20) return { title: 'Pro do Palco', emoji: '🔥', color: '#60a5fa', next: 50 };
   if (eventsCount >= 5) return { title: 'Veterano do Bastidão', emoji: '🎭', color: '#39FF14', next: 20 };
-  return { title: 'Freelancer em Ascensão', emoji: '🚀', color: '#FFB700', next: 5 };
+  return { title: 'Freelancer em Ascensão', emoji: '🚀', color: AUTH_HERO_ACCENT, next: 5 };
 }
 
 export default function Goals() {
@@ -323,7 +324,7 @@ export default function Goals() {
       title: 'Primeira Diária',
       description: 'Complete seu primeiro evento',
       unlocked: totalEvents >= 1,
-      color: '#FFB700',
+      color: AUTH_HERO_ACCENT,
       progress: { value: Math.min(totalEvents, 1), max: 1 },
     },
     {
@@ -347,7 +348,7 @@ export default function Goals() {
       title: 'Pro do Palco',
       description: '50 eventos concluídos',
       unlocked: totalEvents >= 50,
-      color: '#A64AFF',
+      color: AUTH_HERO_PRIMARY,
       progress: { value: Math.min(totalEvents, 50), max: 50 },
     },
     {
@@ -669,7 +670,7 @@ export default function Goals() {
                       value={stats.a_receber}
                       max={metaReceita}
                       size={110}
-                      color="#FFB700"
+                      color={config.accentHex}
                       label="A Receber"
                       sublabel={formatCurrency(stats.a_receber)}
                     />
@@ -692,7 +693,7 @@ export default function Goals() {
                     value: formatCurrency(stats.a_receber),
                     pulseValue: stats.a_receber,
                     sub: stats.a_receber > 0 ? 'pendente de pagamento' : 'tudo em dia',
-                    icon: '⏳', color: '#FFB700', route: '/reports'
+                    icon: '⏳', color: AUTH_HERO_ACCENT, route: '/reports'
                   },
                   {
                     label: 'Diárias no mês',
@@ -868,7 +869,7 @@ export default function Goals() {
                         >
                           <div
                             className="w-2 h-2 rounded-full flex-shrink-0"
-                            style={{ background: isUrgent ? '#FFB700' : config.primaryHex, boxShadow: `0 0 6px ${isUrgent ? '#FFB700' : config.primaryHex}80` }}
+                            style={{ background: isUrgent ? AUTH_HERO_ACCENT : config.primaryHex, boxShadow: `0 0 6px ${isUrgent ? AUTH_HERO_ACCENT : config.primaryHex}80` }}
                           />
                           <div className="flex-1 min-w-0">
                             <EventHeading event={ev} client={ev.clients} size="sm" />
@@ -876,7 +877,7 @@ export default function Goals() {
                               {format(parseISO(ev.start_date), "EEE d/MM", { locale: ptBR })}
                             </p>
                           </div>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: `${isUrgent ? '#FFB700' : config.primaryHex}22`, color: isUrgent ? '#FFB700' : config.primaryHex }}>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: `${isUrgent ? AUTH_HERO_ACCENT : config.primaryHex}22`, color: isUrgent ? AUTH_HERO_ACCENT : config.primaryHex }}>
                             {label}
                           </span>
                         </motion.button>
@@ -1021,10 +1022,10 @@ export default function Goals() {
             >
               {/* Pirâmide de níveis */}
               {[
-                { title: 'Freelancer em Ascensão', emoji: '🚀', req: 1, color: '#FFB700' },
+                { title: 'Freelancer em Ascensão', emoji: '🚀', req: 1, color: AUTH_HERO_ACCENT },
                 { title: 'Veterano do Bastidão', emoji: '🎭', req: 5, color: '#39FF14' },
                 { title: 'Pro do Palco', emoji: '🔥', req: 20, color: '#60a5fa' },
-                { title: 'Astro do Backstage', emoji: '⭐', req: 50, color: '#A64AFF' },
+                { title: 'Astro do Backstage', emoji: '⭐', req: 50, color: AUTH_HERO_PRIMARY },
                 { title: 'Lenda do Palco', emoji: '👑', req: 100, color: '#FFD700' },
               ].map((level, i) => {
                 const reached = totalEvents >= level.req;

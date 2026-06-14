@@ -4,6 +4,7 @@ import { getEventCacheAmount } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { getEventStatus } from '@/components/utils/dateUtils';
 import { hardNavigate } from '@/lib/hardNavigate';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 const SCORE_CONFIG = {
   Excelente: { color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
@@ -23,6 +24,7 @@ function paymentScore(events) {
 
 export default function TopClients({ events = [], clients = [] }) {
   const { formatCurrency, isVisible } = useFinancialVisibility();
+  const { primaryHex, accentHex } = useCategoryTheme();
 
   const ranked = useMemo(() => {
     const clientMap = {};
@@ -130,7 +132,7 @@ export default function TopClients({ events = [], clients = [] }) {
                       style={{
                         width: `${barWidth}%`,
                         background: idx === 0
-                          ? 'linear-gradient(90deg, #818cf8, #6366f1)'
+                          ? `linear-gradient(90deg, ${accentHex}, ${primaryHex})`
                           : 'linear-gradient(90deg, #475569, #334155)',
                       }}
                     />

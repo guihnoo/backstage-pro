@@ -520,7 +520,8 @@ export default function EventDetailModal({
                             size="sm"
                             onClick={handleApply12Hours}
                             disabled={applying12h}
-                            className="h-7 px-2 text-xs bg-purple-600 hover:bg-purple-700"
+                            className="h-7 px-2 text-xs text-white hover:opacity-90"
+                            style={{ backgroundColor: primaryHex }}
                           >
                             {applying12h
                               ? <Loader2 className="w-3 h-3 animate-spin" />

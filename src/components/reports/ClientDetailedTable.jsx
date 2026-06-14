@@ -254,7 +254,7 @@ export default function ClientDetailedTable({ data, onClientClick }) {
                       </div>
                     </td>
                     <td className="p-3 text-center">
-                      <span className="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-xs font-medium">
+                      <span className="bp-chip-badge-active px-3 py-1 rounded-full text-xs font-medium">
                         {client.eventCount}
                       </span>
                     </td>

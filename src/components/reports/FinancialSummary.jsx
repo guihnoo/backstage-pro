@@ -98,7 +98,7 @@ export default function FinancialSummary({ stats }) {
           icon={Hourglass}
           title="Horas Trabalhadas"
           value={formatValue(Math.round(stats.totalHours || 0), 'h')}
-          color="purple"
+          color="primary"
           delay={0.4}
         />
         <StatCard

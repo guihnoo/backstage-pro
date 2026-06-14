@@ -107,6 +107,7 @@
 | 66 | Top Clientes por receita em Relatórios com ranking e score | 2026-06-13 | ✅ `TopClients.jsx`; ranking top-10; barra proporcional; medalhas; ticket médio; score de pagamento; navega para ClientDetail |
 | 67 | Contrato de Serviços em PDF gerado direto do evento | 2026-06-14 | ✅ `ContractPDFDocument.jsx`; partes, evento, pagamento, 6 cláusulas, assinaturas; botão ScrollText (emerald) no footer do EventDetailModal para pre-show |
 | 68 | Gráfico de sazonalidade de receita histórica por mês | 2026-06-14 | ✅ `SeasonalityChart.jsx`; Recharts BarChart Jan-Dez; intensidade de cor; KPIs Melhor Mês/+ Shows/Baixa Temporada; aba Atividade de Reports |
+| 69 | Insights Inteligentes baseados em dados reais do usuário | 2026-06-14 | ✅ `SmartInsights.jsx`; 7 regras (inadimplência, agenda vazia, crescimento, concentração, melhor mês chegando, meta, taxa horária); topo da aba Visão Geral |
 
 ---
 

@@ -40,6 +40,7 @@ import { getEventCacheAmount } from '@/lib/eventFinance';
 import { getEventStatus } from '@/components/utils/dateUtils';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { NeonGlass } from '@/components/design/NeonGlass';
+import { DEFAULT_EVENT_COLOR } from '@/lib/brandColors';
 
 import LoadingSpinner from '@/components/layout/LoadingSpinner';
 import EmptyState from '@/components/layout/EmptyState';
@@ -495,7 +496,7 @@ export default function ClientDetailPage() {
                     >
                       <div
                         className="w-1 self-stretch rounded-full flex-shrink-0"
-                        style={{ backgroundColor: ev.color || '#6366f1' }}
+                        style={{ backgroundColor: ev.color || DEFAULT_EVENT_COLOR }}
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-200 truncate">{ev.title}</p>

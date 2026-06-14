@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Feedback } from '@/api/entities';
 import { APP_VERSION } from '@/lib/appVersion';
+import { AUTH_HERO_PRIMARY } from '@/lib/categoryGear';
 
 export const FEEDBACK_TYPES = [
   { id: 'bug', label: 'Bug', emoji: '🐛' },
@@ -11,7 +12,7 @@ export const FEEDBACK_TYPES = [
 ];
 
 export const FEEDBACK_STATUS = {
-  new: { label: 'Novo', color: '#6366f1' },
+  new: { label: 'Novo', color: AUTH_HERO_PRIMARY },
   in_review: { label: 'Em análise', color: '#eab308' },
   resolved: { label: 'Resolvido', color: '#39FF14' },
 };

@@ -31,7 +31,7 @@ const quickActions = [
     label: 'Próximos Eventos',
     icon: Calendar,
     prompt: 'Quais são meus próximos 5 eventos? Me dê detalhes de cada um.',
-    color: 'from-purple-500 to-indigo-600'
+    themeGradient: 'primaryAccent',
   },
   {
     id: 'top_clients',
@@ -66,7 +66,7 @@ const quickActions = [
     label: 'Insights de Clientes',
     icon: Users,
     prompt: 'Me dê insights sobre meus clientes: quem está ativo, quem está em risco, oportunidades de upsell.',
-    color: 'from-violet-500 to-purple-600'
+    themeGradient: 'primaryAccent',
   }
 ];
 
@@ -80,6 +80,9 @@ export default function QuickActions({ onSelectAction, limit = null }) {
     }
     if (action.themeGradient === 'accent') {
       return { background: `linear-gradient(to bottom right, ${accentHex}, ${primaryHex})` };
+    }
+    if (action.themeGradient === 'primaryAccent') {
+      return { background: `linear-gradient(to bottom right, ${primaryHex}, ${accentHex})` };
     }
     return undefined;
   };

@@ -9,6 +9,7 @@ import { ptBR } from 'date-fns/locale';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import EventHeading from '@/components/events/EventHeading';
+import { DEFAULT_EVENT_COLOR } from '@/lib/brandColors';
 
 const STATUS_LABEL = {
   scheduled: { label: 'Agendado', cls: 'bg-blue-500/20 text-blue-300' },
@@ -188,7 +189,7 @@ export default function GlobalSearch({ isOpen, onClose }) {
                         >
                           <div
                             className="w-1.5 self-stretch rounded-full flex-shrink-0"
-                            style={{ background: ev.color || '#6366f1' }}
+                            style={{ background: ev.color || DEFAULT_EVENT_COLOR }}
                           />
                           <div className="flex-1 min-w-0">
                             <EventHeading event={ev} client={client} size="sm" />
