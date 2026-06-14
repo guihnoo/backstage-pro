@@ -44,6 +44,7 @@ import { NeonGlass } from '@/components/design/NeonGlass';
 import LoadingSpinner from '@/components/layout/LoadingSpinner';
 import EmptyState from '@/components/layout/EmptyState';
 import ClientForm from '@/components/clients/ClientForm';
+import { ClientInteractionLog } from '@/components/clients/ClientInteractionLog';
 import EventForm from '@/components/calendar/EventForm';
 import EventDetailModal from '@/components/reports/EventDetailModal';
 import ReportEventList from '@/components/reports/ReportEventList';
@@ -566,6 +567,8 @@ export default function ClientDetailPage() {
             )}
           </CardContent>
         </Card>
+
+        <ClientInteractionLog clientId={client?.id} />
 
         <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
           <div className="xl:col-span-3">

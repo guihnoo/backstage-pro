@@ -9,9 +9,11 @@ import CompanySearchInput from './CompanySearchInput';
 import { buildCompanyNotes } from '@/lib/cnpjSearch';
 import { pickDefaultClientColor } from '@/lib/brandColors';
 import { useCompanies } from '@/lib/useCompanies';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 export default function ClientQuickCreateDialog({ open, onOpenChange, initialName = '', onCreateClient, onCreated }) {
   const { upsertCompany } = useCompanies();
+  const { primaryHex } = useCategoryTheme();
   const [clientType, setClientType] = useState('empresa');
   const [name, setName] = useState(initialName);
   const [companyRef, setCompanyRef] = useState(''); // para pessoa: empresa de origem
@@ -102,7 +104,7 @@ export default function ClientQuickCreateDialog({ open, onOpenChange, initialNam
           <DialogTitle className="flex items-center gap-2">
             {clientType === 'pessoa'
               ? <><User className="w-4 h-4 text-purple-400" /><span className="text-purple-300">Nova Pessoa</span></>
-              : <><Building2 className="w-4 h-4 text-cyan-400" /><span className="text-cyan-300">Nova Empresa</span></>
+              : <><Building2 className="w-4 h-4" style={{ color: primaryHex }} /><span style={{ color: primaryHex }}>Nova Empresa</span></>
             }
           </DialogTitle>
         </DialogHeader>
@@ -114,8 +116,9 @@ export default function ClientQuickCreateDialog({ open, onOpenChange, initialNam
               type="button"
               onClick={() => { setClientType('empresa'); setSelectedCompany(null); }}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold transition-colors ${
-                clientType === 'empresa' ? 'bg-cyan-600 text-white' : 'bg-slate-800/60 text-slate-400 hover:text-slate-200'
+                clientType === 'empresa' ? 'text-white' : 'bg-slate-800/60 text-slate-400 hover:text-slate-200'
               }`}
+              style={clientType === 'empresa' ? { backgroundColor: primaryHex } : undefined}
             >
               <Building2 className="w-4 h-4" />
               Empresa
@@ -145,8 +148,11 @@ export default function ClientQuickCreateDialog({ open, onOpenChange, initialNam
 
           {/* Prévia dos dados da empresa */}
           {clientType === 'empresa' && selectedCompany && (
-            <div className="rounded-lg border border-cyan-500/30 bg-cyan-950/20 p-3 space-y-1">
-              <div className="flex items-center gap-1.5 text-cyan-400 text-xs font-medium mb-1">
+            <div
+              className="rounded-lg border p-3 space-y-1"
+              style={{ borderColor: `${primaryHex}4d`, backgroundColor: `${primaryHex}14` }}
+            >
+              <div className="flex items-center gap-1.5 text-xs font-medium mb-1" style={{ color: primaryHex }}>
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 Dados encontrados
               </div>
@@ -208,7 +214,8 @@ export default function ClientQuickCreateDialog({ open, onOpenChange, initialNam
             </Button>
             <Button
               type="submit"
-              className={`flex-1 ${clientType === 'pessoa' ? 'bg-purple-600 hover:bg-purple-500' : 'bg-cyan-600 hover:bg-cyan-500'}`}
+              className={`flex-1 ${clientType === 'pessoa' ? 'bg-purple-600 hover:bg-purple-500' : 'text-white hover:opacity-90'}`}
+              style={clientType === 'empresa' ? { backgroundColor: primaryHex } : undefined}
               disabled={!name.trim() || creating}
             >
               {creating

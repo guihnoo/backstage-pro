@@ -1,12 +1,15 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, DollarSign, Calendar, Users, AlertCircle, Zap, Target } from 'lucide-react';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 function formatBRLSimple(value) {
   return `R$ ${Number(value || 0).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}`;
 }
 
 export default function SmartSuggestions({ userData, onSuggestionClick }) {
+  const { primaryHex } = useCategoryTheme();
+
   const suggestions = useMemo(() => {
     const base = [
       {
@@ -19,9 +22,7 @@ export default function SmartSuggestions({ userData, onSuggestionClick }) {
       {
         icon: Calendar,
         text: 'Quais eventos tenho na próxima semana?',
-        color: 'text-cyan-400',
-        bgColor: 'bg-cyan-500/10',
-        borderColor: 'border-cyan-500/30'
+        themePrimary: true,
       },
       {
         icon: TrendingUp,
@@ -74,9 +75,7 @@ export default function SmartSuggestions({ userData, onSuggestionClick }) {
       contextual.push({
         icon: Calendar,
         text: `Tenho show com ${nextShow.cliente || 'cliente'} — o que devo preparar?`,
-        color: 'text-cyan-400',
-        bgColor: 'bg-cyan-500/10',
-        borderColor: 'border-cyan-500/30'
+        themePrimary: true,
       });
     }
 
@@ -102,9 +101,7 @@ export default function SmartSuggestions({ userData, onSuggestionClick }) {
         contextual.push({
           icon: Calendar,
           text: `Trabalhei ${diariasMes} de ${metaDiarias} diárias — como acelerar até o fim do mês?`,
-          color: 'text-cyan-400',
-          bgColor: 'bg-cyan-500/10',
-          borderColor: 'border-cyan-500/30'
+          themePrimary: true,
         });
       }
     }
@@ -136,9 +133,18 @@ export default function SmartSuggestions({ userData, onSuggestionClick }) {
             transition={{ delay: index * 0.08 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => onSuggestionClick(suggestion.text)}
-            className={`flex items-center gap-3 p-4 rounded-lg border ${suggestion.borderColor} ${suggestion.bgColor} hover:brightness-110 transition-all text-left group`}
+            className={`flex items-center gap-3 p-4 rounded-lg border hover:brightness-110 transition-all text-left group ${
+              suggestion.themePrimary ? '' : `${suggestion.borderColor} ${suggestion.bgColor}`
+            }`}
+            style={suggestion.themePrimary ? {
+              borderColor: `${primaryHex}4d`,
+              backgroundColor: `${primaryHex}1a`,
+            } : undefined}
           >
-            <Icon className={`w-5 h-5 ${suggestion.color} flex-shrink-0`} />
+            <Icon
+              className={`w-5 h-5 flex-shrink-0 ${suggestion.themePrimary ? '' : suggestion.color}`}
+              style={suggestion.themePrimary ? { color: primaryHex } : undefined}
+            />
             <span className="text-sm text-slate-300 group-hover:text-white transition-colors leading-snug">
               {suggestion.text}
             </span>

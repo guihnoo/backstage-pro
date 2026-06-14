@@ -7,9 +7,12 @@ import { useAppScrollLock } from '@/lib/useAppScrollLock';
 import { uploadUserFile } from '@/lib/uploadFile';
 import { submitFeedback, FEEDBACK_TYPES } from '@/lib/useFeedback';
 import appToast from '@/lib/appToast';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
-export default function FeedbackModal({ open, onClose, primaryHex = '#22d3ee' }) {
+export default function FeedbackModal({ open, onClose, primaryHex: primaryHexProp }) {
   const { user } = useAuth();
+  const { primaryHex: themePrimary } = useCategoryTheme();
+  const primaryHex = primaryHexProp || themePrimary;
   const location = useLocation();
   const fileRef = useRef(null);
 

@@ -1,5 +1,9 @@
 import React from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { getCategoryConfig } from '@/lib/categoryConfig';
+import { AUTH_HERO_CATEGORY } from '@/lib/categoryGear';
+
+const FALLBACK_PRIMARY = getCategoryConfig(AUTH_HERO_CATEGORY).primaryHex;
 
 export class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -36,7 +40,8 @@ export class ErrorBoundary extends React.Component {
           </details>
           <button
             onClick={() => window.location.reload()}
-            className="flex items-center gap-2 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700"
+            className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:opacity-90"
+            style={{ backgroundColor: FALLBACK_PRIMARY }}
           >
             <RefreshCw className="w-4 h-4" />
             Recarregar Página

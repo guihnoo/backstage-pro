@@ -12,6 +12,7 @@ import SpecialtyPicker from '@/components/auth/SpecialtyPicker';
 import StageBackdrop from '@/components/auth/StageBackdrop';
 import SpotlightRays from '@/components/auth/SpotlightRays';
 import FloatingEquipment from '@/components/auth/FloatingEquipment';
+import { getCategoryConfig } from '@/lib/categoryConfig';
 
 export default function Onboarding() {
   const { user, profile, updateProfile, isOnboardingComplete } = useAuth();
@@ -140,7 +141,11 @@ export default function Onboarding() {
               )}
             </div>
 
-            <StepIndicator currentStep={step} totalSteps={5} />
+            <StepIndicator
+              currentStep={step}
+              totalSteps={5}
+              primaryHex={getCategoryConfig(selectedCategory || 'lighting').primaryHex}
+            />
 
             {error && (
               <div className="mb-6 bg-red-500/20 border border-red-500/50 rounded-lg p-3 flex items-center gap-2">

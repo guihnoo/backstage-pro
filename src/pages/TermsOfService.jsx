@@ -2,8 +2,13 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, Scale, Calendar, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/lib/authContext';
+import { getCategoryConfig } from '@/lib/categoryConfig';
 
 export default function TermsOfServicePage() {
+  const { profile } = useAuth();
+  const { primaryHex } = getCategoryConfig(profile?.category || 'lighting');
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -22,7 +27,7 @@ export default function TermsOfServicePage() {
 
         <Card className="bg-slate-900/60 border-slate-800">
           <CardHeader>
-            <CardTitle className="text-cyan-300 flex items-center gap-2 text-lg">
+            <CardTitle className="flex items-center gap-2 text-lg" style={{ color: primaryHex }}>
               <FileText className="w-5 h-5" />
               Aceitação
             </CardTitle>
@@ -30,7 +35,7 @@ export default function TermsOfServicePage() {
           <CardContent className="text-slate-300 space-y-3 text-sm leading-relaxed">
             <p>
               Ao criar uma conta ou utilizar o Backstage Pro, você concorda com estes Termos de Uso e com nossa{' '}
-              <Link to="/privacidade" className="text-cyan-400 hover:underline">Política de Privacidade</Link>.
+              <Link to="/privacidade" className="hover:underline" style={{ color: primaryHex }}>Política de Privacidade</Link>.
             </p>
           </CardContent>
         </Card>
@@ -68,7 +73,7 @@ export default function TermsOfServicePage() {
         </Card>
 
         <p className="text-center text-slate-500 text-sm pt-4">
-          <Link to="/login" className="text-cyan-400 hover:underline">Voltar ao login</Link>
+          <Link to="/login" className="hover:underline" style={{ color: primaryHex }}>Voltar ao login</Link>
         </p>
       </div>
     </motion.div>

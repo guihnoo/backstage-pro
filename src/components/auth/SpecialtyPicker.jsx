@@ -1,10 +1,13 @@
 import { motion } from 'framer-motion';
 import { CATEGORIES } from '@/lib/eventCategories';
 import { Check } from 'lucide-react';
+import { getCategoryConfig } from '@/lib/categoryConfig';
 
 export default function SpecialtyPicker({ categoryId, selected, onSelect }) {
   const category = CATEGORIES.find(c => c.id === categoryId);
   if (!category) return null;
+
+  const { primaryHex } = getCategoryConfig(categoryId);
 
   return (
     <div className="space-y-3">
@@ -26,15 +29,20 @@ export default function SpecialtyPicker({ categoryId, selected, onSelect }) {
             disabled={selected.length >= 5 && !selected.includes(specialty)}
             className={`w-full p-4 rounded-lg border-2 transition-all flex items-center justify-between ${
               selected.includes(specialty)
-                ? 'bg-cyan-500/20 border-cyan-500 shadow-lg shadow-cyan-500/20'
+                ? 'shadow-lg'
                 : 'bg-slate-800/30 border-slate-700 hover:border-slate-600 disabled:opacity-50 disabled:cursor-not-allowed'
             }`}
+            style={selected.includes(specialty) ? {
+              backgroundColor: `${primaryHex}33`,
+              borderColor: primaryHex,
+              boxShadow: `0 10px 15px -3px ${primaryHex}33`,
+            } : undefined}
           >
             <span className={selected.includes(specialty) ? 'text-white font-medium' : 'text-slate-300'}>
               {specialty}
             </span>
             {selected.includes(specialty) && (
-              <Check className="w-5 h-5 text-cyan-400" />
+              <Check className="w-5 h-5" style={{ color: primaryHex }} />
             )}
           </motion.button>
         ))}

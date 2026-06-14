@@ -215,7 +215,14 @@ export default function PushNotificationSettings() {
       )}
 
       {iosHint && supported && (
-        <p className="text-xs text-cyan-300/80 bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-3 mb-3">
+        <p
+          className="text-xs rounded-lg p-3 mb-3"
+          style={{
+            color: `${config.primaryHex}cc`,
+            backgroundColor: `${config.primaryHex}1a`,
+            border: `1px solid ${config.primaryHex}33`,
+          }}
+        >
           No iPhone: adicione o Backstage à Tela de Início antes de ativar notificações.
         </p>
       )}

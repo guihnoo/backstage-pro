@@ -48,7 +48,7 @@ const EventItem = ({ event, client, work, onClick }) => {
           <p className="text-xs text-slate-500">Início</p>
         </div>
         <div className="text-right md:text-left">
-          <Badge variant="outline" className={`border-transparent ${statusConfig.color}`}>
+          <Badge variant="outline" className={`border-transparent ${statusConfig.textColor || statusConfig.color}`}>
             <StatusIcon className="w-3.5 h-3.5 mr-1.5" />
             {statusConfig.label}
           </Badge>

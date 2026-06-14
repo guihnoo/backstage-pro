@@ -9,6 +9,7 @@ import {
   Clock,
   AlertCircle
 } from 'lucide-react';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 const quickActions = [
   {
@@ -16,7 +17,7 @@ const quickActions = [
     label: 'Resumo do Mês',
     icon: BarChart3,
     prompt: 'Me dê um resumo completo deste mês: faturamento, despesas, eventos e principais insights.',
-    color: 'from-cyan-500 to-blue-600'
+    themeGradient: 'primary',
   },
   {
     id: 'pending_payments',
@@ -51,7 +52,7 @@ const quickActions = [
     label: 'Projeção de Receita',
     icon: TrendingUp,
     prompt: 'Com base nos eventos agendados, qual a projeção de faturamento para o próximo mês?',
-    color: 'from-teal-500 to-cyan-600'
+    themeGradient: 'accent',
   },
   {
     id: 'missing_hours',
@@ -70,7 +71,18 @@ const quickActions = [
 ];
 
 export default function QuickActions({ onSelectAction, limit = null }) {
+  const { primaryHex, accentHex } = useCategoryTheme();
   const actionsToShow = limit ? quickActions.slice(0, limit) : quickActions;
+
+  const getIconBackground = (action) => {
+    if (action.themeGradient === 'primary') {
+      return { background: `linear-gradient(to bottom right, ${primaryHex}, #2563eb)` };
+    }
+    if (action.themeGradient === 'accent') {
+      return { background: `linear-gradient(to bottom right, ${accentHex}, ${primaryHex})` };
+    }
+    return undefined;
+  };
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -90,7 +102,10 @@ export default function QuickActions({ onSelectAction, limit = null }) {
               className="w-full h-auto flex flex-col items-center gap-3 p-4 bg-slate-900/50 border-slate-800 hover:bg-slate-800 hover:border-slate-700 group"
               onClick={() => onSelectAction(action.prompt)}
             >
-              <div className={`p-3 rounded-xl bg-gradient-to-br ${action.color} bg-opacity-10 group-hover:scale-110 transition-transform`}>
+              <div
+                className={`p-3 rounded-xl bg-opacity-10 group-hover:scale-110 transition-transform ${action.themeGradient ? '' : `bg-gradient-to-br ${action.color}`}`}
+                style={getIconBackground(action)}
+              >
                 <Icon className="w-6 h-6 text-white" />
               </div>
               <span className="text-xs font-medium text-slate-300 group-hover:text-white text-center leading-tight">

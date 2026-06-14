@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Copy, Zap, CheckCircle2, AlertCircle, Loader2, ChevronRight, Clock, User } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import appToast from '@/lib/appToast';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 
 const FunctionDisplay = ({ toolCall }) => {
@@ -92,11 +93,17 @@ const FunctionDisplay = ({ toolCall }) => {
 
 export default function MessageBubble({ message }) {
     const isUser = message.role === 'user';
+    const { primaryHex, accentHex } = useCategoryTheme();
+    const linkColor = primaryHex;
+    const avatarGradient = `linear-gradient(to bottom right, ${primaryHex}, ${accentHex})`;
     
     return (
         <div className={cn("flex gap-3 my-4", isUser ? "justify-end" : "justify-start")}>
             {!isUser && (
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div
+                  className="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                  style={{ background: avatarGradient }}
+                >
                     <Zap className="h-4 w-4 text-white" />
                 </div>
             )}
@@ -138,7 +145,7 @@ export default function MessageBubble({ message }) {
                                         );
                                     },
                                     a: ({ children, ...props }) => (
-                                        <a {...props} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">{children}</a>
+                                        <a {...props} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: linkColor }}>{children}</a>
                                     ),
                                     p: ({ children }) => <p className="my-1 leading-relaxed">{children}</p>,
                                     ul: ({ children }) => <ul className="my-1 ml-4 list-disc">{children}</ul>,

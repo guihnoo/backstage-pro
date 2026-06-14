@@ -6,6 +6,23 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-13
 
+### CRM-S65 — Histórico de Interações por Cliente ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **DB**: tabela `client_interactions` (id, user_id, client_id, type, notes, follow_up_date, created_at) + RLS + índices
+- **`src/lib/useClientInteractions.js`** (NOVO): hook CRUD + `fetchPendingFollowUps` (busca follow-ups ≤ hoje)
+- **`src/components/clients/ClientInteractionLog.jsx`** (NOVO):
+  - Timeline colapsável de interações por cliente
+  - Tipos: WhatsApp / Ligação / E-mail / Reunião / Outro (ícones + cores)
+  - Formulário inline: tipo, anotação, data de follow-up opcional
+  - Follow-up overdue em vermelho, hoje em âmbar; botão deletar no hover
+  - Badge "X follow-ups" no header quando há pendências
+- **`src/pages/ClientDetail.jsx`**: `ClientInteractionLog` adicionado após Resumo Financeiro
+- **`src/components/calendar/AlertsPanel.jsx`**:
+  - Import `fetchPendingFollowUps` + `useAuth` + ícone `Bell`
+  - `useEffect` busca follow-ups pendentes do usuário ao montar
+  - Regra `crm_followup`: alerta violet quando há follow-ups vencidos/hoje
+- **Build**: Vite ✅ · **Git backup**: auto-wip ✅
+
 ### TIMER-S64 — Timer ao Vivo para Registro de Horas ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/lib/timerStore.js`** (NOVO): localStorage `backstage_timer`; `startTimer/stopTimer/getTimer/getElapsedMs/formatElapsed/elapsedToHours`; eventos CustomEvent `backstage:timer` para sync entre componentes
@@ -157,6 +174,31 @@ Registro cronológico de tarefas executadas por agentes.
 - `ReportEventList.jsx`, `DailyWorkModal.jsx`, `EventLocationSection.jsx`, `LoadingSpinner.jsx`
 - `CompanySearchInput.jsx`: cards, busca CNPJ/NF-e e seleção via `--bp-primary` / `bp-*`
 - `AdminFeedbacks.jsx`: link de screenshot temático
+- **Testes**: unit 29/29 ✅ · build ✅
+
+### DESIGN-S59 — Fase 9 settings + fiscal + AI + páginas legais (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `FinancialSummary.jsx`: `color="primary"` + `StatCard` com `useCategoryTheme()` (remove `COLOR_CLASSES.cyan`)
+- `BackstageCalendarGrid.jsx`: seleção, badge hoje e overflow com `var(--bp-primary)` / `bp-text-primary`
+- `DayQuickActions.jsx`, `EventTemplateModal.jsx`: CTA e cards temáticos
+- `ClientQuickCreateDialog.jsx`: toggle empresa, prévia CNPJ e submit com `primaryHex`
+- `PushNotificationSettings.jsx`: banner iOS hint com `config.primaryHex`
+- `MessageBubble.jsx`, `QuickActions.jsx`: avatar, links e gradientes brand (`primary`/`accent`)
+- `PrivacyPolicy.jsx`, `TermsOfService.jsx`: `getCategoryConfig(profile?.category || 'lighting')` fora do AppLayout
+- **Testes**: unit 29/29 ✅ · build ✅
+
+### DESIGN-S60 — Fase 10 utilitários + auth + comboboxes (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `ClientCombobox.jsx`, `LocationAutocomplete.jsx`: ações e loader temáticos
+- `SpecialtyPicker.jsx`, `StepIndicator.jsx`, `StageBackdrop.jsx`: cores da categoria (onboarding/auth)
+- `Onboarding.jsx`: step indicator dinâmico conforme categoria selecionada
+- `appToast.jsx`: toasts `info` com `useCategoryTheme()`
+- `dateUtils.jsx`: status `scheduled` via `--bp-primary` / classes `bp-*`
+- `ReportEventList.jsx`: badge usa `textColor` do status
+- `ErrorBoundary.jsx`, `FloatingTimer.jsx`, `SmartSuggestions.jsx`: CTAs e chips sem cyan
+- `FeedbackModal.jsx`, `AdminFeedbacks.jsx`, `useFeedback.js`: status "Novo" temático
+- `BrazilVisitedMap.jsx`: legenda e marcadores com `primaryHex`
+- `QuickActions.jsx`: remove strings cyan legadas nos itens com `themeGradient`
 - **Testes**: unit 29/29 ✅ · build ✅
 
 ### WORK-S50 — R$/hora por show + aba Trabalho em Relatórios ✅

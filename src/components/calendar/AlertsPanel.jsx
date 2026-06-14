@@ -10,9 +10,12 @@ import {
   ClipboardList,
   AlertCircle,
   CalendarCheck,
+  Bell,
 } from 'lucide-react';
 import { normalizeDateString, getEventsForDate, getWorkForDate, getEventStatus } from '../utils/dateUtils';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
+import { fetchPendingFollowUps } from '@/lib/useClientInteractions';
+import { useAuth } from '@/lib/authContext';
 
 function eventNeedsLocation(event) {
   if (!event) return false;
@@ -30,7 +33,15 @@ export default function AlertsPanel({
   className = '',
 }) {
   const theme = useCategoryTheme();
+  const { user } = useAuth();
   const [alerts, setAlerts] = useState([]);
+  const [pendingFollowUps, setPendingFollowUps] = useState([]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    fetchPendingFollowUps(user.id).then(setPendingFollowUps).catch(() => {});
+  }, [user?.id]);
+
   const [dismissedAlerts, setDismissedAlerts] = useState(() => {
     try {
       const raw = sessionStorage.getItem('bp_dismissed_alerts');
@@ -207,8 +218,26 @@ export default function AlertsPanel({
       });
     }
 
+    // Regra CRM: Follow-ups de clientes vencidos/hoje
+    if (pendingFollowUps.length > 0 && !dismissedAlerts.has('crm_followup')) {
+      const first = pendingFollowUps[0];
+      const count = pendingFollowUps.length;
+      newAlerts.push({
+        id: 'crm_followup',
+        kind: 'crm',
+        title: count === 1 ? 'Follow-up pendente' : `${count} follow-ups pendentes`,
+        body: count === 1
+          ? `Cliente "${first.clients?.name || '—'}": ${first.notes?.slice(0, 60) || 'sem anotação'}`
+          : `${count} clientes aguardam retorno. Verifique o histórico de contatos.`,
+        icon: Bell,
+        color: 'text-violet-400',
+        bgColor: 'bg-violet-500/10',
+        borderColor: 'border-violet-500/30',
+      });
+    }
+
     return newAlerts;
-  }, [events, dailyWork, dismissedAlerts, onRegisterWork, onLocationCheckIn, onOpenEvent, theme.primaryHex]);
+  }, [events, dailyWork, pendingFollowUps, dismissedAlerts, onRegisterWork, onLocationCheckIn, onOpenEvent, theme.primaryHex]);
 
   useEffect(() => {
     setAlerts(generatedAlerts);

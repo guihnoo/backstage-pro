@@ -36,7 +36,7 @@ const EventTemplateModal = ({ isOpen, onClose, onSelectTemplate }) => {
         <Dialog open onOpenChange={onClose}>
           <DialogContent className="sm:max-w-md max-h-[90dvh] bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200 flex flex-col overflow-hidden p-0">
             <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
-              <DialogTitle className="flex items-center gap-2 text-cyan-400">
+              <DialogTitle className="flex items-center gap-2 bp-text-primary">
                 <Sparkles className="w-5 h-5" />
                 Usar Template de Evento
               </DialogTitle>
@@ -47,7 +47,7 @@ const EventTemplateModal = ({ isOpen, onClose, onSelectTemplate }) => {
             <div className="bp-modal-scroll px-6 pb-6 space-y-3">
               {loading ? (
                 <div className="flex justify-center items-center h-40">
-                  <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
+                  <Loader2 className="w-8 h-8 animate-spin bp-text-primary" />
                 </div>
               ) : templates.length > 0 ? (
                 templates.map(template => (
@@ -55,7 +55,7 @@ const EventTemplateModal = ({ isOpen, onClose, onSelectTemplate }) => {
                     key={template.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 cursor-pointer hover:border-cyan-400/50 transition-colors"
+                    className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 cursor-pointer transition-colors hover:border-[color-mix(in_srgb,var(--bp-primary)_50%,transparent)]"
                     onClick={() => onSelectTemplate(template)}
                   >
                     <div className="flex items-center justify-between">

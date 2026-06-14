@@ -4,9 +4,11 @@ import { Square, Clock, X } from 'lucide-react';
 import { getTimer, stopTimer, getElapsedMs, formatElapsed, elapsedToHours } from '@/lib/timerStore';
 import { useDailyWork } from '@/lib/useDailyWork';
 import appToast from '@/lib/appToast';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { format } from 'date-fns';
 
 export function FloatingTimer() {
+  const { primaryHex } = useCategoryTheme();
   const [timer, setTimer] = useState(() => getTimer());
   const [elapsed, setElapsed] = useState(() => getElapsedMs(getTimer()));
   const [confirming, setConfirming] = useState(false);
@@ -85,11 +87,20 @@ export function FloatingTimer() {
       >
         {!confirming ? (
           /* Pill ativa */
-          <div className="flex items-center gap-3 bg-slate-900 border border-cyan-500/40 rounded-2xl px-4 py-3 shadow-xl shadow-black/40">
+          <div
+            className="flex items-center gap-3 bg-slate-900 rounded-2xl px-4 py-3 shadow-xl shadow-black/40"
+            style={{ border: `1px solid ${primaryHex}66` }}
+          >
             {/* Indicador pulsante */}
             <span className="relative flex h-2.5 w-2.5 shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500" />
+              <span
+                className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                style={{ backgroundColor: primaryHex }}
+              />
+              <span
+                className="relative inline-flex rounded-full h-2.5 w-2.5"
+                style={{ backgroundColor: primaryHex }}
+              />
             </span>
 
             <div className="flex-1 min-w-0">
@@ -99,8 +110,8 @@ export function FloatingTimer() {
 
             {/* Cronômetro */}
             <div className="flex items-center gap-1.5 shrink-0">
-              <Clock className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="text-lg font-mono font-bold text-cyan-300 tabular-nums">
+              <Clock className="w-3.5 h-3.5" style={{ color: primaryHex }} />
+              <span className="text-lg font-mono font-bold tabular-nums" style={{ color: primaryHex }}>
                 {formatElapsed(elapsed)}
               </span>
             </div>
@@ -121,7 +132,7 @@ export function FloatingTimer() {
               <div>
                 <p className="text-sm font-semibold text-white">Parar timer?</p>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Tempo registrado: <span className="text-cyan-300 font-mono font-bold">{formatElapsed(elapsed)}</span>
+                  Tempo registrado: <span className="font-mono font-bold" style={{ color: primaryHex }}>{formatElapsed(elapsed)}</span>
                   {' '}→ <span className="text-white font-semibold">{elapsedToHours(elapsed)}h</span>
                 </p>
                 <p className="text-xs text-slate-500 mt-0.5 truncate">"{timer.eventTitle}"</p>
@@ -140,7 +151,8 @@ export function FloatingTimer() {
               <button
                 onClick={handleConfirm}
                 disabled={saving}
-                className="flex-1 text-xs py-2 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-semibold disabled:opacity-60 transition-colors"
+                className="flex-1 text-xs py-2 rounded-xl text-white font-semibold disabled:opacity-60 transition-colors hover:opacity-90"
+                style={{ backgroundColor: primaryHex }}
               >
                 {saving ? 'Salvando…' : 'Salvar Horas'}
               </button>

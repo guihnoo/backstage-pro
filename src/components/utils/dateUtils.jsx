@@ -209,10 +209,11 @@ export const getEventStatusConfig = (event) => {
   
   const configs = {
     'scheduled': {
-      color: 'text-cyan-400',
-      bgColor: 'bg-cyan-500/20',
-      borderColor: 'border-cyan-500/30',
-      badgeClass: 'bg-cyan-100 text-cyan-800',
+      color: 'bg-[var(--bp-primary)]',
+      textColor: 'bp-text-primary',
+      bgColor: 'bp-today-surface-soft',
+      borderColor: 'border-[color-mix(in_srgb,var(--bp-primary)_30%,transparent)]',
+      badgeClass: 'bp-chip-badge-active',
       label: 'Agendado'
     },
     'in_progress': {

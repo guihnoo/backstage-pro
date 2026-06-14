@@ -2,8 +2,13 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, Eye, Database, Lock, UserCheck, FileText, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/lib/authContext';
+import { getCategoryConfig } from '@/lib/categoryConfig';
 
 export default function PrivacyPolicyPage() {
+  const { profile } = useAuth();
+  const { primaryHex } = getCategoryConfig(profile?.category || 'lighting');
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -12,7 +17,7 @@ export default function PrivacyPolicyPage() {
     >
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold text-white font-display flex items-center justify-center gap-3 mb-4">
-          <Shield className="w-10 h-10 text-cyan-400" />
+          <Shield className="w-10 h-10" style={{ color: primaryHex }} />
           Política de Privacidade
         </h1>
         <p className="text-slate-400 text-lg">
@@ -27,7 +32,7 @@ export default function PrivacyPolicyPage() {
         
         <Card className="bg-slate-900/50 border-slate-800">
           <CardHeader>
-            <CardTitle className="text-cyan-300 flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2" style={{ color: primaryHex }}>
               <Eye className="w-5 h-5" />
               Transparência Total
             </CardTitle>
@@ -73,7 +78,7 @@ export default function PrivacyPolicyPage() {
 
         <Card className="bg-slate-900/50 border-slate-800">
           <CardHeader>
-            <CardTitle className="text-cyan-300 flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2" style={{ color: primaryHex }}>
               <Calendar className="w-5 h-5" />
               Google Calendar (opcional)
             </CardTitle>
@@ -187,7 +192,7 @@ export default function PrivacyPolicyPage() {
 
         <Card className="bg-slate-900/50 border-slate-800">
           <CardHeader>
-            <CardTitle className="text-cyan-300 flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2" style={{ color: primaryHex }}>
               <Shield className="w-5 h-5" />
               Contato e Suporte
             </CardTitle>
@@ -210,9 +215,9 @@ export default function PrivacyPolicyPage() {
             mudanças significativas através do aplicativo.
           </p>
           <p className="text-sm">
-            <Link to="/termos" className="text-cyan-400 hover:underline">Termos de Uso</Link>
+            <Link to="/termos" className="hover:underline" style={{ color: primaryHex }}>Termos de Uso</Link>
             {' · '}
-            <Link to="/login" className="text-cyan-400 hover:underline">Voltar ao login</Link>
+            <Link to="/login" className="hover:underline" style={{ color: primaryHex }}>Voltar ao login</Link>
           </p>
           <p className="text-slate-500 text-xs mt-2">
             Backstage Pro - Gestão Profissional com Privacidade Total

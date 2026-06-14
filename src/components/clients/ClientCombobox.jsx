@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 import ClientQuickCreateDialog from './ClientQuickCreateDialog';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 export default function ClientCombobox({
   clients = [],
@@ -24,6 +25,7 @@ export default function ClientCombobox({
   disabled = false,
   placeholder = 'Buscar cliente ou criar novo...',
 }) {
+  const { primaryHex } = useCategoryTheme();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -147,7 +149,8 @@ export default function ClientCombobox({
                     value={`criar-${trimmedQuery}`}
                     onMouseDown={(e) => e.preventDefault()}
                     onSelect={handleOpenQuickCreate}
-                    className="text-cyan-300 cursor-pointer"
+                    className="cursor-pointer"
+                    style={{ color: primaryHex }}
                   >
                     <Plus className="w-4 h-4 mr-2 flex-shrink-0" />
                     {`Criar "${trimmedQuery}"`}

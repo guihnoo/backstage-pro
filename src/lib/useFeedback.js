@@ -11,7 +11,7 @@ export const FEEDBACK_TYPES = [
 ];
 
 export const FEEDBACK_STATUS = {
-  new: { label: 'Novo', color: '#22d3ee' },
+  new: { label: 'Novo', color: '#A64AFF' },
   in_review: { label: 'Em análise', color: '#eab308' },
   resolved: { label: 'Resolvido', color: '#39FF14' },
 };

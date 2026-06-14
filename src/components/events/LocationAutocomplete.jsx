@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { MapPin, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { searchAddressSuggestions } from '@/lib/geocodeAddress';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 export default function LocationAutocomplete({
   value = '',
@@ -10,6 +11,7 @@ export default function LocationAutocomplete({
   placeholder = 'Endereço, cidade ou local do evento',
   className = '',
 }) {
+  const { primaryHex } = useCategoryTheme();
   const [input, setInput] = useState(value);
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -75,7 +77,10 @@ export default function LocationAutocomplete({
           className="bg-slate-800 border-slate-700 pl-9 pr-9"
         />
         {loading && (
-          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400 animate-spin" />
+          <Loader2
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin"
+            style={{ color: primaryHex }}
+          />
         )}
       </div>
       {open && suggestions.length > 0 && (

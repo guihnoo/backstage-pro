@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Plus, Clock } from 'lucide-react';
 import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 const DayQuickActions = ({
   open,
@@ -10,6 +11,7 @@ const DayQuickActions = ({
   onNewEvent,
   onNewWork,
 }) => {
+  const { primaryHex } = useCategoryTheme();
   // Não renderiza nada se não houver um alvo para ancorar o popover
   if (!target) return null;
 
@@ -41,7 +43,8 @@ const DayQuickActions = ({
         >
           <Button
             size="sm"
-            className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold"
+            className="text-white font-semibold hover:opacity-90"
+            style={{ backgroundColor: primaryHex }}
             onClick={onNewEvent}
           >
             <Plus className="w-4 h-4 mr-2" />

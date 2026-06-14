@@ -1,6 +1,7 @@
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { CheckCircle2, XCircle, Info, Loader2, AlertTriangle } from 'lucide-react';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 const ICONS = {
   success: CheckCircle2,
@@ -22,9 +23,10 @@ const STYLES = {
     glow: 'shadow-red-500/15',
   },
   info: {
-    ring: 'ring-cyan-500/30',
-    icon: 'text-cyan-400',
-    glow: 'shadow-cyan-500/15',
+    ring: '',
+    icon: '',
+    glow: '',
+    useTheme: true,
   },
   warning: {
     ring: 'ring-amber-500/30',
@@ -40,7 +42,21 @@ const STYLES = {
 
 function BackstageToastCard({ type, title, description }) {
   const Icon = ICONS[type] || Info;
+  const { primaryHex } = useCategoryTheme();
   const style = STYLES[type] || STYLES.info;
+  const themeInfo = style.useTheme
+    ? {
+        ringStyle: { boxShadow: `0 0 0 1px ${primaryHex}4d` },
+        iconStyle: { color: primaryHex },
+        glowClass: '',
+        cardStyle: { boxShadow: `0 20px 25px -5px ${primaryHex}26` },
+      }
+    : {
+        ringStyle: {},
+        iconStyle: {},
+        glowClass: `${style.glow} ring-1 ${style.ring}`,
+        cardStyle: {},
+      };
 
   return (
     <motion.div
@@ -48,10 +64,12 @@ function BackstageToastCard({ type, title, description }) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -8, scale: 0.98 }}
       transition={{ type: 'spring', stiffness: 420, damping: 28 }}
-      className={`flex items-start gap-3 w-full max-w-[min(100vw-2rem,24rem)] rounded-xl border border-[#23262f] bg-[#0c0e14]/95 backdrop-blur-xl px-4 py-3 shadow-xl ${style.glow} ring-1 ${style.ring}`}
+      className={`flex items-start gap-3 w-full max-w-[min(100vw-2rem,24rem)] rounded-xl border border-[#23262f] bg-[#0c0e14]/95 backdrop-blur-xl px-4 py-3 shadow-xl ${themeInfo.glowClass}`}
+      style={themeInfo.cardStyle}
     >
       <Icon
-        className={`w-5 h-5 shrink-0 mt-0.5 ${style.icon} ${type === 'loading' ? 'animate-spin' : ''}`}
+        className={`w-5 h-5 shrink-0 mt-0.5 ${style.useTheme ? '' : style.icon} ${type === 'loading' ? 'animate-spin' : ''}`}
+        style={themeInfo.iconStyle}
       />
       <div className="min-w-0 flex-1 text-left">
         <p className="text-sm font-semibold text-white leading-snug">{title}</p>
@@ -74,7 +92,21 @@ function show(type, title, options = {}) {
 
 function ActionToastCard({ type = 'info', title, description, action, cancel, icon: IconOverride }) {
   const Icon = IconOverride || ICONS[type] || Info;
+  const { primaryHex } = useCategoryTheme();
   const style = STYLES[type] || STYLES.info;
+  const themeInfo = style.useTheme
+    ? {
+        ringStyle: { boxShadow: `0 0 0 1px ${primaryHex}4d` },
+        iconStyle: { color: primaryHex },
+        glowClass: '',
+        cardStyle: { boxShadow: `0 20px 25px -5px ${primaryHex}26` },
+      }
+    : {
+        ringStyle: {},
+        iconStyle: {},
+        glowClass: `${style.glow} ring-1 ${style.ring}`,
+        cardStyle: {},
+      };
 
   return (
     <motion.div
@@ -82,10 +114,11 @@ function ActionToastCard({ type = 'info', title, description, action, cancel, ic
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -8, scale: 0.98 }}
       transition={{ type: 'spring', stiffness: 420, damping: 28 }}
-      className={`w-full max-w-[min(100vw-2rem,24rem)] rounded-xl border border-[#23262f] bg-[#0c0e14]/95 backdrop-blur-xl px-4 py-3 shadow-xl ${style.glow} ring-1 ${style.ring}`}
+      className={`w-full max-w-[min(100vw-2rem,24rem)] rounded-xl border border-[#23262f] bg-[#0c0e14]/95 backdrop-blur-xl px-4 py-3 shadow-xl ${themeInfo.glowClass}`}
+      style={themeInfo.cardStyle}
     >
       <div className="flex items-start gap-3">
-        <Icon className={`w-5 h-5 shrink-0 mt-0.5 ${style.icon}`} />
+        <Icon className={`w-5 h-5 shrink-0 mt-0.5 ${style.useTheme ? '' : style.icon}`} style={themeInfo.iconStyle} />
         <div className="min-w-0 flex-1 text-left">
           <p className="text-sm font-semibold text-white leading-snug">{title}</p>
           {description ? (

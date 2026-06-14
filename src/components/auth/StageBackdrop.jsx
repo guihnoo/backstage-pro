@@ -1,3 +1,8 @@
+import { getCategoryConfig } from '@/lib/categoryConfig';
+import { AUTH_HERO_CATEGORY } from '@/lib/categoryGear';
+
+const hero = getCategoryConfig(AUTH_HERO_CATEGORY);
+
 export default function StageBackdrop() {
   return (
     <svg
@@ -8,8 +13,8 @@ export default function StageBackdrop() {
     >
       <defs>
         <linearGradient id="stageGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#a78bfa" />
-          <stop offset="50%" stopColor="#22d3ee" />
+          <stop offset="0%" stopColor={hero.primaryHex} />
+          <stop offset="50%" stopColor={hero.accentHex} />
           <stop offset="100%" stopColor="#f59e0b" />
         </linearGradient>
         <filter id="glow">
@@ -38,11 +43,11 @@ export default function StageBackdrop() {
 
       {/* Holofotes pendurados */}
       <g id="spotlights" filter="url(#glow)">
-        <circle cx="200" cy="70" r="12" fill="#f59e0b" opacity="0.8" />
-        <circle cx="400" cy="60" r="12" fill="#a78bfa" opacity="0.8" />
-        <circle cx="600" cy="75" r="12" fill="#22d3ee" opacity="0.8" />
-        <circle cx="800" cy="65" r="12" fill="#f59e0b" opacity="0.8" />
-        <circle cx="1000" cy="70" r="12" fill="#a78bfa" opacity="0.8" />
+        <circle cx="200" cy="70" r="12" fill={hero.accentHex} opacity="0.8" />
+        <circle cx="400" cy="60" r="12" fill={hero.primaryHex} opacity="0.8" />
+        <circle cx="600" cy="75" r="12" fill={hero.accentHex} opacity="0.8" />
+        <circle cx="800" cy="65" r="12" fill={hero.primaryHex} opacity="0.8" />
+        <circle cx="1000" cy="70" r="12" fill={hero.accentHex} opacity="0.8" />
       </g>
 
       {/* Palco */}

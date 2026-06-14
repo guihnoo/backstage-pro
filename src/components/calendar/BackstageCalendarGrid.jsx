@@ -51,14 +51,14 @@ const DayCell = React.memo(({ day, isCurrentMonth, isSelected, isToday, onDateSe
       className={`
         relative h-28 md:h-32 lg:h-36 border-b border-r border-slate-800/50 
         ${isCurrentMonth ? 'bg-slate-900/30' : 'bg-slate-900/70'}
-        ${isSelected ? 'outline outline-2 outline-cyan-400 z-10' : ''}
+        ${isSelected ? 'outline outline-2 outline-[var(--bp-primary)] z-10' : ''}
         transition-colors duration-300 touch-manipulation
       `}>
       {/* AJUSTE: Touch target mínimo para o número do dia */}
       <span className={`
         text-xs font-medium absolute top-1.5 right-1.5 md:text-sm rounded-full 
         h-7 w-7 flex items-center justify-center
-        ${isToday ? 'bg-cyan-400 text-slate-900 font-bold' : 'bg-slate-800 text-slate-200'}
+        ${isToday ? 'bg-[var(--bp-primary)] text-slate-900 font-bold' : 'bg-slate-800 text-slate-200'}
       `}>
         {new Date(normalizeDateString(day) + 'T00:00:00').getDate()}
       </span>
@@ -112,7 +112,7 @@ const EventLanesOverlay = React.memo(({ weekStartDate, eventBlocks, clients = []
         </React.Fragment>
       ))}
       {overflow.length > 0 && (
-        <div className="text-cyan-400 text-xs mt-1 col-span-7 text-center pointer-events-auto">
+        <div className="bp-text-primary text-xs mt-1 col-span-7 text-center pointer-events-auto">
           + {overflow.length} mais...
         </div>
       )}

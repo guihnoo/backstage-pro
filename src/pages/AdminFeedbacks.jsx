@@ -29,6 +29,7 @@ function FeedbackCard({ item, onUpdate, primaryHex }) {
   const [saving, setSaving] = useState(false);
   const TypeIcon = TYPE_ICONS[item.type] || Lightbulb;
   const statusMeta = FEEDBACK_STATUS[item.status] || FEEDBACK_STATUS.new;
+  const statusColor = item.status === 'new' ? primaryHex : statusMeta.color;
   const typeLabel = FEEDBACK_TYPES.find((t) => t.id === item.type)?.label || item.type;
 
   const saveStatus = async (status) => {
@@ -73,7 +74,7 @@ function FeedbackCard({ item, onUpdate, primaryHex }) {
             <div className="flex flex-wrap items-center gap-2 mb-1">
               <span
                 className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full"
-                style={{ background: `${statusMeta.color}20`, color: statusMeta.color }}
+                style={{ background: `${statusColor}20`, color: statusColor }}
               >
                 {statusMeta.label}
               </span>

@@ -2,19 +2,21 @@ import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { DollarSign, TrendingUp, TrendingDown, Hourglass, CircleDollarSign } from 'lucide-react';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 const COLOR_CLASSES = {
   green:  { bg: 'bg-green-500/20',  text: 'text-green-400'  },
   yellow: { bg: 'bg-yellow-500/20', text: 'text-yellow-400' },
   red:    { bg: 'bg-red-500/20',    text: 'text-red-400'    },
-  cyan:   { bg: 'bg-cyan-500/20',   text: 'text-cyan-400'   },
   purple: { bg: 'bg-purple-500/20', text: 'text-purple-400' },
   blue:   { bg: 'bg-blue-500/20',   text: 'text-blue-400'   },
 };
 
 const StatCard = ({ icon, title, value, color, delay }) => {
   const Icon = icon;
-  const { bg, text } = COLOR_CLASSES[color] || COLOR_CLASSES.cyan;
+  const { primaryHex } = useCategoryTheme();
+  const isPrimary = color === 'primary';
+  const { bg, text } = isPrimary ? {} : (COLOR_CLASSES[color] || COLOR_CLASSES.blue);
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -25,8 +27,14 @@ const StatCard = ({ icon, title, value, color, delay }) => {
       <Card className="bg-slate-800/50 border-slate-700/80 h-full">
         <CardContent className="p-4">
           <div className="flex items-center gap-4">
-            <div className={`p-3 rounded-lg ${bg} flex-shrink-0`}>
-              <Icon className={`w-6 h-6 ${text}`} />
+            <div
+              className={`p-3 rounded-lg flex-shrink-0 ${isPrimary ? '' : bg}`}
+              style={isPrimary ? { background: `${primaryHex}33` } : undefined}
+            >
+              <Icon
+                className={`w-6 h-6 ${isPrimary ? '' : text}`}
+                style={isPrimary ? { color: primaryHex } : undefined}
+              />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm text-slate-400 truncate">{title}</p>
@@ -79,7 +87,7 @@ export default function FinancialSummary({ stats }) {
           icon={DollarSign}
           title="Lucro Líquido"
           value={formatCurrency(stats.netProfit || 0)}
-          color="cyan"
+          color="primary"
           delay={0.3}
         />
       </div>
