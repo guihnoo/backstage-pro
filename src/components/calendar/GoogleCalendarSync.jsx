@@ -399,9 +399,9 @@ export default function GoogleCalendarSync() {
 
           <p className="text-xs text-slate-500 text-center pt-2">
             Ao conectar, você concorda com a{' '}
-            <Link to="/privacidade" className="text-cyan-400 hover:underline">Política de Privacidade</Link>
+            <Link to="/privacidade" className="hover:underline" style={theme.accentStyle}>Política de Privacidade</Link>
             {' e os '}
-            <Link to="/termos" className="text-cyan-400 hover:underline">Termos de Uso</Link>.
+            <Link to="/termos" className="hover:underline" style={theme.accentStyle}>Termos de Uso</Link>.
           </p>
         </CardContent>
       </Card>

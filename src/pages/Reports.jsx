@@ -194,7 +194,11 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type, onItemClick
                 <p className={`font-bold ${item.value < 0 ? 'text-red-400' : 'text-green-400'}`}>{formatCurrency(item.value)}</p>
                 {item.date && <p className="text-xs text-slate-500">{item.date}</p>}
                 {item.event_ref && <p className="text-[10px] text-slate-600 mt-0.5">Toque para detalhes</p>}
-                {item.client_id && <p className="text-[10px] text-cyan-700 mt-0.5 flex items-center gap-0.5 justify-end"><ExternalLink className="w-2.5 h-2.5" /> Ver cliente</p>}
+                {item.client_id && (
+                  <p className="text-[10px] mt-0.5 flex items-center gap-0.5 justify-end bp-text-primary">
+                    <ExternalLink className="w-2.5 h-2.5" /> Ver cliente
+                  </p>
+                )}
               </div>
             </div>
           );

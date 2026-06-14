@@ -9,11 +9,19 @@ const THRESHOLDS = [
   { pct: 95, color: '#ef4444', label: 'Crítico',  bg: 'from-red-900/30 to-red-900/10',    border: 'border-red-500/40' },
   { pct: 85, color: '#f97316', label: 'Atenção',  bg: 'from-orange-900/30 to-orange-900/10', border: 'border-orange-500/40' },
   { pct: 70, color: '#eab308', label: 'Alerta',   bg: 'from-yellow-900/20 to-yellow-900/5',  border: 'border-yellow-500/30' },
-  { pct:  0, color: '#22d3ee', label: 'Normal',   bg: 'from-cyan-900/20 to-slate-900/20',    border: 'border-cyan-700/30' },
 ];
 
-function getThreshold(pct) {
-  return THRESHOLDS.find(t => pct >= t.pct) || THRESHOLDS[THRESHOLDS.length - 1];
+function getThreshold(pct, accentColor) {
+  const match = THRESHOLDS.find(t => pct >= t.pct);
+  if (match) return match;
+  return {
+    pct: 0,
+    color: accentColor,
+    label: 'Normal',
+    bg: '',
+    border: '',
+    isAccent: true,
+  };
 }
 
 function formatBRL(value) {
@@ -78,7 +86,13 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
   const { formatCurrency } = useFinancialVisibility();
   const pct = useMemo(() => Math.min((annualRevenue / MEI_LIMIT) * 100, 100), [annualRevenue]);
   const remaining = Math.max(MEI_LIMIT - annualRevenue, 0);
-  const threshold = getThreshold(pct);
+  const threshold = getThreshold(pct, accentColor);
+  const accentSurfaceStyle = threshold.isAccent
+    ? {
+        background: `linear-gradient(to bottom right, ${accentColor}33, rgba(15, 23, 42, 0.2))`,
+        borderColor: `${accentColor}4d`,
+      }
+    : undefined;
 
   const now = new Date();
   const monthsElapsed = now.getMonth() + 1;
@@ -110,7 +124,8 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className={`flex items-start gap-3 p-4 rounded-xl border bg-gradient-to-r ${threshold.bg} ${threshold.border}`}
+          className={`flex items-start gap-3 p-4 rounded-xl border bg-gradient-to-r ${threshold.isAccent ? '' : threshold.bg} ${threshold.isAccent ? '' : threshold.border}`}
+          style={accentSurfaceStyle}
         >
           <alertMsg.icon className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: alertMsg.color }} />
           <p className="text-sm font-semibold min-w-0 flex-1 truncate" style={{ color: alertMsg.color }}>
@@ -120,7 +135,10 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
       )}
 
       {/* Main revenue meter */}
-      <div className={`p-5 rounded-2xl border bg-gradient-to-br ${threshold.bg} ${threshold.border}`}>
+      <div
+        className={`p-5 rounded-2xl border bg-gradient-to-br ${threshold.isAccent ? '' : threshold.bg} ${threshold.isAccent ? '' : threshold.border}`}
+        style={accentSurfaceStyle}
+      >
         <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-xs uppercase tracking-wider text-slate-400 mb-0.5">Faturamento Anual {now.getFullYear()}</p>
@@ -201,7 +219,7 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
       {/* Projeção */}
       <div className="bg-slate-900/40 border border-slate-800/50 rounded-xl p-4">
         <div className="flex items-center gap-2 mb-3">
-          <TrendingUp className="w-4 h-4 text-cyan-400" />
+          <TrendingUp className="w-4 h-4" style={{ color: accentColor }} />
           <p className="text-xs font-bold text-slate-300 uppercase tracking-wide">Projeção para Dezembro</p>
         </div>
         <div className="grid grid-cols-3 gap-3 text-center">
@@ -211,13 +229,13 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
           </div>
           <div>
             <p className="text-xs text-slate-500 mb-1">Projeção ano</p>
-            <p className="text-sm font-bold" style={{ color: projectedPct >= 85 ? '#f97316' : '#22d3ee' }}>
+            <p className="text-sm font-bold" style={{ color: projectedPct >= 85 ? '#f97316' : accentColor }}>
               {loading ? '—' : formatCurrency(projectedYear)}
             </p>
           </div>
           <div>
             <p className="text-xs text-slate-500 mb-1">% projetada</p>
-            <p className="text-sm font-bold" style={{ color: projectedPct >= 85 ? '#f97316' : '#22d3ee' }}>
+            <p className="text-sm font-bold" style={{ color: projectedPct >= 85 ? '#f97316' : accentColor }}>
               {loading ? '—' : `${Math.round(projectedPct)}%`}
             </p>
           </div>
@@ -236,7 +254,7 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
       <button
         type="button"
         onClick={() => hardNavigate('/reports')}
-        className="w-full py-3 rounded-xl border border-slate-700/50 bg-slate-800/30 text-xs text-slate-400 hover:text-cyan-400 hover:border-cyan-700/40 transition-all flex items-center justify-center gap-2"
+        className="w-full py-3 rounded-xl border border-slate-700/50 bg-slate-800/30 text-xs text-slate-400 transition-all flex items-center justify-center gap-2 bp-hover-primary"
       >
         <CheckCircle2 className="w-3.5 h-3.5" />
         Ver todos os pagamentos recebidos

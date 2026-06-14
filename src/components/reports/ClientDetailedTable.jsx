@@ -18,9 +18,11 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getEventStatus } from '../utils/dateUtils';
 import { getEventCacheAmount } from '@/lib/eventFinance';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 export default function ClientDetailedTable({ data, onClientClick }) {
   const { isVisible, formatCurrency } = useFinancialVisibility();
+  const { primaryHex } = useCategoryTheme();
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState('generatedRevenue');
   const [sortDirection, setSortDirection] = useState('desc');
@@ -138,7 +140,9 @@ export default function ClientDetailedTable({ data, onClientClick }) {
 
   const SortIcon = ({ field }) => {
     if (sortField !== field) return <ArrowUpDown className="w-4 h-4 ml-1 opacity-50" />;
-    return sortDirection === 'asc' ? <ArrowUp className="w-4 h-4 ml-1 text-cyan-400" /> : <ArrowDown className="w-4 h-4 ml-1 text-cyan-400" />;
+    return sortDirection === 'asc'
+      ? <ArrowUp className="w-4 h-4 ml-1" style={{ color: primaryHex }} />
+      : <ArrowDown className="w-4 h-4 ml-1" style={{ color: primaryHex }} />;
   };
 
   const getPerformanceColor = (value, type) => {
@@ -222,7 +226,7 @@ export default function ClientDetailedTable({ data, onClientClick }) {
                           <button
                             type="button"
                             onClick={() => onClientClick && onClientClick(client.id)}
-                            className="font-medium text-white truncate hover:text-cyan-300 transition-colors flex items-center gap-1 group text-left"
+                            className="font-medium text-white truncate transition-colors flex items-center gap-1 group text-left bp-hover-primary"
                           >
                             {client.name}
                             <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 flex-shrink-0" />
@@ -255,7 +259,7 @@ export default function ClientDetailedTable({ data, onClientClick }) {
                       </span>
                     </td>
                     <td className="p-3 text-right">
-                      <p className="font-bold text-cyan-300">{isVisible ? formatCurrency(client.generatedRevenue) : '•••••'}</p>
+                      <p className="font-bold" style={{ color: primaryHex }}>{isVisible ? formatCurrency(client.generatedRevenue) : '•••••'}</p>
                       {client.pendingRevenue > 0 && (
                         <p className="text-xs text-yellow-400">+{isVisible ? formatCurrency(client.pendingRevenue) : '•••'} pendente</p>
                       )}
@@ -287,7 +291,8 @@ export default function ClientDetailedTable({ data, onClientClick }) {
                           size="sm"
                           variant="ghost"
                           onClick={() => onClientClick && onClientClick(client.id)}
-                          className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-400/20 h-8 px-2"
+                          className="bp-hover-primary h-8 px-2"
+                          style={{ color: primaryHex }}
                         >
                           <Eye className="w-4 h-4 mr-1" />
                           Ver

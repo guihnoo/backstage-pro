@@ -3,15 +3,17 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ReferenceLine, Cell, ResponsiveCo
 import { format, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
+import { useAuth } from '@/lib/authContext';
+import { getCategoryConfig } from '@/lib/categoryConfig';
 
-const CustomTooltip = ({ active, payload, label }) => {
+const CustomTooltip = ({ active, payload, label, primaryHex }) => {
   const { formatCurrency } = useFinancialVisibility();
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (
     <div className="bg-slate-800/95 border border-slate-700 rounded-lg p-3 text-sm shadow-xl">
       <p className="font-bold text-white mb-1 capitalize">{label}</p>
-      <p className="text-cyan-400">Recebido: <span className="font-bold">{formatCurrency(d.revenue)}</span></p>
+      <p style={{ color: primaryHex }}>Recebido: <span className="font-bold">{formatCurrency(d.revenue)}</span></p>
       {d.goal > 0 && (
         <p className={d.revenue >= d.goal ? 'text-emerald-400' : 'text-slate-400'}>
           Meta: {formatCurrency(d.goal)} {d.revenue >= d.goal ? '✅' : `(${Math.round((d.revenue / d.goal) * 100)}%)`}
@@ -23,6 +25,8 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export default function MonthlyTrend({ events = [], goalRevenue = 0, onMonthClick }) {
+  const { profile } = useAuth();
+  const primaryHex = getCategoryConfig(profile?.category || 'lighting').primaryHex;
   const { isVisible, formatCurrency } = useFinancialVisibility();
 
   const months = useMemo(() => {
@@ -69,7 +73,7 @@ export default function MonthlyTrend({ events = [], goalRevenue = 0, onMonthClic
             tickLine={false}
           />
           <YAxis hide domain={[0, maxVal * 1.15]} />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
+          <Tooltip content={<CustomTooltip primaryHex={primaryHex} />} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
           {goalRevenue > 0 && (
             <ReferenceLine
               y={goalRevenue}
@@ -88,7 +92,7 @@ export default function MonthlyTrend({ events = [], goalRevenue = 0, onMonthClic
                     ? '#1e293b'
                     : goalRevenue > 0 && m.revenue >= goalRevenue
                     ? '#10b981'
-                    : '#22d3ee'
+                    : primaryHex
                 }
                 fillOpacity={m.revenue === 0 ? 0.4 : 0.85}
               />
@@ -99,7 +103,10 @@ export default function MonthlyTrend({ events = [], goalRevenue = 0, onMonthClic
 
       {/* Legenda simples */}
       <div className="flex items-center gap-4 text-[11px] text-slate-500">
-        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-cyan-400/80 inline-block" />Abaixo da meta</span>
+        <span className="flex items-center gap-1">
+          <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ backgroundColor: primaryHex, opacity: 0.8 }} />
+          Abaixo da meta
+        </span>
         {goalRevenue > 0 && (
           <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-400/80 inline-block" />Meta atingida</span>
         )}

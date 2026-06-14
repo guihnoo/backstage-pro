@@ -13,6 +13,7 @@ import { latlngToSvg, STATE_CENTROIDS } from '@/lib/brazilMapProjection';
 import { requestMapTour } from '@/lib/appTourBus';
 import { isCancelledEvent } from '@/lib/eventFinance';
 import { Link } from 'react-router-dom';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 class BrazilMapErrorBoundary extends Component {
   state = { hasError: false };
@@ -162,6 +163,8 @@ function eventTitle(ev) {
 }
 
 function BrazilVisitedMapInner({ events = [] }) {
+  const theme = useCategoryTheme();
+  const primary = theme.primaryHex;
   const [activeUf, setActiveUf] = useState(null);
   const [pinnedCityKey, setPinnedCityKey] = useState(null);
   const [hoverCityKey, setHoverCityKey] = useState(null);
@@ -362,20 +365,20 @@ function BrazilVisitedMapInner({ events = [] }) {
       {/* Header */}
       <div className="flex items-center justify-between mb-1 gap-3 flex-wrap">
         <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-          <Map className="w-4 h-4 text-cyan-400" />
+          <Map className="w-4 h-4" style={{ color: primary }} />
           Mapa interativo — onde você trabalhou
         </h3>
         <div className="flex items-center gap-2 text-xs font-mono flex-wrap justify-end">
           <button
             type="button"
             onClick={() => requestMapTour()}
-            className="inline-flex items-center gap-1 text-[10px] text-slate-500 hover:text-cyan-400 transition-colors font-sans normal-case tracking-normal"
+            className="inline-flex items-center gap-1 text-[10px] text-slate-500 transition-colors font-sans normal-case tracking-normal bp-hover-primary"
             aria-label="Como usar o mapa interativo"
           >
             <HelpCircle className="w-3.5 h-3.5" />
             Como usar
           </button>
-          <span className="text-cyan-300">{stateCount}/{totalStates} estados · {pct}%</span>
+          <span style={{ color: primary }}>{stateCount}/{totalStates} estados · {pct}%</span>
           {cityCount > 0 && (
             <>
               <span className="text-slate-600">·</span>
@@ -524,7 +527,8 @@ function BrazilVisitedMapInner({ events = [] }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.15 }}
-            className="mt-2 rounded-lg border border-cyan-500/25 bg-slate-900/80 px-3 py-2.5 text-xs"
+            className="mt-2 rounded-lg border bg-slate-900/80 px-3 py-2.5 text-xs"
+            style={{ borderColor: `${primary}40` }}
           >
             {activeCityData ? (
               <div className="flex items-start gap-2">
@@ -534,7 +538,7 @@ function BrazilVisitedMapInner({ events = [] }) {
                     {activeCityData.uf && (
                       <span className="text-slate-400 text-[10px]">{STATE_NAMES[activeCityData.uf] || activeCityData.uf}</span>
                     )}
-                    <span className="text-cyan-300">{activeCityData.count} evento{activeCityData.count === 1 ? '' : 's'}</span>
+                    <span style={{ color: primary }}>{activeCityData.count} evento{activeCityData.count === 1 ? '' : 's'}</span>
                     {activeCityKey === latestCityKey && (
                       <span className="text-violet-400 text-[10px]">★ mais recente</span>
                     )}
@@ -569,7 +573,7 @@ function BrazilVisitedMapInner({ events = [] }) {
               <div className="flex items-start gap-2">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                    <span className="font-semibold text-cyan-200">{STATE_NAMES[focus]}</span>
+                    <span className="font-semibold" style={{ color: primary }}>{STATE_NAMES[focus]}</span>
                     <span className="text-slate-400">{countsByState[focus]} evento{countsByState[focus] === 1 ? '' : 's'}</span>
                   </div>
                   {focusCities.length > 0 && (
@@ -577,7 +581,7 @@ function BrazilVisitedMapInner({ events = [] }) {
                       {focusCities.slice(0, 8).map((c) => (
                         <span key={c.name} className="text-[11px]">
                           <span className="text-white">{c.name}</span>
-                          <span className="text-cyan-400 font-mono ml-1">{c.count}×</span>
+                          <span className="font-mono ml-1" style={{ color: primary }}>{c.count}×</span>
                         </span>
                       ))}
                       {focusCities.length > 8 && (
@@ -621,7 +625,7 @@ function BrazilVisitedMapInner({ events = [] }) {
       {/* Empty state */}
       {stateCount === 0 && (
         <div className="mt-4 flex flex-col items-center gap-2 rounded-lg border border-slate-700/40 bg-slate-800/30 p-4 text-center">
-          <MapPin className="w-5 h-5 text-cyan-500/60" />
+          <MapPin className="w-5 h-5" style={{ color: `${primary}99` }} />
           <p className="text-sm text-slate-300 font-medium">
             {activeEvents.length === 0
               ? events.length === 0
@@ -638,7 +642,7 @@ function BrazilVisitedMapInner({ events = [] }) {
           </p>
           <Link
             to="/calendar"
-            className="mt-1 text-xs font-medium text-cyan-400 hover:text-cyan-300 transition-colors"
+            className="mt-1 text-xs font-medium transition-colors bp-hover-primary"
           >
             Ir para Agenda →
           </Link>
@@ -658,7 +662,7 @@ function BrazilVisitedMapInner({ events = [] }) {
               <button
                 type="button"
                 onClick={() => setActiveUf(null)}
-                className="text-[10px] text-cyan-400 hover:text-cyan-300"
+                className="text-[10px] bp-hover-primary transition-colors"
               >
                 Ver todas
               </button>
@@ -679,9 +683,14 @@ function BrazilVisitedMapInner({ events = [] }) {
                   onClick={() => selectCity(key)}
                   className={`text-left rounded-lg border px-3 py-2 transition-colors ${
                     isSelected
-                      ? 'border-cyan-500/60 bg-cyan-500/10'
+                      ? ''
                       : 'border-slate-700/60 bg-slate-800/40 hover:border-slate-600'
                   }`}
+                  style={
+                    isSelected
+                      ? { borderColor: `${primary}99`, background: `${primary}1a` }
+                      : undefined
+                  }
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
@@ -690,7 +699,7 @@ function BrazilVisitedMapInner({ events = [] }) {
                         <p className="text-[10px] text-slate-500">{STATE_NAMES[city.uf] || city.uf}</p>
                       )}
                     </div>
-                    <span className="text-[11px] font-mono text-cyan-400 flex-shrink-0">{city.count}×</span>
+                    <span className="text-[11px] font-mono flex-shrink-0" style={{ color: primary }}>{city.count}×</span>
                   </div>
                   {isLatest && (
                     <span className="text-[10px] text-violet-400 mt-1 inline-block">Mais recente</span>

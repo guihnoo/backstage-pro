@@ -48,7 +48,7 @@ function EventRow({ event, client, onOpen }) {
       <button
         type="button"
         onClick={() => onOpen(event)}
-        className="p-1.5 rounded-lg text-slate-500 hover:text-cyan-400 hover:bg-slate-800/60 transition-colors flex-shrink-0"
+        className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-800/60 transition-colors flex-shrink-0 bp-hover-primary"
       >
         <ExternalLink className="w-3.5 h-3.5" />
       </button>

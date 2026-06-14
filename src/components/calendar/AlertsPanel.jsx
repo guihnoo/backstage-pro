@@ -317,4 +317,19 @@ export default function AlertsPanel({
                     </Button>
                   )}
                   <Button
-            
+                    size="sm"
+                    variant="outline"
+                    onClick={() => dismissAlert(alert.id)}
+                    className="border-slate-600 text-slate-400 hover:bg-slate-800"
+                  >
+                    Dispensar
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
+  );
+}

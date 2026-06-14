@@ -62,6 +62,69 @@ export function openWhatsAppCharge(phone, message) {
 }
 
 /**
+ * Gera uma proposta técnica para enviar ao cliente ANTES do show.
+ */
+export function buildProposalMessage({
+  clientName,
+  techName,
+  eventTitle,
+  startDate,
+  endDate,
+  location,
+  locationCity,
+  amount,
+  pixKey,
+  pixKeyType,
+  notes,
+}) {
+  const name = clientName || 'Cliente';
+  const tech = techName || 'Técnico';
+  const valor = formatBRL(amount || 0);
+
+  const fmt = (d) =>
+    d ? new Date(d + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : null;
+
+  const dataInicio = fmt(startDate);
+  const dataFim = endDate && endDate !== startDate ? fmt(endDate) : null;
+  const dataPart = dataFim ? `${dataInicio} a ${dataFim}` : dataInicio;
+
+  const lines = [
+    `Olá ${name}! 👋`,
+    ``,
+    `Segue minha proposta técnica para o evento:`,
+    ``,
+    `📋 *PROPOSTA TÉCNICA*`,
+    `━━━━━━━━━━━━━━━━━━━━`,
+    `🎭 *${eventTitle || 'Evento'}*`,
+    dataPart ? `📅 ${dataPart}` : null,
+    location ? `📍 ${location}${locationCity ? ` — ${locationCity}` : ''}` : locationCity ? `📍 ${locationCity}` : null,
+    ``,
+    `━━━━━━━━━━━━━━━━━━━━`,
+    `💰 *CACHÊ: ${valor}*`,
+    `━━━━━━━━━━━━━━━━━━━━`,
+  ].filter(l => l !== null);
+
+  if (pixKey) {
+    lines.push(``, `🔑 Pagamento via PIX:`);
+    lines.push(`${pixKeyType || 'Chave PIX'}: *${pixKey}*`);
+  }
+
+  if (notes) {
+    lines.push(``, `📝 *Observações:*`, notes);
+  }
+
+  lines.push(
+    ``,
+    `_Proposta válida por 7 dias._`,
+    ``,
+    `Qualquer dúvida estou à disposição! 😊`,
+    `— ${tech}`,
+  );
+
+  return lines.join('\n');
+}
+
+/**
  * Gera um relatório final do evento para enviar ao cliente.
  * Inclui cachê, horas trabalhadas e despesas (reembolsáveis destacadas).
  */

@@ -10,6 +10,7 @@ import AppTopBar, { getAppTopBarOffset } from '@/components/layout/AppTopBar';
 import OfflineBanner from '@/components/layout/OfflineBanner';
 import { prefetchRoute } from '@/lib/routePrefetch';
 import AppTour from '@/components/tour/AppTour';
+import { FloatingTimer } from '@/components/timer/FloatingTimer';
 
 const navItems = [
   { to: '.', match: '/', label: 'Home', icon: Home, end: true },
@@ -138,6 +139,7 @@ export default function AppLayout() {
           })}
         </div>
       </nav>
+      <FloatingTimer />
     </div>
     </MotionConfig>
   );

@@ -7,9 +7,11 @@ import { useFinancialVisibility } from '@/components/context/FinancialVisibility
 import { formatDisplayDate, getEventStatusConfig } from '@/components/utils/dateUtils';
 import EventHeading from '@/components/events/EventHeading';
 import { Ellipsis } from '@/components/ui/overflowText';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 const EventItem = ({ event, client, work, onClick }) => {
   const { formatCurrency } = useFinancialVisibility();
+  const { primaryHex } = useCategoryTheme();
 
   // MUDANÇA CRÍTICA: O cálculo do valor deve usar o 'work' completo, filtrado por ID do evento
   const eventWork = work.filter(w => w.event_id === event.id);
@@ -30,7 +32,10 @@ const EventItem = ({ event, client, work, onClick }) => {
     >
       <Avatar className="h-10 w-10 border-2 border-slate-700 hidden sm:flex flex-shrink-0">
         <AvatarImage src={client?.logo_url} />
-        <AvatarFallback className="bg-cyan-900/50 text-cyan-300">
+        <AvatarFallback
+          className="bp-chip-badge-active"
+          style={{ background: `${primaryHex}33` }}
+        >
           {client?.name?.charAt(0) || '?'}
         </AvatarFallback>
       </Avatar>

@@ -12,6 +12,7 @@ import appToast from '@/lib/appToast';
 
 import { normalizeDateString, formatDisplayDate } from '../utils/dateUtils';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 export default function EventHoursSheet({ 
   isOpen, 
@@ -22,6 +23,7 @@ export default function EventHoursSheet({
   onSave 
 }) {
     const { create, update } = useDailyWork();
+  const { primaryHex } = useCategoryTheme();
   useAppScrollLock(isOpen);
 
   const [formData, setFormData] = useState({
@@ -278,7 +280,7 @@ export default function EventHoursSheet({
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
               <div>
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-cyan-400" />
+                  <Clock className="w-5 h-5 bp-text-primary" />
                   {existingWork ? 'Editar Horas' : 'Registrar Horas'}
                 </h3>
                 {event && (
@@ -378,21 +380,24 @@ export default function EventHoursSheet({
 
                 {/* Cálculos */}
                 {formData.entry_time && formData.exit_time && hours.total > 0 && (
-                  <Alert className="bg-cyan-900/20 border-cyan-700/50">
-                    <Info className="h-4 w-4 text-cyan-400" />
-                    <AlertDescription className="text-cyan-200">
+                  <Alert
+                    className="border"
+                    style={{ background: `${primaryHex}1a`, borderColor: `${primaryHex}66` }}
+                  >
+                    <Info className="h-4 w-4 bp-text-primary" />
+                    <AlertDescription style={{ color: `${primaryHex}cc` }}>
                       <p className="font-semibold mb-2 text-sm">Cálculo Automático</p>
                       <div className="grid grid-cols-3 gap-2 text-xs">
                         <div className="bg-slate-900/40 rounded p-2 text-center">
-                          <p className="text-cyan-400 mb-1">Horas</p>
+                          <p className="bp-text-primary mb-1">Horas</p>
                           <p className="font-bold text-white">{hours.total.toFixed(1)}h</p>
                         </div>
                         <div className="bg-slate-900/40 rounded p-2 text-center">
-                          <p className="text-cyan-400 mb-1">Extras</p>
+                          <p className="bp-text-primary mb-1">Extras</p>
                           <p className="font-bold text-amber-300">{hours.overtime.toFixed(1)}h</p>
                         </div>
                         <div className="bg-slate-900/40 rounded p-2 text-center">
-                          <p className="text-cyan-400 mb-1">Cachê</p>
+                          <p className="bp-text-primary mb-1">Cachê</p>
                           <p className="font-bold text-green-300">
                             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(estimatedCache)}
                           </p>
@@ -486,7 +491,8 @@ export default function EventHoursSheet({
                   type="submit"
                   onClick={handleSubmit}
                   disabled={loading || !formData.date || !formData.entry_time || !formData.exit_time || Object.keys(errors).length > 0}
-                  className="flex-1 bg-cyan-600 hover:bg-cyan-700 h-12"
+                  className="flex-1 text-white h-12 hover:opacity-90"
+                  style={{ backgroundColor: primaryHex }}
                 >
                   {loading ? (
                     <>

@@ -116,7 +116,8 @@ function FeedbackCard({ item, onUpdate, primaryHex }) {
           href={item.screenshot_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs text-cyan-400 hover:underline"
+          className="inline-flex items-center gap-1.5 text-xs bp-hover-primary transition-colors"
+          style={{ color: primaryHex }}
         >
           <ImageIcon className="w-3.5 h-3.5" />
           Ver screenshot

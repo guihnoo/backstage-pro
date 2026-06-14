@@ -6,6 +6,42 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-13
 
+### TIMER-S64 — Timer ao Vivo para Registro de Horas ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/lib/timerStore.js`** (NOVO): localStorage `backstage_timer`; `startTimer/stopTimer/getTimer/getElapsedMs/formatElapsed/elapsedToHours`; eventos CustomEvent `backstage:timer` para sync entre componentes
+- **`src/components/timer/FloatingTimer.jsx`** (NOVO):
+  - Pill flutuante acima da nav (`bottom-20`, `z-[85]`) com indicador pulsante cyan
+  - Mostra nome do evento + cronômetro MM:SS / HH:MM:SS
+  - Botão stop → confirmação inline com horas arredondadas (0.25h) e opção Descartar
+  - Ao confirmar: cria registro via `useDailyWork().create()` com nota "Registrado via Timer"
+- **`src/components/layout/AppLayout.jsx`**: `FloatingTimer` montado globalmente
+- **`src/components/calendar/EventDetailModal.jsx`**:
+  - Import `startTimer/stopTimer/getTimer` de `timerStore`
+  - State `activeTimer` sincronizado via `backstage:timer`
+  - Handler `handleToggleTimer`: inicia (toast confirmação) ou para o timer do evento
+  - Botão `Timer`/`Square` no footer para status `pending/scheduled/confirmed`; vermelho quando ativo neste evento
+- **Build**: Vite ✅ · **Git backup**: auto-wip ✅
+
+### CHECKLIST-S63 — Checklist de Equipamentos por Evento ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **DB**: `ALTER TABLE events ADD COLUMN checklist_items jsonb DEFAULT '[]'` (Supabase prod direto)
+- **`src/components/calendar/EventChecklist.jsx`** (NOVO):
+  - Lista de itens com check/uncheck/delete + input para adicionar
+  - Templates rápidos por categoria: Áudio / Iluminação / DJ / Foto/Vídeo / Geral
+  - Barra de progresso checked/total; limpar marcados; collapse animado (Framer Motion)
+  - Salva imediatamente via `updateEvent` a cada mudança
+- **`src/components/calendar/EventDetailModal.jsx`**: `EventChecklist` no final do scroll
+- **Build**: Vite ✅ · **Git backup**: auto-wip ✅
+
+### PROPOSAL-S62 — Proposta Rápida via WhatsApp no EventDetailModal ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/lib/whatsapp.js`**: `buildProposalMessage()` — gera mensagem formatada com emoji, dados do evento, cachê, chave PIX (se configurada), observações e validade de 7 dias
+- **`src/components/calendar/EventDetailModal.jsx`**:
+  - `handleSendProposal()`: monta proposta com dados do evento + `userSettings` (nome técnico, PIX); abre WhatsApp se cliente tem telefone, senão copia para área de transferência
+  - Botão `Send` (violet) no footer — exibido para eventos com status `pending`, `scheduled` ou `confirmed`
+  - `Send` adicionado ao import de `lucide-react`
+- **Build**: Vite ✅ sem erros · **Git backup**: auto-wip ✅
+
 ### IR-S55 — Resumo de IR (Imposto de Renda) na aba Fiscal ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/components/reports/IRSummary.jsx`** (NOVO):
@@ -107,7 +143,21 @@ Registro cronológico de tarefas executadas por agentes.
 - `MonthlyTrend.jsx`: barras, tooltip e legenda com `primaryHex` (substitui `#22d3ee`)
 - `ActivityHeatmap.jsx`: células com opacidade de `primaryHex` via `getCategoryConfig`
 - `BrazilVisitedMap.jsx`: header, stats, painel UF/cidade, empty state e chips sem cyan
-- **Testes**: unit 29/29 ✅ · build ✅ · smoke E2E (pendente nesta rodada)
+- **Testes**: unit 29/29 ✅ · build ✅ · smoke E2E 27/28 (falha pré-existente em `admin-feedbacks` — fora do escopo S56; `reports-map` 3/3 ✅)
+
+### DESIGN-S57 — Fase 7 sheets mobile + relatórios MEI/NF (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `EventActionSheet.jsx`, `ClientActionSheet.jsx`: borda do sheet, CTAs e stats com `useCategoryTheme()`
+- `ClientDetailedTable.jsx`, `ReportsChart.jsx`, `MeiDashboard.jsx`, `NfTracker.jsx`, `Reports.jsx` (link Ver cliente)
+- **Testes**: unit 29/29 ✅ · build ✅
+
+### DESIGN-S58 — Fase 8 mobile hours/notes + utilitários (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `EventHoursSheet.jsx`, `NotesSheet.jsx`: cálculo automático e CTAs temáticos
+- `ReportEventList.jsx`, `DailyWorkModal.jsx`, `EventLocationSection.jsx`, `LoadingSpinner.jsx`
+- `CompanySearchInput.jsx`: cards, busca CNPJ/NF-e e seleção via `--bp-primary` / `bp-*`
+- `AdminFeedbacks.jsx`: link de screenshot temático
+- **Testes**: unit 29/29 ✅ · build ✅
 
 ### WORK-S50 — R$/hora por show + aba Trabalho em Relatórios ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)

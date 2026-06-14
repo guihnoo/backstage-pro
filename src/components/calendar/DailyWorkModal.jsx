@@ -11,6 +11,7 @@ import appToast from '@/lib/appToast';
 import { normalizeDateString, formatDisplayDate } from '@/components/utils/dateUtils';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { useAuth } from '@/lib/authContext';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 const emptyState = {
   date: '',
@@ -58,6 +59,7 @@ const calculateCache = (event, totalHours, overtimeHours) => {
 export default function DailyWorkModal({ isOpen, onClose, date, event, existingWork, onSuccess }) {
   const { user } = useAuth();
   const { create: createDailyWork, update: updateDailyWork } = useDailyWork();
+  const { primaryHex } = useCategoryTheme();
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState(emptyState);
@@ -147,7 +149,7 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
       <DialogContent className="sm:max-w-xl bg-slate-900 border-slate-700 text-white p-0 flex flex-col overflow-hidden max-h-[90dvh]">
         <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 border-b border-slate-700 flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-white">
-            <Clock className="w-5 h-5 text-cyan-400" />
+            <Clock className="w-5 h-5 bp-text-primary" />
             {existingWork?.id ? 'Editar Registro de Trabalho' : 'Novo Registro de Trabalho'}
           </DialogTitle>
         </DialogHeader>
@@ -173,9 +175,12 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
               </div>
 
               {summary.total > 0 && (
-                <Alert className="bg-cyan-900/20 border-cyan-700/40">
-                  <Info className="h-4 w-4 text-cyan-400" />
-                  <AlertDescription className="text-cyan-200 text-sm">
+                <Alert
+                  className="border"
+                  style={{ background: `${primaryHex}1a`, borderColor: `${primaryHex}66` }}
+                >
+                  <Info className="h-4 w-4 bp-text-primary" />
+                  <AlertDescription className="text-sm" style={{ color: `${primaryHex}cc` }}>
                     Total: <strong>{summary.total.toFixed(1)}h</strong> · Extras: <strong>{summary.overtime.toFixed(1)}h</strong> · Cachê: <strong>R$ {summary.cache.toFixed(2)}</strong>
                   </AlertDescription>
                 </Alert>
@@ -192,7 +197,12 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
             <Button type="button" variant="outline" onClick={() => onClose?.(false)} disabled={loading} className="flex-1 h-11">
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading} className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white h-11">
+            <Button
+              type="submit"
+              disabled={loading}
+              className="flex-1 text-white h-11 hover:opacity-90"
+              style={{ backgroundColor: primaryHex }}
+            >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Salvar'}
             </Button>
           </div>

@@ -27,7 +27,10 @@ import {
   AlertTriangle,
   ClipboardCheck,
   PartyPopper,
-  Copy
+  Copy,
+  Send,
+  Timer,
+  Square
 } from 'lucide-react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import {
@@ -40,10 +43,13 @@ import { useAuth } from '@/lib/authContext';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { applyAuto12Hours } from '@/api/functions';
 import { useStatusToggle } from '@/lib/useStatusToggle';
-import { openWhatsAppCharge, formatBRL, buildEventReport, buildChargeMessage } from '@/lib/whatsapp';
+import { openWhatsAppCharge, formatBRL, buildEventReport, buildChargeMessage, buildProposalMessage } from '@/lib/whatsapp';
+import { generatePixPayload, buildPixWhatsAppMessage } from '@/lib/pixPayload';
+import { startTimer, getTimer, stopTimer } from '@/lib/timerStore';
 import appToast from '@/lib/appToast';
 import EventHeading from '@/components/events/EventHeading';
 import EventLocationSection from '@/components/events/EventLocationSection';
+import { EventChecklist } from '@/components/calendar/EventChecklist';
 import { useEvents } from '@/lib/useEvents';
 import { useExpenses } from '@/lib/useExpenses';
 import ExpenseForm from '@/components/expenses/ExpenseForm';
@@ -77,6 +83,7 @@ export default function EventDetailModal({
   const { update: updateEvent } = useEvents();
   const { expenses, refetch: refetchExpenses } = useExpenses();
   const { settings: userSettings } = useUserSettings();
+  const [activeTimer, setActiveTimer] = useState(() => getTimer());
   const [generatingPDF, setGeneratingPDF] = useState(false);
   const [applying12h, setApplying12h] = useState(false);
   const [savingLocation, setSavingLocation] = useState(false);
@@ -90,6 +97,21 @@ export default function EventDetailModal({
     location_lng: null,
   });
   const { confirmEvent, toggling } = useStatusToggle();
+
+  useEffect(() => {
+    const onTimer = (e) => setActiveTimer(e.detail);
+    window.addEventListener('backstage:timer', onTimer);
+    return () => window.removeEventListener('backstage:timer', onTimer);
+  }, []);
+
+  const handleToggleTimer = () => {
+    if (activeTimer?.eventId === event?.id) {
+      stopTimer();
+    } else {
+      startTimer({ eventId: event.id, eventTitle: event.title });
+      appToast.success('Timer iniciado!', { description: 'O cronômetro está rodando em background.' });
+    }
+  };
 
   useEffect(() => {
     if (!event) return;
@@ -167,6 +189,79 @@ export default function EventDetailModal({
       totalAmount: value,
     });
     openWhatsAppCharge(phone, message);
+  };
+
+  const handleCopyPix = () => {
+    const pixKey = userSettings?.pix_key;
+    if (!pixKey) {
+      appToast.error('Chave PIX não cadastrada.', { description: 'Adicione sua chave PIX no Perfil.' });
+      return;
+    }
+    const amount = getEventCacheAmount(event);
+    const payload = generatePixPayload({
+      pixKey,
+      merchantName: userSettings?.report_full_name || profile?.full_name || 'Tecnico',
+      merchantCity: event.location_city || 'Brasil',
+      amount,
+      txId: (event.title || 'show').replace(/[^a-zA-Z0-9]/g, '').slice(0, 25) || '***',
+    });
+    navigator.clipboard?.writeText(payload).then(() =>
+      appToast.success('PIX copiado!', { description: 'Cole no app do banco para pagar.' })
+    );
+  };
+
+  const handlePixWhatsApp = () => {
+    const phone = client?.phone;
+    const pixKey = userSettings?.pix_key;
+    if (!pixKey) { appToast.error('Chave PIX não cadastrada no Perfil.'); return; }
+    const amount = getEventCacheAmount(event);
+    const payload = generatePixPayload({
+      pixKey,
+      merchantName: userSettings?.report_full_name || profile?.full_name || 'Tecnico',
+      merchantCity: event.location_city || 'Brasil',
+      amount,
+      txId: (event.title || 'show').replace(/[^a-zA-Z0-9]/g, '').slice(0, 25) || '***',
+    });
+    const msg = buildPixWhatsAppMessage({
+      clientName: client?.name,
+      eventTitle: event.title,
+      amount,
+      pixKey,
+      pixKeyType: userSettings?.pix_key_type || 'Chave PIX',
+      pixPayloadStr: payload,
+    });
+    if (phone) {
+      openWhatsAppCharge(phone, msg);
+    } else {
+      navigator.clipboard?.writeText(msg).then(() =>
+        appToast.success('Mensagem PIX copiada!', { description: 'Cole no WhatsApp do cliente.' })
+      );
+    }
+  };
+
+  const handleSendProposal = () => {
+    const phone = client?.phone;
+    const value = getEventCacheAmount(event);
+    const msg = buildProposalMessage({
+      clientName: client?.name,
+      techName: userSettings?.report_full_name || profile?.full_name,
+      eventTitle: event.title,
+      startDate: event.start_date,
+      endDate: event.end_date,
+      location: event.location,
+      locationCity: event.location_city,
+      amount: value,
+      pixKey: userSettings?.pix_key,
+      pixKeyType: userSettings?.pix_key_type,
+      notes: event.observacoes_md,
+    });
+    if (phone) {
+      openWhatsAppCharge(phone, msg);
+    } else {
+      navigator.clipboard?.writeText(msg).then(() =>
+        appToast.success('Proposta copiada!', { description: 'Cole no WhatsApp do cliente.' })
+      );
+    }
   };
 
   const handleSendReport = () => {
@@ -428,7 +523,7 @@ export default function EventDetailModal({
                         )}
                       </div>
                       {!pagamentoDone && (
-                        <div className="flex gap-1.5 flex-shrink-0">
+                        <div className="flex gap-1.5 flex-shrink-0 flex-wrap justify-end">
                           <Button
                             size="sm"
                             onClick={onMarkPaid}
@@ -437,6 +532,18 @@ export default function EventDetailModal({
                             <CheckCircle2 className="w-3 h-3 mr-1" />
                             Pago
                           </Button>
+                          {userSettings?.pix_key && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={client?.phone ? handlePixWhatsApp : handleCopyPix}
+                              className="h-7 px-2 text-xs border-emerald-700/50 text-emerald-400 hover:bg-emerald-900/20"
+                              title={client?.phone ? 'Enviar PIX via WhatsApp' : 'Copiar PIX Copia e Cola'}
+                            >
+                              <Receipt className="w-3 h-3 mr-1" />
+                              PIX
+                            </Button>
+                          )}
                           {client?.phone && (
                             <Button
                               size="sm"
@@ -802,6 +909,13 @@ export default function EventDetailModal({
                 </CardContent>
               </Card>
             )}
+            {/* Checklist de Equipamentos */}
+            <EventChecklist
+              items={event.checklist_items ?? []}
+              onChange={async (next) => {
+                await updateEvent(event.id, { checklist_items: next });
+              }}
+            />
           </div>
         </ScrollArea>
 
@@ -814,6 +928,23 @@ export default function EventDetailModal({
             <Plus className="w-4 h-4 mr-2" />
             Registrar Horas
           </Button>
+          {['confirmed', 'scheduled', 'pending'].includes(event.status) && (
+            <Button
+              onClick={handleToggleTimer}
+              variant="outline"
+              className={`flex-shrink-0 transition-colors ${
+                activeTimer?.eventId === event.id
+                  ? 'border-red-500/50 bg-red-500/10 text-red-400 hover:bg-red-500/20'
+                  : 'border-cyan-600 hover:bg-cyan-900/20 text-cyan-300'
+              }`}
+              title={activeTimer?.eventId === event.id ? 'Parar timer' : 'Iniciar timer'}
+            >
+              {activeTimer?.eventId === event.id
+                ? <Square className="w-4 h-4 fill-red-400" />
+                : <Timer className="w-4 h-4" />
+              }
+            </Button>
+          )}
           <Button
             onClick={() => onEdit?.(event)}
             variant="outline"
@@ -822,6 +953,16 @@ export default function EventDetailModal({
             <Edit className="w-4 h-4 mr-2" />
             Editar
           </Button>
+          {['pending', 'scheduled', 'confirmed'].includes(event.status) && (
+            <Button
+              onClick={handleSendProposal}
+              variant="outline"
+              className="flex-shrink-0 border-violet-600 hover:bg-violet-900/20 text-violet-300"
+              title="Enviar proposta técnica via WhatsApp"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          )}
           {event.status === 'pending' && (
             <Button
               onClick={() => confirmEvent(event, onClose)}

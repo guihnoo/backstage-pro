@@ -99,6 +99,10 @@
 | 58 | Aging de recebíveis — cobrar clientes inadimplentes via WhatsApp | 2026-06-13 | ✅ `ReceivablesAging.jsx` — buckets 0–90+ dias, colapsável, botão Cobrar com mensagem pronta; topo da Visão Geral de Reports |
 | 59 | Score de confiabilidade de pagamento por cliente | 2026-06-13 | ✅ `paymentScore` (pct pagos/concluídos) em Clients.jsx (barra+badge no card) e ClientDetail.jsx (4ª coluna no Resumo Financeiro) |
 | 60 | Resumo de IR — receita, despesas e lucro líquido anual para declaração | 2026-06-13 | ✅ `IRSummary.jsx` — KPIs 4 colunas, despesas por categoria, tabela mês a mês colapsável, seletor de ano, compartilhar; aba Fiscal de Reports |
+| 61 | PIX "Copia e Cola" — gerar payload EMV e enviar via WhatsApp | 2026-06-13 | ✅ `pixPayload.js` (CRC16-CCITT); botão PIX no EventDetailModal; configuração de chave PIX no Perfil |
+| 62 | Proposta Rápida via WhatsApp — enviar proposta técnica pré-evento | 2026-06-13 | ✅ `buildProposalMessage()` em `whatsapp.js`; `handleSendProposal` + botão Send (violet) no footer do EventDetailModal para status pending/scheduled/confirmed |
+| 63 | Checklist de equipamentos por evento com templates por categoria | 2026-06-13 | ✅ `EventChecklist.jsx`; coluna `checklist_items` jsonb no DB; templates Áudio/Iluminação/DJ/Foto/Geral; check/uncheck/delete; barra de progresso; salva automático |
+| 64 | Timer ao vivo para registro automático de horas durante o show | 2026-06-13 | ✅ `timerStore.js` + `FloatingTimer.jsx`; persiste em localStorage; pill flutuante global; botão no EventDetailModal; ao parar cria work record via `useDailyWork` |
 
 ---
 

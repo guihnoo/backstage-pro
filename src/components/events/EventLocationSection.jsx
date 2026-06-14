@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import LocationAutocomplete from '@/components/events/LocationAutocomplete';
 import { captureEventLocationFromGps, mapsUrlForCoords } from '@/lib/eventLocation';
 import appToast from '@/lib/appToast';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 /**
  * Seção de local do evento: busca por endereço OU check-in GPS no local.
@@ -20,6 +21,7 @@ export default function EventLocationSection({
   showLabel = true,
   compact = false,
 }) {
+  const { primaryHex } = useCategoryTheme();
   const [gpsLoading, setGpsLoading] = useState(false);
 
   const applyPatch = (patch) => {
@@ -58,7 +60,7 @@ export default function EventLocationSection({
     <div className={`space-y-2 ${compact ? '' : ''}`}>
       {showLabel && (
         <Label className="flex items-center gap-1.5">
-          <MapPin className="w-3.5 h-3.5 text-cyan-400" />
+          <MapPin className="w-3.5 h-3.5 bp-text-primary" />
           Local do evento
           <span className="text-slate-500 font-normal text-xs">(opcional)</span>
         </Label>
@@ -86,7 +88,8 @@ export default function EventLocationSection({
           size="sm"
           onClick={handleGpsCheckIn}
           disabled={gpsLoading}
-          className="border-cyan-700/50 text-cyan-300 hover:bg-cyan-950/40 h-10 min-h-[44px] justify-start"
+          className="h-10 min-h-[44px] justify-start bp-hover-primary"
+          style={{ borderColor: `${primaryHex}80`, color: primaryHex }}
         >
           {gpsLoading ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -101,7 +104,8 @@ export default function EventLocationSection({
             href={mapsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300 px-2 py-2 min-h-[44px]"
+            className="inline-flex items-center gap-1.5 text-xs px-2 py-2 min-h-[44px] bp-hover-primary transition-colors"
+            style={{ color: primaryHex }}
           >
             <ExternalLink className="w-3.5 h-3.5" />
             Abrir no mapa

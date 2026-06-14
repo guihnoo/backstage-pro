@@ -26,6 +26,7 @@ import { getEventCacheAmount } from '@/lib/eventFinance';
 import appToast from '@/lib/appToast';
 
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 export default function EventActionSheet({
   event,
@@ -43,6 +44,8 @@ export default function EventActionSheet({
   onCheckInLocation,
 }) {
   const { formatCurrency } = useFinancialVisibility();
+  const theme = useCategoryTheme();
+  const primary = theme.primaryHex;
   const [checkingIn, setCheckingIn] = useState(false);
   useAppScrollLock(Boolean(isOpen && event));
 
@@ -92,7 +95,8 @@ export default function EventActionSheet({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed inset-x-0 bottom-0 z-[95] bg-slate-900 border-t-2 border-cyan-400 rounded-t-3xl shadow-2xl pb-safe max-h-[85dvh] flex flex-col overflow-hidden"
+            className="fixed inset-x-0 bottom-0 z-[95] bg-slate-900 border-t-2 rounded-t-3xl shadow-2xl pb-safe max-h-[85dvh] flex flex-col overflow-hidden"
+            style={{ borderTopColor: primary }}
           >
             {/* Handle */}
             <div className="flex justify-center py-3">
@@ -150,7 +154,7 @@ export default function EventActionSheet({
                 )}
                 {event.location && (
                   <div className="flex items-start gap-2 text-slate-300">
-                    <MapPin className="w-4 h-4 text-cyan-500 mt-0.5 flex-shrink-0" />
+                    <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: primary }} />
                     <span className="line-clamp-2">{event.location}</span>
                   </div>
                 )}
@@ -178,7 +182,8 @@ export default function EventActionSheet({
                 {/* Registrar Horas Manualmente */}
                 <Button
                   onClick={onOpenHours}
-                  className="w-full h-14 min-h-[44px] bg-cyan-600 hover:bg-cyan-700 text-white font-medium text-base justify-start px-4"
+                  className="w-full h-14 min-h-[44px] text-white font-medium text-base justify-start px-4 hover:opacity-90"
+                  style={{ backgroundColor: primary }}
                 >
                   <Clock className="w-5 h-5 mr-3" />
                   <div className="text-left">
@@ -191,7 +196,8 @@ export default function EventActionSheet({
                   <Button
                     onClick={handleCheckIn}
                     disabled={checkingIn}
-                    className="w-full h-14 min-h-[44px] bg-slate-800 border border-cyan-700/40 hover:bg-slate-800/80 text-cyan-300 font-medium text-base justify-start px-4"
+                    className="w-full h-14 min-h-[44px] bg-slate-800 hover:bg-slate-800/80 font-medium text-base justify-start px-4"
+                    style={{ borderWidth: 1, borderColor: `${primary}66`, color: primary }}
                   >
                     {checkingIn ? (
                       <Loader2 className="w-5 h-5 mr-3 animate-spin" />
@@ -246,7 +252,8 @@ export default function EventActionSheet({
                   <Button
                     variant="outline"
                     onClick={onDuplicate}
-                    className="w-full h-12 min-h-[44px] bg-slate-800 border-slate-700 hover:bg-slate-700 text-cyan-300 justify-start"
+                    className="w-full h-12 min-h-[44px] bg-slate-800 border-slate-700 hover:bg-slate-700 justify-start bp-hover-primary"
+                    style={{ color: primary }}
                   >
                     <Copy className="w-5 h-5 mr-3" />
                     Duplicar Evento

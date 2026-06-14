@@ -1,19 +1,21 @@
 import { useMemo, useState } from 'react';
 import { format, subDays, startOfWeek, eachDayOfInterval, parseISO, getDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useAuth } from '@/lib/authContext';
+import { getCategoryConfig } from '@/lib/categoryConfig';
 
 const WEEK_LABELS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const MONTHS_ABBR = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
-function cellColor(count) {
-  if (count === 0) return 'bg-slate-800/80';
-  if (count === 1) return 'bg-cyan-900';
-  if (count === 2) return 'bg-cyan-700';
-  if (count === 3) return 'bg-cyan-500';
-  return 'bg-cyan-300';
+function cellStyle(count, primaryHex) {
+  if (count === 0) return { className: 'bg-slate-800/80' };
+  const opacity = count === 1 ? 0.4 : count === 2 ? 0.6 : count === 3 ? 0.85 : 1;
+  return { className: '', style: { backgroundColor: primaryHex, opacity } };
 }
 
 export default function ActivityHeatmap({ events = [] }) {
+  const { profile } = useAuth();
+  const primaryHex = getCategoryConfig(profile?.category || 'lighting').primaryHex;
   const [tooltip, setTooltip] = useState(null);
 
   const { weeks, monthMarkers, totalDays, totalEvents } = useMemo(() => {
@@ -103,11 +105,12 @@ export default function ActivityHeatmap({ events = [] }) {
                     if (!cell || cell.isFuture) {
                       return <div key={dow} style={{ width: 11, height: 11 }} className="rounded-[2px] bg-transparent" />;
                     }
+                    const { className: cellClass, style: cellInlineStyle } = cellStyle(cell.count, primaryHex);
                     return (
                       <div
                         key={dow}
-                        style={{ width: 11, height: 11 }}
-                        className={`rounded-[2px] cursor-default transition-opacity hover:opacity-80 ${cellColor(cell.count)}`}
+                        style={{ width: 11, height: 11, ...cellInlineStyle }}
+                        className={`rounded-[2px] cursor-default transition-opacity hover:opacity-80 ${cellClass}`}
                         onMouseEnter={() => setTooltip({ iso: cell.iso, count: cell.count })}
                         onMouseLeave={() => setTooltip(null)}
                       />
@@ -133,9 +136,12 @@ export default function ActivityHeatmap({ events = [] }) {
       {/* Legend */}
       <div className="flex items-center gap-2 mt-1">
         <span className="text-[10px] text-slate-600">Menos</span>
-        {[0, 1, 2, 3, 4].map(c => (
-          <div key={c} style={{ width: 11, height: 11 }} className={`rounded-[2px] ${cellColor(c)}`} />
-        ))}
+        {[0, 1, 2, 3, 4].map(c => {
+          const { className: cellClass, style: cellInlineStyle } = cellStyle(c, primaryHex);
+          return (
+            <div key={c} style={{ width: 11, height: 11, ...cellInlineStyle }} className={`rounded-[2px] ${cellClass}`} />
+          );
+        })}
         <span className="text-[10px] text-slate-600">Mais</span>
       </div>
     </div>

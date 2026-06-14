@@ -18,6 +18,7 @@ import {
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 export default function ClientActionSheet({ 
   client, 
@@ -30,6 +31,8 @@ export default function ClientActionSheet({
   onDelete,
 }) {
   const { formatCurrency } = useFinancialVisibility();
+  const theme = useCategoryTheme();
+  const primary = theme.primaryHex;
   useAppScrollLock(Boolean(isOpen && client));
 
   if (!client) return null;
@@ -57,7 +60,8 @@ export default function ClientActionSheet({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed inset-x-0 bottom-0 z-[95] bg-slate-900 border-t-2 border-cyan-400 rounded-t-3xl shadow-2xl pb-safe max-h-[85dvh] flex flex-col overflow-hidden"
+            className="fixed inset-x-0 bottom-0 z-[95] bg-slate-900 border-t-2 rounded-t-3xl shadow-2xl pb-safe max-h-[85dvh] flex flex-col overflow-hidden"
+            style={{ borderTopColor: primary }}
           >
             {/* Handle */}
             <div className="flex justify-center py-3">
@@ -106,8 +110,11 @@ export default function ClientActionSheet({
                 {/* Stats */}
                 {stats && (
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-cyan-900/20 rounded-lg p-3 border border-cyan-700/30">
-                      <div className="flex items-center gap-2 text-cyan-400 text-xs mb-1">
+                    <div
+                      className="rounded-lg p-3 border"
+                      style={{ background: `${primary}1a`, borderColor: `${primary}4d` }}
+                    >
+                      <div className="flex items-center gap-2 text-xs mb-1" style={{ color: primary }}>
                         <Calendar className="w-3 h-3" />
                         <span>Eventos</span>
                       </div>
@@ -154,7 +161,8 @@ export default function ClientActionSheet({
             <div className="px-6 py-4 border-t border-slate-800 space-y-2 bg-slate-900/50">
               <Button
                 onClick={() => onViewDetails(client)}
-                className="w-full h-12 min-h-[44px] bg-cyan-600 hover:bg-cyan-700 text-white font-medium text-base"
+                className="w-full h-12 min-h-[44px] text-white font-medium text-base hover:opacity-90"
+                style={{ backgroundColor: primary }}
               >
                 <Eye className="w-4 h-4 mr-2" />
                 Ver Detalhes Completos

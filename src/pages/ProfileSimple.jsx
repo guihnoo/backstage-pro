@@ -25,9 +25,13 @@ import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
 import InstallPwaCard from '@/components/pwa/InstallPwaCard';
 import { requestAppTour } from '@/lib/appTourBus';
+import { useUserSettings } from '@/lib/useUserSettings';
+
+const PIX_TYPES = ['CPF', 'CNPJ', 'E-mail', 'Telefone', 'Chave aleatória'];
 
 export default function ProfileSimple() {
   const { user, profile, signOut, updateProfile } = useAuth();
+  const { settings: userSettings, upsert: upsertSettings } = useUserSettings();
   const { stats, refetch: refetchStats } = useStats(user?.id);
   const { pullDistance, isRefreshing, threshold } = usePullToRefresh(refetchStats);
   const { isVisible, toggleVisibility } = useFinancialVisibility();
@@ -52,6 +56,8 @@ export default function ProfileSimple() {
   const [exporting, setExporting] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [pixForm, setPixForm] = useState({ pix_key: '', pix_key_type: 'CPF' });
+  const [savingPix, setSavingPix] = useState(false);
   const photoInputRef = useRef(null);
   const owner = isAppOwner(user, profile);
   const { newCount: ownerNewFeedbacks } = useOwnerFeedbacks(owner);
@@ -71,6 +77,27 @@ export default function ProfileSimple() {
       });
     }
   }, [profile]);
+
+  useEffect(() => {
+    if (userSettings) {
+      setPixForm({
+        pix_key: userSettings.pix_key || '',
+        pix_key_type: userSettings.pix_key_type || 'CPF',
+      });
+    }
+  }, [userSettings]);
+
+  const handleSavePix = async () => {
+    setSavingPix(true);
+    try {
+      await upsertSettings({ pix_key: pixForm.pix_key.trim(), pix_key_type: pixForm.pix_key_type });
+      appToast.success('Chave PIX salva!');
+    } catch {
+      appToast.error('Erro ao salvar chave PIX.');
+    } finally {
+      setSavingPix(false);
+    }
+  };
 
   const handleExportData = async () => {
     setExporting(true);
@@ -406,6 +433,49 @@ export default function ProfileSimple() {
         {/* Google Calendar */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }}>
           <GoogleCalendarSync />
+        </motion.div>
+
+        {/* PIX */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.315 }}>
+          <NeonGlass primary={config.primaryHex} className="p-5 space-y-4">
+            <div>
+              <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider font-mono">Dados de Pagamento (PIX)</h2>
+              <p className="text-xs text-slate-500 mt-1">Usados para gerar cobrança via WhatsApp e nos relatórios PDF.</p>
+            </div>
+            <div>
+              <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Tipo de chave</label>
+              <select
+                value={pixForm.pix_key_type}
+                onChange={e => setPixForm(f => ({ ...f, pix_key_type: e.target.value }))}
+                className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-slate-600 transition-colors"
+              >
+                {PIX_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Chave PIX</label>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
+                <input
+                  type="text"
+                  value={pixForm.pix_key}
+                  onChange={e => setPixForm(f => ({ ...f, pix_key: e.target.value }))}
+                  placeholder="sua@chave.pix"
+                  className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-600 transition-colors"
+                />
+              </div>
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleSavePix}
+              disabled={savingPix || !pixForm.pix_key.trim()}
+              className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+              style={{ background: `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})` }}
+            >
+              {savingPix ? <><Loader2 className="w-4 h-4 animate-spin" /> Salvando...</> : <><Save className="w-4 h-4" /> Salvar PIX</>}
+            </motion.button>
+          </NeonGlass>
         </motion.div>
 
         {/* Ajuda do app */}

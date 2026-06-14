@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { X, FileText, Save } from 'lucide-react';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 export default function NotesSheet({ 
   event,
@@ -15,6 +16,7 @@ export default function NotesSheet({
   onSave
 }) {
   const [notes, setNotes] = useState('');
+  const { primaryHex } = useCategoryTheme();
   useAppScrollLock(isOpen);
 
   useEffect(() => {
@@ -89,7 +91,7 @@ export default function NotesSheet({
             {/* Header - Fixed */}
             <div className="flex items-center justify-between px-4 py-3 sm:p-6 border-b border-slate-800 flex-shrink-0 bg-slate-900">
               <div className="flex items-center gap-3 flex-1 min-w-0">
-                <FileText className="w-5 h-5 text-cyan-400 flex-shrink-0" />
+                <FileText className="w-5 h-5 bp-text-primary flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <h3 className="text-lg font-bold text-white truncate">
                     Observações
@@ -152,7 +154,8 @@ export default function NotesSheet({
               </Button>
               <Button
                 onClick={handleSave}
-                className="flex-1 bg-cyan-600 hover:bg-cyan-700 h-12 text-base font-semibold"
+                className="flex-1 h-12 text-base font-semibold text-white hover:opacity-90"
+                style={{ backgroundColor: primaryHex }}
               >
                 <Save className="w-4 h-4 mr-2" />
                 Salvar

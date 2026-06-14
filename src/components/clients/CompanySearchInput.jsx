@@ -116,10 +116,10 @@ function CompanyCard({ company, onSelect, sourceBadge }) {
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="group relative rounded-xl border border-slate-700/60 bg-slate-800/60 hover:bg-slate-800 hover:border-cyan-500/40 transition-all cursor-pointer overflow-hidden"
+      className="group relative rounded-xl border border-slate-700/60 bg-slate-800/60 hover:bg-slate-800 transition-all cursor-pointer overflow-hidden hover:border-[color-mix(in_srgb,var(--bp-primary)_40%,transparent)]"
       onClick={() => onSelect(company)}
     >
-      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-cyan-500/0 group-hover:bg-cyan-500/60 transition-colors" />
+      <div className="absolute left-0 top-0 bottom-0 w-0.5 opacity-0 group-hover:opacity-60 transition-opacity bg-[var(--bp-primary)]" />
 
       <div className="flex items-start gap-3 p-3.5">
         <CompanyLogo domain={company.domain} name={displayName} size="md" />
@@ -136,7 +136,7 @@ function CompanyCard({ company, onSelect, sourceBadge }) {
             </div>
             <div className="flex items-center gap-1.5 flex-shrink-0">
               {company.verified && (
-                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" title="Dados verificados (Receita Federal)" />
+                <CheckCircle2 className="w-3.5 h-3.5 bp-text-primary" title="Dados verificados (Receita Federal)" />
               )}
               {sourceBadge && (
                 <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border" style={sourceBadge.style}>
@@ -170,7 +170,7 @@ function CompanyCard({ company, onSelect, sourceBadge }) {
               {company.phone && <span className="text-[11px] text-slate-400">{company.phone}</span>}
               {company.email && <span className="text-[11px] text-slate-400 truncate max-w-[160px]">{company.email}</span>}
               {company.website && (
-                <span className="flex items-center gap-0.5 text-[11px] text-cyan-500">
+                <span className="flex items-center gap-0.5 text-[11px] bp-text-primary">
                   <Globe className="w-3 h-3" />{company.domain}
                 </span>
               )}
@@ -178,7 +178,7 @@ function CompanyCard({ company, onSelect, sourceBadge }) {
           )}
         </div>
 
-        <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-cyan-400 transition-colors flex-shrink-0 mt-1" />
+        <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-[var(--bp-primary)] transition-colors flex-shrink-0 mt-1" />
       </div>
     </motion.div>
   );
@@ -195,7 +195,7 @@ function SelectedCompany({ company, onClear }) {
     <motion.div
       initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="rounded-xl bg-cyan-950/40 border border-cyan-500/30 overflow-hidden"
+      className="rounded-xl bp-today-surface-soft border overflow-hidden"
     >
       <div className="flex items-center gap-3 p-3">
         <CompanyLogo domain={company.domain} name={displayName} size="md" />
@@ -212,7 +212,7 @@ function SelectedCompany({ company, onClear }) {
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <CheckCircle2 className="w-4 h-4 text-cyan-400" />
+          <CheckCircle2 className="w-4 h-4 bp-text-primary" />
           <button
             type="button"
             onClick={onClear}
@@ -226,11 +226,11 @@ function SelectedCompany({ company, onClear }) {
 
       {/* Linha de razão social + nome fantasia destaque */}
       {(razao || company.cnpj) && (
-        <div className="border-t border-cyan-500/10 px-3 py-2 flex flex-wrap gap-x-4 gap-y-1">
+        <div className="border-t border-[color-mix(in_srgb,var(--bp-primary)_15%,transparent)] px-3 py-2 flex flex-wrap gap-x-4 gap-y-1">
           {company.trading_name && (
             <span className="text-[10px] text-slate-500">
               <span className="text-slate-600">Nome Fantasia: </span>
-              <span className="text-cyan-300 font-semibold">{company.trading_name}</span>
+              <span className="bp-text-primary font-semibold">{company.trading_name}</span>
             </span>
           )}
           {razao && (
@@ -489,7 +489,7 @@ export default function CompanySearchInput({ onSelect, disabled }) {
                   onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), runSearch())}
                   disabled={disabled || loading}
                   placeholder="Nome da empresa…"
-                  className="pl-10 bg-slate-800/80 border-slate-600 text-white h-11 text-sm focus:border-cyan-500"
+                  className="pl-10 bg-slate-800/80 border-slate-600 text-white h-11 text-sm bp-focus-input"
                 />
               </div>
               <div className="relative w-32">
@@ -500,14 +500,15 @@ export default function CompanySearchInput({ onSelect, disabled }) {
                   onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), runSearch())}
                   disabled={disabled || loading}
                   placeholder="Cidade"
-                  className="pl-8 bg-slate-800/80 border-slate-600 text-white h-11 text-sm focus:border-cyan-500"
+                  className="pl-8 bg-slate-800/80 border-slate-600 text-white h-11 text-sm bp-focus-input"
                 />
               </div>
               <Button
                 type="button"
                 onClick={runSearch}
                 disabled={disabled || loading || query.trim().length < 2}
-                className="h-11 px-4 bg-cyan-600 hover:bg-cyan-700 text-white flex-shrink-0"
+                className="h-11 px-4 text-white flex-shrink-0 hover:opacity-90"
+                style={{ backgroundColor: 'var(--bp-primary)' }}
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
               </Button>
@@ -529,7 +530,7 @@ export default function CompanySearchInput({ onSelect, disabled }) {
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-2">
                   {results.filter(r => r._origin === 'local').length > 0 && (
                     <div>
-                      <p className="text-[10px] font-mono uppercase tracking-wider text-cyan-500 mb-1.5 flex items-center gap-1">
+                      <p className="text-[10px] font-mono uppercase tracking-wider bp-text-primary mb-1.5 flex items-center gap-1">
                         <Sparkles className="w-3 h-3" /> Já cadastradas no Backstage Pro
                       </p>
                       <div className="space-y-2">
@@ -596,7 +597,7 @@ export default function CompanySearchInput({ onSelect, disabled }) {
                   onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), runCNPJSearch())}
                   disabled={disabled || cnpjLoading}
                   placeholder="00.000.000/0001-00"
-                  className="pl-10 bg-slate-800/80 border-slate-600 text-white h-11 text-sm focus:border-cyan-500 font-mono tracking-wider"
+                  className="pl-10 bg-slate-800/80 border-slate-600 text-white h-11 text-sm bp-focus-input font-mono tracking-wider"
                   maxLength={18}
                 />
               </div>
@@ -604,7 +605,8 @@ export default function CompanySearchInput({ onSelect, disabled }) {
                 type="button"
                 onClick={runCNPJSearch}
                 disabled={disabled || cnpjLoading || cleanCNPJ(cnpjInput).length !== 14}
-                className="h-11 px-4 bg-cyan-600 hover:bg-cyan-700 text-white flex-shrink-0"
+                className="h-11 px-4 text-white flex-shrink-0 hover:opacity-90"
+                style={{ backgroundColor: 'var(--bp-primary)' }}
               >
                 {cnpjLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
               </Button>
@@ -646,7 +648,7 @@ export default function CompanySearchInput({ onSelect, disabled }) {
 
             {!nfeData ? (
               <div
-                className="flex flex-col items-center justify-center gap-3 p-6 rounded-xl border-2 border-dashed border-slate-700 hover:border-cyan-500/50 transition-colors cursor-pointer"
+                className="flex flex-col items-center justify-center gap-3 p-6 rounded-xl border-2 border-dashed border-slate-700 hover:border-[color-mix(in_srgb,var(--bp-primary)_50%,transparent)] transition-colors cursor-pointer"
                 onClick={() => fileRef.current?.click()}
               >
                 {nfeParsing ? (
@@ -684,7 +686,7 @@ export default function CompanySearchInput({ onSelect, disabled }) {
 
                 {nfeData.dest && (
                   <div>
-                    <p className="text-[10px] font-mono uppercase tracking-wider text-cyan-400 mb-1.5 flex items-center gap-1">
+                    <p className="text-[10px] font-mono uppercase tracking-wider bp-text-primary mb-1.5 flex items-center gap-1">
                       <Building2 className="w-3 h-3" /> Contratante / Destinatário
                     </p>
                     <CompanyCard

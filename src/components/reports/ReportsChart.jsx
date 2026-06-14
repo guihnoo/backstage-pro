@@ -10,10 +10,11 @@ import { BarChart3, TrendingUp, Wallet, LineChart as LineChartIcon } from 'lucid
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 const CHART_ANIM_MS = 900;
 
-const CustomTooltip = ({ active, payload, label, chartView }) => {
+const CustomTooltip = ({ active, payload, label, chartView, primaryHex }) => {
   const { formatCurrency } = useFinancialVisibility();
   if (active && payload && payload.length) {
     return (
@@ -21,7 +22,7 @@ const CustomTooltip = ({ active, payload, label, chartView }) => {
         <p className="text-white font-bold text-sm mb-1">{label}</p>
         {chartView === 'overview' ? (
           <>
-            {payload[0] && <p className="text-cyan-400 text-xs">{`Receita: ${formatCurrency(payload[0].value)}`}</p>}
+            {payload[0] && <p className="text-xs" style={{ color: primaryHex }}>{`Receita: ${formatCurrency(payload[0].value)}`}</p>}
             {payload[1] && <p className="text-rose-400 text-xs">{`Despesas: ${formatCurrency(payload[1].value)}`}</p>}
           </>
         ) : (
@@ -33,11 +34,11 @@ const CustomTooltip = ({ active, payload, label, chartView }) => {
   return null;
 };
 
-const GradientDefs = () => (
+const GradientDefs = ({ primaryHex }) => (
   <defs>
     <linearGradient id="gradRealized" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.35} />
-      <stop offset="95%" stopColor="#22d3ee" stopOpacity={0.03} />
+      <stop offset="5%" stopColor={primaryHex} stopOpacity={0.35} />
+      <stop offset="95%" stopColor={primaryHex} stopOpacity={0.03} />
     </linearGradient>
     <linearGradient id="gradReceivable" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.9} />
@@ -48,8 +49,8 @@ const GradientDefs = () => (
       <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.5} />
     </linearGradient>
     <linearGradient id="gradReceita" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stopColor="#22d3ee" stopOpacity={0.9} />
-      <stop offset="100%" stopColor="#22d3ee" stopOpacity={0.5} />
+      <stop offset="0%" stopColor={primaryHex} stopOpacity={0.9} />
+      <stop offset="100%" stopColor={primaryHex} stopOpacity={0.5} />
     </linearGradient>
     <linearGradient id="gradDespesas" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stopColor="#f43f5e" stopOpacity={0.9} />
@@ -85,6 +86,7 @@ const chartVariants = {
 
 export default function ReportsChart({ chartInput, onDataClick }) {
   const { isVisible } = useFinancialVisibility();
+  const { primaryHex } = useCategoryTheme();
   const [chartView, setChartView] = useState('overview');
 
   const chartData = useMemo(() => {
@@ -134,7 +136,7 @@ export default function ReportsChart({ chartInput, onDataClick }) {
     return (
       <Card className="bg-slate-900/50 border-slate-800">
         <CardHeader className="px-4 sm:px-6">
-          <CardTitle className="text-cyan-300 font-display flex items-center gap-2 text-base sm:text-lg">
+          <CardTitle className="font-display flex items-center gap-2 text-base sm:text-lg bp-text-primary">
             <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5" />
             <span className="truncate">Análise Financeira</span>
           </CardTitle>
@@ -157,21 +159,21 @@ export default function ReportsChart({ chartInput, onDataClick }) {
       case 'realized':
         return (
           <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }} onClick={handleChartElementClick}>
-            <GradientDefs />
+            <GradientDefs primaryHex={primaryHex} />
             <CartesianGrid {...gridProps} />
             <XAxis {...xAxisProps} />
             <YAxis {...yAxisProps} />
-            <Tooltip content={<CustomTooltip chartView={chartView} />} />
+            <Tooltip content={<CustomTooltip chartView={chartView} primaryHex={primaryHex} />} />
             <Legend wrapperStyle={legendStyle} />
             <Area
               type="monotone"
               dataKey="realized"
               name="Receita Realizada"
-              stroke="#22d3ee"
+              stroke={primaryHex}
               strokeWidth={2.5}
               fill="url(#gradRealized)"
-              dot={{ r: 3, fill: '#22d3ee', strokeWidth: 0 }}
-              activeDot={{ r: 6, fill: '#fff', stroke: '#22d3ee', strokeWidth: 2 }}
+              dot={{ r: 3, fill: primaryHex, strokeWidth: 0 }}
+              activeDot={{ r: 6, fill: '#fff', stroke: primaryHex, strokeWidth: 2 }}
               isAnimationActive
               animationDuration={CHART_ANIM_MS}
               animationEasing="ease-out"
@@ -181,11 +183,11 @@ export default function ReportsChart({ chartInput, onDataClick }) {
       case 'receivable':
         return (
           <BarChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }} onClick={handleChartElementClick}>
-            <GradientDefs />
+            <GradientDefs primaryHex={primaryHex} />
             <CartesianGrid {...gridProps} />
             <XAxis {...xAxisProps} />
             <YAxis {...yAxisProps} />
-            <Tooltip content={<CustomTooltip chartView={chartView} />} />
+            <Tooltip content={<CustomTooltip chartView={chartView} primaryHex={primaryHex} />} />
             <Legend wrapperStyle={legendStyle} />
             <Bar dataKey="receivable" name="A Receber" fill="url(#gradReceivable)" radius={[6, 6, 0, 0]}
               isAnimationActive animationDuration={CHART_ANIM_MS} animationEasing="ease-out" maxBarSize={40}>
@@ -196,11 +198,11 @@ export default function ReportsChart({ chartInput, onDataClick }) {
       case 'projected':
         return (
           <BarChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }} onClick={handleChartElementClick}>
-            <GradientDefs />
+            <GradientDefs primaryHex={primaryHex} />
             <CartesianGrid {...gridProps} />
             <XAxis {...xAxisProps} />
             <YAxis {...yAxisProps} />
-            <Tooltip content={<CustomTooltip chartView={chartView} />} />
+            <Tooltip content={<CustomTooltip chartView={chartView} primaryHex={primaryHex} />} />
             <Legend wrapperStyle={legendStyle} />
             <Bar dataKey="projected" name="Projetado" fill="url(#gradProjected)" radius={[6, 6, 0, 0]}
               isAnimationActive animationDuration={CHART_ANIM_MS} animationEasing="ease-out" maxBarSize={40}>
@@ -211,11 +213,11 @@ export default function ReportsChart({ chartInput, onDataClick }) {
       default:
         return (
           <BarChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }} onClick={handleChartElementClick}>
-            <GradientDefs />
+            <GradientDefs primaryHex={primaryHex} />
             <CartesianGrid {...gridProps} />
             <XAxis {...xAxisProps} />
             <YAxis {...yAxisProps} />
-            <Tooltip content={<CustomTooltip chartView={chartView} />} />
+            <Tooltip content={<CustomTooltip chartView={chartView} primaryHex={primaryHex} />} />
             <Legend wrapperStyle={legendStyle} />
             <Bar dataKey="overview_receita" name="Receita" fill="url(#gradReceita)" radius={[4, 4, 0, 0]}
               isAnimationActive animationDuration={CHART_ANIM_MS} animationEasing="ease-out" maxBarSize={28} />
@@ -230,7 +232,7 @@ export default function ReportsChart({ chartInput, onDataClick }) {
     <Card className="bg-slate-900/50 border-slate-800">
       <CardHeader className="px-4 sm:px-6 pb-3">
         <div className="flex flex-col gap-3">
-          <CardTitle className="text-cyan-300 font-display flex items-center gap-2 text-base sm:text-lg">
+          <CardTitle className="font-display flex items-center gap-2 text-base sm:text-lg bp-text-primary">
             <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5" />
             <span className="truncate">Análise Financeira</span>
           </CardTitle>

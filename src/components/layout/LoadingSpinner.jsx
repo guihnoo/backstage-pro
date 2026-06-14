@@ -24,7 +24,7 @@ export default function LoadingSpinner({
       animate={{ opacity: 1 }}
       className="flex flex-col items-center justify-center gap-4"
     >
-      <Loader2 className={`${sizeClasses[size]} text-cyan-400 animate-spin`} />
+      <Loader2 className={`${sizeClasses[size]} bp-text-primary animate-spin`} />
       {text && (
         <p className={`${textSizeClasses[size]} text-slate-400 font-medium`}>
           {text}
