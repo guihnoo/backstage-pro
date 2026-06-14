@@ -3,9 +3,9 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-13 (sessão S43 — Cursor)  
+**Última atualização:** 2026-06-14 (sessões S69–S74 — Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último deploy:** 2026-06-13 — `dpl_9Xvk7A1ANiF2RqNWcBWeGQAQ3NqY` (commit `15b7ac0`)  
+**Último deploy:** 2026-06-14 — commit `b315a8c` (anterior); deploy desta sessão em andamento  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` (dedupe refatorado) deployadas no Supabase ✅  
 **Smoke E2E:** 28/28 passando (`npm run test:e2e:smoke`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`
@@ -135,6 +135,24 @@ Use este roteiro para fechar o item **#8** em `IDEIAS_PENDENTES.md`.
 ---
 
 ## Changelog
+
+### 2026-06-14 (sessões S69–S74) — Claude Code: insights, templates, PDFs, CRM e agenda
+
+**S69 — SmartInsights:** 7 regras automáticas no topo de Relatórios → Visão Geral (inadimplência, agenda vazia/cheia, crescimento, concentração de cliente, melhor mês chegando, meta, taxa horária)
+
+**S70 — EventTemplatesManager:** seção collapsível no Perfil para listar e deletar templates salvos (ciclo completo: criar → usar → gerenciar)
+
+**S71 — ReceiptPDFDocument:** recibo de pagamento em PDF gerado direto do EventDetailModal para eventos pagos (botão `BadgeCheck` verde)
+
+**S72 — InactiveClientsPanel + buildReactivationMessage:** painel âmbar na página de Clientes detecta clientes sem shows há ≥90 dias; botão "Reativar" abre WhatsApp com mensagem calorosa
+
+**S73 — WeekdayBreakdown:** gráfico Dom–Sáb na aba Atividade de Relatórios; KPIs +Receita/+Shows/Mais Livre; grid 2 col com SeasonalityChart
+
+**S74 — AvailabilityShareModal + buildAvailabilityMessage:** botão Share2 (verde) na Agenda abre modal de disponibilidade com navegação por mês, prévia e compartilhamento via WhatsApp/clipboard
+
+**Deploy anterior:** `dpl_4Wbzu5zDdCQWB2Y9gqe6iMNmhVuJ` (S67–S69)
+
+---
 
 ### 2026-06-13 (sessão S43) — Cursor: notificações, dedupe GCal, busca global, QA
 
