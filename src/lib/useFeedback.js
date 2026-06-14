@@ -10,8 +10,10 @@ export const FEEDBACK_TYPES = [
   { id: 'praise', label: 'Elogio', emoji: '⭐' },
 ];
 
+import { AUTH_HERO_PRIMARY } from '@/lib/categoryGear';
+
 export const FEEDBACK_STATUS = {
-  new: { label: 'Novo', color: '#A64AFF' },
+  new: { label: 'Novo', color: AUTH_HERO_PRIMARY },
   in_review: { label: 'Em análise', color: '#eab308' },
   resolved: { label: 'Resolvido', color: '#39FF14' },
 };

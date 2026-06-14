@@ -121,7 +121,9 @@ const StatCard = ({ title, value, pulseValue, pulseColor, subtitle, icon: Icon, 
   return (
     <Card
       className={`bg-slate-900/50 border-slate-800 transition-all min-w-0 overflow-hidden ${
-        isClickable && onClick ? 'hover:border-purple-400/50 cursor-pointer hover:shadow-lg hover:shadow-purple-500/10' : ''
+        isClickable && onClick
+          ? 'cursor-pointer hover:border-[color-mix(in_srgb,var(--bp-primary)_45%,transparent)] hover:shadow-[0_12px_40px_-12px_color-mix(in_srgb,var(--bp-primary)_35%,transparent)]'
+          : ''
       }`}
       onClick={onClick}
     >
@@ -145,7 +147,7 @@ const StatCard = ({ title, value, pulseValue, pulseColor, subtitle, icon: Icon, 
           )}
         </div>
         {isClickable && onClick && (
-          <div className="mt-2 text-xs text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="mt-2 text-xs bp-text-primary opacity-0 group-hover:opacity-100 transition-opacity">
             Clique para ver detalhes →
           </div>
         )}
@@ -212,7 +214,7 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type, onItemClick
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-2xl max-h-[90dvh] flex flex-col overflow-hidden p-0">
         <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0 min-w-0">
-          <DialogTitle className="text-xl font-bold text-purple-300 min-w-0">
+          <DialogTitle className="text-xl font-bold bp-text-primary min-w-0">
             <Ellipsis>{title}</Ellipsis>
           </DialogTitle>
           <DialogDescription className="text-slate-400">
@@ -830,7 +832,7 @@ export default function ReportsPage() {
             title="A Receber"
             value={isVisible ? formatCurrency(processedData.current.receivableRevenue) : '•••••'}
             pulseValue={processedData.current.receivableRevenue}
-            pulseColor="#FFB700"
+            pulseColor={config.accentHex}
             subtitle={`${data.events?.filter(isReceivableEvent).length || 0} pendentes`}
             icon={Clock}
             color="text-amber-400"
@@ -852,10 +854,10 @@ export default function ReportsPage() {
             title="Clientes Ativos"
             value={processedData.current.activeClientsCount}
             pulseValue={processedData.current.activeClientsCount}
-            pulseColor="#A64AFF"
+            pulseColor={config.primaryHex}
             subtitle={processedData.current.topClient ? `Top: ${processedData.current.topClient.name}` : 'Nenhum cliente'}
             icon={Users}
-            color="text-purple-400"
+            color="bp-text-primary"
             trend={processedData.trends.clients}
             onClick={() => handleKPIClick('clientes')} />
 
@@ -864,14 +866,18 @@ export default function ReportsPage() {
         {/* Projeção para o Próximo Período */}
         {processedData.next.projectedRevenue > 0 &&
           <Card
-            className="bg-gradient-to-r from-purple-900/20 to-amber-900/20 border-purple-500/30 cursor-pointer hover:border-purple-400/50 transition-all"
+            className="cursor-pointer transition-all border"
+            style={{
+              background: `linear-gradient(to right, ${config.primaryHex}22, ${config.accentHex}18)`,
+              borderColor: `${config.primaryHex}44`,
+            }}
             onClick={() => setShowProjection(true)}>
 
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-purple-300 mb-1">Projeção do Próximo Período</h3>
-                  <StatValuePulse value={processedData.next.projectedRevenue} glowColor="#A64AFF">
+                  <h3 className="text-lg font-semibold bp-text-primary mb-1">Projeção do Próximo Período</h3>
+                  <StatValuePulse value={processedData.next.projectedRevenue} glowColor={config.primaryHex}>
                     <p className="text-3xl font-bold text-white">
                       {isVisible ? formatCurrency(processedData.next.projectedRevenue) : '•••••'}
                     </p>

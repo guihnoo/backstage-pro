@@ -6,6 +6,19 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-13
 
+### CONTRACT-S67 — Contrato de Serviços em PDF ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/lib/ContractPDFDocument.jsx`** (NOVO): template PDF completo via `@react-pdf/renderer`
+  - Seções: cabeçalho (nome técnico + nº do contrato), partes, evento, pagamento (valor + vencimento + PIX), 6 cláusulas padrão, assinaturas
+  - Cláusulas: Objeto, Prazo/Local, Remuneração (com multa 2%/mês), Cancelamento (50% < 72h), Equipamentos, Imagem
+  - Usa dados de `userSettings` (nome, subtítulo, PIX) e do evento (datas, local, cachê, categoria)
+  - `contract_clauses` em settings permite sobrescrever cláusulas padrão
+- **`src/components/calendar/EventDetailModal.jsx`**:
+  - `generatingContract` state + `handleDownloadContract()` handler (dynamic import lazy)
+  - Ícone `ScrollText` (emerald) no footer para status `pending/scheduled/confirmed`
+  - Filename: `Contrato_<cliente>_<data>.pdf`
+- **Build**: Vite ✅ · **Git backup**: auto-wip ✅
+
 ### TOP-S66 — Top Clientes por Receita em Relatórios ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/components/reports/TopClients.jsx`** (NOVO):
@@ -223,6 +236,17 @@ Registro cronológico de tarefas executadas por agentes.
 - `BackstageLogo.jsx`: wordmark roxo→ouro; glow alinhado à marca lighting
 - `CashflowForecast.jsx`, `WorkAnalytics.jsx`: status "A receber", KPIs e barras com `--bp-primary`
 - `EventDetailModal.jsx` (calendar + reports): ícones, CTAs e timer com `useCategoryTheme()`
+- **Testes**: unit 29/29 ✅ · build ✅
+
+### DESIGN-S62 — Fase 12 tokens categoria + PWA + Reports (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `categoryConfig.js`: accents únicos por categoria (remove `#00D9FF` genérico); hospitalidade → teal; fallback `lighting`
+- `categoryGear.js`: exporta `AUTH_HERO_THEME`, `AUTH_HERO_PRIMARY`, `AUTH_HERO_ACCENT`
+- `useCategoryTheme.test.js`: categoria desconhecida → lighting (`#A64AFF`)
+- `useFeedback.js`: status "Novo" via `AUTH_HERO_PRIMARY`
+- `Reports.jsx`: KPIs e projeção com `config.primaryHex` / `accentHex`; hover `var(--bp-primary)`
+- `public/icon.svg`, `icon-maskable.svg`: gradiente roxo→ouro (identidade lighting)
+- `npm run icons:generate`: PNGs PWA (`192`, `512`, maskable, apple-touch) regenerados
 - **Testes**: unit 29/29 ✅ · build ✅
 
 ### WORK-S50 — R$/hora por show + aba Trabalho em Relatórios ✅

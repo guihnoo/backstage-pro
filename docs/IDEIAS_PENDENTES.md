@@ -105,6 +105,7 @@
 | 64 | Timer ao vivo para registro automático de horas durante o show | 2026-06-13 | ✅ `timerStore.js` + `FloatingTimer.jsx`; persiste em localStorage; pill flutuante global; botão no EventDetailModal; ao parar cria work record via `useDailyWork` |
 | 65 | CRM: histórico de interações por cliente com follow-up e alertas | 2026-06-13 | ✅ `client_interactions` DB + `useClientInteractions` + `ClientInteractionLog.jsx` em ClientDetail; 5 tipos; alerta violet no AlertsPanel para follow-ups vencidos |
 | 66 | Top Clientes por receita em Relatórios com ranking e score | 2026-06-13 | ✅ `TopClients.jsx`; ranking top-10; barra proporcional; medalhas; ticket médio; score de pagamento; navega para ClientDetail |
+| 67 | Contrato de Serviços em PDF gerado direto do evento | 2026-06-14 | ✅ `ContractPDFDocument.jsx`; partes, evento, pagamento, 6 cláusulas, assinaturas; botão ScrollText (emerald) no footer do EventDetailModal para pre-show |
 
 ---
 
