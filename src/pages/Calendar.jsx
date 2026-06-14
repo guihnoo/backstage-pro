@@ -30,6 +30,7 @@ import {
   ChevronRight,
   Zap,
   Share2,
+  Columns2,
 } from 'lucide-react';
 import { exportCalendarIcs } from '@/lib/exportReport';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, parseISO, isValid, addWeeks, subWeeks, startOfWeek, endOfWeek, eachDayOfInterval, differenceInCalendarDays, isBefore } from 'date-fns';
@@ -56,6 +57,7 @@ import DrilldownModal from '@/components/reports/DrilldownModal';
 import DayQuickActions from '@/components/calendar/DayQuickActions';
 import AlertsPanel from '@/components/calendar/AlertsPanel';
 import AvailabilityShareModal from '@/components/calendar/AvailabilityShareModal';
+import KanbanPipeline from '@/components/calendar/KanbanPipeline';
 import EventActionSheet from '@/components/mobile/EventActionSheet';
 import EventHoursSheet from '@/components/mobile/EventHoursSheet';
 import NotesSheet from '@/components/mobile/NotesSheet';
@@ -189,7 +191,7 @@ export default function CalendarPage() {
   const [viewMode, setViewMode] = useState(() => {
     try {
       const stored = localStorage.getItem('backstage:calendar-view-mode');
-      return ['grid', 'week', 'list'].includes(stored) ? stored : 'grid';
+      return ['grid', 'week', 'list', 'upcoming', 'kanban'].includes(stored) ? stored : 'grid';
     } catch {
       return 'grid';
     }
@@ -1269,6 +1271,14 @@ export default function CalendarPage() {
               >
                 <Zap className="w-4 h-4" />
               </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('kanban')}
+                title="Pipeline Kanban"
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'kanban' ? 'bg-violet-600/30 text-violet-300' : 'text-slate-500 hover:text-slate-300'}`}
+              >
+                <Columns2 className="w-4 h-4" />
+              </button>
             </div>
             <button
               type="button"
@@ -1509,6 +1519,12 @@ export default function CalendarPage() {
               </div>
             ))}
           </div>
+        ) : viewMode === 'kanban' ? (
+          <KanbanPipeline
+            events={filteredEvents}
+            clients={clients}
+            onEventClick={handleEventClick}
+          />
         ) : (
           <div className="space-y-4">
             {filteredEvents.length === 0 ? (

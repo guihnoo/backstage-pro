@@ -6,6 +6,21 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-14
 
+### KANBAN-S76 — Vista Pipeline Kanban na Agenda ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/calendar/KanbanPipeline.jsx`** (NOVO):
+  - 4 colunas: Negociando (slate), Confirmado (indigo), A Receber (amber), Pago (emerald)
+  - Cada coluna: header com contagem + total de receita + cards clicáveis
+  - Card: barra colorida do evento, título, nome do cliente, data, valor (com máscara financeira)
+  - Scroll horizontal automático no mobile (min-w 720px distribuído em flex)
+  - `onEventClick` → abre `EventDetailModal` existente
+- **`src/pages/Calendar.jsx`**:
+  - Import `Columns2` de lucide + `KanbanPipeline`
+  - `viewMode` aceita `'kanban'` no `useState`
+  - Botão `Columns2` (violet) no grupo de toggle de views
+  - Bloco `viewMode === 'kanban'` antes do fallback `list`
+- **Build**: Vite ✅ · **Git backup**: auto-wip ✅
+
 ### YOY-S75 — Comparação Ano a Ano em Relatórios ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/components/reports/YearOverYear.jsx`** (NOVO):
