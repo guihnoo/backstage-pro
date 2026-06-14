@@ -41,7 +41,10 @@ function calculateCache(event, totalHours, overtimeHours) {
   return Math.round((baseValue + overtimeHours * overtimeRate) * 100) / 100;
 }
 
-export default function ModoPalcoActions({ event, accentColor = '#00D9FF', onRefresh }) {
+import { getCategoryConfig } from '@/lib/categoryConfig';
+import { AUTH_HERO_CATEGORY } from '@/lib/categoryGear';
+
+export default function ModoPalcoActions({ event, accentColor = getCategoryConfig(AUTH_HERO_CATEGORY).primaryHex, onRefresh }) {
   const { user } = useAuth();
   const [record, setRecord] = useState(null);
   const [loading, setLoading] = useState(true);

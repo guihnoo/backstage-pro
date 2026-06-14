@@ -3,7 +3,7 @@ import { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Clock } from 'lucide-react'; // Removed MapPin as it's not used
 import { getContrastColor, softColor, timeRangeLabel } from '../utils/dateUtils';
-import { resolveEventColor } from '@/lib/brandColors';
+import { DEFAULT_EVENT_COLOR, resolveEventColor } from '@/lib/brandColors';
 import { getEventDisplay } from '@/lib/eventDisplay';
 
 export default function ContinuousEventBar({
@@ -22,7 +22,7 @@ export default function ContinuousEventBar({
   const client = clients.find((c) => c?.id === event?.client_id);
 
   // Determine the base color for the bar, prioritizing span.block.color from outline
-  const baseColor = resolveEventColor(event, client) || span.block.color || '#22d3ee';
+  const baseColor = resolveEventColor(event, client) || span.block.color || DEFAULT_EVENT_COLOR;
   const { companyName, eventName, showEventSubtitle } = getEventDisplay(event, client);
   const isToday = span.isToday;
 

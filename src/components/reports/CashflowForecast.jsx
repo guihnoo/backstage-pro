@@ -3,14 +3,20 @@ import { format, addMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO
 import { ptBR } from 'date-fns/locale';
 import { TrendingUp, Clock, CalendarDays, CheckCircle2, AlertCircle, Circle } from 'lucide-react';
 import { getEventCacheAmount } from '@/lib/eventFinance';
-import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import EventHeading from '@/components/events/EventHeading';
 
-const STATUS_CONFIG = {
+const STATUS_CONFIG_BASE = {
   confirmed: { label: 'Confirmado', color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/20', dot: 'bg-green-400' },
   scheduled: { label: 'Agendado', color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20', dot: 'bg-blue-400' },
   pending:   { label: 'Pendente', color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20', dot: 'bg-amber-400' },
-  completed: { label: 'A receber', color: 'text-cyan-400', bg: 'bg-cyan-500/10 border-cyan-500/20', dot: 'bg-cyan-400' },
+};
+
+const STATUS_CONFIG_COMPLETED = {
+  label: 'A receber',
+  color: 'bp-text-primary',
+  bg: 'bp-today-surface-soft',
+  dot: 'bg-[var(--bp-primary)]',
 };
 
 function getStatusKey(ev) {
@@ -18,11 +24,12 @@ function getStatusKey(ev) {
   if (s === 'cancelled') return null;
   if (s === 'completed' && ev.payment_status !== 'paid') return 'completed';
   if (s === 'completed') return null;
-  return STATUS_CONFIG[s] ? s : 'scheduled';
+  return STATUS_CONFIG_BASE[s] ? s : 'scheduled';
 }
 
 export default function CashflowForecast({ events = [], work = [] }) {
   const { formatCurrency, isVisible } = useFinancialVisibility();
+  const STATUS_CONFIG = useMemo(() => getStatusConfig(), []);
 
   const workByEvent = useMemo(() => {
     const map = {};
@@ -115,7 +122,7 @@ export default function CashflowForecast({ events = [], work = [] }) {
       <div className="grid grid-cols-3 gap-2">
         {[
           { label: '30 dias', value: kpis.d30, color: 'text-emerald-400' },
-          { label: '60 dias', value: kpis.d60, color: 'text-cyan-400' },
+          { label: '60 dias', value: kpis.d60, color: 'bp-text-primary' },
           { label: '90 dias', value: kpis.d90, color: 'text-blue-400' },
         ].map(({ label, value, color }) => (
           <div key={label} className="bg-slate-800/50 border border-slate-700 rounded-xl p-3 text-center">

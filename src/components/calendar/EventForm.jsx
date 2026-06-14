@@ -15,7 +15,7 @@ import { useEvents } from '@/lib/useEvents';
 import { useAuth } from '@/lib/authContext';
 import { EventTemplate } from '@/api/entities';
 import EventTemplateModal from './EventTemplateModal';
-import { resolveEventColor } from '@/lib/brandColors';
+import { DEFAULT_EVENT_COLOR, resolveEventColor } from '@/lib/brandColors';
 import { useClients } from '@/lib/useClients';
 import ClientCombobox from '@/components/clients/ClientCombobox';
 import EventLocationSection from '@/components/events/EventLocationSection';
@@ -38,7 +38,7 @@ const defaultState = {
   payment_model: 'HORAS_EXTRAS',
   daily_cache_value: '',
   cache_valor_base: '',
-  color: '#22d3ee',
+  color: DEFAULT_EVENT_COLOR,
   location: '',
   location_city: '',
   location_state: '',
@@ -87,7 +87,7 @@ export default function EventForm({
       payment_model: seed.payment_model || 'HORAS_EXTRAS',
       daily_cache_value: seed.daily_cache_value ?? '',
       cache_valor_base: seed.cache_valor_base ?? '',
-      color: seed.color || '#22d3ee',
+      color: seed.color || resolveEventColor({ client_id: seed.client_id, color: seed.color }, clients.find((c) => c.id === seed.client_id)) || theme.primaryHex,
       location: seed.location || '',
       location_city: seed.location_city || '',
       location_state: seed.location_state || '',

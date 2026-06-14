@@ -1,3 +1,6 @@
+import { getCategoryConfig } from '@/lib/categoryConfig';
+import { AUTH_HERO_CATEGORY } from '@/lib/categoryGear';
+
 export const BRAND_COLOR_PALETTE = [
   { id: 'cyan', hex: '#22d3ee', label: 'Ciano' },
   { id: 'purple', hex: '#A64AFF', label: 'Roxo' },
@@ -13,7 +16,7 @@ export const BRAND_COLOR_PALETTE = [
   { id: 'indigo', hex: '#6366f1', label: 'Índigo' },
 ];
 
-export const DEFAULT_EVENT_COLOR = '#22d3ee';
+export const DEFAULT_EVENT_COLOR = getCategoryConfig(AUTH_HERO_CATEGORY).primaryHex;
 export const DEFAULT_CLIENT_COLOR = '#A64AFF';
 
 export function pickDefaultClientColor(seed = '') {

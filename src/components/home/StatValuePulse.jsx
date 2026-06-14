@@ -2,7 +2,10 @@ import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 
 /** Pulso sutil quando o valor muda (ex.: sync Realtime). */
-export default function StatValuePulse({ value, children, glowColor = '#00D9FF' }) {
+import { getCategoryConfig } from '@/lib/categoryConfig';
+import { AUTH_HERO_CATEGORY } from '@/lib/categoryGear';
+
+export default function StatValuePulse({ value, children, glowColor = getCategoryConfig(AUTH_HERO_CATEGORY).primaryHex }) {
   const prev = useRef(value);
   const pulseKey = useRef(0);
 

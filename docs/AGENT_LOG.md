@@ -214,6 +214,17 @@ Registro cronológico de tarefas executadas por agentes.
 - `QuickActions.jsx`: remove strings cyan legadas nos itens com `themeGradient`
 - **Testes**: unit 29/29 ✅ · build ✅
 
+### DESIGN-S61 — Fase 11 defaults globais + modais + relatórios (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `brandColors.js`: `DEFAULT_EVENT_COLOR` via `getCategoryConfig(AUTH_HERO_CATEGORY).primaryHex`
+- `EventForm.jsx`, `Calendar.jsx`, `ContinuousEventBar.jsx`: fallbacks de cor de evento temáticos
+- `StatValuePulse.jsx`, `ModoPalcoActions.jsx`, `MeiDashboard.jsx`, `MetaMensalBar.jsx`: defaults sem cyan
+- `Goals.jsx`: tier/badge "Pro do Palco" e "5 Shows" com `#60a5fa` (paleta de gamificação)
+- `BackstageLogo.jsx`: wordmark roxo→ouro; glow alinhado à marca lighting
+- `CashflowForecast.jsx`, `WorkAnalytics.jsx`: status "A receber", KPIs e barras com `--bp-primary`
+- `EventDetailModal.jsx` (calendar + reports): ícones, CTAs e timer com `useCategoryTheme()`
+- **Testes**: unit 29/29 ✅ · build ✅
+
 ### WORK-S50 — R$/hora por show + aba Trabalho em Relatórios ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/components/calendar/EventDetailModal.jsx`**:

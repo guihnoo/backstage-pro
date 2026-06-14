@@ -206,7 +206,7 @@ function BadgeCard({ icon: Icon, title, description, unlocked, color, progress, 
 function getLevelInfo(eventsCount) {
   if (eventsCount >= 100) return { title: 'Lenda do Palco', emoji: '👑', color: '#FFD700', next: null };
   if (eventsCount >= 50) return { title: 'Astro do Backstage', emoji: '⭐', color: '#A64AFF', next: 100 };
-  if (eventsCount >= 20) return { title: 'Pro do Palco', emoji: '🔥', color: '#00D9FF', next: 50 };
+  if (eventsCount >= 20) return { title: 'Pro do Palco', emoji: '🔥', color: '#60a5fa', next: 50 };
   if (eventsCount >= 5) return { title: 'Veterano do Bastidão', emoji: '🎭', color: '#39FF14', next: 20 };
   return { title: 'Freelancer em Ascensão', emoji: '🚀', color: '#FFB700', next: 5 };
 }
@@ -331,7 +331,7 @@ export default function Goals() {
       title: '5 Shows',
       description: 'Acumule 5 eventos no ano',
       unlocked: totalEvents >= 5,
-      color: '#00D9FF',
+      color: '#60a5fa',
       progress: { value: Math.min(totalEvents, 5), max: 5 },
     },
     {
@@ -1023,7 +1023,7 @@ export default function Goals() {
               {[
                 { title: 'Freelancer em Ascensão', emoji: '🚀', req: 1, color: '#FFB700' },
                 { title: 'Veterano do Bastidão', emoji: '🎭', req: 5, color: '#39FF14' },
-                { title: 'Pro do Palco', emoji: '🔥', req: 20, color: '#00D9FF' },
+                { title: 'Pro do Palco', emoji: '🔥', req: 20, color: '#60a5fa' },
                 { title: 'Astro do Backstage', emoji: '⭐', req: 50, color: '#A64AFF' },
                 { title: 'Lenda do Palco', emoji: '👑', req: 100, color: '#FFD700' },
               ].map((level, i) => {

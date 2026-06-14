@@ -48,6 +48,7 @@ import AnimatedStatValue from '@/components/home/AnimatedStatValue';
 import CalendarPageHeader from '@/components/calendar/CalendarPageHeader';
 import CalendarTodayStrip from '@/components/calendar/CalendarTodayStrip';
 import appToast from '@/lib/appToast';
+import { DEFAULT_EVENT_COLOR } from '@/lib/brandColors';
 import { Skeleton } from '@/components/ui/skeleton';
 import ExpenseForm from '@/components/expenses/ExpenseForm';
 import DrilldownModal from '@/components/reports/DrilldownModal';
@@ -1737,7 +1738,7 @@ export default function CalendarPage() {
                       className="w-full text-left p-3 sm:p-4 bg-slate-800/50 hover:bg-slate-700/50 active:bg-slate-700 border border-slate-700 rounded-lg transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: event.color || '#22d3ee' }} />
+                        <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: event.color || DEFAULT_EVENT_COLOR }} />
 
                         <div className="min-w-0 flex-1">
                           <p className="font-medium text-white truncate text-sm sm:text-base">{event.title}</p>

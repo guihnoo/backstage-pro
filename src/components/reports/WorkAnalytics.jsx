@@ -4,6 +4,7 @@ import { Clock, TrendingUp, Zap, Award } from 'lucide-react';
 import { format, subMonths, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 function formatCurrencyCompact(v) {
   if (v >= 1000) return `R$${(v / 1000).toFixed(1)}k`;
@@ -12,6 +13,7 @@ function formatCurrencyCompact(v) {
 
 export default function WorkAnalytics({ work = [], events = [], clients = [] }) {
   const { formatCurrency, isVisible } = useFinancialVisibility();
+  const { primaryHex } = useCategoryTheme();
 
   const stats = useMemo(() => {
     if (!work.length) return null;
@@ -86,7 +88,7 @@ export default function WorkAnalytics({ work = [], events = [], clients = [] }) 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-1">
-            <Clock className="w-4 h-4 text-cyan-400" />
+            <Clock className="w-4 h-4 bp-text-primary" />
             <p className="text-xs text-slate-400">Horas trabalhadas</p>
           </div>
           <p className="text-2xl font-bold text-white">{stats.totalHours}h</p>
@@ -145,7 +147,7 @@ export default function WorkAnalytics({ work = [], events = [], clients = [] }) 
             />
             <Bar dataKey="hours" radius={[4, 4, 0, 0]}>
               {monthlyHours.map((m, i) => (
-                <Cell key={i} fill={m.hours > 0 ? '#22d3ee' : '#1e293b'} />
+                <Cell key={i} fill={m.hours > 0 ? primaryHex : '#1e293b'} />
               ))}
             </Bar>
           </BarChart>

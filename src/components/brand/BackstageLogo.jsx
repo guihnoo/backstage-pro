@@ -18,7 +18,7 @@ export default function BackstageLogo({
       height={size}
       className="rounded-[22%] shrink-0"
       style={{
-        boxShadow: '0 0 28px rgba(0, 217, 255, 0.25), 0 0 48px rgba(166, 74, 255, 0.15)',
+        boxShadow: '0 0 28px rgba(166, 74, 255, 0.25), 0 0 48px rgba(255, 183, 0, 0.12)',
       }}
     />
   );
@@ -30,7 +30,7 @@ export default function BackstageLogo({
         <div className="min-w-0">
           <p className="text-lg font-extrabold leading-tight tracking-tight text-white">
             Backstage{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] to-[#A64AFF]">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#A64AFF] to-[#FFB700]">
               Pro
             </span>
           </p>

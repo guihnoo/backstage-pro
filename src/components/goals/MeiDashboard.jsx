@@ -82,7 +82,10 @@ function DasCard({ dasType, color }) {
   );
 }
 
-export default function MeiDashboard({ annualRevenue = 0, loading = false, dasType = 'services', accentColor = '#22d3ee' }) {
+import { getCategoryConfig } from '@/lib/categoryConfig';
+import { AUTH_HERO_CATEGORY } from '@/lib/categoryGear';
+
+export default function MeiDashboard({ annualRevenue = 0, loading = false, dasType = 'services', accentColor = getCategoryConfig(AUTH_HERO_CATEGORY).primaryHex }) {
   const { formatCurrency } = useFinancialVisibility();
   const pct = useMemo(() => Math.min((annualRevenue / MEI_LIMIT) * 100, 100), [annualRevenue]);
   const remaining = Math.max(MEI_LIMIT - annualRevenue, 0);

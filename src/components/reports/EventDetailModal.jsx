@@ -40,6 +40,7 @@ import {
 import EventLocationSection from '@/components/events/EventLocationSection';
 import { useEvents } from '@/lib/useEvents';
 import appToast from '@/lib/appToast';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 import { hardNavigate } from '@/lib/hardNavigate';
 
@@ -74,11 +75,11 @@ const WorkItem = ({ work, onEdit }) => {
         </Button>
       </div>
       <div className="grid grid-cols-2 gap-2 text-center text-xs">
-        <InfoItem icon={Clock} label="Horas" value={`${work.total_hours?.toFixed(1) || 0}h`} color="text-cyan-300" />
+        <InfoItem icon={Clock} label="Horas" value={`${work.total_hours?.toFixed(1) || 0}h`} color="bp-text-primary" />
         <InfoItem icon={Clock} label="Extras" value={`${work.overtime_hours?.toFixed(1) || 0}h`} color="text-pink-400" />
         <InfoItem icon={DollarSign} label="Cachê Dia" value={work.daily_cache || 0} isCurrency={true} color="text-green-300" />
         {work.photo_url &&
-          <a href={work.photo_url} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline flex items-center justify-center gap-1 text-xs">
+          <a href={work.photo_url} target="_blank" rel="noopener noreferrer" className="bp-text-primary hover:underline flex items-center justify-center gap-1 text-xs">
             <Paperclip className="w-3 h-3" /> Ver Foto
           </a>
         }
@@ -135,6 +136,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
 }) {
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
   const { update: updateEvent } = useEvents();
+  const { primaryHex } = useCategoryTheme();
   const [savingLocation, setSavingLocation] = useState(false);
   const [savingRating, setSavingRating] = useState(false);
   const [ratingDraft, setRatingDraft] = useState(null);
@@ -245,9 +247,9 @@ const EventDetailModal = React.memo(function EventDetailModal({
                     <button
                       type="button"
                       onClick={() => { onClose(); hardNavigate(`/client-detail?id=${event.client_id}`); }}
-                      className="flex items-center gap-1 sm:gap-2 text-xs text-slate-300 hover:text-cyan-300 transition-colors group"
+                      className="flex items-center gap-1 sm:gap-2 text-xs text-slate-300 hover:text-[var(--bp-primary)] transition-colors group"
                     >
-                      <Building2 className="w-3 h-3 text-slate-400 group-hover:text-cyan-400 flex-shrink-0" />
+                      <Building2 className="w-3 h-3 text-slate-400 group-hover:text-[var(--bp-primary)] flex-shrink-0" />
                       <span className="truncate max-w-[200px] sm:max-w-[300px]">{client.name}</span>
                     </button>
                   )}
@@ -288,7 +290,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 text-center">
                     <InfoItem icon={DollarSign} label="Receita Bruta" value={stats.totalRevenue || 0} isCurrency color="text-green-300" />
                     <InfoItem icon={FileText} label="Despesas" value={stats.totalExpenses || 0} isCurrency color="text-amber-400" />
-                    <InfoItem icon={DollarSign} label="Receita Líquida" value={stats.netRevenue || 0} isCurrency color={stats.netRevenue >= 0 ? 'text-cyan-300' : 'text-red-400'} />
+                    <InfoItem icon={DollarSign} label="Receita Líquida" value={stats.netRevenue || 0} isCurrency color={stats.netRevenue >= 0 ? 'bp-text-primary' : 'text-red-400'} />
                     <InfoItem icon={Clock} label="Total Horas" value={`${stats.totalHours?.toFixed(1) || 0}h`} color="text-slate-300" />
                   </div>
                   {stats.totalExpenses > 0 && stats.totalRevenue > 0 && (() => {
@@ -347,7 +349,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
               <Card className="bg-slate-800/40 border-slate-700">
                 <CardContent className="p-3 sm:p-4 space-y-3">
                   <h3 className="font-semibold text-white text-sm sm:text-base flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-cyan-400" />
+                    <MapPin className="w-4 h-4 bp-text-primary" />
                     Local do evento
                   </h3>
                   <EventLocationSection
@@ -364,7 +366,8 @@ const EventDetailModal = React.memo(function EventDetailModal({
                       type="button"
                       onClick={() => persistLocation()}
                       disabled={savingLocation}
-                      className="w-full sm:w-auto bg-cyan-600 hover:bg-cyan-700 h-10 min-h-[44px]"
+                      className="w-full sm:w-auto hover:opacity-90 h-10 min-h-[44px]"
+                      style={{ backgroundColor: primaryHex }}
                     >
                       {savingLocation ? (
                         <>
@@ -477,7 +480,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
                 <Button
                   variant="outline"
                   onClick={() => { onDuplicate(event); onClose(); }}
-                  className="flex-1 sm:flex-none bg-slate-800 border-slate-700 hover:bg-slate-700 text-cyan-300 px-3 py-2 text-xs sm:text-sm h-10 min-h-[44px]"
+                  className="flex-1 sm:flex-none bg-slate-800 border-slate-700 hover:bg-slate-700 bp-text-primary px-3 py-2 text-xs sm:text-sm h-10 min-h-[44px]"
                   title="Criar cópia deste evento"
                 >
                   <Copy className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Duplicar

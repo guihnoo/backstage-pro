@@ -122,7 +122,7 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
                   <span className={`ml-1 ${pctDiarias >= 100 ? 'text-emerald-400 font-bold' : 'text-gray-500'}`}>({Math.round(pctDiarias)}%)</span>
                 </span>
               </div>
-              <ProgressBar value={diariasAtual} max={metaDiarias} color={pctDiarias >= 100 ? 'linear-gradient(90deg, #10b981, #34d399)' : '#00D9FF'} />
+              <ProgressBar value={diariasAtual} max={metaDiarias} color={pctDiarias >= 100 ? 'linear-gradient(90deg, #10b981, #34d399)' : accentColor} />
             </div>
           )}
         </div>

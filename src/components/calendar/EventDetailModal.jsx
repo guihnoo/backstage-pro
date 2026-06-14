@@ -54,6 +54,7 @@ import { useEvents } from '@/lib/useEvents';
 import { useExpenses } from '@/lib/useExpenses';
 import ExpenseForm from '@/components/expenses/ExpenseForm';
 import { useUserSettings } from '@/lib/useUserSettings';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -79,6 +80,7 @@ export default function EventDetailModal({
 }) {
   const { formatCurrency } = useFinancialVisibility();
   const { profile } = useAuth();
+  const { primaryHex } = useCategoryTheme();
   const { dailyWork } = useDailyWork();
   const { update: updateEvent } = useEvents();
   const { expenses, refetch: refetchExpenses } = useExpenses();
@@ -567,7 +569,7 @@ export default function EventDetailModal({
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-cyan-400" />
+                  <Calendar className="w-5 h-5 bp-text-primary" />
                   Informações do Evento
                 </CardTitle>
               </CardHeader>
@@ -598,7 +600,7 @@ export default function EventDetailModal({
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-cyan-400" />
+                  <MapPin className="w-5 h-5 bp-text-primary" />
                   Local do evento
                 </CardTitle>
               </CardHeader>
@@ -617,7 +619,8 @@ export default function EventDetailModal({
                     type="button"
                     onClick={() => persistLocation()}
                     disabled={savingLocation}
-                    className="w-full sm:w-auto bg-cyan-600 hover:bg-cyan-700"
+                    className="w-full sm:w-auto hover:opacity-90"
+                    style={{ backgroundColor: primaryHex }}
                   >
                     {savingLocation ? (
                       <>
@@ -654,7 +657,7 @@ export default function EventDetailModal({
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="text-sm text-slate-400 mb-1">Horas Trabalhadas</p>
-                        <p className="text-xl font-bold text-cyan-400">{totals.totalHours}h</p>
+                        <p className="text-xl font-bold bp-text-primary">{totals.totalHours}h</p>
                       </div>
                       <div>
                         <p className="text-sm text-slate-400 mb-1">Horas Extras</p>
@@ -798,7 +801,7 @@ export default function EventDetailModal({
                   <div className="grid grid-cols-3 gap-3 text-center">
                     <div>
                       <p className="text-[10px] text-slate-500 mb-1">Receita</p>
-                      <p className="text-sm font-bold text-cyan-300">{formatCurrency(profitSummary.revenue)}</p>
+                      <p className="text-sm font-bold bp-text-primary">{formatCurrency(profitSummary.revenue)}</p>
                     </div>
                     <div>
                       <p className="text-[10px] text-slate-500 mb-1">Despesas</p>
@@ -840,7 +843,7 @@ export default function EventDetailModal({
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-cyan-400" />
+                      <Clock className="w-5 h-5 bp-text-primary" />
                       Registros de Trabalho ({eventWork.length})
                     </CardTitle>
                     {totals.hourlyRate && (
@@ -896,7 +899,7 @@ export default function EventDetailModal({
                             </div>
                             <div>
                               <p className="text-slate-400">Horas</p>
-                              <p className="text-cyan-400 font-medium">{work.total_hours || 0}h</p>
+                              <p className="bp-text-primary font-medium">{work.total_hours || 0}h</p>
                             </div>
                           </div>
                           {work.notes && (
@@ -923,7 +926,8 @@ export default function EventDetailModal({
         <DialogFooter className="px-6 py-4 border-t border-slate-800 flex-row gap-2 flex-wrap flex-shrink-0">
           <Button
             onClick={onAddWork}
-            className="flex-1 min-w-[120px] bg-cyan-600 hover:bg-cyan-700"
+            className="flex-1 min-w-[120px] hover:opacity-90"
+            style={{ backgroundColor: primaryHex }}
           >
             <Plus className="w-4 h-4 mr-2" />
             Registrar Horas
@@ -935,8 +939,13 @@ export default function EventDetailModal({
               className={`flex-shrink-0 transition-colors ${
                 activeTimer?.eventId === event.id
                   ? 'border-red-500/50 bg-red-500/10 text-red-400 hover:bg-red-500/20'
-                  : 'border-cyan-600 hover:bg-cyan-900/20 text-cyan-300'
+                  : 'hover:bg-[color-mix(in_srgb,var(--bp-primary)_12%,transparent)]'
               }`}
+              style={
+                activeTimer?.eventId === event.id
+                  ? undefined
+                  : { borderColor: `${primaryHex}99`, color: primaryHex }
+              }
               title={activeTimer?.eventId === event.id ? 'Parar timer' : 'Iniciar timer'}
             >
               {activeTimer?.eventId === event.id
