@@ -50,6 +50,15 @@ export default function Onboarding() {
     [selectedCategory]
   );
 
+  const onboardingCssVars = useMemo(
+    () => ({
+      '--bp-primary': onboardingTheme.primaryHex,
+      '--bp-accent': onboardingTheme.accentHex,
+      '--bp-glow': onboardingTheme.bgGlow,
+    }),
+    [onboardingTheme]
+  );
+
   const ctaGradientStyle = useMemo(
     () => ({
       background: `linear-gradient(to right, ${onboardingTheme.primaryHex}, ${onboardingTheme.accentHex})`,
@@ -118,7 +127,7 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050609] text-white overflow-x-hidden relative">
+    <div className="min-h-screen bg-[#050609] text-white overflow-x-hidden relative" style={onboardingCssVars}>
       <StageBackdrop />
       <SpotlightRays primary={onboardingTheme.primaryHex} accent={onboardingTheme.accentHex} />
       <FloatingEquipment categoryId={selectedCategory || 'lighting'} primary={onboardingTheme.primaryHex} />
@@ -144,7 +153,7 @@ export default function Onboarding() {
           transition={{ duration: 0.8 }}
           className="w-full max-w-2xl"
         >
-          <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-5 sm:p-8 shadow-2xl">
+          <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-5 sm:p-8 shadow-2xl bp-focus-scope">
             <div className="flex items-center justify-between mb-6 sm:mb-8">
               <div>
                 <h1 className="text-2xl sm:text-3xl font-black bg-clip-text text-transparent" style={titleGradientStyle}>

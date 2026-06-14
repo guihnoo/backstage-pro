@@ -34,7 +34,7 @@ const EventTemplateModal = ({ isOpen, onClose, onSelectTemplate }) => {
     <AnimatePresence>
       {isOpen && (
         <Dialog open onOpenChange={onClose}>
-          <DialogContent className="sm:max-w-md max-h-[90dvh] bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200 flex flex-col overflow-hidden p-0">
+          <DialogContent className="sm:max-w-md max-h-[90dvh] bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200 flex flex-col overflow-hidden p-0 bp-focus-scope">
             <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
               <DialogTitle className="flex items-center gap-2 bp-text-primary">
                 <Sparkles className="w-5 h-5" />

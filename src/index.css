@@ -336,3 +336,19 @@ body:has([role="alertdialog"][data-state="open"]) [data-app-scroll] {
   outline: 2px solid var(--bp-primary);
   outline-offset: 2px;
 }
+
+/* Escopo em modais/onboarding — focus visível sem repetir classe em cada controle */
+.bp-focus-scope :where(button, a, [role="button"]):focus-visible {
+  outline: 2px solid var(--bp-primary);
+  outline-offset: 2px;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-ring-offset-shadow: 0 0 #0000;
+}
+
+.bp-focus-scope :where(input:not([type="hidden"]), textarea, select):focus-visible {
+  outline: none;
+  border-color: color-mix(in srgb, var(--bp-primary) 60%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bp-primary) 30%, transparent);
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-ring-offset-shadow: 0 0 #0000;
+}

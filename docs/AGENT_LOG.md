@@ -398,6 +398,14 @@ Registro cronológico de tarefas executadas por agentes.
 - `SocialLoginButtons`: Google OAuth com `bp-focus-ring`
 - **Testes**: unit 29/29 ✅ · build ✅
 
+### DESIGN-S69 — Focus scope em modais + onboarding (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `index.css`: utilitário `.bp-focus-scope` (botões, links, inputs, textareas com focus na cor da categoria)
+- `Onboarding.jsx`: `--bp-primary` dinâmico conforme categoria escolhida; card com `bp-focus-scope`
+- `EventForm.jsx`, `EventDetailModal.jsx`: `DialogContent` com `bp-focus-scope` (footer + ações inline)
+- `EventTemplateModal.jsx`, `DailyWorkModal.jsx`: mesmo escopo de focus
+- **Testes**: unit 29/29 ✅ · build ✅
+
 ### WORK-S50 — R$/hora por show + aba Trabalho em Relatórios ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/components/calendar/EventDetailModal.jsx`**:

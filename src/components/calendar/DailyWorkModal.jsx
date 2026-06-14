@@ -146,7 +146,7 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-xl bg-slate-900 border-slate-700 text-white p-0 flex flex-col overflow-hidden max-h-[90dvh]">
+      <DialogContent className="sm:max-w-xl bg-slate-900 border-slate-700 text-white p-0 flex flex-col overflow-hidden max-h-[90dvh] bp-focus-scope">
         <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 border-b border-slate-700 flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-white">
             <Clock className="w-5 h-5 bp-text-primary" />
