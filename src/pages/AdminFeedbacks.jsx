@@ -164,7 +164,7 @@ export default function AdminFeedbacks() {
 
   const [filter, setFilter] = useState('all');
 
-  if (authLoading) {
+  if (authLoading || (user && !profile)) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-slate-500" />

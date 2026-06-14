@@ -81,13 +81,16 @@ export default function AppTour() {
     [markTourComplete, pathname]
   );
 
+  const startTourRef = useRef(startTour);
+  startTourRef.current = startTour;
+
   useEffect(() => {
-    registerTourStarter((options = {}) => startTour({ persist: false, ...options }));
+    registerTourStarter((options = {}) => startTourRef.current({ persist: false, ...options }));
     return () => {
       unregisterTourStarter();
       driverRef.current?.destroy();
     };
-  }, [startTour]);
+  }, []);
 
   useEffect(() => {
     const onManualStart = (event) => {

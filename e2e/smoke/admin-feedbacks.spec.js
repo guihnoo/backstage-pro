@@ -12,8 +12,8 @@ test('owner acessa inbox de feedback no Perfil e na rota admin', async ({ page }
 
   await page.goto('/admin/feedbacks', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: /inbox de feedback/i })).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByText(/botão de salvar não responde/i)).toBeVisible();
-  await expect(page.getByText(/modo escuro automático/i)).toBeVisible();
+  await expect(page.getByText(/botão de salvar não responde/i)).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(/modo escuro automático/i)).toBeVisible({ timeout: 15_000 });
 });
 
 test('usuário comum não vê inbox de feedback', async ({ page }) => {

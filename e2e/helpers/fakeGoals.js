@@ -45,6 +45,14 @@ function applyEventQueryFilters(events, url) {
       const val = raw.slice(3);
       result = result.filter((e) => String(e[key]) === val);
     }
+    if (raw.startsWith('in.')) {
+      const vals = raw
+        .slice(3)
+        .replace(/[()]/g, '')
+        .split(',')
+        .map((v) => v.trim());
+      result = result.filter((e) => vals.includes(String(e[key])));
+    }
     if (raw.startsWith('neq.')) {
       const val = raw.slice(4);
       result = result.filter((e) => String(e[key]) !== val);
@@ -152,6 +160,6 @@ export async function installGoalMocks(page) {
 
 export async function seedGoalsAuth(page) {
   const { seedAuth } = await import('./fakeAuth.js');
-  await seedAuth(page, { monthly_goal_revenue: 10_000 });
   await installGoalMocks(page);
+  await seedAuth(page, { monthly_goal_revenue: 10_000, monthly_goal_events: 10 });
 }

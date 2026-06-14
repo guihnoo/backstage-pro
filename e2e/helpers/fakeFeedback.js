@@ -37,13 +37,14 @@ export function fakeFeedbackRows() {
 
 /** Mock da tabela feedback para inbox do owner. */
 export async function installFeedbackMocks(page, rows = fakeFeedbackRows()) {
-  await page.route(/\/rest\/v1\/feedback(\?|$)/, async (route) => {
+  await page.route(/\/rest\/v1\/feedback/, async (route) => {
     const method = route.request().method();
 
     if (method === 'GET' || method === 'HEAD') {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
+        headers: { 'content-range': `0-${Math.max(rows.length - 1, 0)}/${rows.length}` },
         body: JSON.stringify(rows),
       });
       return;

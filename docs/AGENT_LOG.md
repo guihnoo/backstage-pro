@@ -441,6 +441,15 @@ Registro cronológico de tarefas executadas por agentes.
 - `fakeGoogleCalendar.js`: `seedGoogleCalendarAuth(page, options)` repassa `dedupeRemoved` ao mock
 - **Testes**: unit 29/29 ✅ · build ✅ · E2E `google-calendar-sync` + `reports-map` 4/4 ✅
 
+### DESIGN-S71 — E2E smoke estável + AdminFeedbacks race (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `AdminFeedbacks.jsx`: aguarda `profile` antes de redirect de não-owner (corrige race no inbox)
+- `appToast.jsx` / `CashflowForecast.jsx`: fixes S70 confirmados em produção local
+- E2E: `fakeGoals` (`in.` filter, mocks antes do seed), `fakeFeedback` (rota ampla + content-range), timeouts em `admin-feedbacks`; `goals-streak` usa heading único + regex singular/plural (fix strict mode)
+- `reports/EventDetailModal.jsx`, `AI_Mentor.jsx` (sheet histórico), `command.jsx` (busca global): `bp-focus-scope`
+- `AppTour.jsx` + `appTourBus.js`: handler estável via ref (corrige race no tour do mapa em smoke)
+- **Testes**: unit 29/29 ✅ · smoke isolado `admin-feedbacks` + `goals-streak` + `reports-map`×3 ✅ · smoke completo 27/28 + 1 flaky → corrigido
+
 ### WORK-S50 — R$/hora por show + aba Trabalho em Relatórios ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/components/calendar/EventDetailModal.jsx`**:

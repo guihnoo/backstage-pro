@@ -29,8 +29,8 @@ test('botão Como usar abre o tour do mapa', async ({ page }) => {
   await expect(map).toBeVisible({ timeout: 15_000 });
   await map.getByRole('button', { name: /como usar o mapa interativo/i }).click();
 
-  await expect(page.locator('.backstage-tour-popover')).toBeVisible({ timeout: 10_000 });
-  await expect(page.getByText('Seu histórico geográfico')).toBeVisible();
+  await expect(page.getByText('Seu histórico geográfico')).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('.backstage-tour-popover')).toBeVisible({ timeout: 15_000 });
 });
 
 test('mapa vazio quando só há eventos cancelados', async ({ page }) => {

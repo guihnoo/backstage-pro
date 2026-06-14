@@ -9,7 +9,11 @@ export function unregisterTourStarter() {
 }
 
 export function requestAppTour({ variant = 'full' } = {}) {
-  startHandler?.({ variant });
+  if (startHandler) {
+    startHandler({ variant });
+    return;
+  }
+  window.dispatchEvent(new CustomEvent(APP_TOUR_START_EVENT, { detail: { variant } }));
 }
 
 export function requestMapTour() {
