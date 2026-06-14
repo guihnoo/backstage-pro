@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
-import { AUTH_HERO_PRIMARY } from '@/lib/categoryGear';
+import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
 
-export function NeonSectionFrame({ primary = '#A64AFF', accent = '#FFB700', label, className = '', children }) {
+export function NeonSectionFrame({ primary = AUTH_HERO_PRIMARY, accent = AUTH_HERO_ACCENT, label, className = '', children }) {
   return (
     <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className={`relative mb-8 rounded-[18px] overflow-hidden ${className}`} style={{ background: 'linear-gradient(160deg, rgba(22,25,35,.55), rgba(12,14,20,.45))', border: `1px solid ${primary}22`, boxShadow: `inset 0 1px 0 rgba(255,255,255,.04), 0 12px 28px -16px #000, 0 0 20px ${primary}12` }}>
       <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${primary}55, ${accent}33, transparent)` }} />

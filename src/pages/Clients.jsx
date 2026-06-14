@@ -35,6 +35,7 @@ import { openWhatsAppCharge, buildChargeMessage, formatWhatsAppNumber } from '@/
 import { useMediaQuery } from '@/components/hooks/useMediaQuery';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
+import { AUTH_HERO_PRIMARY } from '@/lib/categoryGear';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { NeonGlass } from '@/components/design/NeonGlass';
 
@@ -458,7 +459,7 @@ export default function ClientsPage() {
                   className="bg-[#161923]/60 border-[#23262f] cursor-pointer transition-all duration-300 hover:shadow-lg flex flex-col h-full border-l-4 min-w-0 overflow-hidden"
                   style={{
                     ['--hover-border']: config.primaryHex,
-                    borderLeftColor: client.brand_color || '#A64AFF',
+                    borderLeftColor: client.brand_color || AUTH_HERO_PRIMARY,
                   }}
                   onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${config.primaryHex}66`; }}
                   onMouseLeave={(e) => { e.currentTarget.style.borderColor = ''; }}

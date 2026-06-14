@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
 
-export function NeonAtmosphere({ primary = '#A64AFF', accent = '#FFB700', stage = false }) {
+export function NeonAtmosphere({ primary = AUTH_HERO_PRIMARY, accent = AUTH_HERO_ACCENT, stage = false }) {
   const washOpacity = stage ? '2e' : '1c';
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">

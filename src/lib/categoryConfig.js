@@ -167,7 +167,7 @@ export const CATEGORIES = {
 };
 
 export function getCategoryConfig(categoryId) {
-  return CATEGORIES[categoryId] || CATEGORIES.audio;
+  return CATEGORIES[categoryId] || CATEGORIES.lighting;
 }
 
 export function getAllCategories() {
@@ -179,7 +179,7 @@ export function getCategoryLabel(categoryId) {
 }
 
 export function getCategoryColor(categoryId) {
-  return getCategoryConfig(categoryId)?.primaryHex || '#39FF14';
+  return getCategoryConfig(categoryId)?.primaryHex || CATEGORIES.lighting.primaryHex;
 }
 
 export function getCategoryEmoji(categoryId) {

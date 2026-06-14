@@ -64,6 +64,7 @@ import CashflowForecast from '@/components/reports/CashflowForecast';
 import CategoryBreakdown from '@/components/reports/CategoryBreakdown';
 import TopClients from '@/components/reports/TopClients';
 import ReceivablesAging from '@/components/reports/ReceivablesAging';
+import SmartInsights from '@/components/reports/SmartInsights';
 import IRSummary from '@/components/reports/IRSummary';
 import EventHeading from '@/components/events/EventHeading';
 import { Ellipsis } from '@/components/ui/overflowText';
@@ -887,7 +888,7 @@ export default function ReportsPage() {
                     {processedData.next.scheduledEventsCount} eventos agendados
                   </p>
                 </div>
-                <BarChart3 className="w-12 h-12 text-purple-400 opacity-60" />
+                <BarChart3 className="w-12 h-12 bp-text-primary opacity-60" />
               </div>
             </CardContent>
           </Card>
@@ -920,7 +921,7 @@ export default function ReportsPage() {
               <view.icon className="w-4 h-4" />
               <span>{view.label}</span>
               {view.count != null && view.count > 0 && (
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${selectedView === view.id ? 'bg-purple-500/20 text-purple-300' : 'bg-slate-700/50 text-slate-500'}`}>
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${selectedView === view.id ? 'bp-chip-badge-active' : 'bg-slate-700/50 text-slate-500'}`}>
                   {view.count}
                 </span>
               )}
@@ -931,6 +932,13 @@ export default function ReportsPage() {
         {/* Content based on selected view */}
         {selectedView === 'overview' && (
           <div className="space-y-6">
+            <SmartInsights
+              events={data.events}
+              clients={data.clients}
+              expenses={data.expenses}
+              work={data.dailyWork}
+              profile={profile}
+            />
             <ReceivablesAging
               events={data.events}
               clients={data.clients}
@@ -1022,7 +1030,7 @@ export default function ReportsPage() {
         <div className="space-y-2">
           {chartFilter && (
             <div className="flex items-center justify-between bg-slate-800/50 p-2 rounded-lg gap-2 min-w-0">
-              <p className="text-sm text-purple-300 truncate min-w-0 flex-1">
+              <p className="text-sm bp-text-primary truncate min-w-0 flex-1">
                 Filtro ativo: Mostrando eventos para <strong>{chartFilter.date ? format(parseISO(chartFilter.date), 'dd/MM/yyyy') : '--'}</strong>
               </p>
               <Button variant="ghost" size="sm" onClick={clearChartFilter} className="text-slate-400 hover:text-white">
@@ -1138,7 +1146,7 @@ export default function ReportsPage() {
       <Dialog open={showProjection} onOpenChange={setShowProjection}>
         <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-lg max-h-[85dvh] flex flex-col overflow-hidden p-0">
           <DialogHeader className="px-6 pt-6 pb-3 flex-shrink-0">
-            <DialogTitle className="text-lg font-bold text-purple-300">
+            <DialogTitle className="text-lg font-bold bp-text-primary">
               Projeção — Próximo Período
             </DialogTitle>
             <DialogDescription className="text-slate-400 text-sm">
@@ -1147,9 +1155,9 @@ export default function ReportsPage() {
           </DialogHeader>
           <div className="bp-modal-scroll px-6 pb-6 space-y-4">
             {/* Total projetado */}
-            <div className="flex items-center justify-between p-4 rounded-xl bg-purple-900/20 border border-purple-500/30">
+            <div className="flex items-center justify-between p-4 rounded-xl border bp-surface-primary">
               <div>
-                <p className="text-xs text-purple-300 uppercase tracking-wider font-mono mb-0.5">Total projetado</p>
+                <p className="text-xs bp-text-primary uppercase tracking-wider font-mono mb-0.5">Total projetado</p>
                 <p className="text-2xl font-black text-white">
                   {isVisible ? formatCurrency(processedData.next.projectedRevenue) : '•••••'}
                 </p>

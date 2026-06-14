@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { AUTH_HERO_PRIMARY } from '@/lib/categoryGear';
+import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
 
 function useLevels(count, intervalMs, active) {
   const [levels, setLevels] = useState(() => Array.from({ length: count }, () => Math.random()));
@@ -12,7 +12,7 @@ function useLevels(count, intervalMs, active) {
   return levels;
 }
 
-export function NeonLevelBars({ primary = '#A64AFF', accent = '#FFB700', active = true, count = 22, className = '' }) {
+export function NeonLevelBars({ primary = AUTH_HERO_PRIMARY, accent = AUTH_HERO_ACCENT, active = true, count = 22, className = '' }) {
   const levels = useLevels(count, 120, active);
   return (
     <div className={`flex items-end gap-[3px] h-[30px] ${className}`}>

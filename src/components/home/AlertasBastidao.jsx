@@ -6,7 +6,9 @@ import { openWhatsAppCharge, buildChargeMessage } from '@/lib/whatsapp';
 import appToast from '@/lib/appToast';
 import { Ellipsis, ClampedText } from '@/components/ui/overflowText';
 
-export default function AlertasBastidao({ alerts, isLoading, primaryHex = '#A64AFF', accentHex = '#FFB700' }) {
+import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
+
+export default function AlertasBastidao({ alerts, isLoading, primaryHex = AUTH_HERO_PRIMARY, accentHex = AUTH_HERO_ACCENT }) {
   if (isLoading) return <NeonGlass primary={primaryHex} className="mb-8 p-5"><div className="space-y-3">{[1, 2].map((i) => <div key={i} className="h-12 bg-[#1a1d27] rounded animate-pulse" />)}</div></NeonGlass>;
   if (!alerts?.length) return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-8">

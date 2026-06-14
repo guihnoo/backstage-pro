@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
+import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
 
-export function SpotlightRays({ primary = '#A64AFF', accent = '#FFB700' }) {
+export function SpotlightRays({ primary = AUTH_HERO_PRIMARY, accent = AUTH_HERO_ACCENT }) {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       <motion.svg animate={{ rotateZ: [-2, 2, -2] }} transition={{ duration: 4, repeat: Infinity }} className="absolute top-0 left-1/4 w-96 h-96" viewBox="0 0 200 300">

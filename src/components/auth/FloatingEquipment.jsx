@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
-import { getGearForCategory } from '@/lib/categoryGear';
+import { getGearForCategory, AUTH_HERO_PRIMARY } from '@/lib/categoryGear';
 
-export function FloatingEquipment({ categoryId = 'lighting', primary = '#A64AFF' }) {
+export function FloatingEquipment({ categoryId = 'lighting', primary = AUTH_HERO_PRIMARY }) {
   const equipments = getGearForCategory(categoryId);
   const isLighting = categoryId === 'lighting';
   const w = typeof window !== 'undefined' ? window.innerWidth : 400;

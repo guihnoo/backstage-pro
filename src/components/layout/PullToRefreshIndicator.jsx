@@ -1,7 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, ArrowDown } from 'lucide-react';
 
-export default function PullToRefreshIndicator({ pullDistance, isRefreshing, threshold, primaryHex = '#A64AFF' }) {
+import { AUTH_HERO_PRIMARY } from '@/lib/categoryGear';
+
+export default function PullToRefreshIndicator({ pullDistance, isRefreshing, threshold, primaryHex = AUTH_HERO_PRIMARY }) {
   const visible = pullDistance > 4 || isRefreshing;
   const progress = Math.min(pullDistance / threshold, 1);
   const ready = pullDistance >= threshold;

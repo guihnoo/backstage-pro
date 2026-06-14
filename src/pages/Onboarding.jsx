@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, CheckCircle2, Sparkles, AlertCircle } from 'lucide-react';
@@ -44,6 +44,28 @@ export default function Onboarding() {
   const [dailyRate, setDailyRate] = useState(() => profile?.daily_rate || '');
   const [monthlyGoalEvents, setMonthlyGoalEvents] = useState(() => profile?.monthly_goal_events || 10);
   const [monthlyGoalRevenue, setMonthlyGoalRevenue] = useState(() => profile?.monthly_goal_revenue || '');
+
+  const onboardingTheme = useMemo(
+    () => getCategoryConfig(selectedCategory || 'lighting'),
+    [selectedCategory]
+  );
+
+  const ctaGradientStyle = useMemo(
+    () => ({
+      background: `linear-gradient(to right, ${onboardingTheme.primaryHex}, ${onboardingTheme.accentHex})`,
+    }),
+    [onboardingTheme]
+  );
+
+  const titleGradientStyle = useMemo(
+    () => ({
+      backgroundImage: `linear-gradient(to right, ${onboardingTheme.primaryHex}, ${onboardingTheme.accentHex})`,
+      WebkitBackgroundClip: 'text',
+      backgroundClip: 'text',
+      color: 'transparent',
+    }),
+    [onboardingTheme]
+  );
 
   const handleNextStep = () => {
     if (step === 1 && !name) {
@@ -98,8 +120,8 @@ export default function Onboarding() {
   return (
     <div className="min-h-screen bg-[#050609] text-white overflow-x-hidden relative">
       <StageBackdrop />
-      <SpotlightRays />
-      <FloatingEquipment />
+      <SpotlightRays primary={onboardingTheme.primaryHex} accent={onboardingTheme.accentHex} />
+      <FloatingEquipment categoryId={selectedCategory || 'lighting'} primary={onboardingTheme.primaryHex} />
 
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
@@ -110,7 +132,8 @@ export default function Onboarding() {
         <motion.div
           animate={{ opacity: [0.1, 0.2, 0.1] }}
           transition={{ duration: 4, delay: 1 }}
-          className="absolute top-0 right-1/4 w-96 h-96 bg-purple-500 rounded-full blur-3xl opacity-15"
+          className="absolute top-0 right-1/4 w-96 h-96 rounded-full blur-3xl opacity-15"
+          style={{ backgroundColor: onboardingTheme.primaryHex }}
         />
       </div>
 
@@ -124,7 +147,7 @@ export default function Onboarding() {
           <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-5 sm:p-8 shadow-2xl">
             <div className="flex items-center justify-between mb-6 sm:mb-8">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-purple-400 to-amber-400 bg-clip-text text-transparent">
+                <h1 className="text-2xl sm:text-3xl font-black bg-clip-text text-transparent" style={titleGradientStyle}>
                   Complete seu perfil
                 </h1>
                 <p className="text-slate-400 text-sm mt-1">Vamos conhecer você melhor</p>
@@ -213,7 +236,8 @@ export default function Onboarding() {
                   <Button
                     onClick={handleNextStep}
                     disabled={!name}
-                    className="w-full bg-gradient-to-r from-purple-500 to-amber-500 hover:from-purple-600 hover:to-amber-600 disabled:opacity-50"
+                    className="w-full text-white disabled:opacity-50"
+                    style={ctaGradientStyle}
                   >
                     Continuar
                   </Button>
@@ -237,7 +261,8 @@ export default function Onboarding() {
                   <Button
                     onClick={handleNextStep}
                     disabled={!selectedCategory}
-                    className="w-full bg-gradient-to-r from-purple-500 to-amber-500 hover:from-purple-600 hover:to-amber-600 disabled:opacity-50"
+                    className="w-full text-white disabled:opacity-50"
+                    style={ctaGradientStyle}
                   >
                     Continuar
                   </Button>
@@ -265,7 +290,8 @@ export default function Onboarding() {
                   <Button
                     onClick={handleNextStep}
                     disabled={selectedSpecialties.length === 0}
-                    className="w-full bg-gradient-to-r from-purple-500 to-amber-500 hover:from-purple-600 hover:to-amber-600 disabled:opacity-50"
+                    className="w-full text-white disabled:opacity-50"
+                    style={ctaGradientStyle}
                   >
                     Continuar
                   </Button>
@@ -338,7 +364,8 @@ export default function Onboarding() {
                   <Button
                     onClick={handleNextStep}
                     disabled={!dailyRate || !monthlyGoalRevenue}
-                    className="w-full bg-gradient-to-r from-purple-500 to-amber-500 hover:from-purple-600 hover:to-amber-600 disabled:opacity-50"
+                    className="w-full text-white disabled:opacity-50"
+                    style={ctaGradientStyle}
                   >
                     Continuar
                   </Button>
@@ -361,7 +388,7 @@ export default function Onboarding() {
                     }}
                     transition={{ duration: 0.6 }}
                   >
-                    <CheckCircle2 className="w-16 h-16 text-purple-400 mx-auto mb-4" />
+                    <CheckCircle2 className="w-16 h-16 mx-auto mb-4" style={{ color: onboardingTheme.primaryHex }} />
                   </motion.div>
 
                   <div>
@@ -378,7 +405,15 @@ export default function Onboarding() {
                       <p className="text-slate-400 text-sm">Especialidades</p>
                       <div className="flex flex-wrap gap-2 mt-2">
                         {selectedSpecialties.map((spec) => (
-                          <span key={spec} className="bg-purple-500/20 border border-purple-500/50 text-purple-300 px-3 py-1 rounded-full text-sm">
+                          <span
+                            key={spec}
+                            className="px-3 py-1 rounded-full text-sm border"
+                            style={{
+                              background: `${onboardingTheme.primaryHex}33`,
+                              borderColor: `${onboardingTheme.primaryHex}80`,
+                              color: onboardingTheme.primaryHex,
+                            }}
+                          >
                             {spec}
                           </span>
                         ))}
@@ -400,7 +435,11 @@ export default function Onboarding() {
                   <Button
                     onClick={handleSubmit}
                     disabled={loading}
-                    className="w-full h-11 bg-gradient-to-r from-purple-500 via-purple-600 to-amber-500 hover:from-purple-600 hover:via-purple-700 hover:to-amber-600 text-white font-bold shadow-lg shadow-purple-500/30"
+                    className="w-full h-11 text-white font-bold"
+                    style={{
+                      ...ctaGradientStyle,
+                      boxShadow: `0 10px 25px -5px ${onboardingTheme.primaryHex}4d`,
+                    }}
                   >
                     {loading ? 'Criando perfil...' : 'Entrar no Backstage'}
                   </Button>

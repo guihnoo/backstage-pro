@@ -6,7 +6,9 @@ import { useFinancialVisibility } from '@/components/context/FinancialVisibility
 import AnimatedStatValue from '@/components/home/AnimatedStatValue';
 import StatValuePulse from '@/components/home/StatValuePulse';
 
-export default function PipelineFinanceiro({ stats, isLoading, primaryHex = '#A64AFF', accentHex = '#FFB700' }) {
+import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
+
+export default function PipelineFinanceiro({ stats, isLoading, primaryHex = AUTH_HERO_PRIMARY, accentHex = AUTH_HERO_ACCENT }) {
   const { formatCurrency } = useFinancialVisibility();
   const pago = stats?.faturamento_pago ?? 0;
   const aReceber = stats?.a_receber ?? 0;

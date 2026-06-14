@@ -5,7 +5,9 @@ import { usePWA } from '@/hooks/usePWA';
 
 const DISMISSED_KEY = 'bp_install_prompt_dismissed';
 
-export default function InstallPwaCard({ primaryHex = '#6366f1' }) {
+import { AUTH_HERO_PRIMARY } from '@/lib/categoryGear';
+
+export default function InstallPwaCard({ primaryHex = AUTH_HERO_PRIMARY }) {
   const { isInstallable, isInstalled, installApp } = usePWA();
   const [dismissed, setDismissed] = useState(
     () => typeof localStorage !== 'undefined' && localStorage.getItem(DISMISSED_KEY) === '1'

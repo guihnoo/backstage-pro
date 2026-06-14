@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
 
 /**
  * Marca Backstage Pro — ícone PWA + wordmark opcional.
@@ -18,7 +19,7 @@ export default function BackstageLogo({
       height={size}
       className="rounded-[22%] shrink-0"
       style={{
-        boxShadow: '0 0 28px rgba(166, 74, 255, 0.25), 0 0 48px rgba(255, 183, 0, 0.12)',
+        boxShadow: `0 0 28px ${AUTH_HERO_PRIMARY}40, 0 0 48px ${AUTH_HERO_ACCENT}1f`,
       }}
     />
   );
@@ -30,7 +31,12 @@ export default function BackstageLogo({
         <div className="min-w-0">
           <p className="text-lg font-extrabold leading-tight tracking-tight text-white">
             Backstage{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#A64AFF] to-[#FFB700]">
+            <span
+              className="text-transparent bg-clip-text"
+              style={{
+                backgroundImage: `linear-gradient(to right, ${AUTH_HERO_PRIMARY}, ${AUTH_HERO_ACCENT})`,
+              }}
+            >
               Pro
             </span>
           </p>

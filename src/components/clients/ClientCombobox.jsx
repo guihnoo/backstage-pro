@@ -13,6 +13,7 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
+import { AUTH_HERO_PRIMARY } from '@/lib/categoryGear';
 import ClientQuickCreateDialog from './ClientQuickCreateDialog';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
@@ -80,10 +81,10 @@ export default function ClientCombobox({
             <span className="flex items-center gap-2 truncate">
               <span
                 className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                style={{ backgroundColor: selected.brand_color || '#A64AFF' }}
+                style={{ backgroundColor: selected.brand_color || AUTH_HERO_PRIMARY }}
               />
               {selected.client_type === 'pessoa'
-                ? <User className="w-3 h-3 text-purple-400 flex-shrink-0" />
+                ? <User className="w-3 h-3 bp-text-primary flex-shrink-0" />
                 : null
               }
               <span className="truncate">{selected.name}</span>
@@ -127,10 +128,10 @@ export default function ClientCombobox({
                 >
                   <span
                     className="w-2.5 h-2.5 rounded-full mr-2 flex-shrink-0"
-                    style={{ backgroundColor: client.brand_color || '#A64AFF' }}
+                    style={{ backgroundColor: client.brand_color || AUTH_HERO_PRIMARY }}
                   />
                   {client.client_type === 'pessoa'
-                    ? <User className="w-3.5 h-3.5 text-purple-400 mr-1 flex-shrink-0" />
+                    ? <User className="w-3.5 h-3.5 bp-text-primary mr-1 flex-shrink-0" />
                     : <Building2 className="w-3.5 h-3.5 text-slate-500 mr-1 flex-shrink-0" />
                   }
                   <span className="flex-1 truncate">{client.name}</span>

@@ -6,6 +6,8 @@ import { useFinancialVisibility } from '@/components/context/FinancialVisibility
 import AnimatedStatValue from '@/components/home/AnimatedStatValue';
 import StatValuePulse from '@/components/home/StatValuePulse';
 
+import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
+
 const statConfigs = [
   { key: 'faturamento_pago', label: 'Recebido', icon: '✅', route: '/reports', hint: 'Ver relatórios', financial: true },
   { key: 'a_receber', label: 'A Receber', icon: '💰', route: '/reports', hint: 'Ver relatórios', financial: true },
@@ -13,7 +15,7 @@ const statConfigs = [
   { key: 'diarias_count', label: 'Diárias no Mês', icon: '📅', route: '/goals', hint: 'Ver metas', format: (v) => `${v} dia${v !== 1 ? 's' : ''}` },
 ];
 
-export default function QuickStats({ stats, isLoading, primaryHex = '#A64AFF', accentHex = '#FFB700' }) {
+export default function QuickStats({ stats, isLoading, primaryHex = AUTH_HERO_PRIMARY, accentHex = AUTH_HERO_ACCENT }) {
   const { formatCurrency } = useFinancialVisibility();
 
   return (

@@ -9,6 +9,7 @@ import { getEventCacheAmount, isCancelledEvent } from '@/lib/eventFinance';
 import { getEventStatus } from '@/components/utils/dateUtils';
 import { getEventDisplay } from '@/lib/eventDisplay';
 import { ptBR } from 'date-fns/locale';
+import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
 
 function getWeekLabel(daysFromNow) {
   if (daysFromNow <= 7) return 'Esta semana';
@@ -16,7 +17,7 @@ function getWeekLabel(daysFromNow) {
   return `Em ${Math.ceil(daysFromNow / 7)} semanas`;
 }
 
-export default function ForecastWidget({ events = [], isLoading, primaryHex = '#A64AFF', accentHex = '#FFB700', onViewEvent }) {
+export default function ForecastWidget({ events = [], isLoading, primaryHex = AUTH_HERO_PRIMARY, accentHex = AUTH_HERO_ACCENT, onViewEvent }) {
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const [showAll, setShowAll] = useState(false);
   const todayMs = startOfDay(new Date()).getTime();

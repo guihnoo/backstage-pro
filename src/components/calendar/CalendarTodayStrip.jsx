@@ -10,6 +10,7 @@ import {
 import { isCancelledEvent } from '@/lib/eventFinance';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import EventHeading from '@/components/events/EventHeading';
+import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
 
 function getTodayWorkForEvent(dailyWork, eventId, today) {
   return dailyWork.find(
@@ -21,8 +22,8 @@ export default function CalendarTodayStrip({
   events = [],
   dailyWork = [],
   clients = [],
-  primaryHex = '#A64AFF',
-  accentHex = '#FFB700',
+  primaryHex = AUTH_HERO_PRIMARY,
+  accentHex = AUTH_HERO_ACCENT,
   onEventClick,
   onRegisterWork,
   onNewEvent,

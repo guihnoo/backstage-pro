@@ -284,3 +284,8 @@ body:has([role="alertdialog"][data-state="open"]) [data-app-scroll] {
   color: var(--bp-primary);
   border-color: color-mix(in srgb, var(--bp-primary) 40%, transparent);
 }
+
+.bp-surface-primary {
+  background: color-mix(in srgb, var(--bp-primary) 14%, transparent);
+  border-color: color-mix(in srgb, var(--bp-primary) 35%, transparent);
+}

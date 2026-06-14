@@ -1132,7 +1132,7 @@ export default function CalendarPage() {
             formatValue={(v) => String(Math.round(v))}
             subtext={monthStats.totalEvents === 1 ? 'evento' : 'eventos'}
             icon={Calendar}
-            color="text-purple-400"
+            color="bp-text-primary"
             onClick={handleEventsClick}
             loading={isLoading}
           />
@@ -1180,7 +1180,7 @@ export default function CalendarPage() {
             formatValue={(v) => String(Math.round(v))}
             subtext={monthStats.uniqueClients === 1 ? 'cliente' : 'clientes'}
             icon={Users}
-            color="text-purple-400"
+            color="bp-text-primary"
             onClick={handleClientsClick}
             loading={isLoading}
           />
@@ -1389,7 +1389,7 @@ export default function CalendarPage() {
                       {/* Eventos do dia */}
                       <div className="flex flex-col gap-1 p-1.5 flex-1">
                         {visibleEvents.map((ev) => {
-                          const evColor = ev.color || '#6366f1';
+                          const evColor = ev.color || DEFAULT_EVENT_COLOR;
                           const timeLabel = ev.start_time ? ev.start_time.slice(0, 5) : null;
                           const isCancelled = ev.status === 'cancelled';
                           return (
@@ -1452,7 +1452,7 @@ export default function CalendarPage() {
                   {upEvents.map(({ ev, diff }) => {
                     const cl = clientMap.get(ev.client_id);
                     const isPaid = ev.payment_status === 'paid';
-                    const evColor = ev.color || '#6366f1';
+                    const evColor = ev.color || DEFAULT_EVENT_COLOR;
                     const timeLabel = ev.start_time ? ev.start_time.slice(0, 5) : null;
                     const amount = getEventCacheAmount(ev);
                     const isOverdue = ev.payment_due_date && isBefore(parseISO(ev.payment_due_date), new Date()) && !isPaid;
@@ -1532,7 +1532,7 @@ export default function CalendarPage() {
                       >
                         <div
                           className="w-1 self-stretch rounded-full flex-shrink-0"
-                          style={{ backgroundColor: ev.color || '#6366f1' }}
+                          style={{ backgroundColor: ev.color || DEFAULT_EVENT_COLOR }}
                         />
                         <button
                           type="button"
@@ -1611,7 +1611,7 @@ export default function CalendarPage() {
                   >
                     <div
                       className="w-1 self-stretch rounded-full flex-shrink-0"
-                      style={{ backgroundColor: ev.color || '#6366f1' }}
+                      style={{ backgroundColor: ev.color || DEFAULT_EVENT_COLOR }}
                     />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-slate-200 truncate">{ev.title}</p>

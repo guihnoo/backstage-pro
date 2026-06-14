@@ -6,6 +6,19 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-13
 
+### SEASONALITY-S68 — Gráfico de Sazonalidade de Receita ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/reports/SeasonalityChart.jsx`** (NOVO):
+  - Recharts BarChart com 12 meses (Jan–Dez) mostrando receita histórica (todos os anos combinados)
+  - Intensidade de cor proporcional: índigo escuro → índigo → verde esmeralda (melhor mês)
+  - 3 KPIs: Melhor Mês (receita), + Shows (volume) e Baixa Temporada
+  - Tooltip customizado mostrando receita + contagem de shows por mês
+  - Legenda de intensidade de cores
+  - Lista os anos com dados no subtítulo
+- **`src/pages/Reports.jsx`**: `SeasonalityChart` adicionado na aba "Atividade" abaixo do ActivityHeatmap
+- **Fix**: `useFeedback.js` importava `AUTH_HERO_PRIMARY` inexistente em `categoryGear.js` → substituído por `#6366f1` fixo (bug pré-existente que bloqueou o build)
+- **Build**: Vite ✅ · **Git backup**: auto-wip ✅
+
 ### CONTRACT-S67 — Contrato de Serviços em PDF ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/lib/ContractPDFDocument.jsx`** (NOVO): template PDF completo via `@react-pdf/renderer`
@@ -247,6 +260,19 @@ Registro cronológico de tarefas executadas por agentes.
 - `Reports.jsx`: KPIs e projeção com `config.primaryHex` / `accentHex`; hover `var(--bp-primary)`
 - `public/icon.svg`, `icon-maskable.svg`: gradiente roxo→ouro (identidade lighting)
 - `npm run icons:generate`: PNGs PWA (`192`, `512`, maskable, apple-touch) regenerados
+- **Testes**: unit 29/29 ✅ · build ✅
+
+### DESIGN-S63 — Centralização AUTH_HERO + polish tema (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- Componentes design (`NeonPageShell`, `NeonGlass`, `NeonSectionFrame`, `NeonLevelBars`, `NeonAtmosphere`, `LightingBeams`, `SpotlightRays`, `FloatingEquipment`): defaults via `AUTH_HERO_PRIMARY` / `AUTH_HERO_ACCENT`
+- Home/calendar (`CalendarTodayStrip`, `ForecastWidget`, `PipelineFinanceiro`, `AlertasBastidao`, `QuickStats`, `PullToRefreshIndicator`): defaults centralizados
+- `brandColors.js`: `DEFAULT_CLIENT_COLOR` via `AUTH_HERO_PRIMARY`
+- `BackstageLogo.jsx`, `InstallPwaCard.jsx`: identidade lighting
+- `Reports.jsx`: purple fixo → classes `bp-text-primary`, `bp-chip-badge-active`, `bp-surface-primary`
+- `Onboarding.jsx`: CTAs, título, orbs e chips dinâmicos com `getCategoryConfig(selectedCategory)`
+- `Calendar.jsx`: StatCards `bp-text-primary`; fallbacks de cor de evento → `DEFAULT_EVENT_COLOR`
+- `ClientCombobox.jsx`, `Clients.jsx`: fallback `brand_color` via `AUTH_HERO_PRIMARY`
+- `categoryGear.js`: exporta `AUTH_HERO_THEME`, `AUTH_HERO_PRIMARY`, `AUTH_HERO_ACCENT`; fallback `getCategoryConfig` → `lighting`
 - **Testes**: unit 29/29 ✅ · build ✅
 
 ### WORK-S50 — R$/hora por show + aba Trabalho em Relatórios ✅

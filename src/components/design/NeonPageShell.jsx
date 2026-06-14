@@ -1,6 +1,7 @@
 import { NeonAtmosphere } from '@/components/design/NeonAtmosphere';
+import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
 
-export function NeonPageShell({ primary = '#A64AFF', accent = '#FFB700', stage = false, className = '', children }) {
+export function NeonPageShell({ primary = AUTH_HERO_PRIMARY, accent = AUTH_HERO_ACCENT, stage = false, className = '', children }) {
   return (
     <div className={`relative min-h-full overflow-x-clip bg-[#050609] text-white ${className}`}>
       <div className="absolute inset-0 overflow-hidden pointer-events-none">

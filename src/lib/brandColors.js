@@ -1,5 +1,5 @@
 import { getCategoryConfig } from '@/lib/categoryConfig';
-import { AUTH_HERO_CATEGORY } from '@/lib/categoryGear';
+import { AUTH_HERO_CATEGORY, AUTH_HERO_PRIMARY } from '@/lib/categoryGear';
 
 export const BRAND_COLOR_PALETTE = [
   { id: 'cyan', hex: '#22d3ee', label: 'Ciano' },
