@@ -30,7 +30,8 @@ import {
   Copy,
   Send,
   Timer,
-  Square
+  Square,
+  ScrollText
 } from 'lucide-react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import {
@@ -87,6 +88,7 @@ export default function EventDetailModal({
   const { settings: userSettings } = useUserSettings();
   const [activeTimer, setActiveTimer] = useState(() => getTimer());
   const [generatingPDF, setGeneratingPDF] = useState(false);
+  const [generatingContract, setGeneratingContract] = useState(false);
   const [applying12h, setApplying12h] = useState(false);
   const [savingLocation, setSavingLocation] = useState(false);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
@@ -326,6 +328,36 @@ export default function EventDetailModal({
       appToast.error('Erro ao gerar PDF', { description: err.message });
     } finally {
       setGeneratingPDF(false);
+    }
+  };
+
+  const handleDownloadContract = async () => {
+    if (generatingContract) return;
+    setGeneratingContract(true);
+    try {
+      const { pdf } = await import('@react-pdf/renderer');
+      const { ContractPDFDocument } = await import('@/lib/ContractPDFDocument');
+      const blob = await pdf(
+        <ContractPDFDocument
+          event={event}
+          client={client}
+          settings={userSettings || {}}
+        />
+      ).toBlob();
+      const clientSlug = (client?.name || 'cliente').replace(/\s+/g, '_').substring(0, 20);
+      const dateSlug = event?.start_date ? event.start_date.replace(/-/g, '') : format(new Date(), 'yyyyMMdd');
+      const filename = `Contrato_${clientSlug}_${dateSlug}.pdf`;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      appToast.success('Contrato gerado!', { description: filename });
+    } catch (err) {
+      appToast.error('Erro ao gerar contrato', { description: err.message });
+    } finally {
+      setGeneratingContract(false);
     }
   };
 
@@ -998,6 +1030,20 @@ export default function EventDetailModal({
               : <FileText className="w-4 h-4" />
             }
           </Button>
+          {['pending', 'scheduled', 'confirmed'].includes(event.status) && (
+            <Button
+              onClick={handleDownloadContract}
+              disabled={generatingContract}
+              variant="outline"
+              className="flex-shrink-0 border-emerald-600 hover:bg-emerald-900/20 text-emerald-300"
+              title="Baixar contrato de serviços em PDF"
+            >
+              {generatingContract
+                ? <Loader2 className="w-4 h-4 animate-spin" />
+                : <ScrollText className="w-4 h-4" />
+              }
+            </Button>
+          )}
           {client?.phone && (
             <Button
               onClick={handleSendReport}
