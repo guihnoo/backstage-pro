@@ -1,7 +1,9 @@
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { CheckCircle2, XCircle, Info, Loader2, AlertTriangle } from 'lucide-react';
-import { useCategoryTheme } from '@/lib/useCategoryTheme';
+
+/** Sonner renderiza fora do AuthProvider — usar CSS vars, não useCategoryTheme. */
+const THEME_PRIMARY = 'var(--bp-primary, #A64AFF)';
 
 const ICONS = {
   success: CheckCircle2,
@@ -42,14 +44,13 @@ const STYLES = {
 
 function BackstageToastCard({ type, title, description }) {
   const Icon = ICONS[type] || Info;
-  const { primaryHex } = useCategoryTheme();
   const style = STYLES[type] || STYLES.info;
   const themeInfo = style.useTheme
     ? {
-        ringStyle: { boxShadow: `0 0 0 1px ${primaryHex}4d` },
-        iconStyle: { color: primaryHex },
+        ringStyle: { boxShadow: `0 0 0 1px color-mix(in srgb, ${THEME_PRIMARY} 30%, transparent)` },
+        iconStyle: { color: THEME_PRIMARY },
         glowClass: '',
-        cardStyle: { boxShadow: `0 20px 25px -5px ${primaryHex}26` },
+        cardStyle: { boxShadow: `0 20px 25px -5px color-mix(in srgb, ${THEME_PRIMARY} 15%, transparent)` },
       }
     : {
         ringStyle: {},
@@ -92,14 +93,13 @@ function show(type, title, options = {}) {
 
 function ActionToastCard({ type = 'info', title, description, action, cancel, icon: IconOverride }) {
   const Icon = IconOverride || ICONS[type] || Info;
-  const { primaryHex } = useCategoryTheme();
   const style = STYLES[type] || STYLES.info;
   const themeInfo = style.useTheme
     ? {
-        ringStyle: { boxShadow: `0 0 0 1px ${primaryHex}4d` },
-        iconStyle: { color: primaryHex },
+        ringStyle: { boxShadow: `0 0 0 1px color-mix(in srgb, ${THEME_PRIMARY} 30%, transparent)` },
+        iconStyle: { color: THEME_PRIMARY },
         glowClass: '',
-        cardStyle: { boxShadow: `0 20px 25px -5px ${primaryHex}26` },
+        cardStyle: { boxShadow: `0 20px 25px -5px color-mix(in srgb, ${THEME_PRIMARY} 15%, transparent)` },
       }
     : {
         ringStyle: {},

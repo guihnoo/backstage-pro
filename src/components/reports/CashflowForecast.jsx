@@ -3,7 +3,7 @@ import { format, addMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO
 import { ptBR } from 'date-fns/locale';
 import { TrendingUp, Clock, CalendarDays, CheckCircle2, AlertCircle, Circle } from 'lucide-react';
 import { getEventCacheAmount } from '@/lib/eventFinance';
-import { useCategoryTheme } from '@/lib/useCategoryTheme';
+import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import EventHeading from '@/components/events/EventHeading';
 
 const STATUS_CONFIG_BASE = {
@@ -25,6 +25,13 @@ function getStatusKey(ev) {
   if (s === 'completed' && ev.payment_status !== 'paid') return 'completed';
   if (s === 'completed') return null;
   return STATUS_CONFIG_BASE[s] ? s : 'scheduled';
+}
+
+function getStatusConfig() {
+  return {
+    ...STATUS_CONFIG_BASE,
+    completed: STATUS_CONFIG_COMPLETED,
+  };
 }
 
 export default function CashflowForecast({ events = [], work = [] }) {

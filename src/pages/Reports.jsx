@@ -216,7 +216,7 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type, onItemClick
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-2xl max-h-[90dvh] flex flex-col overflow-hidden p-0">
+      <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-2xl max-h-[90dvh] flex flex-col overflow-hidden p-0 bp-focus-scope">
         <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0 min-w-0">
           <DialogTitle className="text-xl font-bold bp-text-primary min-w-0">
             <Ellipsis>{title}</Ellipsis>
@@ -1150,7 +1150,7 @@ export default function ReportsPage() {
 
       {/* Modal de Projeção do Próximo Período */}
       <Dialog open={showProjection} onOpenChange={setShowProjection}>
-        <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-lg max-h-[85dvh] flex flex-col overflow-hidden p-0">
+        <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-lg max-h-[85dvh] flex flex-col overflow-hidden p-0 bp-focus-scope">
           <DialogHeader className="px-6 pt-6 pb-3 flex-shrink-0">
             <DialogTitle className="text-lg font-bold bp-text-primary">
               Projeção — Próximo Período

@@ -6,6 +6,17 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-14
 
+### YOY-S75 — Comparação Ano a Ano em Relatórios ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/reports/YearOverYear.jsx`** (NOVO):
+  - Tabela comparativa: shows, receita, ticket médio, clientes ativos — ano atual vs mesmo período (jan-hoje) do ano anterior
+  - Retorna `null` se não há dados do ano anterior (não polui tela de novos usuários)
+  - Delta % com ícone TrendingUp/Down/Minus e cor emerald/red/slate
+  - Mensagem motivacional abaixo: "+X% maior que no mesmo período de YYYY 🚀"
+  - Respeita `useFinancialVisibility` — mascara valores financeiros quando oculto
+- **`src/pages/Reports.jsx`**: import + render logo antes do grid ReportsChart/FinancialSummary na aba Visão Geral
+- **Build**: Vite ✅ · **Git backup**: auto-wip ✅
+
 ### RECEIPT-PDF-S71 — Recibo de Pagamento em PDF ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/lib/ReceiptPDFDocument.jsx`** (NOVO):
@@ -405,6 +416,15 @@ Registro cronológico de tarefas executadas por agentes.
 - `EventForm.jsx`, `EventDetailModal.jsx`: `DialogContent` com `bp-focus-scope` (footer + ações inline)
 - `EventTemplateModal.jsx`, `DailyWorkModal.jsx`: mesmo escopo de focus
 - **Testes**: unit 29/29 ✅ · build ✅
+
+### DESIGN-S70 — E2E smoke + bugs Cashflow/toast + focus Reports (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- **Bugs corrigidos**:
+  - `CashflowForecast.jsx`: import `useFinancialVisibility` + helper `getStatusConfig()` (crash em Relatórios)
+  - `appToast.jsx`: toasts usam `var(--bp-primary)` em vez de `useCategoryTheme()` (Sonner fica fora do `AuthProvider` → crash ao exibir toast pós-dedupe GCal)
+- `Reports.jsx`: `bp-focus-scope` nos 2 `DialogContent`
+- `fakeGoogleCalendar.js`: `seedGoogleCalendarAuth(page, options)` repassa `dedupeRemoved` ao mock
+- **Testes**: unit 29/29 ✅ · build ✅ · E2E `google-calendar-sync` + `reports-map` 4/4 ✅
 
 ### WORK-S50 — R$/hora por show + aba Trabalho em Relatórios ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)

@@ -173,8 +173,8 @@ export async function installGoogleCalendarMocks(page, { dedupeRemoved = 2 } = {
   });
 }
 
-export async function seedGoogleCalendarAuth(page) {
+export async function seedGoogleCalendarAuth(page, options = {}) {
   const { seedAuth } = await import('./fakeAuth.js');
-  await installGoogleCalendarMocks(page);
+  await installGoogleCalendarMocks(page, options);
   await seedAuth(page);
 }

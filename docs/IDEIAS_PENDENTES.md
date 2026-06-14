@@ -113,6 +113,7 @@
 | 72 | Painel de Clientes Inativos com reativação via WhatsApp | 2026-06-14 | ✅ `InactiveClientsPanel.jsx`; detecta clientes sem shows há 90+ dias; mostra meses inativo + histórico; botão "Reativar" abre WhatsApp com mensagem calorosa; aparece só no filtro "Todos" |
 | 73 | Desempenho por dia da semana em Relatórios — Atividade | 2026-06-14 | ✅ `WeekdayBreakdown.jsx`; BarChart Dom-Sáb; intensidade de cor; KPIs +Receita/+Shows/Mais Livre; tooltip com receita, shows e média/show; grid ao lado de SeasonalityChart |
 | 74 | Compartilhar disponibilidade mensal via WhatsApp na Agenda | 2026-06-14 | ✅ `AvailabilityShareModal.jsx` + `buildAvailabilityMessage()` em whatsapp.js; navegação por mês; lista dias livres vs agendados; copiar + abrir WhatsApp; botão Share2 (verde) na Agenda |
+| 75 | Comparação Ano a Ano (YoY) em Relatórios | 2026-06-14 | ✅ `YearOverYear.jsx`; tabela mostra shows, receita, ticket médio e clientes ativos de jan-hoje do ano atual vs mesmo período do ano anterior; variação % com seta; mensagem motivacional; só aparece se houver dados do ano anterior |
 
 ---
 
