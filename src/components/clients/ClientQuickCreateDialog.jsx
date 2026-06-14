@@ -99,7 +99,7 @@ export default function ClientQuickCreateDialog({ open, onOpenChange, initialNam
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md bg-slate-900/95 backdrop-blur-lg border-slate-700 text-white z-[106]">
+      <DialogContent className="sm:max-w-md bg-slate-900/95 backdrop-blur-lg border-slate-700 text-white z-[106] bp-focus-scope">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {clientType === 'pessoa'

@@ -66,6 +66,7 @@ import CategoryBreakdown from '@/components/reports/CategoryBreakdown';
 import TopClients from '@/components/reports/TopClients';
 import ReceivablesAging from '@/components/reports/ReceivablesAging';
 import SmartInsights from '@/components/reports/SmartInsights';
+import YearOverYear from '@/components/reports/YearOverYear';
 import IRSummary from '@/components/reports/IRSummary';
 import EventHeading from '@/components/events/EventHeading';
 import { Ellipsis } from '@/components/ui/overflowText';
@@ -945,6 +946,7 @@ export default function ReportsPage() {
               clients={data.clients}
               work={data.dailyWork}
             />
+            <YearOverYear events={data.events} clients={data.clients} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <ReportsChart
                 chartInput={processedData.chartInput}

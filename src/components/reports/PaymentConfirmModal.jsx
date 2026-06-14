@@ -55,7 +55,7 @@ export default function PaymentConfirmModal({ event, isOpen, onClose, onSuccess 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md max-h-[90dvh] bg-slate-900 border-slate-700 text-white flex flex-col overflow-hidden p-0">
+      <DialogContent className="sm:max-w-md max-h-[90dvh] bg-slate-900 border-slate-700 text-white flex flex-col overflow-hidden p-0 bp-focus-scope">
         <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-xl">
             <CheckCircle className="w-5 h-5 text-green-400" />

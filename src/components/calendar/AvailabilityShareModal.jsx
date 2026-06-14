@@ -88,7 +88,7 @@ export default function AvailabilityShareModal({ open, onClose, events = [], cli
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-slate-900 border-slate-700 text-white p-0 flex flex-col overflow-hidden max-h-[90dvh]">
+      <DialogContent className="sm:max-w-md bg-slate-900 border-slate-700 text-white p-0 flex flex-col overflow-hidden max-h-[90dvh] bp-focus-scope">
         <DialogHeader className="px-4 pt-4 pb-3 border-b border-slate-800 flex-shrink-0">
           <DialogTitle className="text-base flex items-center gap-2">
             <MessageCircle className="w-4 h-4 text-green-400" />

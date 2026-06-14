@@ -15,7 +15,7 @@ export default function ConfirmDialog({ open, onOpenChange, title, description, 
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="bg-slate-900 border-slate-700 text-white max-w-sm mx-4">
+      <AlertDialogContent className="bg-slate-900 border-slate-700 text-white max-w-sm mx-4 bp-focus-scope">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-white">{title}</AlertDialogTitle>
           {description && (

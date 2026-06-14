@@ -35,7 +35,7 @@ export default function DrilldownModal({ open, onOpenChange, title, items = [], 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl bg-slate-900/95 border-slate-800 text-slate-100 max-h-[90dvh] flex flex-col overflow-hidden">
+      <DialogContent className="sm:max-w-2xl bg-slate-900/95 border-slate-800 text-slate-100 max-h-[90dvh] flex flex-col overflow-hidden bp-focus-scope">
         <DialogHeader className="flex flex-row items-center justify-between gap-3 flex-shrink-0">
           <DialogTitle className="text-white min-w-0 flex-1 truncate">{title}</DialogTitle>
           {items?.length > 0 && (

@@ -92,7 +92,7 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg bg-slate-900/95 border-slate-800 text-slate-100 p-0 flex flex-col overflow-hidden max-h-[90dvh]">
+      <DialogContent className="sm:max-w-lg bg-slate-900/95 border-slate-800 text-slate-100 p-0 flex flex-col overflow-hidden max-h-[90dvh] bp-focus-scope">
         <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 border-b border-slate-800 flex-shrink-0">
           <DialogTitle>Digitalizar Recibo</DialogTitle>
           <DialogDescription>
