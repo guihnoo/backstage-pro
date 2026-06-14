@@ -104,6 +104,7 @@
 | 63 | Checklist de equipamentos por evento com templates por categoria | 2026-06-13 | ✅ `EventChecklist.jsx`; coluna `checklist_items` jsonb no DB; templates Áudio/Iluminação/DJ/Foto/Geral; check/uncheck/delete; barra de progresso; salva automático |
 | 64 | Timer ao vivo para registro automático de horas durante o show | 2026-06-13 | ✅ `timerStore.js` + `FloatingTimer.jsx`; persiste em localStorage; pill flutuante global; botão no EventDetailModal; ao parar cria work record via `useDailyWork` |
 | 65 | CRM: histórico de interações por cliente com follow-up e alertas | 2026-06-13 | ✅ `client_interactions` DB + `useClientInteractions` + `ClientInteractionLog.jsx` em ClientDetail; 5 tipos; alerta violet no AlertsPanel para follow-ups vencidos |
+| 66 | Top Clientes por receita em Relatórios com ranking e score | 2026-06-13 | ✅ `TopClients.jsx`; ranking top-10; barra proporcional; medalhas; ticket médio; score de pagamento; navega para ClientDetail |
 
 ---
 

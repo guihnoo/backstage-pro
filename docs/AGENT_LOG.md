@@ -6,6 +6,19 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-13
 
+### TOP-S66 — Top Clientes por Receita em Relatórios ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/reports/TopClients.jsx`** (NOVO):
+  - Ranking top-10 clientes por receita paga (sem cancelados)
+  - Barra proporcional: gradiente indigo para #1, slate para demais
+  - Medalhas ouro/prata/bronze nas 3 primeiras posições
+  - Badge de confiabilidade (score de pagamento) por cliente
+  - Meta info: total de shows, ticket médio, último show, % pago
+  - Clique navega para `/client-detail` via `hardNavigate`
+  - Respeita `isVisible` (máscara financeira)
+- **`src/pages/Reports.jsx`**: `TopClients` adicionado após o grid CashflowForecast+CategoryBreakdown na aba "Visão Geral"
+- **Build**: Vite ✅ · **Git backup**: auto-wip ✅
+
 ### CRM-S65 — Histórico de Interações por Cliente ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **DB**: tabela `client_interactions` (id, user_id, client_id, type, notes, follow_up_date, created_at) + RLS + índices

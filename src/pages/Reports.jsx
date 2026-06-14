@@ -61,6 +61,7 @@ import MonthlyTrend from '@/components/reports/MonthlyTrend';
 import WorkAnalytics from '@/components/reports/WorkAnalytics';
 import CashflowForecast from '@/components/reports/CashflowForecast';
 import CategoryBreakdown from '@/components/reports/CategoryBreakdown';
+import TopClients from '@/components/reports/TopClients';
 import ReceivablesAging from '@/components/reports/ReceivablesAging';
 import IRSummary from '@/components/reports/IRSummary';
 import EventHeading from '@/components/events/EventHeading';
@@ -950,6 +951,10 @@ export default function ReportsPage() {
                 work={processedData.current.work}
               />
             </div>
+            <TopClients
+              events={processedData.current.events}
+              clients={data.clients}
+            />
           </div>
         )}
 
