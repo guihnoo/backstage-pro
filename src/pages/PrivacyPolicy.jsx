@@ -147,7 +147,7 @@ export default function PrivacyPolicyPage() {
 
         <Card className="bg-slate-900/50 border-slate-800">
           <CardHeader>
-            <CardTitle className="text-purple-300 flex items-center gap-2">
+            <CardTitle className="bp-text-primary flex items-center gap-2">
               <FileText className="w-5 h-5" />
               Integração com Google Calendar
             </CardTitle>

@@ -35,6 +35,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { getEventStatus } from '@/components/utils/dateUtils';
@@ -83,6 +84,7 @@ export default function ClientDetailPage() {
   const { formatCurrency } = useFinancialVisibility();
   const { profile } = useAuth();
   const config = getCategoryConfig(profile?.category || 'lighting');
+  const { primaryHex } = useCategoryTheme();
 
   const [showClientForm, setShowClientForm] = useState(false);
   const [showEventForm, setShowEventForm] = useState(false);
@@ -307,7 +309,7 @@ export default function ClientDetailPage() {
                 className="w-16 h-16 rounded-lg flex items-center justify-center font-bold text-3xl"
                 style={
                   client.client_type === 'pessoa'
-                    ? { background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: '#fff' }
+                    ? { background: 'linear-gradient(135deg, var(--bp-person), color-mix(in srgb, var(--bp-person) 70%, white))', color: '#fff' }
                     : { background: `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})`, color: '#06070a' }
                 }
               >
@@ -321,7 +323,7 @@ export default function ClientDetailPage() {
               <div className="flex items-center gap-2 mb-0.5 min-w-0">
                 <h1 className="text-2xl font-bold text-white truncate min-w-0" title={client.name}>{client.name}</h1>
                 {client.client_type === 'pessoa' ? (
-                  <span className="text-[11px] bg-purple-600/20 text-purple-300 border border-purple-500/30 rounded px-2 py-0.5">Pessoa</span>
+                  <span className="text-[11px] bp-person-badge rounded px-2 py-0.5">Pessoa</span>
                 ) : (
                   <span
                     className="text-[11px] rounded px-2 py-0.5"
@@ -458,10 +460,10 @@ export default function ClientDetailPage() {
         </div>
 
         {upcomingEvents.length > 0 && (
-          <Card className="bg-indigo-950/30 border-indigo-700/30">
+          <Card className="bp-surface-primary border">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-indigo-300 flex items-center gap-2">
+                <h3 className="text-sm font-semibold bp-text-primary flex items-center gap-2">
                   <CalendarDays className="w-4 h-4" />
                   Próximos Shows ({upcomingEvents.length})
                 </h3>
@@ -469,7 +471,8 @@ export default function ClientDetailPage() {
                   size="sm"
                   variant="ghost"
                   onClick={() => { setEditingEvent(null); setShowEventForm(true); }}
-                  className="h-7 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/30 px-2"
+                  className="h-7 text-xs bp-text-primary hover:opacity-80 px-2"
+                  style={{ backgroundColor: `${primaryHex}14` }}
                 >
                   <Plus className="w-3 h-3 mr-1" /> Novo
                 </Button>

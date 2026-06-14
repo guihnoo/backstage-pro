@@ -103,7 +103,7 @@ export default function ClientQuickCreateDialog({ open, onOpenChange, initialNam
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {clientType === 'pessoa'
-              ? <><User className="w-4 h-4 text-purple-400" /><span className="text-purple-300">Nova Pessoa</span></>
+              ? <><User className="w-4 h-4 bp-person-icon" /><span className="bp-person-text">Nova Pessoa</span></>
               : <><Building2 className="w-4 h-4" style={{ color: primaryHex }} /><span style={{ color: primaryHex }}>Nova Empresa</span></>
             }
           </DialogTitle>
@@ -127,7 +127,7 @@ export default function ClientQuickCreateDialog({ open, onOpenChange, initialNam
               type="button"
               onClick={() => { setClientType('pessoa'); setSelectedCompany(null); }}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold transition-colors ${
-                clientType === 'pessoa' ? 'bg-purple-600 text-white' : 'bg-slate-800/60 text-slate-400 hover:text-slate-200'
+                clientType === 'pessoa' ? 'bp-person-btn-active' : 'bg-slate-800/60 text-slate-400 hover:text-slate-200'
               }`}
             >
               <User className="w-4 h-4" />
@@ -214,7 +214,7 @@ export default function ClientQuickCreateDialog({ open, onOpenChange, initialNam
             </Button>
             <Button
               type="submit"
-              className={`flex-1 ${clientType === 'pessoa' ? 'bg-purple-600 hover:bg-purple-500' : 'text-white hover:opacity-90'}`}
+              className={`flex-1 bp-focus-ring ${clientType === 'pessoa' ? 'bp-person-btn-active hover:opacity-90' : 'text-white hover:opacity-90'}`}
               style={clientType === 'empresa' ? { backgroundColor: primaryHex } : undefined}
               disabled={!name.trim() || creating}
             >

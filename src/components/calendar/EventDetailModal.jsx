@@ -31,7 +31,8 @@ import {
   Send,
   Timer,
   Square,
-  ScrollText
+  ScrollText,
+  BadgeCheck
 } from 'lucide-react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import {
@@ -89,6 +90,7 @@ export default function EventDetailModal({
   const [activeTimer, setActiveTimer] = useState(() => getTimer());
   const [generatingPDF, setGeneratingPDF] = useState(false);
   const [generatingContract, setGeneratingContract] = useState(false);
+  const [generatingReceipt, setGeneratingReceipt] = useState(false);
   const [applying12h, setApplying12h] = useState(false);
   const [savingLocation, setSavingLocation] = useState(false);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
@@ -358,6 +360,36 @@ export default function EventDetailModal({
       appToast.error('Erro ao gerar contrato', { description: err.message });
     } finally {
       setGeneratingContract(false);
+    }
+  };
+
+  const handleDownloadReceipt = async () => {
+    if (generatingReceipt) return;
+    setGeneratingReceipt(true);
+    try {
+      const { pdf } = await import('@react-pdf/renderer');
+      const { ReceiptPDFDocument } = await import('@/lib/ReceiptPDFDocument');
+      const blob = await pdf(
+        <ReceiptPDFDocument
+          event={event}
+          client={client}
+          settings={userSettings || {}}
+        />
+      ).toBlob();
+      const clientSlug = (client?.name || 'cliente').replace(/\s+/g, '_').substring(0, 20);
+      const dateSlug = event?.start_date ? event.start_date.replace(/-/g, '') : format(new Date(), 'yyyyMMdd');
+      const filename = `Recibo_${clientSlug}_${dateSlug}.pdf`;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      appToast.success('Recibo gerado!', { description: filename });
+    } catch (err) {
+      appToast.error('Erro ao gerar recibo', { description: err.message });
+    } finally {
+      setGeneratingReceipt(false);
     }
   };
 
@@ -1031,6 +1063,20 @@ export default function EventDetailModal({
               : <FileText className="w-4 h-4" />
             }
           </Button>
+          {event.payment_status === 'paid' && (
+            <Button
+              onClick={handleDownloadReceipt}
+              disabled={generatingReceipt}
+              variant="outline"
+              className="flex-shrink-0 border-green-600 hover:bg-green-900/20 text-green-300"
+              title="Baixar recibo de pagamento em PDF"
+            >
+              {generatingReceipt
+                ? <Loader2 className="w-4 h-4 animate-spin" />
+                : <BadgeCheck className="w-4 h-4" />
+              }
+            </Button>
+          )}
           {['pending', 'scheduled', 'confirmed'].includes(event.status) && (
             <Button
               onClick={handleDownloadContract}

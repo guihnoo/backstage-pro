@@ -311,7 +311,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
           <div className="flex items-center justify-between">
             <DialogTitle className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
               {formData.client_type === 'pessoa'
-                ? <User className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                ? <User className="w-5 h-5 bp-person-icon flex-shrink-0" />
                 : <Building2 className="w-5 h-5 flex-shrink-0" style={{ color: theme.primaryHex }} />
               }
               {client ? 'Editar Cliente' : 'Novo Cliente'}
@@ -333,7 +333,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
               <button
                 type="button"
                 onClick={() => handleChange('client_type', 'empresa')}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors ${
+                className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors bp-focus-ring ${
                   formData.client_type === 'empresa'
                     ? 'text-white'
                     : 'bg-slate-800/60 text-slate-400 hover:text-slate-200'
@@ -346,9 +346,9 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
               <button
                 type="button"
                 onClick={() => handleChange('client_type', 'pessoa')}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors ${
+                className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors bp-focus-ring ${
                   formData.client_type === 'pessoa'
-                    ? 'bg-purple-600 text-white'
+                    ? 'bp-person-btn-active'
                     : 'bg-slate-800/60 text-slate-400 hover:text-slate-200'
                 }`}
               >
@@ -376,7 +376,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
             <div className="space-y-4">
               <h3 className="text-base sm:text-lg font-medium text-white flex items-center gap-2">
                 {formData.client_type === 'pessoa'
-                  ? <User className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400 flex-shrink-0" />
+                  ? <User className="w-4 h-4 sm:w-5 sm:h-5 bp-person-icon flex-shrink-0" />
                   : <Building2 className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" style={theme.accentStyle} />
                 }
                 Informações Básicas
@@ -580,20 +580,21 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="flex items-start gap-3 p-3 bg-purple-900/20 border border-purple-700/50 rounded-lg"
+                  className="flex items-start gap-3 p-3 bp-surface-primary border rounded-lg"
                 >
                   <input
                     type="checkbox"
                     id="allows_meio_e_dobra_juntos"
                     checked={formData.policy_allows_meio_e_dobra_juntos}
                     onChange={(e) => handleChange('policy_allows_meio_e_dobra_juntos', e.target.checked)}
-                    className="mt-1 w-5 h-5 text-purple-600 bg-purple-800 border-purple-700 rounded focus:ring-purple-500 cursor-pointer flex-shrink-0"
+                    className="mt-1 w-5 h-5 rounded cursor-pointer flex-shrink-0 bp-focus-ring"
+                    style={{ accentColor: theme.primaryHex }}
                   />
                   <div>
-                    <Label htmlFor="allows_meio_e_dobra_juntos" className="text-purple-200 font-medium cursor-pointer text-sm">
+                    <Label htmlFor="allows_meio_e_dobra_juntos" className="bp-text-primary font-medium cursor-pointer text-sm">
                       Permitir Meio Cachê + Dobra no mesmo dia
                     </Label>
-                    <p className="text-xs text-purple-300 mt-1">
+                    <p className="text-xs text-slate-400 mt-1">
                       Permite aplicar &ldquo;Meio Cachê&rdquo; e &ldquo;Dobra&rdquo; simultaneamente em um único evento.
                     </p>
                   </div>

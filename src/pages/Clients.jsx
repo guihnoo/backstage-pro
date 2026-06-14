@@ -472,7 +472,7 @@ export default function ClientsPage() {
                         <AvatarFallback
                           className={`font-bold ${
                             client.client_type === 'pessoa'
-                              ? 'bg-purple-900/50 text-purple-300'
+                              ? 'bp-person-avatar'
                               : 'bg-slate-800 text-slate-200'
                           }`}
                         >
@@ -484,7 +484,7 @@ export default function ClientsPage() {
                       </Avatar>
                       {client.client_type === 'pessoa' && (
                         <span
-                          className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-purple-600 border-2 border-slate-900 flex items-center justify-center"
+                          className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bp-person-pin flex items-center justify-center"
                           title="Pessoa física"
                         >
                           <User className="w-2.5 h-2.5 text-white" />

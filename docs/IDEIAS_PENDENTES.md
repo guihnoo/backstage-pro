@@ -108,6 +108,7 @@
 | 67 | Contrato de Serviços em PDF gerado direto do evento | 2026-06-14 | ✅ `ContractPDFDocument.jsx`; partes, evento, pagamento, 6 cláusulas, assinaturas; botão ScrollText (emerald) no footer do EventDetailModal para pre-show |
 | 68 | Gráfico de sazonalidade de receita histórica por mês | 2026-06-14 | ✅ `SeasonalityChart.jsx`; Recharts BarChart Jan-Dez; intensidade de cor; KPIs Melhor Mês/+ Shows/Baixa Temporada; aba Atividade de Reports |
 | 69 | Insights Inteligentes baseados em dados reais do usuário | 2026-06-14 | ✅ `SmartInsights.jsx`; 7 regras (inadimplência, agenda vazia, crescimento, concentração, melhor mês chegando, meta, taxa horária); topo da aba Visão Geral |
+| 70 | Gerenciar Templates de Evento no Perfil (listar + excluir) | 2026-06-14 | ✅ `EventTemplatesManager.jsx`; collapsível; lista com cor, título, valor, modelo; delete com confirmação; hint de como criar |
 
 ---
 

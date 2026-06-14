@@ -75,8 +75,11 @@ export default function TopClients({ events = [], clients = [] }) {
     <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 p-4 space-y-4">
       {/* Header */}
       <div className="flex items-center gap-2">
-        <div className="p-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
-          <Users className="w-4 h-4 text-indigo-400" />
+        <div
+          className="p-1.5 rounded-lg border"
+          style={{ backgroundColor: `${primaryHex}1a`, borderColor: `${primaryHex}33` }}
+        >
+          <Users className="w-4 h-4" style={{ color: primaryHex }} />
         </div>
         <div>
           <h3 className="text-sm font-semibold text-white">Top Clientes</h3>

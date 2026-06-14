@@ -21,6 +21,7 @@ import { useFinancialVisibility } from '@/components/context/FinancialVisibility
 import { formatDisplayDate, formatDateWithWeekday, getEventStatus, getEventStatusConfig } from '@/components/utils/dateUtils';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { ClientDraftBadge } from '@/components/clients/ClientDraftBadge';
 import EventHeading from '@/components/events/EventHeading';
 
@@ -74,7 +75,7 @@ const EventTimelineItem = ({ event, client, isLast, workData, onClick }) => {
           {/* Métricas do Evento */}
           {getEventCacheAmount(event) > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-              <div className="flex items-center gap-1 text-purple-400 bg-purple-400/10 px-2 py-1 rounded">
+              <div className="flex items-center gap-1 bp-text-primary bp-surface-primary px-2 py-1 rounded">
                 <DollarSign className="w-3 h-3" />
                 {formatCurrency(getEventCacheAmount(event))}
               </div>
@@ -122,14 +123,16 @@ const EventTimelineItem = ({ event, client, isLast, workData, onClick }) => {
 };
 
 const METRIC_COLOR_CLASSES = {
-  purple: { value: 'text-purple-300', icon: 'text-purple-400' },
+  primary: null,
   green:  { value: 'text-green-300',  icon: 'text-green-400'  },
   amber:  { value: 'text-amber-300',  icon: 'text-amber-400'  },
   slate:  { value: 'text-slate-300',  icon: 'text-slate-400'  },
 };
 
 const MetricCard = ({ title, value, subtitle, icon: Icon, color = "slate", trend, onClick }) => {
-  const cc = METRIC_COLOR_CLASSES[color] || METRIC_COLOR_CLASSES.slate;
+  const { primaryHex } = useCategoryTheme();
+  const isPrimary = color === 'primary';
+  const cc = isPrimary ? null : (METRIC_COLOR_CLASSES[color] || METRIC_COLOR_CLASSES.slate);
   return (
   <Card
     className={`bg-slate-800/50 border-slate-700 ${onClick ? 'hover:border-slate-600 cursor-pointer' : ''} transition-all`}
@@ -139,10 +142,16 @@ const MetricCard = ({ title, value, subtitle, icon: Icon, color = "slate", trend
       <div className="flex items-center justify-between">
         <div className="min-w-0">
           <p className="text-slate-400 text-xs uppercase font-medium mb-1">{title}</p>
-          <p className={`text-2xl font-bold ${cc.value} truncate`}>{value}</p>
+          <p
+            className={`text-2xl font-bold truncate ${isPrimary ? '' : cc.value}`}
+            style={isPrimary ? { color: primaryHex } : undefined}
+          >{value}</p>
           {subtitle && <p className="text-slate-500 text-xs mt-1 truncate" title={subtitle}>{subtitle}</p>}
         </div>
-        <Icon className={`w-8 h-8 ${cc.icon} opacity-60`} />
+        <Icon
+          className={`w-8 h-8 opacity-60 ${isPrimary ? '' : cc.icon}`}
+          style={isPrimary ? { color: primaryHex } : undefined}
+        />
       </div>
       {trend &&
         <div className="flex items-center gap-1 mt-2 text-xs">
@@ -316,7 +325,7 @@ export default function ClientDetailModal({
                       <AvatarFallback
                         className={`text-2xl font-bold ${
                           client.client_type === 'pessoa'
-                            ? 'bg-purple-900/50 text-purple-300'
+                            ? 'bp-person-avatar'
                             : 'bg-slate-800 text-slate-200'
                         }`}
                       >
@@ -327,7 +336,7 @@ export default function ClientDetailModal({
                       </AvatarFallback>
                     </Avatar>
                     {client.client_type === 'pessoa' && (
-                      <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-purple-600 border-2 border-slate-900 flex items-center justify-center">
+                      <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bp-person-pin flex items-center justify-center">
                         <User className="w-3 h-3 text-white" />
                       </span>
                     )}
@@ -338,7 +347,7 @@ export default function ClientDetailModal({
                         {client.name}
                       </DialogTitle>
                       {client.client_type === 'pessoa' ? (
-                        <span className="text-[11px] bg-purple-600/20 text-purple-300 border border-purple-500/30 rounded px-2 py-0.5 flex-shrink-0">
+                        <span className="text-[11px] bp-person-badge rounded px-2 py-0.5 flex-shrink-0">
                           Pessoa
                         </span>
                       ) : (
@@ -421,7 +430,7 @@ export default function ClientDetailModal({
                           value={clientData.totalEvents}
                           subtitle={`${clientData.completedEventsCount} concluídos`}
                           icon={Calendar}
-                          color="purple" />
+                          color="primary" />
 
                         <MetricCard
                           title="Faturamento Real"
@@ -442,7 +451,7 @@ export default function ClientDetailModal({
                           value={`${clientData.totalHours.toFixed(1)}h`}
                           subtitle={`Média: ${clientData.averageHoursPerEvent.toFixed(1)}h/evento`}
                           icon={Clock}
-                          color="purple" />
+                          color="primary" />
 
                       </div>
 
@@ -450,7 +459,7 @@ export default function ClientDetailModal({
                       {clientData.upcomingEvents.length > 0 &&
                         <Card className="bg-slate-800/50 border-slate-700">
                           <CardHeader>
-                            <CardTitle className="text-lg text-purple-300 flex items-center gap-2">
+                            <CardTitle className="text-lg bp-text-primary flex items-center gap-2">
                               <Calendar className="w-5 h-5" />
                               Próximos Eventos ({clientData.upcomingEvents.length})
                             </CardTitle>
@@ -593,7 +602,7 @@ export default function ClientDetailModal({
                             </div>
                             <div>
                               <p className="text-slate-400 text-sm">Taxa de Conversão de Pagamento</p>
-                              <p className="text-2xl font-bold text-purple-400">
+                              <p className="text-2xl font-bold bp-text-primary">
                                 {clientData.paymentConversionRate.toFixed(1)}%
                               </p>
                             </div>
@@ -601,7 +610,7 @@ export default function ClientDetailModal({
                           <div className="space-y-4">
                             <div>
                               <p className="text-slate-400 text-sm">Valor por Hora</p>
-                              <p className="text-2xl font-bold text-purple-400">
+                              <p className="text-2xl font-bold bp-text-primary">
                                 {formatCurrency(clientData.hourlyRate)}
                               </p>
                             </div>
@@ -629,7 +638,7 @@ export default function ClientDetailModal({
                           value={clientData.upcomingEventsCount}
                           subtitle="Próximos agendamentos"
                           icon={Calendar}
-                          color="purple" />
+                          color="primary" />
 
                         <MetricCard
                           title="Pagamentos Pendentes"

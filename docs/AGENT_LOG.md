@@ -6,6 +6,16 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-14
 
+### TEMPLATES-MANAGER-S70 — Gerenciar Templates de Evento no Perfil ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/calendar/EventTemplatesManager.jsx`** (NOVO):
+  - Collapsível com AnimatePresence; abre lazy (fetch só ao expandir)
+  - Lista templates: ponto de cor, nome, título, valor, modelo de pagamento
+  - Delete com `ConfirmDialog`; botão aparece no hover do card
+  - Empty state com instrução de como criar templates na Agenda
+- **`src/pages/ProfileSimple.jsx`**: `EventTemplatesManager` adicionado acima de `InstallPwaCard`
+- **Build**: Vite ✅ · **Git backup**: auto-wip ✅
+
 ### SMART-INSIGHTS-S69 — Insights Inteligentes em Relatórios ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/components/reports/SmartInsights.jsx`** (NOVO):

@@ -141,9 +141,7 @@ export default function AlertsPanel({
           ? `"${first.title || 'Evento'}" está agendado para amanhã${first.start_time ? ` às ${first.start_time.slice(0, 5)}` : ''}.`
           : `${count} eventos agendados para amanhã. Revise sua agenda e equipamentos.`,
         icon: CalendarCheck,
-        color: 'text-indigo-400',
-        bgColor: 'bg-indigo-500/10',
-        borderColor: 'border-indigo-500/30',
+        accentHex: theme.primaryHex,
         cta: {
           label: 'Ver evento',
           action: () => onOpenEvent?.(first),
