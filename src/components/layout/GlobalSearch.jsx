@@ -13,7 +13,7 @@ import { DEFAULT_EVENT_COLOR } from '@/lib/brandColors';
 
 const STATUS_LABEL = {
   scheduled: { label: 'Agendado', cls: 'bg-blue-500/20 text-blue-300' },
-  confirmed: { label: 'Confirmado', cls: 'bg-indigo-500/20 text-indigo-300' },
+  confirmed: { label: 'Confirmado', themePrimary: true },
   in_progress: { label: 'Em andamento', cls: 'bg-yellow-500/20 text-yellow-300' },
   completed: { label: 'Concluído', cls: 'bg-green-500/20 text-green-300' },
   cancelled: { label: 'Cancelado', cls: 'bg-red-500/20 text-red-400 line-through' },
@@ -115,7 +115,7 @@ export default function GlobalSearch({ isOpen, onClose }) {
                 onChange={e => setQuery(e.target.value)}
                 placeholder="Buscar eventos, clientes, locais…"
                 aria-label="Termo de busca"
-                className="flex-1 bg-transparent text-white placeholder:text-slate-500 text-base outline-none"
+                className="flex-1 bg-transparent text-white placeholder:text-slate-500 text-base outline-none bp-focus-ring rounded-sm"
                 style={{ caretColor: theme.primaryHex }}
                 autoComplete="off"
                 autoCorrect="off"
@@ -185,7 +185,7 @@ export default function GlobalSearch({ isOpen, onClose }) {
                             hardNavigate(`/calendar`);
                             onClose();
                           }}
-                          className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800/60 hover:border-slate-700 hover:bg-slate-800/50 transition-colors text-left"
+                          className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800/60 hover:border-slate-700 hover:bg-slate-800/50 transition-colors text-left bp-focus-ring"
                         >
                           <div
                             className="w-1.5 self-stretch rounded-full flex-shrink-0"
@@ -203,7 +203,13 @@ export default function GlobalSearch({ isOpen, onClose }) {
                                   {ev.location_city || ev.location}
                                 </span>
                               )}
-                              <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${st.cls}`}>
+                              <span
+                                className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${st.themePrimary ? '' : st.cls}`}
+                                style={st.themePrimary ? {
+                                  backgroundColor: `${theme.primaryHex}33`,
+                                  color: theme.primaryHex,
+                                } : undefined}
+                              >
                                 {st.label}
                               </span>
                             </div>

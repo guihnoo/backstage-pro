@@ -6,6 +6,7 @@ import { Loader2, Trash2, BookmarkPlus, Sparkles, ChevronDown, ChevronUp, AlertC
 import appToast from '@/lib/appToast';
 import { Button } from '@/components/ui/button';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
+import { DEFAULT_EVENT_COLOR } from '@/lib/brandColors';
 
 const PAYMENT_MODEL_LABELS = {
   HORAS_EXTRAS: 'Horas Extras',
@@ -55,7 +56,7 @@ export default function EventTemplatesManager({ primaryHex }) {
     }
   };
 
-  const accentColor = primaryHex || '#6366f1';
+  const accentColor = primaryHex || DEFAULT_EVENT_COLOR;
 
   return (
     <>

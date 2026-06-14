@@ -40,6 +40,7 @@ import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { NeonGlass } from '@/components/design/NeonGlass';
 
 // Components
+import InactiveClientsPanel from '@/components/clients/InactiveClientsPanel';
 import ClientForm from '@/components/clients/ClientForm';
 import { ClientDraftBadge } from '@/components/clients/ClientDraftBadge';
 import ClientDetailModal from '@/components/clients/ClientDetailModal';
@@ -444,6 +445,10 @@ export default function ClientsPage() {
               ))}
             </div>
         </NeonGlass>
+
+        {filterActive === 'all' && (
+          <InactiveClientsPanel clientsWithStats={clientsWithStats} />
+        )}
 
         {filteredAndSortedClients.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

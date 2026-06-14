@@ -211,3 +211,28 @@ export function buildEventReport({ event, client, work = [], expenses = [] }) {
 
   return lines.join('\n');
 }
+
+/**
+ * Mensagem de reativação de cliente inativo.
+ */
+export function buildReactivationMessage({ clientName, techName, lastEventTitle, daysSince }) {
+  const name = clientName || 'Cliente';
+  const tech = techName || '';
+  const lines = [
+    `Oi, ${name}! Tudo bem? 😊`,
+    ``,
+  ];
+  if (lastEventTitle && daysSince > 0) {
+    lines.push(`Faz um tempo desde o *${lastEventTitle}* — passaram uns ${Math.round(daysSince / 30)} mes${Math.round(daysSince / 30) !== 1 ? 'es' : ''} já!`);
+  } else {
+    lines.push(`Faz um tempinho que não trabalhamos juntos!`);
+  }
+  lines.push(
+    ``,
+    `Queria me reaproximar e saber se tem algum evento ou projeto chegando por aí. 🎶`,
+    ``,
+    `Estou disponível — me chama quando quiser! 🙌`,
+  );
+  if (tech) lines.push(``, `— ${tech}`);
+  return lines.join('\n');
+}

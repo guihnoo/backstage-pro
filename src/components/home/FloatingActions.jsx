@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
+import { DEFAULT_CLIENT_COLOR } from '@/lib/brandColors';
 
 export function FloatingActions() {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,7 +23,7 @@ export function FloatingActions() {
       id: 'client',
       icon: Users,
       label: 'Novo cliente',
-      style: { backgroundColor: '#7c3aed' },
+      style: { backgroundColor: DEFAULT_CLIENT_COLOR },
       to: '/clients?action=new-client',
     },
     {
@@ -76,7 +77,7 @@ export function FloatingActions() {
                   onClick={() => handleAction(action.to)}
                   aria-label={action.label}
                   style={action.style}
-                  className="flex items-center gap-2.5 px-4 h-11 rounded-full text-white text-sm font-semibold shadow-lg"
+                  className="flex items-center gap-2.5 px-4 h-11 rounded-full text-white text-sm font-semibold shadow-lg bp-focus-ring"
                 >
                   <Icon className="w-4 h-4 shrink-0" />
                   <span>{action.label}</span>
@@ -92,7 +93,7 @@ export function FloatingActions() {
         onClick={() => setIsOpen((v) => !v)}
         aria-label={isOpen ? 'Fechar menu de ações' : 'Abrir menu de ações'}
         aria-expanded={isOpen}
-        className="w-14 h-14 rounded-full text-white flex items-center justify-center shadow-xl transition-shadow"
+        className="w-14 h-14 rounded-full text-white flex items-center justify-center shadow-xl transition-shadow bp-focus-ring"
         style={{
           background: `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})`,
           boxShadow: `0 8px 32px ${config.primaryHex}55`,
