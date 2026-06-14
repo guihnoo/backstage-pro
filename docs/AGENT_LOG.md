@@ -24,6 +24,18 @@ Registro cronológico de tarefas executadas por agentes.
   - Botão verde no footer para `event.payment_status === 'paid'`
 - **Build**: Vite ✅ · **Git backup**: auto-wip ✅
 
+### AVAILABILITY-SHARE-S74 — Compartilhar Disponibilidade via WhatsApp ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/lib/whatsapp.js`**: `buildAvailabilityMessage({ monthLabel, freeDays, bookedShows, techName })` — formata lista de dias livres e shows agendados para compartilhamento
+- **`src/components/calendar/AvailabilityShareModal.jsx`** (NOVO):
+  - Navegação por mês (← mês → mês)
+  - Calcula dias livres (excluindo passados no mês atual e future) vs shows agendados
+  - Prévia da mensagem em tempo real
+  - Badges: "X livres / Y agendados"
+  - Botão Copiar (com feedback ✓) + botão WhatsApp (abre wa.me)
+- **`src/pages/Calendar.jsx`**: ícone `Share2` (verde) ao lado do Download ICS; estado `showAvailability`
+- **Build**: Vite ✅ · **Git backup**: auto-wip ✅
+
 ### WEEKDAY-BREAKDOWN-S73 — Desempenho por Dia da Semana em Relatórios ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/components/reports/WeekdayBreakdown.jsx`** (NOVO):
@@ -376,6 +388,14 @@ Registro cronológico de tarefas executadas por agentes.
 - `FinancialSummary`: removido fallback purple morto de `COLOR_CLASSES`
 - `CategoryPicker`, `ClientQuickCreateDialog`: toggles com `bp-focus-ring`
 - `AlertsPanel`: removido mapeamento CTA indigo morto
+- **Testes**: unit 29/29 ✅ · build ✅
+
+### DESIGN-S68 — A11y auth + CSS vars públicas (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `categoryGear.js`: export `AUTH_HERO_CSS_VARS` (`--bp-primary`, `--bp-accent`, `--bp-glow`)
+- `index.css`: fallback `:root` com `--bp-primary`/`--bp-accent` (lighting) para rotas sem AppLayout
+- `LoginNew`, `SignupNew`, `ResetPassword`: wrapper com `AUTH_HERO_CSS_VARS`; inputs `bp-focus-input`; botões/links `bp-focus-ring`
+- `SocialLoginButtons`: Google OAuth com `bp-focus-ring`
 - **Testes**: unit 29/29 ✅ · build ✅
 
 ### WORK-S50 — R$/hora por show + aba Trabalho em Relatórios ✅
