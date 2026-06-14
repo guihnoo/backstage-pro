@@ -109,6 +109,7 @@
 | 68 | Gráfico de sazonalidade de receita histórica por mês | 2026-06-14 | ✅ `SeasonalityChart.jsx`; Recharts BarChart Jan-Dez; intensidade de cor; KPIs Melhor Mês/+ Shows/Baixa Temporada; aba Atividade de Reports |
 | 69 | Insights Inteligentes baseados em dados reais do usuário | 2026-06-14 | ✅ `SmartInsights.jsx`; 7 regras (inadimplência, agenda vazia, crescimento, concentração, melhor mês chegando, meta, taxa horária); topo da aba Visão Geral |
 | 70 | Gerenciar Templates de Evento no Perfil (listar + excluir) | 2026-06-14 | ✅ `EventTemplatesManager.jsx`; collapsível; lista com cor, título, valor, modelo; delete com confirmação; hint de como criar |
+| 71 | Recibo de Pagamento em PDF para eventos pagos | 2026-06-14 | ✅ `ReceiptPDFDocument.jsx`; declaração formal, detalhes do evento, carimbo PAGO, assinaturas; botão BadgeCheck (verde) no footer do EventDetailModal para eventos com payment_status=paid |
 
 ---
 

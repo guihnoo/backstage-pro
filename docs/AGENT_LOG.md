@@ -6,6 +6,24 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-14
 
+### RECEIPT-PDF-S71 — Recibo de Pagamento em PDF ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/lib/ReceiptPDFDocument.jsx`** (NOVO):
+  - `@react-pdf/renderer` — mesma paleta visual do ContractPDFDocument
+  - Header: nome do técnico + "RECIBO DE PAGAMENTO" + número REC-XXXXXX
+  - Carimbo "✓ PAGO" em verde
+  - Declaração formal: "Recebi de [Cliente] a quantia de R$ X referente à prestação de serviços..."
+  - Seção Dados do Serviço: evento, data, local, data do pagamento
+  - Seção Pagamento: valor destacado (verde), chave PIX (das configurações), forma de pagamento
+  - Seção Partes: prestador + contratante com documentos
+  - Assinaturas: técnico + cliente
+  - Footer: cidade, data e número do recibo
+- **`src/components/calendar/EventDetailModal.jsx`**:
+  - `generatingReceipt` state + `handleDownloadReceipt()` handler
+  - Ícone `BadgeCheck` importado
+  - Botão verde no footer para `event.payment_status === 'paid'`
+- **Build**: Vite ✅ · **Git backup**: auto-wip ✅
+
 ### TEMPLATES-MANAGER-S70 — Gerenciar Templates de Evento no Perfil ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/components/calendar/EventTemplatesManager.jsx`** (NOVO):
@@ -311,6 +329,24 @@ Registro cronológico de tarefas executadas por agentes.
 - `Goals`: tiers e badges com `AUTH_HERO_PRIMARY` / `AUTH_HERO_ACCENT`
 - `ClientInsightsModal`: KPIs com `config.primaryHex`
 - `useFeedback.js`: status "Novo" via `AUTH_HERO_PRIMARY`
+- **Testes**: unit 29/29 ✅ · build ✅
+
+### DESIGN-S65 — Token semântico "Pessoa" + focus ring (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `index.css`: tokens `--bp-person` e utilitários `bp-person-*`; `.bp-focus-ring:focus-visible`
+- `ClientForm`, `ClientQuickCreateDialog`, `Clients`, `ClientDetail`, `ClientDetailModal`: entidade Pessoa via `bp-person-*`
+- `AlertsPanel`: alerta horas pendentes com `accentHex` da categoria
+- `PrivacyPolicy`: título com `bp-text-primary`
+- **Testes**: unit 29/29 ✅ · build ✅
+
+### DESIGN-S66 — Relatórios e insights com tema da categoria (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `TopClients`, `SeasonalityChart`: indigo → `primaryHex` / `--bp-primary`
+- `SmartInsights`: meta/quase-lá e taxa horária com `themePrimary`; header Zap com `bp-text-primary`
+- `SmartSuggestions`: chip de insights com `themePrimary`
+- `ClientDetail`: card Próximos Shows com `bp-surface-primary`; avatar Pessoa com `--bp-person`
+- `AlertsPanel`: lembrete "Show amanhã" com `accentHex` da categoria
+- **Intencional**: `GlobalSearch` status confirmado, `FinancialSummary` fallback purple, `ExpenseListItem` hospedagem
 - **Testes**: unit 29/29 ✅ · build ✅
 
 ### WORK-S50 — R$/hora por show + aba Trabalho em Relatórios ✅

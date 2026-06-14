@@ -46,9 +46,7 @@ export default function SmartSuggestions({ userData, onSuggestionClick }) {
       {
         icon: Zap,
         text: 'Dê-me insights sobre meu negócio',
-        color: 'text-indigo-400',
-        bgColor: 'bg-indigo-500/10',
-        borderColor: 'border-indigo-500/30'
+        themePrimary: true,
       }
     ];
 

@@ -5,6 +5,7 @@ import { TrendingUp, TrendingDown, AlertCircle, Zap, Users, Calendar, DollarSign
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { getEventStatus } from '@/components/utils/dateUtils';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { hardNavigate } from '@/lib/hardNavigate';
 
 const MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -188,8 +189,7 @@ function buildInsights({ events, clients, expenses, work, profile }) {
         id: 'goal_near',
         priority: 9,
         icon: CheckCircle2,
-        color: 'text-indigo-400',
-        bg: 'bg-indigo-500/10 border-indigo-500/20',
+        themePrimary: true,
         title: `${pctGoal.toFixed(0)}% da meta mensal — quase lá!`,
         description: `Faltam R$ ${remaining.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} para bater a meta de ${format(today, 'MMMM', { locale: ptBR })}.`,
         cta: 'Ver Metas',
@@ -219,8 +219,7 @@ function buildInsights({ events, clients, expenses, work, profile }) {
         id: 'hourly_rate',
         priority: 2,
         icon: Clock,
-        color: 'text-cyan-400',
-        bg: 'bg-cyan-500/10 border-cyan-500/20',
+        themePrimary: true,
         title: `Sua taxa horária é R$ ${rate.toFixed(0)}/hora`,
         description: `Acima de R$150/hora — ótima rentabilidade! Continue selecionando shows de alto valor.`,
         cta: null,
@@ -235,6 +234,7 @@ function buildInsights({ events, clients, expenses, work, profile }) {
 
 export default function SmartInsights({ events = [], clients = [], expenses = [], work = [], profile = {} }) {
   const { isVisible, formatCurrency } = useFinancialVisibility();
+  const { primaryHex } = useCategoryTheme();
 
   const insights = useMemo(
     () => buildInsights({ events, clients, expenses, work, profile }),
@@ -246,7 +246,7 @@ export default function SmartInsights({ events = [], clients = [], expenses = []
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 px-1">
-        <Zap className="w-4 h-4 text-indigo-400" />
+        <Zap className="w-4 h-4 bp-text-primary" />
         <h3 className="text-sm font-semibold text-white">Insights Inteligentes</h3>
         <span className="text-[10px] text-slate-500 uppercase tracking-wide">baseados nos seus dados</span>
       </div>
@@ -254,14 +254,22 @@ export default function SmartInsights({ events = [], clients = [], expenses = []
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {insights.map(insight => {
           const Icon = insight.icon;
+          const isTheme = insight.themePrimary;
           return (
             <div
               key={insight.id}
-              className={`rounded-xl border p-4 flex flex-col gap-2 ${insight.bg}`}
+              className={`rounded-xl border p-4 flex flex-col gap-2 ${isTheme ? '' : insight.bg}`}
+              style={isTheme ? {
+                backgroundColor: `${primaryHex}1a`,
+                borderColor: `${primaryHex}33`,
+              } : undefined}
             >
               <div className="flex items-start gap-3">
-                <div className={`mt-0.5 flex-shrink-0 p-1.5 rounded-lg bg-black/20`}>
-                  <Icon className={`w-4 h-4 ${insight.color}`} />
+                <div className="mt-0.5 flex-shrink-0 p-1.5 rounded-lg bg-black/20">
+                  <Icon
+                    className={`w-4 h-4 ${isTheme ? '' : insight.color}`}
+                    style={isTheme ? { color: primaryHex } : undefined}
+                  />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-white leading-tight">{insight.title}</p>

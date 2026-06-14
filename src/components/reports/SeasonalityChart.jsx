@@ -119,12 +119,15 @@ export default function SeasonalityChart({ events = [] }) {
           </div>
         )}
         {bestCount && (
-          <div className="rounded-lg bg-indigo-500/10 border border-indigo-500/20 px-3 py-2 text-center">
+          <div
+            className="rounded-lg border px-3 py-2 text-center"
+            style={{ backgroundColor: `${primaryHex}1a`, borderColor: `${primaryHex}33` }}
+          >
             <div className="flex items-center justify-center gap-1 mb-0.5">
-              <CalendarDays className="w-3 h-3 text-indigo-400" />
-              <span className="text-[10px] text-indigo-400 font-medium uppercase tracking-wide">+ Shows</span>
+              <CalendarDays className="w-3 h-3" style={{ color: primaryHex }} />
+              <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: primaryHex }}>+ Shows</span>
             </div>
-            <p className="text-sm font-bold text-indigo-300">{bestCount.name}</p>
+            <p className="text-sm font-bold" style={{ color: primaryHex }}>{bestCount.name}</p>
             <p className="text-[10px] text-slate-400">{bestCount.shows} shows</p>
           </div>
         )}

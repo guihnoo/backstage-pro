@@ -112,7 +112,7 @@ export default function TopClients({ events = [], clients = [] }) {
                   </span>
 
                   {/* Nome */}
-                  <span className="text-sm font-medium text-white truncate flex-1 group-hover:text-indigo-300 transition-colors">
+                  <span className="text-sm font-medium text-white truncate flex-1 group-hover:[color:var(--bp-primary)] transition-colors">
                     {item.name}
                   </span>
 
@@ -124,7 +124,7 @@ export default function TopClients({ events = [], clients = [] }) {
                   )}
 
                   {/* Link */}
-                  <ExternalLink className="w-3 h-3 text-slate-600 group-hover:text-indigo-400 shrink-0 transition-colors" />
+                  <ExternalLink className="w-3 h-3 text-slate-600 group-hover:[color:var(--bp-primary)] shrink-0 transition-colors" />
                 </div>
 
                 {/* Barra proporcional */}

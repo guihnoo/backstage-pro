@@ -542,7 +542,7 @@ export default function ClientDetailModal({
 
                       <Card className="bg-slate-800/50 border-slate-700">
                         <CardHeader>
-                          <CardTitle className="text-lg text-purple-300 flex items-center gap-2">
+                          <CardTitle className="text-lg bp-text-primary flex items-center gap-2">
                             <Activity className="w-5 h-5" />
                             Linha do Tempo Completa
                           </CardTitle>
