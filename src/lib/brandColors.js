@@ -17,7 +17,7 @@ export const BRAND_COLOR_PALETTE = [
 ];
 
 export const DEFAULT_EVENT_COLOR = getCategoryConfig(AUTH_HERO_CATEGORY).primaryHex;
-export const DEFAULT_CLIENT_COLOR = '#A64AFF';
+export const DEFAULT_CLIENT_COLOR = AUTH_HERO_PRIMARY;
 
 export function pickDefaultClientColor(seed = '') {
   const text = String(seed).trim().toLowerCase();

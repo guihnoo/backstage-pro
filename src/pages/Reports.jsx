@@ -56,6 +56,7 @@ import StatValuePulse from '@/components/home/StatValuePulse';
 import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
 import ActivityHeatmap from '@/components/reports/ActivityHeatmap';
+import SeasonalityChart from '@/components/reports/SeasonalityChart';
 import NfTracker from '@/components/reports/NfTracker';
 import MonthlyTrend from '@/components/reports/MonthlyTrend';
 import WorkAnalytics from '@/components/reports/WorkAnalytics';
@@ -994,8 +995,11 @@ export default function ReportsPage() {
         )}
 
         {selectedView === 'activity' && (
-          <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
-            <ActivityHeatmap events={data.events} />
+          <div className="space-y-6">
+            <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
+              <ActivityHeatmap events={data.events} />
+            </div>
+            <SeasonalityChart events={data.events} />
           </div>
         )}
 

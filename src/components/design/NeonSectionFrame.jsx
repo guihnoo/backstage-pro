@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { AUTH_HERO_PRIMARY } from '@/lib/categoryGear';
 
 export function NeonSectionFrame({ primary = '#A64AFF', accent = '#FFB700', label, className = '', children }) {
   return (

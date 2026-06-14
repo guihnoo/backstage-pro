@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { AUTH_HERO_PRIMARY } from '@/lib/categoryGear';
 
 function useLevels(count, intervalMs, active) {
   const [levels, setLevels] = useState(() => Array.from({ length: count }, () => Math.random()));

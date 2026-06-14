@@ -1,9 +1,4 @@
-import { getCategoryConfig } from './categoryConfig';
-
 export const AUTH_HERO_CATEGORY = 'lighting';
-export const AUTH_HERO_THEME = getCategoryConfig(AUTH_HERO_CATEGORY);
-export const AUTH_HERO_PRIMARY = AUTH_HERO_THEME.primaryHex;
-export const AUTH_HERO_ACCENT = AUTH_HERO_THEME.accentHex;
 
 const GEAR_BY_CATEGORY = {
   lighting: ['💡', '🔦', '🎛️', '✨', '🌈', '🔌', '📡', '⚡', '🎭', '🪩', '💜', '🟡'],

@@ -12,10 +12,10 @@ export const CATEGORIES = {
     motivation: 'Sem som, não há show. Você é a alma do evento.',
     icon: Music,
     primaryHex: '#39FF14',
-    accentHex: '#5B8DFF',
+    accentHex: '#00D9FF',
     tailwindPrimary: 'green-400',
-    tailwindAccent: 'blue-400',
-    gradient: 'from-green-400 to-blue-400',
+    tailwindAccent: 'cyan-400',
+    gradient: 'from-green-400 to-cyan-500',
     bgGlow: 'rgba(57, 255, 20, 0.15)',
     borderGlow: 'border-green-400/50 hover:border-green-300 shadow-lg shadow-green-500/20',
     specialties: ['PA/FOH', 'Monitor/IEM', 'RF/Wireless', 'Estúdio', 'Broadcast', 'AV Corporativo']
@@ -44,10 +44,10 @@ export const CATEGORIES = {
     motivation: 'Você congela os melhores momentos. A história passa por você.',
     icon: Camera,
     primaryHex: '#FF6B35',
-    accentHex: '#FFB700',
+    accentHex: '#00D9FF',
     tailwindPrimary: 'orange-400',
-    tailwindAccent: 'amber-400',
-    gradient: 'from-orange-400 to-amber-500',
+    tailwindAccent: 'cyan-400',
+    gradient: 'from-orange-400 to-cyan-500',
     bgGlow: 'rgba(255, 107, 53, 0.15)',
     borderGlow: 'border-orange-400/50 hover:border-orange-300 shadow-lg shadow-orange-500/20',
     specialties: ['Retratos', 'Eventos', 'Produtos', 'Making of', 'Cobertura ao Vivo', 'Press']
@@ -60,10 +60,10 @@ export const CATEGORIES = {
     motivation: 'Você transforma momentos em obras visuais. Épico é seu padrão.',
     icon: Video,
     primaryHex: '#FF006E',
-    accentHex: '#A64AFF',
+    accentHex: '#00D9FF',
     tailwindPrimary: 'pink-500',
-    tailwindAccent: 'purple-400',
-    gradient: 'from-pink-500 to-purple-400',
+    tailwindAccent: 'cyan-400',
+    gradient: 'from-pink-500 to-cyan-500',
     bgGlow: 'rgba(255, 0, 110, 0.15)',
     borderGlow: 'border-pink-500/50 hover:border-pink-400 shadow-lg shadow-pink-500/20',
     specialties: ['Gravação', 'Edição', 'Produção', 'VJ', 'Streaming', 'Mapeamento 3D']
@@ -92,10 +92,10 @@ export const CATEGORIES = {
     motivation: 'Caos organizado é sua arte. Você faz tudo funcionar.',
     icon: Zap,
     primaryHex: '#FFB700',
-    accentHex: '#A64AFF',
+    accentHex: '#00D9FF',
     tailwindPrimary: 'amber-400',
-    tailwindAccent: 'purple-400',
-    gradient: 'from-amber-400 to-purple-400',
+    tailwindAccent: 'cyan-400',
+    gradient: 'from-amber-400 to-cyan-500',
     bgGlow: 'rgba(255, 183, 0, 0.15)',
     borderGlow: 'border-amber-400/50 hover:border-amber-300 shadow-lg shadow-amber-500/20',
     specialties: ['Coordenação', 'Logística', 'Timeline', 'Orçamento', 'Diretor de Palco', 'Rider Técnico']
@@ -123,13 +123,13 @@ export const CATEGORIES = {
     description: 'Curador de experiências',
     motivation: 'Conforto é seu compromisso. Você cuida de cada detalhe.',
     icon: Utensils,
-    primaryHex: '#14b8a6',
+    primaryHex: '#00D9FF',
     accentHex: '#FFB700',
-    tailwindPrimary: 'teal-400',
+    tailwindPrimary: 'cyan-400',
     tailwindAccent: 'amber-400',
-    gradient: 'from-teal-400 to-amber-500',
-    bgGlow: 'rgba(20, 184, 166, 0.15)',
-    borderGlow: 'border-teal-400/50 hover:border-teal-300 shadow-lg shadow-teal-500/20',
+    gradient: 'from-cyan-400 to-amber-500',
+    bgGlow: 'rgba(0, 217, 255, 0.15)',
+    borderGlow: 'border-cyan-400/50 hover:border-cyan-300 shadow-lg shadow-cyan-500/20',
     specialties: ['Catering', 'Bartender', 'Hostess', 'Chef', 'Garçom', 'Sommelier']
   },
   security: {
@@ -140,10 +140,10 @@ export const CATEGORIES = {
     motivation: 'Confiança é sua moeda. Você garante que tudo é seguro.',
     icon: Lock,
     primaryHex: '#FF3333',
-    accentHex: '#FFB700',
+    accentHex: '#00D9FF',
     tailwindPrimary: 'red-500',
-    tailwindAccent: 'amber-400',
-    gradient: 'from-red-500 to-amber-400',
+    tailwindAccent: 'cyan-400',
+    gradient: 'from-red-500 to-cyan-500',
     bgGlow: 'rgba(255, 51, 51, 0.15)',
     borderGlow: 'border-red-500/50 hover:border-red-400 shadow-lg shadow-red-500/20',
     specialties: ['Vigilância', 'Turnos', 'Posicionamento', 'Controle de Acesso', 'Crowd Control', 'VIP']
@@ -167,7 +167,7 @@ export const CATEGORIES = {
 };
 
 export function getCategoryConfig(categoryId) {
-  return CATEGORIES[categoryId] || CATEGORIES.lighting;
+  return CATEGORIES[categoryId] || CATEGORIES.audio;
 }
 
 export function getAllCategories() {

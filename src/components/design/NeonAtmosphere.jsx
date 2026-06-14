@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
 
 export function NeonAtmosphere({ primary = '#A64AFF', accent = '#FFB700', stage = false }) {
   const washOpacity = stage ? '2e' : '1c';
