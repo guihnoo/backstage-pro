@@ -237,7 +237,7 @@ export default function GlobalSearch({ isOpen, onClose }) {
                           hardNavigate(`/client-detail?id=${c.id}`);
                           onClose();
                         }}
-                        className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800/60 hover:border-slate-700 hover:bg-slate-800/50 transition-colors text-left"
+                        className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800/60 hover:border-slate-700 hover:bg-slate-800/50 transition-colors text-left bp-focus-ring"
                       >
                         <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sm font-bold text-slate-300 flex-shrink-0 overflow-hidden">
                           {c.logo_url

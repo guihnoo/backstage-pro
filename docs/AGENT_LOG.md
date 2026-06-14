@@ -24,6 +24,16 @@ Registro cronológico de tarefas executadas por agentes.
   - Botão verde no footer para `event.payment_status === 'paid'`
 - **Build**: Vite ✅ · **Git backup**: auto-wip ✅
 
+### INACTIVE-CLIENTS-S72 — Painel de Clientes Inativos com Reativação WhatsApp ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/lib/whatsapp.js`**: `buildReactivationMessage()` — mensagem calorosa de reengajamento
+- **`src/components/clients/InactiveClientsPanel.jsx`** (NOVO):
+  - Detecta clientes com último show há ≥90 dias (excluindo clientes sem nenhum show)
+  - Colapsível âmbar; ordena por mais tempo inativo primeiro
+  - Card: nome, badge "Xm sem show", histórico, receita, botão Reativar (WhatsApp) + Ver perfil
+- **`src/pages/Clients.jsx`**: render no filtro "Todos" antes da grid de cards
+- **Build**: Vite ✅ · **Git backup**: auto-wip ✅
+
 ### TEMPLATES-MANAGER-S70 — Gerenciar Templates de Evento no Perfil ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/components/calendar/EventTemplatesManager.jsx`** (NOVO):
@@ -346,7 +356,17 @@ Registro cronológico de tarefas executadas por agentes.
 - `SmartSuggestions`: chip de insights com `themePrimary`
 - `ClientDetail`: card Próximos Shows com `bp-surface-primary`; avatar Pessoa com `--bp-person`
 - `AlertsPanel`: lembrete "Show amanhã" com `accentHex` da categoria
-- **Intencional**: `GlobalSearch` status confirmado, `FinancialSummary` fallback purple, `ExpenseListItem` hospedagem
+- **Intencional**: paleta `brandColors`, categorias em `categoryConfig`/`CategoryPicker`, despesa `hospedagem`
+- **Testes**: unit 29/29 ✅ · build ✅
+
+### DESIGN-S67 — Fallbacks finais + focus ring expandido (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `FloatingActions`: FAB "Novo cliente" → `DEFAULT_CLIENT_COLOR`; botões com `bp-focus-ring`
+- `EventTemplatesManager`: fallback `#6366f1` → `DEFAULT_EVENT_COLOR`
+- `GlobalSearch`: status Confirmado com `themePrimary`; input/resultados com `bp-focus-ring`
+- `FinancialSummary`: removido fallback purple morto de `COLOR_CLASSES`
+- `CategoryPicker`, `ClientQuickCreateDialog`: toggles com `bp-focus-ring`
+- `AlertsPanel`: removido mapeamento CTA indigo morto
 - **Testes**: unit 29/29 ✅ · build ✅
 
 ### WORK-S50 — R$/hora por show + aba Trabalho em Relatórios ✅

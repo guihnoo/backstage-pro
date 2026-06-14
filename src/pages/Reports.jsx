@@ -57,6 +57,7 @@ import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
 import ActivityHeatmap from '@/components/reports/ActivityHeatmap';
 import SeasonalityChart from '@/components/reports/SeasonalityChart';
+import WeekdayBreakdown from '@/components/reports/WeekdayBreakdown';
 import NfTracker from '@/components/reports/NfTracker';
 import MonthlyTrend from '@/components/reports/MonthlyTrend';
 import WorkAnalytics from '@/components/reports/WorkAnalytics';
@@ -1007,7 +1008,10 @@ export default function ReportsPage() {
             <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
               <ActivityHeatmap events={data.events} />
             </div>
-            <SeasonalityChart events={data.events} />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <SeasonalityChart events={data.events} />
+              <WeekdayBreakdown events={data.events} />
+            </div>
           </div>
         )}
 

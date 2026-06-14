@@ -115,7 +115,7 @@ export default function ClientQuickCreateDialog({ open, onOpenChange, initialNam
             <button
               type="button"
               onClick={() => { setClientType('empresa'); setSelectedCompany(null); }}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold transition-colors ${
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold transition-colors bp-focus-ring ${
                 clientType === 'empresa' ? 'text-white' : 'bg-slate-800/60 text-slate-400 hover:text-slate-200'
               }`}
               style={clientType === 'empresa' ? { backgroundColor: primaryHex } : undefined}
@@ -126,7 +126,7 @@ export default function ClientQuickCreateDialog({ open, onOpenChange, initialNam
             <button
               type="button"
               onClick={() => { setClientType('pessoa'); setSelectedCompany(null); }}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold transition-colors ${
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold transition-colors bp-focus-ring ${
                 clientType === 'pessoa' ? 'bp-person-btn-active' : 'bg-slate-800/60 text-slate-400 hover:text-slate-200'
               }`}
             >

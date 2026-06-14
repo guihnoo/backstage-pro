@@ -33,11 +33,12 @@ export default function CategoryPicker({ selected, onSelect }) {
       {CATEGORIES.map((category, idx) => (
         <motion.button
           key={category.id}
+          type="button"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: idx * 0.05 }}
           onClick={() => onSelect(category.id)}
-          className={`p-6 rounded-xl border-2 transition-all ${
+          className={`p-6 rounded-xl border-2 transition-all bp-focus-ring ${
             selected === category.id
               ? `bg-gradient-to-br ${colorMap[category.color]} ${selectedRingMap[category.color]} ring-2 shadow-lg`
               : `bg-slate-800/30 border-slate-700 hover:border-slate-600`
