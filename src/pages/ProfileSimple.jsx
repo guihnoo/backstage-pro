@@ -24,6 +24,7 @@ import { useStats } from '@/lib/useBackstageData';
 import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
 import InstallPwaCard from '@/components/pwa/InstallPwaCard';
+import EventTemplatesManager from '@/components/calendar/EventTemplatesManager';
 import { requestAppTour } from '@/lib/appTourBus';
 import { useUserSettings } from '@/lib/useUserSettings';
 
@@ -622,6 +623,8 @@ export default function ProfileSimple() {
           )}
         </NeonGlass>
         </motion.div>
+
+        <EventTemplatesManager primaryHex={config.primaryHex} />
 
         <InstallPwaCard primaryHex={config.primaryHex} />
 
