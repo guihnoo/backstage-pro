@@ -6,6 +6,13 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-15
 
+### S113 — KanbanPipeline EventHeading + Goals mini-calendário (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **KanbanPipeline.jsx**: `EventHeading` importado e aplicado nos `KanbanCard` (substituindo `ev.title` + `client.name`); badge `Xd` para eventos multi-dia com fundo `evColor25`; prop `accentColor={col.dot}` passada ao card e usada para colorir o cachê com a cor da coluna (verde=pago, âmbar=a receber, slate=negociando)
+- **Goals.jsx**: mini-calendário mensal inserido na seção "Próximos Shows" após a lista — grid 7 colunas com cabeçalho abreviado D/S/T/Q/Q/S/S; hoje marcado com círculo sólido na cor da categoria; pontinhos coloridos nos dias com eventos (opacidade 45% para dias passados, 90% para futuros); combina `allEvents` (completados) + `upcomingEvents` (futuros); eventos multi-dia preenchem todos os dias do intervalo; ocultado quando nenhum evento existe no mês
+- **ESLint**: 0 erros, 0 warnings
+- **Build**: Vite ✅ 41.41s
+
 ### S112 — Calendar todas as views + Clients próximo show (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Calendar.jsx** (vista upcoming): `EventHeading` no lugar de `ev.title`; ícone de status de pagamento (`CheckCircle2`/`BadgeCheck`/`AlertCircle`/`Clock`); cor dinâmica do label de diff (hoje=âmbar, amanhã=lilás, futuro=slate); duração `Xd` para eventos multi-dia; borda vermelha suave em eventos com pagamento vencido; cachê em verde/vermelho/âmbar

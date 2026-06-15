@@ -1,12 +1,11 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Clock, Loader2, Info, Timer } from 'lucide-react';
+import { Clock, Loader2, Timer, Zap } from 'lucide-react';
 import appToast from '@/lib/appToast';
 import { getTimer, getElapsedMs, formatElapsed, elapsedToHours } from '@/lib/timerStore';
 import { normalizeDateString, formatDisplayDate } from '@/components/utils/dateUtils';
@@ -222,27 +221,60 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Entrada</Label>
-                  <Input type="time" value={formData.entry_time} onChange={(e) => setField('entry_time', e.target.value)} className="bg-slate-800 border-slate-700 h-12 text-base" />
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>Entrada / Saída</Label>
+                  {/* Atalhos rápidos de duração */}
+                  {formData.entry_time && (
+                    <div className="flex items-center gap-1">
+                      <Zap className="w-3 h-3 text-slate-600" />
+                      {[8, 10, 12].map(h => (
+                        <button
+                          key={h}
+                          type="button"
+                          onClick={() => {
+                            const [entH, entM] = formData.entry_time.split(':').map(Number);
+                            const totalMin = entH * 60 + entM + h * 60;
+                            const exitH = Math.floor(totalMin / 60) % 24;
+                            const exitM = totalMin % 60;
+                            setField('exit_time', `${String(exitH).padStart(2,'0')}:${String(exitM).padStart(2,'0')}`);
+                          }}
+                          className="text-[10px] font-semibold px-1.5 py-0.5 rounded border border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200 transition-colors"
+                        >
+                          {h}h
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="space-y-2">
-                  <Label>Saída</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <Input type="time" value={formData.entry_time} onChange={(e) => setField('entry_time', e.target.value)} className="bg-slate-800 border-slate-700 h-12 text-base" />
                   <Input type="time" value={formData.exit_time} onChange={(e) => setField('exit_time', e.target.value)} className="bg-slate-800 border-slate-700 h-12 text-base" />
                 </div>
               </div>
 
               {summary.total > 0 && (
-                <Alert
-                  className="border"
-                  style={{ background: `${primaryHex}1a`, borderColor: `${primaryHex}66` }}
-                >
-                  <Info className="h-4 w-4 bp-text-primary" />
-                  <AlertDescription className="text-sm" style={{ color: `${primaryHex}cc` }}>
-                    Total: <strong>{summary.total.toFixed(1)}h</strong> · Extras: <strong>{summary.overtime.toFixed(1)}h</strong> · Cachê: <strong>R$ {summary.cache.toFixed(2)}</strong>
-                  </AlertDescription>
-                </Alert>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="rounded-lg p-3 text-center border border-slate-700/60 bg-slate-800/40">
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Horas</p>
+                    <p className="text-lg font-black" style={{ color: primaryHex }}>{summary.total.toFixed(1)}h</p>
+                  </div>
+                  <div className="rounded-lg p-3 text-center border border-pink-500/25 bg-pink-500/5">
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Extras</p>
+                    <p className="text-lg font-black text-pink-400">{summary.overtime.toFixed(1)}h</p>
+                  </div>
+                  <div className="rounded-lg p-3 text-center border border-emerald-500/25 bg-emerald-500/5">
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Cachê</p>
+                    <p className="text-base font-black text-emerald-400 leading-tight">
+                      {summary.cache.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 })}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {event?.payment_model && (
+                <p className="text-[11px] text-slate-600 -mt-1">
+                  Modelo: {event.payment_model === 'MEIO_CACHE_E_DOBRA' ? 'Meio Cache e Dobra' : 'Cachê + Horas Extras'}
+                </p>
               )}
 
               <div className="space-y-2">
