@@ -316,6 +316,7 @@ const KanbanPipeline = ({ events = [], clients = [], onEventClick }) => {
                       isVisible={isVisible}
                       showUrgency={col.key === 'to_receive'}
                       defaultColor={primaryHex}
+                      accentColor={col.dot}
                     />
                   ))
                 )}
