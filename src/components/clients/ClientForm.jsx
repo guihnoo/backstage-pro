@@ -223,12 +223,20 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
         return;
       }
 
-      // Salva empresa no banco compartilhado se selecionada via busca
-      let companyId = null;
-      if (selectedCompany && !client?.id) {
+      // Salva / enriquece empresa no banco compartilhado (busca ou cadastro manual)
+      let companyId = client?.company_id || null;
+      if (!client?.id && formData.client_type === 'empresa') {
         try {
-          const saved = await upsertCompany(selectedCompany);
-          companyId = saved?.id || null;
+          const companyPayload = selectedCompany || {
+            name: formData.name.trim(),
+            trading_name: formData.name.trim(),
+            phone: formData.phone || null,
+            email: formData.email || null,
+            logo_url: formData.logo_url || null,
+            source: 'manual',
+          };
+          const saved = await upsertCompany(companyPayload);
+          companyId = saved?.id || companyId;
         } catch (e) {
           console.warn('Não foi possível salvar empresa no banco compartilhado:', e.message);
         }

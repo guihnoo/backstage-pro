@@ -45,9 +45,14 @@ export default function ClientQuickCreateDialog({ open, onOpenChange, initialNam
     setCreating(true);
     try {
       let companyId = null;
-      if (clientType === 'empresa' && selectedCompany) {
+      if (clientType === 'empresa') {
         try {
-          const saved = await upsertCompany(selectedCompany);
+          const companyPayload = selectedCompany || {
+            name: trimmed,
+            trading_name: trimmed,
+            source: 'manual',
+          };
+          const saved = await upsertCompany(companyPayload);
           companyId = saved?.id || null;
         } catch (err) {
           console.warn('Empresa não salva no banco compartilhado:', err.message);
