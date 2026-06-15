@@ -6,6 +6,11 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-15
 
+### LAPIDAÇÃO COMPLETA — Goals + Home (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Goals.jsx**: removido card "Diárias no mês" do grid (duplicava o círculo CircularProgress "Diárias" acima); "Clientes Ativos" passou de card de grid 50% para faixa full-width horizontal (ícone + valor + subtítulo + ChevronRight)
+- **Build**: Vite ✅ (43s)
+
 ### LAPIDAÇÃO HOME — Remoção de duplicidades na Home (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **QuickStats.jsx**: removidos cards "Recebido" e "A Receber" (mesmos valores já em `PipelineFinanceiro` e `AReceber`); mantidos apenas "Horas no Mês" e "Diárias no Mês"; grid `2-col` em vez de `4-col`; import `useFinancialVisibility` removido

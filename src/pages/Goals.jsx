@@ -678,45 +678,27 @@ export default function Goals() {
                 )}
               </div>
 
-              {/* Resumo — apenas métricas não exibidas nos círculos acima */}
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  {
-                    label: 'Diárias no mês',
-                    value: `${diariasMes} diária${diariasMes !== 1 ? 's' : ''}`,
-                    pulseValue: diariasMes,
-                    sub: `meta: ${metaDiarias} dias trabalhados`,
-                    icon: '📅', color: config.primaryHex, route: '/calendar'
-                  },
-                  {
-                    label: 'Clientes Ativos',
-                    value: `${stats.clientes_ativos}`,
-                    pulseValue: stats.clientes_ativos,
-                    sub: 'empresas / contratantes',
-                    icon: '👥', color: config.accentHex, route: '/clients'
-                  },
-                ].map((item, i) => (
-                  <motion.button
-                    key={i}
-                    type="button"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => hardNavigate(item.route)}
-                    className="bg-slate-900/40 border border-slate-800/40 rounded-xl p-4 text-left hover:border-slate-700/60 transition-colors cursor-pointer min-w-0"
-                  >
-                    <span className="text-xl">{item.icon}</span>
-                    <Ellipsis as="p" className="text-xs text-slate-500 mt-2">{item.label}</Ellipsis>
-                    <StatValuePulse value={item.pulseValue} glowColor={item.color}>
-                      <p className="text-lg font-black mt-0.5 min-w-0 truncate" style={{ color: item.color }}>
-                        {item.value}
-                      </p>
-                    </StatValuePulse>
-                    <Ellipsis as="p" className="text-[10px] text-slate-600 mt-0.5">{item.sub}</Ellipsis>
-                  </motion.button>
-                ))}
-              </div>
+              {/* Clientes Ativos — única métrica não exibida nos círculos */}
+              <motion.button
+                type="button"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => hardNavigate('/clients')}
+                className="w-full flex items-center gap-4 bg-slate-900/40 border border-slate-800/40 rounded-xl p-4 text-left hover:border-slate-700/60 transition-colors cursor-pointer"
+              >
+                <span className="text-2xl">👥</span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs text-slate-500">Clientes Ativos</p>
+                  <StatValuePulse value={stats.clientes_ativos} glowColor={config.accentHex}>
+                    <p className="text-xl font-black mt-0.5" style={{ color: config.accentHex }}>
+                      {stats.clientes_ativos} empresa{stats.clientes_ativos !== 1 ? 's' : ''}
+                    </p>
+                  </StatValuePulse>
+                  <p className="text-[10px] text-slate-600 mt-0.5">contratantes com shows no período</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-600 flex-shrink-0" />
+              </motion.button>
 
               {/* Mensagem de incentivo */}
               {(() => {
