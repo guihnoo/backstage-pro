@@ -124,6 +124,8 @@
 | 83 | Notas do evento editáveis inline no modal | 2026-06-14 | ✅ `InlineNotes` em `EventDetailModal`; clica no texto ou no botão Editar/+ Adicionar; textarea com autoFocus; salva `observacoes_md` sem abrir o form completo |
 | 84 | Total de horas + ordenação na seção Trabalho do modal | 2026-06-14 | ✅ Badge índigo com Xh total ao lado do título; registros ordenados por data asc |
 | 85 | Total de despesas na seção Despesas do modal | 2026-06-14 | ✅ Badge amber com R$ total ao lado do contador de despesas |
+| 86 | Resumo financeiro do mês no cabeçalho da Agenda | 2026-06-14 | ✅ `CalendarPageHeader`: linha com shows / recebido (esmeralda) / a receber (âmbar) abaixo do mês/ano; respeita máscara; animated de entrada |
+| 87 | Gráfico de evolução do cachê médio por show (12 meses) | 2026-06-14 | ✅ `CacheEvolutionChart.jsx`; LineChart 12 meses; tooltip shows+médio+total; linha de referência na média; badge de tendência % alta/queda; aba Atividade de Reports |
 
 ---
 

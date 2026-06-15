@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-14 (sessões S69–S74 — Claude Code)  
+**Última atualização:** 2026-06-14 (sessões S75–S87 — Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-06-14 — `dpl_B3ge4BopmjUZaFswdcbcUxUDaL3d` (commit `48967fc`)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` (dedupe refatorado) deployadas no Supabase ✅  
