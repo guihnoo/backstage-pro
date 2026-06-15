@@ -1,13 +1,14 @@
 import { motion } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Clock, MapPin, ChevronRight, Radio, Plus } from 'lucide-react';
+import { Clock, MapPin, ChevronRight, Radio, Plus, CheckCircle2, BadgeCheck, AlertCircle } from 'lucide-react';
 import {
   todayLocalISO,
   getEventsForDate,
   normalizeDateString,
 } from '@/components/utils/dateUtils';
-import { isCancelledEvent } from '@/lib/eventFinance';
+import { isCancelledEvent, getEventCacheAmount } from '@/lib/eventFinance';
+import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import EventHeading from '@/components/events/EventHeading';
 import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
@@ -28,6 +29,7 @@ export default function CalendarTodayStrip({
   onRegisterWork,
   onNewEvent,
 }) {
+  const { formatCurrency } = useFinancialVisibility();
   const today = todayLocalISO();
   const todayEvents = getEventsForDate(events, today).filter((e) => !isCancelledEvent(e));
 
@@ -91,6 +93,11 @@ export default function CalendarTodayStrip({
             const timeLabel = event.start_time
               ? format(parseISO(`2000-01-01T${event.start_time}`), 'HH:mm', { locale: ptBR })
               : null;
+            const isPaid = event.payment_status === 'paid';
+            const isConfirmed = event.status === 'confirmed';
+            const amount = getEventCacheAmount(event);
+            const StatusIcon = isPaid ? CheckCircle2 : isConfirmed ? BadgeCheck : AlertCircle;
+            const statusColor = isPaid ? '#10b981' : isConfirmed ? '#f59e0b' : '#64748b';
 
             return (
               <button
@@ -125,6 +132,15 @@ export default function CalendarTodayStrip({
                       </span>
                     )}
                   </div>
+                </div>
+                {/* Status de pagamento + cachê */}
+                <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                  <StatusIcon className="w-4 h-4" style={{ color: statusColor }} />
+                  {amount > 0 && (
+                    <span className="text-[11px] font-semibold font-mono" style={{ color: isPaid ? '#10b981' : '#f59e0b' }}>
+                      {formatCurrency(amount)}
+                    </span>
+                  )}
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate-600 flex-shrink-0" />
               </button>

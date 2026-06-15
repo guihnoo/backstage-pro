@@ -1439,25 +1439,50 @@ export default function CalendarPage() {
                           const evColor = ev.color || DEFAULT_EVENT_COLOR;
                           const timeLabel = ev.start_time ? ev.start_time.slice(0, 5) : null;
                           const isCancelled = ev.status === 'cancelled';
+                          const isPaid = ev.payment_status === 'paid';
+                          const isConfirmed = ev.status === 'confirmed';
+                          const amount = getEventCacheAmount(ev);
+                          const statusColor = isPaid ? '#10b981' : isConfirmed ? '#f59e0b' : '#64748b';
+                          const StatusIcon = isPaid ? CheckCircle2 : isConfirmed ? BadgeCheck : Clock;
+                          const durationDays = ev.start_date && ev.end_date
+                            ? Math.round((new Date(ev.end_date) - new Date(ev.start_date)) / 86400000) + 1
+                            : 1;
                           return (
                             <button
                               key={ev.id}
                               type="button"
                               onClick={() => handleEventClick(ev)}
-                              style={{ borderLeftColor: evColor }}
-                              className={`w-full text-left rounded-md px-1.5 py-1 text-[11px] leading-tight font-medium text-slate-200 bg-slate-700/60 hover:bg-slate-700 border border-slate-600/40 border-l-2 transition-colors flex flex-col gap-0.5 ${isCancelled ? 'opacity-50 line-through' : ''}`}
+                              className={`w-full text-left rounded-md px-1.5 py-1.5 text-[11px] leading-tight font-medium transition-all flex flex-col gap-0.5 ${isCancelled ? 'opacity-40 line-through' : 'hover:brightness-125'}`}
+                              style={{
+                                backgroundColor: `${evColor}18`,
+                                border: `1px solid ${evColor}45`,
+                                borderLeft: `3px solid ${evColor}`,
+                              }}
                             >
-                              <span className="truncate">{ev.title}</span>
-                              {timeLabel && (
-                                <span className="text-[10px] text-slate-400">{timeLabel}</span>
-                              )}
+                              <div className="flex items-center gap-1 min-w-0">
+                                <span className="truncate flex-1 text-slate-100">{ev.title}</span>
+                                <StatusIcon className="w-3 h-3 flex-shrink-0 opacity-80" style={{ color: statusColor }} />
+                              </div>
+                              <div className="flex items-center gap-1 text-[10px] text-slate-400 min-w-0">
+                                {timeLabel && <span className="flex-shrink-0">{timeLabel}</span>}
+                                {durationDays > 1 && <span className="text-slate-500 flex-shrink-0">· {durationDays}d</span>}
+                                {amount > 0 && (
+                                  <span className="ml-auto flex-shrink-0 font-semibold" style={{ color: isPaid ? '#10b981' : '#f59e0b' }}>
+                                    {formatCurrency(amount)}
+                                  </span>
+                                )}
+                              </div>
                             </button>
                           );
                         })}
                         {overflow > 0 && (
-                          <p className="text-[10px] text-slate-500 text-center mt-0.5">
+                          <button
+                            type="button"
+                            onClick={() => handleDayClick(day)}
+                            className="text-[10px] text-slate-500 text-center mt-0.5 w-full py-0.5 rounded hover:text-slate-300 transition-colors"
+                          >
                             +{overflow} mais
-                          </p>
+                          </button>
                         )}
                       </div>
                     </div>
