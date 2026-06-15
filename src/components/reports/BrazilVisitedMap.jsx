@@ -162,9 +162,24 @@ function eventTitle(ev) {
   return ev.title || ev.name || ev.client_name || 'Evento';
 }
 
+function hexToRgb(hex) {
+  const h = String(hex || '#A64AFF').replace('#', '');
+  return {
+    r: parseInt(h.slice(0, 2), 16),
+    g: parseInt(h.slice(2, 4), 16),
+    b: parseInt(h.slice(4, 6), 16),
+  };
+}
+
+function rgbaHex(hex, alpha) {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 function BrazilVisitedMapInner({ events = [] }) {
   const theme = useCategoryTheme();
   const primary = theme.primaryHex;
+  const accent = theme.accentHex;
   const [activeUf, setActiveUf] = useState(null);
   const [pinnedCityKey, setPinnedCityKey] = useState(null);
   const [hoverCityKey, setHoverCityKey] = useState(null);
@@ -382,7 +397,7 @@ function BrazilVisitedMapInner({ events = [] }) {
           {cityCount > 0 && (
             <>
               <span className="text-slate-600">·</span>
-              <span className="text-violet-300">{cityCount} {cityCount === 1 ? 'cidade' : 'cidades'}</span>
+              <span style={{ color: accent }}>{cityCount} {cityCount === 1 ? 'cidade' : 'cidades'}</span>
             </>
           )}
         </div>
@@ -442,13 +457,13 @@ function BrazilVisitedMapInner({ events = [] }) {
                 animate={{
                   fill: active
                     ? isFocus
-                      ? 'rgba(34, 211, 238, 0.55)'
-                      : 'rgba(34, 211, 238, 0.28)'
+                      ? rgbaHex(primary, 0.55)
+                      : rgbaHex(primary, 0.28)
                     : 'rgba(30, 41, 59, 0.75)',
                   stroke: active
                     ? isFocus
-                      ? 'rgba(103, 232, 249, 1)'
-                      : 'rgba(34, 211, 238, 0.65)'
+                      ? rgbaHex(primary, 1)
+                      : rgbaHex(primary, 0.65)
                     : 'rgba(51, 65, 85, 0.9)',
                   strokeWidth: isFocus ? 1.4 : 0.8,
                 }}
@@ -488,7 +503,7 @@ function BrazilVisitedMapInner({ events = [] }) {
                     cy={y}
                     r={r + 4}
                     fill="none"
-                    stroke={isLatest ? 'rgba(167,139,250,0.6)' : 'rgba(34,211,238,0.5)'}
+                    stroke={isLatest ? rgbaHex(accent, 0.6) : rgbaHex(primary, 0.5)}
                     strokeWidth={1}
                     animate={{ r: [r + 3, r + 7, r + 3], opacity: [0.7, 0, 0.7] }}
                     transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
@@ -499,17 +514,17 @@ function BrazilVisitedMapInner({ events = [] }) {
                   cx={x}
                   cy={y}
                   r={r + 2}
-                  fill={isLatest ? 'rgba(139,92,246,0.25)' : 'rgba(34,211,238,0.15)'}
+                  fill={isLatest ? rgbaHex(accent, 0.25) : rgbaHex(primary, 0.15)}
                 />
                 {/* Main dot */}
                 <motion.circle
                   cx={x}
                   cy={y}
                   r={r}
-                  fill={isLatest ? 'rgba(167,139,250,0.95)' : `${primary}eb`}
+                  fill={isLatest ? rgbaHex(accent, 0.95) : `${primary}eb`}
                   animate={isActiveCity ? { r: r * 1.4 } : { r }}
                   transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                  style={{ filter: `drop-shadow(0 0 ${r * 1.2}px ${isLatest ? '#a78bfa' : primary})` }}
+                  style={{ filter: `drop-shadow(0 0 ${r * 1.2}px ${isLatest ? accent : primary})` }}
                 />
               </g>
             );
@@ -540,7 +555,7 @@ function BrazilVisitedMapInner({ events = [] }) {
                     )}
                     <span style={{ color: primary }}>{activeCityData.count} evento{activeCityData.count === 1 ? '' : 's'}</span>
                     {activeCityKey === latestCityKey && (
-                      <span className="text-violet-400 text-[10px]">★ mais recente</span>
+                      <span className="text-[10px]" style={{ color: accent }}>★ mais recente</span>
                     )}
                   </div>
                   {activeCityData.lastDate && (
@@ -615,7 +630,7 @@ function BrazilVisitedMapInner({ events = [] }) {
           </div>
           {latestCityKey && cities[latestCityKey] && (
             <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full" style={{ background: 'rgba(167,139,250,0.92)', boxShadow: '0 0 5px #a78bfa' }} />
+              <div className="w-2.5 h-2.5 rounded-full" style={{ background: rgbaHex(accent, 0.92), boxShadow: `0 0 5px ${accent}` }} />
               <span className="text-[11px] text-slate-400">Mais recente</span>
             </div>
           )}
@@ -702,7 +717,7 @@ function BrazilVisitedMapInner({ events = [] }) {
                     <span className="text-[11px] font-mono flex-shrink-0" style={{ color: primary }}>{city.count}×</span>
                   </div>
                   {isLatest && (
-                    <span className="text-[10px] text-violet-400 mt-1 inline-block">Mais recente</span>
+                    <span className="text-[10px] mt-1 inline-block" style={{ color: accent }}>Mais recente</span>
                   )}
                 </button>
               );

@@ -95,7 +95,7 @@ export default function EventActionSheet({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed inset-x-0 bottom-0 z-[95] bg-slate-900 border-t-2 rounded-t-3xl shadow-2xl pb-safe max-h-[85dvh] flex flex-col overflow-hidden"
+            className="fixed inset-x-0 bottom-0 z-[95] bg-slate-900 border-t-2 rounded-t-3xl shadow-2xl pb-safe max-h-[85dvh] flex flex-col overflow-hidden bp-focus-scope"
             style={{ borderTopColor: primary }}
           >
             {/* Handle */}

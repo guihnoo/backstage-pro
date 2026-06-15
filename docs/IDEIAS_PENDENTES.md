@@ -116,6 +116,9 @@
 | 75 | Comparação Ano a Ano (YoY) em Relatórios | 2026-06-14 | ✅ `YearOverYear.jsx`; tabela mostra shows, receita, ticket médio e clientes ativos de jan-hoje do ano atual vs mesmo período do ano anterior; variação % com seta; mensagem motivacional; só aparece se houver dados do ano anterior |
 | 76 | Vista Kanban Pipeline na Agenda (5ª view) | 2026-06-14 | ✅ `KanbanPipeline.jsx`; 4 colunas: Negociando/Confirmado/A Receber/Pago; cards com cor do evento, cliente, data, valor; total por coluna; horizontal scroll mobile; ícone Columns2 (violet) no grupo de views |
 | 77 | Linha do tempo do ciclo de vida do evento | 2026-06-14 | ✅ `EventLifecycleBar` inline no `EventDetailModal`; 4 etapas: Agendado/Realizado/Horas/Pago; círculos coloridos + conectores; dica textual da próxima ação; invisível para cancelados |
+| 78 | Marcar evento como Realizado sem abrir o form | 2026-06-14 | ✅ Botão "Realizado" (esmeralda) no footer do `EventDetailModal`; visível só para eventos passados em status scheduled/confirmed; `updateEvent` direto com spinner |
+| 79 | Compartilhar detalhes do evento via WhatsApp/clipboard | 2026-06-14 | ✅ Botão "Compartilhar" no footer do `EventDetailModal`; Web Share API + fallback clipboard; formata título, data, horário, local e cachê |
+| 80 | Sumário de pipeline no Kanban (a receber + pago) | 2026-06-14 | ✅ Barra de chips acima das colunas do `KanbanPipeline`; total de shows, valor a receber (amber), total pago (emerald); respeita máscara financeira |
 
 ---
 

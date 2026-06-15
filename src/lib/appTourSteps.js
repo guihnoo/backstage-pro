@@ -141,7 +141,7 @@ export function buildMapTourSteps() {
       popover: {
         title: 'Mapa interativo',
         description:
-          'Estados visitados ficam em ciano. Toque nos pins ou na lista "Suas cidades" para ver os shows de cada lugar.',
+          'Estados visitados usam a cor da sua categoria. Toque nos pins ou na lista "Suas cidades" para ver os shows de cada lugar.',
         side: 'top',
         align: 'center',
       },

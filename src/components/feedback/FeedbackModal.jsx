@@ -103,7 +103,7 @@ export default function FeedbackModal({ open, onClose, primaryHex: primaryHexPro
             exit={{ y: 40, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 320, damping: 28 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg max-h-[90dvh] flex flex-col rounded-t-2xl sm:rounded-2xl border border-slate-700/60 bg-[#0d0f1a] shadow-2xl overflow-hidden"
+            className="w-full max-w-lg max-h-[90dvh] flex flex-col rounded-t-2xl sm:rounded-2xl border border-slate-700/60 bg-[#0d0f1a] shadow-2xl overflow-hidden bp-focus-scope"
           >
             <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-slate-800 flex-shrink-0">
               <div className="min-w-0">
@@ -187,7 +187,7 @@ export default function FeedbackModal({ open, onClose, primaryHex: primaryHexPro
                   onChange={(e) => setMessage(e.target.value)}
                   rows={4}
                   placeholder="Descreva o que aconteceu ou o que você gostaria de ver no app…"
-                  className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-500 resize-none"
+                  className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none resize-none bp-focus-input"
                   maxLength={4000}
                 />
                 <p className="text-[10px] text-slate-600 mt-1 text-right">{message.length}/4000</p>

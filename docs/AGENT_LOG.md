@@ -6,6 +6,13 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-14
 
+### REALIZADO-SHARE-S78S79S80 — Marcar Realizado + Compartilhar + Sumário Kanban ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **S78** — `EventDetailModal`: botão "Realizado" (esmeralda) aparece para eventos passados em status scheduled/confirmed; `updateEvent({ status:'completed' })` direto sem abrir form; spinner `markingDone`
+- **S79** — `EventDetailModal`: botão "Compartilhar" usa `navigator.share` / fallback clipboard; formata título, data, hora, local e cachê em markdown WhatsApp
+- **S80** — `KanbanPipeline`: barra de sumário acima das colunas com total de shows, A receber (amber) e Pago (esmeralda); respeita `isVisible` da máscara financeira
+- **Build**: Vite ✅ · **Deploy**: push `fb65c15` → Vercel buildando
+
 ### LIFECYCLE-S77 — Linha do Tempo do Ciclo de Vida do Evento ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/components/reports/EventDetailModal.jsx`**:
