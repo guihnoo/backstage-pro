@@ -31,6 +31,7 @@ import {
   Zap,
   Share2,
   Columns2,
+  Calculator,
 } from 'lucide-react';
 import { exportCalendarIcs } from '@/lib/exportReport';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, parseISO, isValid, addWeeks, subWeeks, startOfWeek, endOfWeek, eachDayOfInterval, differenceInCalendarDays, isBefore } from 'date-fns';
@@ -58,6 +59,7 @@ import DayQuickActions from '@/components/calendar/DayQuickActions';
 import AlertsPanel from '@/components/calendar/AlertsPanel';
 import AvailabilityShareModal from '@/components/calendar/AvailabilityShareModal';
 import KanbanPipeline from '@/components/calendar/KanbanPipeline';
+import CacheCalculator from '@/components/calendar/CacheCalculator';
 import EventActionSheet from '@/components/mobile/EventActionSheet';
 import EventHoursSheet from '@/components/mobile/EventHoursSheet';
 import NotesSheet from '@/components/mobile/NotesSheet';
@@ -188,6 +190,7 @@ export default function CalendarPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showAvailability, setShowAvailability] = useState(false);
+  const [showCalculator, setShowCalculator] = useState(false);
   const [viewMode, setViewMode] = useState(() => {
     try {
       const stored = localStorage.getItem('backstage:calendar-view-mode');
@@ -1290,11 +1293,19 @@ export default function CalendarPage() {
                 type="button"
                 onClick={() => setViewMode('kanban')}
                 title="Pipeline Kanban"
-                className={`p-1.5 rounded-md transition-colors ${viewMode === 'kanban' ? 'bg-violet-600/30 text-violet-300' : 'text-slate-500 hover:text-slate-300'}`}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'kanban' ? 'bp-view-active' : 'text-slate-500 hover:text-slate-300'}`}
               >
                 <Columns2 className="w-4 h-4" />
               </button>
             </div>
+            <button
+              type="button"
+              onClick={() => setShowCalculator(true)}
+              title="Calculadora de cachê"
+              className="p-1.5 rounded-lg bg-slate-800/60 border border-slate-700/60 text-slate-500 hover:text-yellow-400 hover:border-yellow-600/40 transition-colors"
+            >
+              <Calculator className="w-4 h-4" />
+            </button>
             <button
               type="button"
               onClick={() => setShowAvailability(true)}
@@ -1684,6 +1695,17 @@ export default function CalendarPage() {
         }}
         onNewEvent={handleQuickAddEvent}
         onNewWork={handleQuickAddWork}
+      />
+
+      {/* Calculadora de cachê */}
+      <CacheCalculator
+        open={showCalculator}
+        onClose={() => setShowCalculator(false)}
+        onCreateEvent={(prefill) => {
+          setShowCalculator(false);
+          setPrefillEventData(prefill);
+          setShowEventForm(true);
+        }}
       />
 
       {/* Disponibilidade */}

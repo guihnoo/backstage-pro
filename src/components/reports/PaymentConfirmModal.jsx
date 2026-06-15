@@ -11,18 +11,29 @@ import { ptBR } from 'date-fns/locale';
 import appToast from '@/lib/appToast';
 import { useEvents } from '@/lib/useEvents';
 import { Ellipsis } from '@/components/ui/overflowText';
+import { getEventCacheAmount } from '@/lib/eventFinance';
+
+const PAYMENT_METHODS = [
+  { value: 'pix', label: 'PIX' },
+  { value: 'dinheiro', label: 'Dinheiro' },
+  { value: 'transferencia', label: 'Transferência' },
+  { value: 'cartao', label: 'Cartão' },
+  { value: 'cheque', label: 'Cheque' },
+];
 
 export default function PaymentConfirmModal({ event, isOpen, onClose, onSuccess }) {
   const { update: updateEvent } = useEvents();
   const [paidAmount, setPaidAmount] = useState('');
   const [paidDate, setPaidDate] = useState(new Date());
+  const [paymentMethod, setPaymentMethod] = useState('pix');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (event && isOpen) {
-      const estimatedValue = event.paid_amount || event.calculatedValue || 0;
-      setPaidAmount(estimatedValue.toString());
+      const estimatedValue = event.paid_amount || getEventCacheAmount(event) || 0;
+      setPaidAmount(estimatedValue > 0 ? estimatedValue.toString() : '');
       setPaidDate(new Date());
+      setPaymentMethod(event.payment_method || 'pix');
     }
   }, [event, isOpen]);
 
@@ -38,6 +49,7 @@ export default function PaymentConfirmModal({ event, isOpen, onClose, onSuccess 
         payment_status: 'paid',
         paid_amount: Number(paidAmount),
         paid_date: format(paidDate, 'yyyy-MM-dd'),
+        payment_method: paymentMethod,
       });
 
       appToast.success('Pagamento confirmado com sucesso!');
@@ -85,6 +97,26 @@ export default function PaymentConfirmModal({ event, isOpen, onClose, onSuccess 
                 className="pl-10 bg-slate-800 border-slate-700 text-white"
                 placeholder="0.00"
               />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-slate-300">Forma de recebimento</Label>
+            <div className="flex flex-wrap gap-1.5">
+              {PAYMENT_METHODS.map(m => (
+                <button
+                  key={m.value}
+                  type="button"
+                  onClick={() => setPaymentMethod(m.value)}
+                  className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
+                    paymentMethod === m.value
+                      ? 'border-green-500/60 bg-green-500/15 text-green-300'
+                      : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600'
+                  }`}
+                >
+                  {m.label}
+                </button>
+              ))}
             </div>
           </div>
 
