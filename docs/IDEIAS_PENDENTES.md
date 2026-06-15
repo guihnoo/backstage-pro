@@ -46,7 +46,7 @@
 | 19 | **Registrar vida do app** (Cursor + Claude Code) | ✅ | Sessão 9–10: `CLAUDE.md`, RELATORIO, AUDITORIA, IDEIAS, AGENT_LOG |
 | 20 | Não repetir bugs (lazy routes, scroll, OAuth) | 🔄 | Seção “Bugs conhecidos” em AUDITORIA |
 | 21 | Check-in em itens prontos sem quebrar o que funciona | 🔄 | LOCKED em AGENTS.md |
-| 22 | Testes E2E smoke em cada release | ✅ | 28 smoke tests — google-calendar-sync, goals-streak, admin-feedbacks, etc. |
+| 22 | Testes E2E smoke em cada release | ✅ | 29 smoke tests — kanban, google-calendar-sync, goals-streak, admin-feedbacks, etc. |
 
 ---
 
@@ -132,6 +132,9 @@
 | 91 | Badge de urgência "A Receber" no Kanban | 2026-06-15 | ✅ `KanbanPipeline.jsx`: badge colorido por dias vencidos (vermelho/âmbar/slate); coluna ordenada do mais urgente |
 | 92 | Alertas de dias esquecidos em eventos multi-dia | 2026-06-15 | ✅ `AlertsPanel.jsx`: regra `crm_missing_days` detecta dias sem horas nos últimos 7 dias |
 | 93 | Bugfix double-insert EventHoursSheet | 2026-06-15 | ✅ `Calendar.jsx`: `handleHoursSheetSave` não duplicava mais o insert no DB |
+| 94 | Timeline de dias por evento no EventDetailModal | 2026-06-15 | ✅ `calendar/EventDetailModal.jsx`: chips por dia (verde=registrado, vermelho=faltou, brand=hoje, cinza=futuro); click abre DailyWorkModal com data correta |
+| 95 | Polish tema S90–S92 (violet/indigo → tokens dinâmicos) | 2026-06-15 | ✅ Kanban, modais, gráficos, badges Confirmado, CRM e-mail |
+| 96 | Smoke E2E vista Kanban na Agenda | 2026-06-15 | ✅ `calendar-navigation.spec.js` — 29 testes smoke |
 
 ---
 

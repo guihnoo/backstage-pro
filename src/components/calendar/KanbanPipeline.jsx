@@ -75,12 +75,12 @@ const UrgencyBadge = ({ ev }) => {
   );
 };
 
-const KanbanCard = ({ ev, client, onOpen, formatCurrency, isVisible, showUrgency }) => {
+const KanbanCard = ({ ev, client, onOpen, formatCurrency, isVisible, showUrgency, defaultColor }) => {
   const amount = getEventCacheAmount(ev);
   const dateStr = ev.start_date
     ? format(parseISO(ev.start_date), "d 'de' MMM", { locale: ptBR })
     : null;
-  const evColor = ev.color || '#6366f1';
+  const evColor = ev.color || defaultColor;
 
   return (
     <button
@@ -309,6 +309,7 @@ const KanbanPipeline = ({ events = [], clients = [], onEventClick }) => {
                       formatCurrency={formatCurrency}
                       isVisible={isVisible}
                       showUrgency={col.key === 'to_receive'}
+                      defaultColor={primaryHex}
                     />
                   ))
                 )}

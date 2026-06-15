@@ -43,3 +43,17 @@ test('vista semanal persiste após recarregar a página', async ({ page }) => {
   await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 15_000 });
   await expect(page.locator('.grid.grid-cols-7')).toBeVisible({ timeout: 10_000 });
 });
+
+test('vista kanban exibe colunas do pipeline com eventos mockados', async ({ page }) => {
+  await seedAuthWithData(page);
+  await page.goto('/calendar', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 15_000 });
+
+  await page.getByTitle('Pipeline Kanban').click();
+  await expect(page.getByText('Negociando', { exact: true })).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText('Confirmado', { exact: true })).toBeVisible();
+  await expect(page.getByText('A Receber', { exact: true })).toBeVisible();
+  await expect(page.getByText('Pago', { exact: true })).toBeVisible();
+  const kanbanCard = page.locator('.min-w-\\[720px\\]').getByRole('button', { name: /E2E Show Demo/ });
+  await expect(kanbanCard.first()).toBeVisible({ timeout: 10_000 });
+});

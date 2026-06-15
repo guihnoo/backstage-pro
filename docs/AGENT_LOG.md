@@ -6,6 +6,13 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-14
 
+### DESIGN-S92 — Badges Confirmado + smoke Kanban (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `Calendar.jsx` / `ClientDetail.jsx`: badge **Confirmado** com `bp-surface-primary` + `bp-text-primary`
+- `calendar/EventDetailModal.jsx`: botão Confirmar evento temático
+- `KanbanPipeline.jsx`: cor padrão do card usa `primaryHex` da categoria
+- `e2e/smoke/calendar-navigation.spec.js`: teste da vista Kanban (29 smoke total)
+
 ### DESIGN-S91 — Kanban temático + fix refresh horas mobile (Cursor Agent) ✅
 - **Agente**: Cursor (Auto)
 - `KanbanPipeline.jsx`: coluna Confirmado e chips de período usam `primaryHex` / `bp-view-active`

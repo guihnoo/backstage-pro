@@ -1135,7 +1135,7 @@ export default function EventDetailModal({
               onClick={() => confirmEvent(event, onClose)}
               disabled={toggling === event.id}
               variant="outline"
-              className="flex-1 min-w-[120px] border-blue-700 hover:bg-blue-900/20 text-blue-400"
+              className="flex-1 min-w-[120px] border bp-text-primary bp-surface-primary hover:opacity-90"
             >
               {toggling === event.id
                 ? <Loader2 className="w-4 h-4 mr-2 animate-spin" />

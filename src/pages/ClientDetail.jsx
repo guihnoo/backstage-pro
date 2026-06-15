@@ -481,7 +481,7 @@ export default function ClientDetailPage() {
                 {upcomingEvents.slice(0, 4).map((ev) => {
                   const statusStyles = {
                     pending:   'bg-amber-500/15 text-amber-400 border-amber-500/30',
-                    confirmed: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
+                    confirmed: 'bp-surface-primary bp-text-primary border',
                     completed: 'bg-green-500/15 text-green-400 border-green-500/30',
                   };
                   const statusLabels = { pending: 'Pendente', confirmed: 'Confirmado', completed: 'Concluído' };
