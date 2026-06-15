@@ -22,7 +22,8 @@ import {
   MessageCircle,
   MoreHorizontal,
   Building2,
-  User
+  User,
+  Calendar,
 } from 'lucide-react';
 import {
   parseISO,
