@@ -14,6 +14,7 @@ export function mapPayloadToDb(payload = {}) {
   const mapped = {
     user_id: payload.user_id,
     event_id: payload.event_id || null,
+    work_date: workDate,
     date: workDate,
     entry_time: payload.entry_time ?? null,
     exit_time: payload.exit_time ?? null,
