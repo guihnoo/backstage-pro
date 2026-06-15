@@ -6,6 +6,13 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-14
 
+### DESIGN-S72 — Mapa temático + focus mobile (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `BrazilVisitedMap.jsx`: estados/pins/legenda usam `primaryHex` + `accentHex` (remove ciano/violeta hardcoded no SVG)
+- `appTourSteps.js`: copy do tour do mapa alinhada ao tema dinâmico
+- `FeedbackModal.jsx`: `bp-focus-scope` + `bp-focus-input`
+- Sheets mobile (`EventActionSheet`, `NotesSheet`, `EventHoursSheet`, `ClientActionSheet`): `bp-focus-scope`
+
 ### REALIZADO-SHARE-S78S79S80 — Marcar Realizado + Compartilhar + Sumário Kanban ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **S78** — `EventDetailModal`: botão "Realizado" (esmeralda) aparece para eventos passados em status scheduled/confirmed; `updateEvent({ status:'completed' })` direto sem abrir form; spinner `markingDone`
