@@ -6,6 +6,15 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-15
 
+### S104-S107 — Ritmo do Mês, Cadência Goals, Expenses colapsado, ForecastWidget % meta (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **S104 — MetaMensalBar: ritmo do mês** (`MetaMensalBar.jsx`): linha adicionada abaixo das barras de progresso — "Dia X/Y · Z% do mês" + "projeção R$ X.XXX" (verde se acima da meta, âmbar se 75%+, vermelho abaixo); só exibe quando metas não foram 100% batidas
+- **S105 — Goals: cadência de shows** (`Goals.jsx`): bloco de incentivo expandido com sub-linha "✓ No ritmo · 15 dias restantes · 1 show a cada 2,5 dias" (ou ⚠ Abaixo do ritmo); calcula `daysLeft`, `needed` e `cadencia` em tempo real; só aparece quando faltam shows e há dias restantes no mês
+- **S106 — Expenses: mês atual expandido** (`Expenses.jsx`): `MonthGroup` recebe `defaultOpen` prop; mês atual (YYYY-MM corrente) inicia expandido, meses anteriores iniciam colapsados — evita sobrecarga visual com muitos meses
+- **S107 — ForecastWidget: % da meta** (`ForecastWidget.jsx` + `Home.jsx`): prop `metaReceita` passada da Home; sub-linha "X% da meta do mês" abaixo de "receita projetada" — verde (≥100%), âmbar (≥50%), slate (<50%); prop órfã `onViewEvent` removida
+- **ESLint**: 0 erros, 0 warnings em todos arquivos modificados
+- **Build**: Vite ✅
+
 ### S101-S103 — Resultado Líquido, hint AReceber, Repetição de Evento (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **S101 — Resultado Líquido no PipelineFinanceiro** (`PipelineFinanceiro.jsx` + `Home.jsx`): `useExpenses()` carrega despesas do mês; card "Dinheiro nos Trilhos" exibe Despesas + Resultado Líquido (Recebido − Despesas) com ícone TrendingUp/Down; seção só aparece quando há despesas no mês

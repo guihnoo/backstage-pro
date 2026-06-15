@@ -76,6 +76,14 @@ export default function ForecastWidget({ events = [], isLoading, primaryHex = AU
                 {isVisible ? formatCurrency(totalProjected) : '•••••'}
               </p>
               <p className="text-[10px] text-[#4a5060] font-mono">receita projetada</p>
+              {metaReceita > 0 && totalProjected > 0 && (
+                <p className={`text-[10px] font-mono mt-0.5 ${
+                  totalProjected >= metaReceita ? 'text-emerald-500' :
+                  totalProjected >= metaReceita * 0.5 ? 'text-amber-500/80' : 'text-slate-600'
+                }`}>
+                  {Math.round((totalProjected / metaReceita) * 100)}% da meta do mês
+                </p>
+              )}
             </div>
             <CalendarDays className="w-6 h-6 text-[#2a2d3a] flex-shrink-0" />
           </div>

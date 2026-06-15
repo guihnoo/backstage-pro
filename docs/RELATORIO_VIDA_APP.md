@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-15 (S101-S103 — Resultado Líquido Home, hint AReceber, Repetição de Evento no form — Claude Code)  
+**Última atualização:** 2026-06-15 (S104-S107 — Ritmo do mês MetaMensalBar, cadência Goals, Expenses mês atual expandido, ForecastWidget % da meta — Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-06-15 — `dpl_CZLMQ28odnw5yv76C8sjhTSBaB56` (commit `384d2fb` — S90-S94)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` (dedupe refatorado) deployadas no Supabase ✅  
@@ -62,6 +62,8 @@
 | Histórico mensal metas (S33) | `Goals.jsx` (`2c660e2`): grid 2×2 na aba Metas mostrando receita paga + barra de progresso vs meta dos últimos 4 meses |
 | S97-S100 UX (2026-06-15) | Reports: chips de filtro por cliente; AlertsPanel: 1 alerta por evento CRM; Calendar: swipe meses/semanas; DailyWorkModal: banner timer ao vivo com "Usar tempo" |
 | Lapidação duplicidades (2026-06-15) | `CalendarPageHeader`: removido resumo financeiro redundante; `Calendar`: removido 5º StatCard "Clientes"; `Goals`: 4→2 cards (removidos Recebido + A Receber já nos círculos); `EventDetailModal`: fusão "Resultado do Show" → "Financeiro" |
+| S101-S103 (2026-06-15) | `PipelineFinanceiro`: Despesas + Resultado Líquido do mês; `AReceber`: badge "Xd atraso" / "show em Xd"; `EventForm`: repetição de evento (N vezes a cada semana/mês) |
+| S104-S107 (2026-06-15) | `MetaMensalBar`: ritmo do mês (dia X/Y + projeção de receita); `Goals`: cadência "1 show a cada X dias" + alerta ritmo; `Expenses`: mês atual expandido, meses passados colapsados; `ForecastWidget`: "X% da meta do mês" abaixo da receita projetada |
 
 ---
 
