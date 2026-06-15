@@ -71,6 +71,8 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
   };
 
   const live = isOnStage || isLiveShift;
+  const todayStr = new Date().toISOString().split('T')[0];
+  const isToday = !live && eventDateStr === todayStr;
 
   if (isLoading) {
     return (
@@ -151,6 +153,15 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
                 >
                   <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
                   AO VIVO
+                </motion.span>
+              )}
+              {isToday && (
+                <motion.span
+                  animate={{ opacity: [0.75, 1, 0.75] }}
+                  transition={{ duration: 1.8, repeat: Infinity }}
+                  className="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold"
+                >
+                  HOJE
                 </motion.span>
               )}
             </div>
@@ -238,40 +249,63 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
 
         {/* Countdown */}
         {countdown && !live && (
-          <motion.div className="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 mb-6">
-            <div className="text-center">
-              <p className="text-xs text-slate-400 mb-2">ACONTECE EM</p>
-              <div className="flex justify-center gap-4">
-                {countdown.days > 0 && (
-                  <div className="text-center">
-                    <div className="text-2xl font-black" style={{ color: config.primaryHex }}>{countdown.days}</div>
-                    <div className="text-xs text-slate-500">dia{countdown.days !== 1 ? 's' : ''}</div>
+          <motion.div
+            className="rounded-xl p-4 mb-6 border"
+            style={isToday
+              ? { background: `${config.primaryHex}12`, borderColor: `${config.primaryHex}40` }
+              : { background: 'rgba(15,17,27,0.5)', borderColor: 'rgba(100,116,139,0.5)' }
+            }
+          >
+            {isToday ? (
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: config.primaryHex }}>Show hoje às</p>
+                  <p className="text-3xl font-black text-white">{formattedTime}</p>
+                </div>
+                {countdown.hours >= 0 && (
+                  <div className="text-right">
+                    <p className="text-xs text-slate-500 mb-0.5">faltam</p>
+                    <p className="text-lg font-bold text-slate-300">
+                      {countdown.hours > 0 ? `${countdown.hours}h ` : ''}{String(countdown.minutes).padStart(2, '0')}min
+                    </p>
                   </div>
                 )}
-                {(countdown.days > 0 || countdown.hours > 0) && (
-                  <>
-                    <div className="text-slate-600">:</div>
-                    <div className="text-center">
-                      <div className="text-2xl font-black" style={{ color: config.primaryHex }}>
-                        {String(countdown.hours).padStart(2, '0')}
-                      </div>
-                      <div className="text-xs text-slate-500">horas</div>
-                    </div>
-                  </>
-                )}
-                {countdown.minutes >= 0 && (
-                  <>
-                    <div className="text-slate-600">:</div>
-                    <div className="text-center">
-                      <div className="text-2xl font-black" style={{ color: config.primaryHex }}>
-                        {String(countdown.minutes).padStart(2, '0')}
-                      </div>
-                      <div className="text-xs text-slate-500">min</div>
-                    </div>
-                  </>
-                )}
               </div>
-            </div>
+            ) : (
+              <div className="text-center">
+                <p className="text-xs text-slate-400 mb-2">ACONTECE EM</p>
+                <div className="flex justify-center gap-4">
+                  {countdown.days > 0 && (
+                    <div className="text-center">
+                      <div className="text-2xl font-black" style={{ color: config.primaryHex }}>{countdown.days}</div>
+                      <div className="text-xs text-slate-500">dia{countdown.days !== 1 ? 's' : ''}</div>
+                    </div>
+                  )}
+                  {(countdown.days > 0 || countdown.hours > 0) && (
+                    <>
+                      <div className="text-slate-600">:</div>
+                      <div className="text-center">
+                        <div className="text-2xl font-black" style={{ color: config.primaryHex }}>
+                          {String(countdown.hours).padStart(2, '0')}
+                        </div>
+                        <div className="text-xs text-slate-500">horas</div>
+                      </div>
+                    </>
+                  )}
+                  {countdown.minutes >= 0 && (
+                    <>
+                      <div className="text-slate-600">:</div>
+                      <div className="text-center">
+                        <div className="text-2xl font-black" style={{ color: config.primaryHex }}>
+                          {String(countdown.minutes).padStart(2, '0')}
+                        </div>
+                        <div className="text-xs text-slate-500">min</div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
 
