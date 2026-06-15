@@ -119,6 +119,8 @@
 | 78 | Marcar evento como Realizado sem abrir o form | 2026-06-14 | ✅ Botão "Realizado" (esmeralda) no footer do `EventDetailModal`; visível só para eventos passados em status scheduled/confirmed; `updateEvent` direto com spinner |
 | 79 | Compartilhar detalhes do evento via WhatsApp/clipboard | 2026-06-14 | ✅ Botão "Compartilhar" no footer do `EventDetailModal`; Web Share API + fallback clipboard; formata título, data, horário, local e cachê |
 | 80 | Sumário de pipeline no Kanban (a receber + pago) | 2026-06-14 | ✅ Barra de chips acima das colunas do `KanbanPipeline`; total de shows, valor a receber (amber), total pago (emerald); respeita máscara financeira |
+| 81 | Calculadora de Cachê na Agenda | 2026-06-14 | ✅ `CacheCalculator.jsx`; modal com ícone calculadora (amarelo) no header; campos: dias, cachê/dia, modelo (4 opções), extras; total em tempo real; Copiar + Criar Evento pré-preenchido |
+| 82 | Forma de recebimento + prefill real no Confirmar Pagamento | 2026-06-14 | ✅ `PaymentConfirmModal`: prefill via `getEventCacheAmount`; seletor PIX/Dinheiro/Transferência/Cartão/Cheque em chips; salvo em `payment_method` |
 
 ---
 

@@ -6,12 +6,22 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-14
 
+### DESIGN-S73 — Toggle Kanban com tema (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `Calendar.jsx`: botão vista Kanban usa `bp-view-active` (remove violet hardcoded)
+
 ### DESIGN-S72 — Mapa temático + focus mobile (Cursor Agent) ✅
 - **Agente**: Cursor (Auto)
 - `BrazilVisitedMap.jsx`: estados/pins/legenda usam `primaryHex` + `accentHex` (remove ciano/violeta hardcoded no SVG)
 - `appTourSteps.js`: copy do tour do mapa alinhada ao tema dinâmico
 - `FeedbackModal.jsx`: `bp-focus-scope` + `bp-focus-input`
 - Sheets mobile (`EventActionSheet`, `NotesSheet`, `EventHoursSheet`, `ClientActionSheet`): `bp-focus-scope`
+
+### CALC-PAYMENT-S81S82 — Calculadora de Cachê + Forma de Pagamento ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **S81** — `CacheCalculator.jsx` (NOVO): modal no header da Agenda (ícone amarelo); dias × cachê × modelo (4 opções) + extras; total em real time; Copiar + Criar Evento
+- **S82** — `PaymentConfirmModal.jsx`: prefill via `getEventCacheAmount`; seletor PIX/Dinheiro/Transferência/Cartão/Cheque; salva `payment_method`
+- **Build**: Vite ✅ · **Deploy**: push `62e4819` → Vercel em build
 
 ### REALIZADO-SHARE-S78S79S80 — Marcar Realizado + Compartilhar + Sumário Kanban ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
