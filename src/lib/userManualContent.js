@@ -8,7 +8,6 @@ import {
   Sparkles,
   User,
   Wifi,
-  Bell,
   Hand,
   Shield,
 } from 'lucide-react';

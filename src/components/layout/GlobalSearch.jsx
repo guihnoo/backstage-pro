@@ -160,7 +160,7 @@ export default function GlobalSearch({ isOpen, onClose }) {
 
               {hasQuery && !hasResults && (
                 <div className="text-center py-10 text-slate-600">
-                  <p className="text-sm">Nenhum resultado para <span className="text-slate-400">"{query}"</span></p>
+                  <p className="text-sm">Nenhum resultado para <span className="text-slate-400">&quot;{query}&quot;</span></p>
                 </div>
               )}
 

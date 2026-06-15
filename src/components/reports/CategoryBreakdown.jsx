@@ -64,7 +64,7 @@ export default function CategoryBreakdown({ events = [], work = [] }) {
       </div>
 
       <div className="space-y-3">
-        {categories.map((c, i) => {
+        {categories.map((c) => {
           const pct = maxRevenue > 0 ? (c.revenue / maxRevenue) * 100 : 0;
           const hex = c.cfg?.primaryHex || '#39FF14';
           return (

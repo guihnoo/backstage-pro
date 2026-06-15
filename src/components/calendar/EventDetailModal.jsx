@@ -80,10 +80,10 @@ export default function EventDetailModal({
   onEdit,
   onDelete,
   onDuplicate,
-  onAddWork,
+  onAddWork: _onAddWork,
   onMarkPaid
 }) {
-  const { formatCurrency } = useFinancialVisibility();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
   const { profile } = useAuth();
   const { primaryHex } = useCategoryTheme();
   const { dailyWork } = useDailyWork();

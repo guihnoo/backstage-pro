@@ -400,6 +400,14 @@ const EventDetailModal = React.memo(function EventDetailModal({
     return isCompleted && (!dailyWork || dailyWork.length === 0) && !event.auto_hours_applied;
   }, [event, dailyWork]);
 
+  const [markingDone, setMarkingDone] = useState(false);
+
+  const isPastAndNotCompleted = useMemo(() => {
+    if (!event?.start_date) return false;
+    const eventDate = new Date(event.start_date + 'T23:59:59');
+    return eventDate < new Date() && (event.status === 'scheduled' || event.status === 'confirmed');
+  }, [event]);
+
   if (!event) return null;
 
   const handlePaymentUpdate = () => {
@@ -410,8 +418,6 @@ const EventDetailModal = React.memo(function EventDetailModal({
     setShowPaymentConfirm(false);
     onPaymentUpdate();
   };
-
-  const [markingDone, setMarkingDone] = useState(false);
 
   const handleMarkCompleted = async () => {
     setMarkingDone(true);
@@ -455,12 +461,6 @@ const EventDetailModal = React.memo(function EventDetailModal({
       appToast.success('Detalhes copiados!', { description: 'Cole no WhatsApp ou onde preferir.' });
     }
   };
-
-  const isPastAndNotCompleted = useMemo(() => {
-    if (!event.start_date) return false;
-    const eventDate = new Date(event.start_date + 'T23:59:59');
-    return eventDate < new Date() && (event.status === 'scheduled' || event.status === 'confirmed');
-  }, [event]);
 
   return (
     <>

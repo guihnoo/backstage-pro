@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, MessageCircle, Copy, CheckCircle2 } from 'lucide-react';
 import { format, addMonths, subMonths, getDaysInMonth, parseISO, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { buildAvailabilityMessage, formatWhatsAppNumber } from '@/lib/whatsapp';
+import { buildAvailabilityMessage } from '@/lib/whatsapp';
 import { useAuth } from '@/lib/authContext';
 import { getEventStatus } from '@/components/utils/dateUtils';
 import appToast from '@/lib/appToast';

@@ -135,7 +135,7 @@ export function FloatingTimer() {
                   Tempo registrado: <span className="font-mono font-bold" style={{ color: primaryHex }}>{formatElapsed(elapsed)}</span>
                   {' '}→ <span className="text-white font-semibold">{elapsedToHours(elapsed)}h</span>
                 </p>
-                <p className="text-xs text-slate-500 mt-0.5 truncate">"{timer.eventTitle}"</p>
+                <p className="text-xs text-slate-500 mt-0.5 truncate">&quot;{timer.eventTitle}&quot;</p>
               </div>
               <button onClick={handleCancel} className="text-slate-500 hover:text-slate-300 mt-0.5">
                 <X className="w-4 h-4" />
