@@ -867,6 +867,78 @@ export default function Goals() {
                     })}
                   </div>
                 )}
+
+                {/* Mini-calendário do mês */}
+                {(() => {
+                  const now = new Date();
+                  const year = now.getFullYear();
+                  const month = now.getMonth();
+                  const monthStr = `${year}-${String(month + 1).padStart(2, '0')}`;
+                  const daysInMonth = new Date(year, month + 1, 0).getDate();
+                  const firstDayOfWeek = new Date(year, month, 1).getDay();
+
+                  const eventDates = new Set();
+                  [...allEvents, ...upcomingEvents].forEach(ev => {
+                    if (!ev.start_date || ev.status === 'cancelled') return;
+                    if (ev.start_date.startsWith(monthStr)) eventDates.add(ev.start_date);
+                    if (ev.end_date && ev.end_date > ev.start_date) {
+                      let cur = new Date(ev.start_date + 'T00:00:00');
+                      const end = new Date(ev.end_date + 'T00:00:00');
+                      while (cur <= end) {
+                        const ds = cur.toISOString().split('T')[0];
+                        if (ds.startsWith(monthStr)) eventDates.add(ds);
+                        cur.setDate(cur.getDate() + 1);
+                      }
+                    }
+                  });
+
+                  if (eventDates.size === 0) return null;
+
+                  const todayNum = now.getDate();
+                  const cells = [];
+                  for (let i = 0; i < firstDayOfWeek; i++) cells.push(null);
+                  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+                  return (
+                    <div className="mt-4 pt-4 border-t border-slate-800/50">
+                      <p className="text-[10px] font-mono text-slate-600 uppercase tracking-wider mb-2 capitalize">
+                        {new Date(year, month, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+                      </p>
+                      <div className="grid grid-cols-7 text-center mb-1">
+                        {['D','S','T','Q','Q','S','S'].map((d, i) => (
+                          <span key={i} className="text-[9px] font-bold text-slate-700">{d}</span>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-7 gap-y-0.5">
+                        {cells.map((day, i) => {
+                          if (!day) return <div key={`e${i}`} />;
+                          const dateStr = `${monthStr}-${String(day).padStart(2, '0')}`;
+                          const hasEvent = eventDates.has(dateStr);
+                          const isToday = day === todayNum;
+                          const isPast = day < todayNum;
+                          return (
+                            <div key={dateStr} className="flex flex-col items-center py-0.5 gap-0.5">
+                              <span
+                                className={`text-[10px] w-5 h-5 flex items-center justify-center rounded-full leading-none font-medium
+                                  ${isToday ? 'font-bold text-slate-900' : isPast ? 'text-slate-700' : 'text-slate-400'}
+                                `}
+                                style={isToday ? { background: config.primaryHex } : undefined}
+                              >
+                                {day}
+                              </span>
+                              {hasEvent && (
+                                <div
+                                  className="w-1 h-1 rounded-full"
+                                  style={{ backgroundColor: config.primaryHex, opacity: isPast ? 0.45 : 0.9 }}
+                                />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Streak + Projeção */}
