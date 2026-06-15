@@ -1524,43 +1524,51 @@ export default function CalendarPage() {
                   {upEvents.map(({ ev, diff }) => {
                     const cl = clientMap.get(ev.client_id);
                     const isPaid = ev.payment_status === 'paid';
+                    const isConfirmed = ev.status === 'confirmed';
                     const evColor = ev.color || DEFAULT_EVENT_COLOR;
                     const timeLabel = ev.start_time ? ev.start_time.slice(0, 5) : null;
                     const amount = getEventCacheAmount(ev);
                     const isOverdue = ev.payment_due_date && isBefore(parseISO(ev.payment_due_date), new Date()) && !isPaid;
                     const diffLabel = diff === 0 ? 'Hoje' : diff === 1 ? 'Amanhã' : `em ${diff}d`;
+                    const diffColor = diff === 0 ? '#f59e0b' : diff === 1 ? '#a78bfa' : '#64748b';
+                    const StatusIcon = isPaid ? CheckCircle2 : isOverdue ? AlertCircle : isConfirmed ? BadgeCheck : Clock;
+                    const statusColor = isPaid ? '#10b981' : isOverdue ? '#f87171' : isConfirmed ? '#f59e0b' : '#64748b';
+                    const durationDays = ev.start_date && ev.end_date
+                      ? Math.round((new Date(ev.end_date) - new Date(ev.start_date)) / 86400000) + 1
+                      : 1;
                     return (
                       <button
                         key={ev.id}
                         type="button"
                         onClick={() => handleEventClick(ev)}
-                        className="w-full text-left bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 rounded-lg px-4 py-3 flex items-center gap-3 transition-colors"
+                        className="w-full text-left bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 rounded-lg px-3 py-3 flex items-center gap-3 transition-colors"
+                        style={isOverdue ? { borderColor: '#f8717130' } : undefined}
                       >
                         <div className="w-1 self-stretch rounded-full flex-shrink-0" style={{ backgroundColor: evColor }} />
-                        <div className="w-12 text-center flex-shrink-0">
-                          <p className="text-[10px] font-bold uppercase text-amber-400">{diffLabel}</p>
-                          <p className="text-xs text-slate-500 capitalize mt-0.5">
+                        <div className="w-14 text-center flex-shrink-0">
+                          <p className="text-[10px] font-bold uppercase" style={{ color: diffColor }}>{diffLabel}</p>
+                          <p className="text-xs text-slate-500 mt-0.5">
                             {format(parseISO(ev.start_date), 'dd/MM', { locale: ptBR })}
                           </p>
+                          {durationDays > 1 && (
+                            <p className="text-[9px] text-slate-600 mt-0.5">{durationDays}d</p>
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-slate-200 truncate">{ev.title}</p>
-                          <p className="text-xs text-slate-500 truncate">
-                            {timeLabel && <span className="mr-1">{timeLabel}</span>}
-                            {cl && cl.name}
-                          </p>
+                          <EventHeading event={ev} client={cl} size="sm" />
+                          {timeLabel && (
+                            <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
+                              <Clock className="w-3 h-3 flex-shrink-0" />
+                              {timeLabel}
+                            </p>
+                          )}
                         </div>
-                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                        <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                          <StatusIcon className="w-4 h-4" style={{ color: statusColor }} />
                           {amount > 0 && (
-                            <span className={`text-xs font-semibold ${isPaid ? 'text-emerald-400' : isOverdue ? 'text-red-400' : 'text-amber-400'}`}>
+                            <span className="text-[11px] font-semibold font-mono" style={{ color: isPaid ? '#10b981' : isOverdue ? '#f87171' : '#f59e0b' }}>
                               {formatCurrency(amount)}
                             </span>
-                          )}
-                          {isOverdue && (
-                            <span className="text-[10px] text-red-400 font-medium">vencido</span>
-                          )}
-                          {isPaid && (
-                            <span className="text-[10px] text-emerald-400">pago ✓</span>
                           )}
                         </div>
                       </button>
@@ -1625,11 +1633,13 @@ export default function CalendarPage() {
                           onClick={() => handleEventClick(ev)}
                           className="flex-1 min-w-0 text-left"
                         >
-                          <p className="text-sm font-medium text-slate-200 truncate">{ev.title}</p>
-                          <p className="text-xs text-slate-500 truncate">
-                            {timeLabel && <span className="mr-1">{timeLabel}</span>}
-                            {cl && cl.name}
-                          </p>
+                          <EventHeading event={ev} client={cl} size="sm" />
+                          {timeLabel && (
+                            <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
+                              <Clock className="w-3 h-3 flex-shrink-0" />
+                              {timeLabel}
+                            </p>
+                          )}
                         </button>
                         <div className="flex items-center gap-2 flex-shrink-0">
                           {canQuickPay && (
@@ -1674,12 +1684,11 @@ export default function CalendarPage() {
               .sort((a, b) => (a.start_date > b.start_date ? 1 : -1))
               .map((ev) => {
                 const cl = clientMap.get(ev.client_id);
-                const statusBadge = {
-                  pending:   { label: 'Pendente',   cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
-                  confirmed: { label: 'Confirmado', cls: 'bp-surface-primary bp-text-primary border' },
-                  completed: { label: 'Concluído',  cls: 'bg-green-500/15 text-green-400 border-green-500/30' },
-                  cancelled: { label: 'Cancelado',  cls: 'bg-red-500/15 text-red-400 border-red-500/30' },
-                }[ev.status] || { label: ev.status, cls: 'bg-slate-700 text-slate-400 border-slate-600' };
+                const isPaid = ev.payment_status === 'paid';
+                const isConfirmed = ev.status === 'confirmed';
+                const amount = getEventCacheAmount(ev);
+                const StatusIcon = isPaid ? CheckCircle2 : isConfirmed ? BadgeCheck : ev.status === 'cancelled' ? AlertCircle : Clock;
+                const statusColor = isPaid ? '#10b981' : isConfirmed ? '#f59e0b' : ev.status === 'cancelled' ? '#f87171' : '#64748b';
                 return (
                   <button
                     key={ev.id}
@@ -1692,15 +1701,19 @@ export default function CalendarPage() {
                       style={{ backgroundColor: ev.color || DEFAULT_EVENT_COLOR }}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-200 truncate">{ev.title}</p>
-                      <p className="text-xs text-slate-500 truncate">
+                      <EventHeading event={ev} client={cl} size="sm" />
+                      <p className="text-[11px] text-slate-500 truncate mt-0.5">
                         {ev.start_date ? format(parseISO(ev.start_date), "d 'de' MMM yyyy", { locale: ptBR }) : '—'}
-                        {cl ? ` · ${cl.name}` : ''}
                       </p>
                     </div>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full border flex-shrink-0 ${statusBadge.cls}`}>
-                      {statusBadge.label}
-                    </span>
+                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                      <StatusIcon className="w-4 h-4" style={{ color: statusColor }} />
+                      {amount > 0 && (
+                        <span className="text-[11px] font-semibold font-mono" style={{ color: isPaid ? '#10b981' : '#f59e0b' }}>
+                          {formatCurrency(amount)}
+                        </span>
+                      )}
+                    </div>
                   </button>
                 );
               })}

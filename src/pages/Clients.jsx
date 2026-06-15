@@ -156,10 +156,15 @@ export default function ClientsPage() {
       });
       const isActive = recentEvents.length > 0;
 
+      const todayStr = new Date().toISOString().split('T')[0];
       const sortedEvents = clientEvents
         .filter(e => e.start_date)
         .sort((a, b) => new Date(b.start_date) - new Date(a.start_date));
       const lastEvent = sortedEvents[0];
+
+      const nextEvent = clientEvents
+        .filter(e => e.start_date >= todayStr && e.status !== 'cancelled')
+        .sort((a, b) => (a.start_date > b.start_date ? 1 : -1))[0];
 
       return {
         ...client,
@@ -169,6 +174,7 @@ export default function ClientsPage() {
           pendingRevenue,
           isActive,
           lastEventDate: lastEvent?.start_date,
+          nextEventDate: nextEvent?.start_date,
           paymentScore,
           unpaidEvents: completedUnpaidEvents.map(e => ({
             id: e.id,
@@ -554,6 +560,20 @@ export default function ClientsPage() {
                           <p className="font-bold text-amber-400 text-lg">{formatCurrency(client.stats.pendingRevenue)}</p>
                         </div>
                       </div>
+                      {client.stats.nextEventDate && (() => {
+                        const diffDays = Math.round((new Date(client.stats.nextEventDate + 'T00:00:00') - new Date(new Date().toISOString().split('T')[0] + 'T00:00:00')) / 86400000);
+                        return (
+                          <div className="mt-3 flex items-center gap-2">
+                            <Calendar className="w-3.5 h-3.5 flex-shrink-0 text-slate-500" />
+                            <span className="text-[11px] text-slate-400">
+                              Próx. show{' '}
+                              <span className={`font-semibold ${diffDays === 0 ? 'text-amber-400' : diffDays <= 7 ? 'text-emerald-400' : 'text-slate-300'}`}>
+                                {diffDays === 0 ? 'hoje' : diffDays === 1 ? 'amanhã' : `em ${diffDays}d`}
+                              </span>
+                            </span>
+                          </div>
+                        );
+                      })()}
                       {client.stats.paymentScore && (
                         <div className="mt-3 flex items-center justify-between">
                           <p className="text-[11px] text-slate-500">Confiabilidade</p>
