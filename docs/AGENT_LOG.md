@@ -6,6 +6,13 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-15
 
+### S111 — Vista semanal + CalendarTodayStrip ricos (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Calendar.jsx** (vista semanal `week`): cards de eventos reestilizados com fundo colorido semi-transparente (`evColor18`), borda esquerda grossa (`3px solid evColor`), ícone de status (`CheckCircle2` / `BadgeCheck` / `Clock`) no canto direito, linha inferior com horário + duração em dias (`Xd`) para multi-day + cachê (`formatCurrency`) alinhado à direita com cor verde/âmbar; overflow `+X mais` virou `<button>` clicável que abre `handleDayClick(day)`
+- **CalendarTodayStrip.jsx**: imports `getEventCacheAmount`, `useFinancialVisibility`, ícones de status; cada card de evento exibe `StatusIcon` (4×4) + cachê formatado (`formatCurrency`) no lado direito antes do chevron; respeita `isVisible` via contexto
+- **ESLint**: 0 erros, 0 warnings (ambos os arquivos)
+- **Build**: Vite ✅ 43.96s
+
 ### S110 — Calendário visual: dots, status, duração, overflow chip (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **BackstageCalendarGrid.jsx** — `eventsByDay` useMemo: para cada bloco do calendário, itera dias entre `block.start` e `block.end` e popula mapa `dateStr → [{color, status}]`; `DayCell` recebe `dotsForDay` e renderiza até 4 dots coloridos no `bottom-1.5` da célula (1 dot por evento); dots desbotados para dias fora do mês atual; chip `+X mais` virou `<button>` clicável com borda que chama `onDateSelect` ao clicar

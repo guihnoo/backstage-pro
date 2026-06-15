@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-15 (S110 — Calendário: dots nos dias, status nas barras, duração multi-dia, overflow chip — Claude Code)  
+**Última atualização:** 2026-06-15 (S111 — Vista semanal ricos + CalendarTodayStrip com status/cachê — Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-06-15 — `dpl_CZLMQ28odnw5yv76C8sjhTSBaB56` (commit `384d2fb` — S90-S94)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` (dedupe refatorado) deployadas no Supabase ✅  
