@@ -6,6 +6,16 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-14
 
+### BUGFIX-HOME-HORAS-DESPESA — Registro de Horas/Despesas na Home + Detecção Dia do Evento ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Root cause 1** — `calendar/EventDetailModal.jsx` (usado pela Home): botão "Registrar Horas" chamava `onAddWork` prop → Home.jsx passava `hardNavigate('/calendar')` sem abrir form
+- **Root cause 2** — `ExpenseForm` renderizava dentro do `<Dialog>` pai (Dialog aninhado) → focus trap do Radix UI impedia abertura
+- **Fix 1** — `calendar/EventDetailModal.jsx`: DailyWorkModal embutido internamente; botão "Registrar Horas" chama `setShowWorkModal(true)` (não `onAddWork`); ExpenseForm e DailyWorkModal movidos para fora do `<Dialog>` como Fragment separado
+- **Fix 2** — Botão "Registrar Horas" só visível quando `today >= event.start_date && today <= event.end_date` (conforme requisito); fora do período, footer mostra botão "Despesa" âmbar
+- **Fix 3** — `Calendar.jsx` `handleActionSheetOpenHours`: usava sempre `start_date` em vez de hoje; agora usa `today` quando dentro do período do evento
+- **Fix 4** — `EventActionSheet.jsx`: adicionado botão "Registrar Despesa" (âmbar) que chama `onAddExpense(event)` + fecha o sheet
+- **Build**: Vite ✅
+
 ### EVENTFORM-S88S89 — Histórico do Cliente + Detecção de Conflito no EventForm ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **S88** — `EventForm.jsx`: mini-card de histórico ao selecionar cliente (shows, cachê médio, score de pagamento colorido, data do último show); resposta em tempo real ao trocar de cliente
