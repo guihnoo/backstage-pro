@@ -191,6 +191,18 @@ export default function EventForm({
     }
   }, [formData.start_date, formData.end_date, formData.daily_cache_value]);
 
+  const clientCacheHint = useMemo(() => {
+    if (!formData.client_id || event?.id) return null;
+    const prev3 = (allEvents || [])
+      .filter(e => e.client_id === formData.client_id && Number(e.daily_cache_value) > 0)
+      .sort((a, b) => new Date(b.start_date || 0) - new Date(a.start_date || 0))
+      .slice(0, 3);
+    if (prev3.length === 0) return null;
+    const last = prev3[0];
+    const avg = Math.round(prev3.reduce((s, e) => s + Number(e.daily_cache_value), 0) / prev3.length);
+    return { lastValue: Number(last.daily_cache_value), avg, count: prev3.length };
+  }, [allEvents, formData.client_id, event?.id]);
+
   const handleClientChange = (clientId) => {
     const client = allClients.find((c) => c.id === clientId);
     setFormData((prev) => {
@@ -494,6 +506,21 @@ export default function EventForm({
             <div className="space-y-2">
               <Label>Cachê por Dia (R$)</Label>
               <Input type="number" step="0.01" min="0" value={formData.daily_cache_value} onChange={(e) => setField('daily_cache_value', e.target.value)} className="bg-slate-800 border-slate-700" />
+              {clientCacheHint && (
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-[11px] text-slate-500">
+                    Histórico: {isVisible ? `R$ ${clientCacheHint.lastValue.toLocaleString('pt-BR')}` : '•••'} último
+                    {clientCacheHint.count > 1 && ` · R$ ${clientCacheHint.avg.toLocaleString('pt-BR')} média`}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setField('daily_cache_value', String(clientCacheHint.lastValue))}
+                    className="text-[11px] font-semibold text-slate-400 hover:text-white transition-colors underline underline-offset-2 flex-shrink-0"
+                  >
+                    Usar
+                  </button>
+                </div>
+              )}
             </div>
             <div className="space-y-2">
               <Label>Modelo de pagamento</Label>

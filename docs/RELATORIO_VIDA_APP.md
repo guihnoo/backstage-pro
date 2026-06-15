@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-15 (S104-S107 — Ritmo do mês MetaMensalBar, cadência Goals, Expenses mês atual expandido, ForecastWidget % da meta — Claude Code)  
+**Última atualização:** 2026-06-15 (S108-S109 — ProximoShow badge "HOJE" + countdown especial + borda âmbar, EventForm sugestão de cachê por histórico do cliente — Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-06-15 — `dpl_CZLMQ28odnw5yv76C8sjhTSBaB56` (commit `384d2fb` — S90-S94)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` (dedupe refatorado) deployadas no Supabase ✅  

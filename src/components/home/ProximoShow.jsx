@@ -128,6 +128,8 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
       className={`mb-8 rounded-2xl border-2 overflow-hidden ${
         live
           ? `bg-gradient-to-br from-slate-900 to-slate-800 ${config.borderGlow}`
+          : isToday
+          ? 'bg-gradient-to-br from-amber-950/20 to-slate-900/80 border-amber-500/40'
           : 'bg-gradient-to-br from-slate-900/80 to-slate-800/50 border-slate-700/30'
       }`}
     >
@@ -136,6 +138,13 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 2, repeat: Infinity }}
           className="h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent"
+        />
+      )}
+      {isToday && (
+        <motion.div
+          animate={{ opacity: [0.4, 0.9, 0.4] }}
+          transition={{ duration: 2.5, repeat: Infinity }}
+          className="h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent"
         />
       )}
 
