@@ -115,6 +115,7 @@
 | 74 | Compartilhar disponibilidade mensal via WhatsApp na Agenda | 2026-06-14 | ✅ `AvailabilityShareModal.jsx` + `buildAvailabilityMessage()` em whatsapp.js; navegação por mês; lista dias livres vs agendados; copiar + abrir WhatsApp; botão Share2 (verde) na Agenda |
 | 75 | Comparação Ano a Ano (YoY) em Relatórios | 2026-06-14 | ✅ `YearOverYear.jsx`; tabela mostra shows, receita, ticket médio e clientes ativos de jan-hoje do ano atual vs mesmo período do ano anterior; variação % com seta; mensagem motivacional; só aparece se houver dados do ano anterior |
 | 76 | Vista Kanban Pipeline na Agenda (5ª view) | 2026-06-14 | ✅ `KanbanPipeline.jsx`; 4 colunas: Negociando/Confirmado/A Receber/Pago; cards com cor do evento, cliente, data, valor; total por coluna; horizontal scroll mobile; ícone Columns2 (violet) no grupo de views |
+| 77 | Linha do tempo do ciclo de vida do evento | 2026-06-14 | ✅ `EventLifecycleBar` inline no `EventDetailModal`; 4 etapas: Agendado/Realizado/Horas/Pago; círculos coloridos + conectores; dica textual da próxima ação; invisível para cancelados |
 
 ---
 

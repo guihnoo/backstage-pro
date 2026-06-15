@@ -6,6 +6,16 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-14
 
+### LIFECYCLE-S77 — Linha do Tempo do Ciclo de Vida do Evento ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`src/components/reports/EventDetailModal.jsx`**:
+  - `EventLifecycleBar` adicionado como componente local no arquivo
+  - 4 etapas: Agendado (índigo) → Realizado (verde) → Horas (índigo claro) → Pago (esmeralda)
+  - Conectores coloridos entre etapas; etapas completas com checkmark SVG
+  - Dica textual indicando próxima ação quando há etapas pendentes
+  - Renderizado entre DialogHeader e ScrollArea; invisível para cancelados
+- **Build**: Vite ✅ · **Git backup**: auto-wip ✅
+
 ### KANBAN-S76 — Vista Pipeline Kanban na Agenda ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **`src/components/calendar/KanbanPipeline.jsx`** (NOVO):
