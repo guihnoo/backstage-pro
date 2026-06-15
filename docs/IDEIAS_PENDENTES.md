@@ -128,6 +128,10 @@
 | 87 | Gráfico de evolução do cachê médio por show (12 meses) | 2026-06-14 | ✅ `CacheEvolutionChart.jsx`; LineChart 12 meses; tooltip shows+médio+total; linha de referência na média; badge de tendência % alta/queda; aba Atividade de Reports |
 | 88 | Histórico do cliente ao selecionar no EventForm | 2026-06-14 | ✅ `EventForm.jsx`: mini-card abaixo do ClientCombobox com shows, cachê médio, score de pagamento colorido (verde/âmbar/vermelho), data do último show |
 | 89 | Detecção de conflito de agenda no EventForm | 2026-06-14 | ✅ `EventForm.jsx`: banner âmbar aparece quando datas do evento se sobrepõem a outros eventos existentes; lista os conflitos com nome + período; apenas aviso (não bloqueia) |
+| 90 | Filtro temporal no Kanban Pipeline | 2026-06-15 | ✅ `KanbanPipeline.jsx`: chips Futuros / 3 meses / Este ano / Todos; padrão 3 meses; A Receber sempre visível |
+| 91 | Badge de urgência "A Receber" no Kanban | 2026-06-15 | ✅ `KanbanPipeline.jsx`: badge colorido por dias vencidos (vermelho/âmbar/slate); coluna ordenada do mais urgente |
+| 92 | Alertas de dias esquecidos em eventos multi-dia | 2026-06-15 | ✅ `AlertsPanel.jsx`: regra `crm_missing_days` detecta dias sem horas nos últimos 7 dias |
+| 93 | Bugfix double-insert EventHoursSheet | 2026-06-15 | ✅ `Calendar.jsx`: `handleHoursSheetSave` não duplicava mais o insert no DB |
 
 ---
 

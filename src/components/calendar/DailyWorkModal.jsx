@@ -168,7 +168,7 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                   className="bg-slate-800 border-slate-700 h-12 text-base"
                 />
                 {event?.end_date && event.end_date !== event.start_date && (
-                  <p className="text-xs text-indigo-400">
+                  <p className="text-xs bp-text-primary">
                     Evento multi-dia: {formatDisplayDate(event.start_date)} – {formatDisplayDate(event.end_date)}. Você pode registrar qualquer dia do evento.
                   </p>
                 )}

@@ -11,6 +11,7 @@ Registro cronológico de tarefas executadas por agentes.
 - `KanbanPipeline.jsx`: coluna Confirmado e chips de período usam `primaryHex` / `bp-view-active`
 - `useClientInteractions.js`: badge E-mail com tokens `bp-text-primary` + `bp-surface-primary`
 - `Calendar.jsx`: `handleHoursSheetSave` só dispara refresh (persistência fica no `EventHoursSheet`)
+- `DailyWorkModal.jsx`: dica de evento multi-dia com `bp-text-primary`
 
 ### DESIGN-S90 — Polish tema residual violet/indigo (Cursor Agent) ✅
 - **Agente**: Cursor (Auto)
@@ -1480,3 +1481,28 @@ Registro cronológico de tarefas executadas por agentes.
   - Migração 028 (Realtime) confirmada aplicada — `RELATORIO_VIDA_APP.md` atualizado
 - **Arquivos modificados**: `.env.local`, `docs/RELATORIO_VIDA_APP.md`, `docs/IDEIAS_PENDENTES.md`, `docs/AGENT_LOG.md`
 - **Próximo passo**: deploy na Vercel → ir em Perfil → Alertas no celular → Ativar para criar nova assinatura
+
+---
+
+## KANBAN-S90S91 + BUGFIX-HORAS — 2026-06-15 (Claude Code)
+
+- **Sessão**: S90, S91, Bugfix registro de horas
+- **S90 — Filtro Temporal no Kanban** (`KanbanPipeline.jsx`):
+  - 4 chips de período: Futuros / 3 meses (padrão) / Este ano / Todos
+  - Eventos "A Receber" (completados e não pagos) sempre visíveis em todos os filtros
+- **S91 — Urgência "A Receber"** (`KanbanPipeline.jsx`):
+  - Badge por evento: `${days}d vencido` (vermelho ≥30d) / `${days}d atraso` (âmbar 14-29d) / `${days}d atrás` (slate <14d)
+  - Coluna A Receber ordenada do mais urgente para o menos urgente
+- **Bugfix: Double-insert em EventHoursSheet** (`Calendar.jsx`):
+  - `EventHoursSheet` já persiste no DB via `useDailyWork().create` internamente
+  - `handleHoursSheetSave` duplicava o insert → causava falha (unique constraint ou duplos)
+  - Fix: `handleHoursSheetSave` agora só chama `handleFormSuccess()` para refresh
+- **Alertas de dias esquecidos** (`AlertsPanel.jsx`):
+  - Nova regra `crm_missing_days`: detecta dias sem horas em eventos dos últimos 7 dias
+  - Verifica cada dia de start_date até ontem (ou end_date, o que for menor)
+  - Distingue de `crm_pending_hours` (zero horas total) para evitar duplicidade
+- **DailyWorkModal UX** (`DailyWorkModal.jsx`):
+  - Input de data com `min={event.start_date}` e `max={today}` para guiar o usuário
+  - Dica para eventos multi-dia: o usuário pode escolher qualquer dia do evento
+- **Build**: ✅ sem erros
+- **Arquivos modificados**: `KanbanPipeline.jsx`, `Calendar.jsx`, `AlertsPanel.jsx`, `DailyWorkModal.jsx`, docs
