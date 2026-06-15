@@ -6,6 +6,13 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-15
 
+### LAPIDAÇÃO HOME — Remoção de duplicidades na Home (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **QuickStats.jsx**: removidos cards "Recebido" e "A Receber" (mesmos valores já em `PipelineFinanceiro` e `AReceber`); mantidos apenas "Horas no Mês" e "Diárias no Mês"; grid `2-col` em vez de `4-col`; import `useFinancialVisibility` removido
+- **ForecastWidget.jsx**: removida timeline de eventos (80% de overlap com `ProximosEventos` logo abaixo); widget virou card compacto de uma linha mostrando contagem de shows + total projetado + link "Ver agenda"; imports `differenceInCalendarDays`, `format`, `ptBR`, `getEventDisplay`, `useState` removidos
+- **ESLint**: 0 erros, 0 warnings
+- **Build**: Vite ✅ (31s)
+
 ### LAPIDAÇÃO — Remoção de duplicidades em todo o app (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **CalendarPageHeader.jsx**: removido bloco de resumo financeiro (showCount/received/pending) sob o título do mês — dados idênticos já exibidos nos StatCards abaixo

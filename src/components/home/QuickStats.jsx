@@ -2,29 +2,22 @@ import { motion } from 'framer-motion';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import { ChevronRight } from 'lucide-react';
-import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import AnimatedStatValue from '@/components/home/AnimatedStatValue';
 import StatValuePulse from '@/components/home/StatValuePulse';
 
 import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
 
 const statConfigs = [
-  { key: 'faturamento_pago', label: 'Recebido', icon: '✅', route: '/reports', hint: 'Ver relatórios', financial: true },
-  { key: 'a_receber', label: 'A Receber', icon: '💰', route: '/reports', hint: 'Ver relatórios', financial: true },
   { key: 'horas_trabalhadas', label: 'Horas no Mês', icon: '⏱️', route: '/reports', hint: 'Ver relatórios', format: (v) => `${Number(v).toFixed(1)}h` },
   { key: 'diarias_count', label: 'Diárias no Mês', icon: '📅', route: '/goals', hint: 'Ver metas', format: (v) => `${v} dia${v !== 1 ? 's' : ''}` },
 ];
 
 export default function QuickStats({ stats, isLoading, primaryHex = AUTH_HERO_PRIMARY, accentHex = AUTH_HERO_ACCENT }) {
-  const { formatCurrency } = useFinancialVisibility();
-
   return (
-    <div className="mb-8 grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div className="mb-8 grid grid-cols-2 gap-3">
       {statConfigs.map((config, idx) => {
         const value = stats[config.key] ?? 0;
-        const displayFormat = config.financial
-          ? (v) => formatCurrency(v)
-          : config.format;
+        const displayFormat = config.format;
 
         return (
           <motion.div
