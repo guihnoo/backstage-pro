@@ -12,6 +12,7 @@ import {
   daysSinceEventEnd,
 } from './eventFinance';
 import { mapRowFromDb } from './useDailyWork';
+import { getClientDisplayName } from './eventDisplay';
 
 const EVENT_SELECT = '*, clients (id, name, email, phone)';
 
@@ -110,11 +111,11 @@ function buildPaymentAlerts(receivableEvents) {
       return {
         id: event.id,
         type: daysOverdue > 0 ? 'overdue' : 'pending',
-        title: `${event.clients?.name || 'Cliente'} — R$${value.toLocaleString('pt-BR')}`,
+        title: `${getClientDisplayName(event.clients) || 'Sem empresa'} — R$${value.toLocaleString('pt-BR')}`,
         daysOverdue,
         description: daysOverdue > 0 ? `Atrasado há ${daysOverdue} dias` : 'Aguardando pagamento',
         clientId: event.client_id,
-        clientName: event.clients?.name || 'Cliente',
+        clientName: getClientDisplayName(event.clients) || 'Sem empresa',
         phone: event.clients?.phone || null,
         amount: value,
         eventTitle: event.title,
@@ -137,7 +138,7 @@ function buildReceivableRows(receivableEvents, workByEvent) {
     if (!byClient[clientId]) {
       byClient[clientId] = {
         clientId,
-        clientName: event.clients?.name || 'Cliente',
+        clientName: getClientDisplayName(event.clients) || 'Sem empresa',
         phone: event.clients?.phone || null,
         totalAmount: 0,
         eventsCount: 0,

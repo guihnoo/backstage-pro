@@ -1,6 +1,7 @@
 import { format, parseISO } from 'date-fns';
 import { getEventStatus, getEventStatusLabel } from '@/components/utils/dateUtils';
 import { getEventCacheAmount } from '@/lib/eventFinance';
+import { getClientDisplayName } from '@/lib/eventDisplay';
 
 function periodBounds(period) {
   const start = period?.start ?? period?.from ?? null;
@@ -20,7 +21,8 @@ function periodLabel(period) {
 
 function clientName(clients, clientId) {
   if (!clientId) return '';
-  return clients.find((c) => c.id === clientId)?.name || '';
+  const client = clients.find((c) => c.id === clientId);
+  return getClientDisplayName(client) || '';
 }
 
 function formatMoney(value) {

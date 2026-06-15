@@ -1,5 +1,6 @@
 import { normalizeDateString, isSameDay } from './dateUtils';
 import { resolveEventColor } from '@/lib/brandColors';
+import { getClientDisplayName, resolveClientForEvent } from '@/lib/eventDisplay';
 import {
   startOfWeek,
   addDays,
@@ -28,13 +29,14 @@ export const normalizeEventForGrid = (event, clients = []) => {
     };
   }
   
-  // CRÍTICO: Encontrar o nome do cliente para exibição
-  const getClientName = (clientId) => {
-    if (!Array.isArray(clients) || clients.length === 0) {
-      return event.title || 'Evento';
-    }
-    const client = clients.find(c => c && c.id === clientId);
-    return client ? client.name : (event.title || 'Evento');
+  const getDisplayName = (clientId) => {
+    const client = resolveClientForEvent({ client_id: clientId }, clients);
+    return (
+      getClientDisplayName(client) ||
+      event.client_name ||
+      event.title ||
+      'Evento'
+    );
   };
   
   return {
@@ -44,7 +46,7 @@ export const normalizeEventForGrid = (event, clients = []) => {
     isAllDay: true,
     client_id: event.client_id,
     _clients: clients,
-    displayName: getClientName(event.client_id),
+    displayName: getDisplayName(event.client_id),
     color: resolveEventColor(event, clients),
   };
 };

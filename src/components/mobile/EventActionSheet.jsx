@@ -25,6 +25,7 @@ import { formatDisplayDate, getEventStatusConfig } from '../utils/dateUtils';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import appToast from '@/lib/appToast';
+import EventHeading from '@/components/events/EventHeading';
 
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
@@ -109,14 +110,7 @@ export default function EventActionSheet({
             <div className="px-6 pb-4 border-b border-slate-800">
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-xl font-bold text-white truncate mb-2">
-                    {event.title}
-                  </h2>
-                  {client && (
-                    <p className="text-sm text-slate-400 truncate mb-2">
-                      {client.name}
-                    </p>
-                  )}
+                  <EventHeading event={event} client={client} size="lg" className="mb-2" />
                   <div className="flex items-center gap-2 flex-wrap">
                     <Badge className={`${statusConfig.badgeClass}`}>
                       {StatusIcon && <StatusIcon className="w-3 h-3 mr-1" />}

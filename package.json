@@ -21,6 +21,7 @@
     "supabase:auth-push": "powershell -ExecutionPolicy Bypass -File ./scripts/push-supabase-auth-config.ps1",
     "db:seed-demo": "node scripts/seed-demo-user.mjs",
     "db:backfill-locations": "node scripts/backfill-event-locations.mjs",
+    "db:audit-orphan-events": "node scripts/audit-orphan-events.mjs",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "test:e2e:smoke": "playwright test e2e/smoke",

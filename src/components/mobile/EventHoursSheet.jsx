@@ -13,11 +13,13 @@ import appToast from '@/lib/appToast';
 import { normalizeDateString, formatDisplayDate } from '../utils/dateUtils';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
+import EventHeading from '@/components/events/EventHeading';
 
 export default function EventHoursSheet({ 
   isOpen, 
   onClose, 
-  event, 
+  event,
+  client,
   initialDate,
   existingWork,
   onSave 
@@ -284,7 +286,9 @@ export default function EventHoursSheet({
                   {existingWork ? 'Editar Horas' : 'Registrar Horas'}
                 </h3>
                 {event && (
-                  <p className="text-sm text-slate-400 mt-1 truncate">{event.title}</p>
+                  <div className="mt-1">
+                    <EventHeading event={event} client={client} size="sm" />
+                  </div>
                 )}
               </div>
               <Button

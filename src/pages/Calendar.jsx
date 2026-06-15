@@ -71,6 +71,8 @@ import { useUserSettings } from '@/lib/useUserSettings';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { captureEventLocationFromGps } from '@/lib/eventLocation';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
+import EventHeading from '@/components/events/EventHeading';
+import { enrichEventsWithClients, getClientDisplayName } from '@/lib/eventDisplay';
 
 const useMediaQuery = (query) => {
   const [matches, setMatches] = useState(() => window.matchMedia(query).matches);
@@ -168,6 +170,11 @@ export default function CalendarPage() {
   const isLoading = eventsLoading || clientsLoading || dailyWorkLoading || expensesLoading;
   const isDataReady = Array.isArray(events) && Array.isArray(clients) && Array.isArray(dailyWork) && Array.isArray(expenses);
 
+  const enrichedEvents = useMemo(
+    () => enrichEventsWithClients(events || [], clients || []),
+    [events, clients]
+  );
+
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [showEventForm, setShowEventForm] = useState(false);
@@ -224,8 +231,8 @@ export default function CalendarPage() {
   const isMobile = useMediaQuery('(max-width: 768px)');
 
   const activeEvents = useMemo(
-    () => events.filter((e) => !isCancelledEvent(e)),
-    [events]
+    () => enrichedEvents.filter((e) => !isCancelledEvent(e)),
+    [enrichedEvents]
   );
 
   const filteredEvents = useMemo(() => {
@@ -237,7 +244,7 @@ export default function CalendarPage() {
       const cmap = new Map(clients.map(c => [c.id, c]));
       base = base.filter((e) => {
         const title = (e.title || '').toLowerCase();
-        const clientName = (cmap.get(e.client_id)?.name || '').toLowerCase();
+        const clientName = (getClientDisplayName(cmap.get(e.client_id)) || e.client_name || '').toLowerCase();
         const location = (e.location || '').toLowerCase();
         return title.includes(q) || clientName.includes(q) || location.includes(q);
       });
@@ -481,7 +488,7 @@ export default function CalendarPage() {
       const client = clientMap.get(event.client_id);
       const enrichedEvent = {
         ...event,
-        client_name: client?.name || 'Cliente Desconhecido',
+        client_name: getClientDisplayName(client) || event.client_name || 'Sem empresa',
       };
 
       if (isMobile) {
@@ -894,7 +901,7 @@ export default function CalendarPage() {
         const value = fromWork > 0 ? fromWork : getEventCacheAmount(event);
         return {
           title: event.title,
-          subtitle: `${client?.name || 'Cliente'} · ${isValid(startDate) ? format(startDate, 'dd/MM', { locale: ptBR }) : ''}${
+          subtitle: `${getClientDisplayName(client) || 'Sem empresa'} · ${isValid(startDate) ? format(startDate, 'dd/MM', { locale: ptBR }) : ''}${
             isValid(endDate) && endDate.getTime() !== startDate.getTime()
               ? `–${format(endDate, 'dd/MM', { locale: ptBR })}`
               : ''
@@ -921,7 +928,7 @@ export default function CalendarPage() {
         const workDate = parseISO(work.date);
 
         return {
-          title: `${client?.name || 'Cliente'} — ${event?.title || 'Evento'}`,
+          title: `${getClientDisplayName(client) || 'Sem empresa'} — ${event?.title || 'Evento'}`,
           subtitle: `${isValid(workDate) ? format(workDate, 'dd/MM/yy', { locale: ptBR }) : ''} • ${
             work.total_hours || 0
           }h trabalhadas`,
@@ -947,7 +954,7 @@ export default function CalendarPage() {
         const workDate = parseISO(work.date);
 
         return {
-          title: `${client?.name || 'Cliente'} — ${event?.title || 'Evento'}`,
+          title: `${getClientDisplayName(client) || 'Sem empresa'} — ${event?.title || 'Evento'}`,
           subtitle: `${isValid(workDate) ? format(workDate, 'dd/MM/yy', { locale: ptBR }) : ''} • ${
             work.entry_time || ''
           }–${work.exit_time || ''}`,
@@ -972,7 +979,7 @@ export default function CalendarPage() {
       const clientEvents = monthStats.monthEvents.filter((e) => e.client_id === clientId);
 
       clientItems.push({
-        title: client?.name || 'Cliente Desconhecido',
+        title: getClientDisplayName(client) || 'Sem empresa',
         subtitle: `${clientEvents.length} evento(s) no mês`,
         client_id: clientId,
         dateSort: 0,
@@ -1806,10 +1813,7 @@ export default function CalendarPage() {
                         <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: event.color || DEFAULT_EVENT_COLOR }} />
 
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium text-white truncate text-sm sm:text-base">{event.title}</p>
-                          <p className="text-xs sm:text-sm text-slate-400 truncate">
-                            {client?.name || 'Cliente não encontrado'}
-                          </p>
+                          <EventHeading event={event} client={client} size="sm" />
                         </div>
                       </div>
                     </button>

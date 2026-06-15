@@ -154,18 +154,18 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
                 </motion.span>
               )}
             </div>
-            <EventHeading event={event} client={event.clients} size="lg" className="mb-1" />
-            {event.clients?.name ? (
+            <EventHeading event={event} client={event.clients} size="lg" className="mb-2" />
+            {event.client_id ? (
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); hardNavigate(`/client-detail?id=${event.client_id}`); }}
                 className="text-sm text-slate-400 transition-colors flex items-center gap-1.5 group max-w-full min-w-0 bp-hover-primary"
               >
                 <User className="w-3 h-3 flex-shrink-0 bp-text-primary opacity-70 group-hover:opacity-100" />
-                <Ellipsis as="span" className="text-left">{event.clients.name}</Ellipsis>
+                <Ellipsis as="span" className="text-left">Ver página do cliente</Ellipsis>
               </button>
             ) : (
-              <p className="text-sm text-slate-500">—</p>
+              <p className="text-sm text-slate-500">Sem cliente vinculado</p>
             )}
           </div>
         </div>

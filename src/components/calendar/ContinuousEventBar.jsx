@@ -100,8 +100,8 @@ export default function ContinuousEventBar({
         color: getContrastColor(baseColor) // Sets text color on button itself
       }}
       // Preserving original title attribute for tooltip
-      title={`${event.title}${client ? ` • ${client.name}` : ''}${timeLabel ? ` • ${timeLabel}` : ''}\n\nClique duplo (ou toque longo) para registrar horas`}>
-
+      title={`${companyName}${showEventSubtitle ? ` · ${eventName}` : ''}${timeLabel ? ` • ${timeLabel}` : ''}\n\nClique duplo (ou toque longo) para registrar horas`}
+    >
       <div
         className="absolute inset-0 rounded-sm flex items-center justify-between px-2 overflow-hidden"
         style={{
