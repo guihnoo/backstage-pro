@@ -6,6 +6,14 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-14
 
+### DESIGN-S90 — Polish tema residual violet/indigo (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `calendar/EventDetailModal.jsx`: botão Enviar proposta usa `bp-text-primary` + `bp-surface-primary`
+- `reports/EventDetailModal.jsx`: badge de horas e botão Horas com `accentHex`
+- `CacheEvolutionChart.jsx`, `YearOverYear.jsx`: ícones e coluna do ano atual com `primaryHex`
+- `ProximoShow.jsx`: status pendente com cor da categoria
+- `AlertsPanel.jsx`: alerta CRM follow-up com `accentHex` (padrão `accentHex` do painel)
+
 ### BUGFIX-HOME-HORAS-DESPESA — Registro de Horas/Despesas na Home + Detecção Dia do Evento ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Root cause 1** — `calendar/EventDetailModal.jsx` (usado pela Home): botão "Registrar Horas" chamava `onAddWork` prop → Home.jsx passava `hardNavigate('/calendar')` sem abrir form

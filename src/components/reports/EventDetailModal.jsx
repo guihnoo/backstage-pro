@@ -311,7 +311,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
 }) {
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
   const { update: updateEvent } = useEvents();
-  const { primaryHex } = useCategoryTheme();
+  const { primaryHex, accentHex } = useCategoryTheme();
   const [savingLocation, setSavingLocation] = useState(false);
   const [savingRating, setSavingRating] = useState(false);
   const [ratingDraft, setRatingDraft] = useState(null);
@@ -667,7 +667,10 @@ const EventDetailModal = React.memo(function EventDetailModal({
                     Registros de Trabalho ({dailyWork.length})
                   </h3>
                   {dailyWork.length > 0 && (
-                    <span className="text-xs text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-2.5 py-0.5">
+                    <span
+                      className="text-xs rounded-full px-2.5 py-0.5 border bp-text-primary bp-surface-primary"
+                      style={accentHex ? { color: accentHex, background: `${accentHex}1a`, borderColor: `${accentHex}33` } : undefined}
+                    >
                       {stats.totalHours?.toFixed(1)}h total
                     </span>
                   )}
@@ -768,7 +771,8 @@ const EventDetailModal = React.memo(function EventDetailModal({
                 <Button
                   variant="outline"
                   onClick={() => onAddWork(event)}
-                  className="flex-1 sm:flex-none bg-slate-800 border-indigo-600/50 hover:bg-indigo-900/20 text-indigo-300 text-xs sm:text-sm h-10 min-h-[44px]"
+                  className="flex-1 sm:flex-none bg-slate-800 border bp-text-primary bp-hover-primary text-xs sm:text-sm h-10 min-h-[44px]"
+                  style={accentHex ? { color: accentHex, borderColor: `${accentHex}80` } : undefined}
                 >
                   <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Horas
                 </Button>

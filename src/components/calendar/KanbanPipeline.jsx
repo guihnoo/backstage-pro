@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { format, parseISO } from 'date-fns';
+import { useMemo, useState } from 'react';
+import { format, parseISO, subMonths, startOfYear, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
@@ -45,7 +45,39 @@ const COLUMNS = [
   },
 ];
 
-const KanbanCard = ({ ev, client, onOpen, formatCurrency, isVisible }) => {
+const PERIODS = [
+  { key: 'upcoming', label: 'Futuros' },
+  { key: '3m', label: '3 meses' },
+  { key: 'year', label: 'Este ano' },
+  { key: 'all', label: 'Todos' },
+];
+
+const UrgencyBadge = ({ ev }) => {
+  const endDate = ev.payment_due_date || ev.end_date || ev.start_date;
+  if (!endDate) return null;
+  const days = differenceInDays(new Date(), parseISO(endDate));
+  if (days < 1) return null;
+
+  let cls, label;
+  if (days >= 30) {
+    cls = 'bg-red-500/20 border-red-500/40 text-red-300';
+    label = `${days}d vencido`;
+  } else if (days >= 14) {
+    cls = 'bg-amber-500/20 border-amber-500/40 text-amber-300';
+    label = `${days}d atraso`;
+  } else {
+    cls = 'bg-slate-700/60 border-slate-600/40 text-slate-400';
+    label = `${days}d atrás`;
+  }
+
+  return (
+    <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded border ${cls}`}>
+      {label}
+    </span>
+  );
+};
+
+const KanbanCard = ({ ev, client, onOpen, formatCurrency, isVisible, showUrgency }) => {
   const amount = getEventCacheAmount(ev);
   const dateStr = ev.start_date
     ? format(parseISO(ev.start_date), "d 'de' MMM", { locale: ptBR })
@@ -74,11 +106,14 @@ const KanbanCard = ({ ev, client, onOpen, formatCurrency, isVisible }) => {
             {dateStr && (
               <span className="text-[10px] text-slate-500 capitalize">{dateStr}</span>
             )}
-            {amount > 0 && (
-              <span className="text-xs font-semibold text-slate-300 ml-auto">
-                {isVisible ? formatCurrency(amount) : '••••'}
-              </span>
-            )}
+            <div className="flex items-center gap-1.5 ml-auto">
+              {showUrgency && <UrgencyBadge ev={ev} />}
+              {amount > 0 && (
+                <span className="text-xs font-semibold text-slate-300">
+                  {isVisible ? formatCurrency(amount) : '••••'}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -88,6 +123,7 @@ const KanbanCard = ({ ev, client, onOpen, formatCurrency, isVisible }) => {
 
 const KanbanPipeline = ({ events = [], clients = [], onEventClick }) => {
   const { formatCurrency, isVisible } = useFinancialVisibility();
+  const [period, setPeriod] = useState('3m');
 
   const clientMap = useMemo(
     () => new Map((clients || []).map((c) => [c.id, c])),
@@ -99,27 +135,58 @@ const KanbanPipeline = ({ events = [], clients = [], onEventClick }) => {
     [events]
   );
 
-  const columns = useMemo(() =>
-    COLUMNS.map((col) => ({
-      ...col,
-      events: activeEvents.filter(col.match),
-      total: activeEvents.filter(col.match).reduce(
-        (s, e) => s + getEventCacheAmount(e),
-        0
-      ),
-    })),
-    [activeEvents]
-  );
+  // Filter by period; unpaid completed events always show (need action)
+  const filteredEvents = useMemo(() => {
+    if (period === 'all') return activeEvents;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const isUnpaid = (e) => e.status === 'completed' && e.payment_status !== 'paid';
+
+    if (period === 'upcoming') {
+      return activeEvents.filter(
+        (e) => isUnpaid(e) || (e.start_date && parseISO(e.start_date) >= today)
+      );
+    }
+
+    let cutoff;
+    if (period === '3m') cutoff = subMonths(today, 3);
+    if (period === 'year') cutoff = startOfYear(today);
+
+    return activeEvents.filter(
+      (e) => isUnpaid(e) || !e.start_date || parseISO(e.start_date) >= cutoff
+    );
+  }, [activeEvents, period]);
+
+  const columns = useMemo(() => {
+    const now = new Date();
+    return COLUMNS.map((col) => {
+      let evs = filteredEvents.filter(col.match);
+      // Sort "A Receber" by most days overdue first
+      if (col.key === 'to_receive') {
+        evs = [...evs].sort((a, b) => {
+          const da = differenceInDays(now, parseISO(a.payment_due_date || a.end_date || a.start_date || '2000-01-01'));
+          const db = differenceInDays(now, parseISO(b.payment_due_date || b.end_date || b.start_date || '2000-01-01'));
+          return db - da;
+        });
+      }
+      return {
+        ...col,
+        events: evs,
+        total: evs.reduce((s, e) => s + getEventCacheAmount(e), 0),
+      };
+    });
+  }, [filteredEvents]);
 
   const summary = useMemo(() => {
-    const toReceive = activeEvents
+    const toReceive = filteredEvents
       .filter(e => e.status === 'completed' && e.payment_status !== 'paid')
       .reduce((s, e) => s + getEventCacheAmount(e), 0);
-    const paid = activeEvents
+    const paid = filteredEvents
       .filter(e => e.payment_status === 'paid')
       .reduce((s, e) => s + getEventCacheAmount(e), 0);
-    return { toReceive, paid, total: activeEvents.length };
-  }, [activeEvents]);
+    return { toReceive, paid, total: filteredEvents.length };
+  }, [filteredEvents]);
 
   if (activeEvents.length === 0) {
     return (
@@ -131,10 +198,28 @@ const KanbanPipeline = ({ events = [], clients = [], onEventClick }) => {
 
   return (
     <div className="space-y-3">
+      {/* Period filter chips */}
+      <div className="flex gap-1.5 flex-wrap">
+        {PERIODS.map((p) => (
+          <button
+            key={p.key}
+            type="button"
+            onClick={() => setPeriod(p.key)}
+            className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${
+              period === p.key
+                ? 'bg-indigo-600 border-indigo-500 text-white'
+                : 'bg-slate-800/60 border-slate-700/60 text-slate-400 hover:border-slate-600 hover:text-slate-300'
+            }`}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+
       {/* Pipeline summary bar */}
       <div className="flex flex-wrap gap-3 text-xs">
         <span className="bg-slate-800/60 border border-slate-700/60 rounded-lg px-3 py-1.5 text-slate-400">
-          <span className="font-bold text-slate-200">{summary.total}</span> shows no pipeline
+          <span className="font-bold text-slate-200">{summary.total}</span> shows
         </span>
         {summary.toReceive > 0 && (
           <span className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-1.5 text-amber-300">
@@ -148,56 +233,57 @@ const KanbanPipeline = ({ events = [], clients = [], onEventClick }) => {
         )}
       </div>
 
-    <div className="overflow-x-auto pb-4">
-      <div className="flex gap-3 min-w-[720px]">
-        {columns.map((col) => (
-          <div
-            key={col.key}
-            className={`flex-1 min-w-[170px] rounded-xl border ${col.border} flex flex-col overflow-hidden`}
-          >
-            {/* Column header */}
-            <div className={`${col.header} px-3 py-2.5 flex items-center justify-between gap-2`}>
-              <span className={`text-xs font-semibold uppercase tracking-wider ${col.color}`}>
-                {col.label}
-              </span>
-              <div className="flex items-center gap-1.5">
-                <span className={`text-xs font-bold ${col.color}`}>{col.events.length}</span>
+      <div className="overflow-x-auto pb-4">
+        <div className="flex gap-3 min-w-[720px]">
+          {columns.map((col) => (
+            <div
+              key={col.key}
+              className={`flex-1 min-w-[170px] rounded-xl border ${col.border} flex flex-col overflow-hidden`}
+            >
+              {/* Column header */}
+              <div className={`${col.header} px-3 py-2.5 flex items-center justify-between gap-2`}>
+                <span className={`text-xs font-semibold uppercase tracking-wider ${col.color}`}>
+                  {col.label}
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className={`text-xs font-bold ${col.color}`}>{col.events.length}</span>
+                </div>
               </div>
-            </div>
 
-            {/* Total */}
-            {col.total > 0 && (
-              <div className={`px-3 py-1.5 border-b ${col.border} bg-slate-900/30`}>
-                <p className="text-[10px] text-slate-500">
-                  Total:{' '}
-                  <span className={`font-semibold ${col.color}`}>
-                    {isVisible ? formatCurrency(col.total) : '••••'}
-                  </span>
-                </p>
-              </div>
-            )}
-
-            {/* Cards */}
-            <div className="flex-1 p-2 space-y-2 min-h-[120px]">
-              {col.events.length === 0 ? (
-                <p className="text-[11px] text-slate-600 text-center py-6">vazio</p>
-              ) : (
-                col.events.map((ev) => (
-                  <KanbanCard
-                    key={ev.id}
-                    ev={ev}
-                    client={clientMap.get(ev.client_id)}
-                    onOpen={onEventClick}
-                    formatCurrency={formatCurrency}
-                    isVisible={isVisible}
-                  />
-                ))
+              {/* Total */}
+              {col.total > 0 && (
+                <div className={`px-3 py-1.5 border-b ${col.border} bg-slate-900/30`}>
+                  <p className="text-[10px] text-slate-500">
+                    Total:{' '}
+                    <span className={`font-semibold ${col.color}`}>
+                      {isVisible ? formatCurrency(col.total) : '••••'}
+                    </span>
+                  </p>
+                </div>
               )}
+
+              {/* Cards */}
+              <div className="flex-1 p-2 space-y-2 min-h-[120px]">
+                {col.events.length === 0 ? (
+                  <p className="text-[11px] text-slate-600 text-center py-6">vazio</p>
+                ) : (
+                  col.events.map((ev) => (
+                    <KanbanCard
+                      key={ev.id}
+                      ev={ev}
+                      client={clientMap.get(ev.client_id)}
+                      onOpen={onEventClick}
+                      formatCurrency={formatCurrency}
+                      isVisible={isVisible}
+                      showUrgency={col.key === 'to_receive'}
+                    />
+                  ))
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
     </div>
   );
 };

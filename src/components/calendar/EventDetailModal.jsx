@@ -1052,7 +1052,7 @@ export default function EventDetailModal({
             <Button
               onClick={handleSendProposal}
               variant="outline"
-              className="flex-shrink-0 border-violet-600 hover:bg-violet-900/20 text-violet-300"
+              className="flex-shrink-0 border bp-text-primary bp-surface-primary hover:opacity-90"
               title="Enviar proposta técnica via WhatsApp"
             >
               <Send className="w-4 h-4" />

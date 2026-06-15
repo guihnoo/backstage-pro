@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { TrendingUp, TrendingDown, Minus, CalendarDays } from 'lucide-react';
 import { getYear, getMonth, getDate, parseISO } from 'date-fns';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 function parseEventDate(event) {
   try { return parseISO(event.start_date); } catch { return null; }
@@ -55,6 +56,7 @@ function delta(curr, prev) {
 
 const YearOverYear = ({ events = [], clients = [] }) => {
   const { formatCurrency, isVisible } = useFinancialVisibility();
+  const { primaryHex } = useCategoryTheme();
 
   const now = new Date();
   const currYear = getYear(now);
@@ -118,7 +120,7 @@ const YearOverYear = ({ events = [], clients = [] }) => {
   return (
     <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
       <div className="flex items-center gap-2 mb-4">
-        <CalendarDays className="w-4 h-4 text-indigo-400" />
+        <CalendarDays className="w-4 h-4 bp-text-primary" style={{ color: primaryHex }} />
         <h3 className="text-sm font-semibold text-slate-200">Comparação Ano a Ano</h3>
         <span className="ml-auto text-xs text-slate-500">jan–hoje</span>
       </div>
@@ -128,7 +130,7 @@ const YearOverYear = ({ events = [], clients = [] }) => {
           <thead>
             <tr className="border-b border-slate-800">
               <th className="text-left py-2 pr-4 text-xs text-slate-400 font-normal">Métrica</th>
-              <th className="text-right py-2 px-3 text-xs font-semibold text-indigo-300">{currYear}</th>
+              <th className="text-right py-2 px-3 text-xs font-semibold bp-text-primary" style={{ color: primaryHex }}>{currYear}</th>
               <th className="text-right py-2 px-3 text-xs text-slate-400 font-normal">{prevYear}</th>
               <th className="text-right py-2 pl-3 text-xs text-slate-400 font-normal">Var.</th>
             </tr>

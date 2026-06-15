@@ -226,14 +226,12 @@ export default function AlertsPanel({
           ? `Cliente "${first.clients?.name || '—'}": ${first.notes?.slice(0, 60) || 'sem anotação'}`
           : `${count} clientes aguardam retorno. Verifique o histórico de contatos.`,
         icon: Bell,
-        color: 'text-violet-400',
-        bgColor: 'bg-violet-500/10',
-        borderColor: 'border-violet-500/30',
+        accentHex: theme.accentHex,
       });
     }
 
     return newAlerts;
-  }, [events, dailyWork, pendingFollowUps, dismissedAlerts, onRegisterWork, onLocationCheckIn, onOpenEvent, theme.primaryHex]);
+  }, [events, dailyWork, pendingFollowUps, dismissedAlerts, onRegisterWork, onLocationCheckIn, onOpenEvent, theme.primaryHex, theme.accentHex]);
 
   useEffect(() => {
     setAlerts(generatedAlerts);

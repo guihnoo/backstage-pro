@@ -87,7 +87,7 @@ export default function CacheEvolutionChart({ events = [] }) {
     return (
       <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
         <h3 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-indigo-400" />
+          <TrendingUp className="w-4 h-4 bp-text-primary" style={{ color: primaryHex }} />
           Evolução do Cachê
         </h3>
         <p className="text-xs text-slate-500 text-center py-6">
@@ -109,7 +109,7 @@ export default function CacheEvolutionChart({ events = [] }) {
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-indigo-400" />
+            <TrendingUp className="w-4 h-4 bp-text-primary" style={{ color: primaryHex }} />
             Evolução do Cachê
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">Cachê médio por show nos últimos 12 meses</p>
