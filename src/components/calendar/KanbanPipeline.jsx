@@ -111,6 +111,16 @@ const KanbanPipeline = ({ events = [], clients = [], onEventClick }) => {
     [activeEvents]
   );
 
+  const summary = useMemo(() => {
+    const toReceive = activeEvents
+      .filter(e => e.status === 'completed' && e.payment_status !== 'paid')
+      .reduce((s, e) => s + getEventCacheAmount(e), 0);
+    const paid = activeEvents
+      .filter(e => e.payment_status === 'paid')
+      .reduce((s, e) => s + getEventCacheAmount(e), 0);
+    return { toReceive, paid, total: activeEvents.length };
+  }, [activeEvents]);
+
   if (activeEvents.length === 0) {
     return (
       <div className="text-center py-16 text-slate-500 text-sm">
@@ -120,6 +130,24 @@ const KanbanPipeline = ({ events = [], clients = [], onEventClick }) => {
   }
 
   return (
+    <div className="space-y-3">
+      {/* Pipeline summary bar */}
+      <div className="flex flex-wrap gap-3 text-xs">
+        <span className="bg-slate-800/60 border border-slate-700/60 rounded-lg px-3 py-1.5 text-slate-400">
+          <span className="font-bold text-slate-200">{summary.total}</span> shows no pipeline
+        </span>
+        {summary.toReceive > 0 && (
+          <span className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-1.5 text-amber-300">
+            A receber: <span className="font-bold">{isVisible ? formatCurrency(summary.toReceive) : '••••'}</span>
+          </span>
+        )}
+        {summary.paid > 0 && (
+          <span className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-3 py-1.5 text-emerald-300">
+            Pago: <span className="font-bold">{isVisible ? formatCurrency(summary.paid) : '••••'}</span>
+          </span>
+        )}
+      </div>
+
     <div className="overflow-x-auto pb-4">
       <div className="flex gap-3 min-w-[720px]">
         {columns.map((col) => (
@@ -169,6 +197,7 @@ const KanbanPipeline = ({ events = [], clients = [], onEventClick }) => {
           </div>
         ))}
       </div>
+    </div>
     </div>
   );
 };

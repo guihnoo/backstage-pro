@@ -36,6 +36,8 @@ import {
   Loader2,
   ExternalLink,
   Star,
+  CheckSquare2,
+  Share2 as ShareIcon,
 } from 'lucide-react';
 import EventLocationSection from '@/components/events/EventLocationSection';
 import { useEvents } from '@/lib/useEvents';
@@ -308,6 +310,57 @@ const EventDetailModal = React.memo(function EventDetailModal({
     onPaymentUpdate();
   };
 
+  const [markingDone, setMarkingDone] = useState(false);
+
+  const handleMarkCompleted = async () => {
+    setMarkingDone(true);
+    try {
+      await updateEvent(event.id, { status: 'completed' });
+      appToast.success('Evento marcado como realizado!');
+      onPaymentUpdate?.();
+      onClose?.();
+    } catch {
+      appToast.error('Erro ao atualizar status do evento.');
+    } finally {
+      setMarkingDone(false);
+    }
+  };
+
+  const handleShareEvent = () => {
+    const { formatCurrency } = (() => {
+      // inline formatter — doesn't need hook here
+      const fmt = (v) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 });
+      return { formatCurrency: fmt };
+    })();
+
+    const dateStr = event.start_date
+      ? new Date(event.start_date + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
+      : '';
+    const parts = [
+      `📋 *${event.title}*`,
+      dateStr ? `📅 ${dateStr}` : null,
+      event.start_time ? `🕐 ${event.start_time.slice(0, 5)}` : null,
+      (event.location || event.location_city) ? `📍 ${[event.location, event.location_city].filter(Boolean).join(' — ')}` : null,
+      getEventCacheAmount(event) > 0 ? `💰 ${formatCurrency(getEventCacheAmount(event))}` : null,
+      event.notes ? `📝 ${event.notes}` : null,
+      '',
+      '_Backstage Pro_',
+    ].filter(l => l !== null).join('\n');
+
+    if (navigator.share) {
+      navigator.share({ text: parts }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(parts);
+      appToast.success('Detalhes copiados!', { description: 'Cole no WhatsApp ou onde preferir.' });
+    }
+  };
+
+  const isPastAndNotCompleted = useMemo(() => {
+    if (!event.start_date) return false;
+    const eventDate = new Date(event.start_date + 'T23:59:59');
+    return eventDate < new Date() && (event.status === 'scheduled' || event.status === 'confirmed');
+  }, [event]);
+
   return (
     <>
       <Dialog open={true} onOpenChange={onClose}>
@@ -573,6 +626,14 @@ const EventDetailModal = React.memo(function EventDetailModal({
                 </Button>
               )}
               <Button
+                variant="outline"
+                onClick={handleShareEvent}
+                className="flex-1 sm:flex-none bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm h-10 min-h-[44px]"
+                title="Compartilhar detalhes do evento"
+              >
+                <ShareIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Compartilhar
+              </Button>
+              <Button
                 variant="destructive"
                 onClick={() => onDelete(event.id)}
                 className="flex-1 sm:flex-none text-xs sm:text-sm h-10 min-h-[44px]"
@@ -581,6 +642,19 @@ const EventDetailModal = React.memo(function EventDetailModal({
               </Button>
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
+              {isPastAndNotCompleted && (
+                <Button
+                  onClick={handleMarkCompleted}
+                  disabled={markingDone}
+                  className="flex-1 sm:flex-none bg-emerald-700 hover:bg-emerald-600 text-white text-xs sm:text-sm h-10 min-h-[44px]"
+                  title="Marcar este evento como realizado"
+                >
+                  {markingDone
+                    ? <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                    : <CheckSquare2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />}
+                  Realizado
+                </Button>
+              )}
               {onAddWork && (
                 <Button
                   variant="outline"
