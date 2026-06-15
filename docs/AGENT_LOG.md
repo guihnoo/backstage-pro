@@ -6,6 +6,11 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-14
 
+### NOTES-S81 — Observações inline no modal de Relatórios (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `reports/EventDetailModal.jsx`: `InlineNotes` — editar `observacoes_md` no drilldown sem ir à Agenda
+- Polish tema: `bp-focus-input`, botões/links com `primaryHex` da categoria
+
 ### DESIGN-S73 — Toggle Kanban com tema (Cursor Agent) ✅
 - **Agente**: Cursor (Auto)
 - `Calendar.jsx`: botão vista Kanban usa `bp-view-active` (remove violet hardcoded)

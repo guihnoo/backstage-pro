@@ -46,6 +46,104 @@ import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 import { hardNavigate } from '@/lib/hardNavigate';
 
+const InlineNotes = ({ event, updateEvent, onSaved }) => {
+  const { primaryHex } = useCategoryTheme();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const startEdit = () => {
+    setDraft(event.observacoes_md || '');
+    setEditing(true);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await updateEvent(event.id, { observacoes_md: draft.trim() || null });
+      appToast.success('Observações salvas.');
+      onSaved?.();
+      setEditing(false);
+    } catch {
+      appToast.error('Erro ao salvar observações.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (editing) {
+    return (
+      <div className="space-y-2">
+        <h3 className="font-semibold text-white text-sm flex items-center gap-2">
+          <FileText className="w-4 h-4 text-slate-400" />
+          Observações
+        </h3>
+        <textarea
+          autoFocus
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          rows={4}
+          placeholder="Anote informações do evento: contato do local, estacionamento, rider técnico…"
+          className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2.5 text-sm text-slate-200 placeholder:text-slate-500 resize-none focus:outline-none transition-colors bp-focus-input"
+        />
+        <div className="flex gap-2 justify-end">
+          <button
+            type="button"
+            onClick={() => setEditing(false)}
+            className="text-xs text-slate-400 hover:text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving}
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+            style={{ background: primaryHex, color: '#050609' }}
+          >
+            {saving ? 'Salvando…' : 'Salvar'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="font-semibold text-white text-sm flex items-center gap-2">
+          <FileText className="w-4 h-4 text-slate-400" />
+          Observações
+        </h3>
+        <button
+          type="button"
+          onClick={startEdit}
+          className="text-[11px] bp-hover-primary transition-colors"
+          style={{ color: primaryHex }}
+        >
+          {event.observacoes_md ? 'Editar' : '+ Adicionar'}
+        </button>
+      </div>
+      {event.observacoes_md ? (
+        <div
+          className="bg-slate-800/40 border border-slate-700/60 rounded-lg px-4 py-3 cursor-pointer hover:border-slate-600 transition-colors"
+          onClick={startEdit}
+        >
+          <p className="text-sm text-slate-300 whitespace-pre-wrap break-words leading-relaxed">{event.observacoes_md}</p>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={startEdit}
+          className="w-full text-left text-xs text-slate-500 border border-dashed border-slate-700 rounded-lg px-4 py-3 hover:border-slate-500 hover:text-slate-400 transition-colors"
+        >
+          Clique para adicionar observações sobre este evento…
+        </button>
+      )}
+    </div>
+  );
+};
+
 const EventLifecycleBar = ({ event, dailyWork = [] }) => {
   const status = getEventStatus(event);
   const isCancelled = status === 'cancelled';
@@ -511,17 +609,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
                 </CardContent>
               </Card>
 
-              {event.observacoes_md && (
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-white text-sm sm:text-base flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-slate-400" />
-                    Observações
-                  </h3>
-                  <div className="bg-slate-800/40 border border-slate-700/60 rounded-lg px-4 py-3">
-                    <p className="text-sm text-slate-300 whitespace-pre-wrap break-words leading-relaxed">{event.observacoes_md}</p>
-                  </div>
-                </div>
-              )}
+              <InlineNotes event={event} updateEvent={updateEvent} onSaved={onPaymentUpdate} />
 
               {/* Avaliação do cliente — só para eventos concluídos com cliente */}
               {event.status === 'completed' && event.client_id && (
@@ -573,10 +661,21 @@ const EventDetailModal = React.memo(function EventDetailModal({
               )}
 
               <div className="space-y-4">
-                <h3 className="font-semibold text-white text-sm sm:text-base">Registros de Trabalho ({dailyWork.length})</h3>
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="font-semibold text-white text-sm sm:text-base">
+                    Registros de Trabalho ({dailyWork.length})
+                  </h3>
+                  {dailyWork.length > 0 && (
+                    <span className="text-xs text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-2.5 py-0.5">
+                      {stats.totalHours?.toFixed(1)}h total
+                    </span>
+                  )}
+                </div>
                 {dailyWork.length > 0 ? (
                   <div className="space-y-3">
-                    {dailyWork.map((work) => <WorkItem key={work.id} work={work} onEdit={onWorkEdit} />)}
+                    {[...dailyWork]
+                      .sort((a, b) => (a.work_date || a.date || '') < (b.work_date || b.date || '') ? -1 : 1)
+                      .map((work) => <WorkItem key={work.id} work={work} onEdit={onWorkEdit} />)}
                   </div>
                 ) : (
                   <p className="text-sm text-slate-400">Nenhum registro de trabalho para este evento.</p>
@@ -584,7 +683,16 @@ const EventDetailModal = React.memo(function EventDetailModal({
               </div>
 
               <div className="space-y-4">
-                <h3 className="font-semibold text-white text-sm sm:text-base">Despesas ({expenses.length})</h3>
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="font-semibold text-white text-sm sm:text-base">
+                    Despesas ({expenses.length})
+                  </h3>
+                  {expenses.length > 0 && (
+                    <span className="text-xs text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-full px-2.5 py-0.5">
+                      {Number(stats.totalExpenses || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 })} total
+                    </span>
+                  )}
+                </div>
                 {expenses.length > 0 ? (
                   <div className="space-y-3">
                     {expenses.map((exp) => <ExpenseItem key={exp.id} expense={exp} onEdit={onExpenseEdit} />)}
