@@ -587,6 +587,21 @@ export default function CalendarPage() {
     [closeModals]
   );
 
+  const handleAddWorkForEvent = useCallback(
+    (event) => {
+      closeModals();
+      const today = normalizeDateString(new Date());
+      const start = normalizeDateString(event.start_date);
+      const end = normalizeDateString(event.end_date || event.start_date);
+      // Use today if within event range, otherwise use event start date
+      const workDate = today >= start && today <= end ? today : start;
+      setFormPrefilledData({ event_id: event.id, date: workDate });
+      setSelectedDate(new Date(workDate + 'T00:00:00'));
+      setShowDailyWorkModal(true);
+    },
+    [closeModals]
+  );
+
   const handleEditExpense = useCallback(
     (expense, event) => {
       closeModals();
@@ -1718,6 +1733,7 @@ export default function CalendarPage() {
             onPaymentUpdate={handleFormSuccess}
             onWorkEdit={handleEditWork}
             onWorkDelete={handleWorkDelete}
+            onAddWork={handleAddWorkForEvent}
             onAddExpense={handleAddExpenseForEvent}
             onExpenseEdit={handleEditExpense}
             onExpenseDelete={handleFormSuccess}

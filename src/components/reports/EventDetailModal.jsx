@@ -133,6 +133,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
   onExpenseEdit,
   onApply12h,
   onAddExpense,
+  onAddWork,
 }) {
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
   const { update: updateEvent } = useEvents();
@@ -505,6 +506,15 @@ const EventDetailModal = React.memo(function EventDetailModal({
               </Button>
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
+              {onAddWork && (
+                <Button
+                  variant="outline"
+                  onClick={() => { onAddWork(event); onClose(); }}
+                  className="flex-1 sm:flex-none bg-slate-800 border-indigo-600/50 hover:bg-indigo-900/20 text-indigo-300 text-xs sm:text-sm h-10 min-h-[44px]"
+                >
+                  <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Horas
+                </Button>
+              )}
               {onAddExpense && (
                 <Button
                   variant="outline"
