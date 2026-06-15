@@ -26,12 +26,15 @@ import {
   MapPin,
   Star,
   Trash2,
+  CheckCircle2,
+  BadgeCheck,
+  AlertCircle,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { openWhatsAppCharge, buildChargeMessage } from '@/lib/whatsapp';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
@@ -52,6 +55,7 @@ import EventDetailModal from '@/components/reports/EventDetailModal';
 import ReportEventList from '@/components/reports/ReportEventList';
 import ReportsChart from '@/components/reports/ReportsChart';
 import { ClampedText } from '@/components/ui/overflowText';
+import EventHeading from '@/components/events/EventHeading';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import appToast from '@/lib/appToast';
 
@@ -479,17 +483,18 @@ export default function ClientDetailPage() {
               </div>
               <div className="space-y-2">
                 {upcomingEvents.slice(0, 4).map((ev) => {
-                  const statusStyles = {
-                    pending:   'bg-amber-500/15 text-amber-400 border-amber-500/30',
-                    confirmed: 'bp-surface-primary bp-text-primary border',
-                    completed: 'bg-green-500/15 text-green-400 border-green-500/30',
-                  };
-                  const statusLabels = { pending: 'Pendente', confirmed: 'Confirmado', completed: 'Concluído' };
-                  const st = getEventStatus(ev);
+                  const isPaid = ev.payment_status === 'paid';
+                  const isConfirmed = ev.status === 'confirmed' || ev.status === 'scheduled';
+                  const StatusIcon = isPaid ? CheckCircle2 : isConfirmed ? BadgeCheck : AlertCircle;
+                  const statusColor = isPaid ? '#10b981' : isConfirmed ? '#f59e0b' : '#64748b';
                   const dateLabel = ev.start_date
                     ? format(parseISO(ev.start_date), "d 'de' MMM", { locale: ptBR })
                     : '—';
                   const amount = getEventRevenue(ev);
+                  const durationDays = ev.start_date && ev.end_date
+                    ? Math.round((new Date(ev.end_date) - new Date(ev.start_date)) / 86400000) + 1
+                    : 1;
+                  const evColor = ev.color || DEFAULT_EVENT_COLOR;
                   return (
                     <button
                       key={ev.id}
@@ -499,12 +504,15 @@ export default function ClientDetailPage() {
                     >
                       <div
                         className="w-1 self-stretch rounded-full flex-shrink-0"
-                        style={{ backgroundColor: ev.color || DEFAULT_EVENT_COLOR }}
+                        style={{ backgroundColor: evColor }}
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-200 truncate">{ev.title}</p>
-                        <p className="text-xs text-slate-500 flex items-center gap-1.5 truncate">
+                        <EventHeading event={ev} client={client} size="sm" />
+                        <p className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5 truncate">
                           <span>{dateLabel}</span>
+                          {durationDays > 1 && (
+                            <span className="text-[9px] font-bold px-1 py-0.5 rounded" style={{ background: `${evColor}25`, color: evColor }}>{durationDays}d</span>
+                          )}
                           {ev.start_time && <span>{ev.start_time.slice(0, 5)}</span>}
                           {ev.location_city && (
                             <>
@@ -515,11 +523,9 @@ export default function ClientDetailPage() {
                         </p>
                       </div>
                       <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full border ${statusStyles[st] || 'bg-slate-700 text-slate-400 border-slate-600'}`}>
-                          {statusLabels[st] || st}
-                        </span>
+                        <StatusIcon className="w-4 h-4" style={{ color: statusColor }} />
                         {amount > 0 && (
-                          <span className="text-[10px] text-emerald-400 font-medium">
+                          <span className="text-[10px] font-semibold font-mono" style={{ color: isPaid ? '#10b981' : '#f59e0b' }}>
                             {formatCurrency(amount)}
                           </span>
                         )}
@@ -537,40 +543,33 @@ export default function ClientDetailPage() {
           </Card>
         )}
 
-        <Card className="bg-slate-900/50 border-slate-800">
-          <CardHeader>
-            <CardTitle className="text-slate-50 text-lg font-semibold tracking-tight flex items-center gap-2">Resumo Financeiro</CardTitle>
-          </CardHeader>
-          <CardContent className={`grid gap-6 text-center ${stats.paymentScore ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-1 md:grid-cols-3'}`}>
-            <div>
-              <p className="text-sm text-slate-300">FATURAMENTO PAGO</p>
-              <p className="text-2xl font-bold text-green-400">{formatCurrency(stats.paidAmount)}</p>
+        <NeonGlass primary={config.primaryHex} className="p-5">
+          <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono mb-4">Resumo Financeiro</h2>
+          <div className={`grid gap-3 ${stats.paymentScore ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-1 sm:grid-cols-3'}`}>
+            <div className="rounded-lg p-3 text-center bg-emerald-500/8 border border-emerald-500/20">
+              <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Recebido</p>
+              <p className="text-lg font-black text-emerald-400 font-mono leading-tight">{formatCurrency(stats.paidAmount)}</p>
             </div>
-            <div>
-              <p className="text-sm text-slate-300">FATURAMENTO PENDENTE</p>
-              <p className="text-2xl font-bold text-amber-400">{formatCurrency(stats.unpaidAmount)}</p>
+            <div className="rounded-lg p-3 text-center bg-amber-500/8 border border-amber-500/20">
+              <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Pendente</p>
+              <p className="text-lg font-black text-amber-400 font-mono leading-tight">{formatCurrency(stats.unpaidAmount)}</p>
             </div>
-            <div>
-              <p className="text-sm text-slate-300">FATURAMENTO TOTAL</p>
-              <p className="text-2xl font-bold text-white">{formatCurrency(stats.totalRevenue)}</p>
+            <div className="rounded-lg p-3 text-center bg-slate-800/60 border border-slate-700/60">
+              <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Total</p>
+              <p className="text-lg font-black text-slate-200 font-mono leading-tight">{formatCurrency(stats.totalRevenue)}</p>
             </div>
             {stats.paymentScore && (
-              <div>
-                <p className="text-sm text-slate-300">CONFIABILIDADE</p>
-                <p className={`text-2xl font-bold ${stats.paymentScore.textColor}`}>
-                  {stats.paymentScore.label}
-                </p>
-                <div className="mt-2 h-1.5 bg-slate-700 rounded-full overflow-hidden mx-auto max-w-[80px]">
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{ width: `${stats.paymentScore.pct}%`, backgroundColor: stats.paymentScore.hex }}
-                  />
+              <div className="rounded-lg p-3 text-center border" style={{ background: `${stats.paymentScore.hex}10`, borderColor: `${stats.paymentScore.hex}30` }}>
+                <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Confiabilidade</p>
+                <p className="text-base font-black leading-tight" style={{ color: stats.paymentScore.hex }}>{stats.paymentScore.label}</p>
+                <div className="mt-1.5 h-1 bg-slate-700 rounded-full overflow-hidden mx-auto max-w-[60px]">
+                  <div className="h-full rounded-full" style={{ width: `${stats.paymentScore.pct}%`, backgroundColor: stats.paymentScore.hex }} />
                 </div>
-                <p className="text-xs text-slate-500 mt-1">{stats.paymentScore.pct}% dos shows pagos</p>
+                <p className="text-[10px] text-slate-500 mt-1">{stats.paymentScore.pct}%</p>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </NeonGlass>
 
         <ClientInteractionLog clientId={client?.id} />
 
