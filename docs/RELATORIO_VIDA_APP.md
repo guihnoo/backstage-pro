@@ -64,6 +64,7 @@
 | Lapidação duplicidades (2026-06-15) | `CalendarPageHeader`: removido resumo financeiro redundante; `Calendar`: removido 5º StatCard "Clientes"; `Goals`: 4→2 cards (removidos Recebido + A Receber já nos círculos); `EventDetailModal`: fusão "Resultado do Show" → "Financeiro" |
 | S101-S103 (2026-06-15) | `PipelineFinanceiro`: Despesas + Resultado Líquido do mês; `AReceber`: badge "Xd atraso" / "show em Xd"; `EventForm`: repetição de evento (N vezes a cada semana/mês) |
 | S104-S107 (2026-06-15) | `MetaMensalBar`: ritmo do mês (dia X/Y + projeção de receita); `Goals`: cadência "1 show a cada X dias" + alerta ritmo; `Expenses`: mês atual expandido, meses passados colapsados; `ForecastWidget`: "X% da meta do mês" abaixo da receita projetada |
+| S108-S109 (2026-06-15) | `ProximoShow`: badge "HOJE" âmbar pulsante + countdown "Show hoje às HH:mm" + borda/linha âmbar quando show é hoje; `EventForm`: hint de cachê histórico do cliente (último + média dos 3 últimos) com botão "Usar" |
 
 ---
 

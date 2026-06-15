@@ -6,6 +6,13 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-15
 
+### S108-S109 — ProximoShow badge "HOJE", EventForm sugestão de cachê (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **S108 — ProximoShow: show hoje** (`ProximoShow.jsx`): detecta `isToday = !live && eventDateStr === todayStr`; badge âmbar "HOJE" pulsante no header; countdown substituído por "Show hoje às HH:mm · faltam Xh Ymin" com fundo e borda colorida pela categoria; borda do card muda para `amber-950/20 border-amber-500/40`; linha âmbar tênue no topo (como a linha vermelha do AO VIVO)
+- **S109 — EventForm: histórico de cachê por cliente** (`EventForm.jsx`): `clientCacheHint` useMemo filtra eventos do cliente com `daily_cache_value > 0`, ordena por data desc, pega últimos 3; exibe "Histórico: R$ X último · R$ Y média" + botão "Usar" que preenche o campo; só aparece ao criar (não ao editar), desaparece quando não há histórico
+- **ESLint**: 0 erros, 0 warnings
+- **Build**: Vite ✅
+
 ### S104-S107 — Ritmo do Mês, Cadência Goals, Expenses colapsado, ForecastWidget % meta (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **S104 — MetaMensalBar: ritmo do mês** (`MetaMensalBar.jsx`): linha adicionada abaixo das barras de progresso — "Dia X/Y · Z% do mês" + "projeção R$ X.XXX" (verde se acima da meta, âmbar se 75%+, vermelho abaixo); só exibe quando metas não foram 100% batidas
