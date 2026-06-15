@@ -44,6 +44,79 @@ import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 import { hardNavigate } from '@/lib/hardNavigate';
 
+const EventLifecycleBar = ({ event, dailyWork = [] }) => {
+  const status = getEventStatus(event);
+  const isCancelled = status === 'cancelled';
+  if (isCancelled) return null;
+
+  const steps = [
+    {
+      label: 'Agendado',
+      done: true,
+      color: '#6366f1',
+    },
+    {
+      label: 'Realizado',
+      done: status === 'completed',
+      color: '#22c55e',
+    },
+    {
+      label: 'Horas',
+      done: dailyWork.length > 0,
+      color: '#818cf8',
+    },
+    {
+      label: 'Pago',
+      done: event.payment_status === 'paid',
+      color: '#34d399',
+    },
+  ];
+
+  const doneCount = steps.filter(s => s.done).length;
+
+  return (
+    <div className="px-3 sm:px-4 md:px-6 py-3 border-b border-slate-800 bg-slate-900/60 flex-shrink-0">
+      <div className="flex items-center gap-0">
+        {steps.map((step, i) => (
+          <React.Fragment key={step.label}>
+            <div className="flex flex-col items-center gap-1 flex-shrink-0">
+              <div
+                className="w-6 h-6 rounded-full flex items-center justify-center border-2 transition-all"
+                style={{
+                  backgroundColor: step.done ? step.color : 'transparent',
+                  borderColor: step.done ? step.color : '#475569',
+                }}
+              >
+                {step.done && (
+                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
+              <span className={`text-[9px] font-medium leading-none ${step.done ? 'text-slate-300' : 'text-slate-600'}`}>
+                {step.label}
+              </span>
+            </div>
+            {i < steps.length - 1 && (
+              <div
+                className="flex-1 h-0.5 mb-4 transition-colors"
+                style={{ backgroundColor: steps[i + 1].done ? steps[i].color : '#334155' }}
+              />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+      {doneCount < steps.length && (
+        <p className="text-[10px] text-slate-500 mt-1">
+          {doneCount === 1 && 'Registre horas ou marque o evento como concluído'}
+          {doneCount === 2 && 'Registre as horas trabalhadas neste evento'}
+          {doneCount === 3 && 'Aguardando confirmação de pagamento'}
+        </p>
+      )}
+    </div>
+  );
+};
+
 const InfoItem = ({ icon: Icon, label, value, color = 'text-slate-300', isCurrency = false, formatFn }) => {
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const displayValue = formatFn ? formatFn(value) : isCurrency ? formatCurrency(value) : value;
@@ -264,6 +337,8 @@ const EventDetailModal = React.memo(function EventDetailModal({
               </Button>
             </div>
           </DialogHeader>
+
+          <EventLifecycleBar event={event} dailyWork={dailyWork} />
 
           <ScrollArea fill>
             <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-5 pb-safe">
