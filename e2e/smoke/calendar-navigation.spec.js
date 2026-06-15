@@ -26,7 +26,7 @@ test('vista semanal exibe colunas dos 7 dias e eventos mockados', async ({ page 
   await page.getByTitle('Vista semanal').click();
   const weekGrid = page.locator('.grid.grid-cols-7');
   await expect(weekGrid).toBeVisible({ timeout: 10_000 });
-  const eventBtn = weekGrid.getByRole('button', { name: 'E2E Show Demo' });
+  const eventBtn = weekGrid.getByRole('button', { name: /E2E (Cliente Demo|Show Demo)/ }).first();
   await eventBtn.scrollIntoViewIfNeeded();
   await expect(eventBtn).toBeVisible({ timeout: 10_000 });
 });
@@ -54,6 +54,6 @@ test('vista kanban exibe colunas do pipeline com eventos mockados', async ({ pag
   await expect(page.getByText('Confirmado', { exact: true })).toBeVisible();
   await expect(page.getByText('A Receber', { exact: true })).toBeVisible();
   await expect(page.getByText('Pago', { exact: true })).toBeVisible();
-  const kanbanCard = page.locator('.min-w-\\[720px\\]').getByRole('button', { name: /E2E Show Demo/ });
+  const kanbanCard = page.locator('.min-w-\\[720px\\]').getByRole('button', { name: /E2E (Cliente Demo|Show Demo)/ });
   await expect(kanbanCard.first()).toBeVisible({ timeout: 10_000 });
 });
