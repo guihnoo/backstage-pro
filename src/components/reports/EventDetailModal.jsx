@@ -509,7 +509,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
               {onAddWork && (
                 <Button
                   variant="outline"
-                  onClick={() => { onAddWork(event); onClose(); }}
+                  onClick={() => onAddWork(event)}
                   className="flex-1 sm:flex-none bg-slate-800 border-indigo-600/50 hover:bg-indigo-900/20 text-indigo-300 text-xs sm:text-sm h-10 min-h-[44px]"
                 >
                   <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Horas
@@ -518,7 +518,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
               {onAddExpense && (
                 <Button
                   variant="outline"
-                  onClick={() => { onAddExpense(event); onClose(); }}
+                  onClick={() => onAddExpense(event)}
                   className="flex-1 sm:flex-none bg-slate-800 border-amber-600/50 hover:bg-amber-900/20 text-amber-400 text-xs sm:text-sm h-10 min-h-[44px]"
                 >
                   <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Despesa
