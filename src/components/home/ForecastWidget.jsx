@@ -56,7 +56,7 @@ export default function ForecastWidget({ events = [], isLoading, primaryHex = AU
           <div className="flex items-center gap-2">
             <TrendingUp className="w-4 h-4" style={{ color: accentHex }} />
             <div>
-              <p className="text-sm font-bold text-white">Forecast 30 dias</p>
+              <p className="text-sm font-bold text-white">Próximos 30 dias</p>
               <p className="text-[10px] font-mono text-[#7c8494] mt-0.5">
                 {upcoming.length} show{upcoming.length !== 1 ? 's' : ''} agendado{upcoming.length !== 1 ? 's' : ''}
               </p>
