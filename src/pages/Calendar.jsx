@@ -1,5 +1,5 @@
 ﻿
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useQueryAction } from '@/lib/useQueryAction';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -379,6 +379,31 @@ export default function CalendarPage() {
     setCurrentDate(today);
     closeModals();
   }, [closeModals]);
+
+  // Swipe navigation (touch devices)
+  const swipeTouchStart = useRef(null);
+  const swipeTouchStartY = useRef(null);
+
+  const handleGridTouchStart = useCallback((e) => {
+    swipeTouchStart.current = e.touches[0].clientX;
+    swipeTouchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleGridTouchEnd = useCallback((e) => {
+    if (swipeTouchStart.current === null) return;
+    const dx = e.changedTouches[0].clientX - swipeTouchStart.current;
+    const dy = e.changedTouches[0].clientY - swipeTouchStartY.current;
+    swipeTouchStart.current = null;
+    swipeTouchStartY.current = null;
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    if (dx < 0) {
+      if (viewMode === 'week') setWeekStart(w => addWeeks(w, 1));
+      else goToNextMonth();
+    } else {
+      if (viewMode === 'week') setWeekStart(w => subWeeks(w, 1));
+      else goToPreviousMonth();
+    }
+  }, [viewMode, goToNextMonth, goToPreviousMonth]);
 
   const handleNewEvent = useCallback(
     (date = null) => {
@@ -1326,7 +1351,11 @@ export default function CalendarPage() {
 
         {/* Grade, Semana ou Lista */}
         {viewMode === 'grid' ? (
-          <Card className="bg-slate-900/50 border-slate-800 overflow-hidden">
+          <Card
+            className="bg-slate-900/50 border-slate-800 overflow-hidden"
+            onTouchStart={handleGridTouchStart}
+            onTouchEnd={handleGridTouchEnd}
+          >
             <CardContent className="p-0">
               <BackstageCalendarGrid
                 currentDate={currentDate}
@@ -1342,7 +1371,11 @@ export default function CalendarPage() {
             </CardContent>
           </Card>
         ) : viewMode === 'week' ? (
-          <div className="space-y-3">
+          <div
+            className="space-y-3"
+            onTouchStart={handleGridTouchStart}
+            onTouchEnd={handleGridTouchEnd}
+          >
             {/* Banner "Hoje" — aparece apenas quando a semana exibida contém hoje */}
             {(() => {
               const todayIso = format(new Date(), 'yyyy-MM-dd');

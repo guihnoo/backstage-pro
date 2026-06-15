@@ -286,6 +286,7 @@ export default function ReportsPage() {
   const [selectedPeriod, setSelectedPeriod] = useState('this_month');
   const [selectedView, setSelectedView] = useState('overview');
   const [showProjection, setShowProjection] = useState(false);
+  const [selectedClientFilter, setSelectedClientFilter] = useState(null);
 
   // Modal states
   const [modalOpen, setModalOpen] = useState(false);
@@ -607,13 +608,25 @@ export default function ReportsPage() {
     setChartFilter(null);
   };
 
+  // Clientes presentes nos eventos do período atual
+  const clientsInPeriod = useMemo(() => {
+    const clientIds = new Set(processedData.current.events.map((e) => e.client_id).filter(Boolean));
+    return data.clients.filter((c) => clientIds.has(c.id));
+  }, [processedData, data.clients]);
+
+  // Eventos do período filtrados por cliente (se houver filtro ativo)
+  const clientFilteredEvents = useMemo(() => {
+    if (!selectedClientFilter) return processedData.current.events;
+    return processedData.current.events.filter((e) => e.client_id === selectedClientFilter);
+  }, [processedData, selectedClientFilter]);
+
   // Memo para filtrar a lista de eventos com base no clique do gráfico
   const filteredEventList = useMemo(() => {
     if (!chartFilter || !chartFilter.date) {
-      return processedData.current.events;
+      return clientFilteredEvents;
     }
 
-    return processedData.current.events.filter(event => {
+    return clientFilteredEvents.filter(event => {
       const eventStartDate = event.start_date ? event.start_date.split('T')[0] : null;
       const eventPaidDate = event.paid_date ? event.paid_date.split('T')[0] : null;
 
@@ -634,7 +647,7 @@ export default function ReportsPage() {
       // Fallback para despesas no modo geral e outras visualizações
       return eventStartDate === chartFilter.date;
     });
-  }, [processedData, chartFilter]);
+  }, [clientFilteredEvents, chartFilter]);
 
   // Handlers para o EventDetailModal
   const handleEventEdit = () => {
@@ -812,6 +825,29 @@ export default function ReportsPage() {
             </button>
           ))}
         </div>
+
+        {/* Filtro por cliente — só exibe quando há mais de 1 cliente no período */}
+        {clientsInPeriod.length > 1 && (
+          <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none -mt-4">
+            <button
+              type="button"
+              onClick={() => setSelectedClientFilter(null)}
+              className={`flex-shrink-0 text-[11px] font-medium px-3 py-1 rounded-full border transition-all ${!selectedClientFilter ? 'bp-chip-active' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
+            >
+              Todos
+            </button>
+            {clientsInPeriod.map(client => (
+              <button
+                key={client.id}
+                type="button"
+                onClick={() => setSelectedClientFilter(client.id === selectedClientFilter ? null : client.id)}
+                className={`flex-shrink-0 text-[11px] font-medium px-3 py-1 rounded-full border transition-all max-w-[140px] truncate ${selectedClientFilter === client.id ? 'bp-chip-active' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
+              >
+                {getClientDisplayName(client) || client.name}
+              </button>
+            ))}
+          </div>
+        )}
 
         <BrazilVisitedMap events={data.events} clients={data.clients} />
 

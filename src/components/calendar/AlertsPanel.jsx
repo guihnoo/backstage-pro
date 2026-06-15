@@ -187,26 +187,42 @@ export default function AlertsPanel({
       }
     });
 
-    if (missingDayAlerts.length > 0 && !dismissedAlerts.has('crm_missing_days')) {
-      const first = missingDayAlerts[0];
-      const totalMissing = missingDayAlerts.reduce((sum, a) => sum + a.missingDays.length, 0);
-      const dayLabel = totalMissing === 1 ? 'dia' : 'dias';
-      newAlerts.push({
-        id: 'crm_missing_days',
-        kind: 'crm',
-        title: totalMissing === 1
-          ? 'Horas de ontem não registradas'
-          : `${totalMissing} ${dayLabel} sem horas`,
-        body: missingDayAlerts.length === 1
-          ? `"${first.event.title || 'Evento'}" tem ${first.missingDays.length} ${dayLabel} sem registro de trabalho.`
-          : `${missingDayAlerts.length} eventos têm dias sem registro de horas.`,
-        icon: ClipboardList,
-        accentHex: theme.primaryHex,
-        cta: {
-          label: 'Ver evento',
-          action: () => onOpenEvent?.(first.event),
-        },
+    // Um alerta por evento (máx 3), depois resumo para o restante
+    if (missingDayAlerts.length > 0) {
+      missingDayAlerts.slice(0, 3).forEach(({ event, missingDays }) => {
+        const alertId = `crm_missing_days_${event.id}`;
+        if (dismissedAlerts.has(alertId)) return;
+        const dayLabel = missingDays.length === 1 ? 'dia' : 'dias';
+        newAlerts.push({
+          id: alertId,
+          kind: 'crm',
+          title: missingDays.length === 1
+            ? 'Ontem sem registro de horas'
+            : `${missingDays.length} ${dayLabel} sem horas`,
+          body: `"${event.title || 'Evento'}" — ${missingDays.length} ${dayLabel} sem lançamento. Registre para fechar o evento.`,
+          icon: ClipboardList,
+          accentHex: theme.primaryHex,
+          cta: {
+            label: 'Registrar agora',
+            action: () => onOpenEvent?.(event),
+          },
+        });
       });
+      if (missingDayAlerts.length > 3 && !dismissedAlerts.has('crm_missing_days_others')) {
+        const remaining = missingDayAlerts.length - 3;
+        newAlerts.push({
+          id: 'crm_missing_days_others',
+          kind: 'crm',
+          title: `+${remaining} evento${remaining > 1 ? 's' : ''} com horas pendentes`,
+          body: `Outros ${remaining} evento${remaining > 1 ? 's' : ''} têm dias sem registro de trabalho.`,
+          icon: ClipboardList,
+          accentHex: theme.primaryHex,
+          cta: {
+            label: 'Ver agenda',
+            action: () => onOpenEvent?.(missingDayAlerts[3].event),
+          },
+        });
+      }
     }
 
     // Regra CRM: Horas pendentes em eventos recentes (últimos 14 dias) — zero horas no total

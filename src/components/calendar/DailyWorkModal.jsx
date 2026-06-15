@@ -6,8 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Clock, Loader2, Info } from 'lucide-react';
+import { Clock, Loader2, Info, Timer } from 'lucide-react';
 import appToast from '@/lib/appToast';
+import { getTimer, getElapsedMs, formatElapsed, elapsedToHours } from '@/lib/timerStore';
 import { normalizeDateString, formatDisplayDate } from '@/components/utils/dateUtils';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { useAuth } from '@/lib/authContext';
@@ -63,6 +64,23 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState(emptyState);
+
+  // Timer ativo para este evento
+  const [activeTimer, setActiveTimer] = useState(() => getTimer());
+  useEffect(() => {
+    const handler = (e) => setActiveTimer(e.detail);
+    window.addEventListener('backstage:timer', handler);
+    return () => window.removeEventListener('backstage:timer', handler);
+  }, []);
+  const timerForThisEvent = activeTimer?.eventId === event?.id ? activeTimer : null;
+  const [timerElapsed, setTimerElapsed] = useState(0);
+  useEffect(() => {
+    if (!timerForThisEvent) { setTimerElapsed(0); return; }
+    const tick = () => setTimerElapsed(getElapsedMs(timerForThisEvent));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [timerForThisEvent]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -176,6 +194,33 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                   <p className="text-xs text-slate-400">Registrando para {formatDisplayDate(formData.date)}</p>
                 )}
               </div>
+
+              {/* Banner de timer ativo */}
+              {timerForThisEvent && (
+                <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                  <div className="flex items-center gap-2 text-amber-400 text-sm">
+                    <Timer className="w-4 h-4 flex-shrink-0 animate-pulse" />
+                    <span>Timer ativo: <span className="font-mono font-bold">{formatElapsed(timerElapsed)}</span></span>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="text-xs border-amber-500/40 text-amber-300 hover:bg-amber-500/20 flex-shrink-0"
+                    onClick={() => {
+                      const hours = elapsedToHours(timerElapsed);
+                      const totalMin = Math.round(hours * 60);
+                      const h = Math.floor(totalMin / 60);
+                      const m = totalMin % 60;
+                      const exitH = (parseInt(formData.entry_time?.split(':')[0] || '0', 10) + h) % 24;
+                      const exitM = (parseInt(formData.entry_time?.split(':')[1] || '0', 10) + m) % 60;
+                      setField('exit_time', `${String(exitH).padStart(2,'0')}:${String(exitM).padStart(2,'0')}`);
+                    }}
+                  >
+                    Usar tempo
+                  </Button>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
