@@ -1,5 +1,6 @@
 ﻿import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import { differenceInDays, parseISO } from 'date-fns';
+import { differenceInDays, parseISO, format, isValid } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,11 +8,13 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Sparkles, BookmarkPlus } from 'lucide-react';
+import { Loader2, Sparkles, BookmarkPlus, TrendingUp, Star, CalendarDays } from 'lucide-react';
 import appToast from '@/lib/appToast';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { normalizeDateString } from '@/components/utils/dateUtils';
 import { useEvents } from '@/lib/useEvents';
+import { getEventCacheAmount, isCancelledEvent } from '@/lib/eventFinance';
+import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { useAuth } from '@/lib/authContext';
 import { EventTemplate } from '@/api/entities';
 import EventTemplateModal from './EventTemplateModal';
@@ -61,8 +64,9 @@ export default function EventForm({
 }) {
   const { user, profile } = useAuth();
   const theme = useCategoryTheme();
-  const { create: createEvent, update: updateEvent } = useEvents();
+  const { create: createEvent, update: updateEvent, events: allEvents } = useEvents();
   const { create: createClient } = useClients();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
   const [extraClients, setExtraClients] = useState([]);
   const [loading, setLoading] = useState(false);
   const [savingTemplate, setSavingTemplate] = useState(false);
@@ -117,6 +121,27 @@ export default function EventForm({
     [allClients, formData.client_id],
   );
 
+  const clientHistory = useMemo(() => {
+    if (!formData.client_id || !allEvents.length) return null;
+    const clientEvents = allEvents.filter(
+      (e) => e.client_id === formData.client_id && !isCancelledEvent(e)
+    );
+    if (clientEvents.length === 0) return null;
+    const totalShows = clientEvents.length;
+    const totalRevenue = clientEvents.reduce((sum, e) => sum + getEventCacheAmount(e), 0);
+    const avgCache = totalRevenue / totalShows;
+    const paidCount = clientEvents.filter((e) => e.payment_status === 'paid').length;
+    const completedCount = clientEvents.filter((e) => e.status === 'completed').length;
+    const score = completedCount > 0 ? Math.round((paidCount / completedCount) * 100) : null;
+    const sorted = [...clientEvents].sort((a, b) =>
+      (b.start_date || '') > (a.start_date || '') ? 1 : -1
+    );
+    const lastShowDate = sorted[0]?.start_date || null;
+    const isCurrentEvent = event && sorted[0]?.id === event?.id;
+    const lastForDisplay = isCurrentEvent ? sorted[1]?.start_date || null : lastShowDate;
+    return { totalShows, avgCache, score, lastShowDate: lastForDisplay };
+  }, [formData.client_id, allEvents, event]);
+
   const handleCreateClient = useCallback(async (data) => {
     try {
       const created = await createClient(data);
@@ -129,6 +154,25 @@ export default function EventForm({
       throw error;
     }
   }, [createClient]);
+
+  const conflictingEvents = useMemo(() => {
+    if (!formData.start_date) return [];
+    try {
+      const newStart = parseISO(formData.start_date);
+      const newEnd = parseISO(formData.end_date || formData.start_date);
+      if (!isValid(newStart) || !isValid(newEnd)) return [];
+      return allEvents.filter((e) => {
+        if (isCancelledEvent(e)) return false;
+        if (event && e.id === event.id) return false;
+        if (!e.start_date) return false;
+        try {
+          const eStart = parseISO(e.start_date);
+          const eEnd = parseISO(e.end_date || e.start_date);
+          return isValid(eStart) && isValid(eEnd) && eStart <= newEnd && eEnd >= newStart;
+        } catch { return false; }
+      });
+    } catch { return []; }
+  }, [formData.start_date, formData.end_date, allEvents, event]);
 
   const eventSummary = useMemo(() => {
     const daily = Number(formData.daily_cache_value) || 0;
@@ -326,6 +370,33 @@ export default function EventForm({
                 onQuickCreateOpenChange={setClientQuickCreateOpen}
               />
             )}
+            {clientHistory && (
+              <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-slate-800/60 border border-slate-700/50 text-xs">
+                <div className="flex items-center gap-1 text-slate-400">
+                  <CalendarDays className="w-3.5 h-3.5 shrink-0" />
+                  <span><span className="font-semibold text-white">{clientHistory.totalShows}</span> show{clientHistory.totalShows !== 1 ? 's' : ''}</span>
+                </div>
+                <span className="text-slate-700">·</span>
+                <div className="flex items-center gap-1 text-slate-400">
+                  <TrendingUp className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
+                  <span>Média <span className="font-semibold text-white">{isVisible ? formatCurrency(clientHistory.avgCache) : '•••••'}</span></span>
+                </div>
+                {clientHistory.score !== null && (
+                  <>
+                    <span className="text-slate-700">·</span>
+                    <div className="flex items-center gap-1">
+                      <Star className={`w-3.5 h-3.5 shrink-0 ${clientHistory.score >= 80 ? 'text-emerald-400' : clientHistory.score >= 50 ? 'text-amber-400' : 'text-rose-400'}`} />
+                      <span className={`font-semibold ${clientHistory.score >= 80 ? 'text-emerald-400' : clientHistory.score >= 50 ? 'text-amber-400' : 'text-rose-400'}`}>{clientHistory.score}%</span>
+                    </div>
+                  </>
+                )}
+                {clientHistory.lastShowDate && (
+                  <>
+                    <span className="text-slate-700 ml-auto">último {format(parseISO(clientHistory.lastShowDate), "dd/MM/yy")}</span>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -348,6 +419,31 @@ export default function EventForm({
               <Input type="date" value={formData.end_date} onChange={(e) => setField('end_date', e.target.value)} className="bg-slate-800 border-slate-700" />
             </div>
           </div>
+
+          {conflictingEvents.length > 0 && (
+            <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg bg-amber-500/10 border border-amber-500/40 text-xs">
+              <span className="text-amber-400 text-base leading-none mt-0.5">⚠</span>
+              <div className="space-y-1 min-w-0">
+                <p className="font-semibold text-amber-300">
+                  {conflictingEvents.length === 1 ? 'Conflito de agenda' : `${conflictingEvents.length} conflitos de agenda`}
+                </p>
+                <div className="space-y-0.5">
+                  {conflictingEvents.slice(0, 3).map((e) => {
+                    const client = allClients.find((c) => c.id === e.client_id);
+                    return (
+                      <p key={e.id} className="text-amber-200/70 truncate">
+                        {e.title || client?.name || 'Evento sem nome'} — {e.start_date ? format(parseISO(e.start_date), 'dd/MM', { locale: ptBR }) : '?'}
+                        {e.end_date && e.end_date !== e.start_date ? ` a ${format(parseISO(e.end_date), 'dd/MM', { locale: ptBR })}` : ''}
+                      </p>
+                    );
+                  })}
+                  {conflictingEvents.length > 3 && (
+                    <p className="text-amber-200/50">+{conflictingEvents.length - 3} mais…</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {event?.id && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

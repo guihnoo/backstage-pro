@@ -6,6 +6,11 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-14
 
+### DESIGN-S75 — Checklist + WeekdayBreakdown temáticos (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `EventChecklist.jsx`: ícone, templates e pills com `primaryHex`
+- `WeekdayBreakdown.jsx`: header, KPI + Receita e barras do gráfico com `primaryHex`/`accentHex`
+
 ### DESIGN-S74 — Lifecycle bar temática em Relatórios (Cursor Agent) ✅
 - **Agente**: Cursor (Auto)
 - `reports/EventDetailModal.jsx`: `EventLifecycleBar` usa `primaryHex` (Agendado) e `accentHex` (Horas); verde/esmeralda mantidos como semântica de conclusão/pagamento

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Trash2, CheckSquare, Square, ChevronDown, ChevronUp, ClipboardList } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 const TEMPLATES = {
   audio: {
@@ -28,6 +29,7 @@ const TEMPLATES = {
 };
 
 export function EventChecklist({ items = [], onChange, readOnly = false }) {
+  const { primaryHex } = useCategoryTheme();
   const [collapsed, setCollapsed] = useState(false);
   const [newText, setNewText] = useState('');
   const [showTemplates, setShowTemplates] = useState(false);
@@ -70,7 +72,7 @@ export function EventChecklist({ items = [], onChange, readOnly = false }) {
         onClick={() => setCollapsed(v => !v)}
         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-700/20 transition-colors"
       >
-        <ClipboardList className="w-4 h-4 text-violet-400 shrink-0" />
+        <ClipboardList className="w-4 h-4 shrink-0" style={{ color: primaryHex }} />
         <span className="text-sm font-medium text-white flex-1 text-left">Checklist</span>
         {total > 0 && (
           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
@@ -168,8 +170,10 @@ export function EventChecklist({ items = [], onChange, readOnly = false }) {
                   {/* Actions row */}
                   <div className="flex items-center gap-2 flex-wrap">
                     <button
+                      type="button"
                       onClick={() => setShowTemplates(v => !v)}
-                      className="text-xs text-violet-400 hover:text-violet-300 underline underline-offset-2"
+                      className="text-xs underline underline-offset-2 bp-hover-primary transition-colors"
+                      style={{ color: primaryHex }}
                     >
                       {showTemplates ? 'Fechar templates' : '+ Template rápido'}
                     </button>
@@ -195,8 +199,14 @@ export function EventChecklist({ items = [], onChange, readOnly = false }) {
                         {Object.entries(TEMPLATES).map(([key, tpl]) => (
                           <button
                             key={key}
+                            type="button"
                             onClick={() => applyTemplate(key)}
-                            className="text-xs px-2.5 py-1 rounded-full border border-violet-500/40 text-violet-300 hover:bg-violet-500/10 transition-colors"
+                            className="text-xs px-2.5 py-1 rounded-full border transition-colors hover:opacity-90"
+                            style={{
+                              borderColor: `${primaryHex}66`,
+                              color: primaryHex,
+                              backgroundColor: `${primaryHex}14`,
+                            }}
                           >
                             {tpl.label}
                           </button>
