@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import { differenceInDays, parseISO, format, isValid } from 'date-fns';
+import { differenceInDays, parseISO, format, isValid, addWeeks, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Sparkles, BookmarkPlus, TrendingUp, Star, CalendarDays } from 'lucide-react';
+import { Loader2, Sparkles, BookmarkPlus, TrendingUp, Star, CalendarDays, Repeat2 } from 'lucide-react';
 import appToast from '@/lib/appToast';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { normalizeDateString } from '@/components/utils/dateUtils';
@@ -73,6 +73,9 @@ export default function EventForm({
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [clientQuickCreateOpen, setClientQuickCreateOpen] = useState(false);
   const [formData, setFormData] = useState(defaultState);
+  const [repeatEnabled, setRepeatEnabled] = useState(false);
+  const [repeatTimes, setRepeatTimes] = useState(3);
+  const [repeatUnit, setRepeatUnit] = useState('weeks');
 
   useEffect(() => {
     if (!isOpen) return;
@@ -295,7 +298,22 @@ export default function EventForm({
         appToast.success('Evento atualizado', { description: 'Alterações salvas com sucesso.' });
       } else {
         await createEvent(payload);
-        appToast.success('Evento criado', { description: 'Já está na sua agenda.' });
+        if (repeatEnabled && repeatTimes > 0) {
+          const addFn = repeatUnit === 'weeks' ? addWeeks : addMonths;
+          const startBase = parseISO(payload.start_date);
+          const endBase = parseISO(payload.end_date || payload.start_date);
+          for (let i = 1; i <= repeatTimes; i++) {
+            await createEvent({
+              ...payload,
+              start_date: format(addFn(startBase, i), 'yyyy-MM-dd'),
+              end_date: format(addFn(endBase, i), 'yyyy-MM-dd'),
+              payment_status: 'pending',
+            });
+          }
+          appToast.success(`${repeatTimes + 1} eventos criados`, { description: `Série de ${repeatTimes + 1} shows adicionada à agenda.` });
+        } else {
+          appToast.success('Evento criado', { description: 'Já está na sua agenda.' });
+        }
       }
 
       onSuccess?.();
@@ -543,6 +561,59 @@ export default function EventForm({
             <Label>Observações</Label>
             <Textarea value={formData.observacoes_md} onChange={(e) => setField('observacoes_md', e.target.value)} className="bg-slate-800 border-slate-700" />
           </div>
+
+          {!event?.id && (
+            <div className="rounded-xl border border-slate-700/60 bg-slate-800/30 p-4 space-y-3">
+              <button
+                type="button"
+                onClick={() => setRepeatEnabled(v => !v)}
+                className="flex items-center gap-2 w-full text-left"
+              >
+                <Repeat2 className={`w-4 h-4 flex-shrink-0 transition-colors ${repeatEnabled ? 'text-amber-400' : 'text-slate-500'}`} />
+                <span className={`text-sm font-medium transition-colors ${repeatEnabled ? 'text-white' : 'text-slate-400'}`}>
+                  Repetir este evento
+                </span>
+                <div className={`ml-auto w-8 h-4 rounded-full transition-colors flex-shrink-0 ${repeatEnabled ? 'bg-amber-500' : 'bg-slate-700'}`}>
+                  <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${repeatEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
+                </div>
+              </button>
+              {repeatEnabled && (
+                <div className="flex items-center gap-2 pl-6">
+                  <span className="text-xs text-slate-400 whitespace-nowrap">Repetir</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={24}
+                    value={repeatTimes}
+                    onChange={e => setRepeatTimes(Math.max(1, Math.min(24, Number(e.target.value))))}
+                    className="w-14 text-center bg-slate-800 border border-slate-600 rounded-lg text-white text-sm h-8 font-mono"
+                  />
+                  <span className="text-xs text-slate-400 whitespace-nowrap">vezes a cada</span>
+                  <div className="flex gap-1">
+                    {[{ v: 'weeks', l: 'Semana' }, { v: 'months', l: 'Mês' }].map(opt => (
+                      <button
+                        key={opt.v}
+                        type="button"
+                        onClick={() => setRepeatUnit(opt.v)}
+                        className={`px-3 h-8 rounded-lg text-xs font-semibold transition-colors ${
+                          repeatUnit === opt.v
+                            ? 'bg-amber-500/20 border border-amber-500/50 text-amber-300'
+                            : 'bg-slate-800 border border-slate-700 text-slate-400 hover:border-slate-600'
+                        }`}
+                      >
+                        {opt.l}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {repeatEnabled && (
+                <p className="text-[10px] text-slate-500 pl-6">
+                  Criará {repeatTimes + 1} shows no total · mesmo cliente, horário e cachê
+                </p>
+              )}
+            </div>
+          )}
           </div>
           </ScrollArea>
 

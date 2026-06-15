@@ -28,6 +28,7 @@ import appToast from '@/lib/appToast';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
+import { useExpenses } from '@/lib/useExpenses';
 
 const EventDetailModal = lazy(() => import('@/components/calendar/EventDetailModal'));
 const EventForm = lazy(() => import('@/components/calendar/EventForm'));
@@ -44,6 +45,7 @@ export default function Home() {
   const [confirmDeleteEventId, setConfirmDeleteEventId] = useState(null);
   const { clients } = useClients();
   const { delete: deleteEvent } = useEvents();
+  const { expenses } = useExpenses();
   const userId = user?.id;
   const categoryId = profile?.category || 'lighting';
   const config = getCategoryConfig(categoryId);
@@ -81,6 +83,14 @@ export default function Home() {
   );
 
   const todayWork = useMemo(() => getWorkForDate(dailyWork, today), [dailyWork, today]);
+
+  const currentMonth = today.substring(0, 7); // 'YYYY-MM'
+  const despesasMes = useMemo(
+    () => (expenses || [])
+      .filter(e => (e.expense_date || e.date || '').startsWith(currentMonth))
+      .reduce((sum, e) => sum + (e.amount || 0), 0),
+    [expenses, currentMonth]
+  );
 
   const isShowToday = proximoEvento
     ? isDateBetween(
@@ -276,6 +286,7 @@ export default function Home() {
 
         <PipelineFinanceiro
           stats={stats}
+          despesasMes={despesasMes}
           isLoading={loading}
           primaryHex={config.primaryHex}
           accentHex={config.accentHex}

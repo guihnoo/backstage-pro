@@ -6,6 +6,13 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-15
 
+### S101-S103 — Resultado Líquido, hint AReceber, Repetição de Evento (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **S101 — Resultado Líquido no PipelineFinanceiro** (`PipelineFinanceiro.jsx` + `Home.jsx`): `useExpenses()` carrega despesas do mês; card "Dinheiro nos Trilhos" exibe Despesas + Resultado Líquido (Recebido − Despesas) com ícone TrendingUp/Down; seção só aparece quando há despesas no mês
+- **S102 — Hint "show em Xd" no AReceber** (`AReceber.jsx`): quando `maxDaysOverdue < 0` (show futuro ainda não realizado), exibe badge slate discreto "show em Xd" em vez de nada; eventos vencidos agora mostram "Xd atraso" em vez de apenas "Xd"
+- **S103 — Repetição de Evento no EventForm** (`EventForm.jsx`): seção colapsável "Repetir este evento" ao criar (não ao editar); toggle visual + seletor de vezes (1–24) + unidade (Semana/Mês); cria série de shows com mesmo cliente/horário/cachê; toast informa total criado
+- **Build**: Vite ✅ (47s)
+
 ### LAPIDAÇÃO COMPLETA — Goals + Home (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Goals.jsx**: removido card "Diárias no mês" do grid (duplicava o círculo CircularProgress "Diárias" acima); "Clientes Ativos" passou de card de grid 50% para faixa full-width horizontal (ícone + valor + subtítulo + ChevronRight)

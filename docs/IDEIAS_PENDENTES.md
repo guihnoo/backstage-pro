@@ -139,6 +139,9 @@
 | 98 | Alertas individuais por evento (dias faltantes) | 2026-06-15 | ✅ `AlertsPanel.jsx`: 1 alerta por evento com ID único; máx 3 + resumo p/ restante |
 | 99 | Swipe para navegar meses/semanas na Agenda | 2026-06-15 | ✅ `Calendar.jsx`: touch left/right em grade e vista semanal; threshold 50px |
 | 100 | Indicador de timer ativo no DailyWorkModal | 2026-06-15 | ✅ `DailyWorkModal.jsx`: banner âmbar com tempo ao vivo; "Usar tempo" preenche saída |
+| 101 | Resultado Líquido (Recebido − Despesas) na Home | 2026-06-15 | ✅ `PipelineFinanceiro.jsx`: seção Despesas + Resultado abaixo do Total Pipeline; visível quando há despesas no mês |
+| 102 | Hint "show em Xd" na seção A Receber da Home | 2026-06-15 | ✅ `AReceber.jsx`: badge slate discreto para shows futuros ainda não realizados; "Xd atraso" para vencidos |
+| 103 | Repetição de Evento no formulário de criação | 2026-06-15 | ✅ `EventForm.jsx`: toggle "Repetir este evento" + seletor vezes (1–24) + unidade (Semana/Mês); cria série com mesmo cliente/horário/cachê |
 
 ---
 

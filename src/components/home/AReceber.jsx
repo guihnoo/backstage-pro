@@ -163,10 +163,14 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
                   <span className="text-xs text-slate-500">
                     {row.eventsCount} show{row.eventsCount !== 1 ? 's' : ''}
                   </span>
-                  {row.maxDaysOverdue > 0 && (
+                  {row.maxDaysOverdue > 0 ? (
                     <span className="inline-flex items-center gap-1 text-xs text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full">
                       <AlertTriangle className="w-3 h-3" />
-                      {row.maxDaysOverdue}d
+                      {row.maxDaysOverdue}d atraso
+                    </span>
+                  ) : row.maxDaysOverdue < 0 && (
+                    <span className="text-xs text-slate-500 bg-slate-800/60 px-2 py-0.5 rounded-full">
+                      show em {-row.maxDaysOverdue}d
                     </span>
                   )}
                 </div>
