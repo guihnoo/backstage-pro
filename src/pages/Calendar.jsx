@@ -1563,7 +1563,7 @@ export default function CalendarPage() {
                       ? { label: 'Pago', cls: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' }
                       : ({
                           pending:   { label: 'Pendente',   cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
-                          confirmed: { label: 'Confirmado', cls: 'bg-blue-500/15 text-blue-400 border-blue-500/30' },
+                          confirmed: { label: 'Confirmado', cls: 'bp-surface-primary bp-text-primary border' },
                           completed: { label: 'Concluído',  cls: 'bg-green-500/15 text-green-400 border-green-500/30' },
                           cancelled: { label: 'Cancelado',  cls: 'bg-red-500/15 text-red-400 border-red-500/30' },
                         }[ev.status] || { label: ev.status, cls: 'bg-slate-700 text-slate-400 border-slate-600' });

@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import {
   Calendar,
+  CalendarDays,
   DollarSign,
   Clock,
   Edit,
@@ -97,6 +98,7 @@ export default function EventDetailModal({
   const [savingLocation, setSavingLocation] = useState(false);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [showWorkModal, setShowWorkModal] = useState(false);
+  const [workModalDate, setWorkModalDate] = useState(null); // null = today
   const [showExpenses, setShowExpenses] = useState(true);
   const [locDraft, setLocDraft] = useState({
     location: '',
@@ -415,6 +417,24 @@ export default function EventDetailModal({
     return getEventCacheAmount(event);
   }, [event, eventWork.length]);
 
+  // Build per-day status for multi-day events
+  const eventDays = useMemo(() => {
+    const start = event?.start_date;
+    const end = event?.end_date || event?.start_date;
+    if (!start || !end || start === end) return [];
+    const days = [];
+    const cursor = new Date(start + 'T00:00:00');
+    const last = new Date(end + 'T00:00:00');
+    const now = normalizeDateString(new Date());
+    while (cursor <= last) {
+      const d = normalizeDateString(cursor);
+      const work = eventWork.find(w => normalizeDateString(w.date) === d);
+      days.push({ date: d, work, isToday: d === now, isPast: d < now, isFuture: d > now });
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    return days;
+  }, [event, eventWork]);
+
   const eventExpenses = useMemo(() => {
     if (!event) return [];
     return (expenses || []).filter(e => e.event_id === event.id);
@@ -573,7 +593,7 @@ export default function EventDetailModal({
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => setShowWorkModal(true)}
+                              onClick={() => { setWorkModalDate(null); setShowWorkModal(true); }}
                               className="h-7 px-2 text-xs border-slate-600 hover:bg-slate-700"
                             >
                               <Plus className="w-3 h-3 mr-1" />
@@ -913,6 +933,58 @@ export default function EventDetailModal({
               </Card>
             )}
 
+            {/* Timeline de dias — aparece apenas em eventos multi-dia */}
+            {eventDays.length > 0 && (
+              <Card className="bg-slate-800/50 border-slate-700">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center gap-2 text-slate-300">
+                    <CalendarDays className="w-4 h-4 bp-text-primary" />
+                    Dias do evento
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {eventDays.map(({ date, work, isToday, isPast, isFuture }) => {
+                      const label = format(new Date(date + 'T00:00:00'), 'd MMM', { locale: ptBR });
+                      const canRegister = isToday || isPast;
+                      return (
+                        <button
+                          key={date}
+                          type="button"
+                          disabled={isFuture}
+                          onClick={() => {
+                            if (!canRegister) return;
+                            setWorkModalDate(date);
+                            setShowWorkModal(true);
+                          }}
+                          className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg border text-xs font-medium transition-all ${
+                            work
+                              ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
+                              : isToday
+                              ? 'border-2 text-white hover:opacity-80'
+                              : isPast
+                              ? 'bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20'
+                              : 'bg-slate-800 border-slate-700 text-slate-600 cursor-not-allowed'
+                          }`}
+                          style={isToday && !work ? { borderColor: primaryHex, background: `${primaryHex}20`, color: primaryHex } : undefined}
+                        >
+                          <span>{label}</span>
+                          <span className="text-[9px] opacity-80">
+                            {work ? `${work.total_hours || 0}h` : isToday ? 'hoje' : isPast ? 'faltou' : '—'}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {eventDays.some(d => d.isPast && !d.work) && (
+                    <p className="text-[11px] text-red-400/70 mt-2">
+                      Toque num dia vermelho para registrar as horas em atraso.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
             {/* Registros de Trabalho */}
             {eventWork.length > 0 && (
               <Card className="bg-slate-800/50 border-slate-700">
@@ -1002,7 +1074,7 @@ export default function EventDetailModal({
         <DialogFooter className="px-6 py-4 border-t border-slate-800 flex-row gap-2 flex-wrap flex-shrink-0">
           {todayInEventRange ? (
             <Button
-              onClick={() => setShowWorkModal(true)}
+              onClick={() => { setWorkModalDate(null); setShowWorkModal(true); }}
               className="flex-1 min-w-[120px] hover:opacity-90"
               style={{ backgroundColor: primaryHex }}
             >
@@ -1165,10 +1237,10 @@ export default function EventDetailModal({
 
     <DailyWorkModal
       isOpen={showWorkModal}
-      onClose={() => setShowWorkModal(false)}
-      date={new Date()}
+      onClose={() => { setShowWorkModal(false); setWorkModalDate(null); }}
+      date={workModalDate ? new Date(workModalDate + 'T00:00:00') : new Date()}
       event={event}
-      onSuccess={() => setShowWorkModal(false)}
+      onSuccess={() => { setShowWorkModal(false); setWorkModalDate(null); }}
     />
 
     <ExpenseForm
