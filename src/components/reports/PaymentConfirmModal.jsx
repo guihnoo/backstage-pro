@@ -10,8 +10,8 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import appToast from '@/lib/appToast';
 import { useEvents } from '@/lib/useEvents';
-import { Ellipsis } from '@/components/ui/overflowText';
 import { getEventCacheAmount } from '@/lib/eventFinance';
+import EventHeading from '@/components/events/EventHeading';
 
 const PAYMENT_METHODS = [
   { value: 'pix', label: 'PIX' },
@@ -21,7 +21,7 @@ const PAYMENT_METHODS = [
   { value: 'cheque', label: 'Cheque' },
 ];
 
-export default function PaymentConfirmModal({ event, isOpen, onClose, onSuccess }) {
+export default function PaymentConfirmModal({ event, client, isOpen, onClose, onSuccess }) {
   const { update: updateEvent } = useEvents();
   const [paidAmount, setPaidAmount] = useState('');
   const [paidDate, setPaidDate] = useState(new Date());
@@ -78,7 +78,7 @@ export default function PaymentConfirmModal({ event, isOpen, onClose, onSuccess 
         <div className="bp-modal-scroll px-6 space-y-4">
           <div className="space-y-2 min-w-0">
             <p className="text-sm text-slate-400">Evento:</p>
-            <Ellipsis className="font-semibold text-white">{event.title}</Ellipsis>
+            <EventHeading event={event} client={client} size="sm" />
           </div>
 
           <div className="space-y-2">

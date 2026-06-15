@@ -43,6 +43,8 @@ import EventLocationSection from '@/components/events/EventLocationSection';
 import { useEvents } from '@/lib/useEvents';
 import appToast from '@/lib/appToast';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
+import EventHeading from '@/components/events/EventHeading';
+import { getClientDisplayName } from '@/lib/eventDisplay';
 
 import { hardNavigate } from '@/lib/hardNavigate';
 
@@ -476,12 +478,14 @@ const EventDetailModal = React.memo(function EventDetailModal({
                       className="flex items-center gap-1 sm:gap-2 text-xs text-slate-300 hover:text-[var(--bp-primary)] transition-colors group"
                     >
                       <Building2 className="w-3 h-3 text-slate-400 group-hover:text-[var(--bp-primary)] flex-shrink-0" />
-                      <span className="truncate max-w-[200px] sm:max-w-[300px]">{client.name}</span>
+                      <span className="truncate max-w-[200px] sm:max-w-[300px]">{getClientDisplayName(client)}</span>
                     </button>
                   )}
                 </div>
-                <DialogTitle className="text-base sm:text-lg md:text-xl font-bold font-display truncate pr-2">
-                  {event.title}
+                <DialogTitle asChild>
+                  <div className="pr-2 min-w-0">
+                    <EventHeading event={event} client={client} size="lg" />
+                  </div>
                 </DialogTitle>
               </div>
               <Button variant="ghost" size="icon" onClick={onClose} className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 min-w-[44px] min-h-[44px]">
@@ -803,6 +807,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
         {showPaymentConfirm &&
           <PaymentConfirmModal
             event={event}
+            client={client}
             isOpen={showPaymentConfirm}
             onClose={() => setShowPaymentConfirm(false)}
             onSuccess={handlePaymentSuccess} />

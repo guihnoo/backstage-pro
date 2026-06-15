@@ -14,6 +14,11 @@ import { requestMapTour } from '@/lib/appTourBus';
 import { isCancelledEvent } from '@/lib/eventFinance';
 import { Link } from 'react-router-dom';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
+import {
+  buildClientMap,
+  getEventDisplay,
+  resolveClientForEvent,
+} from '@/lib/eventDisplay';
 
 class BrazilMapErrorBoundary extends Component {
   state = { hasError: false };
@@ -158,8 +163,11 @@ function resolveCityCoords({ cityName, uf, cityKey, lat, lng }) {
   return null;
 }
 
-function eventTitle(ev) {
-  return ev.title || ev.name || ev.client_name || 'Evento';
+function eventLabel(ev, clientMap) {
+  const client = resolveClientForEvent(ev, clientMap);
+  const { companyName, eventName, showEventSubtitle } = getEventDisplay(ev, client);
+  if (showEventSubtitle) return `${companyName} · ${eventName}`;
+  return companyName;
 }
 
 function hexToRgb(hex) {
@@ -176,10 +184,11 @@ function rgbaHex(hex, alpha) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-function BrazilVisitedMapInner({ events = [] }) {
+function BrazilVisitedMapInner({ events = [], clients = [] }) {
   const theme = useCategoryTheme();
   const primary = theme.primaryHex;
   const accent = theme.accentHex;
+  const clientMap = useMemo(() => buildClientMap(clients), [clients]);
   const [activeUf, setActiveUf] = useState(null);
   const [pinnedCityKey, setPinnedCityKey] = useState(null);
   const [hoverCityKey, setHoverCityKey] = useState(null);
@@ -241,7 +250,7 @@ function BrazilVisitedMapInner({ events = [] }) {
       cityMap[cityKey].count += 1;
       cityMap[cityKey].events.push({
         id: ev.id,
-        title: eventTitle(ev),
+        title: eventLabel(ev, clientMap),
         date: evDate,
       });
       if (evDate && (!cityMap[cityKey].lastDate || evDate > cityMap[cityKey].lastDate)) {
@@ -285,7 +294,7 @@ function BrazilVisitedMapInner({ events = [] }) {
       latestCityKey: latestKey,
       sortedCityEntries,
     };
-  }, [events]);
+  }, [events, clientMap]);
 
   const totalStates = brazilMap.locations.length;
   const stateCount = visited.size;

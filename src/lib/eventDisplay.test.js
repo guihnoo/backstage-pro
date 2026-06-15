@@ -4,6 +4,7 @@ import {
   getEventDisplay,
   buildClientMap,
   resolveClientForEvent,
+  enrichEventsWithClients,
 } from './eventDisplay.js';
 
 describe('eventDisplay', () => {
@@ -33,5 +34,12 @@ describe('eventDisplay', () => {
     expect(resolveClientForEvent(event, clients)?.name).toBe('B');
     expect(resolveClientForEvent(event, buildClientMap(clients))?.name).toBe('B');
     expect(resolveClientForEvent({ client_id: 'x' }, clients)).toBeNull();
+  });
+
+  it('enrichEventsWithClients injeta client_name a partir do client_id', () => {
+    const clients = [{ id: 'c1', name: 'Produtora Alpha' }];
+    const events = [{ id: 'e1', client_id: 'c1', title: 'Show X' }];
+    const enriched = enrichEventsWithClients(events, clients);
+    expect(enriched[0].client_name).toBe('Produtora Alpha');
   });
 });

@@ -25,6 +25,15 @@ export function resolveClientForEvent(event, clientsOrMap) {
   return (clientsOrMap || []).find((c) => c.id === event.client_id) ?? null;
 }
 
+export function enrichEventsWithClients(events = [], clients = []) {
+  const map = buildClientMap(clients);
+  return events.map((ev) => {
+    const displayName = getClientDisplayName(resolveClientForEvent(ev, map));
+    if (!displayName) return ev;
+    return ev.client_name === displayName ? ev : { ...ev, client_name: displayName };
+  });
+}
+
 export function getEventDisplay(event, client) {
   const companyName =
     getClientDisplayName(client) ||

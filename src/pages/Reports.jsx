@@ -70,6 +70,7 @@ import YearOverYear from '@/components/reports/YearOverYear';
 import CacheEvolutionChart from '@/components/reports/CacheEvolutionChart';
 import IRSummary from '@/components/reports/IRSummary';
 import EventHeading from '@/components/events/EventHeading';
+import { enrichEventsWithClients, getClientDisplayName } from '@/lib/eventDisplay';
 import { Ellipsis } from '@/components/ui/overflowText';
 import BrazilVisitedMap from '@/components/reports/BrazilVisitedMap';
 
@@ -241,15 +242,15 @@ export default function ReportsPage() {
   const { profile, user } = useAuth();
   const config = getCategoryConfig(profile?.category || 'lighting');
 
-  const data = useMemo(
-    () => ({
-      events: events || [],
-      clients: clients || [],
+  const data = useMemo(() => {
+    const clientList = clients || [];
+    return {
+      events: enrichEventsWithClients(events || [], clientList),
+      clients: clientList,
       dailyWork: dailyWork || [],
       expenses: expenses || [],
-    }),
-    [events, clients, dailyWork, expenses]
-  );
+    };
+  }, [events, clients, dailyWork, expenses]);
 
   const loading = useMemo(
     () => ({
@@ -539,7 +540,7 @@ export default function ReportsPage() {
             : 'Data não registrada';
           return {
             title: event.title,
-            subtitle: `${client?.name || 'Cliente'} • ${paidDateStr}`,
+            subtitle: paidDateStr,
             value: event.paid_amount,
             date: paidDateStr,
             event_ref: event,
@@ -553,9 +554,12 @@ export default function ReportsPage() {
         setModalData(receivableEvents.map((event) => {
           const client = data.clients.find((c) => c.id === event.client_id);
           const eventDailyWork = data.dailyWork.filter((w) => w.event_id === event.id);
+          const endLabel = (event.end_date || event.start_date)
+            ? format(parseISO(event.end_date || event.start_date), 'dd/MM/yyyy')
+            : '--';
           return {
             title: event.title,
-            subtitle: `${client?.name || 'Cliente'} • Concluído em ${(event.end_date || event.start_date) ? format(parseISO(event.end_date || event.start_date), 'dd/MM/yyyy') : '--'}`,
+            subtitle: `Concluído em ${endLabel}`,
             value: calculateEventReceivableAmount(event, eventDailyWork),
             event_ref: event,
             client,
@@ -577,7 +581,7 @@ export default function ReportsPage() {
           map((clientId) => data.clients.find((c) => c.id === clientId)).
           filter(Boolean);
         setModalData(activeClients.map((client) => ({
-          title: client.name,
+          title: getClientDisplayName(client) || client.name || 'Cliente',
           subtitle: `${current.events.filter((e) => e.client_id === client.id).length} eventos no período`,
           value: current.paidEvents.filter((e) => e.client_id === client.id).reduce((sum, e) => sum + (e.paid_amount || 0), 0),
           client_id: client.id,
@@ -809,7 +813,7 @@ export default function ReportsPage() {
           ))}
         </div>
 
-        <BrazilVisitedMap events={events} />
+        <BrazilVisitedMap events={data.events} clients={data.clients} />
 
         {!isDataReady ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

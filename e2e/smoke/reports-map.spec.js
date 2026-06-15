@@ -33,6 +33,21 @@ test('botão Como usar abre o tour do mapa', async ({ page }) => {
   await expect(page.locator('.backstage-tour-popover')).toBeVisible({ timeout: 15_000 });
 });
 
+test('mapa interativo lista empresa do cliente nos eventos da cidade', async ({ page }) => {
+  await installReportsMocks(page);
+  await seedAuth(page);
+
+  await page.goto('/reports', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 20_000 });
+
+  const map = page.getByTestId('brazil-visited-map');
+  await expect(map).toBeVisible({ timeout: 15_000 });
+  await map.getByRole('button', { name: /São Paulo/i }).click();
+
+  await expect(map.getByText(/Produtora E2E SP/)).toBeVisible({ timeout: 10_000 });
+  await expect(map.getByText('Sem empresa')).toHaveCount(0);
+});
+
 test('mapa vazio quando só há eventos cancelados', async ({ page }) => {
   await installReportsMocks(page, fakeReportEventsCancelledOnly());
   await seedAuth(page);
