@@ -6,6 +6,12 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-14
 
+### EVENTFORM-S88S89 — Histórico do Cliente + Detecção de Conflito no EventForm ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **S88** — `EventForm.jsx`: mini-card de histórico ao selecionar cliente (shows, cachê médio, score de pagamento colorido, data do último show); resposta em tempo real ao trocar de cliente
+- **S89** — `EventForm.jsx`: banner âmbar de conflito de agenda ao preencher datas; lista os eventos sobrepostos com nome e período; detecta overlap por interseção de intervalos; sem bloqueio — só aviso
+- **Build**: Vite ✅
+
 ### DESIGN-S75 — Checklist + WeekdayBreakdown temáticos (Cursor Agent) ✅
 - **Agente**: Cursor (Auto)
 - `EventChecklist.jsx`: ícone, templates e pills com `primaryHex`

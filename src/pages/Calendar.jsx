@@ -670,7 +670,11 @@ export default function CalendarPage() {
 
   const handleActionSheetOpenHours = useCallback(() => {
     if (selectedActionSheetEvent) {
-      const dateStr = selectedActionSheetEvent.start_date; // Use event start date for initial hours date
+      const today = todayLocalISO();
+      const start = selectedActionSheetEvent.start_date || today;
+      const end = selectedActionSheetEvent.end_date || start;
+      // Use today if within the event's date range, otherwise use event start date
+      const dateStr = today >= start && today <= end ? today : start;
       const work = dailyWork.find(
         (w) => w.event_id === selectedActionSheetEvent.id && normalizeDateString(w.date) === normalizeDateString(dateStr)
       );
@@ -1871,6 +1875,7 @@ export default function CalendarPage() {
           onClose={() => setSelectedActionSheetEvent(null)}
           onViewDetails={handleActionSheetViewDetails}
           onOpenHours={handleActionSheetOpenHours}
+          onAddExpense={handleAddExpenseForEvent}
           onOpenNotes={handleActionSheetOpenNotes}
           onApplyManual12h={handleEventActionSheetApplyManual12h}
           onCheckInLocation={handleEventLocationCheckIn}

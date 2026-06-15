@@ -126,6 +126,8 @@
 | 85 | Total de despesas na seção Despesas do modal | 2026-06-14 | ✅ Badge amber com R$ total ao lado do contador de despesas |
 | 86 | Resumo financeiro do mês no cabeçalho da Agenda | 2026-06-14 | ✅ `CalendarPageHeader`: linha com shows / recebido (esmeralda) / a receber (âmbar) abaixo do mês/ano; respeita máscara; animated de entrada |
 | 87 | Gráfico de evolução do cachê médio por show (12 meses) | 2026-06-14 | ✅ `CacheEvolutionChart.jsx`; LineChart 12 meses; tooltip shows+médio+total; linha de referência na média; badge de tendência % alta/queda; aba Atividade de Reports |
+| 88 | Histórico do cliente ao selecionar no EventForm | 2026-06-14 | ✅ `EventForm.jsx`: mini-card abaixo do ClientCombobox com shows, cachê médio, score de pagamento colorido (verde/âmbar/vermelho), data do último show |
+| 89 | Detecção de conflito de agenda no EventForm | 2026-06-14 | ✅ `EventForm.jsx`: banner âmbar aparece quando datas do evento se sobrepõem a outros eventos existentes; lista os conflitos com nome + período; apenas aviso (não bloqueia) |
 
 ---
 

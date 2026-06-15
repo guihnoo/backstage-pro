@@ -18,6 +18,7 @@ import {
   Navigation,
   Loader2,
   Building2,
+  Receipt,
 } from 'lucide-react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { formatDisplayDate, getEventStatusConfig } from '../utils/dateUtils';
@@ -38,6 +39,7 @@ export default function EventActionSheet({
   onDelete,
   onDuplicate,
   onOpenHours,
+  onAddExpense,
   onMarkPaid,
   onApplyManual12h,
   canApplyAuto12h,
@@ -192,6 +194,20 @@ export default function EventActionSheet({
                     <div className="text-xs opacity-80">Entrada, saída e detalhes</div>
                   </div>
                 </Button>
+
+                {/* Registrar Despesa */}
+                {onAddExpense && (
+                  <Button
+                    onClick={() => { onAddExpense(event); onClose?.(); }}
+                    className="w-full h-14 min-h-[44px] bg-amber-600/20 border border-amber-500/40 hover:bg-amber-600/30 text-amber-300 font-medium text-base justify-start px-4"
+                  >
+                    <Receipt className="w-5 h-5 mr-3" />
+                    <div className="text-left">
+                      <div className="font-bold">Registrar Despesa</div>
+                      <div className="text-xs opacity-80">Transporte, alimentação e outros</div>
+                    </div>
+                  </Button>
+                )}
 
                 {onCheckInLocation && (
                   <Button

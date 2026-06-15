@@ -38,7 +38,8 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import {
   formatDisplayDate,
   getEventStatus,
-  getEventStatusConfig
+  getEventStatusConfig,
+  normalizeDateString,
 } from '../utils/dateUtils';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { useAuth } from '@/lib/authContext';
@@ -55,6 +56,7 @@ import { EventChecklist } from '@/components/calendar/EventChecklist';
 import { useEvents } from '@/lib/useEvents';
 import { useExpenses } from '@/lib/useExpenses';
 import ExpenseForm from '@/components/expenses/ExpenseForm';
+import DailyWorkModal from '@/components/calendar/DailyWorkModal';
 import { useUserSettings } from '@/lib/useUserSettings';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { format } from 'date-fns';
@@ -94,6 +96,7 @@ export default function EventDetailModal({
   const [applying12h, setApplying12h] = useState(false);
   const [savingLocation, setSavingLocation] = useState(false);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
+  const [showWorkModal, setShowWorkModal] = useState(false);
   const [showExpenses, setShowExpenses] = useState(true);
   const [locDraft, setLocDraft] = useState({
     location: '',
@@ -438,6 +441,11 @@ export default function EventDetailModal({
 
   if (!event) return null;
 
+  const today = normalizeDateString(new Date());
+  const eventStart = event.start_date || '';
+  const eventEnd = event.end_date || event.start_date || '';
+  const todayInEventRange = eventStart && today >= eventStart && today <= eventEnd;
+
   const status = getEventStatus(event);
   const statusConfig = getEventStatusConfig(event);
   const StatusIcon = statusConfig.icon;
@@ -470,6 +478,7 @@ export default function EventDetailModal({
   };
 
   return (
+    <>
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-3xl h-[95dvh] bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200 flex flex-col p-0 overflow-hidden bp-focus-scope">
         {/* Header */}
@@ -560,15 +569,17 @@ export default function EventDetailModal({
                               : <><Zap className="w-3 h-3 mr-1" />12h</>
                             }
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={onAddWork}
-                            className="h-7 px-2 text-xs border-slate-600 hover:bg-slate-700"
-                          >
-                            <Plus className="w-3 h-3 mr-1" />
-                            Manual
-                          </Button>
+                          {todayInEventRange && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setShowWorkModal(true)}
+                              className="h-7 px-2 text-xs border-slate-600 hover:bg-slate-700"
+                            >
+                              <Plus className="w-3 h-3 mr-1" />
+                              Manual
+                            </Button>
+                          )}
                         </div>
                       )}
                     </div>
@@ -989,14 +1000,24 @@ export default function EventDetailModal({
 
         {/* Footer com Ações */}
         <DialogFooter className="px-6 py-4 border-t border-slate-800 flex-row gap-2 flex-wrap flex-shrink-0">
-          <Button
-            onClick={onAddWork}
-            className="flex-1 min-w-[120px] hover:opacity-90"
-            style={{ backgroundColor: primaryHex }}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Registrar Horas
-          </Button>
+          {todayInEventRange ? (
+            <Button
+              onClick={() => setShowWorkModal(true)}
+              className="flex-1 min-w-[120px] hover:opacity-90"
+              style={{ backgroundColor: primaryHex }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Registrar Horas
+            </Button>
+          ) : (
+            <Button
+              onClick={() => setShowExpenseForm(true)}
+              className="flex-1 min-w-[120px] hover:opacity-90 bg-amber-600 hover:bg-amber-700"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Despesa
+            </Button>
+          )}
           {['confirmed', 'scheduled', 'pending'].includes(event.status) && (
             <Button
               onClick={handleToggleTimer}
@@ -1140,18 +1161,25 @@ export default function EventDetailModal({
           </Button>
         </DialogFooter>
       </DialogContent>
-
-      {showExpenseForm && (
-        <ExpenseForm
-          open={showExpenseForm}
-          onOpenChange={setShowExpenseForm}
-          initialEventId={event?.id}
-          onSuccess={() => {
-            refetchExpenses();
-            setShowExpenseForm(false);
-          }}
-        />
-      )}
     </Dialog>
+
+    <DailyWorkModal
+      isOpen={showWorkModal}
+      onClose={() => setShowWorkModal(false)}
+      date={new Date()}
+      event={event}
+      onSuccess={() => setShowWorkModal(false)}
+    />
+
+    <ExpenseForm
+      open={showExpenseForm}
+      onOpenChange={setShowExpenseForm}
+      initialEventId={event?.id}
+      onSuccess={() => {
+        refetchExpenses();
+        setShowExpenseForm(false);
+      }}
+    />
+    </>
   );
 }
