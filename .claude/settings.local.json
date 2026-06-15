@@ -145,7 +145,8 @@
       "Bash(Select-Object -Skip 155)",
       "Bash(git stash *)",
       "Bash(python -c \"import sys,json; p=json.load\\(sys.stdin\\); deps={**p.get\\('dependencies',{}\\), **p.get\\('devDependencies',{}\\)}; [print\\(k\\) for k in sorted\\(deps.keys\\(\\)\\)]\")",
-      "Bash(powershell -c \"\\(Get-Content 'C:\\\\Users\\\\monte\\\\OneDrive\\\\Documentos\\\\backstage-pro\\\\src\\\\components\\\\calendar\\\\EventDetailModal.jsx'\\).Count\")"
+      "Bash(powershell -c \"\\(Get-Content 'C:\\\\Users\\\\monte\\\\OneDrive\\\\Documentos\\\\backstage-pro\\\\src\\\\components\\\\calendar\\\\EventDetailModal.jsx'\\).Count\")",
+      "Bash(gh run *)"
     ]
   },
   "enabledMcpjsonServers": [
