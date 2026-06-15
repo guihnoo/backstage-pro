@@ -55,7 +55,12 @@ test.describe('overflow em modais (desktop)', () => {
 
   test('event detail dialog sem overflow horizontal', async ({ page }) => {
     await gotoAuthed(page, '/calendar');
-    await page.getByRole('button', { name: 'E2E Show Demo', exact: true }).click();
+    await page.getByTitle('Vista semanal').click();
+    const weekGrid = page.locator('.grid.grid-cols-7').first();
+    await expect(weekGrid).toBeVisible({ timeout: 10_000 });
+    const eventBtn = weekGrid.getByRole('button', { name: /E2E Cliente Demo/i }).first();
+    await eventBtn.scrollIntoViewIfNeeded();
+    await eventBtn.click();
     await expect(page.getByRole('dialog')).toBeVisible({ timeout: 10_000 });
 
     const audit = await auditOverlayOverflow(page);

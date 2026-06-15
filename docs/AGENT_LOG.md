@@ -6,6 +6,13 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-15
 
+### S110 — Calendário visual: dots, status, duração, overflow chip (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **BackstageCalendarGrid.jsx** — `eventsByDay` useMemo: para cada bloco do calendário, itera dias entre `block.start` e `block.end` e popula mapa `dateStr → [{color, status}]`; `DayCell` recebe `dotsForDay` e renderiza até 4 dots coloridos no `bottom-1.5` da célula (1 dot por evento); dots desbotados para dias fora do mês atual; chip `+X mais` virou `<button>` clicável com borda que chama `onDateSelect` ao clicar
+- **ContinuousEventBar.jsx** — bordas arredondadas corrigidas: `span.roundedLeft/roundedRight` → `radiusLeft/radiusRight` (`9999px` quando é início/fim real, `2px` caso contrário) — fix que faltava para os pills ficarem corretos em eventos multi-semana; ícone de status sempre visível no lado direito (`CheckCircle2` verde para pago, `Clock` âmbar para confirmado, `AlertCircle` cinza para pendente); badge `Xd` no segmento inicial de eventos multi-dia; Clock para quick log só aparece no hover/grupo
+- **ESLint**: 0 erros, 0 warnings
+- **Build**: Vite ✅
+
 ### S108-S109 — ProximoShow badge "HOJE", EventForm sugestão de cachê (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **S108 — ProximoShow: show hoje** (`ProximoShow.jsx`): detecta `isToday = !live && eventDateStr === todayStr`; badge âmbar "HOJE" pulsante no header; countdown substituído por "Show hoje às HH:mm · faltam Xh Ymin" com fundo e borda colorida pela categoria; borda do card muda para `amber-950/20 border-amber-500/40`; linha âmbar tênue no topo (como a linha vermelha do AO VIVO)

@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-15 (S108-S109 — ProximoShow badge "HOJE" + countdown especial + borda âmbar, EventForm sugestão de cachê por histórico do cliente — Claude Code)  
+**Última atualização:** 2026-06-15 (S110 — Calendário: dots nos dias, status nas barras, duração multi-dia, overflow chip — Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-06-15 — `dpl_CZLMQ28odnw5yv76C8sjhTSBaB56` (commit `384d2fb` — S90-S94)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` (dedupe refatorado) deployadas no Supabase ✅  
@@ -65,6 +65,7 @@
 | S101-S103 (2026-06-15) | `PipelineFinanceiro`: Despesas + Resultado Líquido do mês; `AReceber`: badge "Xd atraso" / "show em Xd"; `EventForm`: repetição de evento (N vezes a cada semana/mês) |
 | S104-S107 (2026-06-15) | `MetaMensalBar`: ritmo do mês (dia X/Y + projeção de receita); `Goals`: cadência "1 show a cada X dias" + alerta ritmo; `Expenses`: mês atual expandido, meses passados colapsados; `ForecastWidget`: "X% da meta do mês" abaixo da receita projetada |
 | S108-S109 (2026-06-15) | `ProximoShow`: badge "HOJE" âmbar pulsante + countdown "Show hoje às HH:mm" + borda/linha âmbar quando show é hoje; `EventForm`: hint de cachê histórico do cliente (último + média dos 3 últimos) com botão "Usar" |
+| S110 — Calendário visual (2026-06-15) | `BackstageCalendarGrid`: dots coloridos no fundo das células (1 dot por evento, cor do cliente); `ContinuousEventBar`: ícone de status (✓ pago / ⏰ aguardando / ⚠ pendente) sempre visível; badge `Xd` para eventos multi-dia; bordas arredondadas corrigidas (pill correto no início/fim); `+X mais` agora é chip clicável |
 
 ---
 

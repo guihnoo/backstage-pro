@@ -20,7 +20,7 @@ const WeekHeader = () => (
   </div>
 );
 
-const DayCell = React.memo(({ day, isCurrentMonth, isSelected, isToday, onDateSelect, onQuickAction }) => {
+const DayCell = React.memo(({ day, isCurrentMonth, isSelected, isToday, onDateSelect, onQuickAction, dotsForDay = [] }) => {
   const pressTimer = useRef(null);
   const lastTapRef = useRef(0);
 
@@ -30,7 +30,7 @@ const DayCell = React.memo(({ day, isCurrentMonth, isSelected, isToday, onDateSe
       if (onQuickAction) onQuickAction('work', day);
     }, 500);
 
-    const now = new Date().getTime();
+    const now = Date.now();
     if (now - lastTapRef.current < 300) {
       clearTimeout(pressTimer.current);
       if (onQuickAction) onQuickAction('work', day);
@@ -38,9 +38,7 @@ const DayCell = React.memo(({ day, isCurrentMonth, isSelected, isToday, onDateSe
     lastTapRef.current = now;
   };
 
-  const handlePointerUp = () => {
-    clearTimeout(pressTimer.current);
-  };
+  const handlePointerUp = () => clearTimeout(pressTimer.current);
 
   return (
     <div
@@ -49,24 +47,42 @@ const DayCell = React.memo(({ day, isCurrentMonth, isSelected, isToday, onDateSe
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
       className={`
-        relative h-28 md:h-32 lg:h-36 border-b border-r border-slate-800/50 
+        relative h-28 md:h-32 lg:h-36 border-b border-r border-slate-800/50
         ${isCurrentMonth ? 'bg-slate-900/30' : 'bg-slate-900/70'}
         ${isSelected ? 'outline outline-2 outline-[var(--bp-primary)] z-10' : ''}
         transition-colors duration-300 touch-manipulation
-      `}>
-      {/* AJUSTE: Touch target mínimo para o número do dia */}
+      `}
+    >
+      {/* Número do dia */}
       <span className={`
-        text-xs font-medium absolute top-1.5 right-1.5 md:text-sm rounded-full 
+        text-xs font-medium absolute top-1.5 right-1.5 md:text-sm rounded-full
         h-7 w-7 flex items-center justify-center
         ${isToday ? 'bg-[var(--bp-primary)] text-slate-900 font-bold' : 'bg-slate-800 text-slate-200'}
+        ${!isCurrentMonth ? 'opacity-40' : ''}
       `}>
         {new Date(normalizeDateString(day) + 'T00:00:00').getDate()}
       </span>
+
+      {/* Dots de eventos no fundo da célula */}
+      {dotsForDay.length > 0 && (
+        <div className="absolute bottom-1.5 inset-x-0 flex justify-center gap-0.5 pointer-events-none">
+          {dotsForDay.slice(0, 4).map((dot, i) => (
+            <div
+              key={i}
+              className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+              style={{ backgroundColor: dot.color, opacity: isCurrentMonth ? 0.85 : 0.35 }}
+            />
+          ))}
+          {dotsForDay.length > 4 && (
+            <div className="w-1.5 h-1.5 rounded-full bg-slate-500 flex-shrink-0" />
+          )}
+        </div>
+      )}
     </div>
   );
 });
 
-const EventLanesOverlay = React.memo(({ weekStartDate, eventBlocks, clients = [], onEventClick, onEventQuickLog }) => {
+const EventLanesOverlay = React.memo(({ weekStartDate, eventBlocks, clients = [], onEventClick, onEventQuickLog, onDateSelect }) => {
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 
   useEffect(() => {
@@ -76,7 +92,6 @@ const EventLanesOverlay = React.memo(({ weekStartDate, eventBlocks, clients = []
   }, []);
 
   const weekSpans = useMemo(() => {
-    // CORREÇÃO: Garantir que eventBlocks é sempre um array
     const safeEventBlocks = Array.isArray(eventBlocks) ? eventBlocks : [];
     return safeEventBlocks.flatMap((block) => splitBlockIntoWeekSpans(block, weekStartDate));
   }, [eventBlocks, weekStartDate]);
@@ -89,7 +104,6 @@ const EventLanesOverlay = React.memo(({ weekStartDate, eventBlocks, clients = []
         <React.Fragment key={laneIndex}>
           {lane.map((span) => {
             const dayOfSpan = new Date(weekStartDate);
-            // setDate expects a 1-based day, colStart is 1-based (grid-column: 1 / N)
             dayOfSpan.setDate(dayOfSpan.getDate() + span.colStart - 1);
 
             return (
@@ -99,7 +113,8 @@ const EventLanesOverlay = React.memo(({ weekStartDate, eventBlocks, clients = []
                 style={{
                   gridColumn: `${span.colStart} / ${span.colEnd}`,
                   gridRow: laneIndex + 1
-                }}>
+                }}
+              >
                 <ContinuousEventBar
                   span={span}
                   onEventClick={() => onEventClick(span.block.events?.[0] || span.block)}
@@ -111,21 +126,42 @@ const EventLanesOverlay = React.memo(({ weekStartDate, eventBlocks, clients = []
           })}
         </React.Fragment>
       ))}
+
       {overflow.length > 0 && (
-        <div className="bp-text-primary text-xs mt-1 col-span-7 text-center pointer-events-auto">
-          + {overflow.length} mais...
+        <div
+          className="pointer-events-auto flex justify-center"
+          style={{ gridColumn: '1 / 8', gridRow: lanes.length + 1 }}
+        >
+          <button
+            type="button"
+            onClick={() => onDateSelect && onDateSelect(weekStartDate)}
+            className="text-[10px] font-semibold text-slate-400 bg-slate-800/70 border border-slate-700/50 rounded-full px-2 py-0.5 hover:bg-slate-700/70 hover:text-white transition-all bp-hover-primary"
+          >
+            +{overflow.length} mais
+          </button>
         </div>
       )}
     </div>
   );
 });
 
-const WeekRow = React.memo(({ week, isSelected, onEventQuickLog, ...props }) => {
+const WeekRow = React.memo(({ week, isSelected, onEventQuickLog, eventsByDay = {}, ...props }) => {
   const isWeekSelected = week && week.some((day) => day && isSelected(day));
   return (
     <div className={`relative grid grid-cols-7 ${isWeekSelected ? 'bg-slate-800/20' : ''}`}>
       {week.map((day, dayIndex) =>
-        day ? <DayCell key={normalizeDateString(day)} day={day} {...props} isSelected={isSelected(day)} isToday={isTodayStr(day)} /> : <div key={dayIndex} className="h-32 border-b border-r border-slate-800/50 bg-slate-900/70" />
+        day ? (
+          <DayCell
+            key={normalizeDateString(day)}
+            day={day}
+            {...props}
+            isSelected={isSelected(day)}
+            isToday={isTodayStr(day)}
+            dotsForDay={eventsByDay[normalizeDateString(day)] || []}
+          />
+        ) : (
+          <div key={dayIndex} className="h-32 border-b border-r border-slate-800/50 bg-slate-900/70" />
+        )
       )}
       <EventLanesOverlay weekStartDate={week[0]} onEventQuickLog={onEventQuickLog} {...props} />
     </div>
@@ -144,31 +180,44 @@ export default function BackstageCalendarGrid({
   onEventQuickLog,
   showDayChips
 }) {
-  // CORREÇÃO: Envolvido em useMemo para estabilizar as referências.
-  const safeEvents = useMemo(() => Array.isArray(events) ? events : [], [events]);
+  const safeEvents  = useMemo(() => Array.isArray(events)  ? events  : [], [events]);
   const safeClients = useMemo(() => Array.isArray(clients) ? clients : [], [clients]);
 
-  const days = useMemo(() => monthMatrix(currentDate), [currentDate]);
+  const days  = useMemo(() => monthMatrix(currentDate), [currentDate]);
 
   const weeks = useMemo(() => {
     const result = [];
     if (days && days.length) {
-      for (let i = 0; i < days.length; i += 7) {
-        result.push(days.slice(i, i + 7));
-      }
+      for (let i = 0; i < days.length; i += 7) result.push(days.slice(i, i + 7));
     }
     return result;
   }, [days]);
 
   const isSelected = (day) => selectedDate && normalizeDateString(day) === normalizeDateString(selectedDate);
-  // The isToday prop is passed directly from DayCell now, but for consistency if other components needed it:
-  // const isToday = (day) => isTodayStr(day); 
 
   const eventBlocks = useMemo(() => {
-    // 'safeEvents' e 'safeClients' agora são estáveis.
-    const normalizedEvents = safeEvents.map((event) => normalizeEventForGrid(event, safeClients)).filter(Boolean);
+    const normalizedEvents = safeEvents
+      .map((event) => normalizeEventForGrid(event, safeClients))
+      .filter(Boolean);
     return groupContinuousEvents(normalizedEvents);
   }, [safeEvents, safeClients]);
+
+  // Mapa dia → [{color, status}] para os dots nas células
+  const eventsByDay = useMemo(() => {
+    const map = {};
+    for (const block of eventBlocks) {
+      if (!block.start || !block.end) continue;
+      let cur = new Date(block.start.getTime());
+      const endTime = block.end.getTime();
+      while (cur.getTime() < endTime) {
+        const key = cur.toISOString().split('T')[0];
+        if (!map[key]) map[key] = [];
+        map[key].push({ color: block.color, status: block.events[0]?.payment_status });
+        cur = new Date(cur.getTime() + 86400000);
+      }
+    }
+    return map;
+  }, [eventBlocks]);
 
   const handleEventClickInternal = useCallback((event) => {
     if (onEventClick) onEventClick(event);
@@ -181,19 +230,18 @@ export default function BackstageCalendarGrid({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
-      className="border-t border-slate-800 overflow-x-auto">
-
+      className="border-t border-slate-800 overflow-x-auto"
+    >
       <WeekHeader />
-      {/* AJUSTE: Min-width para garantir que o calendário não fique espremido */}
       <div className="border-l border-slate-800 min-w-[320px]">
         {weeks.map((week, index) => (
           <WeekRow
             key={index}
             week={week}
             isSelected={isSelected}
-            // isToday prop is now passed from WeekRow to DayCell
             isCurrentMonth={(day) => day && new Date(normalizeDateString(day) + 'T00:00:00').getMonth() === currentDate.getMonth()}
             eventBlocks={eventBlocks}
+            eventsByDay={eventsByDay}
             clients={safeClients}
             dailyWork={dailyWork}
             onDateSelect={onDateSelect}
