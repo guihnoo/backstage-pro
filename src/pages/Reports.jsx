@@ -67,6 +67,7 @@ import TopClients from '@/components/reports/TopClients';
 import ReceivablesAging from '@/components/reports/ReceivablesAging';
 import SmartInsights from '@/components/reports/SmartInsights';
 import YearOverYear from '@/components/reports/YearOverYear';
+import CacheEvolutionChart from '@/components/reports/CacheEvolutionChart';
 import IRSummary from '@/components/reports/IRSummary';
 import EventHeading from '@/components/events/EventHeading';
 import { Ellipsis } from '@/components/ui/overflowText';
@@ -1010,6 +1011,7 @@ export default function ReportsPage() {
             <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
               <ActivityHeatmap events={data.events} />
             </div>
+            <CacheEvolutionChart events={data.events} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <SeasonalityChart events={data.events} />
               <WeekdayBreakdown events={data.events} />
