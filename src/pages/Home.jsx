@@ -297,7 +297,7 @@ export default function Home() {
           isLoading={loading}
           primaryHex={config.primaryHex}
           accentHex={config.accentHex}
-          onViewEvent={setDetailEvent}
+          metaReceita={profile?.monthly_goal_revenue || 0}
         />
 
         <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Agenda">

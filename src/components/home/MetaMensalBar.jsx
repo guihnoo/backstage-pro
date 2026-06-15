@@ -26,6 +26,10 @@ function formatMoney(value, hidden) {
 export default function MetaMensalBar({ profile, stats, isLoading, accentColor = '#EAB308' }) {
   const { isVisible } = useFinancialVisibility();
 
+  const today = new Date();
+  const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+  const dayOfMonth = today.getDate();
+
   const metaReceita = Number(profile?.monthly_goal_revenue) || 0;
   const metaDiarias = Number(profile?.monthly_goal_events) || 0;
   const hasGoals = metaReceita > 0 || metaDiarias > 0;
@@ -59,6 +63,11 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
   const pctDiarias = metaDiarias > 0 ? Math.min((diariasAtual / metaDiarias) * 100, 100) : 0;
   const goalReached = pctReceita >= 100 || pctDiarias >= 100;
   const bothGoalsReached = (metaReceita === 0 || pctReceita >= 100) && (metaDiarias === 0 || pctDiarias >= 100);
+
+  const pctMes = Math.round((dayOfMonth / daysInMonth) * 100);
+  const projecaoReceita = dayOfMonth > 0 && receitaAtual > 0
+    ? Math.round((receitaAtual / dayOfMonth) * daysInMonth)
+    : 0;
 
   return (
     <motion.button
@@ -123,6 +132,23 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
                 </span>
               </div>
               <ProgressBar value={diariasAtual} max={metaDiarias} color={pctDiarias >= 100 ? 'linear-gradient(90deg, #10b981, #34d399)' : accentColor} />
+            </div>
+          )}
+
+          {/* Ritmo do mês */}
+          {!bothGoalsReached && (
+            <div className="pt-3 mt-1 border-t border-gray-800/50 flex items-center justify-between">
+              <span className="text-[10px] text-slate-600">
+                Dia {dayOfMonth}/{daysInMonth} · {pctMes}% do mês
+              </span>
+              {metaReceita > 0 && projecaoReceita > 0 && (
+                <span className={`text-[10px] font-mono ${
+                  projecaoReceita >= metaReceita ? 'text-emerald-500' :
+                  projecaoReceita >= metaReceita * 0.75 ? 'text-amber-500' : 'text-red-500/80'
+                }`}>
+                  projeção {formatMoney(projecaoReceita, !isVisible)}
+                </span>
+              )}
             </div>
           )}
         </div>

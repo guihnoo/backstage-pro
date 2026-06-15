@@ -9,7 +9,7 @@ import { getEventCacheAmount, isCancelledEvent } from '@/lib/eventFinance';
 import { getEventStatus } from '@/components/utils/dateUtils';
 import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
 
-export default function ForecastWidget({ events = [], isLoading, primaryHex = AUTH_HERO_PRIMARY, accentHex = AUTH_HERO_ACCENT }) {
+export default function ForecastWidget({ events = [], isLoading, primaryHex = AUTH_HERO_PRIMARY, accentHex = AUTH_HERO_ACCENT, metaReceita = 0 }) {
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const todayMs = startOfDay(new Date()).getTime();
 

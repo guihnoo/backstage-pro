@@ -724,11 +724,25 @@ export default function Goals() {
                     <div className="flex items-start gap-3">
                       <span className="text-xl mt-0.5">{metaReceita100 || metaDiarias100 ? '🎉' : '💪'}</span>
                       <div>
-                        {!metaDiarias100 && (
-                          <p className="text-sm font-bold text-white">
-                            {metaDiarias - diariasMes} diária{metaDiarias - diariasMes !== 1 ? 's' : ''} para bater a meta do mês
-                          </p>
-                        )}
+                        {!metaDiarias100 && (() => {
+                          const needed = metaDiarias - diariasMes;
+                          const todayD = new Date();
+                          const dim = new Date(todayD.getFullYear(), todayD.getMonth() + 1, 0).getDate();
+                          const daysLeft = dim - todayD.getDate();
+                          const onTrack = todayD.getDate() > 0 && (diariasMes / todayD.getDate()) >= (metaDiarias / dim);
+                          return (
+                            <>
+                              <p className="text-sm font-bold text-white">
+                                {needed} diária{needed !== 1 ? 's' : ''} para bater a meta do mês
+                              </p>
+                              {daysLeft > 0 && needed > 0 && (
+                                <p className={`text-xs mt-0.5 ${onTrack ? 'text-emerald-400/70' : 'text-amber-400/80'}`}>
+                                  {onTrack ? '✓ No ritmo' : '⚠ Abaixo do ritmo'} · {daysLeft} dias restantes · 1 show a cada {(daysLeft / needed).toFixed(1)} dias
+                                </p>
+                              )}
+                            </>
+                          );
+                        })()}
                         {metaDiarias100 && !metaReceita100 && (
                           <p className="text-sm font-bold text-white">Meta de diárias batida! 📅</p>
                         )}

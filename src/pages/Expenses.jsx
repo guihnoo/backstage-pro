@@ -37,8 +37,8 @@ const CATEGORY_LABELS = {
   outros: 'Outros',
 };
 
-function MonthGroup({ monthKey, expenses, events, clients, onEdit, onDelete, onMarkReimbursed, formatCurrency, primaryHex: _primaryHex }) {
-    const [open, setOpen] = useState(true);
+function MonthGroup({ monthKey, expenses, events, clients, onEdit, onDelete, onMarkReimbursed, formatCurrency, primaryHex: _primaryHex, defaultOpen = true }) {
+    const [open, setOpen] = useState(defaultOpen);
     const total = expenses.reduce((s, e) => s + (e.amount || 0), 0);
     const reimbursable = expenses.filter(e => e.is_reimbursable && !e.reimbursed).reduce((s, e) => s + (e.amount || 0), 0);
 
@@ -202,6 +202,7 @@ export default function ExpensesPage() {
     const { pullDistance, isRefreshing, threshold } = usePullToRefresh(refreshExpenses);
 
     const allExpenses = useMemo(() => Array.isArray(expenses) ? expenses : [], [expenses]);
+    const currentMonthKey = new Date().toISOString().substring(0, 7);
 
     // Eventos que têm pelo menos uma despesa
     const eventsWithExpenses = useMemo(() => {
@@ -404,6 +405,7 @@ export default function ExpensesPage() {
                                     onMarkReimbursed={handleMarkReimbursed}
                                     formatCurrency={formatCurrency}
                                     primaryHex={config.primaryHex}
+                                    defaultOpen={monthKey === currentMonthKey}
                                 />
                             ))
                         ) : (
