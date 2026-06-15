@@ -4,6 +4,7 @@ import { ptBR } from 'date-fns/locale';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
+import EventHeading from '@/components/events/EventHeading';
 
 const STATIC_COLUMNS = [
   {
@@ -75,12 +76,15 @@ const UrgencyBadge = ({ ev }) => {
   );
 };
 
-const KanbanCard = ({ ev, client, onOpen, formatCurrency, isVisible, showUrgency, defaultColor }) => {
+const KanbanCard = ({ ev, client, onOpen, formatCurrency, isVisible, showUrgency, defaultColor, accentColor }) => {
   const amount = getEventCacheAmount(ev);
   const dateStr = ev.start_date
     ? format(parseISO(ev.start_date), "d 'de' MMM", { locale: ptBR })
     : null;
   const evColor = ev.color || defaultColor;
+  const durationDays = ev.start_date && ev.end_date
+    ? Math.round((new Date(ev.end_date) - new Date(ev.start_date)) / 86400000) + 1
+    : 1;
 
   return (
     <button
@@ -94,20 +98,22 @@ const KanbanCard = ({ ev, client, onOpen, formatCurrency, isVisible, showUrgency
           style={{ backgroundColor: evColor }}
         />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-slate-200 truncate leading-snug">
-            {ev.title || 'Sem título'}
-          </p>
-          {client && (
-            <p className="text-xs text-slate-500 truncate mt-0.5">{client.name}</p>
-          )}
+          <EventHeading event={ev} client={client} size="sm" />
           <div className="flex items-center justify-between gap-2 mt-2">
-            {dateStr && (
-              <span className="text-[10px] text-slate-500 capitalize">{dateStr}</span>
-            )}
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              {dateStr && (
+                <span className="text-[10px] text-slate-500 capitalize">{dateStr}</span>
+              )}
+              {durationDays > 1 && (
+                <span className="text-[9px] font-bold px-1 py-0.5 rounded flex-shrink-0" style={{ background: `${evColor}25`, color: evColor }}>
+                  {durationDays}d
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-1.5 ml-auto">
               {showUrgency && <UrgencyBadge ev={ev} />}
               {amount > 0 && (
-                <span className="text-xs font-semibold text-slate-300">
+                <span className="text-xs font-semibold font-mono" style={{ color: accentColor || '#94a3b8' }}>
                   {isVisible ? formatCurrency(amount) : '••••'}
                 </span>
               )}

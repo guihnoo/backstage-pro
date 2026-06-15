@@ -6,6 +6,15 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-15
 
+### S112 — Calendar todas as views + Clients próximo show (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Calendar.jsx** (vista upcoming): `EventHeading` no lugar de `ev.title`; ícone de status de pagamento (`CheckCircle2`/`BadgeCheck`/`AlertCircle`/`Clock`); cor dinâmica do label de diff (hoje=âmbar, amanhã=lilás, futuro=slate); duração `Xd` para eventos multi-dia; borda vermelha suave em eventos com pagamento vencido; cachê em verde/vermelho/âmbar
+- **Calendar.jsx** (vista list): `EventHeading` no lugar de título simples + horário com ícone `Clock`
+- **Calendar.jsx** (busca/grid): `EventHeading` + ícone de status + cachê colorido por pagamento
+- **Clients.jsx**: `nextEventDate` adicionado nos stats do `useMemo`; card exibe chip "Próx. show hoje/amanhã/em Xd" com cor âmbar (hoje), verde (≤7d), branco (futuro); `Calendar` importado de lucide-react
+- **ESLint**: 0 erros, 0 warnings
+- **Build**: Vite ✅ 35.68s
+
 ### S111 — Vista semanal + CalendarTodayStrip ricos (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Calendar.jsx** (vista semanal `week`): cards de eventos reestilizados com fundo colorido semi-transparente (`evColor18`), borda esquerda grossa (`3px solid evColor`), ícone de status (`CheckCircle2` / `BadgeCheck` / `Clock`) no canto direito, linha inferior com horário + duração em dias (`Xd`) para multi-day + cachê (`formatCurrency`) alinhado à direita com cor verde/âmbar; overflow `+X mais` virou `<button>` clicável que abre `handleDayClick(day)`

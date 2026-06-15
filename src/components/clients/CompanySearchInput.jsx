@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { useCompanies } from '@/lib/useCompanies';
 import { formatCNPJ, looksLikeCNPJ, cleanCNPJ } from '@/lib/cnpjSearch';
+import CompanyAvatar from './CompanyAvatar';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -74,33 +75,6 @@ function parseNFeXML(xmlText) {
   }
 }
 
-// ── Logo com fallback ─────────────────────────────────────────────────────────
-
-function CompanyLogo({ domain, name, size = 'md' }) {
-  const [ok, setOk] = useState(!!domain);
-  const sz = size === 'lg' ? 'w-14 h-14' : 'w-10 h-10';
-  const initial = (name || '?')[0].toUpperCase();
-
-  if (ok && domain) {
-    return (
-      <div className={`${sz} rounded-xl border border-slate-700 bg-white flex items-center justify-center flex-shrink-0 overflow-hidden`}>
-        <img
-          src={`https://logo.clearbit.com/${domain}`}
-          alt={name}
-          className="w-full h-full object-contain p-1"
-          onError={() => setOk(false)}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className={`${sz} rounded-xl border border-slate-700 bg-slate-800 flex items-center justify-center flex-shrink-0`}>
-      <span className="text-slate-300 font-bold text-base">{initial}</span>
-    </div>
-  );
-}
-
 // ── Card de resultado ─────────────────────────────────────────────────────────
 
 function CompanyCard({ company, onSelect, sourceBadge }) {
@@ -122,7 +96,7 @@ function CompanyCard({ company, onSelect, sourceBadge }) {
       <div className="absolute left-0 top-0 bottom-0 w-0.5 opacity-0 group-hover:opacity-60 transition-opacity bg-[var(--bp-primary)]" />
 
       <div className="flex items-start gap-3 p-3.5">
-        <CompanyLogo domain={company.domain} name={displayName} size="md" />
+        <CompanyAvatar company={company} name={displayName} size="md" className="rounded-xl border-slate-700" />
 
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
@@ -198,7 +172,7 @@ function SelectedCompany({ company, onClear }) {
       className="rounded-xl bp-today-surface-soft border overflow-hidden"
     >
       <div className="flex items-center gap-3 p-3">
-        <CompanyLogo domain={company.domain} name={displayName} size="md" />
+        <CompanyAvatar company={company} name={displayName} size="md" className="rounded-xl border-slate-700" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-white truncate">{displayName}</p>
           {razao && (
