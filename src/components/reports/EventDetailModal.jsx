@@ -145,6 +145,7 @@ const InlineNotes = ({ event, updateEvent, onSaved }) => {
 };
 
 const EventLifecycleBar = ({ event, dailyWork = [] }) => {
+  const { primaryHex, accentHex } = useCategoryTheme();
   const status = getEventStatus(event);
   const isCancelled = status === 'cancelled';
   if (isCancelled) return null;
@@ -153,7 +154,7 @@ const EventLifecycleBar = ({ event, dailyWork = [] }) => {
     {
       label: 'Agendado',
       done: true,
-      color: '#6366f1',
+      color: primaryHex,
     },
     {
       label: 'Realizado',
@@ -163,7 +164,7 @@ const EventLifecycleBar = ({ event, dailyWork = [] }) => {
     {
       label: 'Horas',
       done: dailyWork.length > 0,
-      color: '#818cf8',
+      color: accentHex,
     },
     {
       label: 'Pago',

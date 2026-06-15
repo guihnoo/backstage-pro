@@ -882,12 +882,21 @@ export default function CalendarPage() {
     const monthClientIds = new Set(monthEvents.map((e) => e.client_id).filter(Boolean));
     const uniqueClients = monthClientIds.size;
 
+    const received = monthEvents
+      .filter(e => e.payment_status === 'paid')
+      .reduce((sum, e) => sum + (Number(e.paid_amount) || getEventCacheAmount(e)), 0);
+    const pending = monthEvents
+      .filter(e => e.payment_status !== 'paid')
+      .reduce((sum, e) => sum + getEventCacheAmount(e), 0);
+
     return {
       totalEvents,
       workDays,
       totalHours: Math.round(totalHours * 10) / 10,
       totalRevenue,
       uniqueClients,
+      received,
+      pending,
       monthEvents,
       monthWork,
       monthEventIds,
@@ -1098,6 +1107,12 @@ export default function CalendarPage() {
           onNewEvent={() => handleNewEvent()}
           onRegisterWork={() => handleQuickWorkEntry()}
           onSyncNow={() => hardNavigate('/profile?tab=google')}
+          monthStats={{
+            showCount: monthStats.totalEvents,
+            received: monthStats.received,
+            pending: monthStats.pending,
+          }}
+          formatCurrency={formatCurrency}
         />
 
         {!clientsLoading && clients.length === 0 && (

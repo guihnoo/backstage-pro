@@ -121,6 +121,9 @@
 | 80 | Sumário de pipeline no Kanban (a receber + pago) | 2026-06-14 | ✅ Barra de chips acima das colunas do `KanbanPipeline`; total de shows, valor a receber (amber), total pago (emerald); respeita máscara financeira |
 | 81 | Calculadora de Cachê na Agenda | 2026-06-14 | ✅ `CacheCalculator.jsx`; modal com ícone calculadora (amarelo) no header; campos: dias, cachê/dia, modelo (4 opções), extras; total em tempo real; Copiar + Criar Evento pré-preenchido |
 | 82 | Forma de recebimento + prefill real no Confirmar Pagamento | 2026-06-14 | ✅ `PaymentConfirmModal`: prefill via `getEventCacheAmount`; seletor PIX/Dinheiro/Transferência/Cartão/Cheque em chips; salvo em `payment_method` |
+| 83 | Notas do evento editáveis inline no modal | 2026-06-14 | ✅ `InlineNotes` em `EventDetailModal`; clica no texto ou no botão Editar/+ Adicionar; textarea com autoFocus; salva `observacoes_md` sem abrir o form completo |
+| 84 | Total de horas + ordenação na seção Trabalho do modal | 2026-06-14 | ✅ Badge índigo com Xh total ao lado do título; registros ordenados por data asc |
+| 85 | Total de despesas na seção Despesas do modal | 2026-06-14 | ✅ Badge amber com R$ total ao lado do contador de despesas |
 
 ---
 

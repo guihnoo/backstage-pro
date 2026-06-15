@@ -6,10 +6,9 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-14
 
-### NOTES-S81 — Observações inline no modal de Relatórios (Cursor Agent) ✅
+### DESIGN-S74 — Lifecycle bar temática em Relatórios (Cursor Agent) ✅
 - **Agente**: Cursor (Auto)
-- `reports/EventDetailModal.jsx`: `InlineNotes` — editar `observacoes_md` no drilldown sem ir à Agenda
-- Polish tema: `bp-focus-input`, botões/links com `primaryHex` da categoria
+- `reports/EventDetailModal.jsx`: `EventLifecycleBar` usa `primaryHex` (Agendado) e `accentHex` (Horas); verde/esmeralda mantidos como semântica de conclusão/pagamento
 
 ### DESIGN-S73 — Toggle Kanban com tema (Cursor Agent) ✅
 - **Agente**: Cursor (Auto)
@@ -21,6 +20,13 @@ Registro cronológico de tarefas executadas por agentes.
 - `appTourSteps.js`: copy do tour do mapa alinhada ao tema dinâmico
 - `FeedbackModal.jsx`: `bp-focus-scope` + `bp-focus-input`
 - Sheets mobile (`EventActionSheet`, `NotesSheet`, `EventHoursSheet`, `ClientActionSheet`): `bp-focus-scope`
+
+### INLINE-NOTES-S83S84S85 — Notas Inline + Totais de Seção ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **S83** — `InlineNotes` inline em `EventDetailModal`: edita `observacoes_md` sem form completo; textarea autoFocus; botão tracejado se vazio
+- **S84** — Badge índigo com total de horas + ordenação cronológica na seção Trabalho
+- **S85** — Badge amber com R$ total na seção Despesas
+- **Deploy**: push `08d3c0d` → Vercel ✅
 
 ### CALC-PAYMENT-S81S82 — Calculadora de Cachê + Forma de Pagamento ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
