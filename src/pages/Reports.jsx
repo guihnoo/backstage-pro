@@ -964,6 +964,7 @@ export default function ReportsPage() {
               <CashflowForecast
                 events={data.events}
                 work={data.dailyWork}
+                clients={data.clients}
               />
               <CategoryBreakdown
                 events={processedData.current.events}
@@ -1200,8 +1201,8 @@ export default function ReportsPage() {
                       {dateStr.split(' ')[0]}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-white truncate">{event.title}</p>
-                      <p className="text-xs text-slate-500 truncate">{client?.name || 'Sem cliente'} · {dateStr}</p>
+                      <EventHeading event={event} client={client} size="sm" />
+                      <p className="text-xs text-slate-500 truncate mt-0.5">{dateStr}</p>
                     </div>
                     <p className="text-sm font-bold flex-shrink-0" style={{ color: config.primaryHex }}>
                       {isVisible ? formatCurrency(value) : '•••'}

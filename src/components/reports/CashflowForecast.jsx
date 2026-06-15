@@ -5,6 +5,7 @@ import { TrendingUp, Clock, CalendarDays, CheckCircle2, AlertCircle, Circle } fr
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import EventHeading from '@/components/events/EventHeading';
+import { buildClientMap, resolveClientForEvent } from '@/lib/eventDisplay';
 
 const STATUS_CONFIG_BASE = {
   confirmed: { label: 'Confirmado', color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/20', dot: 'bg-green-400' },
@@ -34,9 +35,10 @@ function getStatusConfig() {
   };
 }
 
-export default function CashflowForecast({ events = [], work = [] }) {
+export default function CashflowForecast({ events = [], work = [], clients = [] }) {
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const STATUS_CONFIG = useMemo(() => getStatusConfig(), []);
+  const clientMap = useMemo(() => buildClientMap(clients), [clients]);
 
   const workByEvent = useMemo(() => {
     const map = {};
@@ -174,9 +176,11 @@ export default function CashflowForecast({ events = [], work = [] }) {
                     <div key={ev.id} className="flex items-center gap-3 px-4 py-2.5">
                       <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${cfg.dot}`} />
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <EventHeading event={ev} className="text-xs font-medium text-white truncate" />
-                        </div>
+                        <EventHeading
+                          event={ev}
+                          client={resolveClientForEvent(ev, clientMap)}
+                          size="sm"
+                        />
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-[10px] text-slate-500">{dateStr}</span>
                           <span className={`text-[10px] ${cfg.color}`}>{cfg.label}</span>

@@ -6,6 +6,7 @@ import { getEventCacheAmount, calculateEventReceivableAmount } from '@/lib/event
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import appToast from '@/lib/appToast';
 import EventHeading from '@/components/events/EventHeading';
+import { getClientDisplayName } from '@/lib/eventDisplay';
 
 const BUCKETS = [
   { key: 'hot',    label: '> 90 dias', min: 90,  max: Infinity, color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/30',    dot: 'bg-red-400' },
@@ -75,7 +76,7 @@ export default function ReceivablesAging({ events = [], clients = [], work = [] 
     const client = ev._client;
     const phone = client?.phone;
     const msg = buildChargeMessage({
-      clientName: client?.name || ev.client_name || 'Cliente',
+      clientName: getClientDisplayName(client) || ev.client_name || 'Cliente',
       events: [{ title: ev.title, start_date: ev.start_date, amount: ev._amount }],
       totalAmount: ev._amount,
     });
@@ -132,13 +133,8 @@ export default function ReceivablesAging({ events = [], clients = [], work = [] 
               <div key={ev.id} className="flex items-center gap-3 px-4 py-3 hover:bg-red-950/20 transition-colors">
                 <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${b.dot}`} />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <EventHeading event={ev} className="text-xs font-medium text-white truncate" />
-                  </div>
+                  <EventHeading event={ev} client={ev._client} size="sm" />
                   <div className="flex items-center gap-2 mt-0.5">
-                    {ev._client?.name && (
-                      <span className="text-[10px] text-slate-400 truncate">{ev._client.name}</span>
-                    )}
                     <div className={`flex items-center gap-1 text-[10px] ${b.color}`}>
                       <Clock className="w-2.5 h-2.5" />
                       <span>{ev._days}d em atraso</span>

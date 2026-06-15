@@ -1,10 +1,33 @@
 import { E2E_USER_ID } from './fakeAuth.js';
 
+export const E2E_CLIENT_SP_ID = 'e2e-client-sp';
+export const E2E_CLIENT_RJ_ID = 'e2e-client-rj';
+
+export function fakeReportClients() {
+  return [
+    {
+      id: E2E_CLIENT_SP_ID,
+      user_id: E2E_USER_ID,
+      name: 'Produtora E2E SP',
+      company: 'Produtora E2E SP',
+      phone: '5511999990001',
+    },
+    {
+      id: E2E_CLIENT_RJ_ID,
+      user_id: E2E_USER_ID,
+      name: 'Eventos E2E Rio',
+      company: 'Eventos E2E Rio',
+      phone: '5521999990002',
+    },
+  ];
+}
+
 export function fakeReportEvents() {
   return [
     {
       id: 'e2e-event-sp',
       user_id: E2E_USER_ID,
+      client_id: E2E_CLIENT_SP_ID,
       title: 'Show E2E São Paulo',
       start_date: '2026-05-10',
       end_date: '2026-05-10',
@@ -21,6 +44,7 @@ export function fakeReportEvents() {
     {
       id: 'e2e-event-rj',
       user_id: E2E_USER_ID,
+      client_id: E2E_CLIENT_RJ_ID,
       title: 'Show E2E Rio',
       start_date: '2026-04-20',
       end_date: '2026-04-20',
@@ -62,7 +86,7 @@ function jsonList(route, rows) {
 }
 
 /** Mocks mínimos para a página de Relatórios (eventos com localização para o mapa). */
-export async function installReportsMocks(page, events = fakeReportEvents()) {
+export async function installReportsMocks(page, events = fakeReportEvents(), clients = fakeReportClients()) {
 
   await page.route(/\/rest\/v1\/events(\?|$)/, async (route) => {
     const method = route.request().method();
@@ -83,7 +107,7 @@ export async function installReportsMocks(page, events = fakeReportEvents()) {
 
   await page.route(/\/rest\/v1\/clients(\?|$)/, async (route) => {
     if (route.request().method() === 'GET') {
-      await jsonList(route, []);
+      await jsonList(route, clients);
       return;
     }
     await route.continue();

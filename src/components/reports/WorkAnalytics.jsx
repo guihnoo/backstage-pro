@@ -5,6 +5,8 @@ import { format, subMonths, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
+import EventHeading from '@/components/events/EventHeading';
+import { getClientDisplayName } from '@/lib/eventDisplay';
 
 function formatCurrencyCompact(v) {
   if (v >= 1000) return `R$${(v / 1000).toFixed(1)}k`;
@@ -40,8 +42,10 @@ export default function WorkAnalytics({ work = [], events = [], clients = [] }) 
         const client = ev?.client_id ? clients.find(c => c.id === ev.client_id) : null;
         return {
           eventId,
+          eventRef: ev,
+          clientRef: client,
           title: ev?.title || 'Show sem título',
-          client: client?.name || null,
+          clientLabel: getClientDisplayName(client),
           date: ev?.start_date || null,
           hours: d.hours,
           earned: d.earned,
@@ -169,9 +173,13 @@ export default function WorkAnalytics({ work = [], events = [], clients = [] }) 
                 <div key={ev.eventId} className="flex items-center gap-3">
                   <span className="text-xs text-slate-500 w-4 text-right flex-shrink-0">{i + 1}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-0.5">
-                      <p className="text-xs text-white truncate">{ev.title}</p>
-                      <p className="text-xs font-bold text-amber-400 flex-shrink-0 ml-2">
+                    <div className="flex items-center justify-between mb-0.5 gap-2">
+                      {ev.eventRef ? (
+                        <EventHeading event={ev.eventRef} client={ev.clientRef} size="sm" className="flex-1" />
+                      ) : (
+                        <p className="text-xs text-white truncate">{ev.title}</p>
+                      )}
+                      <p className="text-xs font-bold text-amber-400 flex-shrink-0">
                         {isVisible ? formatCurrency(ev.rate) : '••••'}/h
                       </p>
                     </div>
@@ -184,9 +192,6 @@ export default function WorkAnalytics({ work = [], events = [], clients = [] }) 
                       </div>
                       <span className="text-[10px] text-slate-500 flex-shrink-0">{ev.hours}h</span>
                     </div>
-                    {ev.client && (
-                      <p className="text-[10px] text-slate-500 truncate">{ev.client}</p>
-                    )}
                   </div>
                 </div>
               );

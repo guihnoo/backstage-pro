@@ -4,6 +4,7 @@ import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { getEventCacheAmount } from '@/lib/eventFinance';
+import EventHeading from '@/components/events/EventHeading';
 
 function StatCard({ icon: Icon, label, value, sub, iconClass }) {
   return (
@@ -32,10 +33,8 @@ function EventRow({ event, client, onOpen }) {
     <div className="flex items-center gap-3 py-2.5 border-b border-slate-800/50 last:border-0">
       <div className={`w-2 h-2 rounded-full flex-shrink-0 ${hasNf ? 'bg-emerald-400' : 'bg-amber-400'}`} />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-white truncate">{event.title || 'Sem título'}</p>
-        <p className="text-[11px] text-slate-500 truncate">
-          {client?.name || '—'} · {dateLabel}
-        </p>
+        <EventHeading event={event} client={client} size="sm" />
+        <p className="text-[11px] text-slate-500 truncate mt-0.5">{dateLabel}</p>
       </div>
       <div className="text-right flex-shrink-0 mr-1">
         {hasNf ? (
