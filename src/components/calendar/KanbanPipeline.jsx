@@ -3,8 +3,9 @@ import { format, parseISO, subMonths, startOfYear, differenceInDays } from 'date
 import { ptBR } from 'date-fns/locale';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
+import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
-const COLUMNS = [
+const STATIC_COLUMNS = [
   {
     key: 'negotiating',
     label: 'Negociando',
@@ -17,10 +18,7 @@ const COLUMNS = [
   {
     key: 'confirmed',
     label: 'Confirmado',
-    color: 'text-indigo-300',
-    border: 'border-indigo-500/30',
-    header: 'bg-indigo-500/10',
-    dot: '#818cf8',
+    themed: true,
     match: (ev) =>
       (ev.status === 'scheduled' || ev.status === 'confirmed') &&
       ev.payment_status !== 'paid',
@@ -123,7 +121,24 @@ const KanbanCard = ({ ev, client, onOpen, formatCurrency, isVisible, showUrgency
 
 const KanbanPipeline = ({ events = [], clients = [], onEventClick }) => {
   const { formatCurrency, isVisible } = useFinancialVisibility();
+  const { primaryHex } = useCategoryTheme();
   const [period, setPeriod] = useState('3m');
+
+  const columnsDef = useMemo(() => {
+    return STATIC_COLUMNS.map((col) => {
+      if (!col.themed) return col;
+      return {
+        ...col,
+        color: 'bp-text-primary',
+        border: 'border',
+        header: '',
+        dot: primaryHex,
+        headerStyle: { background: `${primaryHex}1a` },
+        borderStyle: { borderColor: `${primaryHex}4d` },
+        textStyle: { color: primaryHex },
+      };
+    });
+  }, [primaryHex]);
 
   const clientMap = useMemo(
     () => new Map((clients || []).map((c) => [c.id, c])),
@@ -160,7 +175,7 @@ const KanbanPipeline = ({ events = [], clients = [], onEventClick }) => {
 
   const columns = useMemo(() => {
     const now = new Date();
-    return COLUMNS.map((col) => {
+    return columnsDef.map((col) => {
       let evs = filteredEvents.filter(col.match);
       // Sort "A Receber" by most days overdue first
       if (col.key === 'to_receive') {
@@ -176,7 +191,7 @@ const KanbanPipeline = ({ events = [], clients = [], onEventClick }) => {
         total: evs.reduce((s, e) => s + getEventCacheAmount(e), 0),
       };
     });
-  }, [filteredEvents]);
+  }, [filteredEvents, columnsDef]);
 
   const summary = useMemo(() => {
     const toReceive = filteredEvents
@@ -207,7 +222,7 @@ const KanbanPipeline = ({ events = [], clients = [], onEventClick }) => {
             onClick={() => setPeriod(p.key)}
             className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${
               period === p.key
-                ? 'bg-indigo-600 border-indigo-500 text-white'
+                ? 'bp-view-active'
                 : 'bg-slate-800/60 border-slate-700/60 text-slate-400 hover:border-slate-600 hover:text-slate-300'
             }`}
           >
@@ -239,23 +254,41 @@ const KanbanPipeline = ({ events = [], clients = [], onEventClick }) => {
             <div
               key={col.key}
               className={`flex-1 min-w-[170px] rounded-xl border ${col.border} flex flex-col overflow-hidden`}
+              style={col.borderStyle}
             >
               {/* Column header */}
-              <div className={`${col.header} px-3 py-2.5 flex items-center justify-between gap-2`}>
-                <span className={`text-xs font-semibold uppercase tracking-wider ${col.color}`}>
+              <div
+                className={`${col.header} px-3 py-2.5 flex items-center justify-between gap-2`}
+                style={col.headerStyle}
+              >
+                <span
+                  className={`text-xs font-semibold uppercase tracking-wider ${col.color}`}
+                  style={col.textStyle}
+                >
                   {col.label}
                 </span>
                 <div className="flex items-center gap-1.5">
-                  <span className={`text-xs font-bold ${col.color}`}>{col.events.length}</span>
+                  <span
+                    className={`text-xs font-bold ${col.color}`}
+                    style={col.textStyle}
+                  >
+                    {col.events.length}
+                  </span>
                 </div>
               </div>
 
               {/* Total */}
               {col.total > 0 && (
-                <div className={`px-3 py-1.5 border-b ${col.border} bg-slate-900/30`}>
+                <div
+                  className={`px-3 py-1.5 border-b ${col.border} bg-slate-900/30`}
+                  style={col.borderStyle}
+                >
                   <p className="text-[10px] text-slate-500">
                     Total:{' '}
-                    <span className={`font-semibold ${col.color}`}>
+                    <span
+                      className={`font-semibold ${col.color}`}
+                      style={col.textStyle}
+                    >
                       {isVisible ? formatCurrency(col.total) : '••••'}
                     </span>
                   </p>

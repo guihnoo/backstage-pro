@@ -753,40 +753,13 @@ export default function CalendarPage() {
     [user?.id, handleFormSuccess]
   );
 
+  // EventHoursSheet already persists to the DB internally (useDailyWork).
+  // This callback just triggers the post-save data refresh.
   const handleHoursSheetSave = useCallback(
-    async (workData) => {
-      try {
-        if (!mobileHoursEventData?.event) {
-          appToast.error('Nenhum evento selecionado para registrar horas.');
-          return;
-        }
-        const payload = {
-          ...workData,
-          event_id: mobileHoursEventData.event.id,
-          work_date: normalizeDateString(workData.work_date || workData.date || new Date()),
-          hours_worked: Number(workData.hours_worked ?? workData.total_hours ?? 0),
-          status: workData.status || 'completed',
-          user_id: user?.id,
-        };
-
-        delete payload.date;
-        delete payload.total_hours;
-
-        if (mobileHoursEventData.existingWork?.id) {
-          await updateDailyWork(mobileHoursEventData.existingWork.id, payload);
-          appToast.success('Horas atualizadas com sucesso!');
-        } else {
-          await createDailyWork(payload);
-          appToast.success('Horas registradas com sucesso!');
-        }
-
-        handleFormSuccess();
-      } catch (error) {
-        console.error('Erro ao salvar horas:', error);
-        appToast.error('Erro ao registrar horas');
-      }
+    () => {
+      handleFormSuccess();
     },
-    [mobileHoursEventData, handleFormSuccess, user, updateDailyWork, createDailyWork]
+    [handleFormSuccess]
   );
 
   const handleNotesSheetSave = useCallback(

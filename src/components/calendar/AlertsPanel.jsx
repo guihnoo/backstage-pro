@@ -149,7 +149,67 @@ export default function AlertsPanel({
       });
     }
 
-    // Regra CRM: Horas pendentes em eventos recentes (últimos 14 dias)
+    // Regra CRM: Dias específicos sem horas em eventos em andamento ou recentes (7 dias)
+    const sevenDaysAgo = new Date(today);
+    sevenDaysAgo.setDate(today.getDate() - 7);
+    const sevenAgoStr = normalizeDateString(sevenDaysAgo);
+
+    const missingDayAlerts = [];
+    events.forEach((event) => {
+      const st = getEventStatus(event);
+      if (st === 'cancelled') return;
+      if (event.auto_hours_applied) return;
+      const startStr = event.start_date || '';
+      const endStr = event.end_date || event.start_date || '';
+      if (!startStr || startStr < sevenAgoStr) return;
+      // Only check events that have already started
+      if (startStr > todayStr) return;
+
+      // Collect all days from start up to yesterday (days that have passed)
+      const yesterday = new Date(today);
+      yesterday.setDate(today.getDate() - 1);
+      const lastDayToCheck = endStr < todayStr ? endStr : normalizeDateString(yesterday);
+
+      const missingDays = [];
+      const cursor = new Date(startStr + 'T00:00:00');
+      const last = new Date(lastDayToCheck + 'T00:00:00');
+      while (cursor <= last) {
+        const dayStr = normalizeDateString(cursor);
+        const hasWork = dailyWork.some(
+          (w) => w.event_id === event.id && normalizeDateString(w.date) === dayStr
+        );
+        if (!hasWork) missingDays.push(dayStr);
+        cursor.setDate(cursor.getDate() + 1);
+      }
+
+      if (missingDays.length > 0) {
+        missingDayAlerts.push({ event, missingDays });
+      }
+    });
+
+    if (missingDayAlerts.length > 0 && !dismissedAlerts.has('crm_missing_days')) {
+      const first = missingDayAlerts[0];
+      const totalMissing = missingDayAlerts.reduce((sum, a) => sum + a.missingDays.length, 0);
+      const dayLabel = totalMissing === 1 ? 'dia' : 'dias';
+      newAlerts.push({
+        id: 'crm_missing_days',
+        kind: 'crm',
+        title: totalMissing === 1
+          ? 'Horas de ontem não registradas'
+          : `${totalMissing} ${dayLabel} sem horas`,
+        body: missingDayAlerts.length === 1
+          ? `"${first.event.title || 'Evento'}" tem ${first.missingDays.length} ${dayLabel} sem registro de trabalho.`
+          : `${missingDayAlerts.length} eventos têm dias sem registro de horas.`,
+        icon: ClipboardList,
+        accentHex: theme.primaryHex,
+        cta: {
+          label: 'Ver evento',
+          action: () => onOpenEvent?.(first.event),
+        },
+      });
+    }
+
+    // Regra CRM: Horas pendentes em eventos recentes (últimos 14 dias) — zero horas no total
     const fourteenDaysAgo = new Date(today);
     fourteenDaysAgo.setDate(today.getDate() - 14);
     const fourteenAgoStr = normalizeDateString(fourteenDaysAgo);
@@ -160,6 +220,8 @@ export default function AlertsPanel({
       if (event.auto_hours_applied) return false;
       const endStr = event.end_date || event.start_date || '';
       if (!endStr || endStr < fourteenAgoStr) return false;
+      // Skip if already caught by missing-days alert
+      if (missingDayAlerts.some((a) => a.event.id === event.id)) return false;
       return !dailyWork.some((w) => w.event_id === event.id);
     });
 

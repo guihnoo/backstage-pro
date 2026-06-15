@@ -159,8 +159,22 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
             <div className="space-y-4 p-4 sm:p-6 pb-2">
               <div className="space-y-2">
                 <Label>Data do trabalho</Label>
-                <Input type="date" value={formData.date} onChange={(e) => setField('date', e.target.value)} className="bg-slate-800 border-slate-700 h-12 text-base" />
-                <p className="text-xs text-slate-400">{formData.date ? `Trabalho em ${formatDisplayDate(formData.date)}` : 'Selecione a data'}</p>
+                <Input
+                  type="date"
+                  value={formData.date}
+                  min={event?.start_date || undefined}
+                  max={normalizeDateString(new Date())}
+                  onChange={(e) => setField('date', e.target.value)}
+                  className="bg-slate-800 border-slate-700 h-12 text-base"
+                />
+                {event?.end_date && event.end_date !== event.start_date && (
+                  <p className="text-xs text-indigo-400">
+                    Evento multi-dia: {formatDisplayDate(event.start_date)} – {formatDisplayDate(event.end_date)}. Você pode registrar qualquer dia do evento.
+                  </p>
+                )}
+                {formData.date && (
+                  <p className="text-xs text-slate-400">Registrando para {formatDisplayDate(formData.date)}</p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">

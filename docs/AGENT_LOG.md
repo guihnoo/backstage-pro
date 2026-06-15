@@ -6,6 +6,12 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-14
 
+### DESIGN-S91 — Kanban temático + fix refresh horas mobile (Cursor Agent) ✅
+- **Agente**: Cursor (Auto)
+- `KanbanPipeline.jsx`: coluna Confirmado e chips de período usam `primaryHex` / `bp-view-active`
+- `useClientInteractions.js`: badge E-mail com tokens `bp-text-primary` + `bp-surface-primary`
+- `Calendar.jsx`: `handleHoursSheetSave` só dispara refresh (persistência fica no `EventHoursSheet`)
+
 ### DESIGN-S90 — Polish tema residual violet/indigo (Cursor Agent) ✅
 - **Agente**: Cursor (Auto)
 - `calendar/EventDetailModal.jsx`: botão Enviar proposta usa `bp-text-primary` + `bp-surface-primary`

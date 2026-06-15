@@ -5,7 +5,7 @@ import { useAuth } from './authContext';
 export const INTERACTION_TYPES = {
   whatsapp: { label: 'WhatsApp', color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/20' },
   call:      { label: 'Ligação',  color: 'text-blue-400',  bg: 'bg-blue-500/10 border-blue-500/20' },
-  email:     { label: 'E-mail',   color: 'text-violet-400', bg: 'bg-violet-500/10 border-violet-500/20' },
+  email:     { label: 'E-mail',   color: 'bp-text-primary', bg: 'bp-surface-primary border' },
   meeting:   { label: 'Reunião',  color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20' },
   other:     { label: 'Outro',    color: 'text-slate-400', bg: 'bg-slate-500/10 border-slate-500/20' },
 };
