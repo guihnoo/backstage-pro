@@ -678,23 +678,9 @@ export default function Goals() {
                 )}
               </div>
 
-              {/* Resumo financeiro */}
+              {/* Resumo — apenas métricas não exibidas nos círculos acima */}
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  {
-                    label: 'Recebido',
-                    value: formatCurrency(stats.faturamento_pago),
-                    pulseValue: stats.faturamento_pago,
-                    sub: `${Math.round(metaReceita > 0 ? Math.min((stats.faturamento_pago / metaReceita) * 100, 100) : 0)}% da meta`,
-                    icon: '✅', color: '#39FF14', route: '/reports'
-                  },
-                  {
-                    label: 'A Receber',
-                    value: formatCurrency(stats.a_receber),
-                    pulseValue: stats.a_receber,
-                    sub: stats.a_receber > 0 ? 'pendente de pagamento' : 'tudo em dia',
-                    icon: '⏳', color: AUTH_HERO_ACCENT, route: '/reports'
-                  },
                   {
                     label: 'Diárias no mês',
                     value: `${diariasMes} diária${diariasMes !== 1 ? 's' : ''}`,

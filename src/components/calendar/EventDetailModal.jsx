@@ -731,64 +731,107 @@ export default function EventDetailModal({
               </CardContent>
             </Card>
 
-            {/* Informações Financeiras */}
+            {/* Financeiro */}
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <DollarSign className="w-5 h-5 text-green-400" />
-                  Informações Financeiras
+                  Financeiro
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div>
-                  <p className="text-sm text-slate-400 mb-1">Cachê do Evento</p>
-                  <p className="text-2xl font-bold text-green-400">
+                {/* Cachê base */}
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-slate-400">Cachê contratado</p>
+                  <p className="text-lg font-bold text-green-400">
                     {formatCurrency(getEventCacheAmount(event))}
                   </p>
                 </div>
 
-                {eventWork.length > 0 ? (
+                {/* Horas (quando há registros) */}
+                {eventWork.length > 0 && (
                   <>
                     <Separator className="bg-slate-700" />
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-3 gap-2 text-center">
                       <div>
-                        <p className="text-sm text-slate-400 mb-1">Horas Trabalhadas</p>
-                        <p className="text-xl font-bold bp-text-primary">{totals.totalHours}h</p>
+                        <p className="text-[11px] text-slate-500 mb-0.5">Horas</p>
+                        <p className="text-base font-bold bp-text-primary">{totals.totalHours}h</p>
                       </div>
                       <div>
-                        <p className="text-sm text-slate-400 mb-1">Horas Extras</p>
-                        <p className="text-xl font-bold text-orange-400">{totals.totalOvertime}h</p>
+                        <p className="text-[11px] text-slate-500 mb-0.5">Extras</p>
+                        <p className="text-base font-bold text-orange-400">{totals.totalOvertime}h</p>
                       </div>
-                    </div>
-                    <Separator className="bg-slate-700" />
-                    <div>
-                      <p className="text-sm text-slate-400 mb-1">Total Ganho</p>
-                      <p className="text-2xl font-bold text-green-400">
-                        {formatCurrency(totals.totalEarned)}
-                      </p>
-                    </div>
-                  </>
-                ) : estimatedValue !== null && (
-                  <>
-                    <Separator className="bg-slate-700" />
-                    <div>
-                      <p className="text-sm text-slate-400 mb-1">Valor Estimado</p>
-                      <p className="text-2xl font-bold text-yellow-400">
-                        {formatCurrency(estimatedValue)}
-                      </p>
-                      <p className="text-xs text-slate-500 mt-1">
-                        Baseado no cachê diário e duração do evento
-                      </p>
+                      <div>
+                        <p className="text-[11px] text-slate-500 mb-0.5">Total ganho</p>
+                        <p className="text-base font-bold text-green-400">{formatCurrency(totals.totalEarned)}</p>
+                      </div>
                     </div>
                   </>
                 )}
 
+                {/* Valor estimado (quando não há registros) */}
+                {eventWork.length === 0 && estimatedValue !== null && (
+                  <>
+                    <Separator className="bg-slate-700" />
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-slate-400">Valor estimado</p>
+                        <p className="text-[11px] text-slate-500">Baseado no cachê × duração</p>
+                      </div>
+                      <p className="text-lg font-bold text-yellow-400">{formatCurrency(estimatedValue)}</p>
+                    </div>
+                  </>
+                )}
+
+                {/* Resultado líquido (quando há despesas) */}
+                {profitSummary && expenseTotals.total > 0 && (
+                  <>
+                    <Separator className="bg-slate-700" />
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      <div>
+                        <p className="text-[11px] text-slate-500 mb-0.5">Receita</p>
+                        <p className="text-base font-bold bp-text-primary">{formatCurrency(profitSummary.revenue)}</p>
+                      </div>
+                      <div>
+                        <p className="text-[11px] text-slate-500 mb-0.5">Despesas</p>
+                        <p className="text-base font-bold text-red-400">{formatCurrency(profitSummary.expenses)}</p>
+                      </div>
+                      <div>
+                        <p className="text-[11px] text-slate-500 mb-0.5">Lucro</p>
+                        <p className={`text-base font-bold ${profitSummary.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {formatCurrency(profitSummary.profit)}
+                        </p>
+                      </div>
+                    </div>
+                    {profitSummary.margin !== null && (
+                      <div>
+                        <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+                          <span>Margem</span>
+                          <span className={profitSummary.margin >= 0 ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold'}>
+                            {Math.round(profitSummary.margin)}%
+                          </span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-slate-700/60 overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-700"
+                            style={{
+                              width: `${Math.max(0, Math.min(100, profitSummary.margin))}%`,
+                              background: profitSummary.margin >= 70 ? '#10b981' : profitSummary.margin >= 40 ? '#f59e0b' : '#ef4444',
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Vencimento */}
                 {event.payment_due_date && event.payment_status !== 'paid' && (
                   <>
                     <Separator className="bg-slate-700" />
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-slate-400 mb-0.5">Vencimento do pagamento</p>
+                        <p className="text-sm text-slate-400">Vencimento do pagamento</p>
                         <p className="text-base font-bold text-amber-400">
                           {formatDisplayDate(event.payment_due_date)}
                         </p>
@@ -888,50 +931,6 @@ export default function EventDetailModal({
                 </CardContent>
               )}
             </Card>
-
-            {/* Resultado Líquido */}
-            {profitSummary && (
-              <Card className="bg-slate-800/50 border-slate-700">
-                <CardContent className="pt-4 pb-4">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Resultado do Show</p>
-                  <div className="grid grid-cols-3 gap-3 text-center">
-                    <div>
-                      <p className="text-[10px] text-slate-500 mb-1">Receita</p>
-                      <p className="text-sm font-bold bp-text-primary">{formatCurrency(profitSummary.revenue)}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-slate-500 mb-1">Despesas</p>
-                      <p className="text-sm font-bold text-red-400">{formatCurrency(profitSummary.expenses)}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-slate-500 mb-1">Lucro</p>
-                      <p className={`text-sm font-bold ${profitSummary.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {formatCurrency(profitSummary.profit)}
-                      </p>
-                    </div>
-                  </div>
-                  {profitSummary.margin !== null && profitSummary.expenses > 0 && (
-                    <div className="mt-3">
-                      <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
-                        <span>Margem de lucro</span>
-                        <span className={profitSummary.margin >= 0 ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold'}>
-                          {Math.round(profitSummary.margin)}%
-                        </span>
-                      </div>
-                      <div className="h-1.5 rounded-full bg-slate-700/60 overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all duration-700"
-                          style={{
-                            width: `${Math.max(0, Math.min(100, profitSummary.margin))}%`,
-                            background: profitSummary.margin >= 70 ? '#10b981' : profitSummary.margin >= 40 ? '#f59e0b' : '#ef4444',
-                          }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
 
             {/* Timeline de dias — aparece apenas em eventos multi-dia */}
             {eventDays.length > 0 && (

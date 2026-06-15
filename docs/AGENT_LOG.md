@@ -6,6 +6,15 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-15
 
+### S97-S100 — UX: filtro cliente Reports + alertas por evento + swipe + timer (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **S97** — `Reports.jsx`: chips de filtro por cliente abaixo do filtro de período; `clientsInPeriod` useMemo; `clientFilteredEvents` filtra `filteredEventList` e `ReportEventList`; chips "Todos + [Nome]" — só exibe quando há >1 cliente no período
+- **S98** — `AlertsPanel.jsx`: regra `crm_missing_days` agora gera **1 alerta por evento** (máx 3) com ID único `crm_missing_days_${event.id}`; eventos adicionais recebem um alerta resumido `crm_missing_days_others`
+- **S99** — `Calendar.jsx`: swipe left/right para navegar meses (vista grid) ou semanas (vista week); `useRef` + `handleGridTouchStart`/`handleGridTouchEnd`; threshold 50px horizontal; ignora gestos verticais
+- **S100** — `DailyWorkModal.jsx`: banner âmbar quando o FloatingTimer está ativo para o mesmo evento; exibe tempo decorrido ao vivo (atualiza a cada segundo); botão "Usar tempo" calcula horário de saída e preenche o campo automaticamente
+- **ESLint**: 0 erros nos 4 arquivos modificados
+- **Build**: Vite ✅ (35s)
+
 ### ESLINT-FIX — Correção de 44 erros ESLint (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Prioridade 1 — rules-of-hooks (runtime bugs)**: `reports/EventDetailModal.jsx` — `useState(markingDone)` e `useMemo(isPastAndNotCompleted)` estavam após `if (!event) return null`; movidos para antes do guard

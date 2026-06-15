@@ -1171,7 +1171,7 @@ export default function CalendarPage() {
         />
 
         {/* Monthly Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
           <StatCard
             title="Eventos"
             value={monthStats.totalEvents}
@@ -1217,18 +1217,6 @@ export default function CalendarPage() {
             icon={TrendingUp}
             color="text-emerald-400"
             onClick={handleRevenueClick}
-            loading={isLoading}
-          />
-
-          <StatCard
-            title="Clientes"
-            value={monthStats.uniqueClients}
-            numericValue={monthStats.uniqueClients}
-            formatValue={(v) => String(Math.round(v))}
-            subtext={monthStats.uniqueClients === 1 ? 'cliente' : 'clientes'}
-            icon={Users}
-            color="bp-text-primary"
-            onClick={handleClientsClick}
             loading={isLoading}
           />
         </div>

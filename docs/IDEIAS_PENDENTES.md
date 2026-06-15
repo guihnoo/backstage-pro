@@ -135,6 +135,10 @@
 | 94 | Timeline de dias por evento no EventDetailModal | 2026-06-15 | ✅ `calendar/EventDetailModal.jsx`: chips por dia (verde=registrado, vermelho=faltou, brand=hoje, cinza=futuro); click abre DailyWorkModal com data correta |
 | 95 | Polish tema S90–S92 (violet/indigo → tokens dinâmicos) | 2026-06-15 | ✅ Kanban, modais, gráficos, badges Confirmado, CRM e-mail |
 | 96 | Smoke E2E vista Kanban na Agenda | 2026-06-15 | ✅ `calendar-navigation.spec.js` — 29 testes smoke |
+| 97 | Filtro rápido por cliente em Relatórios | 2026-06-15 | ✅ `Reports.jsx`: chips horizontais abaixo do filtro de período; filtra lista de eventos |
+| 98 | Alertas individuais por evento (dias faltantes) | 2026-06-15 | ✅ `AlertsPanel.jsx`: 1 alerta por evento com ID único; máx 3 + resumo p/ restante |
+| 99 | Swipe para navegar meses/semanas na Agenda | 2026-06-15 | ✅ `Calendar.jsx`: touch left/right em grade e vista semanal; threshold 50px |
+| 100 | Indicador de timer ativo no DailyWorkModal | 2026-06-15 | ✅ `DailyWorkModal.jsx`: banner âmbar com tempo ao vivo; "Usar tempo" preenche saída |
 
 ---
 

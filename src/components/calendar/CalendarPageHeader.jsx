@@ -62,37 +62,6 @@ export default function CalendarPageHeader({
             >
               {format(currentDate, 'MMMM yyyy', { locale: ptBR })}
             </motion.h2>
-            {monthStats && formatCurrency && (monthStats.showCount > 0 || monthStats.received > 0 || monthStats.pending > 0) && (
-              <motion.div
-                key={`${currentDate.getMonth()}-stats`}
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="flex items-center gap-2 flex-wrap justify-center"
-              >
-                {monthStats.showCount > 0 && (
-                  <span className="text-[11px] text-slate-400">
-                    {monthStats.showCount} show{monthStats.showCount !== 1 ? 's' : ''}
-                  </span>
-                )}
-                {monthStats.received > 0 && (
-                  <>
-                    {monthStats.showCount > 0 && <span className="text-slate-600 text-[10px]">·</span>}
-                    <span className="text-[11px] text-emerald-400 font-medium">
-                      {formatCurrency(monthStats.received)} recebido
-                    </span>
-                  </>
-                )}
-                {monthStats.pending > 0 && (
-                  <>
-                    {(monthStats.showCount > 0 || monthStats.received > 0) && <span className="text-slate-600 text-[10px]">·</span>}
-                    <span className="text-[11px] text-amber-400 font-medium">
-                      {formatCurrency(monthStats.pending)} a receber
-                    </span>
-                  </>
-                )}
-              </motion.div>
-            )}
           </div>
 
           <Button
