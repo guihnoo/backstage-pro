@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Users, Star, TrendingUp, ExternalLink } from 'lucide-react';
+import { Users, TrendingUp, ExternalLink } from 'lucide-react';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { getEventStatus } from '@/components/utils/dateUtils';

@@ -4,6 +4,29 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+## 2026-06-15
+
+### ESLINT-FIX — Correção de 44 erros ESLint (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Prioridade 1 — rules-of-hooks (runtime bugs)**: `reports/EventDetailModal.jsx` — `useState(markingDone)` e `useMemo(isPastAndNotCompleted)` estavam após `if (!event) return null`; movidos para antes do guard
+- **Prioridade 1b — no-undef**: `calendar/EventDetailModal.jsx` — `isVisible` usado mas não desestruturado; adicionado à desestruturação de `useFinancialVisibility()`
+- **Prioridade 2 — no-unused-vars**:
+  - `Calendar.jsx`: removidos `createDailyWork` e `updateDailyWork` da desestruturação de `useDailyWork()`
+  - `EventDetailModal.jsx (calendar)`: `onAddWork` → `onAddWork: _onAddWork`
+  - `AvailabilityShareModal.jsx`: removido `formatWhatsAppNumber` não usado
+  - `EventTemplatesManager.jsx`: removido `Button` não usado
+  - `InactiveClientsPanel.jsx`: removido `openWhatsAppCharge` não usado
+  - `CacheEvolutionChart.jsx`: removida importação de `getEventStatus`; parâmetro `label` → `_label`
+  - `CashflowForecast.jsx`: removidos `Clock`, `CheckCircle2`, `AlertCircle`, `Circle` não usados
+  - `CategoryBreakdown.jsx`: índice `i` removido do `.map((c, i) =>`
+  - `ExportManager.jsx`: `clients` → `_clients`
+  - `ReceivablesAging.jsx`: removido `getEventCacheAmount` não usado
+  - `SmartInsights.jsx`: removidos `addDays`, `addMonths`, `isBefore`, `DollarSign`; `useFinancialVisibility` removido (sem uso no JSX); `expenses` parâmetro → `_expenses`; `TopClients`: `Star` removido; `WorkAnalytics`: `parseISO` removido; `userManualContent.js`: `Bell` removido
+- **Prioridade 3 — no-unescaped-entities**: `EventTemplatesManager.jsx`, `GlobalSearch.jsx`, `PushNotificationSettings.jsx`, `FloatingTimer.jsx` — aspas `"` → `&quot;`
+- **Prioridade 4 — no-irregular-whitespace**: `SmartInsights.jsx` — 4 caracteres NBSP (U+00A0) substituídos por espaços normais
+- **Resultado**: 44 erros → 0 erros; 19 warnings (exhaustive-deps + fast-refresh — esperados, sem impacto funcional)
+- **Build**: Vite ✅ (37s)
+
 ## 2026-06-14
 
 ### DESIGN-S92 — Badges Confirmado + smoke Kanban (Cursor Agent) ✅

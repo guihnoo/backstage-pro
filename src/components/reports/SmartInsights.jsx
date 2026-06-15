@@ -1,16 +1,15 @@
 import { useMemo } from 'react';
-import { format, addDays, addMonths, isAfter, isBefore, startOfMonth, endOfMonth, subMonths, differenceInDays, parseISO } from 'date-fns';
+import { format, isAfter, startOfMonth, endOfMonth, subMonths, differenceInDays, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { TrendingUp, TrendingDown, AlertCircle, Zap, Users, Calendar, DollarSign, Star, Clock, CheckCircle2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, AlertCircle, Zap, Users, Calendar, Star, Clock, CheckCircle2 } from 'lucide-react';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { getEventStatus } from '@/components/utils/dateUtils';
-import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { hardNavigate } from '@/lib/hardNavigate';
 
 const MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
-function buildInsights({ events, clients, expenses, work, profile }) {
+function buildInsights({ events, clients, expenses: _expenses, work, profile }) {
   const today = new Date();
   const insights = [];
 
@@ -41,7 +40,7 @@ function buildInsights({ events, clients, expenses, work, profile }) {
       color: 'text-red-400',
       bg: 'bg-red-500/10 border-red-500/20',
       title: `${overdueUnpaid.length} show${overdueUnpaid.length > 1 ? 's' : ''} sem pagamento`,
-      description: `Você tem R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} a receber de shows já realizados.`,
+      description: `Você tem R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} a receber de shows já realizados.`,
       cta: 'Ver Relatórios → Visão Geral',
       ctaAction: null,
     });
@@ -191,7 +190,7 @@ function buildInsights({ events, clients, expenses, work, profile }) {
         icon: CheckCircle2,
         themePrimary: true,
         title: `${pctGoal.toFixed(0)}% da meta mensal — quase lá!`,
-        description: `Faltam R$ ${remaining.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} para bater a meta de ${format(today, 'MMMM', { locale: ptBR })}.`,
+        description: `Faltam R$ ${remaining.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} para bater a meta de ${format(today, 'MMMM', { locale: ptBR })}.`,
         cta: 'Ver Metas',
         ctaAction: () => hardNavigate('/goals'),
       });
@@ -203,7 +202,7 @@ function buildInsights({ events, clients, expenses, work, profile }) {
         color: 'text-emerald-400',
         bg: 'bg-emerald-500/10 border-emerald-500/20',
         title: `Meta de ${format(today, 'MMMM', { locale: ptBR })} batida! 🎉`,
-        description: `Você já ultrapassou a meta mensal de R$ ${monthlyGoal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}. Excelente trabalho!`,
+        description: `Você já ultrapassou a meta mensal de R$ ${monthlyGoal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}. Excelente trabalho!`,
         cta: null,
         ctaAction: null,
       });
@@ -220,7 +219,7 @@ function buildInsights({ events, clients, expenses, work, profile }) {
         priority: 2,
         icon: Clock,
         themePrimary: true,
-        title: `Sua taxa horária é R$ ${rate.toFixed(0)}/hora`,
+        title: `Sua taxa horária é R$ ${rate.toFixed(0)}/hora`,
         description: `Acima de R$150/hora — ótima rentabilidade! Continue selecionando shows de alto valor.`,
         cta: null,
         ctaAction: null,
@@ -233,7 +232,6 @@ function buildInsights({ events, clients, expenses, work, profile }) {
 }
 
 export default function SmartInsights({ events = [], clients = [], expenses = [], work = [], profile = {} }) {
-  const { isVisible, formatCurrency } = useFinancialVisibility();
   const { primaryHex } = useCategoryTheme();
 
   const insights = useMemo(

@@ -3,12 +3,11 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { getEventCacheAmount, isCancelledEvent } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
-import { getEventStatus } from '@/components/utils/dateUtils';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { format, subMonths, startOfMonth, endOfMonth, parseISO, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-const CustomTooltip = ({ active, payload, label, formatCurrency, isVisible }) => {
+const CustomTooltip = ({ active, payload, label: _label, formatCurrency, isVisible }) => {
   if (!active || !payload?.length) return null;
   const d = payload[0]?.payload;
   if (!d || d.shows === 0) return null;

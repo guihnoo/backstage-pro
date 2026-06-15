@@ -11,7 +11,7 @@ import { useCategoryTheme } from '@/lib/useCategoryTheme';
 function buildShareText(data, period) {
   const events = data?.events || [];
   const expenses = data?.expenses || [];
-  const clients = data?.clients || [];
+  const _clients = data?.clients || [];
 
   const revenue = events
     .filter(e => e.payment_status === 'paid')

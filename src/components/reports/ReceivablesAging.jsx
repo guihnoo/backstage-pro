@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { differenceInDays, parseISO } from 'date-fns';
 import { AlertTriangle, ChevronDown, ChevronUp, MessageCircle, Clock } from 'lucide-react';
 import { buildChargeMessage, openWhatsAppCharge } from '@/lib/whatsapp';
-import { getEventCacheAmount, calculateEventReceivableAmount } from '@/lib/eventFinance';
+import { calculateEventReceivableAmount } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import appToast from '@/lib/appToast';
 import EventHeading from '@/components/events/EventHeading';

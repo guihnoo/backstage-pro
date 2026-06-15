@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { differenceInDays, parseISO } from 'date-fns';
 import { UserX, MessageCircle, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
-import { buildReactivationMessage, openWhatsAppCharge, formatWhatsAppNumber } from '@/lib/whatsapp';
+import { buildReactivationMessage, formatWhatsAppNumber } from '@/lib/whatsapp';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useAuth } from '@/lib/authContext';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';

@@ -4,7 +4,6 @@ import { EventTemplate } from '@/api/entities';
 import { useAuth } from '@/lib/authContext';
 import { Loader2, Trash2, BookmarkPlus, Sparkles, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 import appToast from '@/lib/appToast';
-import { Button } from '@/components/ui/button';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
 
 const PAYMENT_MODEL_LABELS = {
@@ -118,7 +117,7 @@ export default function EventTemplatesManager({ primaryHex }) {
                     <p className="text-sm text-slate-500">Nenhum template salvo</p>
                     <p className="text-xs text-slate-600 max-w-xs mx-auto">
                       Ao criar um evento na Agenda, clique em{' '}
-                      <span className="text-slate-400 font-medium">"Salvar como template"</span>{' '}
+                      <span className="text-slate-400 font-medium">&quot;Salvar como template&quot;</span>{' '}
                       para reutilizá-lo rapidamente no futuro.
                     </p>
                   </div>
@@ -182,7 +181,7 @@ export default function EventTemplatesManager({ primaryHex }) {
                 {templates.length > 0 && (
                   <p className="text-[10px] text-slate-600 text-center pt-1 flex items-center justify-center gap-1">
                     <AlertCircle className="w-3 h-3" />
-                    Para criar novos templates, use "Salvar como template" na Agenda
+                    Para criar novos templates, use &quot;Salvar como template&quot; na Agenda
                   </p>
                 )}
               </div>

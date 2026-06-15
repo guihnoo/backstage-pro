@@ -155,7 +155,7 @@ export default function CalendarPage() {
   const config = getCategoryConfig(profile?.category || 'lighting');
   const { events, loading: eventsLoading, error: eventsError, refetch: refetchEvents, update: updateEvent, delete: deleteEvent } = useEvents();
   const { clients, loading: clientsLoading } = useClients();
-  const { dailyWork, loading: dailyWorkLoading, refetch: refetchDailyWork, create: createDailyWork, update: updateDailyWork, delete: deleteDailyWorkEntry } = useDailyWork();
+  const { dailyWork, loading: dailyWorkLoading, refetch: refetchDailyWork, delete: deleteDailyWorkEntry } = useDailyWork();
   const { expenses, loading: expensesLoading, refetch: refetchExpenses } = useExpenses();
   const { formatCurrency } = useFinancialVisibility();
   const { settings: userSettings } = useUserSettings();

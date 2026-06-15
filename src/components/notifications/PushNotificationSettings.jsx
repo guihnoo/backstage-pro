@@ -234,7 +234,7 @@ export default function PushNotificationSettings() {
             A variável <code className="font-mono bg-slate-800 px-1 rounded">VITE_VAPID_PUBLIC_KEY</code> não está no build de produção.
           </p>
           <p className="text-xs text-amber-400/80">
-            Acesse <strong>Vercel → Project → Settings → Environment Variables</strong>, adicione a chave e faça um novo deploy. Depois, reabra o app e toque em "Ativar alertas".
+            Acesse <strong>Vercel → Project → Settings → Environment Variables</strong>, adicione a chave e faça um novo deploy. Depois, reabra o app e toque em &quot;Ativar alertas&quot;.
           </p>
         </div>
       )}

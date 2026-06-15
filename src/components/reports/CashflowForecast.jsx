@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { format, addMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO, addDays, isAfter, isBefore, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { TrendingUp, Clock, CalendarDays, CheckCircle2, AlertCircle, Circle } from 'lucide-react';
+import { TrendingUp, CalendarDays } from 'lucide-react';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import EventHeading from '@/components/events/EventHeading';
