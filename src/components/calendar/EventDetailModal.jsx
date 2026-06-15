@@ -133,6 +133,7 @@ export default function EventDetailModal({
       location_lat: event.location_lat ?? null,
       location_lng: event.location_lng ?? null,
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event?.id, event?.location, event?.location_city, event?.location_state, event?.location_lat, event?.location_lng]);
 
   const locationDirty =

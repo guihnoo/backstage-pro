@@ -14,7 +14,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Calendar,
-  Users,
   Clock,
   AlertCircle,
   CheckCircle2,
@@ -996,25 +995,6 @@ export default function CalendarPage() {
     setDrilldownOpen(true);
   }, [currentDate, monthStats.monthWork, eventMap, clientMap, closeModals]);
 
-  const handleClientsClick = useCallback(() => {
-    closeModals();
-    const clientItems = [];
-    monthStats.monthClientIds.forEach((clientId) => {
-      const client = clientMap.get(clientId);
-      const clientEvents = monthStats.monthEvents.filter((e) => e.client_id === clientId);
-
-      clientItems.push({
-        title: getClientDisplayName(client) || 'Sem empresa',
-        subtitle: `${clientEvents.length} evento(s) no mês`,
-        client_id: clientId,
-        dateSort: 0,
-      });
-    });
-
-    setDrilldownTitle(`Clientes Ativos em ${format(currentDate, 'MMMM yyyy', { locale: ptBR })}`);
-    setDrilldownItems(clientItems.sort((a, b) => a.title.localeCompare(b.title)));
-    setDrilldownOpen(true);
-  }, [monthStats.monthClientIds, monthStats.monthEvents, clientMap, currentDate, closeModals]);
 
   const handleRevenueClick = useCallback(() => {
     closeModals();

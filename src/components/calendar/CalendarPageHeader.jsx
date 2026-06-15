@@ -16,8 +16,6 @@ export default function CalendarPageHeader({
   onNewEvent,
   onRegisterWork,
   onSyncNow,
-  monthStats = null,
-  formatCurrency = null,
 }) {
   return (
     <div className="flex flex-col gap-3">

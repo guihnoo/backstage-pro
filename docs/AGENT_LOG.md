@@ -6,6 +6,15 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-15
 
+### LAPIDAÇÃO — Remoção de duplicidades em todo o app (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **CalendarPageHeader.jsx**: removido bloco de resumo financeiro (showCount/received/pending) sob o título do mês — dados idênticos já exibidos nos StatCards abaixo
+- **Calendar.jsx**: removido StatCard "Clientes" (5º card) — mesma info presente em Relatórios e Metas; grid `lg:grid-cols-5` → `lg:grid-cols-4`; removidos `Users` import e `handleClientsClick` (não usados após remoção)
+- **Goals.jsx**: reduzido de 4 para 2 cards de grade — removidos "Recebido" e "A Receber" (já exibidos nos círculos CircularProgress acima); mantidos "Diárias no mês" e "Clientes Ativos"
+- **EventDetailModal.jsx (calendar)**: fusão do card "Resultado do Show" no card "Financeiro" (renomeado de "Informações Financeiras"); lucro/despesas/margem agora exibidos condicionalmente dentro do card financeiro — eliminado card separado redundante
+- **ESLint**: 0 erros, 0 warnings após correções
+- **Build**: Vite ✅
+
 ### S97-S100 — UX: filtro cliente Reports + alertas por evento + swipe + timer (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **S97** — `Reports.jsx`: chips de filtro por cliente abaixo do filtro de período; `clientsInPeriod` useMemo; `clientFilteredEvents` filtra `filteredEventList` e `ReportEventList`; chips "Todos + [Nome]" — só exibe quando há >1 cliente no período

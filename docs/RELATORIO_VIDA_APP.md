@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-15 (S97-S100 — filtro cliente Reports + alertas individuais + swipe + timer — Claude Code)  
+**Última atualização:** 2026-06-15 (Lapidação — remoção de duplicidades em CalendarHeader, Calendar StatCards, Goals cards, EventDetailModal — Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-06-15 — `dpl_CZLMQ28odnw5yv76C8sjhTSBaB56` (commit `384d2fb` — S90-S94)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` (dedupe refatorado) deployadas no Supabase ✅  
@@ -60,6 +60,8 @@
 | Fix CRM WhatsApp (S33) | `handleChargeWhatsApp` no `EventDetailModal` — usa `buildChargeMessage` profissional em vez de lista genérica de detalhes do evento (`6949f70`) |
 | Projeção detalhada (S33) | `Reports.jsx` (`2f0cae9`): Dialog "Projeção do Próximo Período" — lista eventos agendados com valor, data, cliente; clique abre EventDetailModal |
 | Histórico mensal metas (S33) | `Goals.jsx` (`2c660e2`): grid 2×2 na aba Metas mostrando receita paga + barra de progresso vs meta dos últimos 4 meses |
+| S97-S100 UX (2026-06-15) | Reports: chips de filtro por cliente; AlertsPanel: 1 alerta por evento CRM; Calendar: swipe meses/semanas; DailyWorkModal: banner timer ao vivo com "Usar tempo" |
+| Lapidação duplicidades (2026-06-15) | `CalendarPageHeader`: removido resumo financeiro redundante; `Calendar`: removido 5º StatCard "Clientes"; `Goals`: 4→2 cards (removidos Recebido + A Receber já nos círculos); `EventDetailModal`: fusão "Resultado do Show" → "Financeiro" |
 
 ---
 
