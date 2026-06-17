@@ -48,10 +48,12 @@ export default function GoogleCalendarSync() {
 
   useEffect(() => {
     if (user?.id) loadSettings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   useEffect(() => {
     checkUrlForError();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search, locationPathname, user?.id]);
 
   const checkUrlForError = () => {

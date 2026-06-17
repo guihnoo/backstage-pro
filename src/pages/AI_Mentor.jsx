@@ -122,7 +122,7 @@ export default function AIMentorPage() {
   const today = new Date().toISOString().split('T')[0];
   const { events } = useEvents(user?.id, { from: today, limit: 10, ascending: true });
   const config = getCategoryConfig(profile?.category || 'lighting');
-  const { formatCurrency } = useFinancialVisibility();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
   const metaDiarias = Number(profile?.monthly_goal_events) || 0;
   const metaReceita = Number(profile?.monthly_goal_revenue) || 0;
 
@@ -318,12 +318,12 @@ export default function AIMentorPage() {
               )}
               {metaReceita > 0 && (
                 <span className="text-[10px] font-mono px-2.5 py-1 rounded-full border border-emerald-500/25 text-emerald-400 bg-emerald-500/10">
-                  💰 {formatCurrency(stats.faturamento_pago)} / {formatCurrency(metaReceita)}
+                  💰 {isVisible ? `${formatCurrency(stats.faturamento_pago)} / ${formatCurrency(metaReceita)}` : '•••• / ••••'}
                 </span>
               )}
               {(stats.a_receber ?? 0) > 0 && (
                 <span className="text-[10px] font-mono px-2.5 py-1 rounded-full border border-amber-500/25 text-amber-400 bg-amber-500/10">
-                  ⏳ {formatCurrency(stats.a_receber)} a receber
+                  ⏳ {isVisible ? `${formatCurrency(stats.a_receber)} a receber` : '•••• a receber'}
                 </span>
               )}
             </div>
@@ -343,6 +343,7 @@ export default function AIMentorPage() {
               className={`w-8 h-8 ${isAudioEnabled ? '' : 'text-[#5a6070]'}`}
               style={isAudioEnabled ? { color: config.primaryHex } : undefined}
               title={isAudioEnabled ? 'Desativar áudio' : 'Ativar leitura em voz alta'}
+              aria-label={isAudioEnabled ? 'Desativar áudio' : 'Ativar leitura em voz alta'}
             >
               {isAudioEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </Button>
@@ -352,6 +353,7 @@ export default function AIMentorPage() {
               onClick={() => setHistoryOpen(true)}
               className="w-8 h-8 text-[#5a6070] hover:text-white relative"
               title="Histórico"
+              aria-label="Histórico de conversas"
             >
               <History className="w-4 h-4" />
               {conversations.length > 0 && (

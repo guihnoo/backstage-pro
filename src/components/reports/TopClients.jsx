@@ -100,6 +100,7 @@ export default function TopClients({ events = [], clients = [] }) {
           return (
             <li key={item.clientId}>
               <button
+                type="button"
                 onClick={() => hardNavigate(`/client-detail?id=${item.clientId}`)}
                 className="w-full text-left group"
               >

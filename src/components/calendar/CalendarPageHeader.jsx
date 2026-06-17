@@ -47,6 +47,7 @@ export default function CalendarPageHeader({
             size="icon"
             onClick={onPreviousMonth}
             className="text-slate-50 hover:bg-slate-800 flex-shrink-0 h-10 w-10 active:scale-95"
+            aria-label="Mês anterior"
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
@@ -67,6 +68,7 @@ export default function CalendarPageHeader({
             size="icon"
             onClick={onNextMonth}
             className="text-slate-50 hover:bg-slate-800 flex-shrink-0 h-10 w-10 active:scale-95"
+            aria-label="Próximo mês"
           >
             <ChevronRight className="w-5 h-5" />
           </Button>

@@ -86,7 +86,7 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
 import { AUTH_HERO_CATEGORY } from '@/lib/categoryGear';
 
 export default function MeiDashboard({ annualRevenue = 0, loading = false, dasType = 'services', accentColor = getCategoryConfig(AUTH_HERO_CATEGORY).primaryHex }) {
-  const { formatCurrency } = useFinancialVisibility();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
   const pct = useMemo(() => Math.min((annualRevenue / MEI_LIMIT) * 100, 100), [annualRevenue]);
   const remaining = Math.max(MEI_LIMIT - annualRevenue, 0);
   const threshold = getThreshold(pct, accentColor);
@@ -190,13 +190,13 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
             <div className="min-w-0">
               <p className="text-xs text-slate-400 mb-0.5">Faturado</p>
               <p className="text-xl font-black text-white truncate">
-                {loading ? '—' : formatCurrency(annualRevenue)}
+                {loading ? '—' : (isVisible ? formatCurrency(annualRevenue) : '••••')}
               </p>
             </div>
             <div className="min-w-0">
               <p className="text-xs text-slate-400 mb-0.5">Margem restante</p>
               <p className="text-lg font-bold truncate" style={{ color: threshold.color }}>
-                {loading ? '—' : formatCurrency(remaining)}
+                {loading ? '—' : (isVisible ? formatCurrency(remaining) : '••••')}
               </p>
             </div>
           </div>
@@ -228,12 +228,12 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
         <div className="grid grid-cols-3 gap-3 text-center">
           <div>
             <p className="text-xs text-slate-500 mb-1">Média/mês</p>
-            <p className="text-sm font-bold text-white">{loading ? '—' : formatCurrency(monthlyAvg)}</p>
+            <p className="text-sm font-bold text-white">{loading ? '—' : (isVisible ? formatCurrency(monthlyAvg) : '••••')}</p>
           </div>
           <div>
             <p className="text-xs text-slate-500 mb-1">Projeção ano</p>
             <p className="text-sm font-bold" style={{ color: projectedPct >= 85 ? '#f97316' : accentColor }}>
-              {loading ? '—' : formatCurrency(projectedYear)}
+              {loading ? '—' : (isVisible ? formatCurrency(projectedYear) : '••••')}
             </p>
           </div>
           <div>
@@ -245,7 +245,7 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
         </div>
         {monthsRemaining > 0 && !loading && (
           <p className="text-xs text-slate-500 mt-3 text-center">
-            Você ainda pode faturar {formatCurrency(remaining)} até {formatBRL(MEI_LIMIT)} nos próximos {monthsRemaining} {monthsRemaining === 1 ? 'mês' : 'meses'}
+            Você ainda pode faturar {isVisible ? formatCurrency(remaining) : '••••'} até {formatBRL(MEI_LIMIT)} nos próximos {monthsRemaining} {monthsRemaining === 1 ? 'mês' : 'meses'}
           </p>
         )}
       </div>

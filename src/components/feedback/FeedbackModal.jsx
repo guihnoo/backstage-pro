@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader2, ImagePlus, Star } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
@@ -24,6 +24,15 @@ export default function FeedbackModal({ open, onClose, primaryHex: primaryHexPro
   const [sending, setSending] = useState(false);
 
   useAppScrollLock(open);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => { if (e.key === 'Escape') handleClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  // handleClose is defined below — stable within the render
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const reset = () => {
     setType('suggestion');

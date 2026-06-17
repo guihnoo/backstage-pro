@@ -2,6 +2,7 @@ import { E2E_USER_ID } from './fakeAuth.js';
 
 export const E2E_CLIENT_ID = '00000000-0000-4000-8000-000000000002';
 export const E2E_EVENT_ID = '00000000-0000-4000-8000-000000000003';
+export const E2E_GLOBAL_COMPANY_ID = '22222222-2222-4222-8222-222222222222';
 
 function isoDate(d = new Date()) {
   return d.toISOString().split('T')[0];
@@ -20,6 +21,19 @@ export function fakeClient() {
     profile_complete: true,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
+  };
+}
+
+export function fakeGlobalCompany() {
+  return {
+    id: E2E_GLOBAL_COMPANY_ID,
+    name: 'R1 Audiovisual LTDA',
+    trading_name: 'R1 Audiovisual',
+    logo_url: 'https://example.com/r1-logo.png',
+    city: 'São Paulo',
+    state: 'SP',
+    verified: true,
+    source: 'manual',
   };
 }
 
@@ -61,7 +75,16 @@ export async function installDataMocks(page) {
   const tableData = {
     events: [event],
     clients: [client],
+    companies: [fakeGlobalCompany()],
   };
+
+  await page.route('**/functions/v1/search-company', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ results: [] }),
+    });
+  });
 
   await page.route('**/rest/v1/**', async (route) => {
     const url = route.request().url();

@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getCompanyLogoUrl } from '@/lib/companyEnrichment';
+import { pickDefaultClientColor } from '@/lib/brandColors';
 
 export default function CompanyAvatar({
   name,
@@ -14,6 +14,7 @@ export default function CompanyAvatar({
   const [imgOk, setImgOk] = useState(!!resolved);
   const label = name || company?.trading_name || company?.name || '?';
   const initial = label.charAt(0).toUpperCase();
+  const brandColor = pickDefaultClientColor(label);
   const sz = size === 'md' ? 'w-10 h-10 text-base' : 'w-7 h-7 text-xs';
 
   if (imgOk && resolved) {
@@ -37,15 +38,16 @@ export default function CompanyAvatar({
   return (
     <span
       className={cn(
-        `${sz} rounded-lg border border-slate-600 bg-slate-800 flex items-center justify-center flex-shrink-0`,
+        `${sz} rounded-lg border flex items-center justify-center flex-shrink-0 font-bold`,
         className,
       )}
+      style={{
+        backgroundColor: `${brandColor}22`,
+        borderColor: `${brandColor}55`,
+        color: brandColor,
+      }}
     >
-      {size === 'md' ? (
-        <span className="text-slate-300 font-bold">{initial}</span>
-      ) : (
-        <Building2 className="w-3.5 h-3.5 text-slate-500" />
-      )}
+      {initial}
     </span>
   );
 }

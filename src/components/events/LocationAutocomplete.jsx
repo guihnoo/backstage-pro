@@ -10,6 +10,7 @@ export default function LocationAutocomplete({
   onSelect,
   placeholder = 'Endereço, cidade ou local do evento',
   className = '',
+  'aria-label': ariaLabel = 'Local do evento',
 }) {
   const { primaryHex } = useCategoryTheme();
   const [input, setInput] = useState(value);
@@ -75,6 +76,9 @@ export default function LocationAutocomplete({
           onFocus={() => suggestions.length > 0 && setOpen(true)}
           placeholder={placeholder}
           className="bg-slate-800 border-slate-700 pl-9 pr-9"
+          aria-label={ariaLabel}
+          aria-autocomplete="list"
+          aria-expanded={open}
         />
         {loading && (
           <Loader2
@@ -84,9 +88,9 @@ export default function LocationAutocomplete({
         )}
       </div>
       {open && suggestions.length > 0 && (
-        <ul className="absolute z-[110] mt-1 w-full max-h-48 overflow-y-auto overscroll-contain rounded-lg border border-slate-700 bg-slate-900 shadow-xl">
+        <ul role="listbox" aria-label="Sugestões de local" className="absolute z-[110] mt-1 w-full max-h-48 overflow-y-auto overscroll-contain rounded-lg border border-slate-700 bg-slate-900 shadow-xl">
           {suggestions.map((item) => (
-            <li key={item.id}>
+            <li key={item.id} role="option" aria-selected="false">
               <button
                 type="button"
                 className="w-full text-left px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-800 border-b border-slate-800 last:border-0"

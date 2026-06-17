@@ -537,17 +537,30 @@ export default function EventDetailModal({
               if (allDone) {
                 return (
                   <Card className="bg-gradient-to-r from-emerald-900/20 to-emerald-800/20 border-emerald-700/40">
-                    <CardContent className="p-4 flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                        <PartyPopper className="w-5 h-5 text-emerald-400" />
+                    <CardContent className="p-4 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-9 h-9 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                          <PartyPopper className="w-5 h-5 text-emerald-400" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-emerald-300 text-sm">Evento fechado</p>
+                          <p className="text-xs text-emerald-400/70 mt-0.5">
+                            {totals.totalHours > 0 ? `${totals.totalHours}h registradas` : 'Horas OK'}
+                            {' · Pagamento confirmado'}
+                          </p>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <p className="font-bold text-emerald-300 text-sm">Evento fechado</p>
-                        <p className="text-xs text-emerald-400/70 mt-0.5">
-                          {totals.totalHours > 0 ? `${totals.totalHours}h registradas` : 'Horas OK'}
-                          {' · Pagamento confirmado'}
-                        </p>
-                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => window.open('https://www.nfse.gov.br/EmissorNacional/Login', '_blank', 'noopener,noreferrer')}
+                        className="flex-shrink-0 h-8 px-2.5 text-xs border-blue-700/50 text-blue-400 hover:bg-blue-900/20"
+                        title="Emitir NF-e no portal NFS-e Nacional (gov.br)"
+                      >
+                        <ExternalLink className="w-3 h-3 mr-1" />
+                        NF-e
+                      </Button>
                     </CardContent>
                   </Card>
                 );
@@ -573,7 +586,7 @@ export default function EventDetailModal({
                           Registrar horas trabalhadas
                         </p>
                         {horasDone && totals.totalHours > 0 && (
-                          <p className="text-xs text-emerald-400">{totals.totalHours}h · {formatCurrency(totals.totalEarned)}</p>
+                          <p className="text-xs text-emerald-400">{totals.totalHours}h · {isVisible ? formatCurrency(totals.totalEarned) : '••••'}</p>
                         )}
                       </div>
                       {!horasDone && (
@@ -656,6 +669,25 @@ export default function EventDetailModal({
                           )}
                         </div>
                       )}
+                    </div>
+
+                    {/* NF-e */}
+                    <div className="flex items-center gap-3 pt-1 border-t border-slate-700/50">
+                      <Circle className="w-5 h-5 text-blue-500/50 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white">Emitir NF-e (se necessário)</p>
+                        <p className="text-xs text-slate-400">Portal NFS-e Nacional — gov.br</p>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => window.open('https://www.nfse.gov.br/EmissorNacional/Login', '_blank', 'noopener,noreferrer')}
+                        className="flex-shrink-0 h-7 px-2 text-xs border-blue-700/50 text-blue-400 hover:bg-blue-900/20"
+                      >
+                        <ExternalLink className="w-3 h-3 mr-1" />
+                        Abrir portal
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -745,7 +777,7 @@ export default function EventDetailModal({
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-slate-400">Cachê contratado</p>
                   <p className="text-lg font-bold text-green-400">
-                    {formatCurrency(getEventCacheAmount(event))}
+                    {isVisible ? formatCurrency(getEventCacheAmount(event)) : '••••'}
                   </p>
                 </div>
 
@@ -764,7 +796,7 @@ export default function EventDetailModal({
                       </div>
                       <div>
                         <p className="text-[11px] text-slate-500 mb-0.5">Total ganho</p>
-                        <p className="text-base font-bold text-green-400">{formatCurrency(totals.totalEarned)}</p>
+                        <p className="text-base font-bold text-green-400">{isVisible ? formatCurrency(totals.totalEarned) : '••••'}</p>
                       </div>
                     </div>
                   </>
@@ -779,7 +811,7 @@ export default function EventDetailModal({
                         <p className="text-sm text-slate-400">Valor estimado</p>
                         <p className="text-[11px] text-slate-500">Baseado no cachê × duração</p>
                       </div>
-                      <p className="text-lg font-bold text-yellow-400">{formatCurrency(estimatedValue)}</p>
+                      <p className="text-lg font-bold text-yellow-400">{isVisible ? formatCurrency(estimatedValue) : '••••'}</p>
                     </div>
                   </>
                 )}
@@ -791,16 +823,16 @@ export default function EventDetailModal({
                     <div className="grid grid-cols-3 gap-2 text-center">
                       <div>
                         <p className="text-[11px] text-slate-500 mb-0.5">Receita</p>
-                        <p className="text-base font-bold bp-text-primary">{formatCurrency(profitSummary.revenue)}</p>
+                        <p className="text-base font-bold bp-text-primary">{isVisible ? formatCurrency(profitSummary.revenue) : '••••'}</p>
                       </div>
                       <div>
                         <p className="text-[11px] text-slate-500 mb-0.5">Despesas</p>
-                        <p className="text-base font-bold text-red-400">{formatCurrency(profitSummary.expenses)}</p>
+                        <p className="text-base font-bold text-red-400">{isVisible ? formatCurrency(profitSummary.expenses) : '••••'}</p>
                       </div>
                       <div>
                         <p className="text-[11px] text-slate-500 mb-0.5">Lucro</p>
                         <p className={`text-base font-bold ${profitSummary.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {formatCurrency(profitSummary.profit)}
+                          {isVisible ? formatCurrency(profitSummary.profit) : '••••'}
                         </p>
                       </div>
                     </div>
@@ -878,12 +910,12 @@ export default function EventDetailModal({
                   <div className="flex items-center gap-3 mt-2 pt-2 border-t border-slate-700/50">
                     <div>
                       <p className="text-[10px] text-slate-500 uppercase tracking-wide">Total</p>
-                      <p className="text-sm font-bold text-red-300">{formatCurrency(expenseTotals.total)}</p>
+                      <p className="text-sm font-bold text-red-300">{isVisible ? formatCurrency(expenseTotals.total) : '••••'}</p>
                     </div>
                     {expenseTotals.reimbursable > 0 && (
                       <div>
                         <p className="text-[10px] text-slate-500 uppercase tracking-wide">A reembolsar</p>
-                        <p className="text-sm font-bold text-amber-300">{formatCurrency(expenseTotals.reimbursable)}</p>
+                        <p className="text-sm font-bold text-amber-300">{isVisible ? formatCurrency(expenseTotals.reimbursable) : '••••'}</p>
                       </div>
                     )}
                   </div>
@@ -923,7 +955,7 @@ export default function EventDetailModal({
                             </div>
                           </div>
                           <p className="text-sm font-bold text-red-300 flex-shrink-0">
-                            {formatCurrency(exp.amount)}
+                            {isVisible ? formatCurrency(exp.amount) : '••••'}
                           </p>
                         </div>
                       ))}
@@ -1027,7 +1059,7 @@ export default function EventDetailModal({
                             </p>
                             <div className="text-right">
                               <p className="text-green-400 font-bold">
-                                {formatCurrency(work.daily_cache || 0)}
+                                {isVisible ? formatCurrency(work.daily_cache || 0) : '••••'}
                               </p>
                               {dayRate && (
                                 <p className="text-[10px] text-amber-400/70">

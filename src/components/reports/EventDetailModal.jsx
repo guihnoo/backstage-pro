@@ -47,6 +47,7 @@ import EventHeading from '@/components/events/EventHeading';
 import { getClientDisplayName } from '@/lib/eventDisplay';
 
 import { hardNavigate } from '@/lib/hardNavigate';
+import { formatCNPJ } from '@/lib/cnpjSearch';
 
 const InlineNotes = ({ event, updateEvent, onSaved }) => {
   const { primaryHex } = useCategoryTheme();
@@ -128,8 +129,12 @@ const InlineNotes = ({ event, updateEvent, onSaved }) => {
       </div>
       {event.observacoes_md ? (
         <div
+          role="button"
+          tabIndex={0}
+          aria-label="Editar observações"
           className="bg-slate-800/40 border border-slate-700/60 rounded-lg px-4 py-3 cursor-pointer hover:border-slate-600 transition-colors"
           onClick={startEdit}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startEdit(); } }}
         >
           <p className="text-sm text-slate-300 whitespace-pre-wrap break-words leading-relaxed">{event.observacoes_md}</p>
         </div>
@@ -238,53 +243,99 @@ const InfoItem = ({ icon: Icon, label, value, color = 'text-slate-300', isCurren
 };
 
 const WorkItem = ({ work, onEdit }) => {
+  const { primaryHex } = useCategoryTheme();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
+  const dateLabel = formatFullDate(work.work_date || work.date);
+  const timeLabel = work.entry_time && work.exit_time
+    ? `${work.entry_time.slice(0, 5)} – ${work.exit_time.slice(0, 5)}`
+    : null;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-slate-800/50 p-3 rounded-lg border border-slate-700">
+      className="bg-slate-800/50 p-3 rounded-lg border border-slate-700/60">
 
-      <div className="flex justify-between items-center mb-2 gap-2">
-        <p className="text-sm font-bold text-white truncate flex-1">{formatFullDate(work.date)}</p>
-        <Button variant="ghost" size="sm" className="h-8 px-2 flex-shrink-0" onClick={() => onEdit(work)}>
+      <div className="flex justify-between items-center mb-2.5 gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <p className="text-sm font-bold text-white truncate">{dateLabel}</p>
+          {timeLabel && <span className="text-[10px] text-slate-500 font-mono flex-shrink-0">{timeLabel}</span>}
+        </div>
+        <Button variant="ghost" size="sm" className="h-7 px-2 flex-shrink-0 text-slate-400 hover:text-white" onClick={() => onEdit(work)}>
           <Edit className="w-3 h-3 mr-1" /> Editar
         </Button>
       </div>
-      <div className="grid grid-cols-2 gap-2 text-center text-xs">
-        <InfoItem icon={Clock} label="Horas" value={`${work.total_hours?.toFixed(1) || 0}h`} color="bp-text-primary" />
-        <InfoItem icon={Clock} label="Extras" value={`${work.overtime_hours?.toFixed(1) || 0}h`} color="text-pink-400" />
-        <InfoItem icon={DollarSign} label="Cachê Dia" value={work.daily_cache || 0} isCurrency={true} color="text-green-300" />
-        {work.photo_url &&
-          <a href={work.photo_url} target="_blank" rel="noopener noreferrer" className="bp-text-primary hover:underline flex items-center justify-center gap-1 text-xs">
-            <Paperclip className="w-3 h-3" /> Ver Foto
-          </a>
-        }
+
+      <div className="grid grid-cols-3 gap-2">
+        <div className="rounded-lg p-2 text-center border border-slate-700/60 bg-slate-800/40">
+          <p className="text-[9px] text-slate-500 uppercase tracking-wider mb-0.5">Horas</p>
+          <p className="text-sm font-black font-mono leading-tight" style={{ color: primaryHex }}>
+            {(work.total_hours || 0).toFixed(1)}h
+          </p>
+        </div>
+        <div className="rounded-lg p-2 text-center border border-pink-500/20 bg-pink-500/5">
+          <p className="text-[9px] text-slate-500 uppercase tracking-wider mb-0.5">Extras</p>
+          <p className="text-sm font-black text-pink-400 font-mono leading-tight">
+            {(work.overtime_hours || 0).toFixed(1)}h
+          </p>
+        </div>
+        <div className="rounded-lg p-2 text-center border border-emerald-500/20 bg-emerald-500/5">
+          <p className="text-[9px] text-slate-500 uppercase tracking-wider mb-0.5">Cachê</p>
+          <p className="text-xs font-black text-emerald-400 font-mono leading-tight">
+            {isVisible ? formatCurrency(work.daily_cache || 0) : '••••'}
+          </p>
+        </div>
       </div>
+
       {work.notes && <p className="text-xs text-slate-400 mt-2 p-2 bg-slate-900/50 rounded break-words">{work.notes}</p>}
+      {work.photo_url && (
+        <a href={work.photo_url} target="_blank" rel="noopener noreferrer" className="mt-1.5 inline-flex items-center gap-1 text-xs bp-text-primary hover:underline">
+          <Paperclip className="w-3 h-3" /> Ver Foto
+        </a>
+      )}
     </motion.div>
   );
 };
 
+const EXPENSE_CAT_CONFIG = {
+  transporte:  { label: 'Transporte',   color: '#60a5fa', bg: 'bg-blue-500/10 border-blue-500/25' },
+  alimentacao: { label: 'Alimentação',  color: '#fb923c', bg: 'bg-orange-500/10 border-orange-500/25' },
+  equipamento: { label: 'Equipamento',  color: '#a78bfa', bg: 'bg-violet-500/10 border-violet-500/25' },
+  hospedagem:  { label: 'Hospedagem',   color: '#2dd4bf', bg: 'bg-teal-500/10 border-teal-500/25' },
+  combustivel: { label: 'Combustível',  color: '#fbbf24', bg: 'bg-amber-500/10 border-amber-500/25' },
+  manutencao:  { label: 'Manutenção',   color: '#94a3b8', bg: 'bg-slate-500/10 border-slate-500/25' },
+  outros:      { label: 'Outros',       color: '#94a3b8', bg: 'bg-slate-500/10 border-slate-500/25' },
+};
+
 const ExpenseItem = ({ expense, onEdit }) => {
-  const { formatCurrency } = useFinancialVisibility();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
+  const cat = EXPENSE_CAT_CONFIG[expense.category] || EXPENSE_CAT_CONFIG.outros;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-slate-800/50 p-3 rounded-lg border border-slate-700">
+      className="bg-slate-800/50 p-3 rounded-lg border border-slate-700/60">
 
-      <div className="flex justify-between items-start mb-2 gap-2">
+      <div className="flex justify-between items-start gap-2">
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-white truncate">{expense.title}</p>
-          <Badge variant="secondary" className="text-xs capitalize mt-1">{expense.category}</Badge>
+          <p className="text-sm font-bold text-white truncate mb-1">{expense.title}</p>
+          <span
+            className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full border ${cat.bg}`}
+            style={{ color: cat.color }}
+          >
+            {cat.label}
+          </span>
         </div>
         <div className="flex items-start gap-2 flex-shrink-0">
           <div className="text-right">
-            <p className="text-sm font-bold text-amber-400">{formatCurrency(expense.amount)}</p>
-            <p className="text-xs text-slate-400 whitespace-nowrap">{formatDisplayDate(expense.date)}</p>
+            <p className="text-sm font-black text-amber-400 font-mono">
+              {isVisible ? formatCurrency(expense.amount) : '••••'}
+            </p>
+            <p className="text-[10px] text-slate-500 whitespace-nowrap">{formatDisplayDate(expense.expense_date || expense.date)}</p>
           </div>
           {onEdit && (
-            <Button variant="ghost" size="sm" className="h-8 px-2 flex-shrink-0" onClick={() => onEdit(expense)}>
+            <Button variant="ghost" size="sm" className="h-8 px-2 flex-shrink-0 text-slate-400 hover:text-white" onClick={() => onEdit(expense)}>
               <Edit className="w-3 h-3 mr-1" /> Editar
             </Button>
           )}
@@ -314,6 +365,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
   const { update: updateEvent } = useEvents();
   const { primaryHex, accentHex } = useCategoryTheme();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
   const [savingLocation, setSavingLocation] = useState(false);
   const [savingRating, setSavingRating] = useState(false);
   const [ratingDraft, setRatingDraft] = useState(null);
@@ -338,7 +390,8 @@ const EventDetailModal = React.memo(function EventDetailModal({
     });
     setRatingDraft(event.client_rating ?? null);
     setRatingNotesDraft(event.client_rating_notes || '');
-  }, [event?.id, event?.location, event?.location_city, event?.location_state, event?.location_lat, event?.location_lng]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event?.id, event?.location, event?.location_city, event?.location_state, event?.location_lat, event?.location_lng, event?.client_rating, event?.client_rating_notes]);
 
   const locationDirty =
     event &&
@@ -401,6 +454,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
   }, [event, dailyWork]);
 
   const [markingDone, setMarkingDone] = useState(false);
+  const [showNFeCard, setShowNFeCard] = useState(false);
 
   const isPastAndNotCompleted = useMemo(() => {
     if (!event?.start_date) return false;
@@ -425,7 +479,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
       await updateEvent(event.id, { status: 'completed' });
       appToast.success('Evento marcado como realizado!');
       onPaymentUpdate?.();
-      onClose?.();
+      setShowNFeCard(true);
     } catch {
       appToast.error('Erro ao atualizar status do evento.');
     } finally {
@@ -433,12 +487,17 @@ const EventDetailModal = React.memo(function EventDetailModal({
     }
   };
 
+  const buildNFeText = () => [
+    `Serviço: ${event.title}`,
+    event.start_date ? `Data: ${formatDisplayDate(event.start_date)}` : null,
+    client ? `Tomador: ${getClientDisplayName(client)}` : null,
+    client?.cnpj ? `CNPJ: ${formatCNPJ(client.cnpj)}` : null,
+    `Valor: ${formatCurrency(getEventCacheAmount(event))}`,
+    event.location_city ? `Local: ${event.location_city}` : null,
+  ].filter(Boolean).join('\n');
+
   const handleShareEvent = () => {
-    const { formatCurrency } = (() => {
-      // inline formatter — doesn't need hook here
-      const fmt = (v) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 });
-      return { formatCurrency: fmt };
-    })();
+    const fmtShare = (v) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 });
 
     const dateStr = event.start_date
       ? new Date(event.start_date + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
@@ -448,7 +507,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
       dateStr ? `📅 ${dateStr}` : null,
       event.start_time ? `🕐 ${event.start_time.slice(0, 5)}` : null,
       (event.location || event.location_city) ? `📍 ${[event.location, event.location_city].filter(Boolean).join(' — ')}` : null,
-      getEventCacheAmount(event) > 0 ? `💰 ${formatCurrency(getEventCacheAmount(event))}` : null,
+      getEventCacheAmount(event) > 0 ? `💰 ${fmtShare(getEventCacheAmount(event))}` : null,
       event.notes ? `📝 ${event.notes}` : null,
       '',
       '_Backstage Pro_',
@@ -488,7 +547,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
                   </div>
                 </DialogTitle>
               </div>
-              <Button variant="ghost" size="icon" onClick={onClose} className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 min-w-[44px] min-h-[44px]">
+              <Button variant="ghost" size="icon" onClick={onClose} className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 min-w-[44px] min-h-[44px]" aria-label="Fechar">
                 <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
             </div>
@@ -498,6 +557,84 @@ const EventDetailModal = React.memo(function EventDetailModal({
 
           <ScrollArea fill>
             <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-5 pb-safe">
+
+              {/* Prompt NF-e — aparece ao marcar como realizado */}
+              <AnimatePresence>
+                {showNFeCard && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <Card className="bg-blue-950/30 border-blue-700/40">
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <FileText className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                          <p className="text-sm font-semibold text-blue-300">Evento realizado! Deseja emitir a NF-e?</p>
+                        </div>
+                        <div className="bg-slate-800/60 rounded-lg px-3 py-2.5 text-xs space-y-1.5">
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-400 flex-shrink-0">Serviço:</span>
+                            <span className="text-white font-medium text-right truncate">{event.title}</span>
+                          </div>
+                          {client && (
+                            <div className="flex justify-between gap-2">
+                              <span className="text-slate-400 flex-shrink-0">Tomador:</span>
+                              <span className="text-white text-right truncate">{getClientDisplayName(client)}</span>
+                            </div>
+                          )}
+                          {client?.cnpj && (
+                            <div className="flex justify-between gap-2">
+                              <span className="text-slate-400 flex-shrink-0">CNPJ:</span>
+                              <span className="text-white font-mono">{formatCNPJ(client.cnpj)}</span>
+                            </div>
+                          )}
+                          {event.start_date && (
+                            <div className="flex justify-between gap-2">
+                              <span className="text-slate-400 flex-shrink-0">Competência:</span>
+                              <span className="text-white">{formatDisplayDate(event.start_date)}</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-400 flex-shrink-0">Valor:</span>
+                            <span className="text-white font-semibold">{isVisible ? formatCurrency(getEventCacheAmount(event)) : '••••'}</span>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => { navigator.clipboard.writeText(buildNFeText()); appToast.success('Dados copiados!'); }}
+                            className="flex-shrink-0 text-xs border-slate-600 hover:bg-slate-700 text-slate-300 h-9"
+                          >
+                            <Copy className="w-3 h-3 mr-1" />
+                            Copiar
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setShowNFeCard(false)}
+                            className="flex-1 text-xs border-slate-600 hover:bg-slate-700 text-slate-300 h-9"
+                          >
+                            Agora não
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => { window.open('https://www.nfse.gov.br/EmissorNacional/Login', '_blank', 'noopener,noreferrer'); onClose?.(); }}
+                            className="flex-1 text-xs bg-blue-700 hover:bg-blue-600 text-white h-9"
+                          >
+                            <ExternalLink className="w-3 h-3 mr-1" />
+                            Emitir NF-e
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {canApply12h && (
                 <Alert className="bg-blue-900/40 border-blue-700 text-blue-200">
@@ -697,7 +834,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
                   </h3>
                   {expenses.length > 0 && (
                     <span className="text-xs text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-full px-2.5 py-0.5">
-                      {Number(stats.totalExpenses || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 })} total
+                      {isVisible ? formatCurrency(stats.totalExpenses || 0) : '••••'} total
                     </span>
                   )}
                 </div>
@@ -769,6 +906,18 @@ const EventDetailModal = React.memo(function EventDetailModal({
                     ? <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
                     : <CheckSquare2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />}
                   Realizado
+                </Button>
+              )}
+              {event.status === 'completed' && !showNFeCard && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => window.open('https://www.nfse.gov.br/EmissorNacional/Login', '_blank', 'noopener,noreferrer')}
+                  className="flex-1 sm:flex-none bg-slate-800 border-blue-700/50 hover:bg-blue-900/20 text-blue-400 text-xs sm:text-sm h-10 min-h-[44px]"
+                  title="Emitir NF-e no portal NFS-e Nacional (gov.br)"
+                >
+                  <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  NF-e
                 </Button>
               )}
               {onAddWork && (

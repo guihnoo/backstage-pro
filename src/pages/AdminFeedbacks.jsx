@@ -127,10 +127,11 @@ function FeedbackCard({ item, onUpdate, primaryHex }) {
       )}
 
       <div className="pt-2 border-t border-slate-800/80">
-        <label className="text-[10px] text-slate-500 uppercase tracking-wide mb-1.5 block">
+        <label htmlFor="admin-notes" className="text-[10px] text-slate-500 uppercase tracking-wide mb-1.5 block">
           Notas internas (só você vê)
         </label>
         <textarea
+          id="admin-notes"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={2}

@@ -136,20 +136,23 @@ export default function NotificationCenter({ compact = false }) {
   useEffect(() => {
     if (!isOpen) return;
     const today = new Date().toISOString().split('T')[0];
-    const fresh = new Set(
-      [...dismissed].filter(id => {
-        const parts = id.split(':');
-        const dateStr = parts[parts.length - 1];
-        if (dateStr.length === 10) {
-          return differenceInDays(parseISO(today), parseISO(dateStr)) < 3;
-        }
-        return true;
-      })
-    );
-    if (fresh.size !== dismissed.size) {
-      setDismissed(fresh);
-      saveDismissed(fresh);
-    }
+    setDismissed(prev => {
+      const fresh = new Set(
+        [...prev].filter(id => {
+          const parts = id.split(':');
+          const dateStr = parts[parts.length - 1];
+          if (dateStr.length === 10) {
+            return differenceInDays(parseISO(today), parseISO(dateStr)) < 3;
+          }
+          return true;
+        })
+      );
+      if (fresh.size !== prev.size) {
+        saveDismissed(fresh);
+        return fresh;
+      }
+      return prev;
+    });
   }, [isOpen]);
 
   const allNotifications = useMemo(() => {
@@ -237,6 +240,7 @@ export default function NotificationCenter({ compact = false }) {
           className={`relative hover:bg-slate-800 text-slate-400 hover:text-white ${
             compact ? 'min-w-[44px] min-h-[44px] w-11 h-11' : ''
           }`}
+          aria-label="Notificações"
         >
           <Bell className="w-5 h-5" />
           {count > 0 && (

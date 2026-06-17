@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/authContext';
 import { Loader2, Trash2, BookmarkPlus, Sparkles, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 import appToast from '@/lib/appToast';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
+import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 
 const PAYMENT_MODEL_LABELS = {
   HORAS_EXTRAS: 'Horas Extras',
@@ -13,6 +14,7 @@ const PAYMENT_MODEL_LABELS = {
 
 export default function EventTemplatesManager({ primaryHex }) {
   const { user } = useAuth();
+  const { isVisible } = useFinancialVisibility();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -147,7 +149,7 @@ export default function EventTemplatesManager({ primaryHex }) {
                             )}
                             {tpl.daily_cache_value > 0 && (
                               <span className="text-xs font-mono text-emerald-400">
-                                R$ {Number(tpl.daily_cache_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                {isVisible ? `R$ ${Number(tpl.daily_cache_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '••••'}
                               </span>
                             )}
                             {tpl.payment_model && (

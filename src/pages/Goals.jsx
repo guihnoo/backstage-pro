@@ -7,7 +7,8 @@ import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
-import { Trophy, Zap, Star, Award, Flame, Calendar, X, Pencil, Check, CheckCircle2, ChevronRight, Plus, Share2 } from 'lucide-react';
+import { Trophy, Zap, Star, Award, Flame, Calendar, X, Pencil, Check, CheckCircle2, BadgeCheck, Clock as ClockIcon, ChevronRight, Plus, Share2 } from 'lucide-react';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 import { Input } from '@/components/ui/input';
 import appToast from '@/lib/appToast';
 
@@ -99,6 +100,7 @@ function BadgeCelebration({ badge, onClose }) {
         <p className="text-sm text-slate-400">{badge.description}</p>
 
         <button
+          type="button"
           onClick={onClose}
           className="absolute top-3 right-3 p-2 text-slate-600 hover:text-slate-400 transition-colors"
         >
@@ -378,9 +380,11 @@ export default function Goals() {
       const month = String(d.getMonth() + 1).padStart(2, '0');
       const monthStr = `${year}-${month}`;
       const label = d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
-      const monthEvents = allEvents.filter(e =>
-        e.payment_status === 'paid' && (e.start_date || '').startsWith(monthStr)
-      );
+      const monthEvents = allEvents.filter(e => {
+        if (e.payment_status !== 'paid') return false;
+        const refDate = e.paid_date || e.start_date || '';
+        return refDate.startsWith(monthStr);
+      });
       const revenue = monthEvents.reduce((sum, e) =>
         sum + (Number(e.paid_amount) > 0
           ? Number(e.paid_amount)
@@ -410,7 +414,11 @@ export default function Goals() {
     const months = Array.from({ length: 12 }, (_, i) => {
       const monthStr = `${year}-${String(i + 1).padStart(2, '0')}`;
       const revenue = allEvents
-        .filter(e => e.payment_status === 'paid' && (e.start_date || '').startsWith(monthStr))
+        .filter(e => {
+          if (e.payment_status !== 'paid') return false;
+          const refDate = e.paid_date || e.start_date || '';
+          return refDate.startsWith(monthStr);
+        })
         .reduce((s, e) => s + (Number(e.paid_amount) || 0), 0);
       const isCurrent = i === currentMonthIndex;
       const isFuture = i > currentMonthIndex;
@@ -540,6 +548,7 @@ export default function Goals() {
         <div className="flex gap-1 bg-slate-900/50 p-1 rounded-xl mb-5 border border-slate-800/50">
           {tabs.map(tab => (
             <button
+              type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 py-2 px-1 min-h-[36px] rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
@@ -598,8 +607,9 @@ export default function Goals() {
                         style={{ borderColor: `${config.primaryHex}33`, background: `${config.primaryHex}0d` }}
                       >
                         <div>
-                          <label className="block text-xs text-slate-400 mb-1.5">Diárias/mês</label>
+                          <label htmlFor="goal-events" className="block text-xs text-slate-400 mb-1.5">Diárias/mês</label>
                           <Input
+                            id="goal-events"
                             type="number"
                             min="1"
                             value={goalForm.events}
@@ -608,8 +618,9 @@ export default function Goals() {
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-slate-400 mb-1.5">Meta R$ / mês</label>
+                          <label htmlFor="goal-revenue" className="block text-xs text-slate-400 mb-1.5">Meta R$ / mês</label>
                           <Input
+                            id="goal-revenue"
                             type="number"
                             min="0"
                             step="100"
@@ -656,7 +667,7 @@ export default function Goals() {
                       size={110}
                       color={config.primaryHex}
                       label="Recebido"
-                      sublabel={formatCurrency(stats.faturamento_pago)}
+                      sublabel={isVisible ? formatCurrency(stats.faturamento_pago) : '••••'}
                     />
                     <CircularProgress
                       value={diariasMes}
@@ -672,7 +683,7 @@ export default function Goals() {
                       size={110}
                       color={config.accentHex}
                       label="A Receber"
-                      sublabel={formatCurrency(stats.a_receber)}
+                      sublabel={isVisible ? formatCurrency(stats.a_receber) : '••••'}
                     />
                   </div>
                 )}
@@ -711,7 +722,7 @@ export default function Goals() {
                       <p className="text-2xl mb-1">🏆</p>
                       <p className="text-sm font-bold text-white">Todas as metas batidas!</p>
                       <p className="text-xs text-slate-400 mt-1">
-                        {diariasMes} diária{diariasMes !== 1 ? 's' : ''} · {formatCurrency(stats.faturamento_pago)} recebidos. Mês excepcional!
+                        {diariasMes} diária{diariasMes !== 1 ? 's' : ''} · {isVisible ? formatCurrency(stats.faturamento_pago) : '••••'} recebidos. Mês excepcional!
                       </p>
                     </div>
                   );
@@ -748,7 +759,7 @@ export default function Goals() {
                         )}
                         {!metaReceita100 && (
                           <p className="text-xs text-slate-400 mt-0.5">
-                            Faltam {formatCurrency(metaReceita - stats.faturamento_pago)} para a meta de receita
+                            Faltam {isVisible ? formatCurrency(metaReceita - stats.faturamento_pago) : '••••'} para a meta de receita
                           </p>
                         )}
                         {metaReceita100 && !metaDiarias100 && (
@@ -838,6 +849,12 @@ export default function Goals() {
                       const days = differenceInCalendarDays(parseISO(ev.start_date), new Date());
                       const isUrgent = days <= 1;
                       const label = days === 0 ? 'Hoje' : days === 1 ? 'Amanhã' : `em ${days}d`;
+                      const isPaid = ev.payment_status === 'paid';
+                      const isConfirmed = ev.status === 'confirmed' || ev.status === 'scheduled';
+                      const StatusIcon = isPaid ? CheckCircle2 : isConfirmed ? BadgeCheck : ClockIcon;
+                      const statusColor = isPaid ? '#10b981' : isConfirmed ? '#f59e0b' : '#64748b';
+                      const amount = getEventCacheAmount(ev);
+                      const accentColor = isUrgent ? AUTH_HERO_ACCENT : config.primaryHex;
                       return (
                         <motion.button
                           key={ev.id}
@@ -851,7 +868,7 @@ export default function Goals() {
                         >
                           <div
                             className="w-2 h-2 rounded-full flex-shrink-0"
-                            style={{ background: isUrgent ? AUTH_HERO_ACCENT : config.primaryHex, boxShadow: `0 0 6px ${isUrgent ? AUTH_HERO_ACCENT : config.primaryHex}80` }}
+                            style={{ background: accentColor, boxShadow: `0 0 6px ${accentColor}80` }}
                           />
                           <div className="flex-1 min-w-0">
                             <EventHeading event={ev} client={ev.clients} size="sm" />
@@ -859,9 +876,19 @@ export default function Goals() {
                               {format(parseISO(ev.start_date), "EEE d/MM", { locale: ptBR })}
                             </p>
                           </div>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: `${isUrgent ? AUTH_HERO_ACCENT : config.primaryHex}22`, color: isUrgent ? AUTH_HERO_ACCENT : config.primaryHex }}>
-                            {label}
-                          </span>
+                          <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                            <div className="flex items-center gap-1.5">
+                              <StatusIcon className="w-3.5 h-3.5" style={{ color: statusColor }} />
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: `${accentColor}22`, color: accentColor }}>
+                                {label}
+                              </span>
+                            </div>
+                            {amount > 0 && (
+                              <span className="text-[10px] font-semibold font-mono" style={{ color: isPaid ? '#10b981' : '#f59e0b' }}>
+                                {isVisible ? formatCurrency(amount) : '••••'}
+                              </span>
+                            )}
+                          </div>
                         </motion.button>
                       );
                     })}
@@ -1214,7 +1241,7 @@ export default function Goals() {
                     <Ellipsis as="p" className="text-sm text-slate-400">{selectedBadge.description}</Ellipsis>
                   </div>
                 </div>
-                <button onClick={() => setSelectedBadge(null)} className="text-slate-600 hover:text-slate-400 transition-colors shrink-0">
+                <button type="button" onClick={() => setSelectedBadge(null)} className="text-slate-600 hover:text-slate-400 transition-colors shrink-0">
                   <X className="w-5 h-5" />
                 </button>
               </div>

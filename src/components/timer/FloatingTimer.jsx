@@ -118,6 +118,7 @@ export function FloatingTimer() {
 
             {/* Parar */}
             <button
+              type="button"
               onClick={handleStop}
               className="shrink-0 p-1.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 transition-colors"
               title="Parar timer"
@@ -137,18 +138,20 @@ export function FloatingTimer() {
                 </p>
                 <p className="text-xs text-slate-500 mt-0.5 truncate">&quot;{timer.eventTitle}&quot;</p>
               </div>
-              <button onClick={handleCancel} className="text-slate-500 hover:text-slate-300 mt-0.5">
+              <button type="button" onClick={handleCancel} className="text-slate-500 hover:text-slate-300 mt-0.5">
                 <X className="w-4 h-4" />
               </button>
             </div>
             <div className="flex gap-2">
               <button
+                type="button"
                 onClick={handleDiscard}
                 className="flex-1 text-xs py-2 rounded-xl border border-slate-600 text-slate-400 hover:text-red-400 hover:border-red-500/30 transition-colors"
               >
                 Descartar
               </button>
               <button
+                type="button"
                 onClick={handleConfirm}
                 disabled={saving}
                 className="flex-1 text-xs py-2 rounded-xl text-white font-semibold disabled:opacity-60 transition-colors hover:opacity-90"

@@ -15,18 +15,18 @@ import { useCategoryTheme } from '@/lib/useCategoryTheme';
 const CHART_ANIM_MS = 900;
 
 const CustomTooltip = ({ active, payload, label, chartView, primaryHex }) => {
-  const { formatCurrency } = useFinancialVisibility();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
   if (active && payload && payload.length) {
     return (
       <div className="bg-slate-800/95 backdrop-blur-sm border border-slate-700 p-3 rounded-lg shadow-xl">
         <p className="text-white font-bold text-sm mb-1">{label}</p>
         {chartView === 'overview' ? (
           <>
-            {payload[0] && <p className="text-xs" style={{ color: primaryHex }}>{`Receita: ${formatCurrency(payload[0].value)}`}</p>}
-            {payload[1] && <p className="text-rose-400 text-xs">{`Despesas: ${formatCurrency(payload[1].value)}`}</p>}
+            {payload[0] && <p className="text-xs" style={{ color: primaryHex }}>{`Receita: ${isVisible ? formatCurrency(payload[0].value) : '••••'}`}</p>}
+            {payload[1] && <p className="text-rose-400 text-xs">{`Despesas: ${isVisible ? formatCurrency(payload[1].value) : '••••'}`}</p>}
           </>
         ) : (
-          <p className="text-xs" style={{ color: payload[0].color }}>{`${payload[0].name}: ${formatCurrency(payload[0].value)}`}</p>
+          <p className="text-xs" style={{ color: payload[0].color }}>{`${payload[0].name}: ${isVisible ? formatCurrency(payload[0].value) : '••••'}`}</p>
         )}
       </div>
     );

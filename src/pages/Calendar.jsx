@@ -158,7 +158,7 @@ export default function CalendarPage() {
   const { clients, loading: clientsLoading } = useClients();
   const { dailyWork, loading: dailyWorkLoading, refetch: refetchDailyWork, delete: deleteDailyWorkEntry } = useDailyWork();
   const { expenses, loading: expensesLoading, refetch: refetchExpenses } = useExpenses();
-  const { formatCurrency } = useFinancialVisibility();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
   const { settings: userSettings } = useUserSettings();
 
   const unsyncedCount = useMemo(() => {
@@ -931,7 +931,7 @@ export default function CalendarPage() {
               : ''
           }`,
           amount: value,
-          amountFormatted: value > 0 ? formatCurrency(value) : null,
+          amountFormatted: value > 0 ? (isVisible ? formatCurrency(value) : '••••') : null,
           event_id: event.id,
           dateSort: isValid(startDate) ? startDate.getTime() : 0,
         };
@@ -941,7 +941,7 @@ export default function CalendarPage() {
     setDrilldownTitle(`Eventos de ${format(currentDate, 'MMMM yyyy', { locale: ptBR })}`);
     setDrilldownItems(items);
     setDrilldownOpen(true);
-  }, [monthStats.monthEvents, clientMap, currentDate, closeModals, dailyWork, formatCurrency]);
+  }, [monthStats.monthEvents, clientMap, currentDate, closeModals, dailyWork, formatCurrency, isVisible]);
 
   const handleWorkDaysClick = useCallback(() => {
     closeModals();
@@ -957,7 +957,7 @@ export default function CalendarPage() {
             work.total_hours || 0
           }h trabalhadas`,
           amount: work.daily_cache || 0,
-          amountFormatted: formatCurrency(work.daily_cache || 0),
+          amountFormatted: isVisible ? formatCurrency(work.daily_cache || 0) : '••••',
           event_id: work.event_id,
           dateSort: isValid(workDate) ? workDate.getTime() : 0,
         };
@@ -967,7 +967,7 @@ export default function CalendarPage() {
     setDrilldownTitle(`Dias Trabalhados em ${format(currentDate, 'MMMM yyyy', { locale: ptBR })}`);
     setDrilldownItems(items);
     setDrilldownOpen(true);
-  }, [monthStats.monthWork, eventMap, clientMap, currentDate, formatCurrency, closeModals]);
+  }, [monthStats.monthWork, eventMap, clientMap, currentDate, formatCurrency, closeModals, isVisible]);
 
   const handleHoursClick = useCallback(() => {
     closeModals();
@@ -1012,7 +1012,7 @@ export default function CalendarPage() {
           title: event.title,
           subtitle: `${client?.name || 'Cliente'} · ${statusLabel}`,
           amount: value,
-          amountFormatted: formatCurrency(value),
+          amountFormatted: isVisible ? formatCurrency(value) : '••••',
           event_id: event.id,
           dateSort: isValid(startDate) ? startDate.getTime() : 0,
         };
@@ -1022,7 +1022,7 @@ export default function CalendarPage() {
     setDrilldownTitle(`Receita de ${format(currentDate, 'MMMM yyyy', { locale: ptBR })}`);
     setDrilldownItems(items);
     setDrilldownOpen(true);
-  }, [monthStats.monthEvents, clientMap, currentDate, closeModals, dailyWork, formatCurrency]);
+  }, [monthStats.monthEvents, clientMap, currentDate, closeModals, dailyWork, formatCurrency, isVisible]);
 
   const handleDrilldownItemClick = useCallback(
     (item) => {
@@ -1190,8 +1190,8 @@ export default function CalendarPage() {
 
           <StatCard
             title="Receita"
-            value={formatCurrency(monthStats.totalRevenue)}
-            numericValue={monthStats.totalRevenue}
+            value={isVisible ? formatCurrency(monthStats.totalRevenue) : '••••'}
+            numericValue={isVisible ? monthStats.totalRevenue : null}
             formatValue={formatCurrency}
             subtext="estimada no mês"
             icon={TrendingUp}
@@ -1210,12 +1210,14 @@ export default function CalendarPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por título, cliente ou local…"
             className="w-full bg-slate-800/60 border border-slate-700/60 rounded-lg pl-9 pr-9 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none bp-focus-input transition-colors"
+            aria-label="Buscar eventos"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery('')}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+              aria-label="Limpar busca"
             >
               <X className="w-4 h-4" />
             </button>
@@ -1468,7 +1470,7 @@ export default function CalendarPage() {
                                 {durationDays > 1 && <span className="text-slate-500 flex-shrink-0">· {durationDays}d</span>}
                                 {amount > 0 && (
                                   <span className="ml-auto flex-shrink-0 font-semibold" style={{ color: isPaid ? '#10b981' : '#f59e0b' }}>
-                                    {formatCurrency(amount)}
+                                    {isVisible ? formatCurrency(amount) : '••••'}
                                   </span>
                                 )}
                               </div>
@@ -1503,7 +1505,7 @@ export default function CalendarPage() {
                     <span className="font-semibold text-slate-200">{activeEvents.length}</span> show{activeEvents.length > 1 ? 's' : ''} na semana
                   </span>
                   {weekTotal > 0 && (
-                    <span className="text-emerald-400 font-semibold">{formatCurrency(weekTotal)}</span>
+                    <span className="text-emerald-400 font-semibold">{isVisible ? formatCurrency(weekTotal) : '••••'}</span>
                   )}
                 </div>
               );
@@ -1512,8 +1514,10 @@ export default function CalendarPage() {
         ) : viewMode === 'upcoming' ? (
           <div className="space-y-4">
             {upcomingGroups.length === 0 ? (
-              <div className="text-center py-12 text-slate-500 text-sm">
-                Nenhum show agendado a partir de hoje
+              <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+                <CalendarDays className="w-12 h-12 text-slate-700 mb-3" />
+                <p className="text-sm font-medium text-slate-400">Nenhum show agendado a partir de hoje</p>
+                <p className="text-xs text-slate-600 mt-1">Toque em + para criar seu próximo evento</p>
               </div>
             ) : upcomingGroups.map(({ key, label, events: upEvents }) => (
               <div key={key}>
@@ -1567,7 +1571,7 @@ export default function CalendarPage() {
                           <StatusIcon className="w-4 h-4" style={{ color: statusColor }} />
                           {amount > 0 && (
                             <span className="text-[11px] font-semibold font-mono" style={{ color: isPaid ? '#10b981' : isOverdue ? '#f87171' : '#f59e0b' }}>
-                              {formatCurrency(amount)}
+                              {isVisible ? formatCurrency(amount) : '••••'}
                             </span>
                           )}
                         </div>
@@ -1587,8 +1591,10 @@ export default function CalendarPage() {
         ) : (
           <div className="space-y-4">
             {filteredEvents.length === 0 ? (
-              <div className="text-center py-12 text-slate-500 text-sm">
-                Nenhum evento encontrado
+              <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+                <List className="w-12 h-12 text-slate-700 mb-3" />
+                <p className="text-sm font-medium text-slate-400">Nenhum evento encontrado</p>
+                <p className="text-xs text-slate-600 mt-1">Tente ajustar os filtros ou crie um novo evento</p>
               </div>
             ) : listViewGroups.map(({ monthKey, label, events: monthEvents }) => (
               <div key={monthKey}>
@@ -1658,7 +1664,7 @@ export default function CalendarPage() {
                             </span>
                             {amount > 0 && (
                               <span className="text-[10px] text-emerald-400 font-medium">
-                                {formatCurrency(amount)}
+                                {isVisible ? formatCurrency(amount) : '••••'}
                               </span>
                             )}
                           </div>
@@ -1710,7 +1716,7 @@ export default function CalendarPage() {
                       <StatusIcon className="w-4 h-4" style={{ color: statusColor }} />
                       {amount > 0 && (
                         <span className="text-[11px] font-semibold font-mono" style={{ color: isPaid ? '#10b981' : '#f59e0b' }}>
-                          {formatCurrency(amount)}
+                          {isVisible ? formatCurrency(amount) : '••••'}
                         </span>
                       )}
                     </div>
@@ -1844,6 +1850,7 @@ export default function CalendarPage() {
                   const client = clients.find((c) => c.id === event.client_id);
                   return (
                     <button
+                      type="button"
                       key={event.id}
                       onClick={() => handleSelectEventFromMultiple(event)}
                       className="w-full text-left p-3 sm:p-4 bg-slate-800/50 hover:bg-slate-700/50 active:bg-slate-700 border border-slate-700 rounded-lg transition-colors"

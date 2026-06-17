@@ -12,6 +12,7 @@ import { normalizeDateString, formatDisplayDate } from '@/components/utils/dateU
 import { useDailyWork } from '@/lib/useDailyWork';
 import { useAuth } from '@/lib/authContext';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
+import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 
 const emptyState = {
   date: '',
@@ -60,6 +61,7 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
   const { user } = useAuth();
   const { create: createDailyWork, update: updateDailyWork } = useDailyWork();
   const { primaryHex } = useCategoryTheme();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState(emptyState);
@@ -175,8 +177,9 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
           <ScrollArea fill>
             <div className="space-y-4 p-4 sm:p-6 pb-2">
               <div className="space-y-2">
-                <Label>Data do trabalho</Label>
+                <Label htmlFor="dw-date">Data do trabalho</Label>
                 <Input
+                  id="dw-date"
                   type="date"
                   value={formData.date}
                   min={event?.start_date || undefined}
@@ -248,8 +251,8 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                   )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <Input type="time" value={formData.entry_time} onChange={(e) => setField('entry_time', e.target.value)} className="bg-slate-800 border-slate-700 h-12 text-base" />
-                  <Input type="time" value={formData.exit_time} onChange={(e) => setField('exit_time', e.target.value)} className="bg-slate-800 border-slate-700 h-12 text-base" />
+                  <Input type="time" value={formData.entry_time} onChange={(e) => setField('entry_time', e.target.value)} className="bg-slate-800 border-slate-700 h-12 text-base" aria-label="Horário de entrada" />
+                  <Input type="time" value={formData.exit_time} onChange={(e) => setField('exit_time', e.target.value)} className="bg-slate-800 border-slate-700 h-12 text-base" aria-label="Horário de saída" />
                 </div>
               </div>
 
@@ -266,7 +269,7 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                   <div className="rounded-lg p-3 text-center border border-emerald-500/25 bg-emerald-500/5">
                     <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Cachê</p>
                     <p className="text-base font-black text-emerald-400 leading-tight">
-                      {summary.cache.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 })}
+                      {isVisible ? formatCurrency(summary.cache) : '••••'}
                     </p>
                   </div>
                 </div>
@@ -278,8 +281,8 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
               )}
 
               <div className="space-y-2">
-                <Label>Observações</Label>
-                <Textarea value={formData.notes} onChange={(e) => setField('notes', e.target.value)} className="bg-slate-800 border-slate-700" placeholder="Detalhes do turno..." rows={3} />
+                <Label htmlFor="dw-notes">Observações</Label>
+                <Textarea id="dw-notes" value={formData.notes} onChange={(e) => setField('notes', e.target.value)} className="bg-slate-800 border-slate-700" placeholder="Detalhes do turno..." rows={3} />
               </div>
             </div>
           </ScrollArea>

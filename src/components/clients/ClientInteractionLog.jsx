@@ -65,6 +65,7 @@ export function ClientInteractionLog({ clientId }) {
     <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 overflow-hidden">
       {/* Header */}
       <button
+        type="button"
         onClick={() => setCollapsed(v => !v)}
         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-700/20 transition-colors"
       >
@@ -120,6 +121,7 @@ export function ClientInteractionLog({ clientId }) {
                         const Icon = TYPE_ICONS[key];
                         return (
                           <button
+                            type="button"
                             key={key}
                             onClick={() => setForm(f => ({ ...f, type: key }))}
                             className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors ${
@@ -221,6 +223,7 @@ export function ClientInteractionLog({ clientId }) {
                                 {format(parseISO(item.created_at), "dd/MM/yy", { locale: ptBR })}
                               </span>
                               <button
+                                type="button"
                                 onClick={() => handleDelete(item.id)}
                                 className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-600 hover:text-red-400 p-0.5"
                               >

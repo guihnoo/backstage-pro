@@ -90,7 +90,7 @@ export default function ClientsPage() {
   const { clients, loading: clientsLoading, error: clientsError, refetch: refetchClients, delete: deleteClient } = useClients();
   const { events } = useEvents();
   const { dailyWork } = useDailyWork();
-  const { formatCurrency } = useFinancialVisibility();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
   const { profile } = useAuth();
   const config = getCategoryConfig(profile?.category || 'lighting');
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -376,6 +376,7 @@ export default function ClientsPage() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 bg-slate-800 border-slate-700"
+                  aria-label="Buscar clientes"
                 />
               </div>
               <div className="flex gap-2">
@@ -551,14 +552,16 @@ export default function ClientsPage() {
                             </Badge>
                           )}
                         </div>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <p className="text-slate-400">Eventos</p>
-                          <p className="font-bold text-white text-lg">{client.stats.totalEvents}</p>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div className="rounded-lg p-2.5 bg-slate-800/60 border border-slate-700/40 text-center">
+                          <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">Shows</p>
+                          <p className="font-black text-white text-lg leading-tight">{client.stats.totalEvents}</p>
                         </div>
-                        <div>
-                          <p className="text-slate-400">A Receber</p>
-                          <p className="font-bold text-amber-400 text-lg">{formatCurrency(client.stats.pendingRevenue)}</p>
+                        <div className={`rounded-lg p-2.5 border text-center ${client.stats.pendingRevenue > 0 ? 'bg-amber-500/8 border-amber-500/25' : 'bg-slate-800/60 border-slate-700/40'}`}>
+                          <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">A Receber</p>
+                          <p className={`font-black text-lg leading-tight font-mono ${client.stats.pendingRevenue > 0 ? 'text-amber-400' : 'text-slate-500'}`}>
+                            {isVisible ? formatCurrency(client.stats.pendingRevenue) : '••••'}
+                          </p>
                         </div>
                       </div>
                       {client.stats.nextEventDate && (() => {
@@ -628,7 +631,7 @@ export default function ClientsPage() {
                             onClick={(e) => { e.stopPropagation(); handleActionSheetContact(client, 'whatsapp'); }}
                             className={`h-9 px-2 relative group transition-colors ${client.stats.pendingRevenue > 0 ? 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'}`}
                             aria-label={client.stats.pendingRevenue > 0 ? 'Cobrar via WhatsApp' : 'WhatsApp'}
-                            title={client.stats.pendingRevenue > 0 ? `Cobrar ${formatCurrency(client.stats.pendingRevenue)} via WhatsApp` : 'Abrir WhatsApp'}
+                            title={client.stats.pendingRevenue > 0 ? `Cobrar ${isVisible ? formatCurrency(client.stats.pendingRevenue) : '••••'} via WhatsApp` : 'Abrir WhatsApp'}
                           >
                             <MessageCircle className="w-4 h-4 transition-colors group-hover:text-green-400" />
                             {client.stats.pendingRevenue > 0 && (

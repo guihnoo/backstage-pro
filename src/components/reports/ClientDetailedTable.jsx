@@ -169,6 +169,7 @@ export default function ClientDetailedTable({ data, onClientClick }) {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 bg-slate-800/60 border-slate-700 text-white placeholder:text-slate-400"
+              aria-label="Buscar cliente"
             />
           </div>
         </div>

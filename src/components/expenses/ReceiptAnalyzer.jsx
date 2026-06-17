@@ -142,8 +142,9 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <Label className="text-slate-300 text-sm">Título</Label>
+                <Label htmlFor="ra-title" className="text-slate-300 text-sm">Título</Label>
                 <Input
+                  id="ra-title"
                   value={data.title}
                   onChange={(e) => setData({ ...data, title: e.target.value })}
                   className="bg-slate-800 border-slate-700 h-12 text-base"
@@ -151,8 +152,9 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
                 />
               </div>
               <div>
-                <Label className="text-slate-300 text-sm">Valor</Label>
+                <Label htmlFor="ra-amount" className="text-slate-300 text-sm">Valor</Label>
                 <Input
+                  id="ra-amount"
                   type="number"
                   step="0.01"
                   value={data.amount}
@@ -162,8 +164,9 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
                 />
               </div>
               <div>
-                <Label className="text-slate-300 text-sm">Data</Label>
+                <Label htmlFor="ra-date" className="text-slate-300 text-sm">Data</Label>
                 <Input
+                  id="ra-date"
                   type="date"
                   value={data.date}
                   onChange={(e) => setData({ ...data, date: e.target.value })}
@@ -186,8 +189,9 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
             </div>
 
             <div>
-              <Label className="text-slate-300 text-sm">Observações</Label>
+              <Label htmlFor="ra-notes" className="text-slate-300 text-sm">Observações</Label>
               <Textarea
+                id="ra-notes"
                 value={data.notes}
                 onChange={(e) => setData({ ...data, notes: e.target.value })}
                 className="bg-slate-800 border-slate-700 min-h-[80px]"

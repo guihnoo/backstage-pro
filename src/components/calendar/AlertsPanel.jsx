@@ -382,6 +382,7 @@ export default function AlertsPanel({
                     size="icon"
                     className="h-8 w-8 text-slate-400 hover:text-white"
                     onClick={() => dismissAlert(alert.id)}
+                    aria-label="Dispensar alerta"
                   >
                     <X className="w-4 h-4" />
                   </Button>

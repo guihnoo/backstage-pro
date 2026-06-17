@@ -23,5 +23,6 @@ export function useQueryAction(actionKey, onMatch) {
     handledRef.current = true;
     onMatchRef.current();
     navigate(location.pathname, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search, location.pathname, actionKey]);
 }

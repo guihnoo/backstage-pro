@@ -35,12 +35,12 @@ export default function IRSummary({ events = [], expenses = [], work = [] }) {
   const data = useMemo(() => {
     const yearStr = String(year);
 
-    // Receita: eventos pagos no ano (pelo start_date)
-    const paidEvents = events.filter(ev =>
-      ev.payment_status === 'paid' &&
-      ev.status !== 'cancelled' &&
-      (ev.start_date || '').startsWith(yearStr)
-    );
+    // Receita: eventos pagos no ano (pelo paid_date — competência de recebimento)
+    const paidEvents = events.filter(ev => {
+      if (ev.payment_status !== 'paid' || ev.status === 'cancelled') return false;
+      const refDate = ev.paid_date || ev.start_date || '';
+      return refDate.startsWith(yearStr);
+    });
 
     const totalRevenue = paidEvents.reduce((s, ev) => {
       const wk = workByEvent[ev.id] || [];
@@ -67,7 +67,7 @@ export default function IRSummary({ events = [], expenses = [], work = [] }) {
       const m = String(i + 1).padStart(2, '0');
       const prefix = `${yearStr}-${m}`;
       const rev = paidEvents
-        .filter(ev => (ev.start_date || '').startsWith(prefix))
+        .filter(ev => (ev.paid_date || ev.start_date || '').startsWith(prefix))
         .reduce((s, ev) => {
           const wk = workByEvent[ev.id] || [];
           const fromWork = wk.reduce((a, w) => a + (w.daily_cache || 0), 0);
@@ -137,6 +137,7 @@ export default function IRSummary({ events = [], expenses = [], work = [] }) {
             value={year}
             onChange={e => setYear(Number(e.target.value))}
             className="text-xs bg-slate-800 border border-slate-700 text-white rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-500"
+            aria-label="Ano do relatório"
           >
             {years.map(y => (
               <option key={y} value={y}>{y}</option>

@@ -622,8 +622,12 @@ export default function CompanySearchInput({ onSelect, disabled }) {
 
             {!nfeData ? (
               <div
+                role="button"
+                tabIndex={0}
+                aria-label="Selecionar arquivo NF-e XML"
                 className="flex flex-col items-center justify-center gap-3 p-6 rounded-xl border-2 border-dashed border-slate-700 hover:border-[color-mix(in_srgb,var(--bp-primary)_50%,transparent)] transition-colors cursor-pointer"
                 onClick={() => fileRef.current?.click()}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileRef.current?.click(); } }}
               >
                 {nfeParsing ? (
                   <Loader2 className="w-8 h-8 text-slate-500 animate-spin" />

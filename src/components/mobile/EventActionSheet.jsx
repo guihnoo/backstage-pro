@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -46,11 +46,18 @@ export default function EventActionSheet({
   canApplyAuto12h,
   onCheckInLocation,
 }) {
-  const { formatCurrency } = useFinancialVisibility();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
   const theme = useCategoryTheme();
   const primary = theme.primaryHex;
   const [checkingIn, setCheckingIn] = useState(false);
   useAppScrollLock(Boolean(isOpen && event));
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose]);
 
   if (!event) return null;
 
@@ -129,6 +136,7 @@ export default function EventActionSheet({
                   size="icon"
                   onClick={onClose}
                   className="flex-shrink-0 h-10 w-10 min-w-[44px] min-h-[44px]"
+                  aria-label="Fechar"
                 >
                   <X className="w-5 h-5" />
                 </Button>
@@ -145,7 +153,7 @@ export default function EventActionSheet({
                 {getEventCacheAmount(event) > 0 && (
                   <div className="flex items-center gap-2 text-slate-300">
                     <DollarSign className="w-4 h-4 text-slate-500" />
-                    <span>{formatCurrency(getEventCacheAmount(event))}</span>
+                    <span>{isVisible ? formatCurrency(getEventCacheAmount(event)) : '••••'}</span>
                   </div>
                 )}
                 {event.location && (

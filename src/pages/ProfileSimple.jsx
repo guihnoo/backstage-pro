@@ -311,10 +311,11 @@ export default function ProfileSimple() {
             { key: 'years_experience', label: 'Anos de experiência', icon: Calendar, placeholder: '5', type: 'number' },
           ].map(({ key, label, icon: Icon, placeholder, type = 'text' }) => (
             <div key={key}>
-              <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">{label}</label>
+              <label htmlFor={`profile-${key}`} className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">{label}</label>
               <div className="relative">
                 <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
                 <input
+                  id={`profile-${key}`}
                   type={type}
                   value={form[key]}
                   onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
@@ -327,10 +328,11 @@ export default function ProfileSimple() {
 
           {/* Email (readonly) */}
           <div>
-            <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Email (conta)</label>
+            <label htmlFor="profile-email" className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Email (conta)</label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
               <input
+                id="profile-email"
                 value={user?.email || ''}
                 disabled
                 className="w-full bg-slate-800/30 border border-slate-800/50 rounded-xl pl-10 pr-4 py-3 text-base md:text-sm text-slate-500 cursor-not-allowed"
@@ -427,7 +429,7 @@ export default function ProfileSimple() {
             { key: 'monthly_goal_events', label: 'Meta de diárias por mês', icon: Calendar, placeholder: '12', type: 'number', hint: 'Dias únicos trabalhados no mês (independente de quantas empresas no mesmo dia)' },
           ].map(({ key, label, icon: Icon, placeholder, type, hint }) => (
             <div key={key}>
-              <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">{label}</label>
+              <label htmlFor={`goals-${key}`} className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">{label}</label>
               {hint && <p className="text-[10px] text-slate-600 mb-1.5">{hint}</p>}
               {key === 'monthly_goal_events' && stats?.diarias_count != null && (
                 <p className="text-[10px] mb-1.5" style={{ color: `${config.primaryHex}cc` }}>Este mês: {stats.diarias_count} diária{stats.diarias_count !== 1 ? 's' : ''} registrada{stats.diarias_count !== 1 ? 's' : ''}</p>
@@ -435,6 +437,7 @@ export default function ProfileSimple() {
               <div className="relative">
                 <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
                 <input
+                  id={`goals-${key}`}
                   type={type}
                   min="0"
                   value={form[key]}
@@ -488,8 +491,9 @@ export default function ProfileSimple() {
               <p className="text-xs text-slate-500 mt-1">Usados para gerar cobrança via WhatsApp e nos relatórios PDF.</p>
             </div>
             <div>
-              <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Tipo de chave</label>
+              <label htmlFor="pix-key-type" className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Tipo de chave</label>
               <select
+                id="pix-key-type"
                 value={pixForm.pix_key_type}
                 onChange={e => setPixForm(f => ({ ...f, pix_key_type: e.target.value }))}
                 className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-slate-600 transition-colors"
@@ -498,10 +502,11 @@ export default function ProfileSimple() {
               </select>
             </div>
             <div>
-              <label className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Chave PIX</label>
+              <label htmlFor="pix-key" className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Chave PIX</label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
                 <input
+                  id="pix-key"
                   type="text"
                   value={pixForm.pix_key}
                   onChange={e => setPixForm(f => ({ ...f, pix_key: e.target.value }))}
@@ -607,6 +612,7 @@ export default function ProfileSimple() {
         <NeonGlass primary={config.primaryHex} className="p-5">
           <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-4 font-mono">Configurações</h2>
           <button
+            type="button"
             onClick={toggleVisibility}
             className="w-full flex items-center justify-between gap-3 py-3 px-1 rounded-xl transition-all hover:bg-slate-800/30 min-w-0"
           >
@@ -643,12 +649,14 @@ export default function ProfileSimple() {
               <p className="text-sm text-slate-300">Tem certeza que quer sair?</p>
               <div className="flex gap-3">
                 <button
+                  type="button"
                   onClick={() => setShowLogoutConfirm(false)}
                   className="flex-1 py-2.5 rounded-xl bg-slate-800 text-slate-400 text-sm font-semibold hover:bg-slate-700 transition-all"
                 >
                   Cancelar
                 </button>
                 <button
+                  type="button"
                   onClick={handleLogout}
                   className="flex-1 py-2.5 rounded-xl bg-red-900/60 border border-red-800/50 text-red-400 text-sm font-bold hover:bg-red-900/80 transition-all"
                 >
@@ -658,6 +666,7 @@ export default function ProfileSimple() {
             </div>
           ) : (
             <button
+              type="button"
               onClick={() => setShowLogoutConfirm(true)}
               className="w-full flex items-center justify-center gap-2 py-2 text-red-500/70 hover:text-red-400 text-sm font-semibold transition-all"
             >
@@ -673,6 +682,7 @@ export default function ProfileSimple() {
         <InstallPwaCard primaryHex={config.primaryHex} />
 
         <button
+          type="button"
           onClick={handleExportData}
           disabled={exporting}
           className="w-full flex items-center justify-center gap-2 py-2 text-slate-500 hover:text-slate-300 text-xs font-mono transition-all disabled:opacity-50"

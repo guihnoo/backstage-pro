@@ -2,20 +2,30 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { CheckCircle2, Clock, PlayCircle } from 'lucide-react';
+import { CheckCircle2, BadgeCheck, Clock, PlayCircle } from 'lucide-react';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { formatDisplayDate, getEventStatusConfig } from '@/components/utils/dateUtils';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 import EventHeading from '@/components/events/EventHeading';
 import { Ellipsis } from '@/components/ui/overflowText';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 const EventItem = ({ event, client, work, onClick }) => {
-  const { formatCurrency } = useFinancialVisibility();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
   const { primaryHex } = useCategoryTheme();
 
-  // MUDANÇA CRÍTICA: O cálculo do valor deve usar o 'work' completo, filtrado por ID do evento
   const eventWork = work.filter(w => w.event_id === event.id);
-  const eventValue = eventWork.reduce((sum, w) => sum + (w.daily_cache || 0), 0);
+  const workCacheTotal = eventWork.reduce((sum, w) => sum + (w.daily_cache || 0), 0);
+  const eventValue = workCacheTotal > 0
+    ? workCacheTotal
+    : event.paid_amount > 0
+      ? event.paid_amount
+      : getEventCacheAmount(event);
+
+  const isPaid = event.payment_status === 'paid';
+  const isConfirmed = event.status === 'confirmed' || event.status === 'scheduled';
+  const PayIcon = isPaid ? CheckCircle2 : isConfirmed ? BadgeCheck : Clock;
+  const payColor = isPaid ? '#10b981' : isConfirmed ? '#f59e0b' : '#64748b';
 
   const statusConfig = getEventStatusConfig(event);
   const StatusIcon = {
@@ -27,8 +37,11 @@ const EventItem = ({ event, client, work, onClick }) => {
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       className="flex items-center gap-4 px-2 py-3 hover:bg-slate-800/50 rounded-lg transition-colors cursor-pointer min-w-0"
       onClick={() => onClick(event)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(event); } }}
     >
       <Avatar className="h-10 w-10 border-2 border-slate-700 hidden sm:flex flex-shrink-0">
         <AvatarImage src={client?.logo_url} />
@@ -53,9 +66,16 @@ const EventItem = ({ event, client, work, onClick }) => {
             {statusConfig.label}
           </Badge>
         </div>
-        <div className="text-right">
-          <p className="font-bold text-base text-white">{formatCurrency(eventValue)}</p>
-          <p className="text-xs text-slate-500">Valor Gerado</p>
+        <div className="text-right flex flex-col items-end gap-0.5">
+          <p className="font-bold text-base text-white font-mono">
+            {isVisible ? formatCurrency(eventValue) : '••••'}
+          </p>
+          <div className="flex items-center gap-1">
+            <PayIcon className="w-3 h-3 flex-shrink-0" style={{ color: payColor }} />
+            <p className="text-[10px]" style={{ color: payColor }}>
+              {isPaid ? 'Pago' : isConfirmed ? 'Confirmado' : 'Pendente'}
+            </p>
+          </div>
         </div>
       </div>
     </div>

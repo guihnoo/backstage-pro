@@ -65,10 +65,10 @@ export default function WorkAnalytics({ work = [], events = [], clients = [] }) 
       const key = format(monthDate, 'yyyy-MM');
       const label = format(monthDate, 'MMM', { locale: ptBR });
       const hours = work
-        .filter(w => w.date && w.date.startsWith(key))
+        .filter(w => (w.work_date || w.date || '').startsWith(key))
         .reduce((s, w) => s + (w.total_hours || 0), 0);
       const earned = work
-        .filter(w => w.date && w.date.startsWith(key))
+        .filter(w => (w.work_date || w.date || '').startsWith(key))
         .reduce((s, w) => s + (w.daily_cache || 0), 0);
       const rate = hours > 0 && earned > 0 ? earned / hours : 0;
       return { label, hours, earned, rate };

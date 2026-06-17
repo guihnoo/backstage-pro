@@ -26,7 +26,7 @@ import { ClientDraftBadge } from '@/components/clients/ClientDraftBadge';
 import EventHeading from '@/components/events/EventHeading';
 
 const EventTimelineItem = ({ event, client, isLast, workData, onClick }) => {
-  const { formatCurrency } = useFinancialVisibility();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
 
   // Use event.status here, which will now be the calculated real status from clientData
   const eventWork = workData.filter((work) => work.event_id === event.id);
@@ -47,8 +47,11 @@ const EventTimelineItem = ({ event, client, isLast, workData, onClick }) => {
 
       <div className="flex-1 pb-6">
         <div
+          role="button"
+          tabIndex={0}
           className={`bg-slate-800/50 rounded-lg p-4 border ${statusConfig.borderColor} hover:border-slate-600 cursor-pointer transition-all group-hover:bg-slate-800/70 relative overflow-hidden`}
           onClick={() => onClick && onClick(event)}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.(event); } }}
         >
           {/* Linha decorativa baseada no status */}
           <div className={`absolute left-0 top-0 bottom-0 w-1 ${statusConfig.color}`} />
@@ -77,7 +80,7 @@ const EventTimelineItem = ({ event, client, isLast, workData, onClick }) => {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
               <div className="flex items-center gap-1 bp-text-primary bp-surface-primary px-2 py-1 rounded">
                 <DollarSign className="w-3 h-3" />
-                {formatCurrency(getEventCacheAmount(event))}
+                {isVisible ? formatCurrency(getEventCacheAmount(event)) : '••••'}
               </div>
 
               {event.status === 'completed' && eventWork.length > 0 && (
@@ -88,7 +91,7 @@ const EventTimelineItem = ({ event, client, isLast, workData, onClick }) => {
                   </div>
                   <div className="flex items-center gap-1 text-green-400 bg-green-400/10 px-2 py-1 rounded">
                     <TrendingUp className="w-3 h-3" />
-                    {formatCurrency(totalEarned)}
+                    {isVisible ? formatCurrency(totalEarned) : '••••'}
                   </div>
                 </>
               )}
@@ -107,7 +110,7 @@ const EventTimelineItem = ({ event, client, isLast, workData, onClick }) => {
             <div className="mt-3 flex items-center gap-2 text-green-400 bg-green-400/10 px-3 py-2 rounded-lg border border-green-400/20">
               <CheckCircle2 className="w-4 h-4" />
               <span className="text-sm font-medium">
-                Pago: {formatCurrency(event.paid_amount)}
+                Pago: {isVisible ? formatCurrency(event.paid_amount) : '••••'}
                 {event.paid_date && (
                   <span className="text-slate-400 ml-2">
                     em {formatDisplayDate(event.paid_date)}
@@ -178,7 +181,7 @@ export default function ClientDetailModal({
 }) {
   const { events } = useEvents();
   const { dailyWork } = useDailyWork();
-  const { formatCurrency } = useFinancialVisibility();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
   const { profile } = useAuth();
   const config = getCategoryConfig(profile?.category || 'lighting');
   const [activeTab, setActiveTab] = useState('overview');
@@ -368,7 +371,7 @@ export default function ClientDetailModal({
                     }
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" onClick={onClose} className="text-slate-400 hover:text-white flex-shrink-0">
+                <Button variant="ghost" size="icon" onClick={onClose} className="text-slate-400 hover:text-white flex-shrink-0" aria-label="Fechar">
                   <X className="h-5 w-5" />
                 </Button>
               </div>
@@ -434,14 +437,14 @@ export default function ClientDetailModal({
 
                         <MetricCard
                           title="Faturamento Real"
-                          value={formatCurrency(clientData.totalRevenue)}
+                          value={isVisible ? formatCurrency(clientData.totalRevenue) : '••••'}
                           subtitle={`${clientData.paidEventsCount} eventos pagos`}
                           icon={DollarSign}
                           color="green" />
 
                         <MetricCard
                           title="A Receber"
-                          value={formatCurrency(clientData.totalPending)}
+                          value={isVisible ? formatCurrency(clientData.totalPending) : '••••'}
                           subtitle={`${clientData.unpaidEvents.length} evento(s) pendente(s)`}
                           icon={AlertCircle}
                           color="amber" />
@@ -468,8 +471,11 @@ export default function ClientDetailModal({
                             {clientData.upcomingEvents.slice(0, 3).map((event) =>
                               <div
                                 key={event.id}
+                                role="button"
+                                tabIndex={0}
                                 className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg hover:bg-slate-700 cursor-pointer transition-all gap-3 min-w-0"
-                                onClick={() => handleEventClick(event)}>
+                                onClick={() => handleEventClick(event)}
+                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleEventClick(event); } }}>
 
                                 <div className="min-w-0 flex-1">
                                   <EventHeading event={event} client={client} size="sm" />
@@ -480,7 +486,7 @@ export default function ClientDetailModal({
                                 <div className="text-right flex-shrink-0">
                                   {getEventCacheAmount(event) > 0 && (
                                     <p className="text-sm font-medium text-green-400">
-                                      {formatCurrency(getEventCacheAmount(event))}
+                                      {isVisible ? formatCurrency(getEventCacheAmount(event)) : '••••'}
                                     </p>
                                   )}
                                   <ArrowRight className="w-4 h-4 text-slate-400 ml-auto mt-1" />
@@ -597,7 +603,7 @@ export default function ClientDetailModal({
                             <div>
                               <p className="text-slate-400 text-sm">Valor Médio por Evento Pago</p>
                               <p className="text-2xl font-bold text-green-400">
-                                {formatCurrency(clientData.averageEventValue)}
+                                {isVisible ? formatCurrency(clientData.averageEventValue) : '••••'}
                               </p>
                             </div>
                             <div>
@@ -611,7 +617,7 @@ export default function ClientDetailModal({
                             <div>
                               <p className="text-slate-400 text-sm">Valor por Hora</p>
                               <p className="text-2xl font-bold bp-text-primary">
-                                {formatCurrency(clientData.hourlyRate)}
+                                {isVisible ? formatCurrency(clientData.hourlyRate) : '••••'}
                               </p>
                             </div>
                             <div>
@@ -643,7 +649,7 @@ export default function ClientDetailModal({
                         <MetricCard
                           title="Pagamentos Pendentes"
                           value={clientData.unpaidEvents.length}
-                          subtitle={formatCurrency(clientData.totalPending)}
+                          subtitle={isVisible ? formatCurrency(clientData.totalPending) : '••••'}
                           icon={AlertCircle}
                           color="amber" />
 

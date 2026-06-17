@@ -29,7 +29,7 @@ export default function CalendarTodayStrip({
   onRegisterWork,
   onNewEvent,
 }) {
-  const { formatCurrency } = useFinancialVisibility();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
   const today = todayLocalISO();
   const todayEvents = getEventsForDate(events, today).filter((e) => !isCancelledEvent(e));
 
@@ -138,7 +138,7 @@ export default function CalendarTodayStrip({
                   <StatusIcon className="w-4 h-4" style={{ color: statusColor }} />
                   {amount > 0 && (
                     <span className="text-[11px] font-semibold font-mono" style={{ color: isPaid ? '#10b981' : '#f59e0b' }}>
-                      {formatCurrency(amount)}
+                      {isVisible ? formatCurrency(amount) : '••••'}
                     </span>
                   )}
                 </div>

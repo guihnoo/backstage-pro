@@ -1,4 +1,5 @@
-﻿import { motion, AnimatePresence } from 'framer-motion';
+﻿import { useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -30,10 +31,17 @@ export default function ClientActionSheet({
   onEdit,
   onDelete,
 }) {
-  const { formatCurrency } = useFinancialVisibility();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
   const theme = useCategoryTheme();
   const primary = theme.primaryHex;
   useAppScrollLock(Boolean(isOpen && client));
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose]);
 
   if (!client) return null;
 
@@ -98,6 +106,7 @@ export default function ClientActionSheet({
                   size="icon"
                   onClick={onClose}
                   className="flex-shrink-0 h-10 w-10 min-w-[44px] min-h-[44px]"
+                  aria-label="Fechar"
                 >
                   <X className="w-5 h-5" />
                 </Button>
@@ -128,7 +137,7 @@ export default function ClientActionSheet({
                         <span>A Receber</span>
                       </div>
                       <p className="text-white text-lg font-bold">
-                        {formatCurrency(stats.pendingRevenue || 0)}
+                        {isVisible ? formatCurrency(stats.pendingRevenue || 0) : '••••'}
                       </p>
                     </div>
                   </div>

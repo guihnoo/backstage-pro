@@ -5,11 +5,12 @@ import { TrendingUp, TrendingDown, AlertCircle, Zap, Users, Calendar, Star, Cloc
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { getEventStatus } from '@/components/utils/dateUtils';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
+import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { hardNavigate } from '@/lib/hardNavigate';
 
 const MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
-function buildInsights({ events, clients, expenses: _expenses, work, profile }) {
+function buildInsights({ events, clients, expenses: _expenses, work, profile, fmt }) {
   const today = new Date();
   const insights = [];
 
@@ -40,7 +41,7 @@ function buildInsights({ events, clients, expenses: _expenses, work, profile }) 
       color: 'text-red-400',
       bg: 'bg-red-500/10 border-red-500/20',
       title: `${overdueUnpaid.length} show${overdueUnpaid.length > 1 ? 's' : ''} sem pagamento`,
-      description: `Você tem R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} a receber de shows já realizados.`,
+      description: `Você tem ${fmt(total)} a receber de shows já realizados.`,
       cta: 'Ver Relatórios → Visão Geral',
       ctaAction: null,
     });
@@ -190,7 +191,7 @@ function buildInsights({ events, clients, expenses: _expenses, work, profile }) 
         icon: CheckCircle2,
         themePrimary: true,
         title: `${pctGoal.toFixed(0)}% da meta mensal — quase lá!`,
-        description: `Faltam R$ ${remaining.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} para bater a meta de ${format(today, 'MMMM', { locale: ptBR })}.`,
+        description: `Faltam ${fmt(remaining)} para bater a meta de ${format(today, 'MMMM', { locale: ptBR })}.`,
         cta: 'Ver Metas',
         ctaAction: () => hardNavigate('/goals'),
       });
@@ -202,7 +203,7 @@ function buildInsights({ events, clients, expenses: _expenses, work, profile }) 
         color: 'text-emerald-400',
         bg: 'bg-emerald-500/10 border-emerald-500/20',
         title: `Meta de ${format(today, 'MMMM', { locale: ptBR })} batida! 🎉`,
-        description: `Você já ultrapassou a meta mensal de R$ ${monthlyGoal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}. Excelente trabalho!`,
+        description: `Você já ultrapassou a meta mensal de ${fmt(monthlyGoal)}. Excelente trabalho!`,
         cta: null,
         ctaAction: null,
       });
@@ -219,8 +220,8 @@ function buildInsights({ events, clients, expenses: _expenses, work, profile }) 
         priority: 2,
         icon: Clock,
         themePrimary: true,
-        title: `Sua taxa horária é R$ ${rate.toFixed(0)}/hora`,
-        description: `Acima de R$150/hora — ótima rentabilidade! Continue selecionando shows de alto valor.`,
+        title: `Sua taxa horária é ${fmt(rate)}/hora`,
+        description: 'Acima de R$150/hora — ótima rentabilidade! Continue selecionando shows de alto valor.',
         cta: null,
         ctaAction: null,
       });
@@ -233,11 +234,12 @@ function buildInsights({ events, clients, expenses: _expenses, work, profile }) 
 
 export default function SmartInsights({ events = [], clients = [], expenses = [], work = [], profile = {} }) {
   const { primaryHex } = useCategoryTheme();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
 
-  const insights = useMemo(
-    () => buildInsights({ events, clients, expenses, work, profile }),
-    [events, clients, expenses, work, profile]
-  );
+  const insights = useMemo(() => {
+    const fmt = (v) => isVisible ? formatCurrency(v) : '••••';
+    return buildInsights({ events, clients, expenses, work, profile, fmt });
+  }, [events, clients, expenses, work, profile, formatCurrency, isVisible]);
 
   if (insights.length === 0) return null;
 

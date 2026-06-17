@@ -45,6 +45,7 @@ const FunctionDisplay = ({ toolCall }) => {
     return (
         <div className="mt-2 text-xs">
             <button
+                type="button"
                 onClick={() => setExpanded(!expanded)}
                 className={cn(
                     "flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all",
@@ -134,6 +135,7 @@ export default function MessageBubble({ message }) {
                                                         navigator.clipboard.writeText(String(children).replace(/\n$/, ''));
                                                         appToast.success('Código copiado');
                                                     }}
+                                                    aria-label="Copiar código"
                                                 >
                                                     <Copy className="h-3 w-3 text-slate-400" />
                                                 </Button>

@@ -324,7 +324,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
               }
               {client ? 'Editar Cliente' : 'Novo Cliente'}
             </DialogTitle>
-            <Button variant="ghost" size="icon" onClick={onCancel} className="h-10 w-10 flex-shrink-0">
+            <Button variant="ghost" size="icon" onClick={onCancel} className="h-10 w-10 flex-shrink-0" aria-label="Fechar">
               <X className="w-5 h-5" />
             </Button>
           </div>

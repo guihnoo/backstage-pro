@@ -4,15 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { uploadUserFile } from '@/lib/uploadFile';
 import { useDailyWork } from '@/lib/useDailyWork';
-import { X, Clock, Camera, Loader2, AlertCircle, Save, Info, Calendar as CalendarIcon } from 'lucide-react';
+import { X, Clock, Camera, Loader2, AlertCircle, Save, Zap, Calendar as CalendarIcon } from 'lucide-react';
 import appToast from '@/lib/appToast';
 
 import { normalizeDateString, formatDisplayDate } from '../utils/dateUtils';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
+import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import EventHeading from '@/components/events/EventHeading';
 
 export default function EventHoursSheet({ 
@@ -26,7 +26,15 @@ export default function EventHoursSheet({
 }) {
     const { create, update } = useDailyWork();
   const { primaryHex } = useCategoryTheme();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
   useAppScrollLock(isOpen);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose]);
 
   const [formData, setFormData] = useState({
     date: '',
@@ -296,6 +304,7 @@ export default function EventHoursSheet({
                 size="icon"
                 onClick={onClose}
                 className="text-slate-400 hover:text-white"
+                aria-label="Fechar"
               >
                 <X className="w-5 h-5" />
               </Button>
@@ -334,10 +343,35 @@ export default function EventHoursSheet({
                 </div>
 
                 {/* Horários */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-slate-300 text-sm font-medium">Entrada / Saída *</Label>
+                    {formData.entry_time && (
+                      <div className="flex items-center gap-1">
+                        <Zap className="w-3 h-3 text-slate-600" />
+                        {[8, 10, 12].map(h => (
+                          <button
+                            key={h}
+                            type="button"
+                            onClick={() => {
+                              const [entH, entM] = formData.entry_time.split(':').map(Number);
+                              const totalMin = entH * 60 + entM + h * 60;
+                              const exitH = Math.floor(totalMin / 60) % 24;
+                              const exitM = totalMin % 60;
+                              handleChange('exit_time', `${String(exitH).padStart(2,'0')}:${String(exitM).padStart(2,'0')}`);
+                            }}
+                            className="text-[10px] font-semibold px-1.5 py-0.5 rounded border border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200 transition-colors"
+                          >
+                            {h}h
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <Label htmlFor="mobile_entry_time" className="text-slate-300 text-sm font-medium">
-                      Entrada *
+                    <Label htmlFor="mobile_entry_time" className="text-slate-300 text-xs font-medium">
+                      Entrada
                     </Label>
                     <Input
                       id="mobile_entry_time"
@@ -359,8 +393,8 @@ export default function EventHoursSheet({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="mobile_exit_time" className="text-slate-300 text-sm font-medium">
-                      Saída *
+                    <Label htmlFor="mobile_exit_time" className="text-slate-300 text-xs font-medium">
+                      Saída
                     </Label>
                     <Input
                       id="mobile_exit_time"
@@ -381,34 +415,31 @@ export default function EventHoursSheet({
                     )}
                   </div>
                 </div>
+                </div>
 
-                {/* Cálculos */}
-                {formData.entry_time && formData.exit_time && hours.total > 0 && (
-                  <Alert
-                    className="border"
-                    style={{ background: `${primaryHex}1a`, borderColor: `${primaryHex}66` }}
-                  >
-                    <Info className="h-4 w-4 bp-text-primary" />
-                    <AlertDescription style={{ color: `${primaryHex}cc` }}>
-                      <p className="font-semibold mb-2 text-sm">Cálculo Automático</p>
-                      <div className="grid grid-cols-3 gap-2 text-xs">
-                        <div className="bg-slate-900/40 rounded p-2 text-center">
-                          <p className="bp-text-primary mb-1">Horas</p>
-                          <p className="font-bold text-white">{hours.total.toFixed(1)}h</p>
-                        </div>
-                        <div className="bg-slate-900/40 rounded p-2 text-center">
-                          <p className="bp-text-primary mb-1">Extras</p>
-                          <p className="font-bold text-amber-300">{hours.overtime.toFixed(1)}h</p>
-                        </div>
-                        <div className="bg-slate-900/40 rounded p-2 text-center">
-                          <p className="bp-text-primary mb-1">Cachê</p>
-                          <p className="font-bold text-green-300">
-                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(estimatedCache)}
-                          </p>
-                        </div>
-                      </div>
-                    </AlertDescription>
-                  </Alert>
+                {/* Cálculos — 3 cards visuais */}
+                {hours.total > 0 && (
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="rounded-lg p-3 text-center border border-slate-700/60 bg-slate-800/40">
+                      <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Horas</p>
+                      <p className="text-lg font-black font-mono leading-tight" style={{ color: primaryHex }}>{hours.total.toFixed(1)}h</p>
+                    </div>
+                    <div className="rounded-lg p-3 text-center border border-pink-500/25 bg-pink-500/5">
+                      <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Extras</p>
+                      <p className="text-lg font-black text-pink-400 font-mono leading-tight">{hours.overtime.toFixed(1)}h</p>
+                    </div>
+                    <div className="rounded-lg p-3 text-center border border-emerald-500/25 bg-emerald-500/5">
+                      <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Cachê</p>
+                      <p className="text-sm font-black text-emerald-400 font-mono leading-tight">
+                        {isVisible ? formatCurrency(estimatedCache) : '••••'}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {event?.payment_model && (
+                  <p className="text-[11px] text-slate-600 -mt-1">
+                    Modelo: {event.payment_model === 'MEIO_CACHE_E_DOBRA' ? 'Meio Cache e Dobra' : 'Cachê + Horas Extras'}
+                  </p>
                 )}
 
                 {/* Observações */}
@@ -463,6 +494,7 @@ export default function EventHoursSheet({
                         size="icon"
                         onClick={() => setFormData(prev => ({ ...prev, photo_url: '' }))}
                         className="text-red-400 h-12 w-12"
+                        aria-label="Remover foto"
                       >
                         <X className="w-5 h-5" />
                       </Button>

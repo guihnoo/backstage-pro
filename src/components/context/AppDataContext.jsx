@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/authContext';
 
 const AppDataContext = createContext(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAppData = () => {
   const context = useContext(AppDataContext);
   if (!context) {

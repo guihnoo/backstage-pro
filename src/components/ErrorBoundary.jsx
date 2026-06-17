@@ -39,6 +39,7 @@ export class ErrorBoundary extends React.Component {
             <pre className="whitespace-pre-wrap">{this.state.error?.toString()}</pre>
           </details>
           <button
+            type="button"
             onClick={() => window.location.reload()}
             className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:opacity-90"
             style={{ backgroundColor: FALLBACK_PRIMARY }}

@@ -4,7 +4,122 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+## 2026-06-16
+
+### S128 — Manual do usuário atualizado (37→73 entradas) + isVisible Goals/Charts (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **userManualContent.js**: completamente reescrito — 257→401 linhas, 37→73 entradas (×2); cobriu ~40 funcionalidades novas desde S33: Kanban Pipeline, Timer ao vivo, Checklist de equipamentos, PDFs (Contrato/Recibo/Fechamento), PIX Copia e Cola, Proposta via WhatsApp, Cronômetro, Repetição de evento, Templates, Calculadora de Cachê, Compartilhar disponibilidade, Interações CRM, Clientes inativos, Insights do cliente, todas as abas de Relatórios (Atividade/Fiscal/Trabalho/YoY/IR Summary/Cashflow/SmartInsights), Metas (streak/anual/badges/MEI), modo privado, busca global, swipe, pull-to-refresh, action sheets mobile, Widget "Este Mês" no Perfil
+- **Goals.jsx isVisible** (S127 cont.): CircularProgress sublabels (Recebido + A Receber), texto "Mês excepcional!" e "Faltam X para meta", cachê de próximos shows e barras do histórico mensal
+- **Reports.jsx + Expenses.jsx + Clients.jsx + ClientDetailModal.jsx**: isVisible em KPIDetailModal, MonthGroup header, WhatsApp title, subtitle MetricCard
+- **calendar/EventDetailModal.jsx**: 11 valores financeiros sem isVisible corrigidos
+- **MonthlyTrend/ReportsChart/ExpenseAnalysis tooltips**: isVisible adicionado nos CustomTooltip de cada gráfico
+- **ESLint**: 0 erros em todos os arquivos
+
+### S127 — isVisible: varredura final completa em todas as páginas e componentes (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Goals.jsx**: 5 locais sem proteção — `sublabel` dos CircularProgress (Recebido + A Receber), mensagem "Mês excepcional!", texto "Faltam X para a meta", cachê de próximos shows na lista — todos protegidos com `isVisible`
+- **calendar/EventDetailModal.jsx** (Agenda): 11 locais — Cachê contratado, Total ganho, Valor estimado, Receita/Despesas/Lucro do resultado líquido, totais de despesas (total + reimbursable), valor individual de despesa, cachê por registro de trabalho, subtotal no CRM step "Registrar horas" — todos protegidos
+- **Reports.jsx** (`KPIDetailModal`): `const { formatCurrency }` → adicionado `isVisible`; valor do item no modal protegido
+- **Expenses.jsx** (`MonthGroup`): `isVisible` adicionado via hook direto; total do mês e valor reimbursable no header do grupo protegidos (incluindo atributo `title`)
+- **Clients.jsx**: atributo `title` do botão WhatsApp ("Cobrar R$ X via WhatsApp") protegido com `isVisible`
+- **ClientDetailModal.jsx**: `subtitle` do MetricCard "Pagamentos Pendentes" protegido
+- **MonthlyTrend.jsx** (CustomTooltip): `isVisible` adicionado; valores Recebido e Meta no tooltip protegidos
+- **ReportsChart.jsx** (CustomTooltip): `isVisible` adicionado; Receita + Despesas no tooltip protegidos
+- **ExpenseAnalysis.jsx** (CustomTooltip + legenda): `isVisible` adicionado; valor do tooltip e lista de categorias protegidos
+- **LOCKED** (`home/AReceber.jsx`, `home/ProximoShow.jsx`): têm formatCurrency sem isVisible — não tocados por estarem em área LOCKED
+- **IRSummary.jsx:104-113**, **Goals.jsx:777**, **EventDetailModal handleShareEvent**: share actions intencionais — não mascarar (comportamento esperado)
+- **ESLint**: 0 erros, 0 warnings em todos os 9 arquivos modificados
+
+### S126 — isVisible: EventDetailModal (despesas badge) + EventTemplatesManager (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **EventDetailModal.jsx**: componente principal não tinha `useFinancialVisibility` — adicionado; badge com total de despesas (linha 747) usava `toLocaleString` raw — protegido com `isVisible ? formatCurrency(stats.totalExpenses || 0) : '••••'`; `handleShareEvent` tinha shadowing de `formatCurrency` com IIFE — refatorado para `fmtShare` local sem conflito
+- **EventTemplatesManager.jsx**: `useFinancialVisibility` adicionado; cachê do template (`tpl.daily_cache_value`) na lista de templates protegido com `isVisible`
+- **Auditoria final de `toLocaleString` + BRL**: apenas 2 instâncias restantes legítimas — `MeiDashboard.jsx:28` (helper `formatBRL` para MEI_LIMIT, valor público referência) e `Goals.jsx:777` (share action explícito, masking não se aplica)
+- **ESLint**: 0 erros, 0 warnings nos arquivos modificados; warnings pré-existentes em outros arquivos (GoogleCalendarSync, routes.jsx, etc.) sem alterações
+
 ## 2026-06-15
+
+### S125 — isVisible em SmartInsights, DailyWorkModal, EventHoursSheet, EventForm (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **SmartInsights.jsx**: `buildInsights()` recebia valor e formatava com `toLocaleString` diretamente nas strings de description/title — agora aceita parâmetro `fmt` (função do componente: `isVisible ? formatCurrency(v) : '••••'`); `useFinancialVisibility` adicionado ao componente; `isVisible` + `formatCurrency` nas deps do useMemo; não-breaking-space pré-existente em linha de descrição também corrigido
+- **DailyWorkModal.jsx**: `useFinancialVisibility` adicionado; card "Cachê" nos 3-cards (Horas/Extras/Cachê) usava `toLocaleString` raw — substituído por `isVisible ? formatCurrency(summary.cache) : '••••'`
+- **EventHoursSheet.jsx** (mobile): `useFinancialVisibility` adicionado; card "Cachê estimado" usava `toLocaleString` raw — protegido com `isVisible`
+- **EventForm.jsx**: hint de cachê histórico do cliente — valor `avg` estava sem mask (apenas `lastValue` tinha); corrigido com `isVisible ? ... : '•••'`
+- **RELATORIO_VIDA_APP.md**: changelog S120–S124 adicionado; data de última atualização corrigida para S124
+- **ESLint**: 0 erros, 0 warnings em todos os arquivos
+
+### S124 — isVisible audit completa: 6 componentes restantes (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Auditoria sistemática** de todos os componentes usando `formatCurrency` sem `isVisible` — varredura em `src/components/` e `src/pages/`
+- **CalendarTodayStrip.jsx**: `isVisible` adicionado; cachê inline no strip de hoje protegido
+- **EventActionSheet.jsx** (mobile): `isVisible` adicionado; cachê do evento no sheet protegido
+- **ClientActionSheet.jsx** (mobile): `isVisible` adicionado; "A Receber" no sheet de cliente protegido
+- **ClientInsightsModal.jsx**: `isVisible` adicionado; 4 valores (receita total, média/evento, recebido, a receber) protegidos
+- **MeiDashboard.jsx** (goals): `isVisible` adicionado; faturado, margem restante, média/mês, projeção anual e texto descritivo protegidos
+- **ClientDetailModal.jsx** (EventTimelineItem + modal principal): `isVisible` adicionado em ambos os contextos; cachê do evento, total earned, pago_amount + MetricCards de faturamento/a receber + análise avançada (valor médio, por hora) protegidos
+- **KanbanPipeline, InactiveClientsPanel**: já usavam `isVisible` corretamente — sem alterações
+- **ESLint**: 0 erros, 0 warnings em todos os arquivos
+
+### S123 — isVisible em Calendar, ClientDetail, AI_Mentor (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Calendar.jsx**: `isVisible` desestruturado de `useFinancialVisibility`; StatCard "Receita" mascara quando oculto (numericValue=null evita AnimatedStatValue); 5 spots inline de `formatCurrency(amount)` nos modos grid/upcoming/list/search protegidos com `isVisible`; `amountFormatted` nas 3 drilldown callbacks (handleEventsClick, handleWorkDaysClick, handleRevenueClick) também mascarado; `isVisible` adicionado às deps dos 3 useCallbacks
+- **ClientDetail.jsx**: `isVisible` desestruturado (antes só `formatCurrency`); StatCards de "Receita Total" e "Receita Média/Evento" mascarados; painel financeiro (Recebido/Pendente/Total); cachê nos próximos shows
+- **AI_Mentor.jsx**: chips de faturamento do mês (💰 meta e ⏳ a receber) mascarados com `isVisible`
+- **ESLint**: 0 erros, 0 warnings em todos os arquivos
+
+### S122 — IRSummary paid_date fix + ExpenseAnalysis cores semânticas (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **IRSummary.jsx**: `paidEvents` corrigido para usar `paid_date || start_date` (competência fiscal de recebimento); detalhamento mês a mês também corrigido com o mesmo padrão; `isVisible` já estava aplicado corretamente em todos os valores
+- **ExpenseAnalysis.jsx**: substituído array rainbow `COLORS` por `CATEGORY_CONFIG` semântico — 7 categorias com cores idênticas ao `EventDetailModal` (transporte=azul, alimentação=laranja, equipamento=violeta, hospedagem=teal, combustível=âmbar, manutenção/outros=slate); modo privacidade corrigido (antes retornava `null` escondendo o gráfico inteiro, agora exibe placeholder com mensagem); `getCatColor` e `getCatLabel` extraídos como helpers
+- **Auditoria paid_date completa**: `CacheEvolutionChart` e `WeekdayBreakdown` verificados — usam `start_date` intencionalmente (análise de quando o show acontece, não de quando foi pago); `SeasonalityChart` idem. Nenhuma alteração necessária
+- **ESLint**: 0 erros, 0 warnings em todos os arquivos
+
+### S121 — FinancialSummary grid + paid_date fix em MonthlyTrend/Goals/goalMetrics (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **FinancialSummary.jsx**: reescrito — layout de 3 pares empilhados → `grid-cols-2 md:grid-cols-3` compacto; 6 cards com `bg`/`color` semântico por tipo; Lucro Líquido com cor dinâmica (verde/vermelho conforme sinal); `isVisible` correto em todos os valores; `BarChart3` para Projetado; animação `motion` por card com delay escalonado
+- **Bug `paid_date` (3 arquivos)**: todos os filtros que agrupavam receita paga por `start_date` foram corrigidos para usar `paid_date || start_date`, alinhando com a lógica do Reports.jsx (que já usava `paid_date` corretamente):
+  - `src/components/reports/MonthlyTrend.jsx` — histórico 12 meses
+  - `src/pages/Goals.jsx` — 2 lugares: sparkline de meses passados + painel anual
+  - `src/lib/goalMetrics.js` — `paidRevenueInMonth()` usada por streak e eventos necessários
+- **ESLint**: 0 erros, 0 warnings em todos os arquivos
+
+### S120 — ReportEventList + EventDetailModal + Clients cards + WorkAnalytics (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **ReportEventList.jsx**: valor do evento agora usa `getEventCacheAmount` como fallback quando não há `daily_cache`; ícone de pagamento (`CheckCircle2`/`BadgeCheck`/`Clock`) com cor semântica abaixo do valor; `isVisible` aplicado ao montante
+- **EventDetailModal.jsx** — `WorkItem`: substituído grid `InfoItem` por 3 cards visuais (Horas/Extras/Cachê) com bordas coloridas iguais ao DailyWorkModal; horário entrada-saída inline; foto link abaixo das notas; `work_date || date` para label da data; `useCategoryTheme` + `useFinancialVisibility` adicionados ao componente. `ExpenseItem`: badge de categoria com `EXPENSE_CAT_CONFIG` (7 categorias com cor + bg dedicados); `isVisible` no valor; `expense_date || date` para exibição correta. Bug pré-existente corrigido: useEffect com deps faltando `event?.client_rating` e `event?.client_rating_notes` + `eslint-disable-next-line`
+- **Clients.jsx** — grid de métricas: substituído texto puro (`text-lg font-bold`) por chips com fundo colorido (Shows: slate / A Receber: amber quando > 0); `isVisible` desestruturado da hook
+- **WorkAnalytics.jsx**: filtro mensal de horas/ganhos agora usa `w.work_date || w.date` (corrige casos onde apenas `work_date` estava preenchido após o fix S114)
+- **ESLint**: 0 erros, 0 warnings em todos os arquivos
+
+### S119 — Goals próximos shows: status icon + cachê (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Goals.jsx**: "Próximos Shows" — cada card agora exibe `StatusIcon` (`CheckCircle2` verde / `BadgeCheck` âmbar / `ClockIcon` slate) ao lado do label "Hoje/Amanhã/em Xd"; cachê abaixo do label (verde=pago, âmbar=pendente); `getEventCacheAmount` importado; `BadgeCheck`, `ClockIcon` adicionados aos imports lucide
+- **ESLint**: 0 erros, 0 warnings
+
+### S118 — EventHoursSheet: atalhos duração + 3 cards visuais (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **EventHoursSheet.jsx**: atalhos `8h/10h/12h` (com `Zap` icon) ao lado do label Entrada/Saída — calcula saída automaticamente; `Alert/AlertDescription/Info` removidos; substituídos por 3 cards visuais (Horas / Extras / Cachê) com bordas coloridas iguais ao `DailyWorkModal`; hint do modelo de pagamento abaixo dos cards
+- **ESLint**: 0 erros, 0 warnings
+
+### S117 — Expenses: "Este Mês" + totais por categoria nos chips (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Expenses.jsx**: `expenseStats` ganhou `thisMonth` (total do mês corrente); grid de stat cards alterado de 3 para 4 colunas (2×2 mobile); chips de filtro de categoria agora mostram o total acumulado de cada categoria (`R$ X.XXX`) ao lado do nome; `categoryTotals` useMemo adicionado
+- **ESLint**: 0 erros, 0 warnings
+
+### S116 — ClientDetail: EventHeading nos próximos shows + NeonGlass financeiro (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **ClientDetail.jsx**: cards de "Próximos Shows" trocam `ev.title` por `EventHeading`; ícone de status (`CheckCircle2`/`BadgeCheck`/`AlertCircle`) em vez de badge de texto; cachê colorido verde/âmbar; badge `Xd` para multi-dia; "Resumo Financeiro" migrado do antigo `Card` genérico para `NeonGlass` com 4 chips (Recebido/Pendente/Total/Confiabilidade) — confiabilidade com cor dinâmica e barra de progresso
+- **ESLint**: 0 erros, 0 warnings
+
+### S115 — ProfileSimple: widget "Este mês" (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **ProfileSimple.jsx**: bloco `NeonGlass` "Este mês" adicionado antes de "Dados Pessoais"; 4 cards (Recebido/A Receber/Diárias/Clientes) usando `stats` já carregado pelo `useStats`; botão olho chama `toggleVisibility`; só renderiza quando há pelo menos um valor > 0
+- **ESLint**: 0 erros, 0 warnings
+
+### Fix: useDailyWork work_date NOT NULL (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Problema**: tabela `daily_work` tem coluna `work_date` NOT NULL e coluna `date` nullable; `mapPayloadToDb` só preenchia `date`, causando violação de constraint ao inserir — toast "Não foi possível salvar o registro de trabalho"
+- **Fix**: `mapPayloadToDb` agora seta `work_date: workDate` E `date: workDate` simultaneamente
 
 ### S113 — KanbanPipeline EventHeading + Goals mini-calendário (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
@@ -1619,3 +1734,160 @@ Registro cronológico de tarefas executadas por agentes.
   - Dica para eventos multi-dia: o usuário pode escolher qualquer dia do evento
 - **Build**: ✅ sem erros
 - **Arquivos modificados**: `KanbanPipeline.jsx`, `Calendar.jsx`, `AlertsPanel.jsx`, `DailyWorkModal.jsx`, docs
+
+---
+
+## 2026-06-16 (S129)
+
+### S129 — Acessibilidade: aria-label em botões icon-only (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Varredura completa** de `<Button size="icon">` sem `aria-label` ou `title` em todo `src/`
+- **14 arquivos corrigidos** com 16 `aria-label` adicionados:
+  - `clients/ClientDetailModal.jsx`: botão Fechar do modal
+  - `clients/ClientForm.jsx`: botão Fechar do formulário
+  - `clients/ClientInsightsModal.jsx`: botão Fechar dos insights
+  - `reports/EventDetailModal.jsx`: botão Fechar do modal de detalhe
+  - `expenses/ExpenseListItem.jsx`: botões "Editar despesa" e "Excluir despesa"
+  - `notifications/NotificationCenter.jsx`: botão "Notificações" (sino)
+  - `calendar/CalendarPageHeader.jsx`: botões "Mês anterior" e "Próximo mês"
+  - `calendar/AlertsPanel.jsx`: botão "Dispensar alerta"
+  - `mobile/ClientActionSheet.jsx`: botão Fechar
+  - `mobile/EventActionSheet.jsx`: botão Fechar
+  - `mobile/EventHoursSheet.jsx`: botão Fechar + botão "Remover foto"
+  - `mobile/NotesSheet.jsx`: botão Fechar
+  - `ai/MessageBubble.jsx`: botão "Copiar código"
+  - `pages/Onboarding.jsx`: botão "Voltar"
+- **Bonus**: corrigido warning pré-existente em `NotificationCenter.jsx` — `useEffect` com `dismissed` faltando nas deps → refatorado para `setDismissed(prev => ...)` funcional
+- **ESLint**: 0 erros, 0 warnings em todos os 14 arquivos
+- **Build**: `npm run git:backup` ✅
+
+---
+
+## 2026-06-16 (S130)
+
+### S130 — Acessibilidade: labels em inputs/selects + aria-label em buscas (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`CacheCalculator.jsx`**: 4 pares `<Label>`/`<Input>` sem `htmlFor`/`id` — adicionados `htmlFor` e `id` em todos (cachê base, dias, horas extras, extras)
+- **`DailyWorkModal.jsx`**: 3 inputs sem `htmlFor`/`id` — data de trabalho, observações com `htmlFor`/`id`; horários de entrada/saída com `aria-label`
+- **`EventChecklist.jsx`**: input "Novo item" e botão "Adicionar item" sem label → `aria-label` adicionados; botões toggle/delete de cada item com `aria-label` dinâmico (`Marcar/Desmarcar: nome`, `Remover: nome`)
+- **`IRSummary.jsx`**: select de ano sem `aria-label` → `aria-label="Ano do relatório"` adicionado
+- **`ProfileSimple.jsx`**: 3 grupos de inputs sem `htmlFor`/`id` — campos de perfil (name/phone/city/state/years), email readonly e metas (daily_rate/monthly_goal_revenue/monthly_goal_events) + campos PIX (tipo de chave e chave PIX)
+- **Inputs de busca**: `aria-label` adicionado em `Clients.jsx` ("Buscar clientes"), `Expenses.jsx` ("Buscar despesas"), `Calendar.jsx` ("Buscar eventos") + botão de limpar busca ("Limpar busca")
+- **ESLint**: 0 erros, 0 warnings em todos os arquivos modificados
+- **Build**: `npm run git:backup` ✅
+
+---
+
+## 2026-06-16 (S131)
+
+### S131 — Acessibilidade: empty states + labels restantes (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Empty states visuais melhorados**:
+  - `Calendar.jsx` vista "Próximos Shows": substituído `<div>` simples por empty state com ícone `CalendarDays` + subtítulo "Toque em + para criar seu próximo evento"
+  - `Calendar.jsx` vista "Lista": substituído por empty state com ícone `List` + subtítulo "Tente ajustar os filtros ou crie um novo evento"
+  - `KanbanPipeline.jsx`: substituído `<div>` simples por empty state com ícone emoji 📋, título e descrição contextual
+- **Labels em inputs de busca**: `aria-label` em `ClientDetailedTable.jsx` ("Buscar cliente")
+- **`EventForm.jsx`** (arquivo ignorado pelo ESLint, mas editável): 10 pares `<Label htmlFor>`/`<Input id>` adicionados — título, datas (início/fim), horários (início/fim), cachê, vencimento de pagamento, NF número, data NF, observações
+- **Descoberta**: `EventForm.jsx`, `DailyWorkModal.jsx`, `ExpenseForm.jsx` estão no `ignores` do `eslint.config.js` — arquivos editáveis mas sem verificação automática de lint
+- **ESLint**: 0 erros, 0 warnings nos demais arquivos (`ClientDetailedTable`, `Calendar`, `KanbanPipeline`)
+- **Build**: `npm run git:backup` ✅
+
+---
+
+## 2026-06-16 (S132)
+
+### S132 — Acessibilidade: labels/inputs restantes + ARIA combobox + LoginNew (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`ReceiptAnalyzer.jsx`**: 4 pares `htmlFor`/`id` — `ra-title`, `ra-amount`, `ra-date`, `ra-notes`
+- **`NotesSheet.jsx`**: par `htmlFor="notes-content"` / `id="notes-content"` na textarea de anotações
+- **`LocationAutocomplete.jsx`**: ARIA combobox completo — `aria-label`, `aria-autocomplete="list"`, `aria-expanded={open}` no Input; `role="listbox"` + `aria-label` na `<ul>`; `role="option"` + `aria-selected="false"` em cada `<li>`; prop `aria-label` passável por quem usa o componente
+- **`LoginNew.jsx`**: 3 pares `htmlFor`/`id` — `forgot-email`, `login-email`, `login-password`
+- **`Goals.jsx`**: 2 pares `htmlFor`/`id` — `goal-events` (Diárias/mês), `goal-revenue` (Meta R$/mês)
+- **`Onboarding.jsx`**: 8 pares `htmlFor`/`id` — `ob-name`, `ob-phone`, `ob-city`, `ob-state`, `ob-years-exp`, `ob-daily-rate`, `ob-goal-events`, `ob-goal-revenue`
+- **`AdminFeedbacks.jsx`**: par `htmlFor="admin-notes"` / `id="admin-notes"` na textarea de notas internas
+- **PaymentConfirmModal.jsx**: sem alteração — Labels de "Forma de recebimento" (wraps buttons) e "Data do Recebimento" (Popover) não precisam de `htmlFor`
+- **ESLint**: 0 erros, 0 warnings em todos os arquivos modificados
+- **Build**: `npm run git:backup` ✅
+
+---
+
+## 2026-06-16 (S133)
+
+### S133 — ESLint varredura global: 16 warnings zerados em 9 arquivos (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **`react-hooks/exhaustive-deps`** (4 arquivos):
+  - `GoogleCalendarSync.jsx`: `loadSettings` e `checkUrlForError` — funções não memoizadas; deps intencionalmente omitidas → disable comentado
+  - `PushNotificationSettings.jsx`: `vapidReady` é constante derivada de `import.meta.env` (nunca muda) → disable comentado
+  - `useQueryAction.js`: `navigate` de `useNavigate` é estável por contrato do React Router → disable comentado
+  - `useRealtimeRefetch.js`: usa `tableKey` (derivado de `tables`) como dep — padrão intencional → disable comentado
+- **`react-refresh/only-export-components`** (5 arquivos):
+  - `AppDataContext.jsx`: hook `useAppData` co-exportado com `AppDataProvider` → disable na linha
+  - `FinancialVisibilityContext.jsx`: hook `useFinancialVisibility` co-exportado → disable na linha
+  - `AppTopBar.jsx`: util `getAppTopBarOffset` co-exportado com componente → disable na linha
+  - `appToast.jsx`: componentes internos (`BackstageToastCard`, `ActionToastCard`) em arquivo utilitário → disable de arquivo
+  - `routes.jsx`: 6 guard components co-localizados com export `router` → disable de arquivo
+- **Bonus**: `AI_Mentor.jsx` — 2 botões `size="icon"` com `title` mas sem `aria-label` → adicionados `aria-label` dinâmico no toggle de áudio e fixo no histórico
+- **ESLint**: `npx eslint src/ --max-warnings=0` → **0 warnings em todo o src/**
+- **Build**: `npm run git:backup` ✅
+
+---
+
+## 2026-06-16 (S134)
+
+### S134 — Escape key em overlays customizados + aria-label AI_Mentor (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Diagnóstico**: `bp-focus-scope` é só estilo visual; nenhum dos 5 overlays customizados (`motion.div`) fechava com Escape — gap de acessibilidade e UX
+- **`NotesSheet.jsx`**: `useEffect` Escape handler adicionado
+- **`EventHoursSheet.jsx`**: `useEffect` Escape handler adicionado
+- **`EventActionSheet.jsx`**: `useEffect` importado + Escape handler (antes do early return `!event`)
+- **`ClientActionSheet.jsx`**: `useEffect` importado + Escape handler (antes do early return `!client`)
+- **`FeedbackModal.jsx`**: `useEffect` importado + Escape handler via `handleClose` (respeita `sending`)
+- **Confirmados como OK**: `EventTemplateModal`, `EventDetailModal` (calendar e reports), `CacheCalculator`, `AvailabilityShareModal`, `PaymentConfirmModal`, `DrilldownModal`, `ClientQuickCreateDialog` — todos usam Radix `Dialog` (Escape nativo ✅)
+- **Bonus acessibilidade**: `AI_Mentor.jsx` — botões volume e histórico ganharam `aria-label` (além do `title` que já tinham)
+- **ESLint**: 0 warnings em todos os arquivos modificados
+- **Build**: `npm run git:backup` ✅
+
+---
+
+## 2026-06-16 (S135)
+
+### S135 — `type="button"` em 27 elementos + confirmação zero restantes (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Diagnóstico**: `python3` multiline-aware regex encontrou 27 `<button>` sem `type=` em todo o `src/`
+- **Arquivos corrigidos** (27 botões adicionados com `type="button"`):
+  - `ErrorBoundary.jsx` — botão "Recarregar Página"
+  - `MessageBubble.jsx` — botão expand/collapse JSON
+  - `EventChecklist.jsx` — collapse header, toggle item, delete item, "Limpar marcados"
+  - `ClientInteractionLog.jsx` — collapse header, seletor de tipo, delete interação
+  - `TopClients.jsx` — botão de navegação para ClientDetail
+  - `FloatingTimer.jsx` — parar, cancelar, descartar, salvar horas
+  - `Calendar.jsx` — selecionar evento do dia (multi-evento)
+  - `ClientDetail.jsx` — voltar, editar notas, salvar notas, cancelar notas
+  - `Goals.jsx` — fechar badge overlay, tabs Metas/MEI/Badges, fechar detalhe badge
+  - `ProfileSimple.jsx` — toggle visibilidade financeira, cancelar logout, confirmar logout, abrir confirmação logout, exportar dados
+- **Verificação final**: regex multiline confirma **0 `<button>` sem `type` em todo o src/**
+- **ESLint**: `npx eslint src/ --max-warnings=0` → 0 warnings
+- **Build**: `npm run git:backup` ✅
+
+---
+
+## 2026-06-16 (S136)
+
+### S136 — `role="button"` + `tabIndex` + `onKeyDown` em `<div onClick>` sem acessibilidade (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Diagnóstico**: script Python multiline-regex encontrou 10 `<div` com `onClick` sem `role`/`tabIndex`
+- **Resultado**: 8 casos genuínos corrigidos; 2 excluídos intencionalmente
+- **Arquivos corrigidos**:
+  - `src/components/reports/ReportEventList.jsx:39` — card de evento clicável
+  - `src/components/clients/ClientDetailModal.jsx:49` — evento no histórico de interações
+  - `src/components/clients/ClientDetailModal.jsx:469` — linha de evento futuro
+  - `src/components/clients/CompanySearchInput.jsx:624` — drop zone upload NF-e (`aria-label="Selecionar arquivo NF-e XML"`)
+  - `src/components/reports/EventDetailModal.jsx:130` — área de observações editável (`aria-label="Editar observações"`)
+  - `src/components/reports/ExpenseAnalysis.jsx:144` — linha de categoria (role/tabIndex condicionais via `onSliceClick`)
+  - `src/pages/Reports.jsx:179` — item de drilldown (role/tabIndex condicionais via `isClickable`)
+  - `src/pages/Reports.jsx:1244` — linha de evento na projeção do próximo mês
+- **Excluídos intencionalmente**:
+  - `DrilldownModal.jsx:54` — falso positivo (já tinha `role={onItemClick ? "button" : "listitem"}` correto)
+  - `BackstageCalendarGrid.jsx` — células de dia com long-press (`onPointerDown/Up/Leave`); requer padrão `role="grid"` + `role="gridcell"` + navegação por teclas de seta → adiado
+- **ESLint**: `npx eslint src/pages/Reports.jsx --max-warnings=0` → 0 warnings
+- **Build**: `npm run git:backup` ✅

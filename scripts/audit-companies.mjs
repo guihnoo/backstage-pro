@@ -132,7 +132,8 @@ async function main() {
     for (const c of withoutLogo) {
       console.log(`  • ${displayName(c)} (${c.id})`);
     }
-    console.log('\nDica: pnpm db:backfill-company-logos para copiar logo dos clients vinculados.\n');
+    console.log('Dica: pnpm db:backfill-company-logos (clients) ou pnpm db:enrich-companies (Receita/CNPJa).');
+    console.log('Sem logo na API? O app exibe inicial colorida (CompanyAvatar).\n');
   } else if (!clientsUnlinked.length) {
     console.log('Catálogo e vínculos OK. ✓\n');
   }

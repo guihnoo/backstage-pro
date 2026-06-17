@@ -89,8 +89,9 @@ export default function CacheCalculator({ open, onClose, onCreateEvent }) {
         <div className="p-5 space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-400">Cachê base (R$/dia)</Label>
+              <Label htmlFor="calc-base" className="text-xs text-slate-400">Cachê base (R$/dia)</Label>
               <Input
+                id="calc-base"
                 type="number"
                 min="0"
                 placeholder="1500"
@@ -100,8 +101,9 @@ export default function CacheCalculator({ open, onClose, onCreateEvent }) {
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-400">Dias de trabalho</Label>
+              <Label htmlFor="calc-days" className="text-xs text-slate-400">Dias de trabalho</Label>
               <Input
+                id="calc-days"
                 type="number"
                 min="1"
                 value={days}
@@ -134,8 +136,9 @@ export default function CacheCalculator({ open, onClose, onCreateEvent }) {
 
           {model === 'HORAS_EXTRAS' && (
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-400">Horas extras por dia</Label>
+              <Label htmlFor="calc-extra-hours" className="text-xs text-slate-400">Horas extras por dia</Label>
               <Input
+                id="calc-extra-hours"
                 type="number"
                 min="0"
                 value={extraHours}
@@ -146,8 +149,9 @@ export default function CacheCalculator({ open, onClose, onCreateEvent }) {
           )}
 
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-400">Extras (hospedagem, alimentação…)</Label>
+            <Label htmlFor="calc-extras" className="text-xs text-slate-400">Extras (hospedagem, alimentação…)</Label>
             <Input
+              id="calc-extras"
               type="number"
               min="0"
               placeholder="0"

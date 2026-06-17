@@ -69,6 +69,7 @@ export function EventChecklist({ items = [], onChange, readOnly = false }) {
     <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 overflow-hidden">
       {/* Header */}
       <button
+        type="button"
         onClick={() => setCollapsed(v => !v)}
         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-700/20 transition-colors"
       >
@@ -121,9 +122,11 @@ export function EventChecklist({ items = [], onChange, readOnly = false }) {
                       className="flex items-center gap-2 group"
                     >
                       <button
+                        type="button"
                         onClick={() => !readOnly && toggleItem(item.id)}
                         className="shrink-0"
                         disabled={readOnly}
+                        aria-label={`${item.checked ? 'Desmarcar' : 'Marcar'}: ${item.text}`}
                       >
                         {item.checked
                           ? <CheckSquare className="w-4 h-4 text-emerald-400" />
@@ -135,8 +138,10 @@ export function EventChecklist({ items = [], onChange, readOnly = false }) {
                       </span>
                       {!readOnly && (
                         <button
+                          type="button"
                           onClick={() => deleteItem(item.id)}
                           className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 text-slate-500 hover:text-red-400"
+                          aria-label={`Remover: ${item.text}`}
                         >
                           <Trash2 className="w-3 h-3" />
                         </button>
@@ -156,12 +161,14 @@ export function EventChecklist({ items = [], onChange, readOnly = false }) {
                       onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addItem(newText); } }}
                       placeholder="Novo item…"
                       className="h-8 text-sm bg-slate-900/50 border-slate-600"
+                      aria-label="Novo item do checklist"
                     />
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => addItem(newText)}
                       className="h-8 px-2 border-slate-600"
+                      aria-label="Adicionar item"
                     >
                       <Plus className="w-3.5 h-3.5" />
                     </Button>
@@ -179,6 +186,7 @@ export function EventChecklist({ items = [], onChange, readOnly = false }) {
                     </button>
                     {checked > 0 && (
                       <button
+                        type="button"
                         onClick={clearChecked}
                         className="text-xs text-slate-500 hover:text-red-400 underline underline-offset-2 ml-auto"
                       >

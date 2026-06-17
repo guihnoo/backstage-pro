@@ -211,8 +211,12 @@ const KanbanPipeline = ({ events = [], clients = [], onEventClick }) => {
 
   if (activeEvents.length === 0) {
     return (
-      <div className="text-center py-16 text-slate-500 text-sm">
-        Nenhum evento para exibir no pipeline.
+      <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+        <div className="w-12 h-12 rounded-full bg-slate-800/60 flex items-center justify-center mb-3">
+          <span className="text-2xl">📋</span>
+        </div>
+        <p className="text-sm font-medium text-slate-400">Nenhum evento no pipeline</p>
+        <p className="text-xs text-slate-600 mt-1">Eventos confirmados ou em negociação aparecem aqui</p>
       </div>
     );
   }

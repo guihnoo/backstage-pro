@@ -167,6 +167,7 @@ export default function Onboarding() {
                   variant="ghost"
                   size="icon"
                   className="rounded-full hover:bg-slate-800"
+                  aria-label="Voltar"
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </Button>
@@ -197,8 +198,9 @@ export default function Onboarding() {
                   className="space-y-5"
                 >
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">Nome completo</label>
+                    <label htmlFor="ob-name" className="block text-sm font-medium text-slate-300 mb-2">Nome completo</label>
                     <Input
+                      id="ob-name"
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
@@ -208,8 +210,9 @@ export default function Onboarding() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">Telefone / WhatsApp</label>
+                    <label htmlFor="ob-phone" className="block text-sm font-medium text-slate-300 mb-2">Telefone / WhatsApp</label>
                     <Input
+                      id="ob-phone"
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
@@ -220,8 +223,9 @@ export default function Onboarding() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-2">Cidade</label>
+                      <label htmlFor="ob-city" className="block text-sm font-medium text-slate-300 mb-2">Cidade</label>
                       <Input
+                        id="ob-city"
                         type="text"
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
@@ -231,8 +235,9 @@ export default function Onboarding() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-2">Estado</label>
+                      <label htmlFor="ob-state" className="block text-sm font-medium text-slate-300 mb-2">Estado</label>
                       <Input
+                        id="ob-state"
                         type="text"
                         value={state}
                         onChange={(e) => setState(e.target.value)}
@@ -317,8 +322,9 @@ export default function Onboarding() {
                   className="space-y-5"
                 >
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">Anos de experiência</label>
+                    <label htmlFor="ob-years-exp" className="block text-sm font-medium text-slate-300 mb-2">Anos de experiência</label>
                     <Input
+                      id="ob-years-exp"
                       type="number"
                       min="0"
                       value={yearsExperience}
@@ -329,11 +335,12 @@ export default function Onboarding() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">Valor por diária (R$)</label>
+                    <label htmlFor="ob-daily-rate" className="block text-sm font-medium text-slate-300 mb-2">Valor por diária (R$)</label>
                     <p className="text-xs text-slate-500 mb-2">
                       Usado como padrão ao criar eventos quando o cliente não tiver cachê próprio.
                     </p>
                     <Input
+                      id="ob-daily-rate"
                       type="number"
                       min="0"
                       step="50"
@@ -345,9 +352,10 @@ export default function Onboarding() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">Meta de diárias/mês</label>
+                    <label htmlFor="ob-goal-events" className="block text-sm font-medium text-slate-300 mb-2">Meta de diárias/mês</label>
                     <p className="text-xs text-slate-500 mb-2">Dias únicos trabalhados no mês — várias empresas no mesmo dia contam como 1 diária.</p>
                     <Input
+                      id="ob-goal-events"
                       type="number"
                       min="1"
                       value={monthlyGoalEvents}
@@ -358,8 +366,9 @@ export default function Onboarding() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">Meta de faturamento/mês (R$)</label>
+                    <label htmlFor="ob-goal-revenue" className="block text-sm font-medium text-slate-300 mb-2">Meta de faturamento/mês (R$)</label>
                     <Input
+                      id="ob-goal-revenue"
                       type="number"
                       min="0"
                       step="100"

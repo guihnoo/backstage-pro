@@ -6,7 +6,11 @@ export function monthKeyFromOffset(monthsBack, refDate = new Date()) {
 
 export function paidRevenueInMonth(events, monthStr) {
   return events
-    .filter((e) => e.payment_status === 'paid' && (e.start_date || '').startsWith(monthStr))
+    .filter((e) => {
+      if (e.payment_status !== 'paid') return false;
+      const refDate = e.paid_date || e.start_date || '';
+      return refDate.startsWith(monthStr);
+    })
     .reduce((sum, e) => sum + (Number(e.paid_amount) || 0), 0);
 }
 

@@ -25,6 +25,13 @@ export default function NotesSheet({
     }
   }, [event]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose]);
+
   const handleSave = () => {
     onSave({ observacoes_md: notes });
   };
@@ -104,6 +111,7 @@ export default function NotesSheet({
                 size="icon"
                 onClick={onClose}
                 className="text-slate-400 hover:text-white flex-shrink-0 h-9 w-9"
+                aria-label="Fechar"
               >
                 <X className="w-5 h-5" />
               </Button>
@@ -120,10 +128,11 @@ export default function NotesSheet({
 
                 {/* Campo de Observações */}
                 <div className="space-y-2">
-                  <Label className="text-slate-300 text-sm">
+                  <Label htmlFor="notes-content" className="text-slate-300 text-sm">
                     Anotações do Evento (Suporta Markdown)
                   </Label>
                   <Textarea
+                    id="notes-content"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Digite suas observações sobre o evento aqui...&#10;&#10;Você pode usar Markdown:&#10;- **negrito**&#10;- *itálico*&#10;- # Títulos&#10;- Links, listas, etc."

@@ -39,6 +39,7 @@ const CATEGORY_LABELS = {
 
 function MonthGroup({ monthKey, expenses, events, clients, onEdit, onDelete, onMarkReimbursed, formatCurrency, primaryHex: _primaryHex, defaultOpen = true }) {
     const [open, setOpen] = useState(defaultOpen);
+    const { isVisible } = useFinancialVisibility();
     const total = expenses.reduce((s, e) => s + (e.amount || 0), 0);
     const reimbursable = expenses.filter(e => e.is_reimbursable && !e.reimbursed).reduce((s, e) => s + (e.amount || 0), 0);
 
@@ -64,9 +65,9 @@ function MonthGroup({ monthKey, expenses, events, clients, onEdit, onDelete, onM
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
                     {reimbursable > 0 && (
-                        <span className="text-[11px] font-mono text-amber-400 truncate max-w-[8rem] sm:max-w-none" title={`${formatCurrency(reimbursable)} a reembolsar`}>{formatCurrency(reimbursable)} a reimb.</span>
+                        <span className="text-[11px] font-mono text-amber-400 truncate max-w-[8rem] sm:max-w-none" title={isVisible ? `${formatCurrency(reimbursable)} a reembolsar` : '•••• a reembolsar'}>{isVisible ? formatCurrency(reimbursable) : '••••'} a reimb.</span>
                     )}
-                    <span className="text-sm font-bold text-red-300 truncate max-w-[6rem] sm:max-w-none" title={formatCurrency(total)}>{formatCurrency(total)}</span>
+                    <span className="text-sm font-bold text-red-300 truncate max-w-[6rem] sm:max-w-none" title={isVisible ? formatCurrency(total) : '••••'}>{isVisible ? formatCurrency(total) : '••••'}</span>
                 </div>
             </button>
             <AnimatePresence initial={false}>
@@ -246,12 +247,24 @@ export default function ExpensesPage() {
         const total = allExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
         const reimbursable = allExpenses.filter(exp => exp.is_reimbursable && !exp.reimbursed).reduce((sum, exp) => sum + (exp.amount || 0), 0);
         const reimbursed = allExpenses.filter(exp => exp.reimbursed).reduce((sum, exp) => sum + (exp.amount || 0), 0);
-        return { total, reimbursable, reimbursed };
-    }, [allExpenses]);
+        const thisMonth = allExpenses
+            .filter(exp => (exp.expense_date || exp.date || '').startsWith(currentMonthKey))
+            .reduce((sum, exp) => sum + (exp.amount || 0), 0);
+        return { total, reimbursable, reimbursed, thisMonth };
+    }, [allExpenses, currentMonthKey]);
 
     const expenseCategories = useMemo(() => {
         const categories = new Set(allExpenses.map(exp => exp.category).filter(Boolean));
         return Array.from(categories).sort();
+    }, [allExpenses]);
+
+    const categoryTotals = useMemo(() => {
+        const map = {};
+        for (const exp of allExpenses) {
+            if (!exp.category) continue;
+            map[exp.category] = (map[exp.category] || 0) + (exp.amount || 0);
+        }
+        return map;
     }, [allExpenses]);
 
     if (expensesLoading && !allExpenses.length) {
@@ -311,8 +324,9 @@ export default function ExpensesPage() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <StatCard primaryHex={config.primaryHex} accentHex={config.accentHex} title="Gasto Total" value={isVisible ? formatCurrency(expenseStats.total) : '•••••'} onClick={() => setStatusFilter('all')} active={statusFilter === 'all'} />
+                        <StatCard primaryHex={config.primaryHex} accentHex={config.accentHex} title="Este Mês" value={isVisible ? formatCurrency(expenseStats.thisMonth) : '•••••'} onClick={() => setStatusFilter('all')} active={false} />
                         <StatCard primaryHex={config.primaryHex} accentHex={config.accentHex} title="A Reembolsar" value={isVisible ? formatCurrency(expenseStats.reimbursable) : '•••••'} onClick={() => setStatusFilter('reimbursable')} active={statusFilter === 'reimbursable'} />
                         <StatCard primaryHex={config.primaryHex} accentHex={config.accentHex} title="Reembolsado" value={isVisible ? formatCurrency(expenseStats.reimbursed) : '•••••'} onClick={() => setStatusFilter('reimbursed')} active={statusFilter === 'reimbursed'} />
                     </div>
@@ -326,6 +340,7 @@ export default function ExpensesPage() {
                               value={searchTerm}
                               onChange={(e) => setSearchTerm(e.target.value)}
                               className="bg-[#080a10]/80 border-[#23262f] pl-10 font-mono text-sm"
+                              aria-label="Buscar despesas"
                           />
                       </div>
 
@@ -372,6 +387,11 @@ export default function ExpensesPage() {
                                       className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${categoryFilter === cat ? 'bp-chip-active' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
                                   >
                                       {CATEGORY_LABELS[cat] || cat}
+                                      {categoryTotals[cat] > 0 && (
+                                          <span className="ml-1 opacity-70 font-mono font-normal">
+                                              {isVisible ? formatCurrency(categoryTotals[cat]) : '•••'}
+                                          </span>
+                                      )}
                                   </button>
                               ))}
                           </div>

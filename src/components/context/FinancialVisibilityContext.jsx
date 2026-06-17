@@ -6,6 +6,7 @@ const STORAGE_KEY_PREFIX = 'backstage:financial_visibility:';
 
 const FinancialVisibilityContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useFinancialVisibility = () => {
   const context = useContext(FinancialVisibilityContext);
   if (!context) {

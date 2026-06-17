@@ -174,6 +174,7 @@ export default function ExpenseListItem({ expense, event, client, onEdit, onDele
                 variant="ghost"
                 className="hover:bg-slate-700 h-8 w-8"
                 onClick={(e) => { e.stopPropagation(); onEdit(expense); }}
+                aria-label="Editar despesa"
               >
                 <Edit className="w-4 h-4" />
               </Button>
@@ -182,6 +183,7 @@ export default function ExpenseListItem({ expense, event, client, onEdit, onDele
                 variant="ghost"
                 className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-8 w-8"
                 onClick={(e) => { e.stopPropagation(); onDelete(expense.id); }}
+                aria-label="Excluir despesa"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>

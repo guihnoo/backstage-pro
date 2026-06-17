@@ -85,7 +85,7 @@ export default function ClientDetailPage() {
   const { events, loading: eventsLoading, refetch: refetchEvents, delete: deleteEvent } = useEvents();
   const { dailyWork, loading: dailyWorkLoading, refetch: refetchDailyWork } = useDailyWork();
   const { expenses, loading: expensesLoading, refetch: refetchExpenses } = useExpenses();
-  const { formatCurrency } = useFinancialVisibility();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
   const { profile } = useAuth();
   const config = getCategoryConfig(profile?.category || 'lighting');
   const { primaryHex } = useCategoryTheme();
@@ -299,7 +299,7 @@ export default function ClientDetailPage() {
   <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-full pb-24">
     <>
       <div className="space-y-6 p-4 md:p-6">
-        <button onClick={() => hardNavigate('/clients')} className="inline-flex items-center text-sm hover:opacity-80 transition-colors font-mono" style={{ color: config.primaryHex }}>
+        <button type="button" onClick={() => hardNavigate('/clients')} className="inline-flex items-center text-sm hover:opacity-80 transition-colors font-mono" style={{ color: config.primaryHex }}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar para todos os clientes
         </button>
@@ -411,15 +411,15 @@ export default function ClientDetailPage() {
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600">Observações</span>
                   {!editingNotes ? (
-                    <button onClick={() => { setNotesValue(client.notes || ''); setEditingNotes(true); }} className="text-slate-500 bp-hover-primary transition-colors p-0.5">
+                    <button type="button" onClick={() => { setNotesValue(client.notes || ''); setEditingNotes(true); }} className="text-slate-500 bp-hover-primary transition-colors p-0.5">
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                   ) : (
                     <div className="flex gap-1.5">
-                      <button onClick={saveNotes} disabled={savingNotes} className="text-green-400 hover:text-green-300 disabled:opacity-50 p-0.5">
+                      <button type="button" onClick={saveNotes} disabled={savingNotes} className="text-green-400 hover:text-green-300 disabled:opacity-50 p-0.5">
                         <Check className="w-3.5 h-3.5" />
                       </button>
-                      <button onClick={() => setEditingNotes(false)} className="text-slate-500 hover:text-red-400 transition-colors p-0.5">
+                      <button type="button" onClick={() => setEditingNotes(false)} className="text-slate-500 hover:text-red-400 transition-colors p-0.5">
                         <X className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -444,9 +444,9 @@ export default function ClientDetailPage() {
           </NeonGlass>
           <div className="md:col-span-2 grid grid-cols-2 gap-4">
             <StatCard icon={Briefcase} title="Total de Eventos" value={stats.totalEvents} iconStyle={{ background: `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})` }} />
-            <StatCard icon={DollarSign} title="Receita Total" value={formatCurrency(stats.totalRevenue)} iconStyle={{ background: 'linear-gradient(135deg, #10b981, #34d399)' }} />
+            <StatCard icon={DollarSign} title="Receita Total" value={isVisible ? formatCurrency(stats.totalRevenue) : '••••'} iconStyle={{ background: 'linear-gradient(135deg, #10b981, #34d399)' }} />
             <StatCard icon={Clock} title="Total de Horas" value={`${stats.totalHours}h`} iconStyle={{ background: 'linear-gradient(135deg, #f59e0b, #fbbf24)' }} />
-            <StatCard icon={PieChart} title="Receita Média / Evento" value={formatCurrency(stats.avgRevenuePerEvent)} iconStyle={{ background: `linear-gradient(135deg, ${config.primaryHex}99, ${config.accentHex})` }} />
+            <StatCard icon={PieChart} title="Receita Média / Evento" value={isVisible ? formatCurrency(stats.avgRevenuePerEvent) : '••••'} iconStyle={{ background: `linear-gradient(135deg, ${config.primaryHex}99, ${config.accentHex})` }} />
             {avgRating && (
               <div className="col-span-2 flex items-center gap-2 px-4 py-3 rounded-xl bg-amber-900/20 border border-amber-700/30">
                 <div className="flex items-center gap-0.5">
@@ -526,7 +526,7 @@ export default function ClientDetailPage() {
                         <StatusIcon className="w-4 h-4" style={{ color: statusColor }} />
                         {amount > 0 && (
                           <span className="text-[10px] font-semibold font-mono" style={{ color: isPaid ? '#10b981' : '#f59e0b' }}>
-                            {formatCurrency(amount)}
+                            {isVisible ? formatCurrency(amount) : '••••'}
                           </span>
                         )}
                       </div>
@@ -548,15 +548,15 @@ export default function ClientDetailPage() {
           <div className={`grid gap-3 ${stats.paymentScore ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-1 sm:grid-cols-3'}`}>
             <div className="rounded-lg p-3 text-center bg-emerald-500/8 border border-emerald-500/20">
               <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Recebido</p>
-              <p className="text-lg font-black text-emerald-400 font-mono leading-tight">{formatCurrency(stats.paidAmount)}</p>
+              <p className="text-lg font-black text-emerald-400 font-mono leading-tight">{isVisible ? formatCurrency(stats.paidAmount) : '••••'}</p>
             </div>
             <div className="rounded-lg p-3 text-center bg-amber-500/8 border border-amber-500/20">
               <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Pendente</p>
-              <p className="text-lg font-black text-amber-400 font-mono leading-tight">{formatCurrency(stats.unpaidAmount)}</p>
+              <p className="text-lg font-black text-amber-400 font-mono leading-tight">{isVisible ? formatCurrency(stats.unpaidAmount) : '••••'}</p>
             </div>
             <div className="rounded-lg p-3 text-center bg-slate-800/60 border border-slate-700/60">
               <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Total</p>
-              <p className="text-lg font-black text-slate-200 font-mono leading-tight">{formatCurrency(stats.totalRevenue)}</p>
+              <p className="text-lg font-black text-slate-200 font-mono leading-tight">{isVisible ? formatCurrency(stats.totalRevenue) : '••••'}</p>
             </div>
             {stats.paymentScore && (
               <div className="rounded-lg p-3 text-center border" style={{ background: `${stats.paymentScore.hex}10`, borderColor: `${stats.paymentScore.hex}30` }}>

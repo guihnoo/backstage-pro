@@ -28,7 +28,7 @@ import { Ellipsis } from '@/components/ui/overflowText';
 export default function ClientInsightsModal({ client, isOpen, onClose }) {
   const { events } = useEvents();
   const { dailyWork } = useDailyWork();
-  const { formatCurrency } = useFinancialVisibility();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
   const { profile } = useAuth();
   const config = getCategoryConfig(profile?.category || 'lighting');
 
@@ -125,7 +125,7 @@ export default function ClientInsightsModal({ client, isOpen, onClose }) {
               <span className="text-slate-400 font-normal">Insights: </span>
               <Ellipsis as="span">{client.name}</Ellipsis>
             </DialogTitle>
-            <Button variant="ghost" size="icon" onClick={onClose} className="h-10 w-10">
+            <Button variant="ghost" size="icon" onClick={onClose} className="h-10 w-10" aria-label="Fechar">
               <X className="w-5 h-5" />
             </Button>
           </div>
@@ -145,25 +145,25 @@ export default function ClientInsightsModal({ client, isOpen, onClose }) {
                   <div>
                     <p className="text-xs text-slate-400 mb-1">Receita Total</p>
                     <p className="text-xl font-bold text-green-400">
-                      {formatCurrency(insights.totalRevenue)}
+                      {isVisible ? formatCurrency(insights.totalRevenue) : '••••'}
                     </p>
                   </div>
                   <div>
                     <p className="text-xs text-slate-400 mb-1">Média/Evento</p>
                     <p className="text-xl font-bold" style={{ color: config.primaryHex }}>
-                      {formatCurrency(insights.avgRevenuePerEvent)}
+                      {isVisible ? formatCurrency(insights.avgRevenuePerEvent) : '••••'}
                     </p>
                   </div>
                   <div>
                     <p className="text-xs text-slate-400 mb-1">Recebido</p>
                     <p className="text-lg font-bold text-white">
-                      {formatCurrency(insights.paidAmount)}
+                      {isVisible ? formatCurrency(insights.paidAmount) : '••••'}
                     </p>
                   </div>
                   <div>
                     <p className="text-xs text-slate-400 mb-1">A Receber</p>
                     <p className="text-lg font-bold text-amber-400">
-                      {formatCurrency(insights.pendingAmount)}
+                      {isVisible ? formatCurrency(insights.pendingAmount) : '••••'}
                     </p>
                   </div>
                 </div>

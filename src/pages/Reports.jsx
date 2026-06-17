@@ -164,7 +164,7 @@ const StatCard = ({ title, value, pulseValue, pulseColor, subtitle, icon: Icon, 
 
 // Modal para exibir detalhes dos KPIs
 const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type, onItemClick }) => {
-  const { formatCurrency } = useFinancialVisibility();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
 
   const getModalContent = () => {
     if (!data || data.length === 0) {
@@ -178,10 +178,19 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type, onItemClick
           return (
             <div
               key={index}
+              role={isClickable ? 'button' : undefined}
+              tabIndex={isClickable ? 0 : undefined}
               onClick={() => {
                 if (item.event_ref) onItemClick?.(item.event_ref);
                 else if (item.client_id) { onClose?.(); hardNavigate(`/client-detail?id=${item.client_id}`); }
               }}
+              onKeyDown={isClickable ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  if (item.event_ref) onItemClick?.(item.event_ref);
+                  else if (item.client_id) { onClose?.(); hardNavigate(`/client-detail?id=${item.client_id}`); }
+                }
+              } : undefined}
               className={`flex items-center justify-between p-3 bg-slate-800/50 rounded-lg transition-colors gap-3 min-w-0 ${isClickable ? 'cursor-pointer hover:bg-slate-700/60' : ''}`}
             >
               <div className="min-w-0 flex-1">
@@ -200,7 +209,7 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type, onItemClick
                 )}
               </div>
               <div className="text-right flex-shrink-0">
-                <p className={`font-bold ${item.value < 0 ? 'text-red-400' : 'text-green-400'}`}>{formatCurrency(item.value)}</p>
+                <p className={`font-bold ${item.value < 0 ? 'text-red-400' : 'text-green-400'}`}>{isVisible ? formatCurrency(item.value) : '••••'}</p>
                 {item.date && <p className="text-xs text-slate-500">{item.date}</p>}
                 {item.event_ref && <p className="text-[10px] text-slate-600 mt-0.5">Toque para detalhes</p>}
                 {item.client_id && (
@@ -1234,8 +1243,11 @@ export default function ReportsPage() {
                 return (
                   <div
                     key={event.id}
+                    role="button"
+                    tabIndex={0}
                     className="flex items-center gap-3 py-3 border-b border-slate-800/60 last:border-0 cursor-pointer hover:bg-slate-800/30 rounded-lg px-2 -mx-2 transition-colors"
                     onClick={() => { setShowProjection(false); setSelectedEvent(event); }}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowProjection(false); setSelectedEvent(event); } }}
                   >
                     <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center flex-shrink-0 text-sm font-bold text-slate-400">
                       {dateStr.split(' ')[0]}

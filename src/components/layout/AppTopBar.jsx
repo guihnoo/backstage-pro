@@ -11,6 +11,7 @@ import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 const TOP_BAR_HEIGHT = '3.25rem';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function getAppTopBarOffset() {
   return `calc(${TOP_BAR_HEIGHT} + env(safe-area-inset-top, 0px))`;
 }

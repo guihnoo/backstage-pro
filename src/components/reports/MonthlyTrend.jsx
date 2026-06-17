@@ -7,16 +7,16 @@ import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 
 const CustomTooltip = ({ active, payload, label, primaryHex }) => {
-  const { formatCurrency } = useFinancialVisibility();
+  const { formatCurrency, isVisible } = useFinancialVisibility();
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (
     <div className="bg-slate-800/95 border border-slate-700 rounded-lg p-3 text-sm shadow-xl">
       <p className="font-bold text-white mb-1 capitalize">{label}</p>
-      <p style={{ color: primaryHex }}>Recebido: <span className="font-bold">{formatCurrency(d.revenue)}</span></p>
+      <p style={{ color: primaryHex }}>Recebido: <span className="font-bold">{isVisible ? formatCurrency(d.revenue) : '••••'}</span></p>
       {d.goal > 0 && (
         <p className={d.revenue >= d.goal ? 'text-emerald-400' : 'text-slate-400'}>
-          Meta: {formatCurrency(d.goal)} {d.revenue >= d.goal ? '✅' : `(${Math.round((d.revenue / d.goal) * 100)}%)`}
+          Meta: {isVisible ? formatCurrency(d.goal) : '••••'} {d.revenue >= d.goal ? '✅' : isVisible ? `(${Math.round((d.revenue / d.goal) * 100)}%)` : ''}
         </p>
       )}
       <p className="text-slate-500 text-xs mt-1">{d.count} show{d.count !== 1 ? 's' : ''}</p>
@@ -34,9 +34,11 @@ export default function MonthlyTrend({ events = [], goalRevenue = 0, onMonthClic
     return Array.from({ length: 12 }, (_, i) => {
       const d = subMonths(now, 11 - i);
       const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      const monthEvents = events.filter(
-        e => e.payment_status === 'paid' && (e.start_date || '').startsWith(monthStr)
-      );
+      const monthEvents = events.filter(e => {
+        if (e.payment_status !== 'paid') return false;
+        const refDate = e.paid_date || e.start_date || '';
+        return refDate.startsWith(monthStr);
+      });
       const revenue = monthEvents.reduce((s, e) => s + (Number(e.paid_amount) || 0), 0);
       const label = format(d, 'MMM', { locale: ptBR }).replace('.', '');
       return { monthStr, label, revenue, count: monthEvents.length, goal: goalRevenue };

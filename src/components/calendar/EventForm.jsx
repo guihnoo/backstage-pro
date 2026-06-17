@@ -430,8 +430,9 @@ export default function EventForm({
           </div>
 
           <div className="space-y-2">
-            <Label>Nome do evento (opcional)</Label>
+            <Label htmlFor="ef-title">Nome do evento (opcional)</Label>
             <Input
+              id="ef-title"
               value={formData.title}
               onChange={(e) => setField('title', e.target.value)}
               placeholder={selectedClient?.name ? `Padrão: ${selectedClient.name}` : 'Usa o nome do cliente se vazio'}
@@ -441,12 +442,12 @@ export default function EventForm({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Data inicial</Label>
-              <Input type="date" value={formData.start_date} onChange={(e) => setField('start_date', e.target.value)} className="bg-slate-800 border-slate-700" />
+              <Label htmlFor="ef-start-date">Data inicial</Label>
+              <Input id="ef-start-date" type="date" value={formData.start_date} onChange={(e) => setField('start_date', e.target.value)} className="bg-slate-800 border-slate-700" />
             </div>
             <div className="space-y-2">
-              <Label>Data final</Label>
-              <Input type="date" value={formData.end_date} onChange={(e) => setField('end_date', e.target.value)} className="bg-slate-800 border-slate-700" />
+              <Label htmlFor="ef-end-date">Data final</Label>
+              <Input id="ef-end-date" type="date" value={formData.end_date} onChange={(e) => setField('end_date', e.target.value)} className="bg-slate-800 border-slate-700" />
             </div>
           </div>
 
@@ -478,12 +479,12 @@ export default function EventForm({
           {event?.id && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Horário inicial</Label>
-                <Input type="time" value={formData.start_time} onChange={(e) => setField('start_time', e.target.value)} className="bg-slate-800 border-slate-700" />
+                <Label htmlFor="ef-start-time">Horário inicial</Label>
+                <Input id="ef-start-time" type="time" value={formData.start_time} onChange={(e) => setField('start_time', e.target.value)} className="bg-slate-800 border-slate-700" />
               </div>
               <div className="space-y-2">
-                <Label>Horário final</Label>
-                <Input type="time" value={formData.end_time} onChange={(e) => setField('end_time', e.target.value)} className="bg-slate-800 border-slate-700" />
+                <Label htmlFor="ef-end-time">Horário final</Label>
+                <Input id="ef-end-time" type="time" value={formData.end_time} onChange={(e) => setField('end_time', e.target.value)} className="bg-slate-800 border-slate-700" />
               </div>
             </div>
           )}
@@ -504,13 +505,13 @@ export default function EventForm({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Cachê por Dia (R$)</Label>
-              <Input type="number" step="0.01" min="0" value={formData.daily_cache_value} onChange={(e) => setField('daily_cache_value', e.target.value)} className="bg-slate-800 border-slate-700" />
+              <Label htmlFor="ef-cache">Cachê por Dia (R$)</Label>
+              <Input id="ef-cache" type="number" step="0.01" min="0" value={formData.daily_cache_value} onChange={(e) => setField('daily_cache_value', e.target.value)} className="bg-slate-800 border-slate-700" />
               {clientCacheHint && (
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-[11px] text-slate-500">
                     Histórico: {isVisible ? `R$ ${clientCacheHint.lastValue.toLocaleString('pt-BR')}` : '•••'} último
-                    {clientCacheHint.count > 1 && ` · R$ ${clientCacheHint.avg.toLocaleString('pt-BR')} média`}
+                    {clientCacheHint.count > 1 && ` · ${isVisible ? `R$ ${clientCacheHint.avg.toLocaleString('pt-BR')}` : '•••'} média`}
                   </p>
                   <button
                     type="button"
@@ -540,8 +541,9 @@ export default function EventForm({
           </div>
 
           <div className="space-y-2">
-            <Label>Vencimento do pagamento</Label>
+            <Label htmlFor="ef-payment-due">Vencimento do pagamento</Label>
             <Input
+              id="ef-payment-due"
               type="date"
               value={formData.payment_due_date}
               onChange={(e) => setField('payment_due_date', e.target.value)}
@@ -565,8 +567,9 @@ export default function EventForm({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Nº Nota Fiscal</Label>
+              <Label htmlFor="ef-nf-number">Nº Nota Fiscal</Label>
               <Input
+                id="ef-nf-number"
                 placeholder="Ex: 000123"
                 value={formData.nf_number}
                 onChange={(e) => setField('nf_number', e.target.value)}
@@ -574,8 +577,9 @@ export default function EventForm({
               />
             </div>
             <div className="space-y-2">
-              <Label>Data de emissão NF</Label>
+              <Label htmlFor="ef-nf-date">Data de emissão NF</Label>
               <Input
+                id="ef-nf-date"
                 type="date"
                 value={formData.nf_issued_at}
                 onChange={(e) => setField('nf_issued_at', e.target.value)}
@@ -585,8 +589,8 @@ export default function EventForm({
           </div>
 
           <div className="space-y-2">
-            <Label>Observações</Label>
-            <Textarea value={formData.observacoes_md} onChange={(e) => setField('observacoes_md', e.target.value)} className="bg-slate-800 border-slate-700" />
+            <Label htmlFor="ef-notes">Observações</Label>
+            <Textarea id="ef-notes" value={formData.observacoes_md} onChange={(e) => setField('observacoes_md', e.target.value)} className="bg-slate-800 border-slate-700" />
           </div>
 
           {!event?.id && (
