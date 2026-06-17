@@ -1944,3 +1944,25 @@ Registro cronológico de tarefas executadas por agentes.
 - **Fix bug**: `isCurrentMonth` desestruturado explicitamente em `WeekRow` para não vazar como função no spread `...props` → `DayCell`
 - **ESLint**: 0 warnings
 - **Build**: Vite ✅ (58s)
+
+---
+
+## 2026-06-17 (S139)
+
+### S139 — Auditoria scroll/modal/ARIA das features S97–S138 (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Escopo**: 25 componentes novos (views Semana/Próximos Shows/Kanban, modais Agenda, gráficos/painéis de Relatórios, Home S101–S102)
+- **Resultado**: **0 problemas críticos**
+- **Auditado e aprovado**:
+  - Calendário: `KanbanPipeline`, `CacheCalculator`, `AvailabilityShareModal`, `EventChecklist`, vistas `week`/`upcoming`/`kanban` em `Calendar.jsx`, `BackstageCalendarGrid` (S138)
+  - Relatórios: `SmartInsights`, `SeasonalityChart`, `WeekdayBreakdown`, `NfTracker`, `CacheEvolutionChart`, `InactiveClientsPanel`, `TopClients`, `CategoryBreakdown`, `CashflowForecast`, `ReceivablesAging`, `YearOverYear`, `MonthlyTrend`, `IRSummary`, `WorkAnalytics`, `DrilldownModal`, `reports/EventDetailModal`
+  - Home: `PipelineFinanceiro`, `AReceber`
+- **Verificado**:
+  - ✅ `<div onClick>` todos têm `role`/`tabIndex`/`onKeyDown`
+  - ✅ `<button>` todos têm `type="button"`
+  - ✅ Modais Dialog Radix com scroll correto; overlays com `useAppScrollLock`
+  - ✅ Listas longas com `overflow-y-auto` / `ScrollArea`
+  - ✅ Texto com `truncate`/`min-w-0`/`EventHeading`
+  - ✅ Z-index respeitado
+- **Falso positivo**: `DrilldownModal` `DialogHeader` — `flex-shrink-0` já presente (linha 39)
+- **Docs**: `AUDITORIA_PAGINAS.md` atualizado (Agenda + Relatórios expandidos com 25 novos itens; cabeçalho S139)

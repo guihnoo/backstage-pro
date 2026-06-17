@@ -3,7 +3,7 @@
 > Checklist vivo para revisão premium. Marque `[x]` quando validado em **mobile + desktop** após deploy.  
 > Legenda: 🟢 OK · 🟡 Ajustar · 🔴 Quebrado · ⬜ Não revisado
 
-**Última rodada geral:** 2026-06-09 (sessão 10) — auditoria completa scroll/modais  
+**Última rodada geral:** 2026-06-17 (S139) — auditoria S97–S138 completa · 25 componentes novos · 0 problemas críticos  
 **Produção:** https://backstage-pro-beta.vercel.app
 
 ---
@@ -59,8 +59,12 @@
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
 | Página (`Calendar.jsx`) | [x] | 🟢 | `NeonPageShell pb-24` ✅ |
+| Vista Semana (`week`) | [x] | 🟢 | scroll-x em mobile; cards com overflow tratado; `+N mais` é `<button type="button">` ✅ (S139 auditoria) |
+| Vista Próximos Shows (`upcoming`) | [x] | 🟢 | lista agrupada; `EventHeading` + truncate; scroll da página OK (S139 auditoria) |
+| Vista Kanban (`kanban`) | [x] | 🟢 | `KanbanPipeline.jsx` card `<button type="button">` ✅; colunas scroll-x OK (S139 auditoria) |
+| `BackstageCalendarGrid` | [x] | 🟢 | `role="grid"` + roving tabindex + Arrow keys; `EventLanesOverlay` `type="button"` ✅ (S138) |
 | `EventForm` | [x] | 🟢 | `ScrollArea fill` ✅ |
-| `EventDetailModal` | [x] | 🟢 | `ScrollArea fill` + `flex-shrink-0` header/footer ✅; categoria despesa inline traduzida sessão 19 |
+| `EventDetailModal` (calendar) | [x] | 🟢 | `ScrollArea fill` + `flex-shrink-0` header/footer ✅; card NF-e (S137) ✅; `EventLifecycleBar` + `EventChecklist` + timeline de dias ✅ (S139 auditoria) |
 | `DailyWorkModal` (LOCKED) | [x] | 🟢 | `bp-modal-scroll` ✅ |
 | `DateInfoModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
 | `RecurringEventActionModal` | [x] | 🟢 | `bp-modal-scroll` ✅ |
@@ -68,6 +72,9 @@
 | `DayBottomSheet` | [x] | 🟢 | `useAppScrollLock` + `bp-modal-scroll` ✅ |
 | `EventActionSheet` (mobile) | [x] | 🟢 | `useAppScrollLock` + `bp-modal-scroll` ✅ |
 | `EventHoursSheet` | [x] | 🟢 | `useAppScrollLock` + `bp-modal-scroll` ✅ |
+| `CacheCalculator` | [x] | 🟢 | Dialog Radix; inputs com `htmlFor`; `type="button"` ✅ (S139 auditoria) |
+| `AvailabilityShareModal` | [x] | 🟢 | Dialog `max-h-[90dvh] flex flex-col`; `flex-1 overflow-y-auto` na lista ✅ (S139 auditoria) |
+| `EventChecklist` | [x] | 🟢 | todos `type="button"` ✅; renderizado dentro do `EventDetailModal` (S139 auditoria) |
 | `AlertsPanel` | [x] | 🟢 | `min-w-0` + `break-words` no body; títulos longos não extrapolam ✅ lapida |
 | `CalendarTodayStrip` | [x] | 🟢 | `EventHeading` (company name) + prop `clients`; location truncate correto ✅ lapida |
 | `EventDetailModal` client name | [x] | 🟢 | `max-w-[200px] sm:max-w-[300px]` — não corta nomes médios em mobile ✅ lapida |
@@ -125,11 +132,25 @@
 | Página (`Reports.jsx`) | [x] | 🟢 | pull-to-refresh ✅; KPI StatCards truncate ✅; erro com retry ✅ |
 | `ReportEventList` | [x] | 🟢 | `EventHeading` + título truncado ✅ |
 | `KPIDetailModal` | [x] | 🟢 | `EventHeading` em itens de evento; título `Ellipsis` ✅ |
-| `EventDetailModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
+| `EventDetailModal` (reports) | [x] | 🟢 | `ScrollArea fill` ✅; card NF-e (S137): botões `type="button"` ✅; `InlineNotes`: `role="button"` + `tabIndex` + `onKeyDown` ✅ |
 | `PaymentConfirmModal` | [x] | 🟢 | título do evento com `Ellipsis` ✅ |
-| `DrilldownModal` | [x] | 🟢 | `bp-modal-scroll` ✅ |
+| `DrilldownModal` | [x] | 🟢 | `max-h-[90dvh] flex flex-col overflow-hidden`; `DialogHeader flex-shrink-0`; `ScrollArea fill` ✅ (S136) |
 | `BrazilVisitedMap` | [x] | 🟢 | Lazy subcomponent OK |
-| `ExportManager` PDF/CSV | [x] | 🟢 | Implementado |
+| `ExportManager` PDF/CSV/ICS | [x] | 🟢 | Implementado |
+| `SmartInsights` | [x] | 🟢 | Card simples; sem modal; OK (S139 auditoria) |
+| `SeasonalityChart` | [x] | 🟢 | Recharts; sem scroll; OK (S139 auditoria) |
+| `WeekdayBreakdown` | [x] | 🟢 | Recharts; sem scroll; OK (S139 auditoria) |
+| `NfTracker` | [x] | 🟢 | `EventHeading`; `type="button"` ✅; OK (S139 auditoria) |
+| `CacheEvolutionChart` | [x] | 🟢 | Recharts; isVisible ✅; OK (S139 auditoria) |
+| `InactiveClientsPanel` | [x] | 🟢 | header `type="button"` ✅; expand/collapse correto (S139 auditoria) |
+| `TopClients` | [x] | 🟢 | card simples; `EventHeading`; OK (S139 auditoria) |
+| `CategoryBreakdown` | [x] | 🟢 | card simples; sem scroll; OK (S139 auditoria) |
+| `CashflowForecast` | [x] | 🟢 | `EventHeading`; inline card; OK (S139 auditoria) |
+| `ReceivablesAging` | [x] | 🟢 | `EventHeading`; `type="button"` ✅; OK (S139 auditoria) |
+| `YearOverYear` | [x] | 🟢 | gráfico + tabela; sem scroll; OK (S139 auditoria) |
+| `MonthlyTrend` | [x] | 🟢 | Recharts; OK (S139 auditoria) |
+| `IRSummary` | [x] | 🟢 | expansível; `type="button"` ✅; OK (S139 auditoria) |
+| `WorkAnalytics` | [x] | 🟢 | gráficos + tabelas; `EventHeading`; OK (S139 auditoria) |
 
 **Testes:** routes-auth ✅ · app-routes-navigation ✅ · reports-guards regression ✅
 

@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-17 (S138 — `role="grid"` ARIA completo no BackstageCalendarGrid — Claude Code)  
+**Última atualização:** 2026-06-17 (S139 — Auditoria S97–S138 completa · 25 componentes · 0 problemas — Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-06-15 — `dpl_CZLMQ28odnw5yv76C8sjhTSBaB56` (commit `384d2fb` — S90-S94)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` (dedupe refatorado) deployadas no Supabase ✅  
