@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-17 (S137 — NF-e redirect via portal gov.br + acessibilidade S132-S136 completa — Claude Code)  
+**Última atualização:** 2026-06-17 (S138 — `role="grid"` ARIA completo no BackstageCalendarGrid — Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-06-15 — `dpl_CZLMQ28odnw5yv76C8sjhTSBaB56` (commit `384d2fb` — S90-S94)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` (dedupe refatorado) deployadas no Supabase ✅  
@@ -72,6 +72,7 @@
 | S128 Manual + Goals/Charts isVisible (2026-06-16) | Manual do usuário: 37→73 entradas (AGENT_LOG, Relatórios, IA Mentor, Perfil, Metas). `isVisible` em Goals.jsx (8 locais) + `ReportsChart` + `CacheEvolutionChart` + `SmartInsights`. |
 | S132-S136 Acessibilidade global (2026-06-16) | **S132**: `htmlFor`/`id` em 10 pares (Goals, Onboarding, AdminFeedbacks). **S133**: ESLint 16→0 warnings (eslint-disable cirúrgicos em 9 arquivos; `react-hooks/exhaustive-deps`, `react-refresh/only-export-components`; AI_Mentor aria-labels). **S134**: Escape key em 5 overlays customizados (NotesSheet, EventHoursSheet, EventActionSheet, ClientActionSheet, FeedbackModal). **S135**: `type="button"` em 27 botões globais. **S136**: `role="button"` + `tabIndex` + `onKeyDown` em 8 `<div onClick>` (ReportEventList, ClientDetailModal×2, CompanySearchInput, reports/EventDetailModal, ExpenseAnalysis, Reports×2). ESLint 0 warnings global mantido. |
 | S137 NF-e redirect (2026-06-17) | `calendar/EventDetailModal`: card "Próximos Passos" ganha 3º step "Emitir NF-e" + botão "NF-e" no card "Evento fechado". `reports/EventDetailModal`: após marcar Realizado exibe card animado com dados do evento (serviço, tomador, CNPJ, valor) + "Copiar" + "Emitir NF-e →" (abre `nfse.gov.br`); para eventos já concluídos botão "NF-e" no footer. Commit oficial `b50fd7b`. |
+| S138 ARIA grid no calendário (2026-06-17) | `BackstageCalendarGrid.jsx`: `role="grid"` + `aria-label` no container; `role="row"` + `role="columnheader"` no `WeekHeader`; `role="rowgroup"` no bloco de semanas; `role="row"` em cada `WeekRow`; `role="gridcell"` + `data-date` + `aria-label` (data por extenso pt-BR) + `aria-selected` + `aria-current` em cada `DayCell`; roving tabindex com estado `focusedDate`; navegação por `ArrowLeft/Right/Up/Down/Home/End/Enter/Space`. ESLint 0 warnings. |
 
 ---
 

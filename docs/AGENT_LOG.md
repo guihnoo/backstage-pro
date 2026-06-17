@@ -1914,3 +1914,33 @@ Registro cronológico de tarefas executadas por agentes.
 - **ESLint**: 0 warnings em ambos os arquivos
 - **Docs**: RELATORIO_VIDA_APP, IDEIAS_PENDENTES (#104) e AGENT_LOG atualizados
 - **Build**: `npm run git:backup` ✅
+
+---
+
+## 2026-06-17 (S138)
+
+### S138 — `role="grid"` + ARIA grid completo no BackstageCalendarGrid (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Tarefa**: implementar padrão WAI-ARIA `role="grid"` na grade mensal do calendário (adiado do S136)
+- **Arquivo**: `src/components/calendar/BackstageCalendarGrid.jsx` (reescrita completa + mantida lógica funcional)
+- **ARIA implementado**:
+  - `motion.div` principal: `role="grid"` + `aria-label="Calendário de [mês ano]"` + `aria-multiselectable="false"`
+  - `WeekHeader`: container com `role="row"`; cada nome de dia com `role="columnheader"` + `aria-label` completo (ex: "segunda-feira")
+  - Container de semanas: `role="rowgroup"`
+  - `WeekRow`: wrapper com `role="row"`
+  - `DayCell`: `role="gridcell"` + `data-date` + `aria-label` (data por extenso em pt-BR) + `aria-selected` + `aria-current="date"` no dia atual
+  - Células de padding (dias nulos): `role="gridcell"` + `aria-disabled="true"`
+- **Roving tabindex**:
+  - Estado `focusedDate` no componente principal; `rovingDate` derivado (focusedDate > selectedDate > hoje > 1º dia visível)
+  - `DayCell` recebe `isFocused`; célula focada tem `tabIndex={0}`, demais `-1`
+  - `useEffect` em `DayCell` sincroniza foco programático ao mudar `rovingDate`
+  - Reset de `focusedDate` ao trocar de mês
+- **Navegação por teclado** (`onKeyDown` na grid, ativado apenas em `role="gridcell"`):
+  - `ArrowLeft` / `ArrowRight` — dia anterior / próximo (pula células nulas)
+  - `ArrowUp` / `ArrowDown` — semana anterior / próxima (step de 7, busca não-nulo)
+  - `Home` / `End` — primeiro / último dia da semana atual
+  - `Enter` / `Espaço` — seleciona data (chama `onDateSelect`)
+- **`focus-visible`**: `outline` com `var(--bp-primary)` e `z-10` aplicados apenas via CSS `:focus-visible`
+- **Fix bug**: `isCurrentMonth` desestruturado explicitamente em `WeekRow` para não vazar como função no spread `...props` → `DayCell`
+- **ESLint**: 0 warnings
+- **Build**: Vite ✅ (58s)
