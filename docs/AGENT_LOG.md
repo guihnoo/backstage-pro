@@ -1886,8 +1886,31 @@ Registro cronológico de tarefas executadas por agentes.
   - `src/components/reports/ExpenseAnalysis.jsx:144` — linha de categoria (role/tabIndex condicionais via `onSliceClick`)
   - `src/pages/Reports.jsx:179` — item de drilldown (role/tabIndex condicionais via `isClickable`)
   - `src/pages/Reports.jsx:1244` — linha de evento na projeção do próximo mês
-- **Excluídos intencionalmente**:
+- **Excluídos intencionalmente** (mantidos como WIP):
   - `DrilldownModal.jsx:54` — falso positivo (já tinha `role={onItemClick ? "button" : "listitem"}` correto)
   - `BackstageCalendarGrid.jsx` — células de dia com long-press (`onPointerDown/Up/Leave`); requer padrão `role="grid"` + `role="gridcell"` + navegação por teclas de seta → adiado
 - **ESLint**: `npx eslint src/pages/Reports.jsx --max-warnings=0` → 0 warnings
+- **Build**: `npm run git:backup` ✅
+
+---
+
+## 2026-06-17 (S137)
+
+### S137 — NF-e redirect via portal NFS-e Nacional (gov.br) (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Commit oficial**: `b50fd7b` (squash de WIP S128–S136 + S137)
+- **Feature**: atalho de emissão de NF-e ao finalizar evento
+- **Arquivos modificados**:
+  - `src/components/reports/EventDetailModal.jsx`:
+    - Import `formatCNPJ` de `@/lib/cnpjSearch`
+    - Estado `showNFeCard` — após marcar "Realizado" exibe card animado em vez de fechar o modal
+    - Função `buildNFeText()` — monta texto formatado (serviço, tomador, CNPJ, competência, valor) para clipboard
+    - Card NF-e no ScrollArea: botões "Copiar", "Agora não", "Emitir NF-e →" (abre `nfse.gov.br`)
+    - Botão "NF-e" no footer para eventos já concluídos (`event.status === 'completed'`)
+  - `src/components/calendar/EventDetailModal.jsx`:
+    - Card "Evento fechado": botão "NF-e" no canto direito
+    - Card "Próximos Passos": 3º step "Emitir NF-e (se necessário)" com botão "Abrir portal"
+- **Portal**: `https://www.nfse.gov.br/EmissorNacional/Login` — NFS-e Nacional gov.br (gratuito, MEI, URL única)
+- **ESLint**: 0 warnings em ambos os arquivos
+- **Docs**: RELATORIO_VIDA_APP, IDEIAS_PENDENTES (#104) e AGENT_LOG atualizados
 - **Build**: `npm run git:backup` ✅

@@ -142,6 +142,7 @@
 | 101 | Resultado Líquido (Recebido − Despesas) na Home | 2026-06-15 | ✅ `PipelineFinanceiro.jsx`: seção Despesas + Resultado abaixo do Total Pipeline; visível quando há despesas no mês |
 | 102 | Hint "show em Xd" na seção A Receber da Home | 2026-06-15 | ✅ `AReceber.jsx`: badge slate discreto para shows futuros ainda não realizados; "Xd atraso" para vencidos |
 | 103 | Repetição de Evento no formulário de criação | 2026-06-15 | ✅ `EventForm.jsx`: toggle "Repetir este evento" + seletor vezes (1–24) + unidade (Semana/Mês); cria série com mesmo cliente/horário/cachê |
+| 104 | Atalho para emitir NF-e ao finalizar evento | 2026-06-17 | ✅ Redirect para `nfse.gov.br/EmissorNacional/Login`; card com dados do evento (serviço/tomador/CNPJ/valor) após marcar "Realizado"; botão permanente para eventos já concluídos; step no "Próximos Passos" do calendário |
 
 ---
 
