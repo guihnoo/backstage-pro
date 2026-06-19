@@ -564,7 +564,7 @@ export default function EventDetailModal({
                       </Button>
                     </CardContent>
                     <div className="px-4 pb-4">
-                      <NFeAttachment event={event} />
+                      <NFeAttachment event={event} client={client} />
                     </div>
                   </Card>
                 );
@@ -694,7 +694,7 @@ export default function EventDetailModal({
                       </Button>
                     </div>
                     <div className="pt-1 border-t border-slate-700/50">
-                      <NFeAttachment event={event} />
+                      <NFeAttachment event={event} client={client} />
                     </div>
                   </CardContent>
                 </Card>

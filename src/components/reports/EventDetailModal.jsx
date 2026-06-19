@@ -639,7 +639,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
 
               {/* Anexo da NF-e — visível para todos os eventos concluídos */}
               {event.status === 'completed' && (
-                <NFeAttachment event={event} />
+                <NFeAttachment event={event} client={client} />
               )}
 
               {canApply12h && (
