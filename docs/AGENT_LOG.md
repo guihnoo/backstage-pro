@@ -1966,3 +1966,21 @@ Registro cronológico de tarefas executadas por agentes.
   - ✅ Z-index respeitado
 - **Falso positivo**: `DrilldownModal` `DialogHeader` — `flex-shrink-0` já presente (linha 39)
 - **Docs**: `AUDITORIA_PAGINAS.md` atualizado (Agenda + Relatórios expandidos com 25 novos itens; cabeçalho S139)
+
+---
+
+## 2026-06-19 (S140)
+
+### S140 — NF-e: upload de PDF + análise automática por IA (Gemini) (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Problema identificado**: S137 só criou botão de redirect para gov.br — não havia como anexar o arquivo da NF-e dentro do evento
+- **Solução**:
+  - `src/components/shared/NFeAttachment.jsx` (novo): upload de PDF para Supabase Storage (`backstage` bucket, `{userId}/nfe/{eventId}-{ts}.pdf`); após upload dispara análise IA automática; exibe card de resultado; botão ✨ re-analisar; substituir/remover PDF
+  - `supabase/functions/analyze-nfe/index.ts` (novo): Edge Function que baixa o PDF do Storage, envia para Gemini 2.5-flash Vision com contexto do evento (título, cliente esperado, CNPJ, valor); extrai dados da NF-e; valida cruzamento por CNPJ (exato) > nome normalizado (NFD); retorna `cliente_reconhecido`, `valor_confere`, `divergencias[]`
+  - DB: colunas `nfe_numero TEXT`, `nfe_arquivo_url TEXT`, `nfe_arquivo_nome TEXT`, `nfe_analise JSONB` em `events` (aplicadas via MCP execute_sql)
+  - `calendar/EventDetailModal.jsx`: `<NFeAttachment event={event} client={client} />` nos cards "Evento fechado" e "Próximos Passos"
+  - `reports/EventDetailModal.jsx`: `<NFeAttachment event={event} client={client} />` para todos os eventos concluídos
+- **Card de resultado**: verde ✅ "NF-e verificada pela IA" / âmbar ⚠ "Divergências encontradas" com grid de dados (número, tomador, CNPJ, valor, competência, serviço)
+- **Deploy edge function**: `analyze-nfe` deployada no Supabase (`cwtallnetgodoacuoaow`) ✅
+- **Build**: ✅ 0 erros, 0 warnings ESLint
+- **Commit oficial**: `82aa2d7` — `feat(s140): NF-e upload + análise automática por IA (Gemini)`
