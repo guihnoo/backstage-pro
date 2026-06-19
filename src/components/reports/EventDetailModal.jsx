@@ -48,6 +48,7 @@ import { getClientDisplayName } from '@/lib/eventDisplay';
 
 import { hardNavigate } from '@/lib/hardNavigate';
 import { formatCNPJ } from '@/lib/cnpjSearch';
+import NFeAttachment from '@/components/shared/NFeAttachment';
 
 const InlineNotes = ({ event, updateEvent, onSaved }) => {
   const { primaryHex } = useCategoryTheme();
@@ -635,6 +636,11 @@ const EventDetailModal = React.memo(function EventDetailModal({
                   </motion.div>
                 )}
               </AnimatePresence>
+
+              {/* Anexo da NF-e — visível para todos os eventos concluídos */}
+              {event.status === 'completed' && (
+                <NFeAttachment event={event} />
+              )}
 
               {canApply12h && (
                 <Alert className="bg-blue-900/40 border-blue-700 text-blue-200">

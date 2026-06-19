@@ -58,6 +58,7 @@ import { useEvents } from '@/lib/useEvents';
 import { useExpenses } from '@/lib/useExpenses';
 import ExpenseForm from '@/components/expenses/ExpenseForm';
 import DailyWorkModal from '@/components/calendar/DailyWorkModal';
+import NFeAttachment from '@/components/shared/NFeAttachment';
 import { useUserSettings } from '@/lib/useUserSettings';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { format } from 'date-fns';
@@ -562,6 +563,9 @@ export default function EventDetailModal({
                         NF-e
                       </Button>
                     </CardContent>
+                    <div className="px-4 pb-4">
+                      <NFeAttachment event={event} />
+                    </div>
                   </Card>
                 );
               }
@@ -675,8 +679,8 @@ export default function EventDetailModal({
                     <div className="flex items-center gap-3 pt-1 border-t border-slate-700/50">
                       <Circle className="w-5 h-5 text-blue-500/50 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white">Emitir NF-e (se necessário)</p>
-                        <p className="text-xs text-slate-400">Portal NFS-e Nacional — gov.br</p>
+                        <p className="text-sm font-medium text-white">Emitir e registrar NF-e</p>
+                        <p className="text-xs text-slate-400">Emita no portal gov.br e anexe o arquivo aqui</p>
                       </div>
                       <Button
                         type="button"
@@ -686,8 +690,11 @@ export default function EventDetailModal({
                         className="flex-shrink-0 h-7 px-2 text-xs border-blue-700/50 text-blue-400 hover:bg-blue-900/20"
                       >
                         <ExternalLink className="w-3 h-3 mr-1" />
-                        Abrir portal
+                        Portal
                       </Button>
+                    </div>
+                    <div className="pt-1 border-t border-slate-700/50">
+                      <NFeAttachment event={event} />
                     </div>
                   </CardContent>
                 </Card>
