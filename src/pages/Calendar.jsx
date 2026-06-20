@@ -31,6 +31,7 @@ import {
   Share2,
   Columns2,
   Calculator,
+  FileText,
 } from 'lucide-react';
 import { exportCalendarIcs } from '@/lib/exportReport';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, parseISO, isValid, addWeeks, subWeeks, startOfWeek, endOfWeek, eachDayOfInterval, differenceInCalendarDays, isBefore } from 'date-fns';
@@ -1568,7 +1569,16 @@ export default function CalendarPage() {
                           )}
                         </div>
                         <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                          <StatusIcon className="w-4 h-4" style={{ color: statusColor }} />
+                          <div className="flex items-center gap-1.5">
+                            {ev.status === 'completed' && (ev.nfe_arquivo_url || ev.nfe_numero) && (
+                              <FileText
+                                className="w-3.5 h-3.5"
+                                style={{ color: ev.nfe_analise?.cliente_reconhecido ? '#34d399' : '#60a5fa' }}
+                                title={ev.nfe_analise?.cliente_reconhecido ? 'NF-e verificada' : 'NF-e registrada'}
+                              />
+                            )}
+                            <StatusIcon className="w-4 h-4" style={{ color: statusColor }} />
+                          </div>
                           {amount > 0 && (
                             <span className="text-[11px] font-semibold font-mono" style={{ color: isPaid ? '#10b981' : isOverdue ? '#f87171' : '#f59e0b' }}>
                               {isVisible ? formatCurrency(amount) : '••••'}
@@ -1648,6 +1658,13 @@ export default function CalendarPage() {
                           )}
                         </button>
                         <div className="flex items-center gap-2 flex-shrink-0">
+                          {ev.status === 'completed' && (ev.nfe_arquivo_url || ev.nfe_numero) && (
+                            <FileText
+                              className="w-3.5 h-3.5 flex-shrink-0"
+                              style={{ color: ev.nfe_analise?.cliente_reconhecido ? '#34d399' : '#60a5fa' }}
+                              title={ev.nfe_analise?.cliente_reconhecido ? 'NF-e verificada' : 'NF-e registrada'}
+                            />
+                          )}
                           {canQuickPay && (
                             <button
                               type="button"
@@ -1713,7 +1730,16 @@ export default function CalendarPage() {
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                      <StatusIcon className="w-4 h-4" style={{ color: statusColor }} />
+                      <div className="flex items-center gap-1.5">
+                        {ev.status === 'completed' && (ev.nfe_arquivo_url || ev.nfe_numero) && (
+                          <FileText
+                            className="w-3.5 h-3.5"
+                            style={{ color: ev.nfe_analise?.cliente_reconhecido ? '#34d399' : '#60a5fa' }}
+                            title={ev.nfe_analise?.cliente_reconhecido ? 'NF-e verificada' : 'NF-e registrada'}
+                          />
+                        )}
+                        <StatusIcon className="w-4 h-4" style={{ color: statusColor }} />
+                      </div>
                       {amount > 0 && (
                         <span className="text-[11px] font-semibold font-mono" style={{ color: isPaid ? '#10b981' : '#f59e0b' }}>
                           {isVisible ? formatCurrency(amount) : '••••'}

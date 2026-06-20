@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { format, parseISO, subMonths, startOfYear, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { FileText } from 'lucide-react';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
@@ -111,6 +112,13 @@ const KanbanCard = ({ ev, client, onOpen, formatCurrency, isVisible, showUrgency
               )}
             </div>
             <div className="flex items-center gap-1.5 ml-auto">
+              {ev.status === 'completed' && (ev.nfe_arquivo_url || ev.nfe_numero) && (
+                <FileText
+                  className="w-3 h-3 flex-shrink-0"
+                  style={{ color: ev.nfe_analise?.cliente_reconhecido ? '#34d399' : '#60a5fa' }}
+                  title={ev.nfe_analise?.cliente_reconhecido ? 'NF-e verificada' : 'NF-e registrada'}
+                />
+              )}
               {showUrgency && <UrgencyBadge ev={ev} />}
               {amount > 0 && (
                 <span className="text-xs font-semibold font-mono" style={{ color: accentColor || '#94a3b8' }}>

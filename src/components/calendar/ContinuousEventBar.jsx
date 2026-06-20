@@ -1,7 +1,7 @@
 
 import { useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Clock, CheckCircle2, AlertCircle, FileText } from 'lucide-react';
 import { getContrastColor, softColor, timeRangeLabel } from '../utils/dateUtils';
 import { DEFAULT_EVENT_COLOR, resolveEventColor } from '@/lib/brandColors';
 import { getEventDisplay } from '@/lib/eventDisplay';
@@ -133,8 +133,15 @@ export default function ContinuousEventBar({
           )}
         </div>
 
-        {/* Right: status + clock (hover) */}
+        {/* Right: NF-e badge + status + clock (hover) */}
         <div className="flex items-center gap-1 flex-shrink-0 ml-1">
+          {event.status === 'completed' && (event.nfe_arquivo_url || event.nfe_numero) && (
+            <FileText
+              className="w-3 h-3 flex-shrink-0"
+              style={{ color: event.nfe_analise?.cliente_reconhecido ? '#34d399' : '#60a5fa', opacity: 0.9 }}
+              title={event.nfe_analise?.cliente_reconhecido ? 'NF-e verificada' : 'NF-e registrada'}
+            />
+          )}
           <StatusIcon
             className="w-3 h-3 flex-shrink-0 transition-opacity"
             style={{ color: statusColor, opacity: 0.85 }}

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { FileText, CheckCircle2, AlertCircle, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
+import { FileText, CheckCircle2, AlertCircle, ChevronDown, ChevronUp, ExternalLink, Sparkles } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
@@ -27,7 +27,10 @@ function EventRow({ event, client, onOpen }) {
   const dateLabel = event.start_date
     ? format(parseISO(event.start_date), "d MMM yyyy", { locale: ptBR })
     : '—';
-  const hasNf = Boolean(event.nf_number);
+  // Suporta campo legado (nf_number) e novo (nfe_numero + nfe_arquivo_url do S140)
+  const nfeNumero = event.nfe_numero || event.nf_number || null;
+  const hasNf = Boolean(nfeNumero) || Boolean(event.nfe_arquivo_url);
+  const nfeOk = event.nfe_analise?.cliente_reconhecido && event.nfe_analise?.valor_confere;
 
   return (
     <div className="flex items-center gap-3 py-2.5 border-b border-slate-800/50 last:border-0">
@@ -38,7 +41,14 @@ function EventRow({ event, client, onOpen }) {
       </div>
       <div className="text-right flex-shrink-0 mr-1">
         {hasNf ? (
-          <p className="text-[11px] font-mono text-emerald-400">NF {event.nf_number}</p>
+          <div className="flex items-center justify-end gap-1">
+            {nfeOk && (
+              <Sparkles className="w-3 h-3 text-emerald-400" title="Verificada pela IA" />
+            )}
+            <p className="text-[11px] font-mono text-emerald-400">
+              {nfeNumero ? `NF ${nfeNumero}` : 'Arquivo anexado'}
+            </p>
+          </div>
         ) : (
           <p className="text-[11px] text-amber-400 font-medium">Pendente</p>
         )}
@@ -67,15 +77,16 @@ export default function NfTracker({ events = [], clients = [], onOpenEvent }) {
   }, [clients]);
 
   const { pending, issued } = useMemo(() => {
+    const hasNfFor = (e) => Boolean(e.nf_number) || Boolean(e.nfe_numero) || Boolean(e.nfe_arquivo_url);
     const relevant = events.filter(e =>
       e.status !== 'cancelled' &&
       (Number(e.paid_amount) > 0 || getEventCacheAmount(e) > 0)
     );
     const p = relevant
-      .filter(e => !e.nf_number)
+      .filter(e => !hasNfFor(e))
       .sort((a, b) => (b.start_date || '') > (a.start_date || '') ? 1 : -1);
     const i = relevant
-      .filter(e => Boolean(e.nf_number))
+      .filter(e => hasNfFor(e))
       .sort((a, b) => {
         const da = b.nf_issued_at || b.start_date || '';
         const db = a.nf_issued_at || a.start_date || '';

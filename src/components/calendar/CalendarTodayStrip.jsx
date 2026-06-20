@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Clock, MapPin, ChevronRight, Radio, Plus, CheckCircle2, BadgeCheck, AlertCircle } from 'lucide-react';
+import { Clock, MapPin, ChevronRight, Radio, Plus, CheckCircle2, BadgeCheck, AlertCircle, FileText } from 'lucide-react';
 import {
   todayLocalISO,
   getEventsForDate,
@@ -133,9 +133,18 @@ export default function CalendarTodayStrip({
                     )}
                   </div>
                 </div>
-                {/* Status de pagamento + cachê */}
+                {/* Status de pagamento + NF-e + cachê */}
                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                  <StatusIcon className="w-4 h-4" style={{ color: statusColor }} />
+                  <div className="flex items-center gap-1.5">
+                    {event.status === 'completed' && (event.nfe_arquivo_url || event.nfe_numero) && (
+                      <FileText
+                        className="w-3.5 h-3.5"
+                        style={{ color: event.nfe_analise?.cliente_reconhecido ? '#34d399' : '#60a5fa' }}
+                        title={event.nfe_analise?.cliente_reconhecido ? 'NF-e verificada' : 'NF-e registrada'}
+                      />
+                    )}
+                    <StatusIcon className="w-4 h-4" style={{ color: statusColor }} />
+                  </div>
                   {amount > 0 && (
                     <span className="text-[11px] font-semibold font-mono" style={{ color: isPaid ? '#10b981' : '#f59e0b' }}>
                       {isVisible ? formatCurrency(amount) : '••••'}
