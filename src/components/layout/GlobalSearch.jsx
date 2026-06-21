@@ -182,8 +182,8 @@ export default function GlobalSearch({ isOpen, onClose }) {
                           key={ev.id}
                           type="button"
                           onClick={() => {
-                            hardNavigate(`/calendar`);
                             onClose();
+                            setTimeout(() => hardNavigate(`/calendar?event=${ev.id}`), 220);
                           }}
                           className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800/60 hover:border-slate-700 hover:bg-slate-800/50 transition-colors text-left bp-focus-ring"
                         >
@@ -234,8 +234,8 @@ export default function GlobalSearch({ isOpen, onClose }) {
                         key={c.id}
                         type="button"
                         onClick={() => {
-                          hardNavigate(`/client-detail?id=${c.id}`);
                           onClose();
+                          setTimeout(() => hardNavigate(`/client-detail?id=${c.id}`), 220);
                         }}
                         className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800/60 hover:border-slate-700 hover:bg-slate-800/50 transition-colors text-left bp-focus-ring"
                       >
