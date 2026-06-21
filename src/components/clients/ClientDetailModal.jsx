@@ -141,20 +141,19 @@ const MetricCard = ({ title, value, subtitle, icon: Icon, color = "slate", trend
     className={`bg-slate-800/50 border-slate-700 ${onClick ? 'hover:border-slate-600 cursor-pointer' : ''} transition-all`}
     onClick={onClick}>
 
-    <CardContent className="p-4">
-      <div className="flex items-center justify-between">
-        <div className="min-w-0">
-          <p className="text-slate-400 text-xs uppercase font-medium mb-1">{title}</p>
-          <p
-            className={`text-2xl font-bold truncate ${isPrimary ? '' : cc.value}`}
-            style={isPrimary ? { color: primaryHex } : undefined}
-          >{value}</p>
-          {subtitle && <p className="text-slate-500 text-xs mt-1 truncate" title={subtitle}>{subtitle}</p>}
-        </div>
-        <Icon
-          className={`w-8 h-8 opacity-60 ${isPrimary ? '' : cc.icon}`}
+    <CardContent className="p-4 relative">
+      <Icon
+        className={`w-10 h-10 absolute right-3 top-3 opacity-10 ${isPrimary ? '' : cc.icon}`}
+        style={isPrimary ? { color: primaryHex } : undefined}
+      />
+      <div className="min-w-0">
+        <p className="text-slate-400 text-xs uppercase font-medium mb-1">{title}</p>
+        <p
+          className={`text-xl font-bold font-mono truncate ${isPrimary ? '' : cc.value}`}
           style={isPrimary ? { color: primaryHex } : undefined}
-        />
+          title={typeof value === 'string' ? value : undefined}
+        >{value}</p>
+        {subtitle && <p className="text-slate-500 text-xs mt-1 truncate" title={subtitle}>{subtitle}</p>}
       </div>
       {trend &&
         <div className="flex items-center gap-1 mt-2 text-xs">
@@ -303,7 +302,8 @@ export default function ClientDetailModal({
 
   const handleEventClick = useCallback((event) => {
     onClose();
-    hardNavigate(event?.id ? `/calendar?event=${event.id}` : '/calendar');
+    // Delay para deixar a animação de saída do Dialog completar antes de navegar
+    setTimeout(() => hardNavigate(event?.id ? `/calendar?event=${event.id}` : '/calendar'), 220);
   }, [onClose]);
 
   const modalAnimation = {
