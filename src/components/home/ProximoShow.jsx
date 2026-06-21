@@ -200,9 +200,9 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-slate-300">
-            <MapPin className="w-4 h-4 text-amber-400" />
-            <div className="text-sm">
+          <div className="flex items-center gap-2 text-slate-300 min-w-0">
+            <MapPin className="w-4 h-4 text-amber-400 shrink-0" />
+            <div className="text-sm min-w-0">
               <p className="text-slate-500 text-xs">Local</p>
               <p className="font-semibold truncate">{event.location || 'Sem local'}</p>
             </div>
