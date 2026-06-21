@@ -337,9 +337,10 @@ export default function CalendarPage() {
     const action = params.get('action');
     if (action === 'new-event' && clientId) {
       setPrefillEventData((prev) => ({ ...(prev || {}), client_id: clientId }));
-      navigate(location.pathname, { replace: true });
+      // replaceState em vez de navigate() para não acionar AnimatePresence e travar tela preta
+      window.history.replaceState(null, '', location.pathname);
     }
-  }, [location.search, location.pathname, navigate]);
+  }, [location.search, location.pathname]);
 
   const clientMap = useMemo(() => new Map(clients.map(c => [c.id, c])), [clients]);
   const eventMap = useMemo(() => new Map(events.map(e => [e.id, e])), [events]);
@@ -352,10 +353,11 @@ export default function CalendarPage() {
       const ev = eventMap.get(eventId);
       if (ev) {
         setSelectedEvent(ev);
-        navigate(location.pathname, { replace: true });
+        // replaceState em vez de navigate() para não acionar AnimatePresence e travar tela preta
+        window.history.replaceState(null, '', location.pathname);
       }
     }
-  }, [location.search, location.pathname, navigate, eventMap]);
+  }, [location.search, location.pathname, eventMap]);
 
   const closeModals = useCallback(() => {
     setSelectedEvent(null);
