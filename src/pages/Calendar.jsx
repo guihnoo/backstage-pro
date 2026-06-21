@@ -341,7 +341,10 @@ export default function CalendarPage() {
     }
   }, [location.search, location.pathname, navigate]);
 
-  // Abre EventDetailModal quando ?event=ID vem de outra página
+  const clientMap = useMemo(() => new Map(clients.map(c => [c.id, c])), [clients]);
+  const eventMap = useMemo(() => new Map(events.map(e => [e.id, e])), [events]);
+
+  // Abre EventDetailModal quando ?event=ID vem de outra página (definido APÓS eventMap)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const eventId = params.get('event');
@@ -353,9 +356,6 @@ export default function CalendarPage() {
       }
     }
   }, [location.search, location.pathname, navigate, eventMap]);
-
-  const clientMap = useMemo(() => new Map(clients.map(c => [c.id, c])), [clients]);
-  const eventMap = useMemo(() => new Map(events.map(e => [e.id, e])), [events]);
 
   const closeModals = useCallback(() => {
     setSelectedEvent(null);
