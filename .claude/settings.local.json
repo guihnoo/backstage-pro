@@ -146,7 +146,22 @@
       "Bash(git stash *)",
       "Bash(python -c \"import sys,json; p=json.load\\(sys.stdin\\); deps={**p.get\\('dependencies',{}\\), **p.get\\('devDependencies',{}\\)}; [print\\(k\\) for k in sorted\\(deps.keys\\(\\)\\)]\")",
       "Bash(powershell -c \"\\(Get-Content 'C:\\\\Users\\\\monte\\\\OneDrive\\\\Documentos\\\\backstage-pro\\\\src\\\\components\\\\calendar\\\\EventDetailModal.jsx'\\).Count\")",
-      "Bash(gh run *)"
+      "Bash(gh run *)",
+      "Bash(git remote *)",
+      "Bash(cat .vercel/project.json)",
+      "Bash(cat .vercel/repo.json)",
+      "Bash(vercel whoami *)",
+      "Bash(vercel ls *)",
+      "Bash(agent-browser skills *)",
+      "Bash(agent-browser find *)",
+      "Bash(Start-Process \"C:\\\\Program Files\\\\BraveSoftware\\\\Brave-Browser\\\\Application\\\\brave.exe\" \"https://backstage-pro-beta.vercel.app\")",
+      "PowerShell(Start-Process \"C:\\\\Program Files\\\\BraveSoftware\\\\Brave-Browser\\\\Application\\\\brave.exe\" \"https://backstage-pro-beta.vercel.app\")",
+      "Bash(powershell.exe -Command \"Get-Process brave -ErrorAction SilentlyContinue | Select-Object Id, Name | Format-List\")",
+      "PowerShell(Start-Process \"C:\\\\Program Files\\\\BraveSoftware\\\\Brave-Browser\\\\Application\\\\brave.exe\" \"--remote-debugging-port=9222 --user-data-dir=C:\\\\Temp\\\\brave-debug https://backstage-pro-beta.vercel.app\"; Start-Sleep -Seconds 3)",
+      "Bash(agent-browser scroll *)",
+      "Bash(agent-browser press *)",
+      "Bash(agent-browser eval *)",
+      "Bash(agent-browser navigate *)"
     ]
   },
   "enabledMcpjsonServers": [
