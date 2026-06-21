@@ -510,6 +510,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
   };
 
   // Primary CTA logic
+  const isCompletedOrArchived = status === 'completed' || status === 'archived';
   let primaryCTA = null;
   if (isPastAndNotCompleted) {
     primaryCTA = (
@@ -524,7 +525,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
         Marcar Realizado
       </Button>
     );
-  } else if (event.payment_status !== 'paid') {
+  } else if (isCompletedOrArchived && event.payment_status !== 'paid') {
     primaryCTA = (
       <Button onClick={handlePaymentUpdate} className="flex-1 bg-green-600 hover:bg-green-700">
         <CheckCircle className="w-4 h-4 mr-2" />Confirmar Recebimento
