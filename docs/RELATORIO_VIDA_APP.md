@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-20 (S146 — Bottom nav 4 abas; S145 — Reports expandable; S144 — Agenda overflow; S143 — Home 3 blocos; S141-S142 — EventDetailModal 3-tab — Claude Code)  
+**Última atualização:** 2026-06-20 (S148 — ExpandableSection localStorage + Home spacing; S147 — AppLayout polish; S146 — Bottom nav 4 abas; S145 — Reports expandable; S144 — Agenda overflow; S143 — Home 3 blocos; S141-S142 — EventDetailModal 3-tab — Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-06-15 — `dpl_CZLMQ28odnw5yv76C8sjhTSBaB56` (commit `384d2fb` — S90-S94)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` (dedupe refatorado) deployadas no Supabase ✅  
@@ -80,6 +80,8 @@
 | S144 Agenda 2 views + overflow (2026-06-20) | `Calendar.jsx`: toggle de 5 botões substituído por 2 primários (Grid LayoutGrid + Upcoming Zap) + `···` DropdownMenu com views secundárias (Semanal, Lista, Kanban). View ativa no overflow mantém highlight no botão `···`. |
 | S145 Reports expandable sections (2026-06-20) | `Reports.jsx`: componente `ExpandableSection` (chevron toggle, sem Radix) adicionado inline. Aba Visão Geral: SmartInsights + ReceivablesAging + ReportsChart+FinancialSummary + MonthlyTrend sempre visíveis; **YearOverYear**, **CashflowForecast+CategoryBreakdown**, **TopClients** em 3 seções colapsáveis (fechadas por padrão). Imports: `ChevronDown`, `useRef` adicionados. |
 | S146 Bottom nav 4 abas + sheet Mais (2026-06-20) | `AppLayout.jsx`: nav reduzido de 7 para 4 itens (Home + Agenda + Relatório + Mais). Botão **Mais** abre sheet Framer Motion com grid 4-col das abas secundárias (Clientes, Metas, Despesas, IA Mentor). Sheet fecha ao navegar ou clicar fora. Indicador top-bar em "Mais" quando rota secundária está ativa. |
+| S147 Polish AppLayout + AppTour (2026-06-20) | `AppLayout.jsx`: botões da sheet Mais usam `match` (caminho absoluto) em vez de `to` relativo — fix navigate incorreto. `useEffect` scroll reset também fecha sheet ao usar botão voltar. `appTourSteps.js`: step `bottomNav` atualizado para descrever estrutura real (Home/Agenda/Relatório primários + Mais). |
+| S148 ExpandableSection localStorage + Home spacing (2026-06-20) | `Reports.jsx`: `ExpandableSection` ganha prop `id`; estado open/closed persiste em `localStorage['backstage:report-section:{id}']` com `try/catch`. `Home.jsx`: removido `space-y-4` do container — `NeonSectionFrame` já tem `mb-8`, evitando espaçamento duplo. `useRef` desnecessário removido de Reports. |
 
 ---
 
