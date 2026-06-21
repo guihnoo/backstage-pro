@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-20 (S148 — ExpandableSection localStorage + Home spacing; S147 — AppLayout polish; S146 — Bottom nav 4 abas; S145 — Reports expandable; S144 — Agenda overflow; S143 — Home 3 blocos; S141-S142 — EventDetailModal 3-tab — Claude Code)  
+**Última atualização:** 2026-06-21 (S150 — Revisão E2E completa + fix z-index DropdownMenu dentro de dialogs; S149 — Teste Brave CDP; S148 — ExpandableSection localStorage + Home spacing; S147 — AppLayout polish; Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-06-20 — `backstage-1lspcgxfu` (commit `b5fe45c` — S141-S148)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` (dedupe refatorado) deployadas no Supabase ✅  
@@ -82,6 +82,8 @@
 | S146 Bottom nav 4 abas + sheet Mais (2026-06-20) | `AppLayout.jsx`: nav reduzido de 7 para 4 itens (Home + Agenda + Relatório + Mais). Botão **Mais** abre sheet Framer Motion com grid 4-col das abas secundárias (Clientes, Metas, Despesas, IA Mentor). Sheet fecha ao navegar ou clicar fora. Indicador top-bar em "Mais" quando rota secundária está ativa. |
 | S147 Polish AppLayout + AppTour (2026-06-20) | `AppLayout.jsx`: botões da sheet Mais usam `match` (caminho absoluto) em vez de `to` relativo — fix navigate incorreto. `useEffect` scroll reset também fecha sheet ao usar botão voltar. `appTourSteps.js`: step `bottomNav` atualizado para descrever estrutura real (Home/Agenda/Relatório primários + Mais). |
 | S148 ExpandableSection localStorage + Home spacing (2026-06-20) | `Reports.jsx`: `ExpandableSection` ganha prop `id`; estado open/closed persiste em `localStorage['backstage:report-section:{id}']` com `try/catch`. `Home.jsx`: removido `space-y-4` do container — `NeonSectionFrame` já tem `mb-8`, evitando espaçamento duplo. `useRef` desnecessário removido de Reports. |
+| S149 Teste E2E Brave CDP (2026-06-21) | Revisão completa via agent-browser conectado ao Brave — todas as telas confirmadas. Zero bugs críticos. |
+| S150 Fix z-index DropdownMenu (2026-06-21) | `src/components/ui/dropdown-menu.jsx`: `DropdownMenuContent` e `DropdownMenuSubContent` de `z-50` → `z-[150]` para ficar acima do `DialogContent` (`z-[101]`). `tooltip.jsx`: `TooltipContent` de `z-50` → `z-[200]`. Bug: menu "···" no `EventDetailModal` renderizava atrás do modal. |
 
 ---
 
@@ -96,9 +98,11 @@ Ordem oficial após fix de scroll (2026-06-05):
 | Sheets mobile (backdrop) | `z-[90]` | `EventActionSheet`, `EventHoursSheet` |
 | Sheets mobile (painel) | `z-[95]` | idem |
 | Dialog / Sheet Radix | `z-[100]` overlay, `z-[101]` conteúdo | `DialogContent`, `Sheet` |
+| Dropdowns / Menus dentro de Dialog | `z-[150]` | `DropdownMenuContent`, `DropdownMenuSubContent` |
+| Tooltips | `z-[200]` | `TooltipContent` |
 | Toasts | `z-[100]`+ | Sonner |
 
-**Regra:** nunca usar `z-50` em cards/sheets customizados — conflitava com dialogs e com a nav.
+**Regra:** nunca usar `z-50` em cards/sheets customizados — conflitava com dialogs e com a nav. Componentes Radix portalizados (DropdownMenu, Tooltip) precisam de `z-[150]`+ quando usados dentro de `Dialog` (`z-[101]`).
 
 ---
 

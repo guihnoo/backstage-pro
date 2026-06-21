@@ -6,6 +6,26 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-21
 
+### S150 — Revisão E2E completa + fix z-index DropdownMenu (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Método**: agent-browser CDP + edição direta de arquivos
+- **Arquivos**: `src/components/ui/dropdown-menu.jsx`, `src/components/ui/tooltip.jsx`, `docs/RELATORIO_VIDA_APP.md`, `docs/AGENT_LOG.md`
+- **Bug encontrado e corrigido**:
+  - `DropdownMenuContent` e `DropdownMenuSubContent`: `z-50` → `z-[150]`
+  - `TooltipContent`: `z-50` → `z-[200]`
+  - Causa: menu "···" no `EventDetailModal` renderizava atrás do modal (`z-[101]`)
+- **Revisão E2E completa**:
+  - **EventDetailModal Trabalho**: "Registros de Trabalho (0)" + "+ Horas" + "Despesas (0)" + "+ Despesa" ✅
+  - **EventDetailModal "···"**: bug z-index documentado e corrigido; itens: Editar evento, Duplicar, Ver cliente, Compartilhar, Registrar horas, Adicionar despesa, Excluir evento ✅
+  - **Metas 4 tabs**: Metas (3 círculos progresso) + Nível (Freelancer em Ascensão → lista) + Conquistas (grid 2×2: Primeira Diária, 5 Shows, Em Chamas, Pro do Palco) + MEI (Faturamento anual 0% / R$ 81.000,00) ✅
+  - **Agenda Vista Semanal**: grid 7-dias com eventos nas células corretas ✅
+  - **Agenda Vista em Lista**: eventos cronológicos por data ✅
+  - **Agenda Pipeline Kanban**: 4 colunas NEGOCIANDO/CONFIRMADO/A RECEBER/PAGO ✅
+  - **Help /help**: "Manual do app" com seções colapsáveis por página ✅
+  - **Notificações**: painel com "Pagamento pendente: Anhanguera Royal" + botão "Ver" ✅
+  - **Busca global Ctrl+K**: pesquisa "rental" → SHOWS (1) + CLIENTES (1) com links ✅
+- **Build**: pendente deploy (alterações locais)
+
 ### S149 — Teste E2E completo em produção via Brave CDP (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Método**: agent-browser conectado ao Brave via `--cdp 9222`; conta real logada
