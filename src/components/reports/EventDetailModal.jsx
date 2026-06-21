@@ -1,4 +1,4 @@
-﻿
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -13,6 +13,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { getEventStatusLabel, getEventStatusConfig, getEventStatus, formatDisplayDate, formatFullDate, timeRangeLabel } from '../utils/dateUtils';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
@@ -38,6 +47,8 @@ import {
   Star,
   CheckSquare2,
   Share2 as ShareIcon,
+  MoreHorizontal,
+  Receipt,
 } from 'lucide-react';
 import EventLocationSection from '@/components/events/EventLocationSection';
 import { useEvents } from '@/lib/useEvents';
@@ -45,7 +56,6 @@ import appToast from '@/lib/appToast';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import EventHeading from '@/components/events/EventHeading';
 import { getClientDisplayName } from '@/lib/eventDisplay';
-
 import { hardNavigate } from '@/lib/hardNavigate';
 import { formatCNPJ } from '@/lib/cnpjSearch';
 import NFeAttachment from '@/components/shared/NFeAttachment';
@@ -159,26 +169,10 @@ const EventLifecycleBar = ({ event, dailyWork = [] }) => {
   if (isCancelled) return null;
 
   const steps = [
-    {
-      label: 'Agendado',
-      done: true,
-      color: primaryHex,
-    },
-    {
-      label: 'Realizado',
-      done: status === 'completed',
-      color: '#22c55e',
-    },
-    {
-      label: 'Horas',
-      done: dailyWork.length > 0,
-      color: accentHex,
-    },
-    {
-      label: 'Pago',
-      done: event.payment_status === 'paid',
-      color: '#34d399',
-    },
+    { label: 'Agendado', done: true, color: primaryHex },
+    { label: 'Realizado', done: status === 'completed', color: '#22c55e' },
+    { label: 'Horas', done: dailyWork.length > 0, color: accentHex },
+    { label: 'Pago', done: event.payment_status === 'paid', color: '#34d399' },
   ];
 
   const doneCount = steps.filter(s => s.done).length;
@@ -256,7 +250,6 @@ const WorkItem = ({ work, onEdit }) => {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className="bg-slate-800/50 p-3 rounded-lg border border-slate-700/60">
-
       <div className="flex justify-between items-center mb-2.5 gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <p className="text-sm font-bold text-white truncate">{dateLabel}</p>
@@ -266,7 +259,6 @@ const WorkItem = ({ work, onEdit }) => {
           <Edit className="w-3 h-3 mr-1" /> Editar
         </Button>
       </div>
-
       <div className="grid grid-cols-3 gap-2">
         <div className="rounded-lg p-2 text-center border border-slate-700/60 bg-slate-800/40">
           <p className="text-[9px] text-slate-500 uppercase tracking-wider mb-0.5">Horas</p>
@@ -287,7 +279,6 @@ const WorkItem = ({ work, onEdit }) => {
           </p>
         </div>
       </div>
-
       {work.notes && <p className="text-xs text-slate-400 mt-2 p-2 bg-slate-900/50 rounded break-words">{work.notes}</p>}
       {work.photo_url && (
         <a href={work.photo_url} target="_blank" rel="noopener noreferrer" className="mt-1.5 inline-flex items-center gap-1 text-xs bp-text-primary hover:underline">
@@ -317,7 +308,6 @@ const ExpenseItem = ({ expense, onEdit }) => {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className="bg-slate-800/50 p-3 rounded-lg border border-slate-700/60">
-
       <div className="flex justify-between items-start gap-2">
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-white truncate mb-1">{expense.title}</p>
@@ -364,6 +354,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
   onAddWork,
 }) {
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
+  const [activeTab, setActiveTab] = useState('resumo');
   const { update: updateEvent } = useEvents();
   const { primaryHex, accentHex } = useCategoryTheme();
   const { formatCurrency, isVisible } = useFinancialVisibility();
@@ -437,14 +428,12 @@ const EventDetailModal = React.memo(function EventDetailModal({
 
   const stats = useMemo(() => {
     if (!event || !dailyWork) return {};
-
     const totalHours = dailyWork.reduce((sum, work) => sum + (work.total_hours || 0), 0);
     const totalOvertime = dailyWork.reduce((sum, work) => sum + (work.overtime_hours || 0), 0);
     const fromWork = dailyWork.reduce((sum, work) => sum + (work.daily_cache || 0), 0);
     const totalRevenue = fromWork > 0 ? fromWork : getEventCacheAmount(event);
     const totalExpenses = expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
     const netRevenue = totalRevenue - totalExpenses;
-
     return { totalHours, totalOvertime, totalRevenue, totalExpenses, netRevenue };
   }, [event, dailyWork, expenses]);
 
@@ -465,9 +454,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
 
   if (!event) return null;
 
-  const handlePaymentUpdate = () => {
-    setShowPaymentConfirm(true);
-  };
+  const handlePaymentUpdate = () => setShowPaymentConfirm(true);
 
   const handlePaymentSuccess = () => {
     setShowPaymentConfirm(false);
@@ -481,6 +468,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
       appToast.success('Evento marcado como realizado!');
       onPaymentUpdate?.();
       setShowNFeCard(true);
+      setActiveTab('fiscal');
     } catch {
       appToast.error('Erro ao atualizar status do evento.');
     } finally {
@@ -499,7 +487,6 @@ const EventDetailModal = React.memo(function EventDetailModal({
 
   const handleShareEvent = () => {
     const fmtShare = (v) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 });
-
     const dateStr = event.start_date
       ? new Date(event.start_date + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
       : '';
@@ -522,10 +509,45 @@ const EventDetailModal = React.memo(function EventDetailModal({
     }
   };
 
+  // Primary CTA logic
+  let primaryCTA = null;
+  if (isPastAndNotCompleted) {
+    primaryCTA = (
+      <Button
+        onClick={handleMarkCompleted}
+        disabled={markingDone}
+        className="flex-1 bg-emerald-700 hover:bg-emerald-600 text-white"
+      >
+        {markingDone
+          ? <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          : <CheckSquare2 className="w-4 h-4 mr-2" />}
+        Marcar Realizado
+      </Button>
+    );
+  } else if (event.payment_status !== 'paid') {
+    primaryCTA = (
+      <Button onClick={handlePaymentUpdate} className="flex-1 bg-green-600 hover:bg-green-700">
+        <CheckCircle className="w-4 h-4 mr-2" />Confirmar Recebimento
+      </Button>
+    );
+  } else {
+    primaryCTA = (
+      <Button
+        variant="outline"
+        onClick={() => onEdit(event)}
+        className="flex-1 bg-slate-800 border-slate-700 hover:bg-slate-700 text-white"
+      >
+        <Edit className="w-4 h-4 mr-2" />Editar
+      </Button>
+    );
+  }
+
   return (
     <>
       <Dialog open={true} onOpenChange={onClose}>
         <DialogContent hideDefaultClose className="sm:max-w-4xl h-[95dvh] max-h-[95dvh] bg-slate-900/95 backdrop-blur-lg border-slate-700 text-white p-0 overflow-hidden flex flex-col bp-focus-scope">
+
+          {/* Header */}
           <DialogHeader className={`p-3 sm:p-4 md:p-6 border-b ${statusConfig.borderColor} flex-shrink-0`}>
             <div className="flex justify-between items-start gap-2 sm:gap-3">
               <div className="flex-1 min-w-0">
@@ -554,406 +576,448 @@ const EventDetailModal = React.memo(function EventDetailModal({
             </div>
           </DialogHeader>
 
+          {/* Lifecycle bar */}
           <EventLifecycleBar event={event} dailyWork={dailyWork} />
 
-          <ScrollArea fill>
-            <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-5 pb-safe">
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0">
+            <div className="px-3 sm:px-6 pt-3 flex-shrink-0">
+              <TabsList className="w-full bg-slate-800/60 border border-slate-700/40 h-9 p-0.5">
+                <TabsTrigger
+                  value="resumo"
+                  className="flex-1 text-xs h-8 data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:shadow-sm text-slate-400 rounded-md"
+                >
+                  Resumo
+                </TabsTrigger>
+                <TabsTrigger
+                  value="trabalho"
+                  className="flex-1 text-xs h-8 data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:shadow-sm text-slate-400 rounded-md"
+                >
+                  Trabalho{dailyWork.length > 0 ? ` (${dailyWork.length})` : ''}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="fiscal"
+                  className="flex-1 text-xs h-8 data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:shadow-sm text-slate-400 rounded-md"
+                >
+                  Fiscal{(event.nfe_arquivo_url || event.nfe_numero) ? ' ●' : ''}
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-              {/* Prompt NF-e — aparece ao marcar como realizado */}
-              <AnimatePresence>
-                {showNFeCard && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <Card className="bg-blue-950/30 border-blue-700/40">
-                      <CardContent className="p-4 space-y-3">
-                        <div className="flex items-center gap-2">
-                          <FileText className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                          <p className="text-sm font-semibold text-blue-300">Evento realizado! Deseja emitir a NF-e?</p>
-                        </div>
-                        <div className="bg-slate-800/60 rounded-lg px-3 py-2.5 text-xs space-y-1.5">
-                          <div className="flex justify-between gap-2">
-                            <span className="text-slate-400 flex-shrink-0">Serviço:</span>
-                            <span className="text-white font-medium text-right truncate">{event.title}</span>
-                          </div>
-                          {client && (
-                            <div className="flex justify-between gap-2">
-                              <span className="text-slate-400 flex-shrink-0">Tomador:</span>
-                              <span className="text-white text-right truncate">{getClientDisplayName(client)}</span>
-                            </div>
-                          )}
-                          {client?.cnpj && (
-                            <div className="flex justify-between gap-2">
-                              <span className="text-slate-400 flex-shrink-0">CNPJ:</span>
-                              <span className="text-white font-mono">{formatCNPJ(client.cnpj)}</span>
-                            </div>
-                          )}
-                          {event.start_date && (
-                            <div className="flex justify-between gap-2">
-                              <span className="text-slate-400 flex-shrink-0">Competência:</span>
-                              <span className="text-white">{formatDisplayDate(event.start_date)}</span>
-                            </div>
-                          )}
-                          <div className="flex justify-between gap-2">
-                            <span className="text-slate-400 flex-shrink-0">Valor:</span>
-                            <span className="text-white font-semibold">{isVisible ? formatCurrency(getEventCacheAmount(event)) : '••••'}</span>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => { navigator.clipboard.writeText(buildNFeText()); appToast.success('Dados copiados!'); }}
-                            className="flex-shrink-0 text-xs border-slate-600 hover:bg-slate-700 text-slate-300 h-9"
-                          >
-                            <Copy className="w-3 h-3 mr-1" />
-                            Copiar
-                          </Button>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setShowNFeCard(false)}
-                            className="flex-1 text-xs border-slate-600 hover:bg-slate-700 text-slate-300 h-9"
-                          >
-                            Agora não
-                          </Button>
-                          <Button
-                            type="button"
-                            size="sm"
-                            onClick={() => { window.open('https://www.nfse.gov.br/EmissorNacional/Login', '_blank', 'noopener,noreferrer'); onClose?.(); }}
-                            className="flex-1 text-xs bg-blue-700 hover:bg-blue-600 text-white h-9"
-                          >
-                            <ExternalLink className="w-3 h-3 mr-1" />
-                            Emitir NF-e
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+            <ScrollArea fill>
+              <div className="p-3 sm:p-4 md:p-6">
 
-              {/* Anexo da NF-e — visível para todos os eventos concluídos */}
-              {event.status === 'completed' && (
-                <NFeAttachment event={event} client={client} />
-              )}
+                {/* ── RESUMO ── */}
+                <TabsContent value="resumo" className="mt-0 space-y-4 sm:space-y-5 pb-safe data-[state=inactive]:hidden">
 
-              {canApply12h && (
-                <Alert className="bg-blue-900/40 border-blue-700 text-blue-200">
-                  <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                  <div className="flex flex-col gap-2 w-full">
-                    <AlertDescription className="text-sm">
-                      Evento concluído sem registros. Deseja aplicar 12h de trabalho?
-                    </AlertDescription>
-                    <Button
-                      size="sm"
-                      onClick={() => onApply12h(event)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto h-10 min-h-[44px]"
-                    >
-                      <Zap className="w-4 h-4 mr-2" /> Aplicar 12h
-                    </Button>
-                  </div>
-                </Alert>
-              )}
-
-              <Card className="bg-slate-800/40 border-slate-700">
-                <CardContent className="p-3 sm:p-4 space-y-3">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 text-center">
-                    <InfoItem icon={DollarSign} label="Receita Bruta" value={stats.totalRevenue || 0} isCurrency color="text-green-300" />
-                    <InfoItem icon={FileText} label="Despesas" value={stats.totalExpenses || 0} isCurrency color="text-amber-400" />
-                    <InfoItem icon={DollarSign} label="Receita Líquida" value={stats.netRevenue || 0} isCurrency color={stats.netRevenue >= 0 ? 'bp-text-primary' : 'text-red-400'} />
-                    <InfoItem icon={Clock} label="Total Horas" value={`${stats.totalHours?.toFixed(1) || 0}h`} color="text-slate-300" />
-                  </div>
-                  {stats.totalExpenses > 0 && stats.totalRevenue > 0 && (() => {
-                    const margin = ((stats.netRevenue / stats.totalRevenue) * 100);
-                    return (
-                      <div>
-                        <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
-                          <span>Margem de lucro</span>
-                          <span className={margin >= 0 ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold'}>
-                            {Math.round(margin)}%
-                          </span>
-                        </div>
-                        <div className="h-1.5 rounded-full bg-slate-700/60 overflow-hidden">
-                          <div
-                            className="h-full rounded-full transition-all duration-700"
-                            style={{
-                              width: `${Math.max(0, Math.min(100, margin))}%`,
-                              background: margin >= 70 ? '#10b981' : margin >= 40 ? '#f59e0b' : '#ef4444',
-                            }}
-                          />
-                        </div>
+                  {/* Stats card */}
+                  <Card className="bg-slate-800/40 border-slate-700">
+                    <CardContent className="p-3 sm:p-4 space-y-3">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 text-center">
+                        <InfoItem icon={DollarSign} label="Receita Bruta" value={stats.totalRevenue || 0} isCurrency color="text-green-300" />
+                        <InfoItem icon={FileText} label="Despesas" value={stats.totalExpenses || 0} isCurrency color="text-amber-400" />
+                        <InfoItem icon={DollarSign} label="Receita Líquida" value={stats.netRevenue || 0} isCurrency color={stats.netRevenue >= 0 ? 'bp-text-primary' : 'text-red-400'} />
+                        <InfoItem icon={Clock} label="Total Horas" value={`${stats.totalHours?.toFixed(1) || 0}h`} color="text-slate-300" />
                       </div>
-                    );
-                  })()}
-                </CardContent>
-              </Card>
+                      {stats.totalExpenses > 0 && stats.totalRevenue > 0 && (() => {
+                        const margin = ((stats.netRevenue / stats.totalRevenue) * 100);
+                        return (
+                          <div>
+                            <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+                              <span>Margem de lucro</span>
+                              <span className={margin >= 0 ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold'}>
+                                {Math.round(margin)}%
+                              </span>
+                            </div>
+                            <div className="h-1.5 rounded-full bg-slate-700/60 overflow-hidden">
+                              <div
+                                className="h-full rounded-full transition-all duration-700"
+                                style={{
+                                  width: `${Math.max(0, Math.min(100, margin))}%`,
+                                  background: margin >= 70 ? '#10b981' : margin >= 40 ? '#f59e0b' : '#ef4444',
+                                }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </CardContent>
+                  </Card>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                <div className="space-y-3 sm:space-y-4">
-                  <h3 className="font-semibold text-white text-sm sm:text-base">Detalhes do Evento</h3>
-                  <InfoItem icon={Calendar} label="Período" value={`${formatFullDate(event.start_date)} - ${formatFullDate(event.end_date)}`} />
-                  <InfoItem icon={Clock} label="Horário" value={timeRangeLabel(event)} />
-                  <InfoItem icon={DollarSign} label="Valor Diária Base" value={event.daily_cache_value || 0} isCurrency />
-                </div>
-                <div className="space-y-3 sm:space-y-4">
-                  <h3 className="font-semibold text-white text-sm sm:text-base">Detalhes do Pagamento</h3>
-                  <InfoItem
-                    icon={event.payment_status === 'paid' ? CheckCircle : AlertTriangle}
-                    label="Status Pagamento"
-                    value={event.payment_status === 'paid' ? 'Recebido' : 'Pendente'}
-                    color={event.payment_status === 'paid' ? 'text-green-400' : 'text-amber-400'}
-                  />
-
-                  {event.payment_status === 'paid' ? (
-                    <InfoItem icon={Calendar} label="Data do Recebimento" value={event.paid_date ? formatFullDate(event.paid_date) : null} />
-                  ) : (
-                    <InfoItem icon={Calendar} label="Vencimento" value={event.payment_due_date ? formatFullDate(event.payment_due_date) : null} />
-                  )}
-                  {event.paid_amount > 0 && <InfoItem icon={DollarSign} label="Valor Recebido" value={event.paid_amount} isCurrency />}
-                  {event.nf_number && (
-                    <InfoItem icon={FileText} label="Nota Fiscal" value={`NF ${event.nf_number}${event.nf_issued_at ? ` · ${formatFullDate(event.nf_issued_at)}` : ''}`} color="text-emerald-400" />
-                  )}
-                </div>
-              </div>
-
-              <Card className="bg-slate-800/40 border-slate-700">
-                <CardContent className="p-3 sm:p-4 space-y-3">
-                  <h3 className="font-semibold text-white text-sm sm:text-base flex items-center gap-2">
-                    <MapPin className="w-4 h-4 bp-text-primary" />
-                    Local do evento
-                  </h3>
-                  <EventLocationSection
-                    location={locDraft.location}
-                    location_city={locDraft.location_city}
-                    location_state={locDraft.location_state}
-                    location_lat={locDraft.location_lat}
-                    location_lng={locDraft.location_lng}
-                    onChange={(patch) => setLocDraft((prev) => ({ ...prev, ...patch }))}
-                    onGpsCaptured={(captured) => persistLocation(captured)}
-                  />
-                  {locationDirty && (
-                    <Button
-                      type="button"
-                      onClick={() => persistLocation()}
-                      disabled={savingLocation}
-                      className="w-full sm:w-auto hover:opacity-90 h-10 min-h-[44px]"
-                      style={{ backgroundColor: primaryHex }}
-                    >
-                      {savingLocation ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Salvando...
-                        </>
-                      ) : (
-                        'Salvar local'
-                      )}
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-
-              <InlineNotes event={event} updateEvent={updateEvent} onSaved={onPaymentUpdate} />
-
-              {/* Avaliação do cliente — só para eventos concluídos com cliente */}
-              {event.status === 'completed' && event.client_id && (
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-white text-sm sm:text-base flex items-center gap-2">
-                    <Star className="w-4 h-4 text-amber-400" />
-                    Avaliação do cliente
-                  </h3>
-                  <div className="bg-slate-800/40 border border-slate-700/60 rounded-lg px-4 py-3 space-y-3">
-                    {/* Estrelas */}
-                    <div className="flex items-center gap-1">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={star}
-                          type="button"
-                          onClick={() => { setRatingDraft(star); saveRating(star, ratingNotesDraft); }}
-                          onMouseEnter={() => setRatingHover(star)}
-                          onMouseLeave={() => setRatingHover(0)}
-                          className="p-0.5 transition-transform hover:scale-110"
-                          title={`${star} estrela${star > 1 ? 's' : ''}`}
-                        >
-                          <Star
-                            className="w-6 h-6 transition-colors"
-                            fill={(ratingHover || ratingDraft || 0) >= star ? '#fbbf24' : 'none'}
-                            stroke={(ratingHover || ratingDraft || 0) >= star ? '#fbbf24' : '#64748b'}
-                          />
-                        </button>
-                      ))}
-                      {ratingDraft && (
-                        <span className="ml-2 text-xs text-amber-400 font-medium">
-                          {['', 'Ruim', 'Regular', 'Bom', 'Ótimo', 'Excelente'][ratingDraft]}
-                        </span>
-                      )}
-                      {savingRating && <Loader2 className="w-4 h-4 text-slate-500 animate-spin ml-2" />}
+                  {/* Detalhes + Pagamento */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <div className="space-y-3 sm:space-y-4">
+                      <h3 className="font-semibold text-white text-sm sm:text-base">Detalhes do Evento</h3>
+                      <InfoItem icon={Calendar} label="Período" value={`${formatFullDate(event.start_date)} - ${formatFullDate(event.end_date)}`} />
+                      <InfoItem icon={Clock} label="Horário" value={timeRangeLabel(event)} />
+                      <InfoItem icon={DollarSign} label="Valor Diária Base" value={event.daily_cache_value || 0} isCurrency />
                     </div>
-                    {/* Nota de avaliação */}
-                    {ratingDraft && (
-                      <textarea
-                        value={ratingNotesDraft}
-                        onChange={e => setRatingNotesDraft(e.target.value)}
-                        onBlur={() => ratingDraft && saveRating(ratingDraft, ratingNotesDraft)}
-                        placeholder="Observação sobre o cliente (opcional)…"
-                        rows={2}
-                        className="w-full bg-slate-700/50 border border-slate-600/60 rounded-md px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 resize-none focus:outline-none focus:ring-1 focus:ring-amber-500/50"
+                    <div className="space-y-3 sm:space-y-4">
+                      <h3 className="font-semibold text-white text-sm sm:text-base">Detalhes do Pagamento</h3>
+                      <InfoItem
+                        icon={event.payment_status === 'paid' ? CheckCircle : AlertTriangle}
+                        label="Status Pagamento"
+                        value={event.payment_status === 'paid' ? 'Recebido' : 'Pendente'}
+                        color={event.payment_status === 'paid' ? 'text-green-400' : 'text-amber-400'}
                       />
+                      {event.payment_status === 'paid' ? (
+                        <InfoItem icon={Calendar} label="Data do Recebimento" value={event.paid_date ? formatFullDate(event.paid_date) : null} />
+                      ) : (
+                        <InfoItem icon={Calendar} label="Vencimento" value={event.payment_due_date ? formatFullDate(event.payment_due_date) : null} />
+                      )}
+                      {event.paid_amount > 0 && <InfoItem icon={DollarSign} label="Valor Recebido" value={event.paid_amount} isCurrency />}
+                      {event.nf_number && (
+                        <InfoItem icon={FileText} label="Nota Fiscal" value={`NF ${event.nf_number}${event.nf_issued_at ? ` · ${formatFullDate(event.nf_issued_at)}` : ''}`} color="text-emerald-400" />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Local */}
+                  <Card className="bg-slate-800/40 border-slate-700">
+                    <CardContent className="p-3 sm:p-4 space-y-3">
+                      <h3 className="font-semibold text-white text-sm sm:text-base flex items-center gap-2">
+                        <MapPin className="w-4 h-4 bp-text-primary" />
+                        Local do evento
+                      </h3>
+                      <EventLocationSection
+                        location={locDraft.location}
+                        location_city={locDraft.location_city}
+                        location_state={locDraft.location_state}
+                        location_lat={locDraft.location_lat}
+                        location_lng={locDraft.location_lng}
+                        onChange={(patch) => setLocDraft((prev) => ({ ...prev, ...patch }))}
+                        onGpsCaptured={(captured) => persistLocation(captured)}
+                      />
+                      {locationDirty && (
+                        <Button
+                          type="button"
+                          onClick={() => persistLocation()}
+                          disabled={savingLocation}
+                          className="w-full sm:w-auto hover:opacity-90 h-10 min-h-[44px]"
+                          style={{ backgroundColor: primaryHex }}
+                        >
+                          {savingLocation ? (
+                            <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Salvando...</>
+                          ) : 'Salvar local'}
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Observações */}
+                  <InlineNotes event={event} updateEvent={updateEvent} onSaved={onPaymentUpdate} />
+
+                  {/* Avaliação do cliente */}
+                  {event.status === 'completed' && event.client_id && (
+                    <div className="space-y-2">
+                      <h3 className="font-semibold text-white text-sm sm:text-base flex items-center gap-2">
+                        <Star className="w-4 h-4 text-amber-400" />
+                        Avaliação do cliente
+                      </h3>
+                      <div className="bg-slate-800/40 border border-slate-700/60 rounded-lg px-4 py-3 space-y-3">
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => { setRatingDraft(star); saveRating(star, ratingNotesDraft); }}
+                              onMouseEnter={() => setRatingHover(star)}
+                              onMouseLeave={() => setRatingHover(0)}
+                              className="p-0.5 transition-transform hover:scale-110"
+                              title={`${star} estrela${star > 1 ? 's' : ''}`}
+                            >
+                              <Star
+                                className="w-6 h-6 transition-colors"
+                                fill={(ratingHover || ratingDraft || 0) >= star ? '#fbbf24' : 'none'}
+                                stroke={(ratingHover || ratingDraft || 0) >= star ? '#fbbf24' : '#64748b'}
+                              />
+                            </button>
+                          ))}
+                          {ratingDraft && (
+                            <span className="ml-2 text-xs text-amber-400 font-medium">
+                              {['', 'Ruim', 'Regular', 'Bom', 'Ótimo', 'Excelente'][ratingDraft]}
+                            </span>
+                          )}
+                          {savingRating && <Loader2 className="w-4 h-4 text-slate-500 animate-spin ml-2" />}
+                        </div>
+                        {ratingDraft && (
+                          <textarea
+                            value={ratingNotesDraft}
+                            onChange={e => setRatingNotesDraft(e.target.value)}
+                            onBlur={() => ratingDraft && saveRating(ratingDraft, ratingNotesDraft)}
+                            placeholder="Observação sobre o cliente (opcional)…"
+                            rows={2}
+                            className="w-full bg-slate-700/50 border border-slate-600/60 rounded-md px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 resize-none focus:outline-none focus:ring-1 focus:ring-amber-500/50"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+
+                {/* ── TRABALHO ── */}
+                <TabsContent value="trabalho" className="mt-0 space-y-4 sm:space-y-5 pb-safe data-[state=inactive]:hidden">
+
+                  {/* Apply 12h alert */}
+                  {canApply12h && (
+                    <Alert className="bg-blue-900/40 border-blue-700 text-blue-200">
+                      <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                      <div className="flex flex-col gap-2 w-full">
+                        <AlertDescription className="text-sm">
+                          Evento concluído sem registros. Deseja aplicar 12h de trabalho?
+                        </AlertDescription>
+                        <Button
+                          size="sm"
+                          onClick={() => onApply12h(event)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto h-10 min-h-[44px]"
+                        >
+                          <Zap className="w-4 h-4 mr-2" /> Aplicar 12h
+                        </Button>
+                      </div>
+                    </Alert>
+                  )}
+
+                  {/* Registros de Trabalho */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="font-semibold text-white text-sm sm:text-base">
+                        Registros de Trabalho ({dailyWork.length})
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        {dailyWork.length > 0 && (
+                          <span
+                            className="text-xs rounded-full px-2.5 py-0.5 border bp-text-primary bp-surface-primary"
+                            style={accentHex ? { color: accentHex, background: `${accentHex}1a`, borderColor: `${accentHex}33` } : undefined}
+                          >
+                            {stats.totalHours?.toFixed(1)}h total
+                          </span>
+                        )}
+                        {onAddWork && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onAddWork(event)}
+                            className="h-8 px-3 text-xs border bp-text-primary bp-hover-primary"
+                            style={accentHex ? { color: accentHex, borderColor: `${accentHex}80` } : undefined}
+                          >
+                            <Plus className="w-3 h-3 mr-1" /> Horas
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    {dailyWork.length > 0 ? (
+                      <div className="space-y-3">
+                        {[...dailyWork]
+                          .sort((a, b) => (a.work_date || a.date || '') < (b.work_date || b.date || '') ? -1 : 1)
+                          .map((work) => <WorkItem key={work.id} work={work} onEdit={onWorkEdit} />)}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-slate-400 text-center py-4 border border-dashed border-slate-700 rounded-lg">
+                        Nenhum registro de trabalho para este evento.
+                      </p>
                     )}
                   </div>
-                </div>
-              )}
 
-              <div className="space-y-4">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="font-semibold text-white text-sm sm:text-base">
-                    Registros de Trabalho ({dailyWork.length})
-                  </h3>
-                  {dailyWork.length > 0 && (
-                    <span
-                      className="text-xs rounded-full px-2.5 py-0.5 border bp-text-primary bp-surface-primary"
-                      style={accentHex ? { color: accentHex, background: `${accentHex}1a`, borderColor: `${accentHex}33` } : undefined}
+                  {/* Despesas */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="font-semibold text-white text-sm sm:text-base">
+                        Despesas ({expenses.length})
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        {expenses.length > 0 && (
+                          <span className="text-xs text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-full px-2.5 py-0.5">
+                            {isVisible ? formatCurrency(stats.totalExpenses || 0) : '••••'} total
+                          </span>
+                        )}
+                        {onAddExpense && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onAddExpense(event)}
+                            className="h-8 px-3 text-xs border-amber-600/50 hover:bg-amber-900/20 text-amber-400"
+                          >
+                            <Plus className="w-3 h-3 mr-1" /> Despesa
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    {expenses.length > 0 ? (
+                      <div className="space-y-3">
+                        {expenses.map((exp) => <ExpenseItem key={exp.id} expense={exp} onEdit={onExpenseEdit} />)}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-slate-400 text-center py-4 border border-dashed border-slate-700 rounded-lg">
+                        Nenhuma despesa registrada.
+                      </p>
+                    )}
+                  </div>
+                </TabsContent>
+
+                {/* ── FISCAL ── */}
+                <TabsContent value="fiscal" className="mt-0 space-y-4 sm:space-y-5 pb-safe data-[state=inactive]:hidden">
+
+                  {/* Prompt NF-e pós-conclusão */}
+                  <AnimatePresence>
+                    {showNFeCard && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        <Card className="bg-blue-950/30 border-blue-700/40">
+                          <CardContent className="p-4 space-y-3">
+                            <div className="flex items-center gap-2">
+                              <FileText className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                              <p className="text-sm font-semibold text-blue-300">Evento realizado! Deseja emitir a NF-e?</p>
+                            </div>
+                            <div className="bg-slate-800/60 rounded-lg px-3 py-2.5 text-xs space-y-1.5">
+                              <div className="flex justify-between gap-2">
+                                <span className="text-slate-400 flex-shrink-0">Serviço:</span>
+                                <span className="text-white font-medium text-right truncate">{event.title}</span>
+                              </div>
+                              {client && (
+                                <div className="flex justify-between gap-2">
+                                  <span className="text-slate-400 flex-shrink-0">Tomador:</span>
+                                  <span className="text-white text-right truncate">{getClientDisplayName(client)}</span>
+                                </div>
+                              )}
+                              {client?.cnpj && (
+                                <div className="flex justify-between gap-2">
+                                  <span className="text-slate-400 flex-shrink-0">CNPJ:</span>
+                                  <span className="text-white font-mono">{formatCNPJ(client.cnpj)}</span>
+                                </div>
+                              )}
+                              {event.start_date && (
+                                <div className="flex justify-between gap-2">
+                                  <span className="text-slate-400 flex-shrink-0">Competência:</span>
+                                  <span className="text-white">{formatDisplayDate(event.start_date)}</span>
+                                </div>
+                              )}
+                              <div className="flex justify-between gap-2">
+                                <span className="text-slate-400 flex-shrink-0">Valor:</span>
+                                <span className="text-white font-semibold">{isVisible ? formatCurrency(getEventCacheAmount(event)) : '••••'}</span>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => { navigator.clipboard.writeText(buildNFeText()); appToast.success('Dados copiados!'); }}
+                                className="flex-shrink-0 text-xs border-slate-600 hover:bg-slate-700 text-slate-300 h-9"
+                              >
+                                <Copy className="w-3 h-3 mr-1" />Copiar
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setShowNFeCard(false)}
+                                className="flex-1 text-xs border-slate-600 hover:bg-slate-700 text-slate-300 h-9"
+                              >
+                                Agora não
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                onClick={() => { window.open('https://www.nfse.gov.br/EmissorNacional/Login', '_blank', 'noopener,noreferrer'); onClose?.(); }}
+                                className="flex-1 text-xs bg-blue-700 hover:bg-blue-600 text-white h-9"
+                              >
+                                <ExternalLink className="w-3 h-3 mr-1" />Emitir NF-e
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Anexo NF-e */}
+                  {event.status === 'completed' && (
+                    <div>
+                      <h3 className="font-semibold text-white text-sm mb-3 flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-blue-400" />
+                        Nota Fiscal Eletrônica
+                      </h3>
+                      <NFeAttachment event={event} client={client} />
+                    </div>
+                  )}
+
+                  {event.status !== 'completed' && !showNFeCard && (
+                    <div className="text-center py-8 text-slate-500">
+                      <FileText className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                      <p className="text-sm">Disponível após o evento ser marcado como realizado.</p>
+                    </div>
+                  )}
+
+                  {event.status === 'completed' && !showNFeCard && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => window.open('https://www.nfse.gov.br/EmissorNacional/Login', '_blank', 'noopener,noreferrer')}
+                      className="w-full justify-start border-slate-700 text-slate-400 hover:bg-slate-800"
                     >
-                      {stats.totalHours?.toFixed(1)}h total
-                    </span>
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Portal NFS-e Nacional
+                    </Button>
                   )}
-                </div>
-                {dailyWork.length > 0 ? (
-                  <div className="space-y-3">
-                    {[...dailyWork]
-                      .sort((a, b) => (a.work_date || a.date || '') < (b.work_date || b.date || '') ? -1 : 1)
-                      .map((work) => <WorkItem key={work.id} work={work} onEdit={onWorkEdit} />)}
-                  </div>
-                ) : (
-                  <p className="text-sm text-slate-400">Nenhum registro de trabalho para este evento.</p>
-                )}
-              </div>
+                </TabsContent>
 
-              <div className="space-y-4">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="font-semibold text-white text-sm sm:text-base">
-                    Despesas ({expenses.length})
-                  </h3>
-                  {expenses.length > 0 && (
-                    <span className="text-xs text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-full px-2.5 py-0.5">
-                      {isVisible ? formatCurrency(stats.totalExpenses || 0) : '••••'} total
-                    </span>
-                  )}
-                </div>
-                {expenses.length > 0 ? (
-                  <div className="space-y-3">
-                    {expenses.map((exp) => <ExpenseItem key={exp.id} expense={exp} onEdit={onExpenseEdit} />)}
-                  </div>
-                ) : (
-                  <p className="text-sm text-slate-400">Nenhuma despesa registrada para este evento.</p>
-                )}
               </div>
-            </div>
-          </ScrollArea>
+            </ScrollArea>
+          </Tabs>
 
-          <DialogFooter className="p-3 sm:p-4 bg-slate-900/50 border-t border-slate-700 flex flex-col sm:flex-row gap-2 sm:justify-between flex-shrink-0 pb-safe">
-            <div className="flex gap-2 flex-wrap w-full sm:w-auto">
-              <Button
-                variant="outline"
-                onClick={() => onEdit(event)}
-                className="flex-1 sm:flex-none bg-slate-800 border-slate-700 hover:bg-slate-700 text-white px-3 py-2 text-xs sm:text-sm h-10 min-h-[44px]"
-              >
-                <Edit className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Editar
-              </Button>
-              {onDuplicate && (
-                <Button
-                  variant="outline"
-                  onClick={() => { onDuplicate(event); onClose(); }}
-                  className="flex-1 sm:flex-none bg-slate-800 border-slate-700 hover:bg-slate-700 bp-text-primary px-3 py-2 text-xs sm:text-sm h-10 min-h-[44px]"
-                  title="Criar cópia deste evento"
-                >
-                  <Copy className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Duplicar
+          {/* Footer simplificado */}
+          <DialogFooter className="p-3 sm:p-4 bg-slate-900/50 border-t border-slate-700 flex flex-row gap-2 flex-shrink-0 pb-safe">
+            {primaryCTA}
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="flex-shrink-0 bg-slate-800 border-slate-700 hover:bg-slate-700 min-h-[44px]">
+                  <MoreHorizontal className="w-4 h-4" />
                 </Button>
-              )}
-              {event.client_id && (
-                <Button
-                  variant="outline"
-                  onClick={() => { onClose(); hardNavigate(`/client-detail?id=${event.client_id}`); }}
-                  className="flex-1 sm:flex-none bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-300 px-3 py-2 text-xs sm:text-sm h-10 min-h-[44px]"
-                  title="Ver página do cliente"
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" side="top" className="bg-slate-900 border-slate-700 text-slate-200 min-w-[180px]">
+                <DropdownMenuItem onClick={() => onEdit(event)} className="gap-2 cursor-pointer hover:bg-slate-800 focus:bg-slate-800">
+                  <Edit className="w-4 h-4" /> Editar evento
+                </DropdownMenuItem>
+                {onDuplicate && (
+                  <DropdownMenuItem onClick={() => { onDuplicate(event); onClose(); }} className="gap-2 cursor-pointer hover:bg-slate-800 focus:bg-slate-800">
+                    <Copy className="w-4 h-4" /> Duplicar
+                  </DropdownMenuItem>
+                )}
+                {event.client_id && (
+                  <DropdownMenuItem
+                    onClick={() => { onClose(); hardNavigate(`/client-detail?id=${event.client_id}`); }}
+                    className="gap-2 cursor-pointer hover:bg-slate-800 focus:bg-slate-800"
+                  >
+                    <ExternalLink className="w-4 h-4" /> Ver cliente
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={handleShareEvent} className="gap-2 cursor-pointer hover:bg-slate-800 focus:bg-slate-800">
+                  <ShareIcon className="w-4 h-4" /> Compartilhar
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-slate-800" />
+                {onAddWork && (
+                  <DropdownMenuItem onClick={() => onAddWork(event)} className="gap-2 cursor-pointer hover:bg-slate-800 focus:bg-slate-800">
+                    <Clock className="w-4 h-4" /> Registrar horas
+                  </DropdownMenuItem>
+                )}
+                {onAddExpense && (
+                  <DropdownMenuItem onClick={() => onAddExpense(event)} className="gap-2 cursor-pointer hover:bg-slate-800 focus:bg-slate-800">
+                    <Receipt className="w-4 h-4" /> Adicionar despesa
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator className="bg-slate-800" />
+                <DropdownMenuItem
+                  onClick={() => onDelete(event.id)}
+                  className="gap-2 cursor-pointer text-red-400 focus:text-red-400 focus:bg-red-900/20 hover:bg-red-900/20"
                 >
-                  <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Cliente
-                </Button>
-              )}
-              <Button
-                variant="outline"
-                onClick={handleShareEvent}
-                className="flex-1 sm:flex-none bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm h-10 min-h-[44px]"
-                title="Compartilhar detalhes do evento"
-              >
-                <ShareIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Compartilhar
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => onDelete(event.id)}
-                className="flex-1 sm:flex-none text-xs sm:text-sm h-10 min-h-[44px]"
-              >
-                <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Excluir
-              </Button>
-            </div>
-            <div className="flex gap-2 w-full sm:w-auto">
-              {isPastAndNotCompleted && (
-                <Button
-                  onClick={handleMarkCompleted}
-                  disabled={markingDone}
-                  className="flex-1 sm:flex-none bg-emerald-700 hover:bg-emerald-600 text-white text-xs sm:text-sm h-10 min-h-[44px]"
-                  title="Marcar este evento como realizado"
-                >
-                  {markingDone
-                    ? <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
-                    : <CheckSquare2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />}
-                  Realizado
-                </Button>
-              )}
-              {event.status === 'completed' && !showNFeCard && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => window.open('https://www.nfse.gov.br/EmissorNacional/Login', '_blank', 'noopener,noreferrer')}
-                  className="flex-1 sm:flex-none bg-slate-800 border-blue-700/50 hover:bg-blue-900/20 text-blue-400 text-xs sm:text-sm h-10 min-h-[44px]"
-                  title="Emitir NF-e no portal NFS-e Nacional (gov.br)"
-                >
-                  <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                  NF-e
-                </Button>
-              )}
-              {onAddWork && (
-                <Button
-                  variant="outline"
-                  onClick={() => onAddWork(event)}
-                  className="flex-1 sm:flex-none bg-slate-800 border bp-text-primary bp-hover-primary text-xs sm:text-sm h-10 min-h-[44px]"
-                  style={accentHex ? { color: accentHex, borderColor: `${accentHex}80` } : undefined}
-                >
-                  <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Horas
-                </Button>
-              )}
-              {onAddExpense && (
-                <Button
-                  variant="outline"
-                  onClick={() => onAddExpense(event)}
-                  className="flex-1 sm:flex-none bg-slate-800 border-amber-600/50 hover:bg-amber-900/20 text-amber-400 text-xs sm:text-sm h-10 min-h-[44px]"
-                >
-                  <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Despesa
-                </Button>
-              )}
-              {event.payment_status !== 'paid' && (
-                <Button
-                  onClick={handlePaymentUpdate}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-xs sm:text-sm h-10 min-h-[44px]"
-                >
-                  <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" /> Confirmar Recebimento
-                </Button>
-              )}
-            </div>
+                  <Trash2 className="w-4 h-4" /> Excluir evento
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </DialogFooter>
         </DialogContent>
       </Dialog>
