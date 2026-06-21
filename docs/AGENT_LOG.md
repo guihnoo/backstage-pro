@@ -4,6 +4,23 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+## 2026-06-20
+
+### S142 — EventDetailModal 3-tab layout (Resumo/Trabalho/Fiscal) + footer inteligente (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos**: `src/components/calendar/EventDetailModal.jsx`, `src/components/reports/EventDetailModal.jsx`
+- **Build**: ✅ limpo, 0 warnings ESLint
+- **Mudanças**:
+  - Ambos os modais reestruturados com 3 abas: **Resumo** (info, local, notas, checklist/rating) · **Trabalho** (financeiro, timer, dias multi-day, horas, despesas) · **Fiscal** (NF-e upload/AI, PIX, PDFs)
+  - **LifecycleBar** (4 etapas: Agendado → Realizado → Horas → Pago) adicionada em ambos os modais
+  - **Footer simplificado**: 1 CTA contextual por status + timer compacto + `···` DropdownMenu com ações secundárias (Edit/Duplicate/Client/WhatsApp/Delete)
+  - **InlineNotes** adicionada ao modal do calendário (antes ausente)
+  - Aba Fiscal exibe indicador `●` quando NF-e já registrada
+  - Botão **"Fiscal →"** nos cards CRM navega direto para aba NF-e
+- **Commit**: `e35c828`
+
+---
+
 ## 2026-06-16
 
 ### S128 — Manual do usuário atualizado (37→73 entradas) + isVisible Goals/Charts (Claude Code) ✅
