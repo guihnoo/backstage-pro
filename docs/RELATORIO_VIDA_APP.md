@@ -5,7 +5,7 @@
 
 **Última atualização:** 2026-06-20 (S148 — ExpandableSection localStorage + Home spacing; S147 — AppLayout polish; S146 — Bottom nav 4 abas; S145 — Reports expandable; S144 — Agenda overflow; S143 — Home 3 blocos; S141-S142 — EventDetailModal 3-tab — Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último deploy:** 2026-06-15 — `dpl_CZLMQ28odnw5yv76C8sjhTSBaB56` (commit `384d2fb` — S90-S94)  
+**Último deploy:** 2026-06-20 — `backstage-1lspcgxfu` (commit `b5fe45c` — S141-S148)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` (dedupe refatorado) deployadas no Supabase ✅  
 **Smoke E2E:** 28/28 passando (`npm run test:e2e:smoke`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`
