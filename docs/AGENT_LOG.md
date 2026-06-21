@@ -6,6 +6,18 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-21
 
+### S156 — Fix bugs E2E: NotificationCenter client, ClientDetailModal timeline, Calendar TDZ, MetricCard truncate (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos**: `src/components/notifications/NotificationCenter.jsx`, `src/components/clients/ClientDetailModal.jsx`, `src/pages/Calendar.jsx`
+- **Revisão E2E**: continuação — Notificações ✅, Inbox de Feedback ✅, ClientDetailModal (todas 3 abas) ✅
+- **Bugs encontrados e corrigidos**:
+  1. **NotificationCenter "Sem empresa"**: EventDetailModal aberto via notificação mostrava título "Sem empresa" porque `event.clients` era `null` (`useEvents()` faz `select('*')` sem join). Fix: `clients?.find(c => c.id === selectedEvent.client_id)` ✅
+  2. **ClientDetailModal Linha do Tempo click**: `handleEventClick` ignorava o evento e apenas navegava para `/calendar` sem contexto. Fix: navega para `/calendar?event=ID` com delay de 220ms para animação do Dialog ✅
+  3. **Calendar.jsx TDZ crash**: novo `useEffect` para `?event=ID` foi inserido ANTES do `const eventMap = useMemo(...)` → `ReferenceError: Cannot access 'Ee' before initialization` (TDZ em bundle minificado). Fix: mover useEffect para APÓS a declaração de `eventMap` ✅
+  4. **MetricCard "A RECEBER" truncado**: `text-2xl` + ícone `w-8` inline = ~96px disponível; "R$ 1.000,00" truncava para "R$ 1.000,...". Fix: ícone `absolute opacity-10`, `text-xl font-mono` → 140px+ disponível ✅
+- **Commits WIP**: `290a65a`, `0d6d416`, `62c7ac3` (push automático)
+- **Comportamento verificado como correto** (não bug): CTA "Marcar Realizado" para eventos passados com status 'confirmed' no DB (badge "Concluído" é computado); S152 "Confirmar Recebimento" ativado apenas após marcar como 'completed' no DB
+
 ### S155 — Fix truncamento Reports KPI cards + FinancialSummary + QuickStats (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Arquivos**: `src/components/reports/FinancialSummary.jsx`, `src/pages/Reports.jsx`, `src/components/home/QuickStats.jsx`

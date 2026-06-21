@@ -3,9 +3,9 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-21 (S155 — Fix truncamento Reports KPI cards + FinancialSummary + QuickStats diarias float; S154–S150 revisão E2E completa; Claude Code)  
+**Última atualização:** 2026-06-21 (S156 — Fix 4 bugs E2E: NotificationCenter client, Linha do Tempo calendar nav, Calendar TDZ crash, MetricCard truncate; Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último deploy:** 2026-06-21 — commit `25b5217` (S155)  
+**Último deploy:** 2026-06-21 — commit `62c7ac3` (S156 WIP)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` (dedupe refatorado) deployadas no Supabase ✅  
 **Smoke E2E:** 28/28 passando (`npm run test:e2e:smoke`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`
@@ -89,6 +89,7 @@
 | S153 Lifecycle hint + ErrorBoundary chunk (2026-06-21) | `reports/EventDetailModal.jsx`: hint ciclo de vida diferencia eventos futuros. `ErrorBoundary.jsx`: auto-reload na primeira ocorrência de chunk stale pós-deploy (via sessionStorage). |
 | S154 ProximoShow Local truncate (2026-06-21) | `ProximoShow.jsx`: `min-w-0` no flex container + div de texto do campo Local; `shrink-0` no MapPin. Endereços longos agora truncam corretamente na grid. |
 | S155 Fix truncamento Reports + QuickStats float (2026-06-21) | `FinancialSummary.jsx`: `grid-cols-2 md:grid-cols-3` → `grid-cols-2` (container 300px era estreito demais). `Reports.jsx` StatCard: `p-6`+ícone inline→`p-4 relative`+ícone `absolute opacity-10`+`text-lg`; labels completos visíveis. `QuickStats.jsx`: `Math.round(v)` no format de `diarias_count` evita float durante animação. Arquivo `--url` commitado acidentalmente removido. |
+| S156 Fix E2E: NotificationCenter client + Linha do Tempo nav + Calendar TDZ + MetricCard truncate (2026-06-21) | `NotificationCenter.jsx`: `client={clients?.find(c => c.id === selectedEvent.client_id)}` — corrige "Sem empresa". `ClientDetailModal.jsx`: `handleEventClick(event)` navega para `/calendar?event=ID` c/ delay 220ms. `Calendar.jsx`: `useEffect` para `?event=ID` movido APÓS `const eventMap = useMemo(...)` — fix TDZ crash. `ClientDetailModal.jsx` MetricCard: ícone `absolute opacity-10`, `text-xl font-mono` — corrige truncamento "R$ 1.000,...". |
 
 ---
 
