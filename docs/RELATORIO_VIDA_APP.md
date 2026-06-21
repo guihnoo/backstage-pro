@@ -84,6 +84,7 @@
 | S148 ExpandableSection localStorage + Home spacing (2026-06-20) | `Reports.jsx`: `ExpandableSection` ganha prop `id`; estado open/closed persiste em `localStorage['backstage:report-section:{id}']` com `try/catch`. `Home.jsx`: removido `space-y-4` do container — `NeonSectionFrame` já tem `mb-8`, evitando espaçamento duplo. `useRef` desnecessário removido de Reports. |
 | S149 Teste E2E Brave CDP (2026-06-21) | Revisão completa via agent-browser conectado ao Brave — todas as telas confirmadas. Zero bugs críticos. |
 | S150 Fix z-index DropdownMenu (2026-06-21) | `src/components/ui/dropdown-menu.jsx`: `DropdownMenuContent` e `DropdownMenuSubContent` de `z-50` → `z-[150]` para ficar acima do `DialogContent` (`z-[101]`). `tooltip.jsx`: `TooltipContent` de `z-50` → `z-[200]`. Bug: menu "···" no `EventDetailModal` renderizava atrás do modal. |
+| S151 Reports tab bar responsivo (2026-06-21) | `Reports.jsx`: tabs com labels duplos (`hidden min-[440px]:inline` full + `min-[440px]:hidden` short); `px-3` → `px-2.5`; `gap-2` → `gap-1.5`; fade gradiente à direita em mobile. Resultado: 721px → 672px, zero overflow. |
 
 ---
 

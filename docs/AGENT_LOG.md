@@ -6,6 +6,17 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-21
 
+### S151 — Reports tab bar responsivo + sem overflow (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos**: `src/pages/Reports.jsx`, `docs/AUDITORIA_PAGINAS.md`
+- **Problema**: Tab bar de 6 tabs (721px scrollWidth) overflow no viewport 624px — aba "Fiscal" invisível sem scroll
+- **Fix**:
+  - Labels responsivos: `hidden min-[440px]:inline` (full) + `min-[440px]:hidden` (short: "Geral", "Ativ.")
+  - `px-3` → `px-2.5`, `gap-2` → `gap-1.5` para compactar
+  - Fade gradiente `from-[#050609]` à direita como indicador de scroll (só visível em < 440px)
+  - Resultado: scrollWidth = clientWidth = 672px — **zero overflow** ✅
+- **Build**: ✅ `npm run build` limpo; deploy `backstage-agmnuf3fd` READY
+
 ### S150 — Revisão E2E completa + fix z-index DropdownMenu (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Método**: agent-browser CDP + edição direta de arquivos

@@ -218,6 +218,8 @@
 | `min-h-0` ausente em flex main | ✅ Corrigido | AppLayout.jsx |
 | `flex-shrink-0` ausente em DialogHeader/Footer | ✅ Corrigido | SCROLL-FLEX-SHRINK 2026-06-09 |
 | `min-h-screen` em páginas dentro de `data-app-scroll` | ✅ Corrigido | sessão 11 — Calendar, Goals, Home, Profile → `min-h-full` |
+| `DropdownMenuContent` z-50 atrás de Dialog z-101 | ✅ Corrigido | S150 `b4454f6` — `z-[150]`; `TooltipContent` → `z-[200]` |
+| Tab bar Reports overflow em mobile (Fiscal oculto) | ✅ Corrigido | S151 `0232540` — labels curtos + gap menor + fade gradiente direita |
 
 ---
 
