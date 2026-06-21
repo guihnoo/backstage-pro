@@ -179,15 +179,13 @@ const StatCard = ({ title, value, pulseValue, pulseColor, subtitle, icon: Icon, 
       }`}
       onClick={onClick}
     >
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-3 gap-2 min-w-0">
-          <div className="space-y-1 min-w-0 flex-1">
-            <p className="text-sm font-medium text-slate-400 truncate">{title}</p>
-            <StatValuePulse value={pulseValue ?? value} glowColor={pulseColor}>
-              <p className={`text-2xl font-bold truncate ${color}`} title={typeof value === 'string' ? value : undefined}>{value}</p>
-            </StatValuePulse>
-          </div>
-          <Icon className={`w-8 h-8 flex-shrink-0 ${color} opacity-60`} />
+      <CardContent className="p-4 relative">
+        <Icon className={`w-10 h-10 absolute right-3 top-3 ${color} opacity-10`} />
+        <div className="space-y-1 min-w-0 mb-3">
+          <p className="text-sm font-medium text-slate-400 truncate">{title}</p>
+          <StatValuePulse value={pulseValue ?? value} glowColor={pulseColor}>
+            <p className={`text-lg font-bold font-mono truncate ${color}`} title={typeof value === 'string' ? value : undefined}>{value}</p>
+          </StatValuePulse>
         </div>
         <div className="flex items-center justify-between gap-2 min-w-0">
           {subtitle && <p className="text-xs text-slate-500 truncate flex-1 min-w-0" title={subtitle}>{subtitle}</p>}
