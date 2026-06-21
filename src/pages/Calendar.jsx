@@ -340,8 +340,8 @@ export default function CalendarPage() {
     if (action === 'new-event' && clientId && processedActionRef.current !== key) {
       processedActionRef.current = key;
       setPrefillEventData((prev) => ({ ...(prev || {}), client_id: clientId }));
-      // Deferir limpeza da URL 600ms para não conflitar com animação de entrada (AnimatePresence)
-      setTimeout(() => window.history.replaceState(null, '', location.pathname), 600);
+      // Não chamar navigate/replaceState — qualquer mudança de location aciona AnimatePresence
+      // e trava motion.div em opacity:0. processedActionRef evita re-processamento.
     }
   }, [location.search, location.pathname]);
 
@@ -358,8 +358,8 @@ export default function CalendarPage() {
       if (ev) {
         processedEventIdRef.current = eventId;
         setSelectedEvent(ev);
-        // Deferir limpeza da URL 600ms para não conflitar com animação de entrada (AnimatePresence)
-        setTimeout(() => window.history.replaceState(null, '', location.pathname), 600);
+        // Não chamar navigate/replaceState — qualquer mudança de location aciona AnimatePresence
+        // e trava motion.div em opacity:0. processedEventIdRef evita re-processamento.
       }
     }
   }, [location.search, location.pathname, eventMap]);
