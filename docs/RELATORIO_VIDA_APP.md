@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-19 (S140 — NF-e upload + análise IA Gemini — Claude Code)  
+**Última atualização:** 2026-06-20 (S144 — Agenda 2 views + overflow; S143 — Home 3 blocos; S141 — EventDetailModal 3-tab — Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-06-15 — `dpl_CZLMQ28odnw5yv76C8sjhTSBaB56` (commit `384d2fb` — S90-S94)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` (dedupe refatorado) deployadas no Supabase ✅  
@@ -75,6 +75,9 @@
 | S138 ARIA grid no calendário (2026-06-17) | `BackstageCalendarGrid.jsx`: `role="grid"` + `aria-label` no container; `role="row"` + `role="columnheader"` no `WeekHeader`; `role="rowgroup"` no bloco de semanas; `role="row"` em cada `WeekRow`; `role="gridcell"` + `data-date` + `aria-label` (data por extenso pt-BR) + `aria-selected` + `aria-current` em cada `DayCell`; roving tabindex com estado `focusedDate`; navegação por `ArrowLeft/Right/Up/Down/Home/End/Enter/Space`. ESLint 0 warnings. |
 | S139 Auditoria S97–S138 (2026-06-17) | Auditoria formal de 25 componentes das features S97–S138: scroll/modal/ARIA/overflow. 0 problemas reais encontrados (1 falso positivo — `DrilldownModal` já tinha `flex-shrink-0`). `AUDITORIA_PAGINAS.md` atualizado. |
 | S140 NF-e upload + IA Gemini (2026-06-19) | `NFeAttachment.jsx` (shared): upload PDF para Storage (`{userId}/nfe/`), dispara `analyze-nfe` edge function após upload, exibe card de resultado (✅ tudo confere / ⚠ divergências com grid de dados: número, tomador, CNPJ, valor, competência, serviço), botão re-analisar ✨, substituir/remover. `analyze-nfe` edge function: baixa PDF → Gemini 2.5-flash Vision com contexto do evento → valida cruzamento CNPJ exato > nome NFD. DB: `nfe_numero`, `nfe_arquivo_url`, `nfe_arquivo_nome`, `nfe_analise JSONB`. Integrado nos 2 EventDetailModals com `client` prop. |
+| S141 EventDetailModal reports — 3 abas (2026-06-20) | `reports/EventDetailModal.jsx` + `calendar/EventDetailModal.jsx`: layout 3 abas Radix (Resumo · Trabalho · Fiscal) + `LifecycleBar` 4 etapas (Agendado→Realizado→Horas→Pago) + footer 1 CTA contextual por status + `···` DropdownMenu overflow (Edit/Duplicate/Client/WhatsApp/Delete). `InlineNotes` adicionada ao modal calendário. Indicador `●` na aba Fiscal quando NF-e registrada. Botão "Fiscal →" nos cards CRM navega para aba NF-e. |
+| S143 Home 3 blocos (2026-06-20) | `Home.jsx`: 8 seções soltas agrupadas em 3 `NeonSectionFrame` — **Palco** (ProximoShow + AlertasBastidao), **Financeiro** (AReceber + QuickStats + MetaMensalBar + PipelineFinanceiro + ForecastWidget), **Agenda** (ProximosEventos). Layout limpo com `space-y-4`. |
+| S144 Agenda 2 views + overflow (2026-06-20) | `Calendar.jsx`: toggle de 5 botões substituído por 2 primários (Grid LayoutGrid + Upcoming Zap) + `···` DropdownMenu com views secundárias (Semanal, Lista, Kanban). View ativa no overflow mantém highlight no botão `···`. |
 
 ---
 

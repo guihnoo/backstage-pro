@@ -6,6 +6,22 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-20
 
+### S143 + S144 — Home 3 blocos + Agenda 2 views primárias (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos**: `src/pages/Home.jsx`, `src/pages/Calendar.jsx`, `docs/RELATORIO_VIDA_APP.md`
+- **Build**: ✅ limpo, 0 warnings ESLint
+- **S143 — Home 3 blocos**:
+  - As 8 seções soltas agrupadas em 3 `NeonSectionFrame` com labels claros
+  - **Palco**: `ProximoShow` + `AlertasBastidao` (dentro do mesmo frame, `mt-3` quando há alertas)
+  - **Financeiro**: `AReceber` + `QuickStats` + `MetaMensalBar` + `PipelineFinanceiro` + `ForecastWidget`
+  - **Agenda**: `ProximosEventos`
+  - Layout usa `space-y-4` no container em vez de margens avulsas
+- **S144 — Agenda 2 views + overflow**:
+  - Toggle de 5 ícones trocado por: 2 primários (`LayoutGrid` + `Zap`) + `···` `DropdownMenu`
+  - Overflow contém: Vista Semanal (`CalendarDays`), Vista em Lista (`List`), Pipeline Kanban (`Columns2`)
+  - Botão `···` fica destacado (`bp-view-active`) quando a view ativa é uma das secundárias
+  - Imports adicionados: `MoreHorizontal` de lucide-react + `DropdownMenu*` de `@/components/ui/dropdown-menu`
+
 ### S142 — EventDetailModal 3-tab layout (Resumo/Trabalho/Fiscal) + footer inteligente (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Arquivos**: `src/components/calendar/EventDetailModal.jsx`, `src/components/reports/EventDetailModal.jsx`

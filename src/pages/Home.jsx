@@ -231,8 +231,9 @@ export default function Home() {
         </div>
       </motion.header>
 
-      <div className="px-4 py-6 max-w-2xl xl:max-w-6xl mx-auto w-full min-w-0 pb-28">
-        <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Próximo show">
+      <div className="px-4 py-6 max-w-2xl xl:max-w-6xl mx-auto w-full min-w-0 pb-28 space-y-4">
+        {/* Bloco 1 — Palco */}
+        <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Palco">
           {loading ? (
             <SectionSkeleton className="h-36" />
           ) : (
@@ -246,60 +247,61 @@ export default function Home() {
               onRefresh={refreshCockpit}
             />
           )}
+          {hasAlerts && (
+            <div className="mt-3">
+              <AlertasBastidao
+                alerts={alerts}
+                isLoading={loading}
+                primaryHex={config.primaryHex}
+                accentHex={config.accentHex}
+              />
+            </div>
+          )}
         </NeonSectionFrame>
 
-        {hasAlerts && (
-          <AlertasBastidao
-            alerts={alerts}
+        {/* Bloco 2 — Financeiro */}
+        <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Financeiro">
+          {loading ? (
+            <SectionSkeleton className="h-32" />
+          ) : (
+            <AReceber
+              rows={receivableRows}
+              totalReceivable={totalReceivable}
+              isLoading={false}
+              onMarkPaid={handleMarkPaid}
+            />
+          )}
+          <QuickStats
+            stats={stats}
             isLoading={loading}
             primaryHex={config.primaryHex}
             accentHex={config.accentHex}
           />
-        )}
-
-        {loading ? (
-          <SectionSkeleton className="h-32 mb-4" />
-        ) : (
-          <AReceber
-            rows={receivableRows}
-            totalReceivable={totalReceivable}
-            isLoading={false}
-            onMarkPaid={handleMarkPaid}
-          />
-        )}
-
-        <QuickStats
-          stats={stats}
-          isLoading={loading}
-          primaryHex={config.primaryHex}
-          accentHex={config.accentHex}
-        />
-
-        <div data-tour="home-meta">
-          <MetaMensalBar
-            profile={profile}
+          <div data-tour="home-meta">
+            <MetaMensalBar
+              profile={profile}
+              stats={stats}
+              isLoading={loading}
+              accentColor={config.primaryHex}
+            />
+          </div>
+          <PipelineFinanceiro
             stats={stats}
+            despesasMes={despesasMes}
             isLoading={loading}
-            accentColor={config.primaryHex}
+            primaryHex={config.primaryHex}
+            accentHex={config.accentHex}
           />
-        </div>
+          <ForecastWidget
+            events={forecastEvents}
+            isLoading={loading}
+            primaryHex={config.primaryHex}
+            accentHex={config.accentHex}
+            metaReceita={profile?.monthly_goal_revenue || 0}
+          />
+        </NeonSectionFrame>
 
-        <PipelineFinanceiro
-          stats={stats}
-          despesasMes={despesasMes}
-          isLoading={loading}
-          primaryHex={config.primaryHex}
-          accentHex={config.accentHex}
-        />
-
-        <ForecastWidget
-          events={forecastEvents}
-          isLoading={loading}
-          primaryHex={config.primaryHex}
-          accentHex={config.accentHex}
-          metaReceita={profile?.monthly_goal_revenue || 0}
-        />
-
+        {/* Bloco 3 — Agenda */}
         <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Agenda">
           {loading ? (
             <SectionSkeleton className="h-40" />

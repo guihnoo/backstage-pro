@@ -13,6 +13,12 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent } from '@/components/ui/card';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   Calendar,
   Clock,
   AlertCircle,
@@ -32,6 +38,7 @@ import {
   Columns2,
   Calculator,
   FileText,
+  MoreHorizontal,
 } from 'lucide-react';
 import { exportCalendarIcs } from '@/lib/exportReport';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, parseISO, isValid, addWeeks, subWeeks, startOfWeek, endOfWeek, eachDayOfInterval, differenceInCalendarDays, isBefore } from 'date-fns';
@@ -1252,6 +1259,7 @@ export default function CalendarPage() {
           ))}
           <div className="ml-auto flex items-center gap-2">
             <div className="flex items-center gap-1 bg-slate-800/60 border border-slate-700/60 rounded-lg p-0.5">
+              {/* Views primárias */}
               <button
                 type="button"
                 onClick={() => setViewMode('grid')}
@@ -1262,36 +1270,47 @@ export default function CalendarPage() {
               </button>
               <button
                 type="button"
-                onClick={() => { setViewMode('week'); setWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 })); }}
-                title="Vista semanal"
-                className={`p-1.5 rounded-md transition-colors ${viewMode === 'week' ? 'bp-view-active' : 'text-slate-500 hover:text-slate-300'}`}
-              >
-                <CalendarDays className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('list')}
-                title="Vista em lista"
-                className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bp-view-active' : 'text-slate-500 hover:text-slate-300'}`}
-              >
-                <List className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
                 onClick={() => setViewMode('upcoming')}
                 title="Próximos shows"
                 className={`p-1.5 rounded-md transition-colors ${viewMode === 'upcoming' ? 'bg-amber-600/30 text-amber-300' : 'text-slate-500 hover:text-slate-300'}`}
               >
                 <Zap className="w-4 h-4" />
               </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('kanban')}
-                title="Pipeline Kanban"
-                className={`p-1.5 rounded-md transition-colors ${viewMode === 'kanban' ? 'bp-view-active' : 'text-slate-500 hover:text-slate-300'}`}
-              >
-                <Columns2 className="w-4 h-4" />
-              </button>
+              {/* Views secundárias no overflow */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    title="Mais vistas"
+                    className={`p-1.5 rounded-md transition-colors ${['week', 'list', 'kanban'].includes(viewMode) ? 'bp-view-active' : 'text-slate-500 hover:text-slate-300'}`}
+                  >
+                    <MoreHorizontal className="w-4 h-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" side="bottom" className="bg-slate-900 border-slate-700 min-w-[160px] z-[110]">
+                  <DropdownMenuItem
+                    onClick={() => { setViewMode('week'); setWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 })); }}
+                    className={`flex items-center gap-2 cursor-pointer ${viewMode === 'week' ? 'text-white bg-slate-700/50' : 'text-slate-300'}`}
+                  >
+                    <CalendarDays className="w-4 h-4" />
+                    Vista Semanal
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setViewMode('list')}
+                    className={`flex items-center gap-2 cursor-pointer ${viewMode === 'list' ? 'text-white bg-slate-700/50' : 'text-slate-300'}`}
+                  >
+                    <List className="w-4 h-4" />
+                    Vista em Lista
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setViewMode('kanban')}
+                    className={`flex items-center gap-2 cursor-pointer ${viewMode === 'kanban' ? 'text-white bg-slate-700/50' : 'text-slate-300'}`}
+                  >
+                    <Columns2 className="w-4 h-4" />
+                    Pipeline Kanban
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             <button
               type="button"
