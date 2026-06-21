@@ -4,6 +4,25 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+## 2026-06-21
+
+### S149 — Teste E2E completo em produção via Brave CDP (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Método**: agent-browser conectado ao Brave via `--cdp 9222`; conta real logada
+- **Build**: ✅ produção `backstage-1lspcgxfu` (commit `b5fe45c`)
+- **Resultados**:
+  - **Home** 3 blocos (Palco/Financeiro/Agenda): ✅ layout e espaçamento corretos
+  - **Bottom nav 4 abas**: ✅ Home/Agenda/Relatório/Mais funcionando
+  - **Sheet "Mais"**: ✅ animação slide-up, backdrop, X fecha, grid 4-col correto
+  - **Indicador ativo "Mais"**: ✅ roxo em rotas secundárias (/clients)
+  - **Agenda view Grid**: ✅ calendário mensal renderizado com eventos
+  - **Agenda view Upcoming** (Zap): ✅ Esta Semana / Próxima Semana agrupados
+  - **Agenda dropdown "···"**: ✅ Vista Semanal / Vista em Lista / Pipeline Kanban
+  - **Reports seções colapsáveis**: ✅ Comparativo / Previsão Caixa / Top Clientes fechadas por padrão
+  - **Reports localStorage**: ✅ `backstage:report-section:yoy: true` persistido após expandir
+  - **EventDetailModal 3 abas**: ✅ Resumo/Trabalho/Fiscal + LifecycleBar + footer CTA contextual
+- **Zero bugs críticos encontrados**
+
 ## 2026-06-20
 
 ### S148 — Reports ExpandableSection localStorage + Home fix (Claude Code) ✅
