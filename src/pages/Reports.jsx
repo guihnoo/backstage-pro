@@ -993,38 +993,43 @@ export default function ReportsPage() {
         }
 
         {/* View Selector */}
-        <div className="flex items-center gap-1 border-b border-slate-800 overflow-x-auto pb-px scrollbar-none">
-          {[
-            { id: 'overview', label: 'Visão Geral', icon: BarChart3, count: null },
-            { id: 'clients', label: 'Clientes', icon: Users, count: data.clients.length },
-            { id: 'expenses', label: 'Despesas', icon: DollarSign, count: processedData.current.expenses.length },
-            { id: 'work', label: 'Trabalho', icon: Briefcase, count: processedData.current.work.length || null },
-            { id: 'activity', label: 'Atividade', icon: Activity, count: null },
-            {
-              id: 'fiscal', label: 'Fiscal', icon: Receipt,
-              count: data.events.filter(e => e.status !== 'cancelled' && !e.nf_number && (Number(e.paid_amount) > 0 || Number(e.estimated_revenue) > 0 || Number(e.actual_revenue) > 0)).length || null,
-            },
-          ].map((view) => (
-            <button
-              key={view.id}
-              type="button"
-              onClick={() => setSelectedView(view.id)}
-              className={`flex items-center gap-2 h-9 px-3 flex-shrink-0 rounded-t-lg text-sm font-medium transition-all ${
-                selectedView === view.id
-                  ? 'text-white border-b-2'
-                  : 'text-slate-400 hover:text-white border-b-2 border-transparent'
-              }`}
-              style={selectedView === view.id ? { borderBottomColor: config.primaryHex, color: config.primaryHex } : undefined}
-            >
-              <view.icon className="w-4 h-4" />
-              <span>{view.label}</span>
-              {view.count != null && view.count > 0 && (
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${selectedView === view.id ? 'bp-chip-badge-active' : 'bg-slate-700/50 text-slate-500'}`}>
-                  {view.count}
-                </span>
-              )}
-            </button>
-          ))}
+        <div className="relative border-b border-slate-800">
+          <div className="flex items-center gap-1 overflow-x-auto pb-px scrollbar-none">
+            {[
+              { id: 'overview', label: 'Visão Geral', short: 'Geral', icon: BarChart3, count: null },
+              { id: 'clients', label: 'Clientes', short: 'Clientes', icon: Users, count: data.clients.length },
+              { id: 'expenses', label: 'Despesas', short: 'Despesas', icon: DollarSign, count: processedData.current.expenses.length },
+              { id: 'work', label: 'Trabalho', short: 'Trabalho', icon: Briefcase, count: processedData.current.work.length || null },
+              { id: 'activity', label: 'Atividade', short: 'Ativ.', icon: Activity, count: null },
+              {
+                id: 'fiscal', label: 'Fiscal', short: 'Fiscal', icon: Receipt,
+                count: data.events.filter(e => e.status !== 'cancelled' && !e.nf_number && (Number(e.paid_amount) > 0 || Number(e.estimated_revenue) > 0 || Number(e.actual_revenue) > 0)).length || null,
+              },
+            ].map((view) => (
+              <button
+                key={view.id}
+                type="button"
+                onClick={() => setSelectedView(view.id)}
+                className={`flex items-center gap-1.5 h-9 px-2.5 flex-shrink-0 rounded-t-lg text-sm font-medium transition-all ${
+                  selectedView === view.id
+                    ? 'text-white border-b-2'
+                    : 'text-slate-400 hover:text-white border-b-2 border-transparent'
+                }`}
+                style={selectedView === view.id ? { borderBottomColor: config.primaryHex, color: config.primaryHex } : undefined}
+              >
+                <view.icon className="w-4 h-4 shrink-0" />
+                <span className="hidden min-[440px]:inline">{view.label}</span>
+                <span className="min-[440px]:hidden">{view.short}</span>
+                {view.count != null && view.count > 0 && (
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${selectedView === view.id ? 'bp-chip-badge-active' : 'bg-slate-700/50 text-slate-500'}`}>
+                    {view.count}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+          {/* fade direita indica scroll horizontal */}
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#050609] to-transparent min-[440px]:hidden" />
         </div>
 
         {/* Content based on selected view */}
