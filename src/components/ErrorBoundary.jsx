@@ -12,6 +12,16 @@ export class ErrorBoundary extends React.Component {
   }
 
   static getDerivedStateFromError(error) {
+    // Chunk stale após deploy → auto-reload uma vez (evita loop)
+    const isChunkError =
+      error?.message?.includes('Failed to fetch dynamically imported module') ||
+      error?.message?.includes('Loading chunk') ||
+      error?.message?.includes('Importing a module script failed');
+    if (isChunkError && !sessionStorage.getItem('bp_chunk_reload')) {
+      sessionStorage.setItem('bp_chunk_reload', '1');
+      window.location.reload();
+      return { hasError: false, error: null };
+    }
     return { hasError: true, error };
   }
 

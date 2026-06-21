@@ -168,6 +168,8 @@ const EventLifecycleBar = ({ event, dailyWork = [] }) => {
   const isCancelled = status === 'cancelled';
   if (isCancelled) return null;
 
+  const isFutureEvent = event.start_date && new Date(event.start_date + 'T00:00:00') > new Date();
+
   const steps = [
     { label: 'Agendado', done: true, color: primaryHex },
     { label: 'Realizado', done: status === 'completed', color: '#22c55e' },
@@ -211,7 +213,7 @@ const EventLifecycleBar = ({ event, dailyWork = [] }) => {
       </div>
       {doneCount < steps.length && (
         <p className="text-[10px] text-slate-500 mt-1">
-          {doneCount === 1 && 'Registre horas ou marque o evento como concluído'}
+          {doneCount === 1 && (isFutureEvent ? 'Evento futuro — aguardando realização' : 'Registre horas ou marque o evento como concluído')}
           {doneCount === 2 && 'Registre as horas trabalhadas neste evento'}
           {doneCount === 3 && 'Aguardando confirmação de pagamento'}
         </p>
