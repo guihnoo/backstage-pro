@@ -6,6 +6,17 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-21
 
+### S155 — Fix truncamento Reports KPI cards + FinancialSummary + QuickStats (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos**: `src/components/reports/FinancialSummary.jsx`, `src/pages/Reports.jsx`, `src/components/home/QuickStats.jsx`
+- **Revisão E2E**: continuação da varredura completa do app (Clientes ✅, Metas ✅, Despesas ✅, IA Mentor ✅, Agenda todas as vistas ✅, Relatórios ✅, Perfil ✅)
+- **Bugs encontrados e corrigidos**:
+  1. **FinancialSummary grid-cols-3**: container 300px com 3 colunas = 93px/card — truncava "R$ 1.000,00". Fix: `grid-cols-2` → 143px/card ✅
+  2. **StatCard KPI**: `p-6` + ícone `w-8` inline = 68px texto; `text-2xl` truncava. Fix: `p-4 relative`, ícone `absolute opacity-10`, `text-lg` → 124px ✅
+  3. **QuickStats diarias_count float**: animação framer-motion 0→2 mostrava "0.296... dias". Fix: `Math.round(v)` no format ✅
+  4. **Arquivo `--url`**: commitado acidentalmente; removido via `git rm` ✅
+- **Commits**: `893b904` WIP + `7c9c12d` rm --url + `25b5217` S155 oficial
+
 ### S154 — ProximoShow Local truncate fix (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Arquivos**: `src/components/home/ProximoShow.jsx`
