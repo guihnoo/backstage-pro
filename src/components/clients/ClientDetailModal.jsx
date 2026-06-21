@@ -301,9 +301,9 @@ export default function ClientDetailModal({
     }
   }, [client]);
 
-  const handleEventClick = useCallback(() => {
+  const handleEventClick = useCallback((event) => {
     onClose();
-    hardNavigate('/calendar');
+    hardNavigate(event?.id ? `/calendar?event=${event.id}` : '/calendar');
   }, [onClose]);
 
   const modalAnimation = {

@@ -301,7 +301,7 @@ export default function NotificationCenter({ compact = false }) {
       <Suspense fallback={null}>
         <EventDetailModal
           event={selectedEvent}
-          client={selectedEvent.clients || null}
+          client={selectedEvent.clients || clients?.find(c => c.id === selectedEvent.client_id) || null}
           onClose={() => setSelectedEvent(null)}
           onEdit={(event) => {
             setSelectedEvent(null);

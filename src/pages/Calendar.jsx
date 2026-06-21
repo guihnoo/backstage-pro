@@ -341,6 +341,19 @@ export default function CalendarPage() {
     }
   }, [location.search, location.pathname, navigate]);
 
+  // Abre EventDetailModal quando ?event=ID vem de outra página
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const eventId = params.get('event');
+    if (eventId && eventMap.size > 0) {
+      const ev = eventMap.get(eventId);
+      if (ev) {
+        setSelectedEvent(ev);
+        navigate(location.pathname, { replace: true });
+      }
+    }
+  }, [location.search, location.pathname, navigate, eventMap]);
+
   const clientMap = useMemo(() => new Map(clients.map(c => [c.id, c])), [clients]);
   const eventMap = useMemo(() => new Map(events.map(e => [e.id, e])), [events]);
 
