@@ -66,7 +66,7 @@ export default function FinancialSummary({ stats }) {
   return (
     <div className="space-y-3">
       <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Resumo Detalhado</h3>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
+      <div className="grid grid-cols-2 gap-2.5">
         {CARDS.map((card, i) => {
           const Icon = card.icon;
           const raw = stats[card.key] || 0;
