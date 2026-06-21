@@ -3,9 +3,9 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-21 (S156 — Fix 4 bugs E2E: NotificationCenter client, Linha do Tempo calendar nav, Calendar TDZ crash, MetricCard truncate; Claude Code)  
+**Última atualização:** 2026-06-21 (S158 — Fix Calendar tela preta AnimatePresence + GlobalSearch event ID + Expenses truncate + AI Mentor client name; Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último deploy:** 2026-06-21 — commit `62c7ac3` (S156 WIP)  
+**Último deploy:** 2026-06-21 — commit `1fd9483` (S158 AI Mentor client fix)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` (dedupe refatorado) deployadas no Supabase ✅  
 **Smoke E2E:** 28/28 passando (`npm run test:e2e:smoke`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`
@@ -90,6 +90,8 @@
 | S154 ProximoShow Local truncate (2026-06-21) | `ProximoShow.jsx`: `min-w-0` no flex container + div de texto do campo Local; `shrink-0` no MapPin. Endereços longos agora truncam corretamente na grid. |
 | S155 Fix truncamento Reports + QuickStats float (2026-06-21) | `FinancialSummary.jsx`: `grid-cols-2 md:grid-cols-3` → `grid-cols-2` (container 300px era estreito demais). `Reports.jsx` StatCard: `p-6`+ícone inline→`p-4 relative`+ícone `absolute opacity-10`+`text-lg`; labels completos visíveis. `QuickStats.jsx`: `Math.round(v)` no format de `diarias_count` evita float durante animação. Arquivo `--url` commitado acidentalmente removido. |
 | S156 Fix E2E: NotificationCenter client + Linha do Tempo nav + Calendar TDZ + MetricCard truncate (2026-06-21) | `NotificationCenter.jsx`: `client={clients?.find(c => c.id === selectedEvent.client_id)}` — corrige "Sem empresa". `ClientDetailModal.jsx`: `handleEventClick(event)` navega para `/calendar?event=ID` c/ delay 220ms. `Calendar.jsx`: `useEffect` para `?event=ID` movido APÓS `const eventMap = useMemo(...)` — fix TDZ crash. `ClientDetailModal.jsx` MetricCard: ícone `absolute opacity-10`, `text-xl font-mono` — corrige truncamento "R$ 1.000,...". |
+| S157 Fix GlobalSearch event ID + Expenses truncate + Calendar tela preta (2026-06-21) | `GlobalSearch.jsx`: navega para `/calendar?event=ID` em vez de `/calendar`; `onClose()` antes + 220ms delay. `Expenses.jsx` StatCard: `text-xl font-bold font-mono` (era `text-2xl font-extrabold`). `Calendar.jsx`: `replaceState` interceptado pelo RR6 → `AnimatePresence` trava em exit. Tentativas 1 (replaceState) + 2 (replaceState + 600ms + useRef) falharam. Fix definitivo S158: remover toda limpeza de URL. |
+| S158 Fix Calendar tela preta definitivo + AI Mentor client name (2026-06-21) | **Root cause**: `window.history.replaceState` é patchado pelo React Router v6 → dispara nova location → `AnimatePresence mode="wait"` vê nova renderização durante animação de entrada → `motion.div` fica em `opacity:0; translateY(-4px)` (exit state). Fix: remover todo `replaceState` e `navigate` para URL cleanup. `processedEventIdRef`/`processedActionRef` já previnem re-processamento. **AI Mentor**: `e.clients?.name` sempre null pois `useEvents` usa `select('*')` sem join → adicionado `clientMap` via `useClients()`. Nota: `useBackstageData.useEvents` tem JOIN correto; só `useEvents.js` (CRUD) não tem. |
 
 ---
 

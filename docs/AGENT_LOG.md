@@ -6,6 +6,20 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-21
 
+### S158 — Fix bugs E2E: Calendar tela preta (AnimatePresence) + GlobalSearch event ID + Expenses truncate + AI Mentor client name (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos**: `src/pages/Calendar.jsx`, `src/components/layout/GlobalSearch.jsx`, `src/pages/Expenses.jsx`, `src/pages/AI_Mentor.jsx`
+- **Revisão E2E**: continuação completa — Calendar ✅, GlobalSearch ✅, Expenses ✅, AI Mentor ✅, ProfileSimple ✅, Goals ✅, Clients ✅, AppHelp ✅
+- **Bugs encontrados e corrigidos**:
+  1. **GlobalSearch event click sem ID**: navegava para `/calendar` sem `?event=ID`. Fix: `hardNavigate('/calendar?event=${ev.id}')` + `onClose()` antes + 220ms delay ✅ (commit `4df4703`)
+  2. **Expenses StatCard truncado**: `text-2xl font-extrabold` overflow em grid 2-col mobile (~110px). Fix: `text-xl font-bold font-mono` ✅ (commit `9929cc2`)
+  3. **Calendar tela preta `opacity:0; translateY(-4px)`** (EXIT animation): `window.history.replaceState()` é interceptado pelo React Router v6 — patcha o método nativo e dispara nova location, que aciona AnimatePresence `mode="wait"` durante a animação de entrada, travando `motion.div` em estado de saída. Fix definitivo: remover toda limpeza de URL. `processedEventIdRef` e `processedActionRef` já previnem re-processamento sem precisar limpar a URL ✅ (commit `a30f04b`)
+  4. **AI Mentor `proximos_eventos` cliente "Sem cliente"**: `useEvents` de `AI_Mentor.jsx` usa `select('*')` sem join. Fix: `clientMap` via `useClients()` + lookup por `client_id` ✅ (commit `1fd9483`)
+- **Commits**: `4df4703`, `9929cc2`, `6f14281`, `60e4bc0`, `a30f04b`, `1fd9483`
+- **Deploy**: todos READY (Vercel production)
+- **Arquivos revisados sem bugs**: `ProfileSimple.jsx`, `Goals.jsx`, `Clients.jsx`, `AppHelp.jsx`, `AdminFeedbacks.jsx`, `useReceivable.js`, `useBackstageData.js`, `googleEventDedupe.js`
+- **Nota de arquitetura**: `useBackstageData.useEvents` tem JOIN `clients (name, email, phone)` ✅; `useEvents.js` (CRUD) usa `select('*')` sem join — nunca usar `e.clients?.name` com o segundo
+
 ### S156 — Fix bugs E2E: NotificationCenter client, ClientDetailModal timeline, Calendar TDZ, MetricCard truncate (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Arquivos**: `src/components/notifications/NotificationCenter.jsx`, `src/components/clients/ClientDetailModal.jsx`, `src/pages/Calendar.jsx`
