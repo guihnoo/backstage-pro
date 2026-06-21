@@ -6,6 +6,24 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-21
 
+### S154 — ProximoShow Local truncate fix (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos**: `src/components/home/ProximoShow.jsx`
+- **Fix**: campo Local no card do ProximoShow tinha `truncate` mas sem `min-w-0` no flex container — endereços longos podiam ultrapassar a célula da grid. Adicionado `min-w-0` no flex wrapper + no div de texto + `shrink-0` no MapPin.
+
+### S153 — Lifecycle hint futuro + auto-reload chunk stale (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos**: `src/components/reports/EventDetailModal.jsx`, `src/components/ErrorBoundary.jsx`
+- **Fixes**:
+  - `EventLifecycleBar`: dica de `doneCount=1` agora diferencia evento futuro ("Evento futuro — aguardando realização") de evento passado não concluído
+  - `ErrorBoundary`: auto-reload na primeira ocorrência de chunk stale (`Failed to fetch dynamically imported module`) via `sessionStorage` para evitar loop — elimina o crash pós-deploy da IA Mentor
+
+### S152 — reports/EventDetailModal CTA primário incorreto (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos**: `src/components/reports/EventDetailModal.jsx`
+- **Bug**: "Confirmar Recebimento" aparecia para eventos futuros agendados (qualquer evento com `payment_status !== 'paid'`)
+- **Fix**: guarda `isCompletedOrArchived` — CTA só muda para "Confirmar Recebimento" quando `status === 'completed' || 'archived'`; eventos futuros exibem "Editar" corretamente
+
 ### S151 — Reports tab bar responsivo + sem overflow (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Arquivos**: `src/pages/Reports.jsx`, `docs/AUDITORIA_PAGINAS.md`

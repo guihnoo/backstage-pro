@@ -85,6 +85,9 @@
 | S149 Teste E2E Brave CDP (2026-06-21) | Revisão completa via agent-browser conectado ao Brave — todas as telas confirmadas. Zero bugs críticos. |
 | S150 Fix z-index DropdownMenu (2026-06-21) | `src/components/ui/dropdown-menu.jsx`: `DropdownMenuContent` e `DropdownMenuSubContent` de `z-50` → `z-[150]` para ficar acima do `DialogContent` (`z-[101]`). `tooltip.jsx`: `TooltipContent` de `z-50` → `z-[200]`. Bug: menu "···" no `EventDetailModal` renderizava atrás do modal. |
 | S151 Reports tab bar responsivo (2026-06-21) | `Reports.jsx`: tabs com labels duplos (`hidden min-[440px]:inline` full + `min-[440px]:hidden` short); `px-3` → `px-2.5`; `gap-2` → `gap-1.5`; fade gradiente à direita em mobile. Resultado: 721px → 672px, zero overflow. |
+| S152 reports/EventDetailModal CTA fix (2026-06-21) | `reports/EventDetailModal.jsx`: "Confirmar Recebimento" só aparece para `completed`/`archived` (guarda `isCompletedOrArchived`). Eventos futuros agendados exibem "Editar". |
+| S153 Lifecycle hint + ErrorBoundary chunk (2026-06-21) | `reports/EventDetailModal.jsx`: hint ciclo de vida diferencia eventos futuros. `ErrorBoundary.jsx`: auto-reload na primeira ocorrência de chunk stale pós-deploy (via sessionStorage). |
+| S154 ProximoShow Local truncate (2026-06-21) | `ProximoShow.jsx`: `min-w-0` no flex container + div de texto do campo Local; `shrink-0` no MapPin. Endereços longos agora truncam corretamente na grid. |
 
 ---
 
