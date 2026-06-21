@@ -118,7 +118,7 @@ const StatCard = ({ title, value, onClick, active, primaryHex, accentHex }) => (
     <motion.div whileTap={{ scale: 0.98 }} onClick={onClick} className="cursor-pointer min-w-0">
         <NeonGlass primary={primaryHex} accent={accentHex} glow={active} className={`p-4 transition-transform duration-300 min-w-0 overflow-hidden ${active ? 'scale-[1.02]' : ''}`}>
             <p className="text-[10px] font-mono uppercase tracking-wider text-[#7c8494] mb-2 truncate">{title}</p>
-            <p className="text-2xl font-extrabold text-white truncate" title={typeof value === 'string' ? value : undefined} style={active ? { color: accentHex, textShadow: `0 0 16px ${primaryHex}55` } : undefined}>{value}</p>
+            <p className="text-xl font-bold font-mono text-white truncate" title={typeof value === 'string' ? value : undefined} style={active ? { color: accentHex, textShadow: `0 0 16px ${primaryHex}55` } : undefined}>{value}</p>
         </NeonGlass>
     </motion.div>
 );
