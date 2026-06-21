@@ -58,7 +58,7 @@ export function buildAppTourSteps({ pathname = '/' } = {}) {
       popover: {
         title: 'Menu inferior',
         description:
-          'Home, Agenda, Clientes, Metas, Despesas, Relatório e IA Mentor. Tudo a um toque, estilo app nativo.',
+          'Home, Agenda e Relatório ficam sempre visíveis. Toque em "Mais" para acessar Clientes, Metas, Despesas e IA Mentor.',
         side: 'top',
         align: 'center',
       },

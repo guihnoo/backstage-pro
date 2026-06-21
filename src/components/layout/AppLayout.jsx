@@ -53,6 +53,8 @@ export default function AppLayout() {
       mainRef.current.scrollTop = 0;
     }
     window.scrollTo(0, 0);
+    // Fechar sheet "Mais" ao navegar (incluindo botão voltar)
+    setShowMoreSheet(false);
   }, [location.pathname]);
 
   const themeVars = {
@@ -204,13 +206,13 @@ export default function AppLayout() {
                 </button>
               </div>
               <div className="grid grid-cols-4 gap-2 px-4 pb-4">
-                {secondaryNavItems.map(({ to, match, label, icon: Icon }) => {
+                {secondaryNavItems.map(({ match, label, icon: Icon }) => {
                   const active = isNavActive(location.pathname, match, false);
                   return (
                     <button
                       key={match}
                       type="button"
-                      onClick={() => { navigate(to); setShowMoreSheet(false); }}
+                      onClick={() => { navigate(match); setShowMoreSheet(false); }}
                       onPointerEnter={() => prefetchRoute(match)}
                       className="flex flex-col items-center gap-2 py-4 rounded-xl transition-colors bg-slate-800/40 hover:bg-slate-700/50 active:scale-95"
                     >
