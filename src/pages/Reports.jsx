@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useCallback } from 'react';
+﻿import { useState, useMemo, useCallback, useRef } from 'react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import {
   getEventCacheAmount,
@@ -27,6 +27,7 @@ import {
   Activity,
   Receipt,
   Briefcase,
+  ChevronDown,
 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, subMonths, isWithinInterval, parseISO, startOfYear, endOfYear, addMonths, startOfWeek, endOfWeek, subWeeks, addWeeks } from 'date-fns';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
@@ -96,6 +97,32 @@ const ReportsSkeleton = () => (
     <Skeleton className="h-96 rounded-lg" />
   </div>
 );
+
+// Seção colapsável para agrupar charts secundários
+function ExpandableSection({ label, defaultOpen = false, children }) {
+  const [open, setOpen] = useState(defaultOpen);
+  const contentRef = useRef(null);
+  return (
+    <div className="border border-slate-800/60 rounded-xl overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-slate-900/40 hover:bg-slate-800/40 transition-colors"
+      >
+        <span className="text-sm font-semibold text-slate-300">{label}</span>
+        <ChevronDown
+          className="w-4 h-4 text-slate-500 transition-transform duration-200"
+          style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
+        />
+      </button>
+      {open && (
+        <div ref={contentRef} className="p-4 space-y-6">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // Period options for reports
 const PERIOD_OPTIONS = [
@@ -983,7 +1010,8 @@ export default function ReportsPage() {
 
         {/* Content based on selected view */}
         {selectedView === 'overview' && (
-          <div className="space-y-6">
+          <div className="space-y-4">
+            {/* Seções sempre visíveis */}
             <SmartInsights
               events={data.events}
               clients={data.clients}
@@ -996,7 +1024,6 @@ export default function ReportsPage() {
               clients={data.clients}
               work={data.dailyWork}
             />
-            <YearOverYear events={data.events} clients={data.clients} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <ReportsChart
                 chartInput={processedData.chartInput}
@@ -1009,21 +1036,32 @@ export default function ReportsPage() {
               events={data.events}
               goalRevenue={Number(profile?.monthly_goal_revenue) || 0}
             />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <CashflowForecast
-                events={data.events}
-                work={data.dailyWork}
+
+            {/* Seções secundárias colapsáveis */}
+            <ExpandableSection label="Comparativo Ano a Ano">
+              <YearOverYear events={data.events} clients={data.clients} />
+            </ExpandableSection>
+
+            <ExpandableSection label="Previsão de Caixa & Categorias">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <CashflowForecast
+                  events={data.events}
+                  work={data.dailyWork}
+                  clients={data.clients}
+                />
+                <CategoryBreakdown
+                  events={processedData.current.events}
+                  work={processedData.current.work}
+                />
+              </div>
+            </ExpandableSection>
+
+            <ExpandableSection label="Top Clientes">
+              <TopClients
+                events={processedData.current.events}
                 clients={data.clients}
               />
-              <CategoryBreakdown
-                events={processedData.current.events}
-                work={processedData.current.work}
-              />
-            </div>
-            <TopClients
-              events={processedData.current.events}
-              clients={data.clients}
-            />
+            </ExpandableSection>
           </div>
         )}
 

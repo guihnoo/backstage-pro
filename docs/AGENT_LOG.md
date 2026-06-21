@@ -6,6 +6,22 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-20
 
+### S145 + S146 — Reports expandable sections + Bottom nav 4 abas (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos**: `src/pages/Reports.jsx`, `src/components/layout/AppLayout.jsx`, `docs/RELATORIO_VIDA_APP.md`
+- **Build**: ✅ limpo, 0 warnings ESLint
+- **S145 — Reports expandable sections**:
+  - `ExpandableSection` local adicionado no topo de `Reports.jsx` (chevron toggle, fechado por padrão)
+  - Aba **Visão Geral** reorganizada: 4 seções sempre visíveis + 3 colapsáveis
+  - Colapsáveis: "Comparativo Ano a Ano" (YearOverYear), "Previsão de Caixa & Categorias" (CashflowForecast + CategoryBreakdown), "Top Clientes" (TopClients)
+  - Imports adicionados: `ChevronDown` (lucide-react), `useRef`
+- **S146 — Bottom nav 4 abas**:
+  - `navItems` (7) dividido em `primaryNavItems` (3: Home, Agenda, Relatório) + `secondaryNavItems` (4: Clientes, Metas, Despesas, IA Mentor)
+  - Botão **Mais** (Menu icon) substitui as 4 abas removidas
+  - Sheet Framer Motion: backdrop escuro + painel deslizante com grid 4-col das rotas secundárias
+  - Indicador de rota ativo (`nav-indicator`) funciona no botão "Mais" quando rota secundária está ativa
+  - Imports adicionados: `useState`, `useNavigate`, `Menu`, `X`
+
 ### S143 + S144 — Home 3 blocos + Agenda 2 views primárias (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Arquivos**: `src/pages/Home.jsx`, `src/pages/Calendar.jsx`, `docs/RELATORIO_VIDA_APP.md`
