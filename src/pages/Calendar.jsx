@@ -331,14 +331,17 @@ export default function CalendarPage() {
   }, []));
 
   // Abre o formulário com cliente pré-selecionado quando ?action=new-event&client_id=xxx
+  const processedActionRef = useRef(null);
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const clientId = params.get('client_id');
     const action = params.get('action');
-    if (action === 'new-event' && clientId) {
+    const key = action + ':' + clientId;
+    if (action === 'new-event' && clientId && processedActionRef.current !== key) {
+      processedActionRef.current = key;
       setPrefillEventData((prev) => ({ ...(prev || {}), client_id: clientId }));
-      // replaceState em vez de navigate() para não acionar AnimatePresence e travar tela preta
-      window.history.replaceState(null, '', location.pathname);
+      // Deferir limpeza da URL 600ms para não conflitar com animação de entrada (AnimatePresence)
+      setTimeout(() => window.history.replaceState(null, '', location.pathname), 600);
     }
   }, [location.search, location.pathname]);
 
@@ -346,15 +349,17 @@ export default function CalendarPage() {
   const eventMap = useMemo(() => new Map(events.map(e => [e.id, e])), [events]);
 
   // Abre EventDetailModal quando ?event=ID vem de outra página (definido APÓS eventMap)
+  const processedEventIdRef = useRef(null);
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const eventId = params.get('event');
-    if (eventId && eventMap.size > 0) {
+    if (eventId && eventMap.size > 0 && processedEventIdRef.current !== eventId) {
       const ev = eventMap.get(eventId);
       if (ev) {
+        processedEventIdRef.current = eventId;
         setSelectedEvent(ev);
-        // replaceState em vez de navigate() para não acionar AnimatePresence e travar tela preta
-        window.history.replaceState(null, '', location.pathname);
+        // Deferir limpeza da URL 600ms para não conflitar com animação de entrada (AnimatePresence)
+        setTimeout(() => window.history.replaceState(null, '', location.pathname), 600);
       }
     }
   }, [location.search, location.pathname, eventMap]);
