@@ -6,6 +6,14 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-20
 
+### S147 — Polish AppLayout sheet Mais + AppTour step (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos**: `src/components/layout/AppLayout.jsx`, `src/lib/appTourSteps.js`
+- **Build**: ✅ limpo, 0 warnings ESLint
+- **Fix navigate()**: botões da sheet Mais agora usam `match` (caminho absoluto, ex: `/clients`) em vez de `to` relativo, evitando resolução incorreta de rota ao navegar de subrotas
+- **Fix sheet on back**: `useEffect` já existente para scroll reset agora também chama `setShowMoreSheet(false)`, garantindo que a sheet fecha ao usar o botão voltar do browser
+- **Fix AppTour**: step `bottomNav` atualizado — texto anterior listava 7 abas, novo texto descreve estrutura real: "Home, Agenda e Relatório sempre visíveis; Mais para o restante"
+
 ### S145 + S146 — Reports expandable sections + Bottom nav 4 abas (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Arquivos**: `src/pages/Reports.jsx`, `src/components/layout/AppLayout.jsx`, `docs/RELATORIO_VIDA_APP.md`
