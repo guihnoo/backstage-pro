@@ -231,7 +231,7 @@ export default function Home() {
         </div>
       </motion.header>
 
-      <div className="px-4 py-6 max-w-2xl xl:max-w-6xl mx-auto w-full min-w-0 pb-28 space-y-4">
+      <div className="px-4 py-6 max-w-2xl xl:max-w-6xl mx-auto w-full min-w-0 pb-28">
         {/* Bloco 1 — Palco */}
         <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Palco">
           {loading ? (

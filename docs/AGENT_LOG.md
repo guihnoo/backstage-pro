@@ -6,6 +6,14 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-20
 
+### S148 — Reports ExpandableSection localStorage + Home fix (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos**: `src/pages/Reports.jsx`, `src/pages/Home.jsx`
+- **Build**: ✅ limpo, 0 warnings ESLint
+- **S148a — ExpandableSection persistência**: prop `id` adicionada; estado open/closed persiste em `localStorage['backstage:report-section:{id}']`; leitura inicial restaura último estado; `try/catch` em leitura e escrita para ambientes sem storage
+- **S148b — Home spacing fix**: removido `space-y-4` do container da Home — `NeonSectionFrame` já tem `mb-8` embutido, gerando espaçamento duplo (48px) entre blocos; agora correto (32px via mb-8)
+- Também removido `useRef` desnecessário do import de Reports.jsx
+
 ### S147 — Polish AppLayout sheet Mais + AppTour step (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Arquivos**: `src/components/layout/AppLayout.jsx`, `src/lib/appTourSteps.js`

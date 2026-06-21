@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useCallback, useRef } from 'react';
+﻿import { useState, useMemo, useCallback } from 'react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import {
   getEventCacheAmount,
@@ -98,15 +98,34 @@ const ReportsSkeleton = () => (
   </div>
 );
 
-// Seção colapsável para agrupar charts secundários
-function ExpandableSection({ label, defaultOpen = false, children }) {
-  const [open, setOpen] = useState(defaultOpen);
-  const contentRef = useRef(null);
+// Seção colapsável — persiste estado aberto/fechado em localStorage
+function ExpandableSection({ id, label, defaultOpen = false, children }) {
+  const storageKey = id ? `backstage:report-section:${id}` : null;
+  const [open, setOpen] = useState(() => {
+    if (!storageKey) return defaultOpen;
+    try {
+      const stored = localStorage.getItem(storageKey);
+      return stored !== null ? stored === 'true' : defaultOpen;
+    } catch {
+      return defaultOpen;
+    }
+  });
+
+  const toggle = () => {
+    setOpen(v => {
+      const next = !v;
+      if (storageKey) {
+        try { localStorage.setItem(storageKey, String(next)); } catch (_e) { /* storage indisponível */ }
+      }
+      return next;
+    });
+  };
+
   return (
     <div className="border border-slate-800/60 rounded-xl overflow-hidden">
       <button
         type="button"
-        onClick={() => setOpen(v => !v)}
+        onClick={toggle}
         className="w-full flex items-center justify-between px-4 py-3 bg-slate-900/40 hover:bg-slate-800/40 transition-colors"
       >
         <span className="text-sm font-semibold text-slate-300">{label}</span>
@@ -116,7 +135,7 @@ function ExpandableSection({ label, defaultOpen = false, children }) {
         />
       </button>
       {open && (
-        <div ref={contentRef} className="p-4 space-y-6">
+        <div className="p-4 space-y-6">
           {children}
         </div>
       )}
@@ -1038,11 +1057,11 @@ export default function ReportsPage() {
             />
 
             {/* Seções secundárias colapsáveis */}
-            <ExpandableSection label="Comparativo Ano a Ano">
+            <ExpandableSection id="yoy" label="Comparativo Ano a Ano">
               <YearOverYear events={data.events} clients={data.clients} />
             </ExpandableSection>
 
-            <ExpandableSection label="Previsão de Caixa & Categorias">
+            <ExpandableSection id="cashflow-category" label="Previsão de Caixa & Categorias">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <CashflowForecast
                   events={data.events}
@@ -1056,7 +1075,7 @@ export default function ReportsPage() {
               </div>
             </ExpandableSection>
 
-            <ExpandableSection label="Top Clientes">
+            <ExpandableSection id="top-clients" label="Top Clientes">
               <TopClients
                 events={processedData.current.events}
                 clients={data.clients}
