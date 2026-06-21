@@ -161,6 +161,8 @@ export default function AIMentorPage() {
     });
   }, []);
 
+  const clientMap = useMemo(() => new Map((clients || []).map(c => [c.id, c])), [clients]);
+
   // Contexto financeiro enviado ao Claude
   const financialContext = useMemo(() => ({
     faturamento_mes: stats?.faturamento_pago ?? 0,
@@ -171,7 +173,7 @@ export default function AIMentorPage() {
     proximos_eventos: events?.slice(0, 5).map(e => ({
       titulo: e.title,
       data: e.start_date,
-      cliente: e.clients?.name || 'Sem cliente',
+      cliente: clientMap.get(e.client_id)?.name || 'Sem cliente',
       valor: getEventCacheAmount(e),
     })) ?? [],
     total_clientes: clients?.length ?? 0,
@@ -179,7 +181,7 @@ export default function AIMentorPage() {
     meta_receita: profile?.monthly_goal_revenue || 0,
     meta_eventos: profile?.monthly_goal_events || 0,
     meta_diarias: profile?.monthly_goal_events || 0,
-  }), [stats, events, clients, profile]);
+  }), [stats, events, clientMap, clients, profile]);
 
   const persistConversations = useCallback((convs) => {
     setConversations(convs);
