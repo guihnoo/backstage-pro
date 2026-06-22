@@ -31,8 +31,12 @@ const mapPayloadToDb = (payload = {}) => {
 
   delete mapped.id;
   delete mapped.owner_id;
-  // Não enviar event_date em updates parciais — coluna legada pode não existir ou ser NOT NULL.
-  delete mapped.event_date;
+  // event_date é a coluna legada NOT NULL — manter em sincronia com start_date
+  if (mapped.start_date) {
+    mapped.event_date = mapped.start_date;
+  } else {
+    delete mapped.event_date;
+  }
 
   normalizeLocationFields(mapped);
 
