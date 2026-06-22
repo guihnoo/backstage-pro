@@ -6,6 +6,30 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-22
 
+### S161 — Auditoria E2E (continuação): DailyWorkModal, ExpenseForm, ClientDetailModal, Home e sub-componentes, Reports (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Commits**: nenhum (sem bugs críticos encontrados)
+
+**Componentes auditados (sem bugs críticos):**
+- `DailyWorkModal`: timer ativo, atalhos 8/10/12h, cálculo de cachê — OK ✅
+- `ExpenseForm`: reset via `useEffect([open])`, payload correto — OK ✅
+- `ClientDetailModal`: `getEventStatus()` em `useMemo`, métricas financeiras corretas — OK ✅
+- `Home.jsx`: lazy load, ConfirmDialog, refetch pós-ações — OK ✅
+- `ProximoShow`: `event.status` raw intencional (status manual do usuário) — OK ✅
+- `AReceber`: confirmação com valor editável, WhatsApp charge — OK ✅
+- `ForecastWidget`: usa `getEventStatus()` para excluir completados — OK ✅
+- `QuickStats`: sem lógica problemática — OK ✅
+- `useHomeDashboard`: query otimizada (2 requests), `mapRowFromDb` normaliza `.date` e `.work_date` — OK ✅
+- `Reports.jsx`: `getEventStatus()` aplicado a todos os eventos via `calculatedStatus` — OK ✅
+
+**Inconsistência menor identificada (não bug):**
+- `useHomeDashboard.computeStats`: `faturamento_pago` usa data de start do evento no mês; `Reports.jsx` usa `paid_date`. Semânticas diferentes: Home = "receita de shows do mês", Reports = "o que recebeu no mês". Ambas válidas para os respectivos contextos.
+
+**Cobertura de auditoria E2E após S160+S161:**
+- Todas as páginas principais auditadas ✅
+- Todos os modais principais auditados ✅
+- Edge functions: `analyze-nfe` v3, `google-calendar` v29 — corrigidas e deployadas ✅
+
 ### S160 — Auditoria E2E: EventDetailModal CTA + NFeAttachment sync + google-calendar auto-disconnect + analyze-nfe v3 (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Commits**: `70f6eed` (S160 principal)
