@@ -6,6 +6,28 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-22
 
+### S162 — Auditoria E2E (finalização): AppLayout, edge functions, Clients, Expenses, ReceiptAnalyzer (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Commits**: nenhum (sem bugs críticos encontrados)
+
+**Componentes/areas auditados:**
+- `AppLayout.jsx`: `layoutId="nav-indicator"` compartilhado entre tabs primárias e "Mais" — correto; `scrollTop=0` em navegação; sheet "Mais" `z-[90]` OK
+- `AlertasBastidao`: `Ellipsis`/`ClampedText`, `type="button"`, WhatsApp por evento OK
+- `MetaMensalBar`: projeção mensal, `isVisible` correto, sem estado stale
+- `AppHelp.jsx`: `ManualSection` expandível, `aria-expanded`, sem modal, OK
+- `ReceiptAnalyzer`: upload Supabase → `analyze-receipt` → OCR pré-preenche form; `uploadUserFile` valida tipo/tamanho/UUID no path
+- `reports/EventDetailModal`: estado local `locDraft`/`ratingDraft`/`ratingNotesDraft` sincronizados via `useEffect([event.id, ...])` — OK ✅
+- `ai-chat` edge fn: auth, fallback local quando Gemini falha, sem `responseMimeType` na config
+- `search-company` edge fn: sem auth (intencional — lookup público), fallback BrasilAPI → CNPJa
+- `send-push-digest/test`: `send-push-digest` protegido por CRON_SECRET/service role; `send-push-test` requer user auth
+- `google-calendar-callback`: verifyState HMAC, fallback refresh_token se Google não retornar novo, lookup email opcional
+- `Clients.jsx`, `Expenses.jsx`: estrutura OK, sem bugs
+
+**Risco menor identificado (não bug):**
+- `analyze-receipt` usa `responseMimeType:'application/json'` com imagens — funciona para imagens mas monitorar se surgirem 500s (fix seria remover `responseMimeType` como feito no `analyze-nfe` v3)
+
+**Cobertura E2E após S160+S161+S162: toda a codebase auditada ✅**
+
 ### S161 — Auditoria E2E (continuação): DailyWorkModal, ExpenseForm, ClientDetailModal, Home e sub-componentes, Reports (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Commits**: nenhum (sem bugs críticos encontrados)
