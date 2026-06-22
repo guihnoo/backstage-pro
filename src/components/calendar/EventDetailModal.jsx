@@ -55,7 +55,7 @@ import { useAuth } from '@/lib/authContext';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { applyAuto12Hours } from '@/api/functions';
 import { useStatusToggle } from '@/lib/useStatusToggle';
-import { openWhatsAppCharge, formatBRL, buildEventReport, buildChargeMessage, buildProposalMessage } from '@/lib/whatsapp';
+import { openWhatsAppCharge, buildEventReport, buildChargeMessage, buildProposalMessage } from '@/lib/whatsapp';
 import { generatePixPayload, buildPixWhatsAppMessage } from '@/lib/pixPayload';
 import { startTimer, getTimer, stopTimer } from '@/lib/timerStore';
 import appToast from '@/lib/appToast';
@@ -315,20 +315,6 @@ export default function EventDetailModal({
     } finally {
       setSavingLocation(false);
     }
-  };
-
-  const handleShareWhatsApp = () => {
-    const phone = client?.phone;
-    if (!phone) { appToast.error('Cliente sem telefone cadastrado.'); return; }
-    const dateStr = event.start_date ? new Date(event.start_date + 'T12:00:00').toLocaleDateString('pt-BR') : '';
-    const timeStr = event.start_time ? event.start_time.slice(0, 5) : '';
-    const value = getEventCacheAmount(event);
-    const parts = [`*${event.title}*`];
-    if (dateStr) parts.push(`📅 ${dateStr}`);
-    if (timeStr) parts.push(`🕐 ${timeStr}`);
-    if (event.location) parts.push(`📍 ${event.location}`);
-    if (value > 0) parts.push(`💰 ${formatBRL(value)}`);
-    openWhatsAppCharge(phone, parts.join('\n'));
   };
 
   const handleChargeWhatsApp = () => {

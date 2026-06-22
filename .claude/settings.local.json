@@ -188,7 +188,8 @@
       "Bash(powershell.exe *)",
       "Bash(tasklist)",
       "Bash(taskkill /F /IM brave.exe)",
-      "Bash(grep -E \"Mais detalhes|MoreHorizontal|\\\\\\\\.\\\\\\\\.\\\\\\\\.|\\\\\\\\.\\\\\\\\.\\\\\\\\.button\")"
+      "Bash(grep -E \"Mais detalhes|MoreHorizontal|\\\\\\\\.\\\\\\\\.\\\\\\\\.|\\\\\\\\.\\\\\\\\.\\\\\\\\.button\")",
+      "Bash(npx eslint *)"
     ]
   },
   "enabledMcpjsonServers": [
