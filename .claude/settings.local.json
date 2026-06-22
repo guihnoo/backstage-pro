@@ -179,7 +179,16 @@
       "Bash(agent-browser --session backstage wait --load networkidle)",
       "Bash(agent-browser --session backstage screenshot --save /tmp/audit_home.png)",
       "Bash(agent-browser --session backstage snapshot -i)",
-      "Bash(agent-browser key *)"
+      "Bash(agent-browser key *)",
+      "Bash(agent-browser keyboard *)",
+      "Bash(grep -iv \"busca\\\\|notif\\\\|inbox\\\\|perfil\\\\|ref=e[3-9]$\")",
+      "Bash(agent-browser --session backstage-audit snapshot -i)",
+      "Bash(agent-browser sessions *)",
+      "Bash(agent-browser *)",
+      "Bash(powershell.exe *)",
+      "Bash(tasklist)",
+      "Bash(taskkill /F /IM brave.exe)",
+      "Bash(grep -E \"Mais detalhes|MoreHorizontal|\\\\\\\\.\\\\\\\\.\\\\\\\\.|\\\\\\\\.\\\\\\\\.\\\\\\\\.button\")"
     ]
   },
   "enabledMcpjsonServers": [

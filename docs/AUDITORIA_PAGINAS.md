@@ -3,7 +3,7 @@
 > Checklist vivo para revisão premium. Marque `[x]` quando validado em **mobile + desktop** após deploy.  
 > Legenda: 🟢 OK · 🟡 Ajustar · 🔴 Quebrado · ⬜ Não revisado
 
-**Última rodada geral:** 2026-06-17 (S139) — auditoria S97–S138 completa · 25 componentes novos · 0 problemas críticos  
+**Última rodada geral:** 2026-06-22 (S167) — auditoria E2E interativa CDP · 7 páginas validadas em conta real · 1 bug corrigido (ClientDetailModal Editar)  
 **Produção:** https://backstage-pro-beta.vercel.app
 
 ---
@@ -91,7 +91,7 @@
 | Página lista + filtros | [x] | 🟢 | `NeonPageShell min-h-full pb-24` ✅; pull-to-refresh ✅ lapida |
 | Cards lista | [x] | 🟢 | `truncate` + `title` em nome/contato; `min-w-0 overflow-hidden` ✅ |
 | `ClientForm` (LOCKED) | [x] | 🟢 | `ScrollArea fill` ✅; Razão Social adicionado sessão 10 |
-| `ClientDetailModal` | [x] | 🟢 | `EventHeading` timeline + próximos eventos; header truncate ✅ |
+| `ClientDetailModal` | [x] | 🟢 | `EventHeading` timeline + próximos eventos; header truncate ✅; botão Editar corrigido (S167 `a466c1a`) |
 | `ClientInsightsModal` | [x] | 🟢 | `Ellipsis` no título; `EventHeading` último evento ✅ |
 | `ClientActionSheet` | [x] | 🟢 | `useAppScrollLock` + `bp-modal-scroll` ✅ |
 | `CompanySearchInput` (3 abas) | [x] | 🟢 | Pesquisar/CNPJ/NF-e — sessão 10 |

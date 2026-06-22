@@ -6,6 +6,30 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-22
 
+### S167 — Auditoria E2E interativa via CDP: 7 páginas + fix ClientDetailModal Editar (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Commit**: `a466c1a` — fix(clients): ClientDetailModal Editar fecha modal antes de abrir form
+- **Arquivo alterado**: `src/components/clients/ClientDetailModal.jsx`
+
+**Páginas auditadas via agent-browser CDP (Brave, conta real):**
+- ✅ `/clients` — cards, ClientDetailModal (3 abas), InsightsModal, busca, filtros, Agendar Show, Página Completa, **Editar (bug CORRIGIDO)**
+- ✅ `/calendar` — EventDetailModal (3 abas + Fiscal/NF-e), list, busca, filtros
+- ✅ `/reports` — filtros período/cliente, mapa interativo, PDF (print preview), Excel (download)
+- ✅ `/expenses` — lista, Nova Despesa form, Digitalizar Recibo (IA)
+- ✅ `/goals` — animações Achievement, abas Metas/Nível/Conquistas/MEI
+- ✅ `/ai-mentor` — chat com contexto personalizado, sugestões, respostas IA
+- ✅ `/profile` — dados do usuário, stats mensais
+
+**Bug corrigido:**
+- `ClientDetailModal.jsx` botão "Editar": `onClick={() => onEdit(client)}` → `onClick={() => { onClose(); onEdit(client); }}`
+- Root cause: `ClientDetailModal` permanecia montado e visível (portal renderizado ACIMA do `ClientForm` na ordem DOM) bloqueando o form de edição
+- Fix: `onClose()` antes de `onEdit(client)` desmonta o dialog antes de abrir o form
+
+**Limitação de automação identificada (não bug):**
+- `motion.button` do Framer Motion não responde a `click()` via CDP ref — workaround: `eval("element.click()")` via querySelector. Cliques reais do usuário funcionam normalmente.
+
+---
+
 ### S165 — Fix analyze-nfe v5: maxOutputTokens + thinkingBudget + markdown parser (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Edge Function**: `analyze-nfe` v5 deployada no Supabase ✅

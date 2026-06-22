@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-22 (S164 — Auditoria E2E finalização: Timer, Push, PDF, GlobalSearch, CRM, Realtime, EventForm; Claude Code)  
+**Última atualização:** 2026-06-22 (S167 — Auditoria E2E interativa 7 páginas + fix ClientDetailModal Editar; Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-06-22 — commit `70f6eed` (S160 EventDetailModal + NFeAttachment fixes)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` v29 (auto-disconnect token inválido) + `analyze-nfe` v5 (Files API + maxOutputTokens 8192 + thinkingBudget 0 — **testado e funcionando em produção** ✅) deployadas no Supabase ✅  
@@ -92,6 +92,7 @@
 | S156 Fix E2E: NotificationCenter client + Linha do Tempo nav + Calendar TDZ + MetricCard truncate (2026-06-21) | `NotificationCenter.jsx`: `client={clients?.find(c => c.id === selectedEvent.client_id)}` — corrige "Sem empresa". `ClientDetailModal.jsx`: `handleEventClick(event)` navega para `/calendar?event=ID` c/ delay 220ms. `Calendar.jsx`: `useEffect` para `?event=ID` movido APÓS `const eventMap = useMemo(...)` — fix TDZ crash. `ClientDetailModal.jsx` MetricCard: ícone `absolute opacity-10`, `text-xl font-mono` — corrige truncamento "R$ 1.000,...". |
 | S157 Fix GlobalSearch event ID + Expenses truncate + Calendar tela preta (2026-06-21) | `GlobalSearch.jsx`: navega para `/calendar?event=ID` em vez de `/calendar`; `onClose()` antes + 220ms delay. `Expenses.jsx` StatCard: `text-xl font-bold font-mono` (era `text-2xl font-extrabold`). `Calendar.jsx`: `replaceState` interceptado pelo RR6 → `AnimatePresence` trava em exit. Tentativas 1 (replaceState) + 2 (replaceState + 600ms + useRef) falharam. Fix definitivo S158: remover toda limpeza de URL. |
 | S158 Fix Calendar tela preta definitivo + AI Mentor client name (2026-06-21) | **Root cause**: `window.history.replaceState` é patchado pelo React Router v6 → dispara nova location → `AnimatePresence mode="wait"` vê nova renderização durante animação de entrada → `motion.div` fica em `opacity:0; translateY(-4px)` (exit state). Fix: remover todo `replaceState` e `navigate` para URL cleanup. `processedEventIdRef`/`processedActionRef` já previnem re-processamento. **AI Mentor**: `e.clients?.name` sempre null pois `useEvents` usa `select('*')` sem join → adicionado `clientMap` via `useClients()`. Nota: `useBackstageData.useEvents` tem JOIN correto; só `useEvents.js` (CRUD) não tem. |
+| S167 Auditoria E2E interativa + fix Editar (2026-06-22) | Audit CDP via agent-browser: 7 páginas confirmadas (/clients /calendar /reports /expenses /goals /ai-mentor /profile). **Bug corrigido**: `ClientDetailModal` botão Editar não fechava o modal antes de abrir o form → `ClientForm` ficava oculto atrás. Fix: `onClose()` antes de `onEdit(client)`. Commit `a466c1a`. |
 
 ---
 
