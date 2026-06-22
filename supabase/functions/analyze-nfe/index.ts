@@ -77,7 +77,8 @@ Deno.serve(async (req) => {
     // Baixa o PDF do Storage
     const pdfRes = await fetch(body.pdf_url);
     if (!pdfRes.ok) throw new Error(`Erro ao buscar PDF: ${pdfRes.status}`);
-    const mimeType = pdfRes.headers.get('content-type') || 'application/pdf';
+    // Forçar application/pdf independente do Content-Type do storage
+    const mimeType = 'application/pdf';
     const base64 = toBase64(await pdfRes.arrayBuffer());
 
     const ctx = body.event_context ?? {};
@@ -105,6 +106,8 @@ Retorne SOMENTE JSON válido (sem markdown) com os campos:
 - "valor_confere": boolean — true se o valor da NF está dentro de R$ 1,00 do valor esperado (ou se não há valor esperado, retorne true)
 - "divergencias": array de strings descrevendo divergências encontradas, vazio se tudo ok`;
 
+    // Gemini 2.5 Flash com PDF: usar generateContent sem responseMimeType
+    // (responseMimeType + PDF inline pode causar 500 em alguns modelos)
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(geminiKey)}`;
     const geminiRes = await fetch(geminiUrl, {
       method: 'POST',
@@ -112,14 +115,13 @@ Retorne SOMENTE JSON válido (sem markdown) com os campos:
       body: JSON.stringify({
         contents: [{
           parts: [
-            { text: prompt },
             { inline_data: { mime_type: mimeType, data: base64 } },
+            { text: prompt },
           ],
         }],
         generationConfig: {
-          maxOutputTokens: 512,
+          maxOutputTokens: 1024,
           temperature: 0.1,
-          responseMimeType: 'application/json',
         },
       }),
     });
