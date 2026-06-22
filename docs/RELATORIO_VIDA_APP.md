@@ -5,7 +5,7 @@
 
 **Última atualização:** 2026-06-22 (S167 — Auditoria E2E interativa 7 páginas + fix ClientDetailModal Editar; Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último deploy:** 2026-06-22 — commit `70f6eed` (S160 EventDetailModal + NFeAttachment fixes)  
+**Último deploy:** 2026-06-22 — commit `c2015ce` (S167 ClientDetailModal Editar fix + S168 ESLint dead-code cleanup)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` v29 (auto-disconnect token inválido) + `analyze-nfe` v5 (Files API + maxOutputTokens 8192 + thinkingBudget 0 — **testado e funcionando em produção** ✅) deployadas no Supabase ✅  
 **Smoke E2E:** 28/28 passando (`npm run test:e2e:smoke`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`

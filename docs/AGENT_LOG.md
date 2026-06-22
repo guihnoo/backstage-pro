@@ -30,6 +30,19 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+### S168 — Limpeza ESLint: 3 dead-code em src (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos alterados**: `calendar/EventDetailModal.jsx`, `reports/EventDetailModal.jsx`, `Calendar.jsx`
+
+**Erros removidos:**
+1. `calendar/EventDetailModal.jsx`: `handleShareWhatsApp` — função declarada mas nunca chamada (substituída por `handleShareEvent` no S141); `formatBRL` — import que ficou órfão após remover a função
+2. `reports/EventDetailModal.jsx`: `Separator` — import não utilizado (ficou de refactor anterior)
+3. `Calendar.jsx`: `useNavigate` import + `const navigate = useNavigate()` — declarado mas nunca usado após S158 (que removeu toda navegação programática para evitar o bug de tela preta com AnimatePresence)
+
+**Resultado:** ESLint 0 erros em `src/` ✅
+
+---
+
 ### S165 — Fix analyze-nfe v5: maxOutputTokens + thinkingBudget + markdown parser (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Edge Function**: `analyze-nfe` v5 deployada no Supabase ✅
