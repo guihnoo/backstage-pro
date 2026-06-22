@@ -12,11 +12,12 @@ import EventHeading from '@/components/events/EventHeading';
 import { DEFAULT_EVENT_COLOR } from '@/lib/brandColors';
 
 const STATUS_LABEL = {
-  scheduled: { label: 'Agendado', cls: 'bg-blue-500/20 text-blue-300' },
-  confirmed: { label: 'Confirmado', themePrimary: true },
+  scheduled:   { label: 'Agendado',     cls: 'bg-blue-500/20 text-blue-300' },
+  confirmed:   { label: 'Confirmado',   themePrimary: true },
   in_progress: { label: 'Em andamento', cls: 'bg-yellow-500/20 text-yellow-300' },
-  completed: { label: 'Concluído', cls: 'bg-green-500/20 text-green-300' },
-  cancelled: { label: 'Cancelado', cls: 'bg-red-500/20 text-red-400 line-through' },
+  completed:   { label: 'Concluído',    cls: 'bg-green-500/20 text-green-300' },
+  cancelled:   { label: 'Cancelado',    cls: 'bg-red-500/20 text-red-400 line-through' },
+  archived:    { label: 'Arquivado',    cls: 'bg-slate-500/20 text-slate-400' },
 };
 
 function normalize(s) {

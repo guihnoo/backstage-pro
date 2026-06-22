@@ -3,10 +3,10 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-22 (S160 — Auditoria E2E: status CTA EventDetailModal + NFeAttachment sync + google-calendar auto-disconnect + analyze-nfe v3; Claude Code)  
+**Última atualização:** 2026-06-22 (S164 — Auditoria E2E finalização: Timer, Push, PDF, GlobalSearch, CRM, Realtime, EventForm; Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-06-22 — commit `70f6eed` (S160 EventDetailModal + NFeAttachment fixes)  
-**Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` v29 (auto-disconnect token inválido) + `analyze-nfe` v3 deployadas no Supabase ✅  
+**Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` v29 (auto-disconnect token inválido) + `analyze-nfe` v4 (Files API para PDFs — fix definitivo) deployadas no Supabase ✅  
 **Smoke E2E:** 28/28 passando (`npm run test:e2e:smoke`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
