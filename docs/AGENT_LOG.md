@@ -6,6 +6,32 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-22
 
+### S165 — Fix analyze-nfe v5: maxOutputTokens + thinkingBudget + markdown parser (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Edge Function**: `analyze-nfe` v5 deployada no Supabase ✅
+- **Arquivo alterado**: `supabase/functions/analyze-nfe/index.ts`
+
+**Root cause do 500 na v4 (identificado via curl direto):**
+- `gemini-2.5-flash` usa tokens de "thinking" antes do output visível
+- `maxOutputTokens: 1024` era insuficiente: thinking consumia parte do budget → JSON truncado antes do `}` final
+- Regex fallback `/\{[\s\S]*\}/` falha quando não há `}` → lançava "formato inválido"
+- Evidência: resposta mostrava `"nfe_numero": "63", "nfe_valor": 1000.00, "nfe_` cortado
+
+**Correções v5:**
+1. `maxOutputTokens: 1024 → 8192` — espaço suficiente para JSON completo
+2. `thinkingConfig: { thinkingBudget: 0 }` — desabilita raciocínio para extração estruturada simples
+3. Parser: `text.replace(/^\`\`\`(?:json)?\s*/i, '').replace(/\s*\`\`\`\s*$/, '')` — strip markdown antes de JSON.parse
+
+**Teste confirmado via curl (v5):**
+```json
+{"success":true,"data":{"nfe_numero":"63","nfe_valor":1000,"nfe_competencia":"19/06/2026",
+"nfe_tomador_nome":"FREELER PLATAFORMA DIGITAL DE SERVICOS PARA EVENTOS LTDA",
+"nfe_prestador_nome":"46.715.076 GUILHERME MONTEIRO DE OLIVEIRA","divergencias":[...]}}
+```
+✅ IA leu o PDF real e extraiu todos os campos corretamente
+
+---
+
 ### S164 — Auditoria E2E finalização: Timer, Push, PDF, GlobalSearch, CRM, Realtime, NotifCenter, EventForm (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Commits**: WIP auto-push (git:backup)

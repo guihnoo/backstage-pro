@@ -178,8 +178,9 @@ Retorne SOMENTE JSON válido (sem markdown, sem blocos de código, sem texto adi
           ],
         }],
         generationConfig: {
-          maxOutputTokens: 1024,
+          maxOutputTokens: 8192,
           temperature: 0.1,
+          thinkingConfig: { thinkingBudget: 0 },
         },
       }),
     });
@@ -202,10 +203,12 @@ Retorne SOMENTE JSON válido (sem markdown, sem blocos de código, sem texto adi
 
     let extracted: Record<string, unknown>;
     try {
-      extracted = JSON.parse(text);
+      // Strip markdown code block if present (```json ... ``` or ``` ... ```)
+      const stripped = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+      extracted = JSON.parse(stripped);
     } catch {
       const match = text.match(/\{[\s\S]*\}/);
-      if (!match) throw new Error('Resposta da IA em formato inválido: ' + text.slice(0, 200));
+      if (!match) throw new Error('Resposta da IA em formato inválido: ' + text.slice(0, 300));
       extracted = JSON.parse(match[0]);
     }
 

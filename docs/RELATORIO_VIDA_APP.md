@@ -6,7 +6,7 @@
 **Última atualização:** 2026-06-22 (S164 — Auditoria E2E finalização: Timer, Push, PDF, GlobalSearch, CRM, Realtime, EventForm; Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-06-22 — commit `70f6eed` (S160 EventDetailModal + NFeAttachment fixes)  
-**Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` v29 (auto-disconnect token inválido) + `analyze-nfe` v4 (Files API para PDFs — fix definitivo) deployadas no Supabase ✅  
+**Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` v29 (auto-disconnect token inválido) + `analyze-nfe` v5 (Files API + maxOutputTokens 8192 + thinkingBudget 0 — **testado e funcionando em produção** ✅) deployadas no Supabase ✅  
 **Smoke E2E:** 28/28 passando (`npm run test:e2e:smoke`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
