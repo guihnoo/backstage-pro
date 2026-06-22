@@ -82,12 +82,12 @@ export default function AppLayout() {
           paddingBottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))',
         }}
       >
-        <AnimatePresence>
+        <AnimatePresence mode="popLayout">
           <motion.div
             key={location.pathname}
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
             className="min-h-full"
           >
