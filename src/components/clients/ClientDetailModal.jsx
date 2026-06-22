@@ -690,7 +690,7 @@ export default function ClientDetailModal({
                   Agendar Show
                 </Button>
                 <Button
-                  onClick={() => onEdit(client)}
+                  onClick={() => { onClose(); onEdit(client); }}
                   className="sm:flex-none text-white border-0"
                   style={{ backgroundColor: config.primaryHex }}
                 >
