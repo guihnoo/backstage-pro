@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Upload, FileText, Download, Trash2, Loader2,
   ExternalLink, CheckCircle2, AlertTriangle, XCircle, Sparkles,
@@ -126,6 +126,10 @@ export default function NFeAttachment({ event, client }) {
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [numero, setNumero] = useState(event?.nfe_numero ?? '');
+
+  useEffect(() => {
+    setNumero(event?.nfe_numero ?? '');
+  }, [event?.id, event?.nfe_numero]);
   const [savingNumero, setSavingNumero] = useState(false);
 
   const hasArquivo = Boolean(event?.nfe_arquivo_url);

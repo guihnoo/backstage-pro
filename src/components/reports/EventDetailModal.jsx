@@ -512,6 +512,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
   };
 
   // Primary CTA logic
+  const status = getEventStatus(event);
   const isCompletedOrArchived = status === 'completed' || status === 'archived';
   let primaryCTA = null;
   if (isPastAndNotCompleted) {
