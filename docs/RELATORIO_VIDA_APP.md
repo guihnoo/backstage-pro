@@ -3,10 +3,10 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-21 (S158 — Fix Calendar tela preta AnimatePresence + GlobalSearch event ID + Expenses truncate + AI Mentor client name; Claude Code)  
+**Última atualização:** 2026-06-22 (S160 — Auditoria E2E: status CTA EventDetailModal + NFeAttachment sync + google-calendar auto-disconnect + analyze-nfe v3; Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último deploy:** 2026-06-21 — commit `1fd9483` (S158 AI Mentor client fix)  
-**Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` (dedupe refatorado) deployadas no Supabase ✅  
+**Último deploy:** 2026-06-22 — commit `70f6eed` (S160 EventDetailModal + NFeAttachment fixes)  
+**Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` v29 (auto-disconnect token inválido) + `analyze-nfe` v3 deployadas no Supabase ✅  
 **Smoke E2E:** 28/28 passando (`npm run test:e2e:smoke`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 

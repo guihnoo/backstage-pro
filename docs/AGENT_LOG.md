@@ -6,14 +6,26 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-22
 
-### S160 — Fix analyze-nfe v3 + google-calendar auto-disconnect token inválido (Claude Code) ✅
+### S160 — Auditoria E2E: EventDetailModal CTA + NFeAttachment sync + google-calendar auto-disconnect + analyze-nfe v3 (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
-- **Arquivos**: `supabase/functions/analyze-nfe/index.ts` (v3), `supabase/functions/_shared/googleCalendar.ts` (v29 do google-calendar)
-- **Navegação SPA**: `mode="popLayout"` (commit `80f5dda`) confirmado funcionando — screenshot mostra Calendar com opacity:1, sem tela preta ✅
-- **analyze-nfe v2 não havia sido deployada corretamente** (logs mostravam ainda versão 1 retornando 500). Redeploy como v3 — código igual ao fix da sessão anterior: sem `responseMimeType`, `inline_data` antes do `text`, `mimeType='application/pdf'` forçado.
-- **google-calendar 500 spam**: causa raiz = access token expirou 2026-06-17, toda chamada `push-event`/`sync-now` tentava refresh → Google retorna `invalid_grant` → não era capturado → retornava 500 em vez de 400. Fix em `getAccessToken`: envolve `refreshAccessToken` em try/catch; se erro contém `invalid_grant|token.*expired|token.*revoked`, auto-deleta `google_calendar_connections` e marca `user_settings.google_calendar_connected=false`, depois lança erro "não conectado" → handler retorna 400.
-- **Deployados**: `analyze-nfe` v3, `google-calendar` v29
-- **Ação necessária pelo usuário**: reconectar Google Calendar em Perfil → Integrações
+- **Commits**: `70f6eed` (S160 principal)
+- **Edge Functions**: `analyze-nfe` v3, `google-calendar` v29
+- **Navegação SPA**: `mode="popLayout"` (commit `80f5dda`) confirmado funcionando via screenshot ✅
+
+**Bugs corrigidos:**
+1. **`reports/EventDetailModal.jsx` — CTA "Confirmar Recebimento" nunca aparecia**: `status` não declarado no componente resolvia para `window.status` (string vazia no browser) → `isCompletedOrArchived` sempre `false`. Fix: `const status = getEventStatus(event)` inserido antes do bloco CTA. Commit `70f6eed`.
+2. **`NFeAttachment.jsx` — campo "Número da NF-e" mostrava valor de evento anterior**: `useState(event?.nfe_numero)` inicializa só no mount; `EventDetailModal` (sem `key` prop) não remonta ao trocar eventos. Fix: `useEffect` sincroniza `numero` state quando `event.id` ou `event.nfe_numero` muda. Commit `70f6eed`.
+3. **`google-calendar` 500 spam**: access token expirou 2026-06-17. Cada save de evento chamava `push-event` → tentava refresh → Google retorna `invalid_grant` → não capturado → retornava 500. Fix em `getAccessToken`: try/catch ao redor de `refreshAccessToken`; se `invalid_grant`, auto-deleta `google_calendar_connections` e marca `user_settings.google_calendar_connected=false` → erro "não conectado" → 400. Deploy: `google-calendar` v29. DB limpo manualmente via SQL.
+4. **`analyze-nfe` v2 não havia sido deployada** (logs mostravam v1 em 500). Redeploy como v3 com fixes corretos.
+
+**Observações da auditoria (não bugs críticos):**
+- Weekly view: eventos multi-dia aparecem apenas no `start_date`, não nos dias intermediários
+- Dois `EventDetailModal` existem: `calendar/` (Goals) e `reports/` (Calendar) — manter em sync em novas features
+- `EventChecklist`: templates por categoria (audio, lighting, DJ, foto, geral) — OK
+- `FloatingTimer`: salva com `date:` como alias de `work_date` — aceito pelo `mapPayloadToDb` ✅
+- `KanbanPipeline`: filtragem por período, sort "A Receber" por atraso — OK
+
+**Ação necessária pelo usuário**: reconectar Google Calendar em Perfil → Integrações
 
 ## 2026-06-21
 
