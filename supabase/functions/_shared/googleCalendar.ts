@@ -134,13 +134,29 @@ export async function getAccessToken(serviceClient: any, userId: string) {
   if (error || !conn) throw new Error('Google Calendar não conectado');
   const expiresAt = conn.token_expires_at ? new Date(conn.token_expires_at).getTime() : 0;
   if (conn.access_token && expiresAt > Date.now() + 60_000) return conn.access_token;
-  const tokens = await refreshAccessToken(conn.refresh_token);
-  await serviceClient.from('google_calendar_connections').update({
-    access_token: tokens.access_token,
-    token_expires_at: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
-    updated_at: new Date().toISOString(),
-  }).eq('user_id', userId);
-  return tokens.access_token;
+  try {
+    const tokens = await refreshAccessToken(conn.refresh_token);
+    await serviceClient.from('google_calendar_connections').update({
+      access_token: tokens.access_token,
+      token_expires_at: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
+      updated_at: new Date().toISOString(),
+    }).eq('user_id', userId);
+    return tokens.access_token;
+  } catch (err) {
+    // Token revogado ou expirado — auto-desconectar para parar spam de erros 500
+    const msg = err instanceof Error ? err.message : '';
+    const isTokenError = /invalid_grant|token.*expired|token.*revoked|revoked/i.test(msg);
+    if (isTokenError) {
+      await serviceClient.from('google_calendar_connections').delete().eq('user_id', userId);
+      await serviceClient.from('user_settings').update({
+        google_calendar_connected: false,
+        google_account_email: null,
+        google_calendar_id: null,
+        google_last_sync_at: null,
+      }).eq('user_id', userId).catch(() => null);
+    }
+    throw new Error('Google Calendar não conectado: reconecte nas configurações do app');
+  }
 }
 
 const BRAND_COLORS = ['#A64AFF', '#22d3ee', '#EAB308', '#22c55e', '#f43f5e', '#f97316', '#3b82f6', '#8b5cf6'];

@@ -4,7 +4,26 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+## 2026-06-22
+
+### S160 — Fix analyze-nfe v3 + google-calendar auto-disconnect token inválido (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos**: `supabase/functions/analyze-nfe/index.ts` (v3), `supabase/functions/_shared/googleCalendar.ts` (v29 do google-calendar)
+- **Navegação SPA**: `mode="popLayout"` (commit `80f5dda`) confirmado funcionando — screenshot mostra Calendar com opacity:1, sem tela preta ✅
+- **analyze-nfe v2 não havia sido deployada corretamente** (logs mostravam ainda versão 1 retornando 500). Redeploy como v3 — código igual ao fix da sessão anterior: sem `responseMimeType`, `inline_data` antes do `text`, `mimeType='application/pdf'` forçado.
+- **google-calendar 500 spam**: causa raiz = access token expirou 2026-06-17, toda chamada `push-event`/`sync-now` tentava refresh → Google retorna `invalid_grant` → não era capturado → retornava 500 em vez de 400. Fix em `getAccessToken`: envolve `refreshAccessToken` em try/catch; se erro contém `invalid_grant|token.*expired|token.*revoked`, auto-deleta `google_calendar_connections` e marca `user_settings.google_calendar_connected=false`, depois lança erro "não conectado" → handler retorna 400.
+- **Deployados**: `analyze-nfe` v3, `google-calendar` v29
+- **Ação necessária pelo usuário**: reconectar Google Calendar em Perfil → Integrações
+
 ## 2026-06-21
+
+### S159 — Fix NF-e upload 400: bucket 'backstage' sem application/pdf (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos**: nenhum (fix direto no Supabase Storage via SQL)
+- **Causa raiz**: bucket `backstage` no Supabase Storage tinha `allowed_mime_types = [image/jpeg, image/png, image/webp, image/gif, image/heic]` — sem `application/pdf`. Qualquer tentativa de upload de PDF retornava HTTP 400.
+- **Evidência**: log de storage `POST | 400 | /object/backstage/{userId}/nfe/{eventId}-timestamp.pdf`
+- **Fix**: `UPDATE storage.buckets SET allowed_mime_types = array_append(allowed_mime_types, 'application/pdf') WHERE id = 'backstage'`
+- **Sem alterações de código** — `NFeAttachment.jsx` estava correto; o problema era infraestrutura.
 
 ### S158 — Fix bugs E2E: Calendar tela preta (AnimatePresence) + GlobalSearch event ID + Expenses truncate + AI Mentor client name (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
