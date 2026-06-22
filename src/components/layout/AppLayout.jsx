@@ -82,13 +82,13 @@ export default function AppLayout() {
           paddingBottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))',
         }}
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           <motion.div
             key={location.pathname}
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.18, ease: 'easeOut' }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
             className="min-h-full"
           >
             <Suspense fallback={<RouteSkeleton />}>
