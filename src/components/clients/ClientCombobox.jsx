@@ -205,6 +205,12 @@ export default function ClientCombobox({
             <CommandList>
               {listEmpty && <CommandEmpty>Nenhuma empresa encontrada.</CommandEmpty>}
 
+              {!trimmedQuery && filteredClients.length === 0 && (
+                <div className="py-5 text-center text-xs text-slate-500 px-4">
+                  <p>Digite o nome para buscar clientes ou criar novo</p>
+                </div>
+              )}
+
               {filteredClients.length > 0 && (
                 <CommandGroup heading="Meus clientes">
                   {filteredClients.map((client) => (

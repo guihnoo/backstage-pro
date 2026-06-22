@@ -178,7 +178,8 @@
       "Bash(agent-browser --session backstage open https://backstage-pro-beta.vercel.app)",
       "Bash(agent-browser --session backstage wait --load networkidle)",
       "Bash(agent-browser --session backstage screenshot --save /tmp/audit_home.png)",
-      "Bash(agent-browser --session backstage snapshot -i)"
+      "Bash(agent-browser --session backstage snapshot -i)",
+      "Bash(agent-browser key *)"
     ]
   },
   "enabledMcpjsonServers": [

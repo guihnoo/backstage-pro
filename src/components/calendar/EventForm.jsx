@@ -374,23 +374,6 @@ export default function EventForm({
             <Label>Cliente</Label>
             {clientsLoading && allClients.length === 0 ? (
               <div className="h-11 rounded-md bg-slate-800 border border-slate-700 animate-pulse" />
-            ) : allClients.length === 0 ? (
-              <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 space-y-3">
-                <p className="text-sm text-amber-100">
-                  Cadastre um cliente antes de criar um evento na agenda.
-                </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="border-amber-500/50 text-amber-200 hover:bg-amber-500/20"
-                  onClick={() => {
-                    onClose?.(false);
-                    hardNavigate('/clients?action=new-client');
-                  }}
-                >
-                  Cadastrar primeiro cliente
-                </Button>
-              </div>
             ) : (
               <ClientCombobox
                 clients={allClients}
