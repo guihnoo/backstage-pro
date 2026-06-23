@@ -2,6 +2,11 @@ import { test, expect } from '@playwright/test';
 import { seedAuth } from '../helpers/fakeAuth.js';
 import { seedAuthWithData } from '../helpers/dataMocks.js';
 
+async function selectView(page, viewLabel) {
+  await page.getByTitle('Mais vistas').click();
+  await page.getByText(viewLabel, { exact: true }).click();
+}
+
 test('calendar nao fica preso em Carregando apos navegacao', async ({ page }) => {
   await seedAuth(page);
   await page.goto('/calendar', { waitUntil: 'domcontentloaded' });
@@ -23,7 +28,7 @@ test('vista semanal exibe colunas dos 7 dias e eventos mockados', async ({ page 
   await page.goto('/calendar', { waitUntil: 'domcontentloaded' });
   await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 15_000 });
 
-  await page.getByTitle('Vista semanal').click();
+  await selectView(page, 'Vista Semanal');
   const weekGrid = page.locator('.grid.grid-cols-7');
   await expect(weekGrid).toBeVisible({ timeout: 10_000 });
   const eventBtn = weekGrid.getByRole('button', { name: /E2E (Cliente Demo|Show Demo)/ }).first();
@@ -36,7 +41,7 @@ test('vista semanal persiste após recarregar a página', async ({ page }) => {
   await page.goto('/calendar', { waitUntil: 'domcontentloaded' });
   await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 15_000 });
 
-  await page.getByTitle('Vista semanal').click();
+  await selectView(page, 'Vista Semanal');
   await expect(page.locator('.grid.grid-cols-7')).toBeVisible({ timeout: 10_000 });
 
   await page.reload({ waitUntil: 'domcontentloaded' });
@@ -49,7 +54,7 @@ test('vista kanban exibe colunas do pipeline com eventos mockados', async ({ pag
   await page.goto('/calendar', { waitUntil: 'domcontentloaded' });
   await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 15_000 });
 
-  await page.getByTitle('Pipeline Kanban').click();
+  await selectView(page, 'Pipeline Kanban');
   await expect(page.getByText('Negociando', { exact: true })).toBeVisible({ timeout: 10_000 });
   await expect(page.getByText('Confirmado', { exact: true })).toBeVisible();
   await expect(page.getByText('A Receber', { exact: true })).toBeVisible();

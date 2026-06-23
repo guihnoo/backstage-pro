@@ -4,6 +4,30 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+## 2026-06-23
+
+### S172 — Auditoria E2E páginas + fix smoke tests (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos alterados**:
+  - `e2e/smoke/bottom-nav-navigation.spec.js` — atualizado para S146 nav (Mais sheet buttons vs links)
+  - `e2e/smoke/calendar-navigation.spec.js` — atualizado para DropdownMenu vistas (Mais vistas trigger)
+
+**Auditoria completa — todos OK (sem bugs encontrados):**
+- `Goals.jsx` — badges, streak, yearlyPanel, compartilhar, mini-calendar ✅
+- `Clients.jsx` — clientsWithStats, paymentScore, WhatsApp cobrança, useEvents interno ✅
+- `Reports.jsx` — processForPeriod, paid_date revenue, KPIDetailModal, ExpandableSection ✅
+- `ClientDetail.jsx` — stats memo, saveNotes, delete flow, chartInput ✅
+- `AI_Mentor.jsx` — stale closure menor em handleSend (novo conv ordering), não crítico ✅
+- `SignupNew.jsx` — handleSubmit, handleResend, useEffect redirect ✅
+- `Expenses.jsx` — MonthGroup, filteredExpenses, groupedByMonth, ReceiptAnalyzer ✅
+- `Calendar.jsx` — processedActionRef/EventIdRef, swipe, deleteEvent, applyAuto12Hours ✅
+
+**Smoke tests:** 33/33 passando ✅
+- `bottom-nav-navigation.spec.js` — 2/2 ✅ (openMaisAndNavigate helper)
+- `calendar-navigation.spec.js` — 4/4 ✅ (selectView helper → DropdownMenu trigger + item)
+
+---
+
 ## 2026-06-22
 
 ### S171 — Auditoria libs/hooks: 25+ arquivos validados (Claude Code) ✅
