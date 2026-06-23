@@ -38,7 +38,7 @@ export default function FeedbackModal({ open, onClose, primaryHex: primaryHexPro
     setType('suggestion');
     setMessage('');
     setRating(0);
-    setScreenshotPreview(null);
+    setScreenshotPreview((prev) => { if (prev) URL.revokeObjectURL(prev); return null; });
     setScreenshotFile(null);
     if (fileRef.current) fileRef.current.value = '';
   };
@@ -53,7 +53,10 @@ export default function FeedbackModal({ open, onClose, primaryHex: primaryHexPro
     const file = e.target.files?.[0];
     if (!file) return;
     setScreenshotFile(file);
-    setScreenshotPreview(URL.createObjectURL(file));
+    setScreenshotPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(file);
+    });
   };
 
   const handleSubmit = async () => {
@@ -216,7 +219,7 @@ export default function FeedbackModal({ open, onClose, primaryHex: primaryHexPro
                     <button
                       type="button"
                       onClick={() => {
-                        setScreenshotPreview(null);
+                        setScreenshotPreview((prev) => { if (prev) URL.revokeObjectURL(prev); return null; });
                         setScreenshotFile(null);
                         if (fileRef.current) fileRef.current.value = '';
                       }}

@@ -6,6 +6,34 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-22
 
+### S170 — Fix crítico: AppDataContext infinite render loop + auditoria auth pages (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivo alterado**: `src/components/context/AppDataContext.jsx`
+
+**Bug identificado via smoke tests (bottom-nav-navigation.spec.js):**
+- `AppDataProvider` gerava "Maximum update depth exceeded" — loop infinito de renders
+- Root cause: `authUser = mapSupabaseUser(sessionUser, profile)` criava objeto **novo a cada render**
+- Esse objeto estava na dep array de `useEffect` (linha 80) e de `useCallback(loadEntity)` (linha 111)
+- Loop: render → novo `authUser` → `useEffect` dispara → `setData` → re-render → novo `authUser` → ...
+- Fix: envolver em `useMemo([sessionUser, profile])` — objeto só muda quando state real muda
+- Importado `useMemo` de React
+
+**Efeito no app real:**
+- Em prod o comportamento era mascarado pelo React (ErrorBoundary captura antes de travar o browser)
+- Nos smoke tests: UI congelava, links de navegação ficavam inacessíveis → timeout
+
+**Páginas auditadas (sem mudanças necessárias):**
+- `AuthCallback.jsx` — CORRETO: finishedRef, timeouts, humanizeAuthError, recovery flow ✅
+- `ResetPassword.jsx` — CORRETO: guarda sessão no mount, validação senha, loading/done states ✅
+- `Onboarding.jsx` — CORRETO: 5 steps, validação por step, updateProfile + redirect ✅
+- `useEvents.js` — CORRETO: mapPayloadToDb, normalizeLocationFields, sort pós-create, realtime ✅
+- `authContext.jsx` — CORRETO: hydrateUser, applySession, onAuthStateChange handlers ✅
+- `ensureUserProfile.js` — CORRETO: maybeSingle(), criação com metadata OAuth ✅
+- `withTimeout.js` — CORRETO: Promise.race simples e correto ✅
+- `utils.js` — CORRETO: cn() via clsx+twMerge ✅
+
+---
+
 ### S167 — Auditoria E2E interativa via CDP: 7 páginas + fix ClientDetailModal Editar (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Commit**: `a466c1a` — fix(clients): ClientDetailModal Editar fecha modal antes de abrir form

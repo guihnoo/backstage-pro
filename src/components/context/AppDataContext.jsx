@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/authContext';
 
@@ -45,7 +45,10 @@ function mapSupabaseUser(sessionUser, profile) {
 
 export const AppDataProvider = ({ children }) => {
   const { user: sessionUser, profile, loading: authLoading } = useAuth();
-  const authUser = mapSupabaseUser(sessionUser, profile);
+  const authUser = useMemo(
+    () => mapSupabaseUser(sessionUser, profile),
+    [sessionUser, profile]
+  );
 
   const [data, setData] = useState({
     events: [],
