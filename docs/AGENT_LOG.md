@@ -6,6 +6,38 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-22
 
+### S171 — Auditoria libs/hooks: 25+ arquivos validados (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Sem arquivos alterados** (todos corretos)
+
+**Arquivos auditados — todos OK:**
+- `useClients.js` — fallback `client_type` error + linkClientToCompanyAfterCreate fire-and-forget ✅
+- `useExpenses.js` — mapPayloadToDb/mapRowFromDb, silent refetch, realtime ✅
+- `eventFinance.js` — isCancelledEvent, isReceivableEvent, calcEventDays, getEventCacheAmount ✅
+- `useHomeDashboard.js` — 2 requests (events+work), cancelled flag, markClientPaid com ratio ✅
+- `notificationRules.js` — today/tomorrow/payment/goal reminders, priority sort ✅
+- `patchHistory.js` — filtra `state.idx` React Router, evita loop bp:history ✅
+- `goalMetrics.js` — streak, eventsNeeded, paidRevenueInMonth ✅
+- `useStatusToggle.js` / `usePaymentToggle.js` — toggling guard, onSuccess callback ✅
+- `whatsapp.js` — formatWhatsAppNumber, buildChargeMessage (1/multi), buildProposalMessage, buildEventReport ✅
+- `exportReport.js` — CSV/ICS/PDF: downloadBlob revoga URL imediatamente (correto) ✅
+- `supabase.js` — PKCE, detectSessionInUrl:false, latin1SafeFetch, placeholder fallback ✅
+- `useUserSettings.js` — maybeSingle, upsert onConflict:user_id ✅
+- `LoginNew.jsx` — authBootTimedOut 10s guard, humanizeLoginError, forgotPassword flow ✅
+- `Home.jsx` — useHomeDashboard + useEvents/useClients/useExpenses, delete flow, pull-to-refresh ✅
+- `useDailyWork.js` — mapPayloadToDb null-cleanup, mapRowFromDb normaliza work_date/total_hours ✅
+- `useReceivable.js` — cancelledRef, markClientPaid com ratio proporcional, optimistic remove ✅
+- `useQueryAction.js` — onMatchRef pattern (sem stale closure), handledRef guard, navigate replace ✅
+- `pixPayload.js` — CRC-16/CCITT correto, TLV EMV, normalizeField para campos PIX ✅
+- `userDataBackup.js` — Promise.all 5 tabelas, blob download com `body.appendChild` (cross-browser) ✅
+- `useClientInteractions.js` — fetchPendingFollowUps usa `.lte(today)` para vencidos ✅
+- `checkSupabaseReachable.js` — HEAD 5s AbortSignal, 401 = reachable (correto) ✅
+- `ErrorBoundary.jsx` — chunk error → auto-reload com sessionStorage guard anti-loop ✅
+- `googleCalendarPush.js` — wrapper fire-and-forget, erros apenas como warning ✅
+- `useBackstageData.js` — useStats/useEvents/useClients/useMeiStats/useCountdown; `JSON.stringify(options)` dep OK para plain objects ✅
+
+---
+
 ### S170 — Fix crítico: AppDataContext infinite render loop + auditoria auth pages (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Arquivo alterado**: `src/components/context/AppDataContext.jsx`

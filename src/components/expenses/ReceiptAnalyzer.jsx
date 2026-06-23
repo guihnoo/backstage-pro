@@ -73,7 +73,7 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
   const handleFileChange = async (e) => {
     const f = e.target.files?.[0];
     if (!f) return;
-    setPreviewUrl(URL.createObjectURL(f));
+    setPreviewUrl((prev) => { if (prev) URL.revokeObjectURL(prev); return URL.createObjectURL(f); });
     await uploadReceipt(f);
   };
 
@@ -84,7 +84,7 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
       receipt_url: fileUrl || "",
       amount: data.amount ? Number(data.amount) : 0,
     });
-    setPreviewUrl("");
+    setPreviewUrl((prev) => { if (prev) URL.revokeObjectURL(prev); return ""; });
     setFileUrl("");
     setData({ title: "", amount: "", date: todayIso(), category: "outros", notes: "" });
     onOpenChange(false);
