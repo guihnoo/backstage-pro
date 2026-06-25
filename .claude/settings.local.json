@@ -192,7 +192,8 @@
       "Bash(npx eslint *)",
       "PowerShell(\\(Get-Item \"C:\\\\Users\\\\monte\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-monte-OneDrive-Documentos-backstage-pro\\\\b2b03128-8055-4a7f-b973-8bd5875b9bb5\\\\tasks\\\\b9cfevlqo.output\"\\).Length 2>&1)",
       "Bash(Get-Content \"C:\\\\Users\\\\monte\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-monte-OneDrive-Documentos-backstage-pro\\\\b2b03128-8055-4a7f-b973-8bd5875b9bb5\\\\tasks\\\\bzhu1hlus.output\")",
-      "Bash(Select-Object -Last 60)"
+      "Bash(Select-Object -Last 60)",
+      "Bash(grep -v \"//\\\\|import\\\\|const\\\\|let\\\\|var\\\\|function\\\\|=>\")"
     ]
   },
   "enabledMcpjsonServers": [

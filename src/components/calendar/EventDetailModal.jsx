@@ -851,16 +851,23 @@ export default function EventDetailModal({
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-4 pb-4 space-y-3">
-                  <div className="grid grid-cols-2 gap-4">
+                  {event.start_date === event.end_date || !event.end_date ? (
                     <div>
-                      <p className="text-xs text-slate-400 mb-1">Data Início</p>
+                      <p className="text-xs text-slate-400 mb-1">Data</p>
                       <p className="text-white font-medium text-sm">{formatDisplayDate(event.start_date)}</p>
                     </div>
-                    <div>
-                      <p className="text-xs text-slate-400 mb-1">Data Fim</p>
-                      <p className="text-white font-medium text-sm">{formatDisplayDate(event.end_date)}</p>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs text-slate-400 mb-1">Data Início</p>
+                        <p className="text-white font-medium text-sm">{formatDisplayDate(event.start_date)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-400 mb-1">Data Fim</p>
+                        <p className="text-white font-medium text-sm">{formatDisplayDate(event.end_date)}</p>
+                      </div>
                     </div>
-                  </div>
+                  )}
                   {event.description && (
                     <div>
                       <p className="text-xs text-slate-400 mb-1">Descrição</p>
@@ -1017,7 +1024,7 @@ export default function EventDetailModal({
               </Card>
 
               {/* Cronômetro */}
-              {['pending', 'scheduled', 'confirmed'].includes(event.status) && (
+              {['pending', 'scheduled', 'confirmed'].includes(status) && (
                 <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700">
                   <div>
                     <p className="text-sm font-medium text-white">Cronômetro</p>
@@ -1288,7 +1295,7 @@ export default function EventDetailModal({
                       Recibo de Pagamento
                     </Button>
                   )}
-                  {['pending', 'scheduled', 'confirmed'].includes(event.status) && (
+                  {['pending', 'scheduled', 'confirmed'].includes(status) && (
                     <Button
                       onClick={handleDownloadContract}
                       disabled={generatingContract}

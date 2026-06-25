@@ -33,6 +33,7 @@ const EventTimelineItem = ({ event, client, isLast, workData, onClick }) => {
   const totalWorkedHours = eventWork.reduce((sum, work) => sum + (work.total_hours || 0), 0);
   const totalEarned = eventWork.reduce((sum, work) => sum + (work.daily_cache || 0), 0);
 
+  const eventStatus = getEventStatus(event);
   const statusConfig = getEventStatusConfig(event);
   const StatusIcon = statusConfig.icon;
 
@@ -61,7 +62,9 @@ const EventTimelineItem = ({ event, client, isLast, workData, onClick }) => {
               <EventHeading event={event} client={client} size="sm" />
               <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-1 min-w-0">
                 <p className="text-sm text-slate-400 truncate">
-                  {formatDisplayDate(event.start_date)} - {formatDisplayDate(event.end_date)}
+                  {event.start_date === event.end_date || !event.end_date
+                    ? formatDisplayDate(event.start_date)
+                    : `${formatDisplayDate(event.start_date)} - ${formatDisplayDate(event.end_date)}`}
                 </p>
                 <Badge
                   variant="outline"
@@ -83,7 +86,7 @@ const EventTimelineItem = ({ event, client, isLast, workData, onClick }) => {
                 {isVisible ? formatCurrency(getEventCacheAmount(event)) : '••••'}
               </div>
 
-              {event.status === 'completed' && eventWork.length > 0 && (
+              {eventStatus === 'completed' && eventWork.length > 0 && (
                 <>
                   <div className="flex items-center gap-1 text-slate-300 bg-slate-700/50 px-2 py-1 rounded">
                     <Clock className="w-3 h-3" />
@@ -99,7 +102,7 @@ const EventTimelineItem = ({ event, client, isLast, workData, onClick }) => {
           )}
 
           {/* Alertas de Pagamento */}
-          {event.payment_status === 'unpaid' && event.status === 'completed' && (
+          {event.payment_status === 'unpaid' && eventStatus === 'completed' && (
             <div className="mt-3 flex items-center gap-2 text-amber-400 bg-amber-400/10 px-3 py-2 rounded-lg border border-amber-400/20">
               <AlertCircle className="w-4 h-4" />
               <span className="text-sm font-medium">Pagamento pendente</span>

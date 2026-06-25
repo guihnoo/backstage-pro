@@ -455,7 +455,8 @@ const EventDetailModal = React.memo(function EventDetailModal({
   const isPastAndNotCompleted = useMemo(() => {
     if (!event?.start_date) return false;
     const eventDate = new Date(event.start_date + 'T23:59:59');
-    return eventDate < new Date() && (event.status === 'scheduled' || event.status === 'confirmed');
+    const s = getEventStatus(event);
+    return eventDate < new Date() && (s === 'scheduled' || s === 'confirmed');
   }, [event]);
 
   if (!event) return null;
@@ -656,7 +657,13 @@ const EventDetailModal = React.memo(function EventDetailModal({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     <div className="space-y-3 sm:space-y-4">
                       <h3 className="font-semibold text-white text-sm sm:text-base">Detalhes do Evento</h3>
-                      <InfoItem icon={Calendar} label="Período" value={`${formatFullDate(event.start_date)} - ${formatFullDate(event.end_date)}`} />
+                      <InfoItem
+                        icon={Calendar}
+                        label={event.start_date === event.end_date || !event.end_date ? 'Data' : 'Período'}
+                        value={event.start_date === event.end_date || !event.end_date
+                          ? formatFullDate(event.start_date)
+                          : `${formatFullDate(event.start_date)} − ${formatFullDate(event.end_date)}`}
+                      />
                       <InfoItem icon={Clock} label="Horário" value={timeRangeLabel(event)} />
                       <InfoItem icon={DollarSign} label="Valor Diária Base" value={event.daily_cache_value || 0} isCurrency />
                     </div>
@@ -716,7 +723,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
                   <InlineNotes event={event} updateEvent={updateEvent} />
 
                   {/* Avaliação do cliente */}
-                  {event.status === 'completed' && event.client_id && (
+                  {status === 'completed' && event.client_id && (
                     <div className="space-y-2">
                       <h3 className="font-semibold text-white text-sm sm:text-base flex items-center gap-2">
                         <Star className="w-4 h-4 text-amber-400" />
@@ -942,7 +949,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
                   </AnimatePresence>
 
                   {/* Anexo NF-e */}
-                  {event.status === 'completed' && (
+                  {status === 'completed' && (
                     <div>
                       <h3 className="font-semibold text-white text-sm mb-3 flex items-center gap-2">
                         <FileText className="w-4 h-4 text-blue-400" />
@@ -952,14 +959,14 @@ const EventDetailModal = React.memo(function EventDetailModal({
                     </div>
                   )}
 
-                  {event.status !== 'completed' && !showNFeCard && (
+                  {status !== 'completed' && !showNFeCard && (
                     <div className="text-center py-8 text-slate-500">
                       <FileText className="w-10 h-10 mx-auto mb-2 opacity-30" />
                       <p className="text-sm">Disponível após o evento ser marcado como realizado.</p>
                     </div>
                   )}
 
-                  {event.status === 'completed' && !showNFeCard && (
+                  {status === 'completed' && !showNFeCard && (
                     <Button
                       type="button"
                       variant="outline"
