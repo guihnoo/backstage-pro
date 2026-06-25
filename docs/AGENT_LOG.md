@@ -4,6 +4,21 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+## 2026-06-25
+
+### S173 — Fix logo empresa + observações evento (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos alterados**:
+  - `src/components/clients/ClientForm.jsx` — `handleCompanySelect`: adicionado `company.logo_url` na cadeia de precedência da `logo_url` (antes só usava `clearbitLogo`)
+  - `src/components/reports/EventDetailModal.jsx` — `InlineNotes`: state local `localText` (update otimista), removido `onSaved` que fechava o modal pai ao salvar observações
+  - `src/components/calendar/EventDetailModal.jsx` — mesmo fix do `InlineNotes`: state local `localText` + update otimista
+- **Build**: ✅ 0 erros, 0 warnings
+- **Bugs corrigidos**:
+  1. **Logo empresa**: ao buscar empresa já cadastrada via CompanySearchInput, a `logo_url` do banco não era propagada pro form — corrigido
+  2. **Observações evento**: modal fechava após salvar observação (via `onSaved → handleFormSuccess → closeModals`); também: texto salvo não aparecia até Realtime sync — ambos resolvidos com state otimista e remoção do `onSaved`
+
+---
+
 ## 2026-06-23
 
 ### S172 — Auditoria E2E páginas + fix smoke tests (Claude Code) ✅
