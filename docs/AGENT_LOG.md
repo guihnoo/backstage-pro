@@ -2429,7 +2429,7 @@ Registro cronológico de tarefas executadas por agentes.
 - **Build**: ✅ 0 erros, 0 warnings ESLint
 - **Commit oficial**: `82aa2d7` — `feat(s140): NF-e upload + análise automática por IA (Gemini)`
 
-### Marketing Instagram Stories — mockups 1080×1920 (Cursor) ✅
+### Marketing Instagram — capturas REAIS + vídeo (Cursor) ✅
 - **Agente**: Cursor (Composer)
-- **Entrega**: `marketing/instagram-stories/` — 8 slides PNG (capa, agenda, modo palco, financeiro, clientes, IA, fechamento, CTA) + `stories.html` (preview/editar) + `export-stories.mjs` + `ROTEIRO.md` (carrossel, stories, reels 60s)
-- **Export**: `marketing/instagram-stories/export/*.png`
+- **Entrega**: `capture-real.mjs`, `marketingMocks.js`, `export-real/` (9 PNG UI real, `carousel.html`, `backstage-pro-promo.webm`)
+- **Comando**: `node marketing/instagram-stories/capture-real.mjs`
