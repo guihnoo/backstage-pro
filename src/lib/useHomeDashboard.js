@@ -10,6 +10,8 @@ import {
   sumReceivableAmount,
   calculateEventReceivableAmount,
   daysSinceEventEnd,
+  daysOverduePayment,
+  isPaymentOverdue,
 } from './eventFinance';
 import { mapRowFromDb } from './useDailyWork';
 import { getClientDisplayName } from './eventDisplay';
@@ -105,15 +107,19 @@ function buildPaymentAlerts(receivableEvents) {
   return receivableEvents
     .filter(isReceivableEvent)
     .map((event) => {
-      const refDate = event.end_date || event.start_date;
-      const daysOverdue = differenceInDays(new Date(), parseISO(refDate));
+      const daysOverdue = daysOverduePayment(event);
+      const overdue = isPaymentOverdue(event);
       const value = eventValue(event);
       return {
         id: event.id,
-        type: daysOverdue > 0 ? 'overdue' : 'pending',
+        type: overdue ? 'overdue' : 'pending',
         title: `${getClientDisplayName(event.clients) || 'Sem empresa'} — R$${value.toLocaleString('pt-BR')}`,
         daysOverdue,
-        description: daysOverdue > 0 ? `Atrasado há ${daysOverdue} dias` : 'Aguardando pagamento',
+        description: overdue
+          ? `Vencimento passado há ${daysOverdue} dia${daysOverdue !== 1 ? 's' : ''}`
+          : event.payment_due_date
+            ? `Vence em ${new Date(event.payment_due_date + 'T12:00:00').toLocaleDateString('pt-BR')}`
+            : 'Aguardando pagamento',
         clientId: event.client_id,
         clientName: getClientDisplayName(event.clients) || 'Sem empresa',
         phone: event.clients?.phone || null,
@@ -133,7 +139,7 @@ function buildReceivableRows(receivableEvents, workByEvent) {
 
     const clientId = event.client_id || event.clients?.id || 'unknown';
     const amount = calculateEventReceivableAmount(event, workByEvent[event.id] || []);
-    const daysOverdue = daysSinceEventEnd(event);
+    const daysOverdue = daysOverduePayment(event);
 
     if (!byClient[clientId]) {
       byClient[clientId] = {
