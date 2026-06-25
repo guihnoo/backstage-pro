@@ -6,6 +6,14 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-25
 
+### S177 — Fix: payment_due_date em Home + Calendar status (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos alterados**:
+  - `src/lib/useHomeDashboard.js` — `buildPaymentAlerts` e `buildReceivableRows`: calculavam atraso desde `end_date`; corrigido para `daysOverduePayment` + `isPaymentOverdue`
+  - `src/pages/Calendar.jsx` — status badge exibia texto em inglês ("scheduled"); `canQuickPay` usava `event.status` bruto; ícone NF-e usava `ev.status` bruto → todos corrigidos com `getEventStatus`
+- **Build**: ✅ 0 erros
+- **Comportamento corrigido**: Home mostra "Vence em DD/MM" para pagamentos aguardando vencimento; "Atrasado há X dias" só após a data de vencimento passar
+
 ### S175 — Fix: alertas de atraso respeitam payment_due_date (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Arquivos alterados**:

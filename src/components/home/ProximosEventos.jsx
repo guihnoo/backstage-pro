@@ -21,10 +21,11 @@ function getTimeGroup(daysFromToday) {
 }
 
 const statusConfig = {
-  pending: { label: 'Pendente', color: 'bg-amber-600/20 border-amber-500/30 text-amber-300' },
+  pending:   { label: 'Pendente',    color: 'bg-amber-600/20 border-amber-500/30 text-amber-300' },
+  scheduled: { label: 'Agendado',    color: 'bg-blue-600/20 border-blue-500/30 text-blue-300' },
   confirmed: { label: '✓ Confirmado', color: 'bg-green-600/20 border-green-500/30 text-green-300' },
-  completed: { label: 'Concluído', color: 'bg-blue-600/20 border-blue-500/30 text-blue-300' },
-  cancelled: { label: 'Cancelado', color: 'bg-red-600/20 border-red-500/30 text-red-300' }
+  completed: { label: 'Concluído',   color: 'bg-slate-600/20 border-slate-500/30 text-slate-300' },
+  cancelled: { label: 'Cancelado',   color: 'bg-red-600/20 border-red-500/30 text-red-300' }
 };
 
 export default function ProximosEventos({ events, isLoading, onRefresh, onViewEvent, userCategory }) {
