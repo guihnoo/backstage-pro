@@ -76,3 +76,32 @@ export function daysSinceEventEnd(event) {
     return 0;
   }
 }
+
+/**
+ * Dias de atraso respeitando payment_due_date quando definida.
+ * Retorna valor negativo quando o vencimento ainda não chegou (quantos dias faltam).
+ * Retorna 0+ quando já venceu.
+ */
+export function daysOverduePayment(event) {
+  if (!event) return 0;
+  if (event.payment_due_date) {
+    try {
+      return differenceInDays(new Date(), parseISO(event.payment_due_date));
+    } catch { return 0; }
+  }
+  return daysSinceEventEnd(event);
+}
+
+/**
+ * Retorna true somente quando o pagamento está efetivamente em atraso:
+ * - se payment_due_date existe: somente após essa data
+ * - se não existe: 7+ dias após end_date (comportamento legado)
+ */
+export function isPaymentOverdue(event) {
+  if (!event || event.payment_status === 'paid') return false;
+  if (event.payment_due_date) {
+    const today = new Date().toISOString().slice(0, 10);
+    return event.payment_due_date < today;
+  }
+  return daysSinceEventEnd(event) >= 7;
+}

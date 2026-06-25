@@ -224,9 +224,9 @@ export default function ClientDetailModal({
       clientEvents.some((event) => event.id === work.event_id)
     );
 
-    const completedEventsList = clientEvents.filter((event) => event.status === 'completed');
+    const completedEventsList = clientEvents.filter((event) => getEventStatus(event) === 'completed');
     const upcomingEventsList = clientEvents.filter((event) =>
-      ['scheduled', 'in_progress'].includes(event.status)
+      ['scheduled', 'in_progress', 'pending', 'confirmed'].includes(getEventStatus(event))
     );
 
     const paidEventsList = clientEvents.filter((event) =>

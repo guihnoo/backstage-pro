@@ -21,10 +21,12 @@ function buildInsights({ events, clients, expenses: _expenses, work, profile, fm
     return (st === 'scheduled' || st === 'confirmed') && e.start_date && isAfter(parseISO(e.start_date), today);
   });
 
-  // --- 1. Inadimplência: eventos concluídos sem pagamento há >7 dias ---
+  // --- 1. Inadimplência: eventos concluídos com pagamento vencido ---
   const overdueUnpaid = completed.filter(e => {
-    const isPaid = e.payment_status === 'paid';
-    if (isPaid) return false;
+    if (e.payment_status === 'paid') return false;
+    // Se tem data de vencimento definida, respeita ela
+    if (e.payment_due_date) return parseISO(e.payment_due_date) < today;
+    // Sem data de vencimento: 7+ dias após o fim do evento
     const daysAgo = e.end_date
       ? differenceInDays(today, parseISO(e.end_date))
       : e.start_date

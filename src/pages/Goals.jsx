@@ -386,9 +386,7 @@ export default function Goals() {
         return refDate.startsWith(monthStr);
       });
       const revenue = monthEvents.reduce((sum, e) =>
-        sum + (Number(e.paid_amount) > 0
-          ? Number(e.paid_amount)
-          : (Number(e.actual_revenue) || Number(e.estimated_revenue) || Number(e.daily_cache_value) || 0)), 0);
+        sum + (Number(e.paid_amount) > 0 ? Number(e.paid_amount) : getEventCacheAmount(e)), 0);
       const pct = metaReceita > 0 ? Math.min((revenue / metaReceita) * 100, 100) : null;
       const hit = metaReceita > 0 && revenue >= metaReceita;
       const isCurrent = monthsBack === 0;

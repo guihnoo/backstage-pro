@@ -4,7 +4,7 @@ import { todayLocalISO } from '@/components/utils/dateUtils';
 import {
   isReceivableEvent,
   calculateEventReceivableAmount,
-  daysSinceEventEnd,
+  daysOverduePayment,
 } from './eventFinance';
 
 export function useReceivableByClient(userId) {
@@ -22,7 +22,7 @@ export function useReceivableByClient(userId) {
         supabase
           .from('events')
           .select(
-            'id, title, start_date, end_date, status, payment_status, actual_revenue, estimated_revenue, daily_cache_value, client_id, clients (id, name, phone)'
+            'id, title, start_date, end_date, status, payment_status, payment_due_date, actual_revenue, estimated_revenue, daily_cache_value, client_id, clients (id, name, phone)'
           )
           .eq('user_id', userId)
           .in('payment_status', ['pending', 'unpaid', 'partial'])
@@ -53,7 +53,7 @@ export function useReceivableByClient(userId) {
           event,
           workByEvent[event.id] || []
         );
-        const daysOverdue = daysSinceEventEnd(event);
+        const daysOverdue = daysOverduePayment(event);
 
         if (!byClient[clientId]) {
           byClient[clientId] = {

@@ -1325,7 +1325,7 @@ export default function EventDetailModal({
         <DialogFooter className="px-6 py-4 border-t border-slate-800 flex-row gap-2 flex-shrink-0">
           {primaryCTA}
 
-          {['confirmed', 'scheduled', 'pending'].includes(event.status) && (
+          {['confirmed', 'scheduled', 'pending'].includes(status) && (
             <Button
               onClick={handleToggleTimer}
               variant="outline"
@@ -1369,7 +1369,7 @@ export default function EventDetailModal({
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator className="bg-slate-800" />
-              {['pending', 'scheduled', 'confirmed'].includes(event.status) && (
+              {['pending', 'scheduled', 'confirmed'].includes(status) && (
                 <DropdownMenuItem onClick={handleSendProposal} className="gap-2 cursor-pointer hover:bg-slate-800 focus:bg-slate-800">
                   <Send className="w-4 h-4" /> Enviar proposta
                 </DropdownMenuItem>

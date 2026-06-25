@@ -35,16 +35,18 @@ export default function ReceivablesAging({ events = [], clients = [], work = [] 
 
   const overdue = useMemo(() => {
     const today = new Date();
+    const todayStr = today.toISOString().slice(0, 10);
     return events
       .filter(ev => {
         if (ev.status === 'cancelled') return false;
-        // Concluídos não pagos OU eventos que já passaram mas payment_status está pending/unpaid
-        const isPastDue =
-          ev.status === 'completed' && ev.payment_status !== 'paid';
-        return isPastDue;
+        if (ev.status !== 'completed' || ev.payment_status === 'paid') return false;
+        // Se tem vencimento definido, só mostra após a data de vencimento
+        if (ev.payment_due_date) return ev.payment_due_date <= todayStr;
+        return true;
       })
       .map(ev => {
-        const ref = ev.end_date || ev.start_date;
+        // Calcula dias de atraso a partir do vencimento (quando disponível)
+        const ref = ev.payment_due_date || ev.end_date || ev.start_date;
         const days = ref ? Math.max(0, differenceInDays(today, parseISO(ref))) : 0;
         const wk = workByEvent[ev.id] || [];
         const amount = calculateEventReceivableAmount(ev, wk);
