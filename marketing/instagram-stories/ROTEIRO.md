@@ -1,38 +1,38 @@
 # Backstage Pro — Instagram (carrossel + vídeo)
 
-## Pacote autêntico (UI real) — usar este
+## Vídeo promocional (versão profissional)
 
-**Pasta:** `export-real/`
+O vídeo **não** é um tour robótico de telas. É um **filme com roteiro**:
 
-| Arquivo | Uso |
-|---------|-----|
-| `01-login.png` … `09-cta.png` | Carrossel / Stories (1080×1920) |
-| `carousel.html` | Preview interativo no browser (auto-play, swipe) |
-| `backstage-pro-promo.webm` | Reels / vídeo Stories (~45s) |
+1. Hook — "Você faz o show acontecer"
+2. Problema — planilha, WhatsApp, cachê perdido
+3. Solução — cockpit do bastidor (login real)
+4. Modo Palco — próximo show
+5. Financeiro — meta, pipeline, a receber
+6. Agenda — calendário profissional
+7. Clientes — CRM
+8. Relatórios — mapa Brasil
+9. IA Mentor
+10. CTA — grátis + link
 
-**Regenerar:**
+**Preview do roteiro (sem gravar):** abra `export-real/promo-film.html` no browser.
+
+**Gravar vídeo:**
+```bash
+node marketing/instagram-stories/record-promo-film.mjs
+```
+
+**Pacote completo (screenshots + vídeo):**
 ```bash
 node marketing/instagram-stories/capture-real.mjs
 ```
 
-**MP4:** importe o `.webm` no CapCut → exportar MP4 para Instagram.
+**Arquivos:**
+- `backstage-pro-promo.webm` — filme ~52s
+- `backstage-pro-promo.mp4` — se ffmpeg instalado
+- `carousel.html` — carrossel interativo
+- `01-login.png` … `09-cta.png` — telas reais
+
+**Música:** adicione no CapCut/InShot — beat eletrônico / festival (sem copyright).
 
 **Link:** https://backstage-pro-beta.vercel.app
-
-### Ordem do carrossel
-
-1. Login — primeira impressão
-2. Home — cockpit (Palco + Financeiro)
-3. Agenda — calendário + alertas
-4. Clientes — CRM
-5. Metas — progresso mensal
-6. Relatórios — mapa Brasil
-7. Despesas — controle por evento
-8. IA Mentor — assistente
-9. Perfil / PWA — CTA instalar
-
-### Legenda sugerida
-
-"Técnico de eventos? O Backstage Pro organiza agenda, financeiro, clientes e IA no bastidor do seu show. Grátis · link na bio 💡🎙️"
-
-Hashtags: `#tecnicoDeSom #iluminacao #fotografiadeeventos #eventos #backstage #produtora`

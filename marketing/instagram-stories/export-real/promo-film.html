@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Backstage Pro — Filme Promocional</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 1080px; height: 1920px;
+      overflow: hidden;
+      background: #050609;
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      color: #fff;
+    }
+    #stage {
+      position: relative;
+      width: 1080px; height: 1920px;
+      overflow: hidden;
+    }
+
+    /* Film grain */
+    .grain {
+      position: absolute; inset: 0; pointer-events: none; z-index: 90;
+      opacity: 0.04;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    .scene {
+      position: absolute; inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .scene.active { opacity: 1; pointer-events: auto; }
+
+    .bg-img {
+      position: absolute; inset: -8%;
+      width: 116%; height: 116%;
+      object-fit: cover;
+      object-position: top center;
+      transform: scale(1.05);
+      filter: brightness(0.72) saturate(1.05);
+    }
+    .scene.active .bg-img.ken {
+      animation: ken 6s ease-out forwards;
+    }
+  @keyframes ken {
+      from { transform: scale(1.08) translateY(0); }
+      to { transform: scale(1.14) translateY(-2%); }
+    }
+
+    .vignette {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 40%, transparent 30%, rgba(5,6,9,0.55) 100%),
+        linear-gradient(180deg, rgba(5,6,9,0.5) 0%, transparent 22%, transparent 55%, rgba(5,6,9,0.92) 100%);
+      z-index: 2;
+    }
+
+    .content {
+      position: absolute; inset: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      padding: 72px 56px 120px;
+    }
+
+    .logo-mark {
+      width: 64px; height: 64px;
+      border-radius: 16px;
+      margin-bottom: 28px;
+      box-shadow: 0 0 48px rgba(166,74,255,0.45);
+    }
+
+    .brand {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 48px;
+      background: linear-gradient(135deg, #fff 20%, #C77DFF 60%, #FFB700);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    h1 {
+      font-size: 64px;
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      max-width: 92%;
+      text-shadow: 0 4px 40px rgba(0,0,0,0.5);
+    }
+    h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, #C77DFF, #FFB700);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .sub {
+      margin-top: 28px;
+      font-size: 32px;
+      line-height: 1.45;
+      color: rgba(255,255,255,0.78);
+      max-width: 88%;
+      font-weight: 500;
+    }
+
+    .tag {
+      display: inline-block;
+      margin-top: 40px;
+      padding: 12px 24px;
+      border-radius: 999px;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: rgba(166,74,255,0.22);
+      border: 1px solid rgba(166,74,255,0.45);
+      color: #E9D5FF;
+    }
+
+    /* Intro — só atmosfera */
+    .intro-glow {
+      position: absolute;
+      width: 900px; height: 900px;
+      top: -200px; left: 50%;
+      transform: translateX(-50%);
+      background: radial-gradient(circle, rgba(166,74,255,0.35) 0%, transparent 65%);
+    }
+    .intro-beam {
+      position: absolute; top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 500px; height: 700px;
+      background: linear-gradient(180deg, rgba(166,74,255,0.3) 0%, transparent 100%);
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    }
+
+    .centered {
+      justify-content: center;
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    .bottom-copy {
+      margin-top: auto;
+    }
+
+    .feature-label {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #FFB700;
+      margin-bottom: 16px;
+    }
+
+    .progress {
+      position: absolute;
+      bottom: 48px; left: 56px; right: 56px;
+      height: 3px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 999px;
+      z-index: 100;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #A64AFF, #FFB700);
+      border-radius: 999px;
+      transition: width 0.3s linear;
+    }
+
+    .cta-btn {
+      display: inline-block;
+      margin-top: 36px;
+      padding: 28px 48px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #A64AFF, #7c3aed);
+      font-size: 28px;
+      font-weight: 800;
+      box-shadow: 0 20px 60px rgba(166,74,255,0.45);
+    }
+    .cta-url {
+      margin-top: 20px;
+      font-size: 26px;
+      color: #FFB700;
+      font-weight: 600;
+    }
+
+    .fade-line {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    .scene.active .fade-line {
+      animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+    .scene.active .fade-line.d1 { animation-delay: 0.15s; }
+    .scene.active .fade-line.d2 { animation-delay: 0.35s; }
+    .scene.active .fade-line.d3 { animation-delay: 0.55s; }
+
+  @keyframes rise {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Phone frame sutil — credibilidade */
+    .phone-hint {
+      position: absolute;
+      bottom: 100px; right: 48px;
+      width: 280px;
+      border-radius: 24px;
+      border: 2px solid rgba(166,74,255,0.35);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+      overflow: hidden;
+      z-index: 15;
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+    }
+    .scene.active .phone-hint {
+      animation: popIn 0.7s 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+  @keyframes popIn {
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .phone-hint img {
+      width: 100%;
+      display: block;
+      filter: brightness(0.95);
+    }
+  </style>
+</head>
+<body>
+  <div id="stage">
+    <div class="grain"></div>
+    <div class="progress"><div class="progress-fill" id="progress"></div></div>
+
+    <!-- 1. Hook -->
+    <div class="scene" data-duration="4500">
+      <div class="intro-glow"></div>
+      <div class="intro-beam"></div>
+      <div class="content centered">
+        <svg class="logo-mark fade-line" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+          <rect width="512" height="512" rx="108" fill="#050609"/>
+          <path d="M176 156h80c44 0 68 22 68 54 0 24-12 40-32 48 26 8 42 28 42 58 0 40-32 64-82 64H176V156zm48 44v48h30c18 0 28-8 28-22s-10-26-28-26h-30zm0 96v72h36c28 0 44-12 44-32s-16-40-44-40h-36z" fill="url(#g1)"/>
+          <defs><linearGradient id="g1" x1="20%" y1="12%" x2="80%" y2="88%"><stop offset="0%" stop-color="#A64AFF"/><stop offset="100%" stop-color="#FFB700"/></linearGradient></defs>
+        </svg>
+        <p class="brand fade-line d1">Backstage Pro</p>
+        <h1 class="fade-line d2">Você faz o show<br/><em>acontecer.</em></h1>
+        <p class="sub fade-line d3">Iluminação · Áudio · Foto · Vídeo · DJ</p>
+      </div>
+    </div>
+
+    <!-- 2. Problema -->
+    <div class="scene" data-duration="4000">
+      <div class="intro-glow" style="opacity:0.6"></div>
+      <div class="content centered">
+        <p class="feature-label fade-line">O bastidor real</p>
+        <h1 class="fade-line d1">Planilha.<br/>WhatsApp.<br/>Cachê que some.</h1>
+        <p class="sub fade-line d2">Técnico profissional não deveria perder tempo no improviso.</p>
+      </div>
+    </div>
+
+    <!-- 3. Solução + login real -->
+    <div class="scene" data-duration="5000">
+      <img class="bg-img ken" src="01-login.png" alt="" />
+      <div class="vignette"></div>
+      <div class="content bottom-copy">
+        <p class="feature-label fade-line">A resposta</p>
+        <h1 class="fade-line d1">Um cockpit<br/>para o <em>bastidor.</em></h1>
+        <p class="sub fade-line d2">Agenda, financeiro, clientes e IA — no mesmo lugar.</p>
+      </div>
+    </div>
+
+    <!-- 4. Palco / próximo show -->
+    <div class="scene" data-duration="5500">
+      <img class="bg-img ken" src="02-home.png" alt="" style="object-position: center 8%;" />
+      <div class="vignette"></div>
+      <div class="content bottom-copy">
+        <p class="feature-label fade-line">Modo Palco</p>
+        <h1 class="fade-line d1">Show hoje?<br/>Você já sabe.</h1>
+        <p class="sub fade-line d2">Local, horário, cachê e check-in — antes de subir no palco.</p>
+      </div>
+    </div>
+
+    <!-- 5. Financeiro -->
+    <div class="scene" data-duration="5500">
+      <img class="bg-img ken" src="02-home.png" alt="" style="object-position: center 72%;" />
+      <div class="vignette"></div>
+      <div class="content bottom-copy">
+        <p class="feature-label fade-line">Financeiro</p>
+        <h1 class="fade-line d1">Meta do mês.<br/>Pipeline.<br/>A receber.</h1>
+        <p class="sub fade-line d2">Sem Excel. Sem adivinhar quanto falta pra bater a meta.</p>
+      </div>
+    </div>
+
+    <!-- 6. Agenda -->
+    <div class="scene" data-duration="5000">
+      <img class="bg-img ken" src="03-agenda.png" alt="" />
+      <div class="vignette"></div>
+      <div class="content bottom-copy">
+        <p class="feature-label fade-line">Agenda</p>
+        <h1 class="fade-line d1">Calendário que<br/>fala sua língua.</h1>
+        <p class="sub fade-line d2">Status de pagamento, cores por cliente, Google Calendar.</p>
+      </div>
+    </div>
+
+    <!-- 7. Clientes -->
+    <div class="scene" data-duration="4500">
+      <img class="bg-img ken" src="04-clientes.png" alt="" />
+      <div class="vignette"></div>
+      <div class="content bottom-copy">
+        <p class="feature-label fade-line">Clientes</p>
+        <h1 class="fade-line d1">CRM do<br/>bastidor.</h1>
+        <p class="sub fade-line d2">Empresa ou pessoa. Histórico de cachê. Cobrança no Zap.</p>
+      </div>
+    </div>
+
+    <!-- 8. Relatórios -->
+    <div class="scene" data-duration="4500">
+      <img class="bg-img ken" src="06-relatorios.png" alt="" />
+      <div class="vignette"></div>
+      <div class="content bottom-copy">
+        <p class="feature-label fade-line">Relatórios</p>
+        <h1 class="fade-line d1">Onde você<br/>já trabalhou.</h1>
+        <p class="sub fade-line d2">Mapa do Brasil, receita por cliente, projeção do mês.</p>
+      </div>
+    </div>
+
+    <!-- 9. IA -->
+    <div class="scene" data-duration="4500">
+      <img class="bg-img ken" src="08-ia-mentor.png" alt="" />
+      <div class="vignette"></div>
+      <div class="content bottom-copy">
+        <p class="feature-label fade-line">IA Mentor</p>
+        <h1 class="fade-line d1">IA que entende<br/>o palco.</h1>
+        <p class="sub fade-line d2">Dicas com contexto dos seus números — por categoria.</p>
+      </div>
+    </div>
+
+    <!-- 10. CTA -->
+    <div class="scene" data-duration="6000">
+      <div class="intro-glow"></div>
+      <div class="intro-beam"></div>
+      <div class="content centered">
+        <p class="brand fade-line">Backstage Pro</p>
+        <h1 class="fade-line d1">Comece<br/><em>grátis.</em></h1>
+        <p class="sub fade-line d2">PWA — instala no celular como app nativo.<br/>Offline, push e sync em tempo real.</p>
+        <div class="cta-btn fade-line d3">COMEÇAR AGORA</div>
+        <p class="cta-url fade-line d3">backstage-pro-beta.vercel.app</p>
+      </div>
+      <div class="phone-hint">
+        <img src="09-cta.png" alt="" />
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const scenes = [...document.querySelectorAll('.scene')];
+    const progress = document.getElementById('progress');
+    const TOTAL = scenes.reduce((s, el) => s + Number(el.dataset.duration), 0);
+    let idx = 0;
+    let elapsed = 0;
+    let start = performance.now();
+
+    function showScene(i) {
+      scenes.forEach((s, j) => s.classList.toggle('active', j === i));
+      idx = i;
+    }
+
+    function tick(now) {
+      const dt = now - start;
+      elapsed += dt;
+      start = now;
+      progress.style.width = `${Math.min(100, (elapsed / TOTAL) * 100)}%`;
+
+      const scene = scenes[idx];
+      const dur = Number(scene.dataset.duration);
+      const sceneStart = scenes.slice(0, idx).reduce((s, el) => s + Number(el.dataset.duration), 0);
+
+      if (elapsed >= sceneStart + dur && idx < scenes.length - 1) {
+        showScene(idx + 1);
+      }
+
+      if (elapsed < TOTAL + 500) {
+        requestAnimationFrame(tick);
+      }
+    }
+
+    showScene(0);
+    requestAnimationFrame(tick);
+
+    // Signal para Playwright saber quando terminar
+    window.__PROMO_DONE__ = false;
+    setTimeout(() => { window.__PROMO_DONE__ = true; }, TOTAL + 800);
+  </script>
+</body>
+</html>

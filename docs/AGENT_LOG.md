@@ -2446,5 +2446,5 @@ Registro cronológico de tarefas executadas por agentes.
 
 ### Marketing Instagram — capturas REAIS + vídeo (Cursor) ✅
 - **Agente**: Cursor (Composer)
-- **Entrega**: `capture-real.mjs`, `marketingMocks.js`, `export-real/` (9 PNG UI real, `carousel.html`, `backstage-pro-promo.webm`)
-- **Comando**: `node marketing/instagram-stories/capture-real.mjs`
+- **Entrega**: `capture-real.mjs`, `marketingMocks.js`, `export-real/` (9 PNG UI real, `carousel.html`, `promo-film.html` roteiro cinematográfico, `record-promo-film.mjs`)
+- **Vídeo v2**: narrativa (hook → problema → features → CTA) + ken-burns + overlays — não tour robótico de telas

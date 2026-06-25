@@ -310,68 +310,6 @@ function buildCarouselHtml(captured) {
 </html>`;
 }
 
-async function recordPromoVideo(browser, baseUrl) {
-  const videoDir = path.join(OUT_DIR, '_video-temp');
-  fs.mkdirSync(videoDir, { recursive: true });
-
-  const context = await browser.newContext({
-    viewport: VIEWPORT,
-    deviceScaleFactor: 1,
-    baseURL: baseUrl,
-    recordVideo: { dir: videoDir, size: { width: 1080, height: 1920 } },
-  });
-  const page = await context.newPage();
-  const { seedMarketingSession } = await import('./marketingMocks.js');
-  const { disableServiceWorkerForE2E } = await import('../../e2e/helpers/fakeAuth.js');
-
-  await disableServiceWorkerForE2E(page);
-  await page.goto('/login', { waitUntil: 'domcontentloaded' });
-  await sleep(2500);
-
-  await seedMarketingSession(page);
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await waitForReady(page, /Palco|Financeiro|Ricardo/i);
-  await sleep(2000);
-
-  const main = page.locator('main[data-app-scroll]');
-  await main.evaluate((el) => { el.scrollTop = 350; });
-  await sleep(1500);
-  await main.evaluate((el) => { el.scrollTop = 0; });
-  await sleep(800);
-
-  const navRoutes = [
-    { path: '/calendar', wait: /Agenda|Grid|Junho/i },
-    { path: '/clients', wait: /Live Nation|Clientes/i },
-    { path: '/goals', wait: /Meta|Receita/i },
-    { path: '/reports', wait: /Relatório|Brasil/i },
-    { path: '/expenses', wait: /Despesas/i },
-    { path: '/ai-mentor', wait: /Mentor/i },
-    { path: '/profile', wait: /Perfil|Ricardo/i },
-  ];
-
-  for (const nav of navRoutes) {
-    await page.goto(nav.path, { waitUntil: 'domcontentloaded' });
-    await waitForReady(page, nav.wait);
-    await sleep(2200);
-  }
-
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await waitForReady(page, /Palco|Financeiro/i);
-  await sleep(2000);
-
-  const video = page.video();
-  await context.close();
-
-  if (!video) return null;
-
-  const webmPath = path.join(OUT_DIR, 'backstage-pro-promo.webm');
-  await video.saveAs(webmPath);
-
-  fs.rmSync(videoDir, { recursive: true, force: true });
-  console.log(`✓ ${webmPath}`);
-  return webmPath;
-}
-
 async function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
@@ -395,17 +333,26 @@ async function main() {
     const carouselPath = path.join(OUT_DIR, 'carousel.html');
     fs.writeFileSync(carouselPath, buildCarouselHtml(captured), 'utf8');
     console.log(`✓ ${carouselPath}`);
-
-    await recordPromoVideo(browser, BASE);
-
-    console.log(`\n✅ Pacote completo em: ${OUT_DIR}`);
-    console.log('   → Abra carousel.html para preview do carrossel');
-    console.log('   → PNGs prontos para postar no Instagram');
-    console.log('   → backstage-pro-promo.webm para Reels (importe no CapCut se precisar MP4)');
   } finally {
     await browser.close();
     if (devChild) devChild.kill();
   }
+
+  // Filme promocional com narrativa (não tour robótico de telas)
+  const { spawn } = await import('child_process');
+  await new Promise((resolve, reject) => {
+    const child = spawn('node', ['marketing/instagram-stories/record-promo-film.mjs'], {
+      cwd: path.join(__dirname, '../../'),
+      shell: true,
+      stdio: 'inherit',
+    });
+    child.on('close', (code) => (code === 0 ? resolve() : reject(new Error('record-promo-film falhou'))));
+  });
+
+  console.log(`\n✅ Pacote completo em: ${OUT_DIR}`);
+  console.log('   → carousel.html — carrossel interativo');
+  console.log('   → promo-film.html — preview do roteiro do vídeo');
+  console.log('   → backstage-pro-promo.webm / .mp4 — filme promocional');
 }
 
 main().catch((err) => {
