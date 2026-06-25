@@ -1,4 +1,5 @@
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 
 const C = {
   navy:    '#1B4882',
@@ -94,11 +95,7 @@ export function ReceiptPDFDocument({ event, client, settings = {} }) {
   const clientName = client?.name || event?.client_name || 'Contratante';
   const clientDoc  = client?.cnpj || client?.cpf || client?.document || '';
 
-  const amount = event?.paid_amount ? Number(event.paid_amount) : (
-    event?.cache_valor_base ? Number(event.cache_valor_base) : (
-      event?.daily_cache_value ? Number(event.daily_cache_value) : 0
-    )
-  );
+  const amount = event?.paid_amount ? Number(event.paid_amount) : getEventCacheAmount(event);
 
   const paidDateStr  = event?.paid_date ? fmtLong(event.paid_date) : fmtLong(new Date().toISOString().slice(0, 10));
   const eventDateStr = event?.start_date ? fmtDate(event.start_date) : '';

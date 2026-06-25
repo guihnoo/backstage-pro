@@ -1,4 +1,5 @@
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { getEventCacheAmount } from '@/lib/eventFinance';
 
 const C = {
   navy:    '#1B4882',
@@ -84,7 +85,7 @@ export function ContractPDFDocument({ event, client, settings = {} }) {
   } = settings;
 
   const displayName = techName || 'Profissional Técnico';
-  const amount = event?.cache_value ?? event?.cache_diaria ?? 0;
+  const amount = getEventCacheAmount(event);
   const startDate = fmtDate(event?.start_date);
   const endDate = event?.end_date && event.end_date !== event.start_date ? fmtDate(event.end_date) : null;
   const datePeriod = endDate ? `${startDate} a ${endDate}` : startDate;
