@@ -166,7 +166,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
       email: company.email || prev.email,
       phone: company.phone || prev.phone,
       contact_person: company.contact_person || prev.contact_person,
-      logo_url: prev.logo_url || clearbitLogo || '',
+      logo_url: prev.logo_url || company.logo_url || clearbitLogo || '',
       notes: autoNotes
         ? (prev.notes ? `${autoNotes}\n\n${prev.notes}` : autoNotes)
         : prev.notes,

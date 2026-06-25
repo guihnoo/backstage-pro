@@ -135,9 +135,14 @@ function InlineNotes({ event, updateEvent }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
   const [saving, setSaving] = useState(false);
+  const [localText, setLocalText] = useState(event?.observacoes_md || '');
+
+  useEffect(() => {
+    setLocalText(event?.observacoes_md || '');
+  }, [event?.observacoes_md]);
 
   const startEdit = () => {
-    setDraft(event.observacoes_md || '');
+    setDraft(localText);
     setEditing(true);
   };
 
@@ -145,6 +150,7 @@ function InlineNotes({ event, updateEvent }) {
     setSaving(true);
     try {
       await updateEvent(event.id, { observacoes_md: draft.trim() || null });
+      setLocalText(draft.trim());
       appToast.success('Observações salvas.');
       setEditing(false);
     } catch {
@@ -193,10 +199,10 @@ function InlineNotes({ event, updateEvent }) {
           <FileText className="w-4 h-4 text-slate-400" /> Observações
         </h4>
         <button type="button" onClick={startEdit} className="text-[11px] transition-colors" style={{ color: primaryHex }}>
-          {event.observacoes_md ? 'Editar' : '+ Adicionar'}
+          {localText ? 'Editar' : '+ Adicionar'}
         </button>
       </div>
-      {event.observacoes_md ? (
+      {localText ? (
         <div
           role="button"
           tabIndex={0}
@@ -204,7 +210,7 @@ function InlineNotes({ event, updateEvent }) {
           onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startEdit(); } }}
           className="bg-slate-800/40 border border-slate-700/60 rounded-lg px-3 py-2.5 cursor-pointer hover:border-slate-600 transition-colors"
         >
-          <p className="text-sm text-slate-300 whitespace-pre-wrap break-words leading-relaxed">{event.observacoes_md}</p>
+          <p className="text-sm text-slate-300 whitespace-pre-wrap break-words leading-relaxed">{localText}</p>
         </div>
       ) : (
         <button

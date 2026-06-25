@@ -59,14 +59,19 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import { formatCNPJ } from '@/lib/cnpjSearch';
 import NFeAttachment from '@/components/shared/NFeAttachment';
 
-const InlineNotes = ({ event, updateEvent, onSaved }) => {
+const InlineNotes = ({ event, updateEvent }) => {
   const { primaryHex } = useCategoryTheme();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
   const [saving, setSaving] = useState(false);
+  const [localText, setLocalText] = useState(event?.observacoes_md || '');
+
+  useEffect(() => {
+    setLocalText(event?.observacoes_md || '');
+  }, [event?.observacoes_md]);
 
   const startEdit = () => {
-    setDraft(event.observacoes_md || '');
+    setDraft(localText);
     setEditing(true);
   };
 
@@ -74,8 +79,8 @@ const InlineNotes = ({ event, updateEvent, onSaved }) => {
     setSaving(true);
     try {
       await updateEvent(event.id, { observacoes_md: draft.trim() || null });
+      setLocalText(draft.trim());
       appToast.success('Observações salvas.');
-      onSaved?.();
       setEditing(false);
     } catch {
       appToast.error('Erro ao salvar observações.');
@@ -134,10 +139,10 @@ const InlineNotes = ({ event, updateEvent, onSaved }) => {
           className="text-[11px] bp-hover-primary transition-colors"
           style={{ color: primaryHex }}
         >
-          {event.observacoes_md ? 'Editar' : '+ Adicionar'}
+          {localText ? 'Editar' : '+ Adicionar'}
         </button>
       </div>
-      {event.observacoes_md ? (
+      {localText ? (
         <div
           role="button"
           tabIndex={0}
@@ -146,7 +151,7 @@ const InlineNotes = ({ event, updateEvent, onSaved }) => {
           onClick={startEdit}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startEdit(); } }}
         >
-          <p className="text-sm text-slate-300 whitespace-pre-wrap break-words leading-relaxed">{event.observacoes_md}</p>
+          <p className="text-sm text-slate-300 whitespace-pre-wrap break-words leading-relaxed">{localText}</p>
         </div>
       ) : (
         <button
@@ -708,7 +713,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
                   </Card>
 
                   {/* Observações */}
-                  <InlineNotes event={event} updateEvent={updateEvent} onSaved={onPaymentUpdate} />
+                  <InlineNotes event={event} updateEvent={updateEvent} />
 
                   {/* Avaliação do cliente */}
                   {event.status === 'completed' && event.client_id && (
