@@ -6,6 +6,24 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-25
 
+### S175 — Fix: alertas de atraso respeitam payment_due_date (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos alterados**:
+  - `src/lib/eventFinance.js` — adicionadas `daysOverduePayment(event)` e `isPaymentOverdue(event)`: respeitam `payment_due_date`; retornam negativo se vencimento não chegou
+  - `src/lib/useReceivable.js` — usa `daysOverduePayment`; adicionado `payment_due_date` no SELECT (estava faltando no fetch)
+  - `src/components/reports/SmartInsights.jsx` — insight "sem pagamento" só conta após `payment_due_date` quando definida
+  - `src/components/reports/ReceivablesAging.jsx` — aging só exibe evento após a data de vencimento; dias calculados a partir de `payment_due_date`
+- **Build**: ✅ 0 erros
+- **Bug corrigido**: evento com `payment_due_date` futuro aparecia como "Xd atraso" (Home) e "inadimplente" (Relatórios) — corrigido em 4 pontos do código
+
+### S176 — Lapidação contínua: status calculado + cálculo receita (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos alterados**:
+  - `src/components/calendar/EventDetailModal.jsx` — footer: timer e "Enviar proposta" usavam `event.status` bruto → corrigido para `status` (getEventStatus)
+  - `src/components/clients/ClientDetailModal.jsx` — filtros `completedEventsList` / `upcomingEventsList` usavam `event.status` direto → corrigido para `getEventStatus(event)`; adicionado 'pending' e 'confirmed' nos estados futuros
+  - `src/pages/Goals.jsx` — `monthlyHistory`: cálculo de receita por mês não multiplicava `daily_cache_value` pelos dias → corrigido para `getEventCacheAmount(e)`
+- **Build**: ✅ 0 erros
+
 ### S174 — Lapidação: datas duplicadas, event.status bruto, PDF contratos (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Arquivos alterados**:

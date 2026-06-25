@@ -52,6 +52,7 @@ import {
   normalizeDateString,
   todayLocalISO,
   getEventsForDate,
+  getEventStatus,
 } from '@/components/utils/dateUtils';
 import { isCancelledEvent } from '@/lib/eventFinance';
 import AnimatedStatValue from '@/components/home/AnimatedStatValue';
@@ -1653,15 +1654,18 @@ export default function CalendarPage() {
                   {monthEvents.map((ev) => {
                     const cl = clientMap.get(ev.client_id);
                     const isPaid = ev.payment_status === 'paid';
-                    const canQuickPay = (ev.status === 'completed' || ev.status === 'confirmed') && !isPaid;
+                    const evStatus = getEventStatus(ev);
+                    const canQuickPay = (evStatus === 'completed' || evStatus === 'confirmed') && !isPaid;
                     const statusBadge = isPaid
                       ? { label: 'Pago', cls: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' }
                       : ({
                           pending:   { label: 'Pendente',   cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
+                          scheduled: { label: 'Agendado',   cls: 'bg-blue-500/15 text-blue-400 border-blue-500/30' },
                           confirmed: { label: 'Confirmado', cls: 'bp-surface-primary bp-text-primary border' },
                           completed: { label: 'Concluído',  cls: 'bg-green-500/15 text-green-400 border-green-500/30' },
                           cancelled: { label: 'Cancelado',  cls: 'bg-red-500/15 text-red-400 border-red-500/30' },
-                        }[ev.status] || { label: ev.status, cls: 'bg-slate-700 text-slate-400 border-slate-600' });
+                          archived:  { label: 'Arquivado',  cls: 'bg-slate-700/60 text-slate-400 border-slate-600' },
+                        }[evStatus] || { label: evStatus, cls: 'bg-slate-700 text-slate-400 border-slate-600' });
                     const dayLabel = ev.start_date ? format(parseISO(ev.start_date), "EEE d", { locale: ptBR }) : '—';
                     const timeLabel = ev.start_time ? ev.start_time.slice(0, 5) : null;
                     const amount = getEventCacheAmount(ev);
@@ -1696,7 +1700,7 @@ export default function CalendarPage() {
                           )}
                         </button>
                         <div className="flex items-center gap-2 flex-shrink-0">
-                          {ev.status === 'completed' && (ev.nfe_arquivo_url || ev.nfe_numero) && (
+                          {evStatus === 'completed' && (ev.nfe_arquivo_url || ev.nfe_numero) && (
                             <FileText
                               className="w-3.5 h-3.5 flex-shrink-0"
                               style={{ color: ev.nfe_analise?.cliente_reconhecido ? '#34d399' : '#60a5fa' }}
