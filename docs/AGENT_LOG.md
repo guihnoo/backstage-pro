@@ -6,6 +6,21 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-25
 
+### S174 — Lapidação: datas duplicadas, event.status bruto, PDF contratos (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Arquivos alterados**:
+  - `src/components/calendar/EventDetailModal.jsx` — datas não duplicam mais em eventos de 1 dia (Data Início/Fim → Data); `event.status` bruto → `status` computado por `getEventStatus` (cronômetro + contrato de serviços)
+  - `src/components/reports/EventDetailModal.jsx` — "Período" → "Data" em eventos de 1 dia; `event.status` → `status` computado em 4 pontos (avaliação, anexo NF-e x2, NFS-e portal, `isPastAndNotCompleted`)
+  - `src/components/clients/ClientDetailModal.jsx` — datas não duplicam na timeline de eventos; `eventStatus = getEventStatus(event)` para horas trabalhadas e alerta de pagamento pendente
+  - `src/lib/ContractPDFDocument.jsx` — **bug crítico**: contrato PDF mostrava R$ 0,00 (campos `cache_value`/`cache_diaria` não existem no DB); corrigido para `getEventCacheAmount(event)`
+  - `src/lib/ReceiptPDFDocument.jsx` — fallback do valor simplificado: `paid_amount || getEventCacheAmount(event)` (antes usava `daily_cache_value` isolado, ignorando dias múltiplos)
+- **Build**: ✅ 0 erros
+- **Bugs corrigidos**:
+  1. **Datas duplicadas**: eventos de 1 dia mostravam "Data Início: X / Data Fim: X" — 3 componentes corrigidos
+  2. **`event.status` bruto**: 7 pontos usando status calculado incorretamente (cronômetro, contrato, fiscal, timeline, avaliação)
+  3. **Contrato PDF com valor R$ 0,00**: campos deprecated `cache_value`/`cache_diaria` substituídos por `getEventCacheAmount()`
+  4. **Recibo PDF**: cálculo de fallback errado para eventos multi-dia
+
 ### S173 — Fix logo empresa + observações evento (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Arquivos alterados**:
