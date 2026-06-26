@@ -27,8 +27,42 @@ import InstallPwaCard from '@/components/pwa/InstallPwaCard';
 import EventTemplatesManager from '@/components/calendar/EventTemplatesManager';
 import { requestAppTour } from '@/lib/appTourBus';
 import { useUserSettings } from '@/lib/useUserSettings';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const PIX_TYPES = ['CPF', 'CNPJ', 'E-mail', 'Telefone', 'Chave aleatória'];
+
+function ProfileSkeleton() {
+  return (
+    <div className="min-h-full pb-28 px-4 max-w-2xl mx-auto space-y-6 pt-6 animate-in fade-in duration-200">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="space-y-1.5">
+          <Skeleton className="h-3 w-20 rounded" />
+          <Skeleton className="h-6 w-36 rounded" />
+        </div>
+        <Skeleton className="h-8 w-24 rounded-lg" />
+      </div>
+      {/* Avatar */}
+      <div className="flex flex-col items-center gap-3 py-4">
+        <Skeleton className="w-20 h-20 rounded-full" />
+        <Skeleton className="h-4 w-32 rounded" />
+        <Skeleton className="h-3 w-48 rounded" />
+      </div>
+      {/* Stats widget */}
+      <div className="grid grid-cols-4 gap-2">
+        {[0,1,2,3].map(i => <Skeleton key={i} className="h-14 rounded-xl" />)}
+      </div>
+      {/* Form sections */}
+      {[0,1,2].map(i => (
+        <div key={i} className="rounded-2xl border border-slate-800/50 bg-slate-900/30 p-4 space-y-3">
+          <Skeleton className="h-3 w-28 rounded" />
+          <Skeleton className="h-11 w-full rounded-xl" />
+          <Skeleton className="h-11 w-full rounded-xl" />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function ProfileSimple() {
   const { user, profile, signOut, updateProfile } = useAuth();
@@ -156,6 +190,8 @@ export default function ProfileSimple() {
     await signOut();
     hardNavigate('/login');
   };
+
+  if (!profile) return <ProfileSkeleton />;
 
   return (
     <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-full pb-28">
