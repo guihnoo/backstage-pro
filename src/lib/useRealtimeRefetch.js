@@ -29,9 +29,13 @@ export function useRealtimeRefetch(tables, refetch) {
 
     const unsubs = list.map((table) => realtimeBus.subscribe(table, scheduleRefetch));
 
+    const onReconnect = () => scheduleRefetch();
+    window.addEventListener('backstage:reconnect', onReconnect);
+
     return () => {
       clearTimeout(timer);
       unsubs.forEach((unsub) => unsub());
+      window.removeEventListener('backstage:reconnect', onReconnect);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableKey]);

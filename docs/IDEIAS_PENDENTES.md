@@ -32,7 +32,7 @@
 | 12 | Busca inteligente empresas / CNPJ compartilhado | ✅ | migrations 020 + Edge Function + NF-e XML sessão 10 |
 | 13 | Export PDF/CSV relatórios | ✅ | exportReport.js |
 | 14 | OCR recibo despesas (ReceiptAnalyzer) | ✅ | Gemini Vision via Edge Function `analyze-receipt`; auto-preenche form |
-| 15 | PWA offline refinado + sync estado | ✅ | S32: `usePWA` hook + `InstallPwaCard` (Perfil) + OfflineBanner "reconectado" + `backstage:reconnect` event |
+| 15 | PWA offline refinado + sync estado | 🔄 | S32 base ✅; **S180 Fase 1** ✅ (reconnect refetch + cache perfil + Workbox 7d); Fase 2 pendente (IndexedDB + write queue) |
 | 16 | Push notifications | ✅ | VAPID keys + cron 8h/18h + service worker + UI Perfil; reativar no Perfil após próximo deploy |
 | 17 | Code-split **seguro** (sem travar rotas) | ✅ | Cursor Sprint PERF-SPA-LAZY — bundle principal ~263 KB; todas as rotas lazy + Suspense ✅ |
 | 18 | Dedupe eventos Google Calendar | ✅ | `googleEventDedupe` + unit tests + smoke E2E no Perfil |

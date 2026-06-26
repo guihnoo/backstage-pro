@@ -13,6 +13,7 @@ import TermsOfServicePage from './pages/TermsOfService';
 import OAuthUrlGuard from '@/components/auth/OAuthUrlGuard';
 import NavigationSync from '@/components/NavigationSync';
 import { AuthProvider } from '@/lib/authContext';
+import { ProfileOfflineProvider } from '@/lib/profileOfflineContext';
 import { AppDataProvider } from '@/components/context/AppDataContext';
 import { RealtimeSyncProvider } from '@/components/context/RealtimeSyncProvider';
 import PushSubscriptionSync from '@/components/notifications/PushSubscriptionSync';
@@ -68,14 +69,16 @@ function OnboardingRoute({ children }) {
 function RootShell() {
   return (
     <AuthProvider>
-      <RealtimeSyncProvider>
-        <AppDataProvider>
-          <PushSubscriptionSync />
-          <NavigationSync />
-          <OAuthUrlGuard />
-          <Outlet />
-        </AppDataProvider>
-      </RealtimeSyncProvider>
+      <ProfileOfflineProvider>
+        <RealtimeSyncProvider>
+          <AppDataProvider>
+            <PushSubscriptionSync />
+            <NavigationSync />
+            <OAuthUrlGuard />
+            <Outlet />
+          </AppDataProvider>
+        </RealtimeSyncProvider>
+      </ProfileOfflineProvider>
     </AuthProvider>
   );
 }

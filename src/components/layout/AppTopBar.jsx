@@ -4,6 +4,7 @@ import { Inbox, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
 import { useAuth } from '@/lib/authContext';
+import { useProfile } from '@/lib/profileOfflineContext';
 import { isAppOwner } from '@/lib/isAppOwner';
 import { useOwnerFeedbacks } from '@/lib/useFeedback';
 import GlobalSearch from '@/components/layout/GlobalSearch';
@@ -39,7 +40,8 @@ function ProfileAvatar({ profile, primaryHex, active }) {
 
 export default function AppTopBar() {
   const { pathname } = useLocation();
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
+  const profile = useProfile();
   const theme = useCategoryTheme();
   const owner = isAppOwner(user, profile);
   const { newCount } = useOwnerFeedbacks(owner);

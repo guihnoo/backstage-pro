@@ -2512,3 +2512,16 @@ Registro cronológico de tarefas executadas por agentes.
 - **Agente**: Cursor (Composer)
 - **Entrega**: `capture-real.mjs`, `marketingMocks.js`, `export-real/` (9 PNG UI real, `carousel.html`, `promo-film.html` roteiro cinematográfico, `record-promo-film.mjs`)
 - **Vídeo v2**: narrativa (hook → problema → features → CTA) + ken-burns + overlays — não tour robótico de telas
+
+---
+
+## 2026-06-25 (S180)
+
+### PWA-S180 — Offline Fase 1: reconnect sync + cache perfil + Workbox (Cursor Agent) ✅
+- **Agente**: Cursor (Composer)
+- **Objetivo**: melhorar experiência offline read-only sem refatorar hooks LOCKED
+- **Arquivos novos**: `src/lib/offlineProfileCache.js`, `src/lib/profileOfflineContext.jsx`
+- **Arquivos alterados**: `useRealtimeRefetch.js` (listener `backstage:reconnect`), `useCategoryTheme.js`, `routes.jsx`, `AppLayout.jsx`, `AppTopBar.jsx`, `Home.jsx`, `Goals.jsx`, `Calendar.jsx`, `vite.config.js` (Workbox supabase-api: 200 entradas / 7 dias)
+- **Build**: ✅ `npm run build` (~33s)
+- **Deploy**: pendente (pedido explícito do usuário)
+- **Próximo**: Fase 2 — IndexedDB (Dexie) + fila de mutações offline

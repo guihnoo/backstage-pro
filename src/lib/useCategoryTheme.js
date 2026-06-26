@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useAuth } from '@/lib/authContext';
+import { useProfile } from '@/lib/profileOfflineContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 
 /**
@@ -7,7 +7,7 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
  * Use em CTAs, empty states e superfícies ativas — evita cyan hardcoded.
  */
 export function useCategoryTheme(overrideCategory) {
-  const { profile } = useAuth();
+  const profile = useProfile();
   const categoryId = overrideCategory ?? profile?.category ?? 'lighting';
 
   return useMemo(() => {

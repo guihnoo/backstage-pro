@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/authContext';
+import { useProfile } from '@/lib/profileOfflineContext';
 import { useStats, useEvents, useMeiStats } from '@/lib/useBackstageData';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
@@ -233,7 +234,8 @@ function getLevelInfo(eventsCount) {
 }
 
 export default function Goals() {
-  const { user, profile, updateProfile } = useAuth();
+  const { user, updateProfile } = useAuth();
+  const profile = useProfile();
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const userId = user?.id;
   const categoryId = profile?.category || 'lighting';

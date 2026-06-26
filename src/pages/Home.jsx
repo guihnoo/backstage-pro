@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useAuth } from '@/lib/authContext';
+import { useProfile } from '@/lib/profileOfflineContext';
 import { getCategoryConfig, getCategoryMotivation } from '@/lib/categoryConfig';
 import { useHomeDashboard } from '@/lib/useHomeDashboard';
 import { todayLocalISO, isDateBetween, getWorkForDate } from '@/components/utils/dateUtils';
@@ -109,7 +110,8 @@ function AgendaSkeleton() {
 }
 
 export default function Home() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
+  const profile = useProfile();
   const [detailEvent, setDetailEvent] = useState(null);
   const [editingEvent, setEditingEvent] = useState(null);
   const [showEventForm, setShowEventForm] = useState(false);

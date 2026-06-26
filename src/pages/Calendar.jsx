@@ -4,6 +4,7 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import { useQueryAction } from '@/lib/useQueryAction';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/authContext';
+import { useProfile } from '@/lib/profileOfflineContext';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
 import { useDailyWork } from '@/lib/useDailyWork';
@@ -160,7 +161,8 @@ const StatCard = ({
 
 export default function CalendarPage() {
   const location = useLocation();
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const profile = useProfile();
   const config = getCategoryConfig(profile?.category || 'lighting');
   const { events, loading: eventsLoading, error: eventsError, refetch: refetchEvents, update: updateEvent, delete: deleteEvent } = useEvents();
   const { clients, loading: clientsLoading } = useClients();

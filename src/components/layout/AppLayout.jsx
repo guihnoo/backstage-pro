@@ -4,6 +4,7 @@ import RouteSkeleton from '@/components/layout/RouteSkeleton';
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { Home, Calendar, BarChart2, Menu, Users, Receipt, Target, Sparkles, X } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
+import { useProfile } from '@/lib/profileOfflineContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { checkCompletedEventsForAutoHours } from '@/lib/checkCompletedEventsForAutoHours';
 import AppTopBar, { getAppTopBarOffset } from '@/components/layout/AppTopBar';
@@ -33,7 +34,8 @@ function isNavActive(pathname, matchPath, end) {
 }
 
 export default function AppLayout() {
-  const { profile, user } = useAuth();
+  const { user } = useAuth();
+  const profile = useProfile();
   const config = getCategoryConfig(profile?.category || 'lighting');
   const autoHoursChecked = useRef(false);
   const mainRef = useRef(null);
