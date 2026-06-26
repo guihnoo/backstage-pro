@@ -15,6 +15,16 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Backstage Pro" />
     <title>Backstage Pro - Gestão de Eventos e Finanças</title>
+  <script>
+    // Quando o service worker atualiza (skipWaiting+clientsClaim), força reload da página.
+    // Roda antes do React — funciona mesmo com tela preta/crash do JS.
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(function(reg) { reg.update(); });
+      navigator.serviceWorker.addEventListener('controllerchange', function() {
+        window.location.reload();
+      });
+    }
+  </script>
   </head>
   <body>
     <div id="root"></div>
