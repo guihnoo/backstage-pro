@@ -460,11 +460,12 @@ export default function ClientsPage() {
 
         {filteredAndSortedClients.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredAndSortedClients.map((client) => (
+            {filteredAndSortedClients.map((client, idx) => (
               <motion.div
                 key={client.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: Math.min(idx, 8) * 0.05, duration: 0.28, ease: 'easeOut' }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -583,10 +584,12 @@ export default function ClientsPage() {
                           <p className="text-[11px] text-slate-500">Confiabilidade</p>
                           <div className="flex items-center gap-1.5">
                             <div className="w-16 h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                              <div
+                              <motion.div
                                 className="h-full rounded-full"
+                                initial={{ width: 0 }}
+                                animate={{ width: `${client.stats.paymentScore.pct}%` }}
+                                transition={{ duration: 0.7, ease: 'easeOut', delay: 0.1 }}
                                 style={{
-                                  width: `${client.stats.paymentScore.pct}%`,
                                   backgroundColor: client.stats.paymentScore.pct >= 90 ? '#34d399'
                                     : client.stats.paymentScore.pct >= 70 ? '#60a5fa'
                                     : client.stats.paymentScore.pct >= 40 ? '#fbbf24' : '#f87171'

@@ -8,15 +8,26 @@ import { useFinancialVisibility } from '@/components/context/FinancialVisibility
 import { buildChargeMessage, openWhatsAppCharge } from '@/lib/whatsapp';
 import appToast from '@/lib/appToast';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
-
+import { Skeleton } from '@/components/ui/skeleton';
+import { haptics } from '@/lib/haptics';
 import { Input } from '@/components/ui/input';
 
 function ReceivableSkeleton() {
   return (
     <div className="mb-8 p-5 rounded-2xl bg-slate-900/50 border border-slate-800/50 space-y-3">
-      <div className="h-5 w-40 bg-slate-800 rounded animate-pulse" />
+      <div className="flex items-center justify-between mb-1">
+        <Skeleton className="h-4 w-32 rounded" />
+        <Skeleton className="h-5 w-20 rounded" />
+      </div>
       {[1, 2].map((i) => (
-        <div key={i} className="h-14 bg-slate-800/80 rounded-xl animate-pulse" />
+        <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-slate-800/40">
+          <Skeleton className="w-8 h-8 rounded-full flex-shrink-0" />
+          <div className="flex-1 space-y-1.5">
+            <Skeleton className="h-3.5 w-28 rounded" />
+            <Skeleton className="h-3 w-20 rounded" />
+          </div>
+          <Skeleton className="h-5 w-16 rounded" />
+        </div>
       ))}
     </div>
   );
@@ -65,10 +76,12 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
 
   const handleCharge = (row) => {
     if (!row.phone) {
+      haptics.error();
       appToast.error('Cliente sem telefone cadastrado. Adicione no perfil do cliente.');
       hardNavigate('/clients');
       return;
     }
+    haptics.medium();
     const message = buildChargeMessage({
       clientName: row.clientName,
       events: row.events,
@@ -89,6 +102,7 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
   };
 
   const handleMarkPaid = async (row) => {
+    haptics.success();
     setConfirming(null);
     setMarking(row.clientId);
     const typed = parseFloat(paidAmounts[row.clientId]);

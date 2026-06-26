@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Target, ChevronRight, Trophy } from 'lucide-react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function ProgressBar({ value, max, color }) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
@@ -105,8 +106,16 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
 
       {isLoading ? (
         <div className="space-y-3">
-          <div className="h-2 bg-gray-800 rounded animate-pulse" />
-          <div className="h-2 bg-gray-800 rounded animate-pulse w-2/3" />
+          <div className="flex justify-between mb-1.5">
+            <Skeleton className="h-3 w-20 rounded" />
+            <Skeleton className="h-3 w-28 rounded" />
+          </div>
+          <Skeleton className="h-2 w-full rounded-full" />
+          <div className="flex justify-between mb-1.5 mt-1">
+            <Skeleton className="h-3 w-14 rounded" />
+            <Skeleton className="h-3 w-16 rounded" />
+          </div>
+          <Skeleton className="h-2 w-2/3 rounded-full" />
         </div>
       ) : (
         <div className="space-y-4">
