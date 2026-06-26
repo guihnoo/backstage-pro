@@ -8,6 +8,7 @@ import { useProfile } from '@/lib/profileOfflineContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { checkCompletedEventsForAutoHours } from '@/lib/checkCompletedEventsForAutoHours';
 import AppTopBar, { getAppTopBarOffset } from '@/components/layout/AppTopBar';
+import { OfflineSyncProvider } from '@/lib/offline/OfflineSyncProvider';
 import OfflineBanner from '@/components/layout/OfflineBanner';
 import { prefetchRoute } from '@/lib/routePrefetch';
 import AppTour from '@/components/tour/AppTour';
@@ -74,7 +75,9 @@ export default function AppLayout() {
     >
       <AppTour />
       <AppTopBar />
-      <OfflineBanner />
+      <OfflineSyncProvider>
+        <OfflineBanner />
+      </OfflineSyncProvider>
       <main
         ref={mainRef}
         data-app-scroll

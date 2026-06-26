@@ -47,7 +47,7 @@
 | `ForecastWidget` | [x] | 🟢 | `getEventDisplay` + truncate |
 | `AlertasBastidao` | [x] | 🟢 | Ellipsis + line-clamp descrição |
 | `MetaMensalBar` | [x] | 🟢 | CTA quando metas zeradas |
-| Banner offline | [x] | 🟢 | `OfflineBanner` global AppLayout |
+| Banner offline | [x] | 🟢 | `OfflineBanner` global + pending sync violeta (S181) |
 | Prefetch nav | [x] | 🟢 | `routePrefetch.js` hover/touch bottom nav |
 
 **Testes:** bottom-nav smoke ✅ · calendar-navigation ✅ · overflow-responsive `/` ✅

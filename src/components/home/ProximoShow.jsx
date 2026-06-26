@@ -6,6 +6,7 @@ import appToast from '@/lib/appToast';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { useCountdown } from '@/lib/useBackstageData';
 import { hardNavigate } from '@/lib/hardNavigate';
+import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import ModoPalcoActions from '@/components/home/ModoPalcoActions';
@@ -76,13 +77,28 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
 
   if (isLoading) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8 p-8 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50"
-      >
-        <div className="h-32 bg-slate-800/50 rounded-xl animate-pulse" />
-      </motion.div>
+      <div className="p-4 space-y-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="w-10 h-10 rounded-full shrink-0" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-3/4 rounded" />
+            <Skeleton className="h-3 w-1/2 rounded" />
+          </div>
+          <Skeleton className="w-16 h-6 rounded-full" />
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {[0,1,2].map(i => (
+            <div key={i} className="space-y-1.5">
+              <Skeleton className="h-2.5 w-10 rounded" />
+              <Skeleton className="h-4 w-full rounded" />
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-2 pt-1">
+          <Skeleton className="h-10 flex-1 rounded-lg" />
+          <Skeleton className="h-10 w-28 rounded-lg" />
+        </div>
+      </div>
     );
   }
 

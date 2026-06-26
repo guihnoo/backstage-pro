@@ -2525,3 +2525,15 @@ Registro cronológico de tarefas executadas por agentes.
 - **Build**: ✅ `npm run build` (~33s)
 - **Deploy**: pendente (pedido explícito do usuário)
 - **Próximo**: Fase 2 — IndexedDB (Dexie) + fila de mutações offline
+
+---
+
+## 2026-06-25 (S181)
+
+### PWA-S181 — Offline Fase 2: IndexedDB + fila CRUD + sync (Cursor Agent) ✅
+- **Agente**: Cursor (Composer)
+- **Camada nova** `src/lib/offline/`: `offlineDb.js`, `offlineSync.js`, `offlineUtils.js`, `createOfflineHook.js`, wrappers `useOfflineEvents/Clients/Expenses/DailyWork`, `OfflineSyncProvider.jsx`
+- **Vite alias**: `@/lib/useEvents|useClients|useExpenses|useDailyWork` → wrappers offline (EventForm/ClientForm/ExpenseForm/DailyWorkModal incluídos sem editar LOCKED)
+- **UI**: `OfflineBanner` badge violeta com contagem de alterações pendentes + toast ao sincronizar
+- **Build**: ✅ `npm run build` (~21s)
+- **Deploy**: pendente

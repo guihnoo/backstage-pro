@@ -5,7 +5,7 @@ import { useRealtimeRefetch } from './useRealtimeRefetch';
 import { companyPatchFromClient } from './companyEnrichment';
 import { enrichCompanyById, upsertCompanyRecord } from './companyService';
 
-async function linkClientToCompanyAfterCreate(client, userId) {
+export async function linkClientToCompanyAfterCreate(client, userId) {
   if (!client || client.client_type === 'pessoa' || !userId) return client;
 
   let companyId = client.company_id || null;

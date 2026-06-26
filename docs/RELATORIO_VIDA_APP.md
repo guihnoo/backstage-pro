@@ -3,9 +3,9 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-25 (S180 — PWA offline Fase 1: reconnect sync + cache perfil + Workbox 7d; Cursor Agent)  
+**Última atualização:** 2026-06-25 (S181 — PWA offline Fase 2: IndexedDB + fila mutações + sync automático; Cursor Agent)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último deploy:** 2026-06-25 — S178 fix ProximoShow botão Confirmar para status `scheduled` (`8f4b207`)  
+**Último deploy:** 2026-06-25 — S179+S180 skeletons shimmer + PWA offline Fase 1 (`4709123`)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` v29 (auto-disconnect token inválido) + `analyze-nfe` v5 (Files API + maxOutputTokens 8192 + thinkingBudget 0 — **testado e funcionando em produção** ✅) deployadas no Supabase ✅  
 **Smoke E2E:** 33/33 passando (`npm run test:e2e:smoke`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`
@@ -54,6 +54,7 @@
 | Lapidação Sprint (S31) | **Sprint completa — 8/8 páginas `done`** — Cursor: Home, Clientes, Despesas, Relatórios, Metas; Claude Code: Agenda (`85d0c2e`), Despesas fix client lookup (`cad4b34`), Perfil pull-to-refresh (`c43302b`), IA Mentor pb-safe iOS (`e26d418`) |
 | PWA offline refinado (S32) | `usePWA` hook (install prompt + isInstalled + isOnline); `InstallPwaCard` em Perfil (dismissível, persiste localStorage); `OfflineBanner` com estado "Conexão restaurada — puxe para atualizar" 3s + dispara `backstage:reconnect` CustomEvent |
 | PWA offline Fase 1 (S180) | `useRealtimeRefetch` escuta `backstage:reconnect` → refetch silencioso em todos os hooks; `ProfileOfflineProvider` + `useProfile()` + cache `localStorage`; Workbox Supabase cache 7 dias / 200 entradas; telas Home/Goals/Calendar/AppLayout/AppTopBar usam perfil offline |
+| PWA offline Fase 2 (S181) | IndexedDB (`offlineDb`) espelha events/clients/expenses/daily_work; fila `sync_queue` + processador `offlineSync`; hooks via alias Vite → `useOffline*` (forms LOCKED incluídos); `OfflineSyncProvider` flush ao reconectar; banner violeta alterações pendentes |
 | CRM automatizado (S32) | Painel "Próximos Passos" em `EventDetailModal` para eventos concluídos: checklist horas (12h auto / manual) + pagamento (marcar pago / WhatsApp cobrança); badge "Evento fechado 🎉" quando tudo ok; remove botão redundante do footer |
 | Alertas CRM proativos (S32) | `AlertsPanel`: 2 novas regras — "Horas pendentes" (eventos últimos 14 dias sem horas) + "Pagamentos vencidos" (payment_due_date passado + unpaid); botão "Ver evento" abre `EventDetailModal` via `onOpenEvent` prop |
 | IA Mentor polish (S33) | `TypingDots` component: 3 pontos animados Framer Motion substituem spinner+texto; `CATEGORY_HINTS` map: empty state hint dinâmico por categoria (audio/lighting/photo/video/dj/…) usando `profile.category` |
@@ -660,7 +661,7 @@ Use este roteiro para fechar o item **#8** em `IDEIAS_PENDENTES.md`.
 
 ### Média
 6. Animações financeiras / charts animados no dashboard (`vendor-charts` já bundlado)
-7. PWA offline Fase 2 — IndexedDB + fila de mutações offline (Fase 1 ✅ S180)
+7. ~~PWA offline Fase 2~~ — ✅ S181 (IndexedDB + fila); polish: badge `_offlinePending` nos cards + conflitos multi-device
 8. Code-split seguro para `vendor-charts` (~421 KB) — `vite.config.js` LOCKED
 9. ~~Expandir smoke E2E~~ — ✅ 46 testes (smoke + regression overflow + modal)
 

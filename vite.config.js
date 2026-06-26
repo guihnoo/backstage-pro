@@ -61,6 +61,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@/lib/useEvents': path.resolve(__dirname, './src/lib/offline/useOfflineEvents.js'),
+      '@/lib/useClients': path.resolve(__dirname, './src/lib/offline/useOfflineClients.js'),
+      '@/lib/useExpenses': path.resolve(__dirname, './src/lib/offline/useOfflineExpenses.js'),
+      '@/lib/useDailyWork': path.resolve(__dirname, './src/lib/offline/useOfflineDailyWork.js'),
     },
     extensions: ['.mjs', '.js', '.jsx', '.ts', '.tsx', '.json']
   },
