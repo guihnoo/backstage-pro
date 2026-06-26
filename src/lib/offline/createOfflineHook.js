@@ -7,10 +7,11 @@ import {
 } from './offlineDb';
 import {
   applyQueueToRows,
-  isBrowserOffline,
   isNetworkError,
   OFFLINE_QUEUE_EVENT,
 } from './offlineUtils';
+import { markConnectivityOnline } from './connectivityStore';
+import { useConnectivity } from './useConnectivity';
 import {
   queueOfflineCreate,
   queueOfflineDelete,
@@ -32,6 +33,7 @@ export function createOfflineHook({
     const base = useBaseHook();
     const { user } = useAuth();
     const userId = user?.id;
+    const { offline: isOffline } = useConnectivity();
 
     const baseRows = base[dataKey];
     const [mirrorRows, setMirrorRows] = useState([]);
@@ -76,7 +78,7 @@ export function createOfflineHook({
     const effectiveRows = useMemo(() => {
       let source = baseRows || [];
 
-      if ((isBrowserOffline() || base.error) && mirrorRows.length) {
+      if ((isOffline || base.error) && mirrorRows.length) {
         source = mirrorRows;
       }
 
@@ -95,6 +97,7 @@ export function createOfflineHook({
       mapRowFromDb,
       sortRows,
       hasPending,
+      isOffline,
     ]);
 
     const pendingCount = useMemo(
@@ -104,16 +107,18 @@ export function createOfflineHook({
 
     const runOnlineOrQueue = useCallback(
       async (onlineFn, queueFn) => {
-        if (!isBrowserOffline()) {
+        if (!isOffline) {
           try {
-            return await onlineFn();
+            const result = await onlineFn();
+            markConnectivityOnline();
+            return result;
           } catch (err) {
             if (!isNetworkError(err)) throw err;
           }
         }
         return queueFn();
       },
-      []
+      [isOffline]
     );
 
     const create = useCallback(
@@ -156,13 +161,13 @@ export function createOfflineHook({
       [base, userId, entity, storeName, runOnlineOrQueue, refreshLocal]
     );
 
-    const loading = base.loading && !mirrorReady && !(mirrorRows.length && (isBrowserOffline() || base.error));
+    const loading = base.loading && !mirrorReady && !(mirrorRows.length && (isOffline || base.error));
     const offlinePending = pendingCount > 0;
 
     return {
       [dataKey]: effectiveRows,
       loading,
-      error: isBrowserOffline() && mirrorRows.length ? null : base.error,
+      error: isOffline && mirrorRows.length ? null : base.error,
       refetch: base.refetch,
       create,
       update,

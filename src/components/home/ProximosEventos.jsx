@@ -11,6 +11,8 @@ import { getEventCacheAmount } from '@/lib/eventFinance';
 import { getEventDisplay } from '@/lib/eventDisplay';
 import { resolveEventColor } from '@/lib/brandColors';
 import { getCategoryConfig } from '@/lib/categoryConfig';
+import { Skeleton } from '@/components/ui/skeleton';
+import { haptics } from '@/lib/haptics';
 
 function getTimeGroup(daysFromToday) {
   if (daysFromToday === 0) return 'Hoje';
@@ -57,10 +59,29 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
   if (isLoading) {
     return (
       <div className="mb-8">
-        <h3 className="text-lg font-bold text-white mb-4">Próximos Eventos</h3>
-        <div className="space-y-3">
+        <div className="flex items-center justify-between mb-4">
+          <Skeleton className="h-6 w-36 rounded" />
+          <Skeleton className="h-4 w-20 rounded" />
+        </div>
+        <div className="space-y-2">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-16 bg-slate-800 rounded-lg animate-pulse" />
+            <div key={i} className="p-4 rounded-lg border border-slate-700/30 bg-slate-900/50 flex items-start justify-between gap-3">
+              <div className="flex-1 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="w-2 h-2 rounded-full flex-shrink-0" />
+                  <Skeleton className="h-4 w-32 rounded" />
+                  <Skeleton className="h-4 w-16 rounded" />
+                </div>
+                <div className="flex gap-3">
+                  <Skeleton className="h-3 w-10 rounded" />
+                  <Skeleton className="h-3 w-20 rounded" />
+                </div>
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                <Skeleton className="h-3 w-10 rounded" />
+                <Skeleton className="h-5 w-16 rounded" />
+              </div>
+            </div>
           ))}
         </div>
       </div>

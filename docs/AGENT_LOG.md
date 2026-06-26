@@ -6,6 +6,17 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-25
 
+### S182 — Empty states visuais premium (Claude Code) ✅
+- **Agente**: Claude Code (claude-opus-4-8)
+- **Commits**: WIP automáticos `d04e765`, `4709123`
+- **Arquivos alterados**:
+  - `src/components/layout/EmptyState.jsx` — ícone com glow blur radial atrás + spring animation entrada (`scale 0.7→1`) + círculo branded com `primaryHex` border/bg; botão CTA com `primaryStyle`
+  - `src/components/home/ProximoShow.jsx` — estado `isLoading` trocado de `animate-pulse` div genérico para skeleton shimmer com forma exata do card (avatar + grid + botões)
+  - `src/pages/Calendar.jsx` — empty states "Sem eventos" na view Próximos e Lista agora têm ícone + CTA "Adicionar Evento" (`setShowEventForm(true)`) estilizado com `config.primaryHex`/`accentHex`; importado `Plus` do lucide-react
+- **Build**: ✅ 0 erros (`✓ built in 26.41s`)
+
+---
+
 ### S179 — Skeleton loading screens com shimmer premium (Claude Code) ✅
 - **Agente**: Claude Code (claude-opus-4-8)
 - **Commit**: `23a3f61`
@@ -2537,3 +2548,12 @@ Registro cronológico de tarefas executadas por agentes.
 - **UI**: `OfflineBanner` badge violeta com contagem de alterações pendentes + toast ao sincronizar
 - **Build**: ✅ `npm run build` (~21s)
 - **Deploy**: pendente
+
+---
+
+## 2026-06-25 (S182)
+
+### PWA-S182 — Detecção automática de conexão (Cursor Agent) ✅
+- **Problema**: offline não pode depender de escolha do usuário; `navigator.onLine` falha com Wi‑Fi sem internet
+- **Solução**: `connectivityStore.js` (probe Supabase + eventos browser + falha de request → offline); `useConnectivity()`; banner informativo automático
+- **Build**: ✅

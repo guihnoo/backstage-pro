@@ -4,6 +4,7 @@ import appToast from '@/lib/appToast';
 import { getSyncQueueCount } from '@/lib/offline/offlineDb';
 import { processOfflineQueue } from '@/lib/offline/offlineSync';
 import { OFFLINE_QUEUE_EVENT, OFFLINE_SYNC_EVENT } from '@/lib/offline/offlineUtils';
+import { initConnectivityMonitor, probeConnectivity } from '@/lib/offline/connectivityStore';
 
 const OfflineSyncContext = createContext({ pendingCount: 0, syncing: false });
 
@@ -59,6 +60,10 @@ export function OfflineSyncProvider({ children }) {
   }, [userId, refreshCount]);
 
   useEffect(() => {
+    initConnectivityMonitor();
+  }, []);
+
+  useEffect(() => {
     refreshCount();
   }, [refreshCount]);
 
@@ -71,16 +76,15 @@ export function OfflineSyncProvider({ children }) {
   useEffect(() => {
     if (!userId) return undefined;
 
-    const onReconnect = () => {
-      flushQueue();
+    const onReconnect = async () => {
+      const reachable = await probeConnectivity({ silent: true });
+      if (reachable) flushQueue();
     };
 
     window.addEventListener('backstage:reconnect', onReconnect);
-    window.addEventListener('online', onReconnect);
 
     return () => {
       window.removeEventListener('backstage:reconnect', onReconnect);
-      window.removeEventListener('online', onReconnect);
     };
   }, [userId, flushQueue]);
 

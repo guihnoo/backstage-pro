@@ -17,6 +17,7 @@ import {
   upsertMirrorRow,
 } from './offlineDb';
 import { newTempId, notifyQueueChanged } from './offlineUtils';
+import { isAppOnline } from './connectivityStore';
 
 const EVENT_STORE = 'events';
 const CLIENT_STORE = 'clients';
@@ -242,7 +243,7 @@ const SYNC_HANDLERS = {
 };
 
 export async function processOfflineQueue(userId) {
-  if (!userId || isBrowserOfflineCheck()) return { synced: 0, failed: 0, skipped: true };
+  if (!userId || !isAppOnline()) return { synced: 0, failed: 0, skipped: true };
 
   const items = await getSyncQueue(userId);
   if (!items.length) return { synced: 0, failed: 0, skipped: false };
@@ -275,10 +276,6 @@ export async function processOfflineQueue(userId) {
 
   notifyQueueChanged();
   return { synced, failed, skipped: false };
-}
-
-function isBrowserOfflineCheck() {
-  return typeof navigator !== 'undefined' && !navigator.onLine;
 }
 
 export {

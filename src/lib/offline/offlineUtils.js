@@ -1,20 +1,28 @@
 /** Utilitários compartilhados da camada offline. */
 
+import { isAppOnline, markConnectivityOffline } from './connectivityStore';
+
 export function isBrowserOffline() {
-  return typeof navigator !== 'undefined' && !navigator.onLine;
+  return !isAppOnline();
 }
 
 export function isNetworkError(err) {
   if (!err) return false;
   const msg = String(err.message || err).toLowerCase();
-  return (
+  const networkLike =
     isBrowserOffline() ||
     msg.includes('failed to fetch') ||
     msg.includes('network') ||
     msg.includes('load failed') ||
     msg.includes('networkerror') ||
-    err.name === 'TypeError'
-  );
+    msg.includes('não foi possível conectar') ||
+    err.name === 'TypeError';
+
+  if (networkLike && !isBrowserOffline()) {
+    markConnectivityOffline('request-failed');
+  }
+
+  return networkLike;
 }
 
 export function newTempId() {

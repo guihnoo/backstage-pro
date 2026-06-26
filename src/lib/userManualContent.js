@@ -339,8 +339,8 @@ export const USER_MANUAL_SECTIONS = [
     icon: Wifi,
     items: [
       {
-        heading: 'Modo offline',
-        body: 'Visualização funciona sem internet. Banner no topo quando offline; ao reconectar, dados sincronizam automaticamente.',
+        heading: 'Sem internet',
+        body: 'O app detecta automaticamente quando não há conexão. Você continua usando agenda, clientes e despesas com os dados salvos no celular. Ao voltar online, tudo sincroniza sozinho — sem precisar fazer nada.',
       },
       {
         heading: 'Push',
