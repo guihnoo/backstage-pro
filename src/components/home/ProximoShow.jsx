@@ -341,7 +341,7 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
             <ChevronRight className="w-4 h-4" />
           </motion.button>
 
-          {event.status === 'pending' && (
+          {(event.status === 'pending' || event.status === 'scheduled') && (
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
