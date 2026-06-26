@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/authContext';
 import { useProfile } from '@/lib/profileOfflineContext';
@@ -13,12 +13,13 @@ import { getEventCacheAmount } from '@/lib/eventFinance';
 import { Input } from '@/components/ui/input';
 import appToast from '@/lib/appToast';
 
-import MeiDashboard from '@/components/goals/MeiDashboard';
 import LiveClockBar from '@/components/home/LiveClockBar';
 import StatValuePulse from '@/components/home/StatValuePulse';
-import EventDetailModal from '@/components/calendar/EventDetailModal';
-import EventForm from '@/components/calendar/EventForm';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
+
+const MeiDashboard = lazy(() => import('@/components/goals/MeiDashboard'));
+const EventDetailModal = lazy(() => import('@/components/calendar/EventDetailModal'));
+const EventForm = lazy(() => import('@/components/calendar/EventForm'));
 import { useEvents as useEventsStore } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
 import { format, parseISO, differenceInCalendarDays } from 'date-fns';
@@ -581,7 +582,7 @@ export default function Goals() {
         </div>
 
         {/* Conteúdo das tabs */}
-        <AnimatePresence mode="wait">
+        <AnimatePresence initial={false}>
           {/* ─── ABA METAS ─── */}
           {activeTab === 'metas' && (
             <motion.div
@@ -1199,12 +1200,14 @@ export default function Goals() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
             >
-              <MeiDashboard
-                annualRevenue={annualRevenue}
-                loading={meiLoading}
-                dasType="services"
-                accentColor={config.primaryHex}
-              />
+              <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl" />}>
+                <MeiDashboard
+                  annualRevenue={annualRevenue}
+                  loading={meiLoading}
+                  dasType="services"
+                  accentColor={config.primaryHex}
+                />
+              </Suspense>
             </motion.div>
           )}
         </AnimatePresence>
@@ -1295,41 +1298,45 @@ export default function Goals() {
       })()}
     </AnimatePresence>
     {selectedEvent && (
-      <EventDetailModal
-        event={selectedEvent}
-        client={selectedEvent.clients || null}
-        onClose={() => setSelectedEvent(null)}
-        onEdit={(event) => {
-          setSelectedEvent(null);
-          setEditingEvent(event);
-          setShowEventForm(true);
-        }}
-        onDelete={(eventId) => setConfirmDeleteEventId(eventId)}
-        onMarkPaid={() => {
-          setSelectedEvent(null);
-          refreshData();
-        }}
-        onAddWork={() => {
-          setSelectedEvent(null);
-          hardNavigate('/calendar');
-        }}
-      />
+      <Suspense fallback={null}>
+        <EventDetailModal
+          event={selectedEvent}
+          client={selectedEvent.clients || null}
+          onClose={() => setSelectedEvent(null)}
+          onEdit={(event) => {
+            setSelectedEvent(null);
+            setEditingEvent(event);
+            setShowEventForm(true);
+          }}
+          onDelete={(eventId) => setConfirmDeleteEventId(eventId)}
+          onMarkPaid={() => {
+            setSelectedEvent(null);
+            refreshData();
+          }}
+          onAddWork={() => {
+            setSelectedEvent(null);
+            hardNavigate('/calendar');
+          }}
+        />
+      </Suspense>
     )}
     {showEventForm && (
-      <EventForm
-        isOpen={showEventForm}
-        clients={clients}
-        event={editingEvent}
-        onClose={() => {
-          setShowEventForm(false);
-          setEditingEvent(null);
-        }}
-        onSuccess={async () => {
-          setShowEventForm(false);
-          setEditingEvent(null);
-          await refreshData();
-        }}
-      />
+      <Suspense fallback={null}>
+        <EventForm
+          isOpen={showEventForm}
+          clients={clients}
+          event={editingEvent}
+          onClose={() => {
+            setShowEventForm(false);
+            setEditingEvent(null);
+          }}
+          onSuccess={async () => {
+            setShowEventForm(false);
+            setEditingEvent(null);
+            await refreshData();
+          }}
+        />
+      </Suspense>
     )}
     <ConfirmDialog
       open={!!confirmDeleteEventId}

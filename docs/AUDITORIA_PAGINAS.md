@@ -92,7 +92,9 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página lista + filtros | [x] | 🟢 | `NeonPageShell min-h-full pb-24` ✅; pull-to-refresh ✅ lapida |
+| Página lista + filtros | [x] | 🟢 | pull-to-refresh silencioso ✅ (S187) |
+| Offline cache S187 | [x] | 🟢 | Erro só bloqueia online sem cache; banner inline |
+| Lazy modais S187 | [x] | 🟢 | ClientForm/DetailModal/ActionSheet/Insights/InactivePanel — chunk ~21KB |
 | Cards lista | [x] | 🟢 | `truncate` + `title` em nome/contato; `min-w-0 overflow-hidden` ✅ |
 | `ClientForm` (LOCKED) | [x] | 🟢 | `ScrollArea fill` ✅; Razão Social adicionado sessão 10 |
 | `ClientDetailModal` | [x] | 🟢 | `EventHeading` timeline + próximos eventos; header truncate ✅; botão Editar corrigido (S167 `a466c1a`) |
@@ -120,7 +122,8 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página | [x] | 🟢 | `NeonPageShell pb-24` ✅; pull-to-refresh ✅; StatCard/MonthGroup truncate ✅ |
+| Página | [x] | 🟢 | pull-to-refresh silencioso ✅ (S188); offline cache |
+| Lazy forms S188 | [x] | 🟢 | ExpenseForm + ReceiptAnalyzer lazy; chunk ~20KB |
 | `ExpenseListItem` | [x] | 🟢 | `EventHeading` c/ client lookup correto (`useClients` → prop `client`); `ClampedText` em notas ✅ |
 | `ExpenseForm` (LOCKED) | [x] | 🟢 | `ScrollArea fill` ✅; select evento com truncate ✅ |
 | `ReceiptAnalyzer` | [x] | 🟢 | OCR Gemini Vision — Edge Function `analyze-receipt` ✅ |
@@ -167,7 +170,8 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página (`Goals.jsx`) | [x] | 🟢 | pull-to-refresh ✅; StatCards/CircularProgress truncate ✅; nível preview `min-w-0` ✅ |
+| Página (`Goals.jsx`) | [x] | 🟢 | pull-to-refresh ✅; tabs sem `mode="wait"` (S189) |
+| Lazy MeiDashboard/modais S189 | [x] | 🟢 | chunk ~37KB gzip 11KB |
 | Próximos Shows | [x] | 🟢 | `EventHeading` + data truncada ✅ |
 | `MeiDashboard` | [x] | 🟢 | alert banner e valores financeiros truncate ✅ |
 | Badge bottom sheet | [x] | 🟢 | `useAppScrollLock` + `bp-modal-scroll`; título `Ellipsis` ✅ |

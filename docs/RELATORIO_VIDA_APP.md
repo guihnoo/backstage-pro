@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-25 (S186 — auditoria mobile Relatórios: lazy charts, offline cache, refetch silencioso; Cursor)  
+**Última atualização:** 2026-06-25 (S187–S189 — auditoria mobile Clientes/Despesas/Metas; Cursor)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-06-25 — S179+S180 skeletons shimmer + PWA offline Fase 1 (`4709123`)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` v29 (auto-disconnect token inválido) + `analyze-nfe` v5 (Files API + maxOutputTokens 8192 + thinkingBudget 0 — **testado e funcionando em produção** ✅) deployadas no Supabase ✅  
@@ -55,7 +55,7 @@
 | PWA offline refinado (S32) | `usePWA` hook (install prompt + isInstalled + isOnline); `InstallPwaCard` em Perfil (dismissível, persiste localStorage); `OfflineBanner` com estado "Conexão restaurada — puxe para atualizar" 3s + dispara `backstage:reconnect` CustomEvent |
 | PWA offline Fase 1 (S180) | `useRealtimeRefetch` escuta `backstage:reconnect` → refetch silencioso em todos os hooks; `ProfileOfflineProvider` + `useProfile()` + cache `localStorage`; Workbox Supabase cache 7 dias / 200 entradas; telas Home/Goals/Calendar/AppLayout/AppTopBar usam perfil offline |
 | PWA offline Fase 2 (S181–S183) | IndexedDB + fila CRUD + sync **silencioso** ao reconectar; detecção automática (`connectivityStore`); banner **só sem internet** (sem pending/reconectado) |
-| Auditoria mobile S184–S186 | **S184 Agenda**: load progressivo, lazy chunks, modais 100dvh. **S185 Home**: fallback offline, lazy ForecastWidget. **S186 Relatórios**: lazy 20+ componentes charts/map (~137KB→~39KB chunk inicial), erro só bloqueia online sem cache, pull-to-refresh silencioso |
+| Auditoria mobile S184–S189 | **S184 Agenda** · **S185 Home** · **S186 Relatórios** · **S187 Clientes** (lazy modais, offline cache) · **S188 Despesas** · **S189 Metas** (lazy MeiDashboard/modais, tabs sem `mode="wait"`) |
 | Lapidação premium S183 (Claude Code) | **Haptics** (`haptics.js` via navigator.vibrate): toggle pagamento, confirmar evento, pull-to-refresh, nav inferior; **PullToRefreshIndicator** reescrito com anel SVG de progresso circular; **skeletons shimmer** completos em todos os componentes da Home (AReceber, ForecastWidget, PipelineFinanceiro, AlertasBastidao, MetaMensalBar, QuickStats, ProximosEventos); **stagger animation** nos cards de Clientes; barra "Confiabilidade" animada com `motion.div` |
 | CRM automatizado (S32) | Painel "Próximos Passos" em `EventDetailModal` para eventos concluídos: checklist horas (12h auto / manual) + pagamento (marcar pago / WhatsApp cobrança); badge "Evento fechado 🎉" quando tudo ok; remove botão redundante do footer |
 | Alertas CRM proativos (S32) | `AlertsPanel`: 2 novas regras — "Horas pendentes" (eventos últimos 14 dias sem horas) + "Pagamentos vencidos" (payment_due_date passado + unpaid); botão "Ver evento" abre `EventDetailModal` via `onOpenEvent` prop |
@@ -664,7 +664,7 @@ Use este roteiro para fechar o item **#8** em `IDEIAS_PENDENTES.md`.
 ### Média
 6. Animações financeiras / charts animados no dashboard (`vendor-charts` já bundlado)
 7. ~~PWA offline~~ — ✅ S181–S183
-8. **Auditoria mobile rigorosa** — 🟡 em andamento: S183 base + **S184 Agenda** + **S185 Home** + **S186 Relatórios** ✅; próximo: Clientes, Despesas, Metas
+8. **Auditoria mobile rigorosa** — ✅ S183–S189 (Agenda, Home, Relatórios, Clientes, Despesas, Metas)
 9. ~~Expandir smoke E2E~~ — ✅ 46 testes (smoke + regression overflow + modal)
 
 ### Baixa / segurança

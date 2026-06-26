@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
 import { useQueryAction } from '@/lib/useQueryAction';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -15,17 +15,21 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import LiveClockBar from '@/components/home/LiveClockBar';
 import { NeonGlass } from '@/components/design/NeonGlass';
-import { format, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import ExpenseForm from '@/components/expenses/ExpenseForm';
-import ExpenseListItem from '@/components/expenses/ExpenseListItem';
-import ReceiptAnalyzer from '@/components/expenses/ReceiptAnalyzer';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useConnectivity } from '@/lib/offline/useConnectivity';
 import EmptyState from '@/components/layout/EmptyState';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
 import { Ellipsis } from '@/components/ui/overflowText';
+import ExpenseListItem from '@/components/expenses/ExpenseListItem';
+
+const ExpenseForm = lazy(() => import('@/components/expenses/ExpenseForm'));
+const ReceiptAnalyzer = lazy(() => import('@/components/expenses/ReceiptAnalyzer'));
+
+import { format, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 const CATEGORY_LABELS = {
   transporte: 'Transporte',
@@ -128,6 +132,7 @@ export default function ExpensesPage() {
     const { events } = useEvents();
     const { clients } = useClients();
     const { profile } = useAuth();
+    const { offline } = useConnectivity();
     const config = getCategoryConfig(profile?.category || 'lighting');
     const { isVisible, formatCurrency } = useFinancialVisibility();
 
@@ -151,7 +156,7 @@ export default function ExpensesPage() {
         setShowForm(false);
         setEditingExpense(null);
         appToast.success(editingExpense ? "Despesa atualizada!" : "Despesa criada!");
-        refetchExpenses();
+        refetchExpenses({ silent: true });
     }, [editingExpense, refetchExpenses]);
 
     const handleEdit = (expense) => {
@@ -196,7 +201,7 @@ export default function ExpensesPage() {
     };
 
     const refreshExpenses = useCallback(async () => {
-        await refetchExpenses();
+        await refetchExpenses({ silent: true });
         appToast.success('Despesas atualizadas');
     }, [refetchExpenses]);
 
@@ -275,7 +280,10 @@ export default function ExpensesPage() {
         );
     }
 
-    if (expensesError) {
+    const hasCachedExpenses = allExpenses.length > 0;
+    const showBlockingError = expensesError && !offline && !hasCachedExpenses;
+
+    if (showBlockingError) {
         return (
             <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-full flex items-center justify-center p-4">
                 <EmptyState
@@ -323,6 +331,15 @@ export default function ExpensesPage() {
                             </Button>
                         </div>
                     </div>
+
+                    {expensesError && hasCachedExpenses && (
+                        <Alert className="border-red-500/40 bg-red-500/10">
+                            <AlertCircle className="w-4 h-4 text-red-400" />
+                            <AlertDescription className="text-red-300 text-sm">
+                                <strong>Erro ao sincronizar:</strong> {expensesError} — exibindo despesas em cache.
+                            </AlertDescription>
+                        </Alert>
+                    )}
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <StatCard primaryHex={config.primaryHex} accentHex={config.accentHex} title="Gasto Total" value={isVisible ? formatCurrency(expenseStats.total) : '•••••'} onClick={() => setStatusFilter('all')} active={statusFilter === 'all'} />
@@ -440,21 +457,25 @@ export default function ExpensesPage() {
             </NeonPageShell>
 
             {showForm && (
-                <ExpenseForm
-                    open={showForm}
-                    onOpenChange={setShowForm}
-                    expense={editingExpense}
-                    events={events}
-                    onSuccess={handleFormSuccess}
-                    prefillData={prefillFromScan}
-                />
+                <Suspense fallback={null}>
+                    <ExpenseForm
+                        open={showForm}
+                        onOpenChange={setShowForm}
+                        expense={editingExpense}
+                        events={events}
+                        onSuccess={handleFormSuccess}
+                        prefillData={prefillFromScan}
+                    />
+                </Suspense>
             )}
 
-            <ReceiptAnalyzer
-                open={showAnalyzer}
-                onOpenChange={setShowAnalyzer}
-                onExtract={handleAnalyzerExtract}
-            />
+            <Suspense fallback={null}>
+                <ReceiptAnalyzer
+                    open={showAnalyzer}
+                    onOpenChange={setShowAnalyzer}
+                    onExtract={handleAnalyzerExtract}
+                />
+            </Suspense>
 
             <ConfirmDialog
                 open={!!confirmDelete}

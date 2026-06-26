@@ -2619,3 +2619,13 @@ Registro cronológico de tarefas executadas por agentes.
 - Pull-to-refresh e updates pós-modal com `refetch({ silent: true })`
 - Modal projeção: `100dvh` mobile + scroll flex
 - **Build**: ✅ Reports 39KB gzip 12KB · vendor-charts carrega sob demanda por aba
+
+---
+
+## 2026-06-25 (S187–S189)
+
+### MOBILE-S187–S189 — Clientes + Despesas + Metas (Cursor Agent) ✅
+- **Clients.jsx**: lazy ClientForm/DetailModal/ActionSheet/Insights/InactivePanel; erro só bloqueia online sem cache; pull-to-refresh silencioso; chunk **54KB→21KB** gzip 7KB
+- **Expenses.jsx**: lazy ExpenseForm/ReceiptAnalyzer; offline cache + refetch silencioso; chunk ~20KB gzip 6.6KB
+- **Goals.jsx**: lazy MeiDashboard/EventDetailModal/EventForm; tabs sem `AnimatePresence mode="wait"`; chunk **44KB→37KB** gzip 11KB
+- **Build**: ✅

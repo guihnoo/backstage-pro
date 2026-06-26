@@ -1,11 +1,11 @@
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useQueryAction } from '@/lib/useQueryAction';
 import { useClients } from '@/lib/useClients';
 import { useEvents } from '@/lib/useEvents';
 import { useDailyWork } from '@/lib/useDailyWork';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -39,16 +39,17 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
 import { AUTH_HERO_PRIMARY } from '@/lib/categoryGear';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { NeonGlass } from '@/components/design/NeonGlass';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useConnectivity } from '@/lib/offline/useConnectivity';
 
-// Components
-import InactiveClientsPanel from '@/components/clients/InactiveClientsPanel';
-import ClientForm from '@/components/clients/ClientForm';
-import { ClientDraftBadge } from '@/components/clients/ClientDraftBadge';
-import ClientDetailModal from '@/components/clients/ClientDetailModal';
+const InactiveClientsPanel = lazy(() => import('@/components/clients/InactiveClientsPanel'));
+const ClientForm = lazy(() => import('@/components/clients/ClientForm'));
+const ClientDetailModal = lazy(() => import('@/components/clients/ClientDetailModal'));
+const ClientActionSheet = lazy(() => import('@/components/mobile/ClientActionSheet'));
+const ClientInsightsModal = lazy(() => import('@/components/clients/ClientInsightsModal'));
 import EmptyState from '@/components/layout/EmptyState';
-import ClientActionSheet from '@/components/mobile/ClientActionSheet';
-import ClientInsightsModal from '@/components/clients/ClientInsightsModal';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
+import { ClientDraftBadge } from '@/components/clients/ClientDraftBadge';
 
 import appToast from '@/lib/appToast';
 import { usePullToRefresh } from '@/lib/usePullToRefresh';
@@ -92,6 +93,7 @@ export default function ClientsPage() {
   const { dailyWork } = useDailyWork();
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const { profile } = useAuth();
+  const { offline } = useConnectivity();
   const config = getCategoryConfig(profile?.category || 'lighting');
   const isMobile = useMediaQuery("(max-width: 768px)");
 
@@ -253,11 +255,11 @@ export default function ClientsPage() {
   const handleFormSuccess = useCallback(() => {
     setShowClientForm(false);
     setEditingClient(null);
-    refetchClients();
+    refetchClients({ silent: true });
   }, [refetchClients]);
 
   const refreshClientsList = useCallback(async () => {
-    await refetchClients();
+    await refetchClients({ silent: true });
     appToast.success('Clientes atualizados');
   }, [refetchClients]);
 
@@ -325,7 +327,10 @@ export default function ClientsPage() {
     );
   }
 
-  if (clientsError) {
+  const hasCachedClients = (clients?.length ?? 0) > 0;
+  const showBlockingError = clientsError && !offline && !hasCachedClients;
+
+  if (showBlockingError) {
     return (
       <div className="h-full flex flex-col items-center justify-center p-4">
         <EmptyState
@@ -366,6 +371,15 @@ export default function ClientsPage() {
             Novo Cliente
           </Button>
         </div>
+
+        {clientsError && hasCachedClients && (
+          <Alert className="border-red-500/40 bg-red-500/10">
+            <AlertCircle className="w-4 h-4 text-red-400" />
+            <AlertDescription className="text-red-300 text-sm">
+              <strong>Erro ao sincronizar:</strong> {clientsError} — exibindo clientes em cache.
+            </AlertDescription>
+          </Alert>
+        )}
 
         <NeonGlass primary={config.primaryHex} className="p-4 space-y-3">
             <div className="flex flex-col lg:flex-row gap-4">
@@ -455,7 +469,9 @@ export default function ClientsPage() {
         </NeonGlass>
 
         {filterActive === 'all' && (
-          <InactiveClientsPanel clientsWithStats={clientsWithStats} />
+          <Suspense fallback={<Skeleton className="h-24 w-full rounded-xl" />}>
+            <InactiveClientsPanel clientsWithStats={clientsWithStats} />
+          </Suspense>
         )}
 
         {filteredAndSortedClients.length > 0 ? (
@@ -665,24 +681,28 @@ export default function ClientsPage() {
         )}
       </motion.div>
 
-      <AnimatePresence>
-        {showClientForm && (
+      {showClientForm && (
+        <Suspense fallback={null}>
           <ClientForm
             client={editingClient}
             onSuccess={handleFormSuccess}
             onCancel={() => setShowClientForm(false)}
           />
-        )}
+        </Suspense>
+      )}
 
-        {selectedClient && (
+      {selectedClient && (
+        <Suspense fallback={null}>
           <ClientDetailModal
             client={selectedClient}
             onClose={() => setSelectedClient(null)}
             onEdit={handleEditClient}
             onDelete={handleDeleteClient}
           />
-        )}
+        </Suspense>
+      )}
 
+      <Suspense fallback={null}>
         <ClientActionSheet
           client={actionSheetClient}
           stats={actionSheetClient?.stats}
@@ -699,15 +719,17 @@ export default function ClientsPage() {
             handleDeleteClient(clientId);
           }}
         />
+      </Suspense>
 
-        {insightsClient && (
-            <ClientInsightsModal
-                client={insightsClient}
-                isOpen={!!insightsClient}
-                onClose={() => setInsightsClient(null)}
-            />
-        )}
-      </AnimatePresence>
+      {insightsClient && (
+        <Suspense fallback={null}>
+          <ClientInsightsModal
+            client={insightsClient}
+            isOpen={!!insightsClient}
+            onClose={() => setInsightsClient(null)}
+          />
+        </Suspense>
+      )}
 
       <ConfirmDialog
         open={!!confirmDeleteId}

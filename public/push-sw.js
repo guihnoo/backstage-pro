@@ -1,4 +1,17 @@
 /* Push + notification click — carregado pelo service worker do PWA */
+
+// Quando o novo SW ativa, avisa todos os clientes para recarregar.
+// Isso garante que páginas com crash (tela preta) saiam do loop de cache stale.
+self.addEventListener('activate', function(event) {
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clients) {
+      clients.forEach(function(client) {
+        client.postMessage({ type: 'BP_SW_ACTIVATED' });
+      });
+    })
+  );
+});
+
 self.addEventListener('push', (event) => {
   let data = { title: 'Backstage Pro', body: 'Você tem um novo alerta.', url: '/' };
   try {
