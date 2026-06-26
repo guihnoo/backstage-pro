@@ -28,6 +28,24 @@ import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
 import EventHeading from '@/components/events/EventHeading';
 import { Ellipsis } from '@/components/ui/overflowText';
 import { computeEventsNeededForGoal, computeGoalStreak } from '@/lib/goalMetrics';
+import { Skeleton } from '@/components/ui/skeleton';
+
+function CirclesSkeleton() {
+  return (
+    <div className="flex justify-around flex-wrap gap-4 py-2">
+      {[0, 1, 2].map(i => (
+        <div key={i} className="flex flex-col items-center gap-2">
+          <div className="relative">
+            <Skeleton className="w-[110px] h-[110px] rounded-full" />
+            <div className="absolute inset-[10px] rounded-full bg-[#050609]" />
+          </div>
+          <Skeleton className="h-3 w-14 rounded" />
+          <Skeleton className="h-3 w-20 rounded" />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 const SEEN_BADGES_KEY = 'backstage_seen_badges';
 
@@ -652,11 +670,7 @@ export default function Goals() {
                 </AnimatePresence>
 
                 {statsLoading ? (
-                  <div className="flex justify-around">
-                    {[1, 2, 3].map(i => (
-                      <div key={i} className="w-24 h-24 bg-slate-800 rounded-full animate-pulse" />
-                    ))}
-                  </div>
+                  <CirclesSkeleton />
                 ) : (
                   <div className="flex justify-around flex-wrap gap-4">
                     <CircularProgress

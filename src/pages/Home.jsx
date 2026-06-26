@@ -33,8 +33,79 @@ import { useExpenses } from '@/lib/useExpenses';
 const EventDetailModal = lazy(() => import('@/components/calendar/EventDetailModal'));
 const EventForm = lazy(() => import('@/components/calendar/EventForm'));
 
-function SectionSkeleton({ className = 'h-28' }) {
-  return <Skeleton className={`w-full rounded-xl bg-slate-800/60 ${className}`} />;
+function PalcoSkeleton() {
+  return (
+    <div className="p-4 space-y-4">
+      <div className="flex items-center gap-3">
+        <Skeleton className="w-10 h-10 rounded-full shrink-0" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-4 w-3/4 rounded" />
+          <Skeleton className="h-3 w-1/2 rounded" />
+        </div>
+        <Skeleton className="w-16 h-6 rounded-full" />
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        {[0,1,2].map(i => (
+          <div key={i} className="space-y-1.5">
+            <Skeleton className="h-2.5 w-10 rounded" />
+            <Skeleton className="h-4 w-full rounded" />
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-2 pt-1">
+        <Skeleton className="h-10 flex-1 rounded-lg" />
+        <Skeleton className="h-10 w-28 rounded-lg" />
+      </div>
+    </div>
+  );
+}
+
+function FinanceiroSkeleton() {
+  return (
+    <div className="p-4 space-y-4">
+      {/* AReceber rows */}
+      {[0,1].map(i => (
+        <div key={i} className="flex items-center gap-3">
+          <Skeleton className="w-8 h-8 rounded-full shrink-0" />
+          <div className="flex-1 space-y-1.5">
+            <Skeleton className="h-3.5 w-2/3 rounded" />
+            <Skeleton className="h-3 w-1/3 rounded" />
+          </div>
+          <Skeleton className="w-20 h-7 rounded-lg" />
+        </div>
+      ))}
+      {/* QuickStats grid */}
+      <div className="grid grid-cols-2 gap-3 pt-1">
+        <Skeleton className="h-16 rounded-xl" />
+        <Skeleton className="h-16 rounded-xl" />
+      </div>
+      {/* MetaMensalBar */}
+      <div className="space-y-2">
+        <div className="flex justify-between">
+          <Skeleton className="h-3 w-24 rounded" />
+          <Skeleton className="h-3 w-16 rounded" />
+        </div>
+        <Skeleton className="h-2.5 w-full rounded-full" />
+      </div>
+    </div>
+  );
+}
+
+function AgendaSkeleton() {
+  return (
+    <div className="p-4 space-y-3">
+      {[0,1,2,3].map(i => (
+        <div key={i} className="flex items-center gap-3">
+          <Skeleton className="w-2 h-2 rounded-full shrink-0 mt-0.5" />
+          <div className="flex-1 space-y-1.5">
+            <Skeleton className="h-3.5 rounded" style={{ width: `${70 - i * 8}%` }} />
+            <Skeleton className="h-3 w-24 rounded" />
+          </div>
+          <Skeleton className="w-14 h-5 rounded-full" />
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export default function Home() {
@@ -235,7 +306,7 @@ export default function Home() {
         {/* Bloco 1 — Palco */}
         <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Palco">
           {loading ? (
-            <SectionSkeleton className="h-36" />
+            <PalcoSkeleton />
           ) : (
             <ProximoShow
               event={proximoEvento}
@@ -262,7 +333,7 @@ export default function Home() {
         {/* Bloco 2 — Financeiro */}
         <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Financeiro">
           {loading ? (
-            <SectionSkeleton className="h-32" />
+            <FinanceiroSkeleton />
           ) : (
             <AReceber
               rows={receivableRows}
@@ -304,7 +375,7 @@ export default function Home() {
         {/* Bloco 3 — Agenda */}
         <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Agenda">
           {loading ? (
-            <SectionSkeleton className="h-40" />
+            <AgendaSkeleton />
           ) : (
             <ProximosEventos
               events={proximosEventos}
