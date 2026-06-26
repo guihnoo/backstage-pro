@@ -6,6 +6,20 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-25
 
+### S179 — Skeleton loading screens com shimmer premium (Claude Code) ✅
+- **Agente**: Claude Code (claude-opus-4-8)
+- **Commit**: `23a3f61`
+- **Arquivos alterados**:
+  - `tailwind.config.js` — keyframe `shimmer` + classe `animate-shimmer` adicionados
+  - `src/components/ui/skeleton.jsx` — trocado `animate-pulse` por gradiente shimmer deslizante (`bg-gradient-to-r via-slate-700/50 animate-shimmer`)
+  - `src/pages/Home.jsx` — 3 skeletons específicos por seção: `PalcoSkeleton` (avatar + grid 3 col + botões), `FinanceiroSkeleton` (2 rows AReceber + grid cards + barra), `AgendaSkeleton` (4 rows com dot + texto + badge)
+  - `src/pages/Goals.jsx` — `CirclesSkeleton` com anéis ocos (buraco no centro, igual ao `CircularProgress` real) + label/sublabel por círculo; importado `Skeleton`
+  - `src/pages/ProfileSimple.jsx` — `ProfileSkeleton` com avatar + stats 4-cards + 3 seções de form; guard `if (!profile) return <ProfileSkeleton />` antes do render principal
+  - `src/components/layout/RouteSkeleton.jsx` — reescrito: `HomeSkeleton`, `CalendarSkeleton` (grid 7×5), `ReportsSkeleton` (tabs + KPI cards), `ListSkeleton` (rows com avatar + texto + valor); mapa `ROUTE_SKELETON` despacha por pathname
+- **Build**: ✅ 0 erros
+
+---
+
 ### S178 — Fix: ProximoShow botão Confirmar inclui status `scheduled` (Claude Code) ✅
 - **Agente**: Claude Code (claude-opus-4-8)
 - **Arquivo alterado**:
