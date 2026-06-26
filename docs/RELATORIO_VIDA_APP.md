@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-23 (S172 — Auditoria E2E páginas completa + fix smoke tests; Claude Code)  
+**Última atualização:** 2026-06-25 (S178 — Fix ProximoShow botão Confirmar para status `scheduled`; Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-06-22 — S170 fix AppDataContext `useMemo` (loop infinito corrigido)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` v29 (auto-disconnect token inválido) + `analyze-nfe` v5 (Files API + maxOutputTokens 8192 + thinkingBudget 0 — **testado e funcionando em produção** ✅) deployadas no Supabase ✅  

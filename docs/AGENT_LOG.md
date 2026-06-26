@@ -6,6 +6,15 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-25
 
+### S178 — Fix: ProximoShow botão Confirmar inclui status `scheduled` (Claude Code) ✅
+- **Agente**: Claude Code (claude-opus-4-8)
+- **Arquivo alterado**:
+  - `src/components/home/ProximoShow.jsx` — condição do botão "Confirmar" (linha 344): `event.status === 'pending'` → `event.status === 'pending' || event.status === 'scheduled'`
+- **Build**: ✅ sem alterações de build necessárias
+- **Comportamento corrigido**: eventos com `status: 'scheduled'` (inseridos via banco ou integração externa) agora exibem o botão "Confirmar" na Home, igual aos eventos `pending`
+
+---
+
 ### S177 — Fix: payment_due_date em Home + Calendar status (Claude Code) ✅
 - **Agente**: Claude Code (claude-sonnet-4-6)
 - **Arquivos alterados**:
