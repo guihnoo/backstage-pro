@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Sparkles, BookmarkPlus, TrendingUp, Star, CalendarDays, Repeat2 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import appToast from '@/lib/appToast';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { normalizeDateString } from '@/components/utils/dateUtils';
@@ -373,7 +374,7 @@ export default function EventForm({
           <div className="space-y-2">
             <Label>Cliente</Label>
             {clientsLoading && allClients.length === 0 ? (
-              <div className="h-11 rounded-md bg-slate-800 border border-slate-700 animate-pulse" />
+              <Skeleton className="h-11 w-full rounded-md" />
             ) : (
               <ClientCombobox
                 clients={allClients}

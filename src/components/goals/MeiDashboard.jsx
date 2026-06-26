@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { Skeleton } from '@/components/ui/skeleton';
 import { AlertTriangle, CheckCircle2, TrendingUp, Calendar, Info, ExternalLink } from 'lucide-react';
 import { MEI_LIMIT, MEI_DAS } from '@/lib/useBackstageData';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
@@ -175,7 +176,7 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               {loading ? (
-                <div className="w-8 h-2 bg-slate-700 rounded animate-pulse" />
+                <Skeleton className="w-10 h-3 rounded" />
               ) : (
                 <>
                   <span className="text-2xl font-black text-white">{Math.round(pct)}%</span>

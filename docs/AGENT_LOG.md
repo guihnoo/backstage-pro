@@ -2599,3 +2599,12 @@ Registro cronológico de tarefas executadas por agentes.
 - **EventActionSheet**: scroll actions `flex-1 min-h-0`
 - **createOfflineHook**: loading não trava offline
 - **Build**: ✅ Calendar 98KB gzip 28KB
+
+---
+
+## 2026-06-25 (S185)
+
+### MOBILE-S185 — Auditoria Home: offline fallback + load progressivo (Cursor Agent) ✅
+- **Home.jsx**: cockpit derivado de `useEvents` + `useDailyWork` enquanto `useHomeDashboard` carrega ou falha offline; pull-to-refresh com `refetch({ silent: true })`; lazy `ForecastWidget` (chunk ~2.7KB); header palco/motivação sem `mode="wait"`
+- **useHomeDashboard.js**: exporta `deriveDashboard`; refetch retorna Promise + modo silencioso; estado preservado em erro
+- **Build**: ✅ Home 65KB gzip 18KB · ForecastWidget chunk separado

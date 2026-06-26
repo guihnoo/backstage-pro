@@ -2,6 +2,7 @@
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { CheckCircle2, XCircle, Info, Loader2, AlertTriangle } from 'lucide-react';
+import { haptics } from '@/lib/haptics';
 
 /** Sonner renderiza fora do AuthProvider — usar CSS vars, não useCategoryTheme. */
 const THEME_PRIMARY = 'var(--bp-primary, #A64AFF)';
@@ -85,6 +86,10 @@ function BackstageToastCard({ type, title, description }) {
 
 function show(type, title, options = {}) {
   const { description, duration = type === 'error' ? 5000 : 3500, id } = options;
+
+  if (type === 'success') haptics.success();
+  else if (type === 'error') haptics.error();
+  else if (type === 'warning') haptics.medium();
 
   return toast.custom(
     () => <BackstageToastCard type={type} title={title} description={description} />,

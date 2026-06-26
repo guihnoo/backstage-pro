@@ -4,7 +4,8 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import { useAuth } from '@/lib/authContext';
 import { useProfile } from '@/lib/profileOfflineContext';
 import { getCategoryConfig, getCategoryMotivation } from '@/lib/categoryConfig';
-import { useHomeDashboard } from '@/lib/useHomeDashboard';
+import { useHomeDashboard, deriveDashboard } from '@/lib/useHomeDashboard';
+import { enrichEventsWithClients } from '@/lib/eventDisplay';
 import { todayLocalISO, isDateBetween, getWorkForDate } from '@/components/utils/dateUtils';
 import { isCancelledEvent } from '@/lib/eventFinance';
 import ProximoShow from '@/components/home/ProximoShow';
@@ -14,10 +15,10 @@ import AReceber from '@/components/home/AReceber';
 import AlertasBastidao from '@/components/home/AlertasBastidao';
 import PipelineFinanceiro from '@/components/home/PipelineFinanceiro';
 import ProximosEventos from '@/components/home/ProximosEventos';
-import ForecastWidget from '@/components/home/ForecastWidget';
 import FloatingActions from '@/components/home/FloatingActions';
 import LiveClockBar from '@/components/home/LiveClockBar';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
+import { NeonGlass } from '@/components/design/NeonGlass';
 import { LightingBeams } from '@/components/design/LightingBeams';
 import { NeonLevelBars } from '@/components/design/NeonLevelBars';
 import { NeonSectionFrame } from '@/components/design/NeonSectionFrame';
@@ -30,9 +31,11 @@ import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
 import { useExpenses } from '@/lib/useExpenses';
+import { useDailyWork } from '@/lib/useDailyWork';
 
 const EventDetailModal = lazy(() => import('@/components/calendar/EventDetailModal'));
 const EventForm = lazy(() => import('@/components/calendar/EventForm'));
+const ForecastWidget = lazy(() => import('@/components/home/ForecastWidget'));
 
 function PalcoSkeleton() {
   return (
@@ -117,7 +120,8 @@ export default function Home() {
   const [showEventForm, setShowEventForm] = useState(false);
   const [confirmDeleteEventId, setConfirmDeleteEventId] = useState(null);
   const { clients } = useClients();
-  const { delete: deleteEvent } = useEvents();
+  const { events, delete: deleteEvent } = useEvents();
+  const { dailyWork: hookDailyWork } = useDailyWork();
   const { expenses } = useExpenses();
   const userId = user?.id;
   const categoryId = profile?.category || 'lighting';
@@ -141,21 +145,44 @@ export default function Home() {
     upcomingEvents,
     dailyWork,
     loading,
+    error,
     refetch,
     markClientPaid,
   } = useHomeDashboard(userId);
 
+  const fallbackDashboard = useMemo(() => {
+    if (!userId) return null;
+    const hasEvents = Array.isArray(events) && events.length > 0;
+    const hasWork = Array.isArray(hookDailyWork) && hookDailyWork.length > 0;
+    if (!hasEvents && !hasWork) return null;
+    const enriched = enrichEventsWithClients(events || [], clients || []);
+    return deriveDashboard(enriched, hookDailyWork || []);
+  }, [userId, events, clients, hookDailyWork]);
+
+  const useFallback = Boolean((loading || error) && fallbackDashboard);
+  const cockpitLoading = loading && !fallbackDashboard;
+
+  const cockpitStats = useFallback ? fallbackDashboard.stats : stats;
+  const cockpitProximo = useFallback ? fallbackDashboard.proximoEvento : proximoEvento;
+  const cockpitAlerts = useFallback ? fallbackDashboard.alerts : alerts;
+  const cockpitReceivableRows = useFallback ? fallbackDashboard.receivableRows : receivableRows;
+  const cockpitUpcoming = useFallback ? fallbackDashboard.upcomingEvents : upcomingEvents;
+  const cockpitDailyWork = useFallback ? fallbackDashboard.dailyWork : dailyWork;
+  const cockpitTotalReceivable = useFallback
+    ? fallbackDashboard.receivableRows.reduce((sum, r) => sum + r.totalAmount, 0)
+    : totalReceivable;
+
   const proximosEventos = useMemo(
-    () => upcomingEvents.filter((e) => !isCancelledEvent(e)).slice(0, 5),
-    [upcomingEvents]
+    () => cockpitUpcoming.filter((e) => !isCancelledEvent(e)).slice(0, 5),
+    [cockpitUpcoming]
   );
 
   const forecastEvents = useMemo(
-    () => upcomingEvents.filter((e) => !isCancelledEvent(e)),
-    [upcomingEvents]
+    () => cockpitUpcoming.filter((e) => !isCancelledEvent(e)),
+    [cockpitUpcoming]
   );
 
-  const todayWork = useMemo(() => getWorkForDate(dailyWork, today), [dailyWork, today]);
+  const todayWork = useMemo(() => getWorkForDate(cockpitDailyWork, today), [cockpitDailyWork, today]);
 
   const currentMonth = today.substring(0, 7); // 'YYYY-MM'
   const despesasMes = useMemo(
@@ -165,27 +192,27 @@ export default function Home() {
     [expenses, currentMonth]
   );
 
-  const isShowToday = proximoEvento
+  const isShowToday = cockpitProximo
     ? isDateBetween(
         today,
-        proximoEvento.start_date || proximoEvento.event_date,
-        proximoEvento.end_date || proximoEvento.start_date || proximoEvento.event_date
-      ) && !isCancelledEvent(proximoEvento)
+        cockpitProximo.start_date || cockpitProximo.event_date,
+        cockpitProximo.end_date || cockpitProximo.start_date || cockpitProximo.event_date
+      ) && !isCancelledEvent(cockpitProximo)
     : false;
 
   const isLiveShift = Boolean(
     isShowToday &&
-      proximoEvento?.id &&
-      todayWork?.event_id === proximoEvento.id &&
+      cockpitProximo?.id &&
+      todayWork?.event_id === cockpitProximo.id &&
       todayWork?.entry_time &&
       !todayWork?.exit_time
   );
 
   const palcoAtivo = isLiveShift || isShowToday;
-  const hasAlerts = alerts.length > 0;
+  const hasAlerts = cockpitAlerts.length > 0;
 
   const refreshCockpit = useCallback(async () => {
-    await refetch();
+    await refetch({ silent: true });
     appToast.success('Cockpit atualizado');
   }, [refetch]);
 
@@ -265,13 +292,14 @@ export default function Home() {
             </span>
             .
           </motion.h1>
-          <AnimatePresence mode="wait">
+          <AnimatePresence initial={false}>
             {palcoAtivo ? (
               <motion.div
                 key="palco"
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
                 className="flex flex-col gap-3 mt-3"
               >
                 <motion.span
@@ -293,6 +321,7 @@ export default function Home() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
                 className="mt-2"
               >
                 <ClampedText lines={2} className="text-sm text-[#8a91a1] italic font-mono">
@@ -307,11 +336,11 @@ export default function Home() {
       <div className="px-4 py-6 max-w-2xl xl:max-w-6xl mx-auto w-full min-w-0 pb-28">
         {/* Bloco 1 — Palco */}
         <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Palco">
-          {loading ? (
+          {cockpitLoading ? (
             <PalcoSkeleton />
           ) : (
             <ProximoShow
-              event={proximoEvento}
+              event={cockpitProximo}
               userCategory={categoryId}
               isOnStage={isShowToday}
               isLiveShift={isLiveShift}
@@ -323,8 +352,8 @@ export default function Home() {
           {hasAlerts && (
             <div className="mt-3">
               <AlertasBastidao
-                alerts={alerts}
-                isLoading={loading}
+                alerts={cockpitAlerts}
+                isLoading={cockpitLoading}
                 primaryHex={config.primaryHex}
                 accentHex={config.accentHex}
               />
@@ -334,49 +363,58 @@ export default function Home() {
 
         {/* Bloco 2 — Financeiro */}
         <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Financeiro">
-          {loading ? (
+          {cockpitLoading ? (
             <FinanceiroSkeleton />
           ) : (
             <AReceber
-              rows={receivableRows}
-              totalReceivable={totalReceivable}
+              rows={cockpitReceivableRows}
+              totalReceivable={cockpitTotalReceivable}
               isLoading={false}
               onMarkPaid={handleMarkPaid}
             />
           )}
           <QuickStats
-            stats={stats}
-            isLoading={loading}
+            stats={cockpitStats}
+            isLoading={cockpitLoading}
             primaryHex={config.primaryHex}
             accentHex={config.accentHex}
           />
           <div data-tour="home-meta">
             <MetaMensalBar
               profile={profile}
-              stats={stats}
-              isLoading={loading}
+              stats={cockpitStats}
+              isLoading={cockpitLoading}
               accentColor={config.primaryHex}
             />
           </div>
           <PipelineFinanceiro
-            stats={stats}
+            stats={cockpitStats}
             despesasMes={despesasMes}
-            isLoading={loading}
+            isLoading={cockpitLoading}
             primaryHex={config.primaryHex}
             accentHex={config.accentHex}
           />
-          <ForecastWidget
-            events={forecastEvents}
-            isLoading={loading}
-            primaryHex={config.primaryHex}
-            accentHex={config.accentHex}
-            metaReceita={profile?.monthly_goal_revenue || 0}
-          />
+          <Suspense
+            fallback={
+              <NeonGlass primary={config.primaryHex} className="mb-8 p-5">
+                <Skeleton className="h-4 w-32 rounded mb-2" />
+                <Skeleton className="h-8 w-24 rounded" />
+              </NeonGlass>
+            }
+          >
+            <ForecastWidget
+              events={forecastEvents}
+              isLoading={cockpitLoading}
+              primaryHex={config.primaryHex}
+              accentHex={config.accentHex}
+              metaReceita={profile?.monthly_goal_revenue || 0}
+            />
+          </Suspense>
         </NeonSectionFrame>
 
         {/* Bloco 3 — Agenda */}
         <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Agenda">
-          {loading ? (
+          {cockpitLoading ? (
             <AgendaSkeleton />
           ) : (
             <ProximosEventos

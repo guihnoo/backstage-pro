@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { differenceInDays, parseISO } from 'date-fns';
 import { supabase } from './supabase';
 import { useRealtimeRefetch } from './useRealtimeRefetch';
@@ -172,7 +172,7 @@ function buildReceivableRows(receivableEvents, workByEvent) {
   return Object.values(byClient).sort((a, b) => b.totalAmount - a.totalAmount);
 }
 
-function deriveDashboard(eventsRaw, workRaw) {
+export function deriveDashboard(eventsRaw, workRaw) {
   const today = todayLocalISO();
   const events = eventsRaw || [];
   const workRows = (workRaw || []).map(mapRowFromDb);
@@ -210,8 +210,16 @@ export function useHomeDashboard(userId) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [version, setVersion] = useState(0);
+  const silentRef = useRef(false);
+  const pendingRef = useRef(null);
 
-  const refetch = useCallback(() => setVersion((v) => v + 1), []);
+  const refetch = useCallback((opts = {}) => {
+    if (opts?.silent) silentRef.current = true;
+    return new Promise((resolve, reject) => {
+      pendingRef.current = { resolve, reject };
+      setVersion((v) => v + 1);
+    });
+  }, []);
 
   useRealtimeRefetch(['events', 'daily_work'], refetch);
 
@@ -224,10 +232,14 @@ export function useHomeDashboard(userId) {
     let cancelled = false;
     const { monthStart, monthEnd } = monthBounds();
     const today = todayLocalISO();
+    const silent = silentRef.current;
+    silentRef.current = false;
 
     async function load() {
-      setLoading(true);
-      setError(null);
+      if (!silent) {
+        setLoading(true);
+        setError(null);
+      }
 
       try {
         const eventsFilter = [
@@ -260,8 +272,11 @@ export function useHomeDashboard(userId) {
         setDailyWork(derived.dailyWork);
       } catch (err) {
         if (!cancelled) setError(err.message);
+        pendingRef.current?.reject?.(err);
       } finally {
         if (!cancelled) setLoading(false);
+        pendingRef.current?.resolve?.();
+        pendingRef.current = null;
       }
     }
 

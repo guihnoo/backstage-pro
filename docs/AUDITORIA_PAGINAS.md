@@ -47,8 +47,12 @@
 | `ForecastWidget` | [x] | 🟢 | `getEventDisplay` + truncate |
 | `AlertasBastidao` | [x] | 🟢 | Ellipsis + line-clamp descrição |
 | `MetaMensalBar` | [x] | 🟢 | CTA quando metas zeradas |
-| Banner offline | [x] | 🟢 | `OfflineBanner` global + pending sync violeta (S181) |
+| Banner offline | [x] | 🟢 | `OfflineBanner` global — só âmbar sem internet (S183) |
 | Prefetch nav | [x] | 🟢 | `routePrefetch.js` hover/touch bottom nav |
+| Load progressivo S185 | [x] | 🟢 | Skeleton só sem cache hooks; fallback offline via `deriveDashboard` |
+| Lazy ForecastWidget S185 | [x] | 🟢 | chunk separado ~2.7KB gzip |
+| Pull-to-refresh silencioso S185 | [x] | 🟢 | `refetch({ silent: true })` — sem flash de skeleton |
+| Header palco/motivação S185 | [x] | 🟢 | Removido `AnimatePresence mode="wait"` (risco tela preta S158) |
 
 **Testes:** bottom-nav smoke ✅ · calendar-navigation ✅ · overflow-responsive `/` ✅
 

@@ -5,6 +5,7 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { DEFAULT_CLIENT_COLOR } from '@/lib/brandColors';
+import { haptics } from '@/lib/haptics';
 
 export function FloatingActions() {
   const [isOpen, setIsOpen] = useState(false);
@@ -36,6 +37,7 @@ export function FloatingActions() {
   ];
 
   const handleAction = (to) => {
+    haptics.light();
     setIsOpen(false);
     hardNavigate(to);
   };
@@ -87,13 +89,23 @@ export function FloatingActions() {
         </AnimatePresence>
       </div>
 
+      {/* Glow pulse breathing por baixo do botão */}
+      {!isOpen && (
+        <motion.div
+          className="absolute inset-0 rounded-full pointer-events-none"
+          animate={{ scale: [1, 1.35, 1], opacity: [0.4, 0, 0.4] }}
+          transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ background: config.primaryHex }}
+        />
+      )}
+
       <motion.button
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.93 }}
-        onClick={() => setIsOpen((v) => !v)}
+        onClick={() => { haptics.medium(); setIsOpen((v) => !v); }}
         aria-label={isOpen ? 'Fechar menu de ações' : 'Abrir menu de ações'}
         aria-expanded={isOpen}
-        className="w-14 h-14 rounded-full text-white flex items-center justify-center shadow-xl transition-shadow bp-focus-ring"
+        className="w-14 h-14 rounded-full text-white flex items-center justify-center shadow-xl transition-shadow bp-focus-ring relative"
         style={{
           background: `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})`,
           boxShadow: `0 8px 32px ${config.primaryHex}55`,
