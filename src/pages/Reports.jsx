@@ -64,6 +64,7 @@ const ExportManager = lazy(() => import('@/components/reports/ExportManager'));
 const EventDetailModal = lazy(() => import('@/components/reports/EventDetailModal'));
 const EventForm = lazy(() => import('@/components/calendar/EventForm'));
 const ExpenseForm = lazy(() => import('@/components/expenses/ExpenseForm'));
+const DailyWorkModal = lazy(() => import('@/components/calendar/DailyWorkModal'));
 const ActivityHeatmap = lazy(() => import('@/components/reports/ActivityHeatmap'));
 const SeasonalityChart = lazy(() => import('@/components/reports/SeasonalityChart'));
 const WeekdayBreakdown = lazy(() => import('@/components/reports/WeekdayBreakdown'));
@@ -369,6 +370,8 @@ export default function ReportsPage() {
   const [editingExpense, setEditingExpense] = useState(null);
   const [confirmDeleteEvent, setConfirmDeleteEvent] = useState(null);
   const [confirmDeleteWork, setConfirmDeleteWork] = useState(null);
+  const [showWorkModal, setShowWorkModal] = useState(false);
+  const [editingWorkEntry, setEditingWorkEntry] = useState(null);
   const [confirmDeleteExpense, setConfirmDeleteExpense] = useState(null);
 
   const eventsReady = !loading.events;
@@ -756,9 +759,10 @@ export default function ReportsPage() {
     }
   };
 
-  const handleWorkEdit = () => {
-    hardNavigate('/calendar');
-    appToast.info('Edite o registro de trabalho diretamente na Agenda.');
+  const handleWorkEdit = (work) => {
+    if (!work || !selectedEvent) return;
+    setEditingWorkEntry(work);
+    setShowWorkModal(true);
   };
 
   const handleWorkDelete = (workId) => {
@@ -1283,6 +1287,30 @@ export default function ReportsPage() {
             onExpenseEdit={handleExpenseEdit}
             onExpenseDelete={handleExpenseDelete}
             onApply12h={handleApply12h}
+          />
+        </Suspense>
+      )}
+
+      {showWorkModal && selectedEvent && (
+        <Suspense fallback={null}>
+          <DailyWorkModal
+            isOpen={showWorkModal}
+            onClose={() => {
+              setShowWorkModal(false);
+              setEditingWorkEntry(null);
+            }}
+            date={
+              editingWorkEntry?.date || editingWorkEntry?.work_date
+                ? new Date(`${(editingWorkEntry.date || editingWorkEntry.work_date).slice(0, 10)}T00:00:00`)
+                : new Date()
+            }
+            event={selectedEvent}
+            existingWork={editingWorkEntry}
+            onSuccess={() => {
+              setShowWorkModal(false);
+              setEditingWorkEntry(null);
+              refreshData({ silent: true });
+            }}
           />
         </Suspense>
       )}

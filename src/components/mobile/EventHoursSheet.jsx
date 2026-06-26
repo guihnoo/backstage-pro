@@ -6,8 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { uploadUserFile } from '@/lib/uploadFile';
 import { useDailyWork } from '@/lib/useDailyWork';
-import { X, Clock, Camera, Loader2, AlertCircle, Save, Zap, Calendar as CalendarIcon } from 'lucide-react';
+import { X, Clock, Camera, Loader2, AlertCircle, Save, Zap, Calendar as CalendarIcon, Trash2 } from 'lucide-react';
 import appToast from '@/lib/appToast';
+import ConfirmDialog from '@/components/layout/ConfirmDialog';
 
 import { normalizeDateString, formatDisplayDate } from '../utils/dateUtils';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
@@ -24,7 +25,7 @@ export default function EventHoursSheet({
   existingWork,
   onSave 
 }) {
-    const { create, update } = useDailyWork();
+    const { create, update, delete: deleteWork } = useDailyWork();
   const { primaryHex } = useCategoryTheme();
   const { formatCurrency, isVisible } = useFinancialVisibility();
   useAppScrollLock(isOpen);
@@ -48,6 +49,7 @@ export default function EventHoursSheet({
   const [uploading, setUploading] = useState(false);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const photoInputRef = useRef(null);
 
   // CRÍTICO: Inicializar formulário corretamente
@@ -253,6 +255,23 @@ export default function EventHoursSheet({
 
   const hours = calculateHours(formData.entry_time, formData.exit_time);
   const estimatedCache = calculateCache(hours.total, hours.overtime);
+
+  const handleDelete = async () => {
+    if (!existingWork?.id) return;
+    setLoading(true);
+    try {
+      await deleteWork(existingWork.id);
+      appToast.success('Registro excluído.');
+      onSave?.();
+      onClose();
+    } catch (error) {
+      console.error('Erro ao excluir:', error);
+      appToast.error('Erro ao excluir registro.');
+    } finally {
+      setLoading(false);
+      setConfirmDelete(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -514,6 +533,18 @@ export default function EventHoursSheet({
             {/* Footer */}
             <div className="p-6 pt-4 border-t border-slate-800 bg-slate-900/80 pb-safe">
               <div className="flex gap-3">
+                {existingWork?.id && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setConfirmDelete(true)}
+                    disabled={loading}
+                    className="h-12 px-3 border-red-500/40 text-red-400 hover:bg-red-500/10"
+                    aria-label="Excluir registro"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                )}
                 <Button
                   type="button"
                   variant="outline"
@@ -547,6 +578,16 @@ export default function EventHoursSheet({
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ConfirmDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title="Excluir registro de horas?"
+        description="Esta ação não pode ser desfeita."
+        confirmLabel="Excluir"
+        destructive
+        onConfirm={handleDelete}
+      />
     </>
   );
 }

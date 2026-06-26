@@ -2657,3 +2657,12 @@ Registro cronológico de tarefas executadas por agentes.
 - **Expenses.jsx**: lazy ExpenseForm/ReceiptAnalyzer; offline cache + refetch silencioso; chunk ~20KB gzip 6.6KB
 - **Goals.jsx**: lazy MeiDashboard/EventDetailModal/EventForm; tabs sem `AnimatePresence mode="wait"`; chunk **44KB→37KB** gzip 11KB
 - **Build**: ✅
+
+---
+
+## 2026-06-25 (S190)
+
+### FIX-S190 — Editar/excluir horas por dia no evento (Cursor Agent) ✅
+- **Causa**: `EventDetailModal` (Agenda) abria `DailyWorkModal` sempre como registro novo — sem `existingWork`; lista de horas sem botões Editar/Excluir. Relatórios redirecionava para Agenda.
+- **Fix**: botões Editar/Excluir por dia; toque em dia verde abre edição; Relatórios abre `DailyWorkModal` inline; mobile `EventHoursSheet` com excluir.
+- **Build**: ✅

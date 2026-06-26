@@ -243,7 +243,7 @@ const InfoItem = ({ icon: Icon, label, value, color = 'text-slate-300', isCurren
   );
 };
 
-const WorkItem = ({ work, onEdit }) => {
+const WorkItem = ({ work, onEdit, onDelete }) => {
   const { primaryHex } = useCategoryTheme();
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const dateLabel = formatFullDate(work.work_date || work.date);
@@ -262,9 +262,22 @@ const WorkItem = ({ work, onEdit }) => {
           <p className="text-sm font-bold text-white truncate">{dateLabel}</p>
           {timeLabel && <span className="text-[10px] text-slate-500 font-mono flex-shrink-0">{timeLabel}</span>}
         </div>
-        <Button variant="ghost" size="sm" className="h-7 px-2 flex-shrink-0 text-slate-400 hover:text-white" onClick={() => onEdit(work)}>
-          <Edit className="w-3 h-3 mr-1" /> Editar
-        </Button>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <Button variant="ghost" size="sm" className="h-7 px-2 flex-shrink-0 text-slate-400 hover:text-white" onClick={() => onEdit?.(work)}>
+            <Edit className="w-3 h-3 mr-1" /> Editar
+          </Button>
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+              aria-label="Excluir registro de horas"
+              onClick={() => onDelete(work.id)}
+            >
+              <Trash2 className="w-3 h-3" />
+            </Button>
+          )}
+        </div>
       </div>
       <div className="grid grid-cols-3 gap-2">
         <div className="rounded-lg p-2 text-center border border-slate-700/60 bg-slate-800/40">
@@ -356,6 +369,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
   onDuplicate,
   onPaymentUpdate,
   onWorkEdit,
+  onWorkDelete,
   onExpenseEdit,
   onApply12h,
   onAddExpense,
@@ -829,7 +843,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
                       <div className="space-y-3">
                         {[...dailyWork]
                           .sort((a, b) => (a.work_date || a.date || '') < (b.work_date || b.date || '') ? -1 : 1)
-                          .map((work) => <WorkItem key={work.id} work={work} onEdit={onWorkEdit} />)}
+                          .map((work) => <WorkItem key={work.id} work={work} onEdit={onWorkEdit} onDelete={onWorkDelete} />)}
                       </div>
                     ) : (
                       <p className="text-sm text-slate-400 text-center py-4 border border-dashed border-slate-700 rounded-lg">

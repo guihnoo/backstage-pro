@@ -59,6 +59,7 @@ import { openWhatsAppCharge, buildEventReport, buildChargeMessage, buildProposal
 import { generatePixPayload, buildPixWhatsAppMessage } from '@/lib/pixPayload';
 import { startTimer, getTimer, stopTimer } from '@/lib/timerStore';
 import appToast from '@/lib/appToast';
+import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import EventHeading from '@/components/events/EventHeading';
 import EventLocationSection from '@/components/events/EventLocationSection';
 import { EventChecklist } from '@/components/calendar/EventChecklist';
@@ -238,7 +239,7 @@ export default function EventDetailModal({
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const { profile } = useAuth();
   const { primaryHex } = useCategoryTheme();
-  const { dailyWork } = useDailyWork();
+  const { dailyWork, delete: deleteDailyWorkEntry } = useDailyWork();
   const { update: updateEvent } = useEvents();
   const { expenses, refetch: refetchExpenses } = useExpenses();
   const { settings: userSettings } = useUserSettings();
@@ -252,6 +253,8 @@ export default function EventDetailModal({
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [showWorkModal, setShowWorkModal] = useState(false);
   const [workModalDate, setWorkModalDate] = useState(null);
+  const [editingWorkEntry, setEditingWorkEntry] = useState(null);
+  const [confirmDeleteWorkId, setConfirmDeleteWorkId] = useState(null);
   const [showExpenses, setShowExpenses] = useState(true);
   const [locDraft, setLocDraft] = useState({
     location: '',
@@ -261,6 +264,32 @@ export default function EventDetailModal({
     location_lng: null,
   });
   const { confirmEvent, toggling } = useStatusToggle();
+
+  const closeWorkModal = () => {
+    setShowWorkModal(false);
+    setWorkModalDate(null);
+    setEditingWorkEntry(null);
+  };
+
+  const openWorkModal = (dateStr, workEntry = null) => {
+    setWorkModalDate(dateStr || null);
+    setEditingWorkEntry(workEntry);
+    setShowWorkModal(true);
+  };
+
+  const handleConfirmDeleteWork = async () => {
+    if (!confirmDeleteWorkId) return;
+    try {
+      await deleteDailyWorkEntry(confirmDeleteWorkId);
+      appToast.success('Registro de horas excluído.');
+      closeWorkModal();
+    } catch (err) {
+      console.error('Erro ao excluir registro de trabalho:', err);
+      appToast.error('Não foi possível excluir o registro.');
+    } finally {
+      setConfirmDeleteWorkId(null);
+    }
+  };
 
   useEffect(() => {
     const onTimer = (e) => setActiveTimer(e.detail);
@@ -700,7 +729,7 @@ export default function EventDetailModal({
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => { setWorkModalDate(null); setShowWorkModal(true); }}
+                    onClick={() => openWorkModal(null, null)}
                     className="h-7 px-2 text-xs border-slate-600 hover:bg-slate-700"
                   >
                     <Plus className="w-3 h-3 mr-1" />Manual
@@ -1072,8 +1101,7 @@ export default function EventDetailModal({
                             disabled={isFuture}
                             onClick={() => {
                               if (!canRegister) return;
-                              setWorkModalDate(date);
-                              setShowWorkModal(true);
+                              openWorkModal(date, work || null);
                             }}
                             className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg border text-xs font-medium transition-all ${
                               work ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
@@ -1096,6 +1124,11 @@ export default function EventDetailModal({
                         Toque num dia vermelho para registrar horas em atraso.
                       </p>
                     )}
+                    {eventDays.some(d => d.work) && (
+                      <p className="text-[11px] text-emerald-400/70 mt-2">
+                        Dias verdes já registrados — toque para editar as horas.
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
               )}
@@ -1112,7 +1145,7 @@ export default function EventDetailModal({
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => { setWorkModalDate(null); setShowWorkModal(true); }}
+                      onClick={() => openWorkModal(null, null)}
                       className="h-7 px-2 text-xs border-slate-600 hover:bg-slate-700"
                     >
                       <Plus className="w-3 h-3 mr-1" />Registrar
@@ -1129,11 +1162,33 @@ export default function EventDetailModal({
                       const dayRate = work.total_hours > 0 && work.daily_cache > 0 ? work.daily_cache / work.total_hours : null;
                       return (
                         <div key={work.id || idx} className="p-3 bg-slate-900/50 rounded-lg border border-slate-700">
-                          <div className="flex justify-between items-start mb-2">
+                          <div className="flex justify-between items-start mb-2 gap-2">
                             <p className="font-medium text-white text-sm">{formatDisplayDate(work.date)}</p>
-                            <div className="text-right">
-                              <p className="text-green-400 font-bold text-sm">{isVisible ? formatCurrency(work.daily_cache || 0) : '••••'}</p>
-                              {dayRate && <p className="text-[10px] text-amber-400/70">{isVisible ? formatCurrency(dayRate) : '••••'}/h</p>}
+                            <div className="flex items-center gap-1 flex-shrink-0">
+                              <div className="text-right mr-1">
+                                <p className="text-green-400 font-bold text-sm">{isVisible ? formatCurrency(work.daily_cache || 0) : '••••'}</p>
+                                {dayRate && <p className="text-[10px] text-amber-400/70">{isVisible ? formatCurrency(dayRate) : '••••'}/h</p>}
+                              </div>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 px-2 text-xs text-slate-400 hover:text-white"
+                                onClick={() => openWorkModal(normalizeDateString(work.work_date || work.date), work)}
+                              >
+                                <Edit className="w-3 h-3 mr-1" />
+                                Editar
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 w-7 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                aria-label="Excluir registro de horas"
+                                onClick={() => setConfirmDeleteWorkId(work.id)}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
                             </div>
                           </div>
                           <div className="grid grid-cols-3 gap-2 text-sm">
@@ -1399,10 +1454,21 @@ export default function EventDetailModal({
 
     <DailyWorkModal
       isOpen={showWorkModal}
-      onClose={() => { setShowWorkModal(false); setWorkModalDate(null); }}
+      onClose={closeWorkModal}
       date={workModalDate ? new Date(workModalDate + 'T00:00:00') : new Date()}
       event={event}
-      onSuccess={() => { setShowWorkModal(false); setWorkModalDate(null); }}
+      existingWork={editingWorkEntry}
+      onSuccess={closeWorkModal}
+    />
+
+    <ConfirmDialog
+      open={!!confirmDeleteWorkId}
+      onOpenChange={(open) => !open && setConfirmDeleteWorkId(null)}
+      title="Excluir registro de horas?"
+      description="Esta ação não pode ser desfeita. O cachê calculado para este dia será removido."
+      confirmLabel="Excluir"
+      destructive
+      onConfirm={handleConfirmDeleteWork}
     />
 
     <ExpenseForm
