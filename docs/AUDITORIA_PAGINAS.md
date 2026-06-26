@@ -133,7 +133,10 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página (`Reports.jsx`) | [x] | 🟢 | pull-to-refresh ✅; KPI StatCards truncate ✅; erro com retry ✅ |
+| Página (`Reports.jsx`) | [x] | 🟢 | pull-to-refresh silencioso ✅; KPI StatCards truncate ✅; erro só bloqueia online sem cache (S186) |
+| Lazy charts S186 | [x] | 🟢 | 20+ componentes lazy; chunk inicial ~39KB gzip (era ~137KB) |
+| Offline cache S186 | [x] | 🟢 | Banner inline + dados em cache quando offline/erro |
+| Modal projeção S186 | [x] | 🟢 | `100dvh` mobile + `bp-modal-scroll` |
 | `ReportEventList` | [x] | 🟢 | `EventHeading` + título truncado ✅ |
 | `KPIDetailModal` | [x] | 🟢 | `EventHeading` em itens de evento; título `Ellipsis` ✅ |
 | `EventDetailModal` (reports) | [x] | 🟢 | `ScrollArea fill` ✅; card NF-e (S137): botões `type="button"` ✅; `InlineNotes`: `role="button"` + `tabIndex` + `onKeyDown` ✅ |

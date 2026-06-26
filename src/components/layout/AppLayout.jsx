@@ -92,14 +92,7 @@ export default function AppLayout() {
         }}
       >
         <Suspense fallback={<RouteSkeleton />}>
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-          >
-            <Outlet />
-          </motion.div>
+          <Outlet />
         </Suspense>
       </main>
       <nav

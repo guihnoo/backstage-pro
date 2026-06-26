@@ -2608,3 +2608,14 @@ Registro cronológico de tarefas executadas por agentes.
 - **Home.jsx**: cockpit derivado de `useEvents` + `useDailyWork` enquanto `useHomeDashboard` carrega ou falha offline; pull-to-refresh com `refetch({ silent: true })`; lazy `ForecastWidget` (chunk ~2.7KB); header palco/motivação sem `mode="wait"`
 - **useHomeDashboard.js**: exporta `deriveDashboard`; refetch retorna Promise + modo silencioso; estado preservado em erro
 - **Build**: ✅ Home 65KB gzip 18KB · ForecastWidget chunk separado
+
+---
+
+## 2026-06-25 (S186)
+
+### MOBILE-S186 — Auditoria Relatórios: lazy charts + offline (Cursor Agent) ✅
+- **Reports.jsx**: 20+ componentes (charts, mapa, modais) em `lazy()` + `Suspense`; chunk inicial **137KB → 39KB** gzip 12KB
+- Erro bloqueante só online sem cache; banner inline com dados em cache offline
+- Pull-to-refresh e updates pós-modal com `refetch({ silent: true })`
+- Modal projeção: `100dvh` mobile + scroll flex
+- **Build**: ✅ Reports 39KB gzip 12KB · vendor-charts carrega sob demanda por aba

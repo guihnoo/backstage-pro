@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useCallback } from 'react';
+﻿import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import {
   getEventCacheAmount,
@@ -34,20 +34,14 @@ import { useFinancialVisibility } from '@/components/context/FinancialVisibility
 import appToast from '@/lib/appToast';
 import { getEventStatus } from '@/components/utils/dateUtils';
 
-// Component imports
-import ReportsChart from '@/components/reports/ReportsChart';
+// Component imports — charts/map/modais em lazy para reduzir chunk inicial
 import ReportEventList from '@/components/reports/ReportEventList';
 import FinancialSummary from '@/components/reports/FinancialSummary';
-import ClientDetailedTable from '@/components/reports/ClientDetailedTable';
-import ExpenseAnalysis from '@/components/reports/ExpenseAnalysis';
-import ExportManager from '@/components/reports/ExportManager';
-import EventDetailModal from '@/components/reports/EventDetailModal';
-import EventForm from '@/components/calendar/EventForm';
-import ExpenseForm from '@/components/expenses/ExpenseForm';
 import { Skeleton } from '@/components/ui/skeleton';
 import EmptyState from '@/components/layout/EmptyState';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/lib/authContext';
 import { applyAuto12Hours } from '@/lib/applyAuto12Hours';
 import { getCategoryConfig } from '@/lib/categoryConfig';
@@ -56,24 +50,37 @@ import LiveClockBar from '@/components/home/LiveClockBar';
 import StatValuePulse from '@/components/home/StatValuePulse';
 import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
-import ActivityHeatmap from '@/components/reports/ActivityHeatmap';
-import SeasonalityChart from '@/components/reports/SeasonalityChart';
-import WeekdayBreakdown from '@/components/reports/WeekdayBreakdown';
-import NfTracker from '@/components/reports/NfTracker';
-import MonthlyTrend from '@/components/reports/MonthlyTrend';
-import WorkAnalytics from '@/components/reports/WorkAnalytics';
-import CashflowForecast from '@/components/reports/CashflowForecast';
-import CategoryBreakdown from '@/components/reports/CategoryBreakdown';
-import TopClients from '@/components/reports/TopClients';
-import ReceivablesAging from '@/components/reports/ReceivablesAging';
-import SmartInsights from '@/components/reports/SmartInsights';
-import YearOverYear from '@/components/reports/YearOverYear';
-import CacheEvolutionChart from '@/components/reports/CacheEvolutionChart';
-import IRSummary from '@/components/reports/IRSummary';
 import EventHeading from '@/components/events/EventHeading';
 import { enrichEventsWithClients, getClientDisplayName } from '@/lib/eventDisplay';
 import { Ellipsis } from '@/components/ui/overflowText';
-import BrazilVisitedMap from '@/components/reports/BrazilVisitedMap';
+import { useConnectivity } from '@/lib/offline/useConnectivity';
+
+const ReportsChart = lazy(() => import('@/components/reports/ReportsChart'));
+const MonthlyTrend = lazy(() => import('@/components/reports/MonthlyTrend'));
+const ClientDetailedTable = lazy(() => import('@/components/reports/ClientDetailedTable'));
+const ExpenseAnalysis = lazy(() => import('@/components/reports/ExpenseAnalysis'));
+const ExportManager = lazy(() => import('@/components/reports/ExportManager'));
+const EventDetailModal = lazy(() => import('@/components/reports/EventDetailModal'));
+const EventForm = lazy(() => import('@/components/calendar/EventForm'));
+const ExpenseForm = lazy(() => import('@/components/expenses/ExpenseForm'));
+const ActivityHeatmap = lazy(() => import('@/components/reports/ActivityHeatmap'));
+const SeasonalityChart = lazy(() => import('@/components/reports/SeasonalityChart'));
+const WeekdayBreakdown = lazy(() => import('@/components/reports/WeekdayBreakdown'));
+const NfTracker = lazy(() => import('@/components/reports/NfTracker'));
+const WorkAnalytics = lazy(() => import('@/components/reports/WorkAnalytics'));
+const CashflowForecast = lazy(() => import('@/components/reports/CashflowForecast'));
+const CategoryBreakdown = lazy(() => import('@/components/reports/CategoryBreakdown'));
+const TopClients = lazy(() => import('@/components/reports/TopClients'));
+const ReceivablesAging = lazy(() => import('@/components/reports/ReceivablesAging'));
+const SmartInsights = lazy(() => import('@/components/reports/SmartInsights'));
+const YearOverYear = lazy(() => import('@/components/reports/YearOverYear'));
+const CacheEvolutionChart = lazy(() => import('@/components/reports/CacheEvolutionChart'));
+const IRSummary = lazy(() => import('@/components/reports/IRSummary'));
+const BrazilVisitedMap = lazy(() => import('@/components/reports/BrazilVisitedMap'));
+
+function ChartBlockSkeleton({ className = 'h-64' }) {
+  return <Skeleton className={`w-full rounded-lg ${className}`} />;
+}
 
 const ReportsSkeleton = () => (
   <div className="p-4 md:p-6 space-y-6">
@@ -293,6 +300,7 @@ export default function ReportsPage() {
   const { expenses, loading: expensesLoading, error: expensesError, refetch: refetchExpenses, delete: deleteExpense } = useExpenses();
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const { profile, user } = useAuth();
+  const { offline } = useConnectivity();
   const config = getCategoryConfig(profile?.category || 'lighting');
 
   const data = useMemo(() => {
@@ -325,12 +333,18 @@ export default function ReportsPage() {
     [eventsError, clientsError, dailyWorkError, expensesError]
   );
 
-  const refreshData = useCallback(async () => {
-    await Promise.all([refetchEvents(), refetchClients(), refetchDailyWork(), refetchExpenses()]);
+  const refreshData = useCallback(async ({ silent = false } = {}) => {
+    const opts = { silent };
+    await Promise.all([
+      refetchEvents(opts),
+      refetchClients(opts),
+      refetchDailyWork(opts),
+      refetchExpenses(opts),
+    ]);
   }, [refetchEvents, refetchClients, refetchDailyWork, refetchExpenses]);
 
   const pullRefreshReports = useCallback(async () => {
-    await refreshData();
+    await refreshData({ silent: true });
     appToast.success('Relatórios atualizados');
   }, [refreshData]);
 
@@ -359,6 +373,8 @@ export default function ReportsPage() {
   const eventsReady = !loading.events;
   const isDataReady = eventsReady && !loading.clients && !loading.dailyWork && !loading.expenses;
   const hasError = error.events || error.clients || error.dailyWork || error.expenses;
+  const hasCachedData = (events?.length ?? 0) > 0 || (clients?.length ?? 0) > 0;
+  const showBlockingError = hasError && !offline && !hasCachedData;
 
   // Calculate date ranges for current and previous periods
   const { currentRange, previousRange, nextRange } = useMemo(() => {
@@ -821,14 +837,14 @@ export default function ReportsPage() {
     return <ReportsSkeleton />;
   }
 
-  if (hasError) {
+  if (showBlockingError) {
     return (
       <div className="h-[60vh] flex items-center justify-center p-4">
         <EmptyState
           icon={AlertCircle}
           title="Erro ao Carregar Dados"
           description="Não foi possível carregar os dados para o relatório."
-          action={refreshData}
+          action={() => refreshData()}
           actionLabel="Tentar Novamente"
         />
       </div>
@@ -853,17 +869,30 @@ export default function ReportsPage() {
 
           <div className="flex items-center gap-3">
             <LiveClockBar primaryHex={config.primaryHex} />
-            <ExportManager
-              data={{
-                events: processedData.current.events,
-                work: processedData.current.work,
-                expenses: processedData.current.expenses,
-                clients: data.clients
-              }}
-              period={currentRange} />
-
+            <Suspense fallback={<Skeleton className="h-9 w-28 rounded-lg shrink-0" />}>
+              <ExportManager
+                data={{
+                  events: processedData.current.events,
+                  work: processedData.current.work,
+                  expenses: processedData.current.expenses,
+                  clients: data.clients
+                }}
+                period={currentRange}
+              />
+            </Suspense>
           </div>
         </div>
+
+        {hasError && (
+          <Alert className="border-red-500/40 bg-red-500/10">
+            <AlertCircle className="w-4 h-4 text-red-400" />
+            <AlertDescription className="text-red-300 text-sm">
+              <strong>Erro ao sincronizar:</strong>{' '}
+              {[error.events, error.clients, error.dailyWork, error.expenses].filter(Boolean).join(' · ')}
+              {hasCachedData && ' — exibindo dados em cache.'}
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Filtro de período — chips scrolláveis */}
         <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none -mt-4">
@@ -902,7 +931,9 @@ export default function ReportsPage() {
           </div>
         )}
 
-        <BrazilVisitedMap events={data.events} clients={data.clients} />
+        <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
+          <BrazilVisitedMap events={data.events} clients={data.clients} />
+        </Suspense>
 
         {!isDataReady ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1033,114 +1064,148 @@ export default function ReportsPage() {
         {/* Content based on selected view */}
         {selectedView === 'overview' && (
           <div className="space-y-4">
-            {/* Seções sempre visíveis */}
-            <SmartInsights
-              events={data.events}
-              clients={data.clients}
-              expenses={data.expenses}
-              work={data.dailyWork}
-              profile={profile}
-            />
-            <ReceivablesAging
-              events={data.events}
-              clients={data.clients}
-              work={data.dailyWork}
-            />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <ReportsChart
-                chartInput={processedData.chartInput}
-                period={selectedPeriod}
-                onDataClick={handleChartClick}
+            <Suspense fallback={<ChartBlockSkeleton className="h-24" />}>
+              <SmartInsights
+                events={data.events}
+                clients={data.clients}
+                expenses={data.expenses}
+                work={data.dailyWork}
+                profile={profile}
               />
+            </Suspense>
+            <Suspense fallback={<ChartBlockSkeleton className="h-40" />}>
+              <ReceivablesAging
+                events={data.events}
+                clients={data.clients}
+                work={data.dailyWork}
+              />
+            </Suspense>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Suspense fallback={<ChartBlockSkeleton />}>
+                <ReportsChart
+                  chartInput={processedData.chartInput}
+                  period={selectedPeriod}
+                  onDataClick={handleChartClick}
+                />
+              </Suspense>
               <FinancialSummary stats={processedData.current} />
             </div>
-            <MonthlyTrend
-              events={data.events}
-              goalRevenue={Number(profile?.monthly_goal_revenue) || 0}
-            />
+            <Suspense fallback={<ChartBlockSkeleton className="h-56" />}>
+              <MonthlyTrend
+                events={data.events}
+                goalRevenue={Number(profile?.monthly_goal_revenue) || 0}
+              />
+            </Suspense>
 
             {/* Seções secundárias colapsáveis */}
             <ExpandableSection id="yoy" label="Comparativo Ano a Ano">
-              <YearOverYear events={data.events} clients={data.clients} />
+              <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
+                <YearOverYear events={data.events} clients={data.clients} />
+              </Suspense>
             </ExpandableSection>
 
             <ExpandableSection id="cashflow-category" label="Previsão de Caixa & Categorias">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <CashflowForecast
-                  events={data.events}
-                  work={data.dailyWork}
-                  clients={data.clients}
-                />
-                <CategoryBreakdown
-                  events={processedData.current.events}
-                  work={processedData.current.work}
-                />
+                <Suspense fallback={<ChartBlockSkeleton />}>
+                  <CashflowForecast
+                    events={data.events}
+                    work={data.dailyWork}
+                    clients={data.clients}
+                  />
+                </Suspense>
+                <Suspense fallback={<ChartBlockSkeleton />}>
+                  <CategoryBreakdown
+                    events={processedData.current.events}
+                    work={processedData.current.work}
+                  />
+                </Suspense>
               </div>
             </ExpandableSection>
 
             <ExpandableSection id="top-clients" label="Top Clientes">
-              <TopClients
-                events={processedData.current.events}
-                clients={data.clients}
-              />
+              <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
+                <TopClients
+                  events={processedData.current.events}
+                  clients={data.clients}
+                />
+              </Suspense>
             </ExpandableSection>
           </div>
         )}
 
         {selectedView === 'clients' && (
-          <ClientDetailedTable
-            data={{
-              clients: data.clients,
-              events: processedData.current.events,
-              work: processedData.current.work,
-              expenses: processedData.current.expenses
-            }}
-            onClientClick={handleClientDetail}
-          />
+          <Suspense fallback={<ChartBlockSkeleton className="h-96" />}>
+            <ClientDetailedTable
+              data={{
+                clients: data.clients,
+                events: processedData.current.events,
+                work: processedData.current.work,
+                expenses: processedData.current.expenses
+              }}
+              onClientClick={handleClientDetail}
+            />
+          </Suspense>
         )}
 
         {selectedView === 'expenses' &&
-          <ExpenseAnalysis
-            expenses={processedData.current.expenses}
-            period={selectedPeriod}
-            onSliceClick={(category) => {
-              appToast.info(`Visualizando despesas da categoria: ${category}`);
-            }} />
+          <Suspense fallback={<ChartBlockSkeleton className="h-80" />}>
+            <ExpenseAnalysis
+              expenses={processedData.current.expenses}
+              period={selectedPeriod}
+              onSliceClick={(category) => {
+                appToast.info(`Visualizando despesas da categoria: ${category}`);
+              }}
+            />
+          </Suspense>
         }
 
         {selectedView === 'work' && (
-          <WorkAnalytics
-            work={processedData.current.work}
-            events={data.events}
-            clients={data.clients}
-          />
+          <Suspense fallback={<ChartBlockSkeleton className="h-80" />}>
+            <WorkAnalytics
+              work={processedData.current.work}
+              events={data.events}
+              clients={data.clients}
+            />
+          </Suspense>
         )}
 
         {selectedView === 'activity' && (
           <div className="space-y-6">
             <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
-              <ActivityHeatmap events={data.events} />
+              <Suspense fallback={<ChartBlockSkeleton className="h-32" />}>
+                <ActivityHeatmap events={data.events} />
+              </Suspense>
             </div>
-            <CacheEvolutionChart events={data.events} />
+            <Suspense fallback={<ChartBlockSkeleton className="h-64" />}>
+              <CacheEvolutionChart events={data.events} />
+            </Suspense>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <SeasonalityChart events={data.events} />
-              <WeekdayBreakdown events={data.events} />
+              <Suspense fallback={<ChartBlockSkeleton />}>
+                <SeasonalityChart events={data.events} />
+              </Suspense>
+              <Suspense fallback={<ChartBlockSkeleton />}>
+                <WeekdayBreakdown events={data.events} />
+              </Suspense>
             </div>
           </div>
         )}
 
         {selectedView === 'fiscal' && (
           <div>
-            <NfTracker
-              events={data.events}
-              clients={data.clients}
-              onOpenEvent={(ev) => setSelectedEvent(ev)}
-            />
-            <IRSummary
-              events={data.events}
-              expenses={data.expenses}
-              work={data.dailyWork}
-            />
+            <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
+              <NfTracker
+                events={data.events}
+                clients={data.clients}
+                onOpenEvent={(ev) => setSelectedEvent(ev)}
+              />
+            </Suspense>
+            <Suspense fallback={<ChartBlockSkeleton className="h-64" />}>
+              <IRSummary
+                events={data.events}
+                expenses={data.expenses}
+                work={data.dailyWork}
+              />
+            </Suspense>
           </div>
         )}
 
@@ -1196,41 +1261,51 @@ export default function ReportsPage() {
 
       {/* Modal de detalhes do evento */}
       {selectedEvent && (
-        <EventDetailModal
-          event={selectedEvent}
-          client={data.clients.find(c => c.id === selectedEvent.client_id)}
-          dailyWork={data.dailyWork.filter(w => w.event_id === selectedEvent.id)}
-          expenses={data.expenses.filter(e => e.event_id === selectedEvent.id)}
-          onClose={() => setSelectedEvent(null)}
-          onEdit={handleEventEdit}
-          onDelete={handleEventDelete}
-          onDuplicate={handleEventDuplicate}
-          onPaymentUpdate={() => refreshData()}
-          onWorkEdit={handleWorkEdit}
-          onWorkDelete={handleWorkDelete}
-          onExpenseEdit={handleExpenseEdit}
-          onExpenseDelete={handleExpenseDelete}
-          onApply12h={handleApply12h}
-        />
+        <Suspense fallback={null}>
+          <EventDetailModal
+            event={selectedEvent}
+            client={data.clients.find(c => c.id === selectedEvent.client_id)}
+            dailyWork={data.dailyWork.filter(w => w.event_id === selectedEvent.id)}
+            expenses={data.expenses.filter(e => e.event_id === selectedEvent.id)}
+            onClose={() => setSelectedEvent(null)}
+            onEdit={handleEventEdit}
+            onDelete={handleEventDelete}
+            onDuplicate={handleEventDuplicate}
+            onPaymentUpdate={() => refreshData({ silent: true })}
+            onWorkEdit={handleWorkEdit}
+            onWorkDelete={handleWorkDelete}
+            onExpenseEdit={handleExpenseEdit}
+            onExpenseDelete={handleExpenseDelete}
+            onApply12h={handleApply12h}
+          />
+        </Suspense>
       )}
 
       {/* Form de edição de evento */}
-      <EventForm
-        isOpen={!!editingEvent}
-        onClose={() => setEditingEvent(null)}
-        event={editingEvent}
-        clients={data.clients}
-        onSuccess={() => { setEditingEvent(null); refreshData(); }}
-      />
+      {editingEvent && (
+        <Suspense fallback={null}>
+          <EventForm
+            isOpen={!!editingEvent}
+            onClose={() => setEditingEvent(null)}
+            event={editingEvent}
+            clients={data.clients}
+            onSuccess={() => { setEditingEvent(null); refreshData({ silent: true }); }}
+          />
+        </Suspense>
+      )}
 
       {/* Form de edição de despesa */}
-      <ExpenseForm
-        open={!!editingExpense}
-        onOpenChange={(open) => { if (!open) setEditingExpense(null); }}
-        expense={editingExpense}
-        events={data.events}
-        onSuccess={() => { setEditingExpense(null); refreshData(); }}
-      />
+      {editingExpense && (
+        <Suspense fallback={null}>
+          <ExpenseForm
+            open={!!editingExpense}
+            onOpenChange={(open) => { if (!open) setEditingExpense(null); }}
+            expense={editingExpense}
+            events={data.events}
+            onSuccess={() => { setEditingExpense(null); refreshData({ silent: true }); }}
+          />
+        </Suspense>
+      )}
 
       <ConfirmDialog
         open={!!confirmDeleteEvent}
@@ -1262,7 +1337,7 @@ export default function ReportsPage() {
 
       {/* Modal de Projeção do Próximo Período */}
       <Dialog open={showProjection} onOpenChange={setShowProjection}>
-        <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-lg max-h-[85dvh] flex flex-col overflow-hidden p-0 bp-focus-scope">
+        <DialogContent className="bg-slate-900 border-slate-800 text-white w-full max-w-lg h-[100dvh] max-h-[100dvh] sm:h-auto sm:max-h-[85dvh] flex flex-col overflow-hidden p-0 bp-focus-scope sm:rounded-lg">
           <DialogHeader className="px-6 pt-6 pb-3 flex-shrink-0">
             <DialogTitle className="text-lg font-bold bp-text-primary">
               Projeção — Próximo Período
