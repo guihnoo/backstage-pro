@@ -58,13 +58,13 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página (`Calendar.jsx`) | [x] | 🟢 | `NeonPageShell pb-24` ✅ |
+| Página (`Calendar.jsx`) | [x] | 🟢 | S184: load progressivo (events+clients); lazy Kanban/Calc/Disponibilidade; offline não bloqueia |
 | Vista Semana (`week`) | [x] | 🟢 | scroll-x em mobile; cards com overflow tratado; `+N mais` é `<button type="button">` ✅ (S139 auditoria) |
 | Vista Próximos Shows (`upcoming`) | [x] | 🟢 | lista agrupada; `EventHeading` + truncate; scroll da página OK (S139 auditoria) |
 | Vista Kanban (`kanban`) | [x] | 🟢 | `KanbanPipeline.jsx` card `<button type="button">` ✅; colunas scroll-x OK (S139 auditoria) |
 | `BackstageCalendarGrid` | [x] | 🟢 | `role="grid"` + roving tabindex + Arrow keys; `EventLanesOverlay` `type="button"` ✅ (S138) |
 | `EventForm` | [x] | 🟢 | `ScrollArea fill` ✅ |
-| `EventDetailModal` (calendar) | [x] | 🟢 | `ScrollArea fill` + `flex-shrink-0` header/footer ✅; card NF-e (S137) ✅; `EventLifecycleBar` + `EventChecklist` + timeline de dias ✅ (S139 auditoria) |
+| `EventDetailModal` (calendar) | [x] | 🟢 | S184: fullscreen mobile `100dvh`; ScrollArea fill ✅ |
 | `DailyWorkModal` (LOCKED) | [x] | 🟢 | `bp-modal-scroll` ✅ |
 | `DateInfoModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
 | `RecurringEventActionModal` | [x] | 🟢 | `bp-modal-scroll` ✅ |

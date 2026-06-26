@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-25 (S183 — offline silencioso + fix scroll/telas em branco; Cursor Agent)  
+**Última atualização:** 2026-06-25 (S183 — lapidação: haptics + skeletons shimmer completos + PullToRefresh ring; Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-06-25 — S179+S180 skeletons shimmer + PWA offline Fase 1 (`4709123`)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` v29 (auto-disconnect token inválido) + `analyze-nfe` v5 (Files API + maxOutputTokens 8192 + thinkingBudget 0 — **testado e funcionando em produção** ✅) deployadas no Supabase ✅  
@@ -662,7 +662,7 @@ Use este roteiro para fechar o item **#8** em `IDEIAS_PENDENTES.md`.
 ### Média
 6. Animações financeiras / charts animados no dashboard (`vendor-charts` já bundlado)
 7. ~~PWA offline~~ — ✅ S181–S183
-8. **Auditoria mobile rigorosa** — scroll, modais, fontes, lentidão, telas em branco (S183 iniciou: remove AnimatePresence rotas, prefetch, scroll lock, 100dvh)
+8. **Auditoria mobile rigorosa** — 🟡 em andamento: S183 base + **S184 Agenda** (load progressivo, lazy chunks, modais mobile); próximo: Home, Relatórios
 9. ~~Expandir smoke E2E~~ — ✅ 46 testes (smoke + regression overflow + modal)
 
 ### Baixa / segurança

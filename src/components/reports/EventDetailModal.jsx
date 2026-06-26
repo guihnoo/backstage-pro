@@ -554,7 +554,10 @@ const EventDetailModal = React.memo(function EventDetailModal({
   return (
     <>
       <Dialog open={true} onOpenChange={onClose}>
-        <DialogContent hideDefaultClose className="sm:max-w-4xl h-[95dvh] max-h-[95dvh] bg-slate-900/95 backdrop-blur-lg border-slate-700 text-white p-0 overflow-hidden flex flex-col bp-focus-scope">
+        <DialogContent
+          hideDefaultClose
+          className="flex flex-col bp-focus-scope w-full max-w-[100vw] h-[100dvh] max-h-[100dvh] rounded-none border-x-0 border-b-0 p-0 overflow-hidden bg-slate-900/95 backdrop-blur-lg border-slate-700 text-white left-0 top-0 translate-x-0 translate-y-0 sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:max-w-4xl sm:h-[95dvh] sm:max-h-[95dvh] sm:rounded-lg sm:border"
+        >
 
           {/* Header */}
           <DialogHeader className={`p-3 sm:p-4 md:p-6 border-b ${statusConfig.borderColor} flex-shrink-0`}>

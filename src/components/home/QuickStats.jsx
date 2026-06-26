@@ -4,7 +4,7 @@ import { NeonGlass } from '@/components/design/NeonGlass';
 import { ChevronRight } from 'lucide-react';
 import AnimatedStatValue from '@/components/home/AnimatedStatValue';
 import StatValuePulse from '@/components/home/StatValuePulse';
-
+import { Skeleton } from '@/components/ui/skeleton';
 import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
 
 const statConfigs = [
@@ -37,7 +37,7 @@ export default function QuickStats({ stats, isLoading, primaryHex = AUTH_HERO_PR
               </div>
               <p className="text-[9px] font-mono uppercase tracking-wider text-[#7c8494] mt-2 mb-1">{config.label}</p>
               {isLoading ? (
-                <div className="h-6 bg-[#1a1d27] rounded animate-pulse" />
+                <Skeleton className="h-6 w-20 rounded mt-1" />
               ) : (
                 <StatValuePulse value={value} glowColor={primaryHex}>
                   <AnimatedStatValue

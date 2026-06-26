@@ -161,13 +161,15 @@ export function createOfflineHook({
       [base, userId, entity, storeName, runOnlineOrQueue, refreshLocal]
     );
 
-    const loading = base.loading && !mirrorReady && !(mirrorRows.length && (isOffline || base.error));
+    const loading = isOffline
+      ? !mirrorReady
+      : base.loading && !(baseRows?.length > 0);
     const offlinePending = pendingCount > 0;
 
     return {
       [dataKey]: effectiveRows,
       loading,
-      error: isOffline && mirrorRows.length ? null : base.error,
+      error: isOffline && (mirrorRows.length || hasPending) ? null : base.error,
       refetch: base.refetch,
       create,
       update,

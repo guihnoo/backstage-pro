@@ -6,6 +6,28 @@ Registro cronológico de tarefas executadas por agentes.
 
 ## 2026-06-25
 
+### S183 — Lapidação: haptics + skeletons shimmer completos + PullToRefresh ring (Claude Code) ✅
+- **Agente**: Claude Code (claude-opus-4-8)
+- **Commits**: WIP automáticos
+- **Arquivos alterados**:
+  - `src/lib/haptics.js` — novo utilitário de feedback tátil (navigator.vibrate): padrões `light/medium/success/error/confirm`
+  - `src/lib/usePaymentToggle.js` — haptics automático ao toggle pagamento (`success` ao pagar, `light` ao desmarcar)
+  - `src/lib/useStatusToggle.js` — haptics `confirm` ao confirmar evento
+  - `src/lib/usePullToRefresh.js` — haptics `light` ao atingir threshold + `success` ao soltar
+  - `src/components/layout/AppLayout.jsx` — haptics `light` ao trocar de aba na nav inferior
+  - `src/components/layout/PullToRefreshIndicator.jsx` — reescrito: anel SVG de progresso circular que preenche conforme o pull; ícone RefreshCw substitui ArrowDown; glow no threshold; animação spring no enter/exit
+  - `src/components/home/ProximosEventos.jsx` — loading skeleton shimmer substituindo `animate-pulse` divs genéricos (forma exata do card)
+  - `src/components/home/MetaMensalBar.jsx` — loading skeleton shimmer com labels + barras; importado `Skeleton`
+  - `src/components/home/QuickStats.jsx` — loading skeleton shimmer substituindo `animate-pulse`
+  - `src/components/home/AReceber.jsx` — loading skeleton shimmer (avatar + texto + valor); haptics em `handleCharge` e `handleMarkPaid`
+  - `src/components/home/ForecastWidget.jsx` — loading skeleton shimmer estruturado
+  - `src/components/home/PipelineFinanceiro.jsx` — loading skeleton shimmer (barra + labels)
+  - `src/components/home/AlertasBastidao.jsx` — loading skeleton shimmer detalhado (ícone + texto + botão)
+  - `src/pages/Clients.jsx` — stagger nas cards de cliente (`delay: idx * 0.05`); barra de confiabilidade animada com `motion.div width 0→pct`
+- **Build**: ✅ 0 erros
+
+---
+
 ### S182 — Empty states visuais premium (Claude Code) ✅
 - **Agente**: Claude Code (claude-opus-4-8)
 - **Commits**: WIP automáticos `d04e765`, `4709123`
@@ -2566,3 +2588,14 @@ Registro cronológico de tarefas executadas por agentes.
 - **Offline**: sync ao reconectar sem toast/banner pending; banner só âmbar quando sem internet
 - **Perf mobile**: removido `AnimatePresence` nas rotas; `prefetchCriticalRoutes`; limpa scroll-lock na navegação; `100dvh` + touch scroll iOS
 - **Build**: ✅
+
+---
+
+## 2026-06-25 (S184)
+
+### MOBILE-S184 — Auditoria Agenda: load, lazy, modais (Cursor Agent) ✅
+- **Calendar.jsx**: carregamento progressivo (não espera dailyWork/expenses); erro só bloqueia se online sem cache; lazy KanbanPipeline/CacheCalculator/AvailabilityShareModal (−13KB chunk inicial)
+- **EventDetailModal**: fullscreen mobile 100dvh
+- **EventActionSheet**: scroll actions `flex-1 min-h-0`
+- **createOfflineHook**: loading não trava offline
+- **Build**: ✅ Calendar 98KB gzip 28KB

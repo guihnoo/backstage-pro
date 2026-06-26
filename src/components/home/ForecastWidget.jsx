@@ -8,6 +8,7 @@ import { parseISO, addDays, isValid, startOfDay } from 'date-fns';
 import { getEventCacheAmount, isCancelledEvent } from '@/lib/eventFinance';
 import { getEventStatus } from '@/components/utils/dateUtils';
 import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ForecastWidget({ events = [], isLoading, primaryHex = AUTH_HERO_PRIMARY, accentHex = AUTH_HERO_ACCENT, metaReceita = 0 }) {
   const { formatCurrency, isVisible } = useFinancialVisibility();
@@ -37,7 +38,13 @@ export default function ForecastWidget({ events = [], isLoading, primaryHex = AU
   if (isLoading) {
     return (
       <NeonGlass primary={primaryHex} className="mb-8 p-5">
-        <div className="h-16 bg-[#1a1d27] rounded animate-pulse" />
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-32 rounded" />
+            <Skeleton className="h-3 w-24 rounded" />
+          </div>
+          <Skeleton className="h-8 w-24 rounded" />
+        </div>
       </NeonGlass>
     );
   }

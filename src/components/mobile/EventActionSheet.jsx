@@ -166,7 +166,7 @@ export default function EventActionSheet({
             </div>
 
             {/* Actions */}
-            <div className="bp-modal-scroll px-6 py-4">
+            <div className="bp-modal-scroll flex-1 min-h-0 px-4 sm:px-6 py-4">
               <div className="space-y-2">
                 
                 {/* Aplicar 12h Automáticas */}

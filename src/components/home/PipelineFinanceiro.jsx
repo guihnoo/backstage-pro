@@ -7,6 +7,7 @@ import AnimatedStatValue from '@/components/home/AnimatedStatValue';
 import StatValuePulse from '@/components/home/StatValuePulse';
 
 import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function PipelineFinanceiro({ stats, despesasMes = 0, isLoading, primaryHex = AUTH_HERO_PRIMARY, accentHex = AUTH_HERO_ACCENT }) {
   const { formatCurrency } = useFinancialVisibility();
@@ -30,7 +31,15 @@ export default function PipelineFinanceiro({ stats, despesasMes = 0, isLoading, 
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
-        {isLoading ? <div className="h-8 bg-[#1a1d27] rounded animate-pulse" /> : (
+        {isLoading ? (
+          <div className="space-y-3">
+            <Skeleton className="h-10 w-full rounded-lg" />
+            <div className="flex gap-4">
+              <Skeleton className="h-3 w-24 rounded" />
+              <Skeleton className="h-3 w-20 rounded" />
+            </div>
+          </div>
+        ) : (
           <div className="space-y-3">
             <div key={`${pago}-${aReceber}`} className="flex gap-2 h-10 rounded-lg overflow-hidden bg-[#0c0e14]/80 p-1 border border-[#23262f]">
               {percentualPago > 0 && (

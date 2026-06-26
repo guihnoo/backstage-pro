@@ -1,5 +1,5 @@
 ﻿
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useQueryAction } from '@/lib/useQueryAction';
 import { useLocation } from 'react-router-dom';
@@ -67,9 +67,7 @@ import ExpenseForm from '@/components/expenses/ExpenseForm';
 import DrilldownModal from '@/components/reports/DrilldownModal';
 import DayQuickActions from '@/components/calendar/DayQuickActions';
 import AlertsPanel from '@/components/calendar/AlertsPanel';
-import AvailabilityShareModal from '@/components/calendar/AvailabilityShareModal';
-import KanbanPipeline from '@/components/calendar/KanbanPipeline';
-import CacheCalculator from '@/components/calendar/CacheCalculator';
+import { useConnectivity } from '@/lib/offline/useConnectivity';
 import EventActionSheet from '@/components/mobile/EventActionSheet';
 import EventHoursSheet from '@/components/mobile/EventHoursSheet';
 import NotesSheet from '@/components/mobile/NotesSheet';
@@ -84,6 +82,16 @@ import { useAppScrollLock } from '@/lib/useAppScrollLock';
 import EventHeading from '@/components/events/EventHeading';
 import { enrichEventsWithClients, getClientDisplayName } from '@/lib/eventDisplay';
 import { haptics } from '@/lib/haptics';
+
+const KanbanPipeline = lazy(() => import('@/components/calendar/KanbanPipeline'));
+const CacheCalculator = lazy(() => import('@/components/calendar/CacheCalculator'));
+const AvailabilityShareModal = lazy(() => import('@/components/calendar/AvailabilityShareModal'));
+
+const CalendarViewFallback = () => (
+  <div className="py-10 px-2">
+    <Skeleton className="h-40 w-full rounded-xl" />
+  </div>
+);
 
 const useMediaQuery = (query) => {
   const [matches, setMatches] = useState(() => window.matchMedia(query).matches);
@@ -172,14 +180,16 @@ export default function CalendarPage() {
   const { expenses, loading: expensesLoading, refetch: refetchExpenses } = useExpenses();
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const { settings: userSettings } = useUserSettings();
+  const { offline } = useConnectivity();
 
   const unsyncedCount = useMemo(() => {
     if (!userSettings?.google_calendar_connected) return 0;
     return events.filter((e) => !e.google_event_id && !isCancelledEvent(e)).length;
   }, [events, userSettings?.google_calendar_connected]);
 
-  const isLoading = eventsLoading || clientsLoading || dailyWorkLoading || expensesLoading;
-  const isDataReady = Array.isArray(events) && Array.isArray(clients) && Array.isArray(dailyWork) && Array.isArray(expenses);
+  const isCoreLoading = eventsLoading || clientsLoading;
+  const isCoreReady = Array.isArray(events) && Array.isArray(clients);
+  const isSecondaryLoading = dailyWorkLoading || expensesLoading;
 
   const enrichedEvents = useMemo(
     () => enrichEventsWithClients(events || [], clients || []),
@@ -860,7 +870,7 @@ export default function CalendarPage() {
   }, [filteredEvents, clients, currentDate]);
 
   const monthStats = useMemo(() => {
-    if (!isDataReady) {
+    if (!isCoreReady) {
       return {
         totalEvents: 0,
         workDays: 0,
@@ -942,7 +952,7 @@ export default function CalendarPage() {
       monthEventIds,
       monthClientIds,
     };
-  }, [currentDate, isDataReady, events, dailyWork]);
+  }, [currentDate, isCoreReady, events, dailyWork]);
 
   const handleEventsClick = useCallback(() => {
     closeModals();
@@ -1083,7 +1093,7 @@ export default function CalendarPage() {
     setQuickActions({ open: false, date: null, target: null });
   }, [quickActions.date, handleQuickWorkEntry]);
 
-  if (authLoading) {
+  if (authLoading && !user) {
     return (
       <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 md:p-6">
         <CalendarSkeleton />
@@ -1091,7 +1101,7 @@ export default function CalendarPage() {
     );
   }
 
-  if (!isDataReady && isLoading) {
+  if (!isCoreReady && isCoreLoading) {
     return (
       <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 md:p-6">
         <CalendarSkeleton />
@@ -1100,8 +1110,9 @@ export default function CalendarPage() {
   }
 
   const hasError = Boolean(eventsError);
+  const showBlockingError = hasError && !offline && !(events?.length > 0);
 
-  if (hasError) {
+  if (showBlockingError) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] text-center p-4">
         <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
@@ -1193,7 +1204,7 @@ export default function CalendarPage() {
             icon={Calendar}
             color="bp-text-primary"
             onClick={handleEventsClick}
-            loading={isLoading}
+            loading={isCoreLoading || isSecondaryLoading}
           />
 
           <StatCard
@@ -1205,7 +1216,7 @@ export default function CalendarPage() {
             icon={CheckCircle2}
             color="text-green-400"
             onClick={handleWorkDaysClick}
-            loading={isLoading}
+            loading={isCoreLoading || isSecondaryLoading}
           />
 
           <StatCard
@@ -1217,7 +1228,7 @@ export default function CalendarPage() {
             icon={Clock}
             color="text-amber-400"
             onClick={handleHoursClick}
-            loading={isLoading}
+            loading={isCoreLoading || isSecondaryLoading}
           />
 
           <StatCard
@@ -1229,7 +1240,7 @@ export default function CalendarPage() {
             icon={TrendingUp}
             color="text-emerald-400"
             onClick={handleRevenueClick}
-            loading={isLoading}
+            loading={isCoreLoading || isSecondaryLoading}
           />
         </div>
 
@@ -1654,11 +1665,13 @@ export default function CalendarPage() {
             ))}
           </div>
         ) : viewMode === 'kanban' ? (
-          <KanbanPipeline
-            events={filteredEvents}
-            clients={clients}
-            onEventClick={handleEventClick}
-          />
+          <Suspense fallback={<CalendarViewFallback />}>
+            <KanbanPipeline
+              events={filteredEvents}
+              clients={clients}
+              onEventClick={handleEventClick}
+            />
+          </Suspense>
         ) : (
           <div className="space-y-4">
             {filteredEvents.length === 0 ? (
@@ -1849,23 +1862,27 @@ export default function CalendarPage() {
       />
 
       {/* Calculadora de cachê */}
-      <CacheCalculator
-        open={showCalculator}
-        onClose={() => setShowCalculator(false)}
-        onCreateEvent={(prefill) => {
-          setShowCalculator(false);
-          setPrefillEventData(prefill);
-          setShowEventForm(true);
-        }}
-      />
+      <Suspense fallback={null}>
+        <CacheCalculator
+          open={showCalculator}
+          onClose={() => setShowCalculator(false)}
+          onCreateEvent={(prefill) => {
+            setShowCalculator(false);
+            setPrefillEventData(prefill);
+            setShowEventForm(true);
+          }}
+        />
+      </Suspense>
 
       {/* Disponibilidade */}
-      <AvailabilityShareModal
-        open={showAvailability}
-        onClose={() => setShowAvailability(false)}
-        events={events}
-        clients={clients}
-      />
+      <Suspense fallback={null}>
+        <AvailabilityShareModal
+          open={showAvailability}
+          onClose={() => setShowAvailability(false)}
+          events={events}
+          clients={clients}
+        />
+      </Suspense>
 
       {/* Modals */}
       <AnimatePresence>
@@ -1940,19 +1957,19 @@ export default function CalendarPage() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 max-w-md w-full"
+              className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 max-w-md w-full max-h-[min(90dvh,32rem)] flex flex-col overflow-hidden"
             >
-              <h3 className="text-lg sm:text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-2 flex items-center gap-2 shrink-0">
                 <Clock className="w-5 h-5 text-green-400" />
                 Selecionar Evento
               </h3>
-              <p className="text-sm sm:text-base text-slate-300 mb-6">
+              <p className="text-sm sm:text-base text-slate-300 mb-4 shrink-0">
                 Encontramos {eventsForSelectedDate.length} eventos para{' '}
                 {selectedDate && format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}. Para qual evento você deseja
                 registrar as horas?
               </p>
 
-              <div className="space-y-2 sm:space-y-3 mb-6 max-h-80 overflow-y-auto pr-2">
+              <div className="bp-modal-scroll flex-1 min-h-0 space-y-2 sm:space-y-3 mb-4 pr-1">
                 {(eventsForSelectedDate || []).map((event) => {
                   const client = clients.find((c) => c.id === event.client_id);
                   return (
@@ -1974,7 +1991,7 @@ export default function CalendarPage() {
                 })}
               </div>
 
-              <div className="flex gap-2 sm:gap-3">
+              <div className="flex gap-2 sm:gap-3 shrink-0">
                 <Button
                   variant="outline"
                   onClick={() => closeModals()}

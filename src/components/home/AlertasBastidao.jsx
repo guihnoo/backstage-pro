@@ -5,11 +5,27 @@ import { NeonGlass } from '@/components/design/NeonGlass';
 import { openWhatsAppCharge, buildChargeMessage } from '@/lib/whatsapp';
 import appToast from '@/lib/appToast';
 import { Ellipsis, ClampedText } from '@/components/ui/overflowText';
-
+import { Skeleton } from '@/components/ui/skeleton';
 import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
 
 export default function AlertasBastidao({ alerts, isLoading, primaryHex = AUTH_HERO_PRIMARY, accentHex = AUTH_HERO_ACCENT }) {
-  if (isLoading) return <NeonGlass primary={primaryHex} className="mb-8 p-5"><div className="space-y-3">{[1, 2].map((i) => <div key={i} className="h-12 bg-[#1a1d27] rounded animate-pulse" />)}</div></NeonGlass>;
+  if (isLoading) return (
+    <NeonGlass primary={primaryHex} className="mb-8 p-5">
+      <div className="space-y-3">
+        <Skeleton className="h-3 w-24 rounded mb-4" />
+        {[1, 2].map((i) => (
+          <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-[#0a0c14]/60">
+            <Skeleton className="w-8 h-8 rounded-lg flex-shrink-0" />
+            <div className="flex-1 space-y-1.5">
+              <Skeleton className="h-3 w-32 rounded" />
+              <Skeleton className="h-3 w-20 rounded" />
+            </div>
+            <Skeleton className="h-7 w-16 rounded-full" />
+          </div>
+        ))}
+      </div>
+    </NeonGlass>
+  );
   if (!alerts?.length) return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-8">
       <NeonGlass primary={primaryHex} accent={accentHex} className="p-5">
