@@ -5,7 +5,7 @@
 
 **Última atualização:** 2026-06-25 (S178 — Fix ProximoShow botão Confirmar para status `scheduled`; Claude Code)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último deploy:** 2026-06-22 — S170 fix AppDataContext `useMemo` (loop infinito corrigido)  
+**Último deploy:** 2026-06-25 — S178 fix ProximoShow botão Confirmar para status `scheduled` (`8f4b207`)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` v29 (auto-disconnect token inválido) + `analyze-nfe` v5 (Files API + maxOutputTokens 8192 + thinkingBudget 0 — **testado e funcionando em produção** ✅) deployadas no Supabase ✅  
 **Smoke E2E:** 33/33 passando (`npm run test:e2e:smoke`)  
 **Supabase ref:** `cwtallnetgodoacuoaow`

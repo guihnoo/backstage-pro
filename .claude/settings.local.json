@@ -195,7 +195,9 @@
       "Bash(Select-Object -Last 60)",
       "Bash(grep -v \"//\\\\|import\\\\|const\\\\|let\\\\|var\\\\|function\\\\|=>\")",
       "Bash(grep -v \"//\\\\|import\\\\|className\\\\|description\\\\|placeholder\\\\|aria\\\\|null\\)\\\\|null,\")",
-      "Bash(grep -v \"import\\\\|className\\\\|//\\\\|Combobox\\\\|aria\")"
+      "Bash(grep -v \"import\\\\|className\\\\|//\\\\|Combobox\\\\|aria\")",
+      "Bash(vercel --version)",
+      "Bash(vercel --prod)"
     ]
   },
   "enabledMcpjsonServers": [
