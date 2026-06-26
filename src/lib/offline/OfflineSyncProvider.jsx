@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/lib/authContext';
 import appToast from '@/lib/appToast';
 import { getSyncQueueCount } from '@/lib/offline/offlineDb';
