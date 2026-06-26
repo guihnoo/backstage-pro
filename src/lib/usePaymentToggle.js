@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { supabase } from './supabase';
 import appToast from '@/lib/appToast';
+import { haptics } from '@/lib/haptics';
 
 export function usePaymentToggle() {
   const [toggling, setToggling] = useState(null);
@@ -8,6 +9,7 @@ export function usePaymentToggle() {
   const togglePayment = useCallback(async (event, onSuccess) => {
     if (!event?.id) return;
     const newStatus = event.payment_status === 'paid' ? 'unpaid' : 'paid';
+    haptics[newStatus === 'paid' ? 'success' : 'light']();
     setToggling(event.id);
     try {
       const updateData = { payment_status: newStatus };

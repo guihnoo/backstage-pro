@@ -14,6 +14,7 @@ import OAuthUrlGuard from '@/components/auth/OAuthUrlGuard';
 import NavigationSync from '@/components/NavigationSync';
 import { AuthProvider } from '@/lib/authContext';
 import { ProfileOfflineProvider } from '@/lib/profileOfflineContext';
+import { OfflineSyncProvider } from '@/lib/offline/OfflineSyncProvider';
 import { AppDataProvider } from '@/components/context/AppDataContext';
 import { RealtimeSyncProvider } from '@/components/context/RealtimeSyncProvider';
 import PushSubscriptionSync from '@/components/notifications/PushSubscriptionSync';
@@ -70,14 +71,16 @@ function RootShell() {
   return (
     <AuthProvider>
       <ProfileOfflineProvider>
-        <RealtimeSyncProvider>
-          <AppDataProvider>
-            <PushSubscriptionSync />
-            <NavigationSync />
-            <OAuthUrlGuard />
-            <Outlet />
-          </AppDataProvider>
-        </RealtimeSyncProvider>
+        <OfflineSyncProvider>
+          <RealtimeSyncProvider>
+            <AppDataProvider>
+              <PushSubscriptionSync />
+              <NavigationSync />
+              <OAuthUrlGuard />
+              <Outlet />
+            </AppDataProvider>
+          </RealtimeSyncProvider>
+        </OfflineSyncProvider>
       </ProfileOfflineProvider>
     </AuthProvider>
   );

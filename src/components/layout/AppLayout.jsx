@@ -8,11 +8,11 @@ import { useProfile } from '@/lib/profileOfflineContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { checkCompletedEventsForAutoHours } from '@/lib/checkCompletedEventsForAutoHours';
 import AppTopBar, { getAppTopBarOffset } from '@/components/layout/AppTopBar';
-import { OfflineSyncProvider } from '@/lib/offline/OfflineSyncProvider';
 import OfflineBanner from '@/components/layout/OfflineBanner';
-import { prefetchRoute } from '@/lib/routePrefetch';
+import { prefetchRoute, prefetchCriticalRoutes } from '@/lib/routePrefetch';
 import AppTour from '@/components/tour/AppTour';
 import { FloatingTimer } from '@/components/timer/FloatingTimer';
+import { haptics } from '@/lib/haptics';
 
 // 4 abas primárias
 const primaryNavItems = [
@@ -52,12 +52,17 @@ export default function AppLayout() {
   }, [user?.id]);
 
   useEffect(() => {
+    prefetchCriticalRoutes();
+  }, []);
+
+  useEffect(() => {
     if (mainRef.current) {
       mainRef.current.scrollTop = 0;
     }
     window.scrollTo(0, 0);
-    // Fechar sheet "Mais" ao navegar (incluindo botão voltar)
     setShowMoreSheet(false);
+    // Evita scroll travado se algum modal/sheet não limpou o lock
+    document.body.removeAttribute('data-scroll-lock');
   }, [location.pathname]);
 
   const themeVars = {
@@ -75,32 +80,20 @@ export default function AppLayout() {
     >
       <AppTour />
       <AppTopBar />
-      <OfflineSyncProvider>
-        <OfflineBanner />
-      </OfflineSyncProvider>
+      <OfflineBanner />
       <main
         ref={mainRef}
         data-app-scroll
-        className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+        className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y"
         style={{
           paddingTop: getAppTopBarOffset(),
           paddingBottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))',
+          WebkitOverflowScrolling: 'touch',
         }}
       >
-        <AnimatePresence mode="popLayout">
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="min-h-full"
-          >
-            <Suspense fallback={<RouteSkeleton />}>
-              <Outlet />
-            </Suspense>
-          </motion.div>
-        </AnimatePresence>
+        <Suspense fallback={<RouteSkeleton />}>
+          <Outlet />
+        </Suspense>
       </main>
       <nav
         data-tour="bottom-nav"
@@ -130,6 +123,7 @@ export default function AppLayout() {
                 onPointerEnter={() => prefetchRoute(match)}
                 onTouchStart={() => prefetchRoute(match)}
                 onFocus={() => prefetchRoute(match)}
+                onClick={() => !active && haptics.light()}
                 className="flex-1 flex justify-center min-h-[56px] min-w-0 bg-transparent border-0 p-0 cursor-pointer no-underline relative"
               >
                 {active && (
@@ -160,7 +154,7 @@ export default function AppLayout() {
               <button
                 type="button"
                 aria-label="Mais opções"
-                onClick={() => setShowMoreSheet(v => !v)}
+                onClick={() => { haptics.light(); setShowMoreSheet(v => !v); }}
                 className="flex-1 flex justify-center min-h-[56px] min-w-0 bg-transparent border-0 p-0 cursor-pointer relative"
               >
                 {moreActive && (

@@ -83,6 +83,7 @@ import { captureEventLocationFromGps } from '@/lib/eventLocation';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
 import EventHeading from '@/components/events/EventHeading';
 import { enrichEventsWithClients, getClientDisplayName } from '@/lib/eventDisplay';
+import { haptics } from '@/lib/haptics';
 
 const useMediaQuery = (query) => {
   const [matches, setMatches] = useState(() => window.matchMedia(query).matches);

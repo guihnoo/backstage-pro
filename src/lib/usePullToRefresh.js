@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { haptics } from '@/lib/haptics';
 
 const DEFAULT_THRESHOLD = 72;
 
@@ -22,8 +23,11 @@ export function usePullToRefresh(onRefresh, { enabled = true, threshold = DEFAUL
     refreshingRef.current = isRefreshing;
   }, [isRefreshing]);
 
+  const thresholdReachedRef = useRef(false);
+
   const runRefresh = useCallback(async () => {
     if (refreshingRef.current || !onRefreshRef.current) return;
+    haptics.success();
     refreshingRef.current = true;
     setIsRefreshing(true);
     setPullDistance(threshold);
@@ -60,6 +64,12 @@ export function usePullToRefresh(onRefresh, { enabled = true, threshold = DEFAUL
       const damped = Math.min(delta * 0.45, threshold * 1.4);
       distanceRef.current = damped;
       setPullDistance(damped);
+      if (damped >= threshold && !thresholdReachedRef.current) {
+        thresholdReachedRef.current = true;
+        haptics.light();
+      } else if (damped < threshold) {
+        thresholdReachedRef.current = false;
+      }
       if (damped > 8) e.preventDefault();
     };
 

@@ -2557,3 +2557,12 @@ Registro cronológico de tarefas executadas por agentes.
 - **Problema**: offline não pode depender de escolha do usuário; `navigator.onLine` falha com Wi‑Fi sem internet
 - **Solução**: `connectivityStore.js` (probe Supabase + eventos browser + falha de request → offline); `useConnectivity()`; banner informativo automático
 - **Build**: ✅
+
+---
+
+## 2026-06-25 (S183)
+
+### OFFLINE-S183 + PERF-S183 — Offline silencioso + fix telas em branco/scroll (Cursor Agent) ✅
+- **Offline**: sync ao reconectar sem toast/banner pending; banner só âmbar quando sem internet
+- **Perf mobile**: removido `AnimatePresence` nas rotas; `prefetchCriticalRoutes`; limpa scroll-lock na navegação; `100dvh` + touch scroll iOS
+- **Build**: ✅

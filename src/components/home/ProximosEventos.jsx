@@ -12,7 +12,6 @@ import { getEventDisplay } from '@/lib/eventDisplay';
 import { resolveEventColor } from '@/lib/brandColors';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { Skeleton } from '@/components/ui/skeleton';
-import { haptics } from '@/lib/haptics';
 
 function getTimeGroup(daysFromToday) {
   if (daysFromToday === 0) return 'Hoje';

@@ -36,11 +36,6 @@ export function OfflineSyncProvider({ children }) {
       const result = await processOfflineQueue(userId);
       await refreshCount();
       if (result.synced > 0) {
-        appToast.success(
-          result.synced === 1
-            ? '1 alteração sincronizada'
-            : `${result.synced} alterações sincronizadas`
-        );
         window.dispatchEvent(new CustomEvent('backstage:reconnect'));
       }
       if (result.failed > 0) {

@@ -340,7 +340,7 @@ export const USER_MANUAL_SECTIONS = [
     items: [
       {
         heading: 'Sem internet',
-        body: 'O app detecta automaticamente quando não há conexão. Você continua usando agenda, clientes e despesas com os dados salvos no celular. Ao voltar online, tudo sincroniza sozinho — sem precisar fazer nada.',
+        body: 'Sem internet, o app detecta sozinho e continua funcionando com os dados do celular. Quando a conexão volta, tudo sincroniza automaticamente — você não precisa fazer nada.',
       },
       {
         heading: 'Push',

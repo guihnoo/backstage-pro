@@ -17,3 +17,16 @@ export function prefetchRoute(matchPath) {
   prefetched.add(matchPath);
   loader().catch(() => prefetched.delete(matchPath));
 }
+
+/** Pré-carrega rotas principais após login — reduz tela em branco na 1ª navegação. */
+export function prefetchCriticalRoutes() {
+  if (typeof window === 'undefined') return;
+  const run = () => {
+    ['/', '/calendar', '/reports', '/clients'].forEach(prefetchRoute);
+  };
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(run, { timeout: 2500 });
+  } else {
+    window.setTimeout(run, 800);
+  }
+}
