@@ -253,8 +253,9 @@ const WorkItem = ({ work, onEdit }) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 28 }}
       className="bg-slate-800/50 p-3 rounded-lg border border-slate-700/60">
       <div className="flex justify-between items-center mb-2.5 gap-2">
         <div className="flex items-center gap-2 min-w-0">
@@ -311,8 +312,9 @@ const ExpenseItem = ({ expense, onEdit }) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 28 }}
       className="bg-slate-800/50 p-3 rounded-lg border border-slate-700/60">
       <div className="flex justify-between items-start gap-2">
         <div className="flex-1 min-w-0">

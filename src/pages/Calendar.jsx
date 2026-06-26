@@ -1598,7 +1598,7 @@ export default function CalendarPage() {
                   {label}
                 </p>
                 <div className="space-y-1.5">
-                  {upEvents.map(({ ev, diff }) => {
+                  {upEvents.map(({ ev, diff }, idx) => {
                     const cl = clientMap.get(ev.client_id);
                     const isPaid = ev.payment_status === 'paid';
                     const isConfirmed = ev.status === 'confirmed';
@@ -1614,10 +1614,14 @@ export default function CalendarPage() {
                       ? Math.round((new Date(ev.end_date) - new Date(ev.start_date)) / 86400000) + 1
                       : 1;
                     return (
-                      <button
+                      <motion.button
                         key={ev.id}
                         type="button"
                         onClick={() => handleEventClick(ev)}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.22, delay: Math.min(idx, 10) * 0.04, ease: 'easeOut' }}
+                        whileTap={{ scale: 0.985 }}
                         className="w-full text-left bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 rounded-lg px-3 py-3 flex items-center gap-3 transition-colors"
                         style={isOverdue ? { borderColor: '#f8717130' } : undefined}
                       >
@@ -1657,7 +1661,7 @@ export default function CalendarPage() {
                             </span>
                           )}
                         </div>
-                      </button>
+                      </motion.button>
                     );
                   })}
                 </div>

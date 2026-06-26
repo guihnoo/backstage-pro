@@ -1,4 +1,5 @@
 ﻿import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
+import { motion } from 'framer-motion';
 import { hardNavigate } from '@/lib/hardNavigate';
 import {
   getEventCacheAmount,
@@ -859,7 +860,12 @@ export default function ReportsPage() {
         threshold={threshold}
         primaryHex={config.primaryHex}
       />
-      <div className="p-4 md:p-6 space-y-8 max-w-2xl xl:max-w-6xl mx-auto w-full min-w-0">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+        className="p-4 md:p-6 space-y-8 max-w-2xl xl:max-w-6xl mx-auto w-full min-w-0"
+      >
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex-1 min-w-0">
@@ -1248,7 +1254,7 @@ export default function ReportsPage() {
         }
         </>
         )}
-      </div>
+      </motion.div>
 
       {/* Modal de detalhes dos KPIs */}
       <KPIDetailModal

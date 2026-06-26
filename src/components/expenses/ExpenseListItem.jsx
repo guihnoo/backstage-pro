@@ -45,7 +45,7 @@ const categoryColors = {
   outros: 'bg-slate-500/20 text-slate-300 border-slate-400/30',
 };
 
-export default function ExpenseListItem({ expense, event, client, onEdit, onDelete, onMarkReimbursed }) {
+export default function ExpenseListItem({ expense, event, client, onEdit, onDelete, onMarkReimbursed, index = 0 }) {
   const { isVisible, formatCurrency } = useFinancialVisibility();
   const { profile } = useAuth();
   const config = getCategoryConfig(profile?.category || 'lighting');
@@ -76,9 +76,10 @@ export default function ExpenseListItem({ expense, event, client, onEdit, onDele
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: -10 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
+      exit={{ opacity: 0, scale: 0.97 }}
+      transition={{ duration: 0.25, delay: Math.min(index, 8) * 0.05, ease: 'easeOut' }}
       className="relative overflow-hidden rounded-2xl"
     >
       {/* Ações reveladas ao arrastar */}

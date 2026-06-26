@@ -82,7 +82,7 @@ function MonthGroup({ monthKey, expenses, events, clients, onEdit, onDelete, onM
                         exit={{ opacity: 0, height: 0 }}
                         className="space-y-3 overflow-hidden"
                     >
-                        {expenses.map(expense => {
+                        {expenses.map((expense, idx) => {
                             const ev = events.find(e => e.id === expense.event_id);
                             const client = ev ? (clients || []).find(c => c.id === ev.client_id) : undefined;
                             return (
@@ -91,6 +91,7 @@ function MonthGroup({ monthKey, expenses, events, clients, onEdit, onDelete, onM
                                 expense={expense}
                                 event={ev}
                                 client={client}
+                                index={idx}
                                 onEdit={onEdit}
                                 onDelete={onDelete}
                                 onMarkReimbursed={onMarkReimbursed}

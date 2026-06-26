@@ -4,6 +4,34 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+## 2026-06-26
+
+### S186 — Lapidação: stagger animations + spring transitions + Calendar polish (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Objetivo**: Continuar lapidação premium — micro-interações, stagger entrance e spring physics
+- **Arquivos alterados**:
+  - `src/components/expenses/ExpenseListItem.jsx` — stagger entrance via `index` prop (`delay: Math.min(index, 8) * 0.05`), exit com `scale: 0.97`, transição `easeOut`
+  - `src/pages/Expenses.jsx` — passa `index={idx}` ao `ExpenseListItem` no MonthGroup
+  - `src/components/reports/EventDetailModal.jsx` — WorkItem e ExpenseItem com `transition: spring(stiffness:300, damping:28)` em vez de linear
+  - `src/pages/Calendar.jsx` — event cards na view "upcoming" viram `motion.button` com stagger `delay: Math.min(idx, 10) * 0.04` e `whileTap={{ scale: 0.985 }}`
+  - `src/pages/Reports.jsx` — adicionado `motion` import + `motion.div` com `initial={{ opacity:0, y:10 }}` no conteúdo principal (fade-in na entrada da página)
+- **Build**: ✅ 4237 módulos, sem erros
+
+---
+
+### S185 — Fix crítico: tela preta (createContext não importado) + SW auto-reload (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-4-6)
+- **Causa raiz**: `OfflineSyncProvider.jsx` usava `createContext` sem importar do React → `ReferenceError` no boot → tela preta em qualquer browser
+- **Arquivos alterados**:
+  - `src/lib/offline/OfflineSyncProvider.jsx` — adicionado `createContext` ao import do React (linha 1)
+  - `public/push-sw.js` — service worker posta mensagem `BP_SW_ACTIVATED` no evento `activate` (para futuros updates auto-reloadarem mesmo com page crash)
+  - `index.html` — inline script ouve `controllerchange` + `BP_SW_ACTIVATED` antes do React montar; garante reload mesmo com JS crashado
+- **Build**: ✅ confirmado via Playwright (login renderiza em produção)
+- **Deploy**: `dpl_DSHKqdy2sNbNrM2CUaodM5vJXWFZ` → `backstage-pro-beta.vercel.app`
+- **Diagnóstico**: Playwright capturou login renderizando; bug não era cache de SW mas sim JS crash no módulo raiz
+
+---
+
 ## 2026-06-25
 
 ### S183 — Lapidação: haptics + skeletons shimmer completos + PullToRefresh ring (Claude Code) ✅
