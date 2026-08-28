@@ -36,6 +36,7 @@
 | 16 | Push notifications | ✅ | VAPID keys + cron 8h/18h + service worker + UI Perfil; reativar no Perfil após próximo deploy |
 | 17 | Code-split **seguro** (sem travar rotas) | ✅ | Cursor Sprint PERF-SPA-LAZY — bundle principal ~263 KB; todas as rotas lazy + Suspense ✅ |
 | 18 | Dedupe eventos Google Calendar | ✅ | `googleEventDedupe` + unit tests + smoke E2E no Perfil |
+| 19 | **Revisão geral de produto** — clareza + completude funcional; reduzir densidade de tela; números consistentes entre telas | 🔄 | `docs/PLANO_REVISAO_GERAL.md` — Fase 0 feita 2026-08-28; Trilha A (inventário) a iniciar |
 
 ---
 

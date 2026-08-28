@@ -4,6 +4,21 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+## 2026-08-28
+
+### Revisão geral — Fase 0: plano de revisão de produto (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-5)
+- **Objetivo**: montar plano para revisão geral do app (clareza de produto + completude funcional) e definir divisão de trabalho Claude Code × Cursor
+- **Arquivos alterados**:
+  - `docs/PLANO_REVISAO_GERAL.md` — NOVO. Divisão de papéis, regras anti-colisão, 3 trilhas paralelas, template de inventário tela a tela, 5 jornadas críticas, matriz "números que não batem", Trilha C (integrações)
+  - `docs/IDEIAS_PENDENTES.md` — entrada #19 (revisão geral de produto)
+- **Calibração (usuário)**: usa todas as telas; todas parecem densas; não funcionam 100%: Google Calendar, offline/sync, números inconsistentes entre telas, push; perfil de uso = ciclo completo
+- **Divisão**: Claude = `docs/**` + auditoria/browser; Cursor = `src/**` implementação. Handoff via tabela de specs em `PLANO_REVISAO_GERAL.md`
+- **Build**: N/A (só docs)
+- **Próximo passo**: Trilha A — inventário da Home item a item
+
+---
+
 ## 2026-06-26
 
 ### S186 — Lapidação: stagger animations + spring transitions + Calendar polish (Claude Code) ✅
@@ -2666,3 +2681,12 @@ Registro cronológico de tarefas executadas por agentes.
 - **Causa**: `EventDetailModal` (Agenda) abria `DailyWorkModal` sempre como registro novo — sem `existingWork`; lista de horas sem botões Editar/Excluir. Relatórios redirecionava para Agenda.
 - **Fix**: botões Editar/Excluir por dia; toque em dia verde abre edição; Relatórios abre `DailyWorkModal` inline; mobile `EventHoursSheet` com excluir.
 - **Build**: ✅
+
+---
+
+## 2026-08-28
+
+### DOC — Guia mestre do projeto (Cursor) ✅
+- **Arquivo**: `docs/BACKSTAGE_PRO_GUIA_COMPLETO.md` — consolida objetivo, arquitetura, estado atual, destino, divisão Cursor/Claude e referências
+- **Motivo**: pedido do usuário para documento único de download com tudo que os agentes sabem sobre o Backstage Pro
+- **Build**: N/A (somente docs)
