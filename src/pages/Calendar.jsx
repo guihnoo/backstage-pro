@@ -81,7 +81,6 @@ import { captureEventLocationFromGps } from '@/lib/eventLocation';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
 import EventHeading from '@/components/events/EventHeading';
 import { enrichEventsWithClients, getClientDisplayName } from '@/lib/eventDisplay';
-import { haptics } from '@/lib/haptics';
 
 const KanbanPipeline = lazy(() => import('@/components/calendar/KanbanPipeline'));
 const CacheCalculator = lazy(() => import('@/components/calendar/CacheCalculator'));

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { differenceInDays, parseISO } from 'date-fns';
 import { supabase } from './supabase';
 import { useRealtimeRefetch } from './useRealtimeRefetch';
 import { todayLocalISO, countUniqueWorkDays } from '@/components/utils/dateUtils';
@@ -9,7 +8,6 @@ import {
   isReceivableEvent,
   sumReceivableAmount,
   calculateEventReceivableAmount,
-  daysSinceEventEnd,
   daysOverduePayment,
   isPaymentOverdue,
 } from './eventFinance';

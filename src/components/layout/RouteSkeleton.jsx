@@ -90,7 +90,7 @@ function HomeSkeleton({ primary }) {
   );
 }
 
-function CalendarSkeleton({ primary }) {
+function CalendarSkeleton({ primary: _primary }) {
   return (
     <div className="px-4 py-6 max-w-2xl mx-auto space-y-5 animate-in fade-in duration-200">
       <div className="flex items-center justify-between">
@@ -159,7 +159,7 @@ function ListSkeleton({ primary, rows = 6, hasHeader = true, hasSearch = true })
   );
 }
 
-function ReportsSkeleton({ primary }) {
+function ReportsSkeleton({ primary: _primary }) {
   return (
     <div className="px-4 py-6 max-w-2xl mx-auto space-y-5 animate-in fade-in duration-200">
       <div className="flex items-center justify-between">

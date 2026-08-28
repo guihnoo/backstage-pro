@@ -60,7 +60,7 @@ export function markConnectivityOnline(reason = 'network-success') {
   setOnline(true, reason);
 }
 
-export async function probeConnectivity({ silent = true } = {}) {
+export async function probeConnectivity({ silent: _silent = true } = {}) {
   if (typeof navigator !== 'undefined' && !navigator.onLine) {
     setOnline(false, 'navigator-offline');
     return false;
