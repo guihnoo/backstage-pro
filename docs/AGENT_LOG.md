@@ -19,6 +19,21 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+### Revisão geral — Trilha A: inventário da Home (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-5)
+- **Método**: leitura de código (`Home.jsx` + 10 componentes de `src/components/home/` + `useHomeDashboard.js` + `goalMetrics.js` + `eventFinance.js`)
+- **Arquivos alterados**: `docs/PLANO_REVISAO_GERAL.md` (seção 1 Home: 17 itens com status/spec; matriz de números preenchida)
+- **Achados principais**:
+  - **Números não batem (confirmado)**: `useHomeDashboard.js` `computeStats()` calcula "recebido do mês" por **data do show**; `goalMetrics.js` `paidRevenueInMonth()` por **data do pagamento** (`paid_date`). Mesmo número, duas regras → Home ≠ Metas. Valor também difere (`paid_amount || eventValue` vs `paid_amount || 0`). S120–S124 corrigiu Reports/Goals mas não a Home.
+  - **Densidade**: Bloco "Financeiro" tem 5 widgets repetindo 3 números. Proposta: 5→3 (A receber colapsado · Meta do mês · Agenda/30 dias). Remover `PipelineFinanceiro` e frase motivacional do header; colapsar `ForecastWidget` e `AlertasBastidao`.
+  - **Bug H5**: `pickProximoEvento` ignora `status: 'scheduled'` → esses eventos somem do card "Próximo Show".
+  - **Bug H8**: botão "Cobrar" sem telefone faz `hardNavigate('/clients')` — tira o usuário da Home abruptamente.
+- **Nada alterado em `src/`** (aguarda Cursor)
+- **Build**: N/A (só docs)
+- **Próximo passo**: Cursor implementa fixes H5/H8 + helper compartilhado de receita paga; Claude segue para Agenda (tela 2)
+
+---
+
 ## 2026-06-26
 
 ### S186 — Lapidação: stagger animations + spring transitions + Calendar polish (Claude Code) ✅

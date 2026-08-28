@@ -87,11 +87,42 @@ Ordem (ciclo completo de uso, não por "dor"):
 7. Despesas
 8. Perfil + IA Mentor
 
-### 1. Home `/` — ⬜ não auditada
+### 1. Home `/` — 🔄 auditada 2026-08-28 (Claude Code, via código)
 
-| Item | Funciona? | Claro? | Uso | Status | Spec de correção |
-|---|---|---|---|---|---|
-| _(preencher na sessão de auditoria)_ | | | | | |
+Estrutura: Header → Bloco **Palco** (ProximoShow + AlertasBastidao) → Bloco **Financeiro**
+(AReceber + QuickStats + MetaMensalBar + PipelineFinanceiro + ForecastWidget) → Bloco **Agenda** (ProximosEventos) → FAB.
+
+**Leitura geral:** o Bloco Financeiro concentra ~5 widgets que repetem os mesmos 3 números
+("recebido", "a receber", "% da meta") com nomes diferentes. É a maior fonte de "coisa demais na tela".
+
+| # | Item | Func. | Claro | Uso | Status | Spec de correção (para Cursor) |
+|---|---|---|---|---|---|---|
+| H1 | Header: LiveClockBar + label categoria + saudação | ✅ | ✅ | alto | ✅ | Manter |
+| H2 | Header: frase motivacional (`getCategoryMotivation`, itálico mono) | ✅ | 🌀 | nenhum | 📦 | Decorativo, rouba atenção no topo. Remover, ou mover para um lugar discreto / mostrar só no empty state |
+| H3 | `ProximoShow` — card do próximo evento | ✅ | 🌀 | alto | 🌀 | Card muito alto: emoji+badges+heading+"ver cliente"+grid 4 células+ModoPalco+GPS+countdown grande+data+descrição 4 linhas+3 botões. Enxugar para modo "glance": heading + data/hora + local + cachê + 1 CTA. Countdown grande e descrição só quando `isToday`/`isOnStage` |
+| H4 | `ProximoShow` empty state "Palco Limpo" | ✅ | ✅ | — | ✅ | Manter |
+| H5 | `pickProximoEvento` só considera `status ∈ {pending, confirmed}` | 🔧 | — | alto | 🔧 | Evento `scheduled` nunca vira "Próximo Show" (some da Home), mas o botão "Confirmar" do card trata `pending\|scheduled`. Incluir `scheduled` no filtro de `pickProximoEvento` (`useHomeDashboard.js:88` e `:98`) |
+| H6 | `AlertasBastidao` — pagamentos atrasados/pendentes | ✅ | 🌀 | médio | 🌀 | Sobrepõe `AReceber` (mesmos clientes/valores). Nome "Bastidão" confunde. Fundir com `AReceber` OU reduzir a um resumo de 1 linha ("2 pagamentos atrasados →") |
+| H7 | `AReceber` — total pendente + até 6 clientes, cada um expansível + painel pagar inline | ✅ | 🌀 | alto | 🌀 | Bom conteúdo, densidade alta. Colapsar lista por padrão (só total + "ver N clientes"); painel de confirmação de valor inline pode virar passo único |
+| H8 | `AReceber` "Cobrar" sem telefone → toast + `hardNavigate('/clients')` | 🔧 | 🔧 | médio | 🔧 | Navegação abrupta pra fora da Home. Trocar por abrir modal/sheet de edição do cliente, ou link "Adicionar telefone" no próprio row |
+| H9 | `QuickStats` — 2 cards (Horas no Mês → /reports, Diárias no Mês → /goals) | ✅ | ✅ | médio | 📦 | Destinos inconsistentes para stats parecidas. Ambas poderiam ir para /reports ou /goals. Considerar fundir na MetaMensalBar |
+| H10 | `MetaMensalBar` — faturamento + diárias vs meta + ritmo do mês + projeção | ✅ | 🌀 | alto | 🌀 | Bom, mas "projeção" e "% do mês" duplicam o ForecastWidget. Manter como o único lugar de "meta vs realizado" na Home |
+| H11 | `MetaMensalBar` empty state "Defina sua meta" | ✅ | ✅ | — | ✅ | Manter |
+| H12 | `PipelineFinanceiro` "Dinheiro nos Trilhos" — barra + Recebido/A Receber + Total Pipeline (3xl) + Despesas + Resultado | ✅ | 🌀 | baixo | ❌ | Repete Recebido (=MetaMensalBar) e A Receber (=AReceber card). "Total Pipeline" em 3xl é o número mais destacado da tela e é o menos acionável. Remover da Home; mover "Resultado líquido do mês" (único dado novo) para dentro da MetaMensalBar ou QuickStats |
+| H13 | `ForecastWidget` "Próximos 30 dias" — receita projetada + % da meta | ✅ | 🌀 | baixo | 📦 | "% da meta" duplica MetaMensalBar; "receita projetada" ≈ soma de ProximosEventos (Bloco Agenda logo abaixo). Colapsar em 1 linha dentro do Bloco Agenda: "Próximos 30 dias: N shows · R$ X" |
+| H14 | `ProximosEventos` — até 6, agrupados Hoje/Amanhã/Semana, com Confirmar + Marcar pago inline | ✅ | ✅ | alto | ✅ | Manter. É o bloco mais útil e mais limpo |
+| H15 | `FloatingActions` FAB — Novo evento / cliente / despesa | ✅ | ✅ | alto | ✅ | Manter |
+| H16 | Nomenclatura: "A receber"/"A Receber"/"Total pendente"/"Dinheiro nos Trilhos"/"Bastidão" | — | 🔧 | — | 🔧 | Padronizar rótulos: um conceito = um nome. Sugestão: "A receber", "Recebido no mês", "Meta do mês", "Agenda" |
+| H17 | 5× links "Ver relatório"/"Ver agenda" no Bloco Financeiro | — | 🌀 | — | 📦 | Reduzir para 1 "Ver relatório completo" ao fim do bloco |
+
+**Resumo da Home — proposta de simplificação (Trilha B):**
+Bloco Financeiro passa de 5 widgets para 3: **A receber** (colapsado) · **Meta do mês** (com resultado líquido embutido) · **Agenda / próximos 30 dias**.
+Remover: PipelineFinanceiro (H12), frase motivacional (H2). Colapsar: ForecastWidget→linha (H13), AlertasBastidao→resumo (H6).
+
+**Bugs para corrigir já (Trilha B, prioridade):**
+- H5 — `scheduled` some da Home
+- H8 — "Cobrar" sem telefone joga pra fora da Home
+- **NÚMEROS — competência de "Recebido" diferente entre Home e Metas** (ver matriz abaixo)
 
 ### 2. Agenda `/calendar` — ⬜
 
@@ -157,16 +188,24 @@ Rastrear, para cada valor exibido em mais de uma tela, **qual fonte e qual regra
 
 | Valor | Home | Relatórios | Metas | Regra esperada | Bate? |
 |---|---|---|---|---|---|
-| Receita paga do mês | | | | `paid_date \|\| start_date` | ⬜ |
-| A receber | | | | eventos não pagos | ⬜ |
-| Nº de diárias / shows | | | | `diarias_count` (dias únicos) | ⬜ |
-| Meta vs realizado | | | | — | ⬜ |
-| Despesas do mês | | | | `expense.date` | ⬜ |
-| Resultado líquido | | | | receita − despesas | ⬜ |
+| Receita paga do mês | `computeStats`: datas do evento no mês + `paid`; valor `paid_amount \|\| eventValue(e)` | _(verificar)_ | `paidRevenueInMonth`: `paid_date \|\| start_date` no mês; valor `paid_amount \|\| 0` | `paid_date \|\| start_date`, mesmo helper de valor | 🔴 **NÃO** — Home usa data do show; Metas usa data do pagamento. E valor: Home tem fallback `eventValue`, Metas não |
+| A receber | `sumReceivableAmount` = `calculateEventReceivableAmount` por evento (all-time) | _(verificar)_ | _(verificar)_ | mesmo helper em todas | 🟡 dentro da Home bate (AReceber e Pipeline usam o mesmo helper); falta comparar com Relatórios |
+| Nº de diárias / shows | `countUniqueWorkDays(monthWork)` filtrado por `w.date` | _(verificar)_ | _(verificar — provável mesmo helper)_ | `countUniqueWorkDays` | ⬜ |
+| Meta vs realizado | `MetaMensalBar` usa `stats.faturamento_pago` (regra da Home) | — | `Goals.jsx` usa `paidRevenueInMonth` (regra de Metas) | regra única | 🔴 **NÃO** — consequência direta da linha 1 |
+| Despesas do mês | `Home.jsx`: `expense_date \|\| date` no mês | _(verificar)_ | — | campo único de data de despesa | ⬜ |
+| Resultado líquido | `PipelineFinanceiro`: `faturamento_pago − despesasMes` | _(verificar)_ | — | receita − despesas, mesma competência | ⬜ |
 
-> Histórico relevante: S120–S124 já corrigiu `paid_date` em vários lugares; S158 achou `useEvents.js`
-> (CRUD) sem JOIN de cliente. Provável que ainda haja divergências de competência (data de pagamento
-> vs data do show) e de fonte de cachê (`daily_cache_value` vs `getEventCacheAmount`).
+> **Achado principal (2026-08-28):** `src/lib/useHomeDashboard.js` `computeStats()` calcula "recebido" por
+> **data do show** (`start_date`/`end_date` no mês); `src/lib/goalMetrics.js` `paidRevenueInMonth()` calcula por
+> **data do pagamento** (`paid_date || start_date`). São regras de competência diferentes para o mesmo número —
+> por isso Home e Metas mostram valores diferentes. Além disso o helper de valor difere
+> (`paid_amount || eventValue(e)` vs `paid_amount || 0`).
+>
+> **Fix proposto (Cursor):** `computeStats` deve usar a mesma regra de `goalMetrics` — extrair
+> `paidRevenueInMonth` para um helper compartilhado e reusar na Home. Depois revalidar Relatórios contra o mesmo helper.
+>
+> Histórico: S120–S124 corrigiu `paid_date` em Reports/Goals/IRSummary mas **não tocou `useHomeDashboard`**.
+> S158 achou `useEvents.js` (CRUD) sem JOIN de cliente.
 
 ---
 
@@ -196,3 +235,4 @@ Rastrear, para cada valor exibido em mais de uma tela, **qual fonte e qual regra
 | Data | Fase / tela | Agente | Resultado |
 |---|---|---|---|
 | 2026-08-28 | Fase 0 + estrutura do plano | Claude Code | Plano criado, calibração feita |
+| 2026-08-28 | Trilha A — Home (via código) | Claude Code | 17 itens mapeados; achado principal: `useHomeDashboard` calcula "recebido" por data do show, `goalMetrics` por data do pagamento → Home ≠ Metas. Proposta: Bloco Financeiro 5→3 widgets |
