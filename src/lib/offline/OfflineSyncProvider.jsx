@@ -8,6 +8,7 @@ import { initConnectivityMonitor, probeConnectivity } from '@/lib/offline/connec
 
 const OfflineSyncContext = createContext({ pendingCount: 0, syncing: false });
 
+// eslint-disable-next-line react-refresh/only-export-components -- hook co-localizado com o provider
 export function useOfflineSync() {
   return useContext(OfflineSyncContext);
 }

@@ -20,7 +20,11 @@ import {
 
 /**
  * Factory para hooks offline-first (espelho IDB + fila de mutações).
+ *
+ * Os hooks gerados usam entity/storeName/mapRowFromDb/sortRows do closure do factory —
+ * valores estáveis por instância, não deps de render. exhaustive-deps é suprimido de propósito.
  */
+/* eslint-disable react-hooks/exhaustive-deps */
 export function createOfflineHook({
   useBaseHook,
   entity,

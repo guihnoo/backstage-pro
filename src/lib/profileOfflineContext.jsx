@@ -73,6 +73,7 @@ export function ProfileOfflineProvider({ children }) {
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- hook co-localizado com o provider
 export function useProfile() {
   const offlineProfile = useContext(ProfileContext);
   const { profile: authProfile } = useAuth();
