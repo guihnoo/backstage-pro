@@ -34,6 +34,37 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+### Revisão geral — verificação de estado + P0 (números) + Trilha A: Agenda (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-5)
+- **Método**: READ-ONLY, leitura de código. Nenhuma alteração em `src/`. Nenhum deploy/migration/mudança de banco.
+- **Git**:
+  - `npm run git:backup` executado conforme pedido — retornou "nada para salvar" porque **`git status` está quebrado** (`fatal: not a git repository: .git/worktrees/agent-abd00af5c51a7f7b6` — metadados de worktree corrompidos, `gitdir`/`commondir`/`HEAD` = 0 bytes).
+  - Preservação feita manualmente: `git add docs/AGENT_LOG.md docs/PLANO_REVISAO_GERAL.md` → `git commit` → `git push` (funcionam apesar do erro de status). **Commit `e9e600f` em `origin/main`.**
+  - Worktree órfão `agent-abd00af5c51a7f7b6`: `git worktree list --porcelain` não o lista mais; `git worktree prune -n` confirma stale ("gitdir file does not exist"); `git worktree prune` real falha com "Permission denied" (lock de S.O.). Branch de 15/06/2026. **Não removido** — requer ação do usuário (reiniciar sessão / OneDrive) + `git worktree prune`.
+- **P0 — Números (Home × Metas × Relatórios × Agenda)** elevado a prioridade ALTA:
+  - Matriz completa em `PLANO_REVISAO_GERAL.md` seção "P0 — Inconsistência de números": TELA/COMPONENTE → MÉTRICA → FONTE → FILTRO → COMPETÊNCIA → STATUS → FÓRMULA.
+  - **3 regras de competência simultâneas** para "recebido no mês": data do show (Home, Metas círculos, MEI, Agenda) vs data do pagamento (Metas streak/anual, Relatórios "Faturamento", MonthlyTrend/IRSummary).
+  - **3 fórmulas de valor**: `paid_amount || eventValue` vs `Number(paid_amount) || 0` vs `paid_amount || calculateRealEventValue`. Evento pago via "Marcar pago" rápido (sem `paid_amount`) → Metas streak conta R$ 0.
+  - **4 implementações paralelas** de "stats do mês": `useHomeDashboard.computeStats`, `useBackstageData.useStats`, `useBackstageData.useMeiStats`, `Calendar.monthStats`.
+  - Relatórios "Faturamento" exige `paid_date` não-nulo → eventos pagos sem `paid_date` somem do KPI.
+  - **2 sistemas de status**: `event.status` cru (7 valores) vs `getEventStatus` calculado (5 valores, nunca retorna pending/tentative/confirmed).
+  - Nenhuma correção — só a matriz + direção (helper único de competência).
+- **Trilha A — Agenda `/calendar`** (auditoria READ-ONLY completa):
+  - Arquivos lidos: `Calendar.jsx` (2109 l.), `EventForm.jsx`, `reports/EventDetailModal.jsx`, `calendar/EventDetailModal.jsx` (parcial), `CalendarPageHeader.jsx`, `BackstageCalendarGrid.jsx` (parcial), `DayQuickActions.jsx`, `AlertsPanel.jsx`, `mobile/EventActionSheet.jsx`, `DailyWorkModal.jsx`, `ClientCombobox.jsx`, `ClientQuickCreateDialog.jsx`, `useEvents.js`, `eventFinance.js`, `dateUtils.jsx`, `useBackstageData.js`.
+  - Entregue em `PLANO_REVISAO_GERAL.md` § "Auditoria — Agenda": 12 partes (inventário 36 itens · mapa de componentes · jornadas · problemas P-1..P-16 · redundâncias · inconsistências · simplificação · problemas mobile M-1..M-7 · riscos técnicos T-1..T-8 · ranking P0/P1/P2/P3 · recomendações · tabela de handoff AG-01..AG-18).
+  - **Achados-chave da Agenda**:
+    - **P-2 (P0)**: não existe caminho para confirmar um evento (pending→confirmed) pela Agenda — o `reports/EventDetailModal` usado por ela não tem o CTA "Confirmar" (só o `calendar/EventDetailModal` da Home tem).
+    - **P-1 (P0)**: eventos `status='scheduled'` somem dos chips de filtro e de `pickProximoEvento`/`useUpcomingEvent`.
+    - **P-3 (P1)**: dois `EventDetailModal` com features divergentes, conforme a tela de origem.
+    - **A17 (P1)**: no grid, dia com N eventos só abre o 1º.
+    - **P-11 (P1)**: horário 09:00–18:00 gravado em todo evento novo com o campo escondido.
+    - **P-4 (P2)**: `monthStats.received/pending` calculados e passados a `CalendarPageHeader` que os ignora — computação morta.
+- **ESLint**: `npm run lint` contaminado pelo worktree (`.claude/**` não está nos `ignores`). Documentado A (ruído ~1100) / B (7 erros triviais em `src/`) / C (9 warnings). Os 7 `react-hooks/exhaustive-deps` em `createOfflineHook.js` analisados semanticamente — são "unnecessary dependency" de args do factory (estáveis por construção); **recomendação: `eslint-disable`, NÃO adicionar deps** (risco de loop de sync / requests duplicados / regressão offline).
+- **Build**: N/A (só docs). Build de produção já verificado PASS na sessão anterior (`e9e600f` só muda docs).
+- **Próximo passo**: revisão estratégica do usuário sobre P0 (regra de competência) e P0-b/c (status). Sem implementação até decisão.
+
+---
+
 ## 2026-06-26
 
 ### S186 — Lapidação: stagger animations + spring transitions + Calendar polish (Claude Code) ✅
