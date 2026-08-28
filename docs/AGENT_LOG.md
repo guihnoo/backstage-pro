@@ -65,6 +65,29 @@ Registro cronológico de tarefas executadas por agentes.
 
 ---
 
+### Revisão geral — Decisões aprovadas + P0 parciais + Trilha A: Clientes (Claude Code) ✅
+- **Agente**: Claude Code (claude-sonnet-5)
+- **Método**: READ-ONLY. Leitura de código + **4 consultas SELECT** à base de produção (`cwtallnetgodoacuoaow`) via Supabase MCP. Nenhuma alteração em `src/`, schema, banco ou deploy.
+- **Decisões estratégicas do usuário registradas em `PLANO_REVISAO_GERAL.md`** (aprovadas, NÃO autorizam implementação):
+  - **Modelo oficial de competência**: RECEBIDO→`paid_date` · PROJETADO→período do evento · DESPESAS→`expense_date` · HORAS/DIÁRIAS→data trabalhada · A RECEBER→NÃO usa `paid_date` (regra a definir na auditoria de Relatórios).
+  - **Valor recebido**: acabar com as 3 fórmulas; usar nullish `??` (não `||`) para campos monetários (`0` é válido).
+  - **DECISÃO 2 — Status**: `scheduled`/`tentative`/`pending`/`confirmed`/`completed`/`cancelled`/`archived` **todos mantidos**. **PROIBIDO** aplicar "chips/badges usam `getEventStatus()`". Modelo conceitual: Status de Negócio (persistido) × Status Temporal (calculado) — temporal complementa, não substitui. Regras futuras: `scheduled` visível em Próximo Show/Agenda, `tentative` identificável, `confirmed` não perde status por data passar, Agenda precisa de caminho `pending→confirmed`, unificar os 2 EventDetailModal.
+- **Consultas de produção (evidência)**:
+  - `payment_status`: 21 `paid` (18 do Google), 8 `unpaid`, **0 `partial`**. **`paid_amount` NULL em 21/21 pagos (100%)**. `paid_date` presente em todos os pagos (0 legado sem data).
+  - `event.status`: `confirmed` 13, `pending` 10, **`confirmado` 5 (pt-BR!) — todos do Google Calendar**, `completed` 1. `scheduled`=0, `tentative`=0. → o bug "status desaparece" já está ativo via `'confirmado'` (nada compara com esse valor).
+  - `clients`: **sem coluna `cnpj`/`cpf`/`razao_social`**. Colunas legadas Base44 (`company`, `total_events`, `total_spent`, `is_favorite`) presentes mas **vazias**. 15 clientes, 5 rascunhos, 0 pessoa. `companies` (global): 13, 1 verificada.
+  - `daily_work`: `date` preenchido 26/26, `work_date` NULL 26/26 (dual-column; `date` é o canônico de fato).
+- **P0 — Semântica de pagamentos parciais** (seção nova): `partial` é reconhecido por 8 pontos de leitura, **criado por nenhuma UI**, sem `paid_amount`/`paid_date`/histórico. Quando existe: valor CHEIO em "A Receber", R$ 0 em "Recebido". Decisão (implementar parcial de verdade vs remover) adiada.
+- **P0 — `paid_amount` NULL 100%** (consequência ativa): `goalMetrics.paidRevenueInMonth` (`|| 0`) → **Metas mostra streak/histórico/anual = R$ 0** apesar de 21 shows pagos; `ClientDetailModal` "Faturamento Real" → R$ 0 por cliente. Home/Reports usam fallback (mostram valor estimado, não recebido).
+- **Trilha A — Clientes `/clients` + `/client-detail`** (auditoria completa em `PLANO_REVISAO_GERAL.md` § "Auditoria — Clientes"): 20 partes, 53 itens de inventário, mapa de componentes, arquitetura de dados, 5 jornadas, CL-1..CL-20, redundâncias, inconsistências, §12 matriz "quanto o cliente rende por tela", problemas mobile CM-1..CM-5, riscos CT-1..CT-7, ranking P0/P1/P2/P3, §17 simplificação, §18 possíveis remoções, §19 dependências, §20 handoff CLI-01..CLI-16.
+  - **Achados-chave**: sem coluna CNPJ → `client?.cnpj` sempre undefined → card NF-e sem tomador (CL-2); **4 implementações de "stats do cliente"** com regras diferentes (`clientsWithStats`, `ClientDetailModal`, `ClientInsightsModal`, `ClientDetail`) → "A Receber/Recebido" não batem entre card/modal/insights/página (CL-3/CL-4); **3 superfícies quase idênticas** de "ver cliente" (CL-5); CRM (`ClientInteractionLog`) só no `/client-detail`, ausente no modal (CL-6); "Razão Social" gravada em `notes`, some ao editar (CL-7); editar Observações apaga metadados (CL-8); `/client-detail` funde `confirmed`+`scheduled` visualmente (CL-9, viola Decisão 2); criar cliente empresa grava sempre em `companies` global (CL-14).
+- **Arquivos lidos**: `Clients.jsx`, `ClientDetail.jsx`, `ClientForm.jsx`, `ClientDetailModal.jsx`, `ClientInsightsModal.jsx`, `CompanySearchInput.jsx`, `InactiveClientsPanel.jsx`, `ClientInteractionLog.jsx`, `mobile/ClientActionSheet.jsx`, `reports/PaymentConfirmModal.jsx`, `lib/{useClients, useCompanies, companyService, useClientInteractions, usePaymentToggle, useReceivable, useDailyWork}`.
+- **Ordem de auditoria** (20 telas) registrada no plano conforme lista do usuário.
+- **Build**: N/A (só docs).
+- **Próximo passo**: revisão estratégica; depois Trilha A tela 3 em diante (EventDetailModal transversal / Registro de Horas / Despesas / Metas / Relatórios / ...). Sem implementação até decisão.
+
+---
+
 ## 2026-06-26
 
 ### S186 — Lapidação: stagger animations + spring transitions + Calendar polish (Claude Code) ✅

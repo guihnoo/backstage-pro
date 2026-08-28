@@ -5,8 +5,9 @@
 > Este documento ataca: "isso funciona de verdade no meu dia a dia?" e "por que tem tanta coisa na tela?".
 
 **Criado:** 2026-08-28 (Claude Code)
-**Status:** 🔄 Trilha A em andamento — Home ✅ · **Agenda ✅ (2026-08-28)** · demais telas ⬜
-**Prioridade P0 atual:** inconsistência de números Home × Metas × Relatórios (matriz abaixo)
+**Status:** 🔄 Trilha A — Home ✅ · Agenda ✅ · **Clientes + `/client-detail` ✅ (2026-08-28)** · demais ⬜
+**Decisões estratégicas aprovadas (2026-08-28):** ver §"Modelo oficial de competência" e §"Status de Negócio × Status Temporal" — **aprovadas, NÃO autorizam implementação ainda**
+**Prioridades P0:** (1) competência/valor de dinheiro; (2) semântica de pagamentos parciais; (3) duas dimensões de status confundidas
 
 ---
 
@@ -77,16 +78,32 @@ e de **backup git automático sobrescrevendo trabalho em andamento**.
 
 ## Trilha A — Inventário tela a tela
 
-Ordem (ciclo completo de uso, não por "dor"):
+Ordem aprovada pelo usuário (2026-08-28) — não imutável se a arquitetura revelar dependências:
 
-1. Home
-2. Agenda + EventForm
-3. EventDetailModal (calendar + reports) — o mais denso
-4. Relatórios
-5. Metas
-6. Clientes + ClientDetailModal
-7. Despesas
-8. Perfil + IA Mentor
+| # | Tela / área | Status |
+|---|---|---|
+| — | Home `/` | ✅ 2026-08-28 |
+| — | Agenda `/calendar` | ✅ 2026-08-28 |
+| 1 | Clientes `/clients` | ✅ 2026-08-28 |
+| 2 | Detalhe do Cliente `/client-detail` | ✅ 2026-08-28 (junto de Clientes) |
+| 3 | EventDetailModal (componente transversal — calendar + reports) | 🔄 parcial (Agenda) |
+| 4 | Registro de Horas / DailyWork | 🔄 parcial (Agenda) |
+| 5 | Despesas `/expenses` | ⬜ |
+| 6 | Metas `/goals` | ⬜ |
+| 7 | Relatórios `/reports` | ⬜ (leitura financeira parcial já feita no P0) |
+| 8 | IA Mentor | ⬜ |
+| 9 | Perfil / Configurações | ⬜ |
+| 10 | Google Calendar | ⬜ (Trilha C) |
+| 11 | Push Notifications | ⬜ (Trilha C) |
+| 12 | Offline / Sync / Realtime | ⬜ (Trilha C) |
+| 13 | Onboarding | ⬜ |
+| 14 | Login / Cadastro / Recuperação | ⬜ |
+| 15 | Navegação global / Bottom Nav / "Mais" | ⬜ |
+| 16 | PWA / instalação | ⬜ |
+| 17 | Empty states (varredura transversal) | ⬜ |
+| 18 | Loading / error states (varredura transversal) | ⬜ |
+| 19 | Acessibilidade (varredura transversal) | ⬜ |
+| 20 | Experiência mobile global (varredura transversal) | ⬜ |
 
 ### 1. Home `/` — 🔄 auditada 2026-08-28 (Claude Code, via código)
 
@@ -149,11 +166,12 @@ ranking P0–P3, tabela de handoff para o Cursor.
 |---|---|---|---|---|---|
 | | | | | | |
 
-### 6. Clientes `/clients` — ⬜
+### 6. Clientes `/clients` + `/client-detail` — ✅ auditada 2026-08-28 (Claude Code, via código + 4 SELECTs de produção)
 
-| Item | Funciona? | Claro? | Uso | Status | Spec |
-|---|---|---|---|---|---|
-| | | | | | |
+Detalhe completo na seção **[Auditoria — Clientes](#auditoria--clientes-clients--client-detail)** mais abaixo:
+20 partes, 53 itens de inventário, problemas CL-1..CL-20, ranking P0–P3, tabela de handoff CLI-01..CLI-16.
+Achados-chave: `paid_amount` NULL em 100% dos pagos (Metas e "Faturamento Real" = R$ 0); sem coluna CNPJ;
+4 implementações de "stats do cliente" divergentes; 3 modais/telas de "ver cliente" quase idênticos.
 
 ### 7. Despesas `/expenses` — ⬜
 
@@ -552,13 +570,491 @@ mas seu badge (vista Lista, via `getEventStatus`) mostra "Concluído". Chip e ba
 | N7 | **4 implementações paralelas** de "stats do mês": `useHomeDashboard.computeStats`, `useBackstageData.useStats`, `useBackstageData.useMeiStats`, `Calendar.monthStats` | Manutenção: corrigir uma regra exige corrigir 4 lugares |
 | N8 | **`monthStats.received`/`.pending`** em `Calendar.jsx` são calculados e passados a `CalendarPageHeader` que **não os usa** — computação 100% morta | Custo de render sem benefício; confusão para quem lê o código |
 
-### Direção de correção (para depois da revisão estratégica — NÃO implementar agora)
+### Direção de correção (substituída pelas decisões aprovadas abaixo)
 
-1. **Definir uma regra oficial de competência financeira** (recomendação: **data do pagamento** `paid_date`, com fallback explícito documentado).
-2. **Um helper compartilhado** `paidRevenueInPeriod(events, {start, end})` + `receivableInPeriod` + `projectedInPeriod` em `src/lib/` — todas as telas consomem.
-3. **Garantir `paid_date` sempre preenchido** ao marcar pago (já ocorre em `handleMarkPaid`); backfill dos eventos antigos: `paid_date := start_date` onde `payment_status='paid' AND paid_date IS NULL` (migração — **fora de escopo desta fase**).
-4. **Unificar os dois sistemas de status** ou documentar claramente qual usar onde (chips de filtro deveriam usar `getEventStatus` como os badges).
-5. Remover as 3 implementações redundantes de stats; manter `useHomeDashboard` como única e derivar Metas/Agenda dela.
+Ver **"Modelo oficial de competência — decisão aprovada"** e **"Regra do valor recebido"** logo a seguir.
+A sugestão anterior "chips e badges devem usar `getEventStatus()`" foi **PROIBIDA pelo usuário** — ver §Status.
+
+---
+
+## MODELO OFICIAL DE COMPETÊNCIA — decisão aprovada (2026-08-28)
+
+> Aprovada pelo usuário. **NÃO autoriza implementação em `src/**` ainda.** Direção obrigatória para a fase de implementação.
+
+O domínio financeiro tem **competências diferentes por tipo de valor**. Não existe "uma data que rege tudo".
+
+| Métrica | Competência (data que a "coloca no mês/período") | Observação |
+|---|---|---|
+| **RECEBIDO** (dinheiro que entrou) | **`paid_date`** | Fonte oficial. Todo novo pagamento marcado como recebido **precisa ter `paid_date`** |
+| **PROJETADO / PREVISTO** | **período do evento** (`start_date` / `end_date`) | Ainda não aconteceu financeiramente — competência é quando o show ocorre |
+| **DESPESAS** | **`expense_date`** | — |
+| **HORAS / DIÁRIAS** | **data efetivamente trabalhada** (`work_date` / campo canônico equivalente — hoje resolve para `daily_work.date`) | Ver nota sobre `work_date` vs `date` em §Registro de Horas |
+| **A RECEBER** | **NÃO usa `paid_date`** (pagamento não ocorreu). Regra de período a definir na auditoria de Relatórios/Financeiro | Provisoriamente all-time; decisão adiada de propósito |
+
+**Implicações para a fase de implementação (não fazer agora):**
+- `Reports.processForPeriod.realizedRevenue` já usa `paid_date` — mas **exclui** eventos pagos sem `paid_date`. Precisa de guarda/backfill (ver §Legado).
+- `useHomeDashboard.computeStats` / `useBackstageData.useStats` / `useMeiStats` usam **data do show** para "recebido" — divergem da regra. Migrar para `paid_date`.
+- `goalMetrics.paidRevenueInMonth` já usa `paid_date || start_date` — manter `paid_date`, revisar o fallback.
+- Um helper compartilhado (`src/lib/`): `receivedInPeriod` (por `paid_date`), `projectedInPeriod` (por evento), `expensesInPeriod` (por `expense_date`), `hoursInPeriod` (por dia trabalhado). Todas as telas consomem.
+
+### Regra do valor recebido — direção aprovada
+
+Acabar com as 3 fórmulas: `paid_amount || eventValue` · `Number(paid_amount) || 0` · `paid_amount || calculateRealEventValue`.
+Durante a implementação, **determinar o valor canônico** de "quanto foi recebido num evento".
+
+**ATENÇÃO TÉCNICA (aprovada):** `0` é valor monetário válido; `||` trata `0` como falso. A implementação deve usar
+**nullish (`??`)** onde apropriado: `paid_amount ?? valorRealDoEvento` — **não** `paid_amount || valorRealDoEvento`.
+Também aplicar `?? 0` (e não `|| 0`) em somas de `paid_amount`.
+
+**Isto NÃO é autorização para alterar código.**
+
+### LEGADO — eventos pagos sem `paid_date` (levantamento 2026-08-28)
+
+Consulta read-only à base de produção (`cwtallnetgodoacuoaow`, dados de 1 usuário, 29 eventos):
+
+| Situação | Contagem | Detalhe |
+|---|---|---|
+| `payment_status='paid'` | **21** | 18 vieram do Google Calendar, 3 manuais |
+| `paid` **sem `paid_date`** | **0** | ✅ nenhum evento pago sem data hoje |
+| `paid` **sem `paid_amount`** | **21 (100%)** | 🔴 **nenhum evento pago tem `paid_amount` preenchido** |
+| `paid` com `paid_amount = 0` | 0 | — |
+| `payment_status='unpaid'` | 8 | 7 sem `paid_date` (esperado), 1 do Google |
+| `payment_status='partial'` | **0** | não existe na base |
+
+**Achados:**
+- O risco "legado pago sem `paid_date`" **não está ativo nesta base** (0 registros). Mas o *código* de Relatórios ainda descarta esses eventos se existirem (ex.: import futuro, outro usuário). Recomendação: guarda `paid_date ?? start_date` **apenas na leitura**, não migration.
+- 🔴 **`paid_amount` é NULL em 100% dos eventos pagos.** Consequência **ativa hoje**:
+  - `goalMetrics.paidRevenueInMonth` (`Σ Number(paid_amount) || 0`) → **R$ 0** → **a tela Metas mostra streak/histórico/anual zerados** mesmo com 21 shows pagos.
+  - `ClientDetailModal` "Faturamento Real" (`paid && paid_amount > 0`) → **R$ 0 para todo cliente**.
+  - `Home`/`useStats`/`Reports` usam fallback (`|| eventValue` / `|| calculateRealEventValue`) → mostram valor, mas **um valor estimado, não o recebido real**.
+- **Origem**: o fluxo `PaymentConfirmModal` grava `paid_amount`, mas os caminhos rápidos (`usePaymentToggle`, `handleMarkPaid`, `useReceivable`) e o **import do Google Calendar** gravam `payment_status='paid'` + `paid_date` **sem `paid_amount`**. 18/21 pagos vieram do Google.
+- **Estratégia (documentar, não executar):**
+  1. Todo caminho de "marcar pago" deve capturar/estimar `paid_amount` (ou assumir explicitamente `paid_amount = valorRealDoEvento` no momento).
+  2. Leitura deve usar `paid_amount ?? valorRealDoEvento` (nullish) em todas as métricas de "recebido".
+  3. Backfill opcional futuro: `paid_amount := <valor real calculado>` onde `paid AND paid_amount IS NULL` — **plano separado, fora desta fase**.
+
+---
+
+## P0 — Semântica de pagamentos parciais (`payment_status = 'partial'`)
+
+> Investigação READ-ONLY concluída 2026-08-28. **Nenhuma proposta de migration.**
+
+### Onde `partial` aparece no código
+
+| Arquivo | Uso | Tipo |
+|---|---|---|
+| `src/lib/eventFinance.js:4` | `UNPAID_STATUSES = {'pending','unpaid','partial'}` — `isReceivableEvent` trata partial como não-pago | leitura |
+| `src/lib/useBackstageData.js:63, 297` | query `.in('payment_status', ['pending','unpaid','partial'])` | leitura |
+| `src/lib/useHomeDashboard.js:64, 182` | filtro `['pending','unpaid','partial'].includes(...)` | leitura |
+| `src/lib/useReceivable.js:28` | query `.in(..., ['pending','unpaid','partial'])` | leitura |
+| `src/pages/Calendar.jsx:1052` | drilldown "Receita": `payment_status === 'partial' ? 'Parcial' : ...` | exibição (label) |
+| `src/components/clients/ClientDetailModal.jsx` | `totalPending` filtra **só `'unpaid'`** → partial **NÃO** conta | leitura (inconsistente) |
+| `src/pages/ClientDetail.jsx` | `unpaidAmount` filtra `!== 'paid'` → partial **conta como cheio** | leitura (inconsistente) |
+| `src/components/clients/ClientInsightsModal.jsx` | `pendingAmount` filtra `!== 'paid' && completed` → partial conta se completed | leitura (inconsistente) |
+
+### Onde `partial` é CRIADO / EDITADO
+
+**Em lugar nenhum.** Busca por `payment_status: 'partial'` / `'partial'` como valor de escrita → **zero ocorrências**.
+- `PaymentConfirmModal` → só grava `'paid'` (valida `Number(paidAmount) > 0`, sem opção de parcial).
+- `usePaymentToggle` / `handleMarkPaid` (Calendar) → alterna `'paid'` ↔ `'unpaid'`.
+- `EventForm` → grava `'unpaid'` (default) / `'pending'` (fallback morto).
+- `useReceivable.markClientPaid` → grava `'paid'`.
+- Nenhuma UI de "registrar pagamento parcial" / parcelas / histórico de pagamentos.
+
+### Semântica atual (respostas à investigação pedida)
+
+| Pergunta | Resposta |
+|---|---|
+| Onde `partial` é criado? | **Nenhuma UI.** Só pode vir de: edição manual no banco, import do Google Calendar, ou dado legado Base44 |
+| Onde é editado? | Nenhuma UI |
+| `paid_amount` quando status = partial? | **Indefinido.** Nenhum código lê `paid_amount` especificamente para partial. A base de produção tem 0 eventos partial |
+| `paid_date` em partial? | Não garantido (nenhum código grava) |
+| Primeiro/último pagamento? | Não há conceito — o app guarda **apenas o estado atual**, sem histórico de parcelas |
+| Histórico de parcelas? | **Não existe.** Nenhuma tabela de `payments`/`installments` |
+| Quanto aparece como "Recebido"? | **R$ 0** — partial não entra em nenhum cálculo de "recebido" (todos filtram `=== 'paid'`) |
+| Quanto aparece como "A Receber"? | **O valor CHEIO do evento** (`calculateEventReceivableAmount`), não `total − pago`. Em `isReceivableEvent` partial = não-pago integral |
+| Como Home trata? | `partial` → conta em "A Receber" pelo valor cheio; R$ 0 em "Recebido" |
+| Como Metas trata? | `goalMetrics.paidRevenueInMonth` só olha `=== 'paid'` → partial = R$ 0 recebido |
+| Como Relatórios trata? | `realizedRevenue` só `=== 'paid'` → R$ 0; `receivableRevenue` via `isReceivableEvent` → valor cheio |
+| Como Agenda trata? | Chip "Pagos" só `=== 'paid'`; label "Parcial" no drilldown de receita; card usa `getEventCacheAmount` (valor cheio) |
+| Como PaymentConfirmModal trata? | Não gera partial; ao confirmar, força `'paid'` |
+
+### Conclusão
+
+`partial` é um **estado órfão**: reconhecido por 8 pontos de leitura, criável por nenhum, sem `paid_amount`/`paid_date`/histórico,
+e quando existe **distorce os números** (valor cheio em "A Receber", R$ 0 em "Recebido").
+**Decisão a tomar na fase de implementação:** (a) implementar pagamento parcial de verdade (campo `paid_amount` + `partial` calcula `resta = total − pago`), ou (b) remover `partial` do domínio e tratar como `unpaid` até quitação total. **Não decidir agora.**
+
+---
+
+## DECISÃO 2 — STATUS: Status de Negócio × Status Temporal (aprovada 2026-08-28)
+
+> Aprovada. **NÃO autoriza implementação.** Direção conceitual obrigatória.
+
+### O que continua existindo (NÃO normalizar, NÃO remover)
+
+`event.status` persistido: **`tentative` · `pending` · `scheduled` · `confirmed` · `completed` · `cancelled` · `archived`** — todos mantidos.
+
+### PROIBIDO até redesenho semântico
+
+❌ **NÃO** aplicar automaticamente "chips e badges devem usar `getEventStatus()`".
+Motivo comprovado pela auditoria: são **duas dimensões diferentes** que hoje estão misturadas.
+
+### Modelo conceitual (nomes finais a definir depois)
+
+**A) STATUS DE NEGÓCIO / EVENTO** — persistido (`event.status`), decisão comercial do usuário:
+
+| Valor | Significado |
+|---|---|
+| `tentative` | pré-reserva / hold / possibilidade ainda não garantida |
+| `pending` | aguardando confirmação / negociação |
+| `scheduled` | agendado válido, sem info/necessidade de confirmação explícita |
+| `confirmed` | explicitamente confirmado |
+| `completed` | realizado |
+| `cancelled` | cancelado |
+| `archived` | arquivado |
+
+**B) STATUS TEMPORAL** — calculado pelas datas (hoje é `getEventStatus`):
+
+| Valor | Significado |
+|---|---|
+| `upcoming` / `future` | data ainda não chegou |
+| `in_progress` | hoje está dentro de `[start_date, end_date]` |
+| `past` | data já passou |
+
+O **temporal complementa** o de negócio — **não substitui**. Um evento `confirmed` cuja data passou continua
+comercialmente `confirmed`; a situação temporal apenas diz "já aconteceu".
+
+### Objetivo agora
+
+Descobrir **todos os lugares onde as duas dimensões estão confundidas** (mapa abaixo, na auditoria de Clientes e na de Agenda).
+**Sem** modificar schema, renomear helper ou criar migration.
+
+### Regras já aprovadas (direção futura — registrar, não implementar)
+
+- `scheduled` **precisa aparecer** em "Próximo Show".
+- `scheduled` **precisa aparecer corretamente** na Agenda.
+- `tentative` **precisa continuar visível e identificável** (badge próprio).
+- Um evento `confirmed` **não deixa de ser** "confirmed" comercialmente só porque a data passou.
+- Situação temporal **complementa**, não substitui silenciosamente.
+- A Agenda **precisa ter** caminho para `pending → confirmed`.
+- Os dois `EventDetailModal` **serão revisados** para futura unificação.
+
+### Achado de dados relevante (2026-08-28, base de produção)
+
+`event.status` real na base (29 eventos): `confirmed` 13 · `pending` 10 · **`confirmado` 5 (valor em português!)** · `completed` 1.
+**`scheduled` = 0, `tentative` = 0** hoje. Os 5 `'confirmado'` (pt) **vieram todos do Google Calendar** — o import
+grava valores fora da convenção (`'confirmado'` em vez de `'confirmed'`). `isCancelledEvent` cobre `'cancelado'`/`'cancelled'`
+mas nada cobre `'confirmado'` → qualquer código que compara `=== 'confirmed'` (chips, `pickProximoEvento`, `useUpcomingEvent`,
+badges de card, Kanban) **ignora esses 5 eventos**. `getEventStatus` também não trata `'confirmado'` → cai na lógica de data.
+**O bug "status desaparece" já está ativo — via `'confirmado'`, não via `'scheduled'`.**
+
+---
+
+## Auditoria — Clientes `/clients` + `/client-detail`
+
+> **READ-ONLY.** Concluída 2026-08-28 (Claude Code, via leitura de código + 4 consultas SELECT à base de produção).
+> Arquivos lidos: `pages/Clients.jsx`, `pages/ClientDetail.jsx`, `components/clients/{ClientForm, ClientDetailModal,
+> ClientInsightsModal, CompanySearchInput, InactiveClientsPanel, ClientInteractionLog, ClientDraftBadge, CompanyAvatar}`,
+> `components/mobile/ClientActionSheet.jsx`, `lib/{useClients, useCompanies, companyService, useClientInteractions,
+> usePaymentToggle, useReceivable, useDailyWork}`, `components/reports/PaymentConfirmModal.jsx`.
+> Nada em `src/**` foi alterado.
+
+### 1. Inventário completo
+
+| # | Item | Hoje | Ação | Nota |
+|---|---|---|---|---|
+| C1 | Título "Clientes" + subtítulo "Base de clientes e relacionamento" | fixo | MANTER | — |
+| C2 | Botão "Novo Cliente" (header) | abre `ClientForm` | MANTER | — |
+| C3 | Alerta de erro de sync (com cache) | banner | MANTER | — |
+| C4 | Busca | filtra nome, `contact_person`, `razao_social`, email, phone (só dígitos), city | MELHORAR | `razao_social` **não é coluna** (é linha em `notes`) — busca por razão social quase nunca acha |
+| C5 | Filtros: Todos · Ativos · Inativos · Rascunhos · Empresas · Pessoas | 6 botões, 2 grupos | SIMPLIFICAR | "Empresas/Pessoas" alternam (clicar de novo volta a "all"); os outros não. Comportamento misto. `pessoa` = 0 na base → filtro "Pessoas" hoje sempre vazio |
+| C6 | Ordenação: A–Z · Maior pendência · Mais shows · Mais recente | 4 chips | MANTER | — |
+| C7 | `InactiveClientsPanel` (90+ dias sem show) | painel âmbar colapsável, só no filtro "Todos" | MANTER | 4º bloco competindo por atenção no topo (depois de busca+filtro+sort) |
+| C8 | Card do cliente — avatar/logo | `AvatarImage src={logo_url}` + fallback iniciais (empresa) / ícone User (pessoa) | MANTER | — |
+| C9 | Card — nome + `ClientDraftBadge` (rascunho) | truncate | MANTER | Badge de rascunho aparece **2×** no card (linha do nome + linha de status) |
+| C10 | Card — `contact_person` com prefixo "🏢 " para pessoa | truncate | MELHORAR | Emoji hardcoded; para empresa mostra sem prefixo |
+| C11 | Card — badge Ativo/Inativo (6 meses) **OU** `ClientDraftBadge` | | MANTER | "Ativo" = evento nos últimos 6 meses; "Inativo" senão |
+| C12 | Card — dot colorido de "último show" (verde ≤30d / âmbar ≤90d / vermelho >90d ou sem histórico) | `title` tooltip | MELHORAR | 3ª sinalização de atividade no mesmo card (badge Ativo + dot + InactivePanel). Sem legenda visível |
+| C13 | Card — badge "H.E." / "M&D" (`policy_default_payment_model`) | | MANTER | Sigla sem explicação |
+| C14 | Card — 2 mini-stats: **Shows** · **A Receber** | grid 2 col | MANTER | "A Receber" = `completed && payment_status==='unpaid'` (ver §12 inconsistências) |
+| C15 | Card — "Próx. show hoje/amanhã/em Xd" | quando há evento futuro | MANTER | — |
+| C16 | Card — barra "Confiabilidade" (% pagos dos concluídos) | animada | MANTER | 4ª métrica no card |
+| C17 | Card — rodapé: ícones Email / Ligar / WhatsApp | quando há email/phone | MANTER | WhatsApp vira "Cobrar R$ X" (âmbar + dot) quando há pendência |
+| C18 | Card — botão `···` → `ClientInsightsModal` | canto sup. direito | POSSÍVEL REMOÇÃO | Abre um **3º modal** de dados do cliente que duplica ~80% do `ClientDetailModal` (ver §9) |
+| C19 | Clicar no card → `ClientDetailModal` (desktop) **ou** `ClientActionSheet` (mobile) | `useMediaQuery(max-width:768px)` | MELHORAR | Experiências divergentes; tablet retrato usa desktop |
+| C20 | Empty state (sem clientes / sem resultado) | ícone + CTA | MANTER | — |
+| C21 | Loading (`ClientsSkeleton`) | grid de cards fantasma | MANTER | — |
+| C22 | `ClientForm` — toggle Empresa/Pessoa | topo | MANTER | — |
+| C23 | `ClientForm` — `CompanySearchInput` (3 abas: Pesquisar/CNPJ/NF-e) | **só ao criar empresa** (`!client`) | MELHORAR | Não dá para re-buscar/re-vincular empresa ao **editar** |
+| C24 | `ClientForm` — campo "Razão Social" | só empresa; **vai para `notes` como texto** | CORRIGIR | Não é coluna; reseta para `''` a cada edição; digitar de novo pode duplicar a linha em `notes` |
+| C25 | `ClientForm` — `ColorGridPicker` (brand_color) | | MANTER | fallback se coluna faltar (código defensivo — S27/schema) |
+| C26 | `ClientForm` — "Pessoa de Contato" / "Empresa / Produtora" | label dinâmico | MANTER | — |
+| C27 | `ClientForm` — Email / Telefone com validação | | MANTER | — |
+| C28 | `ClientForm` — Políticas de Pagamento (modelo padrão + cachê diário padrão + checkbox meio&dobra) | bloco | MANTER | Usado por `EventForm.handleClientChange` |
+| C29 | `ClientForm` — upload de Logo (Storage `logos/`) + Portal de NF-e (URL) | | MANTER | — |
+| C30 | `ClientForm` — Observações (textarea) | | MELHORAR | Mistura notas do usuário com metadados injetados (`Razão Social:`, `buildCompanyNotes` → CNPJ/CNAE/porte) |
+| C31 | **Sem campo CNPJ / CPF** em lugar nenhum do `ClientForm`/detalhe | — | CORRIGIR | `clients` **não tem coluna `cnpj`/`cpf`** (confirmado no schema). CNPJ só existe em `companies` (vinculada) ou dentro de `notes`. `EventDetailModal` lê `client?.cnpj` → **sempre `undefined`** → card de NF-e nunca mostra CNPJ do tomador |
+| C32 | `ClientQuickCreateDialog` (criar cliente dentro do `EventForm`) | dialog aninhado | MANTER | ~5–7 toques; ver §4 |
+| C33 | `ClientDetailModal` (desktop) — header: avatar + nome + badge Pessoa/Empresa + Draft + contact_person | | MANTER | — |
+| C34 | `ClientDetailModal` — ações rápidas: Email / Ligar / WhatsApp / Portal NF-e | | MANTER | — |
+| C35 | `ClientDetailModal` — 3 abas: Visão Geral / Linha do Tempo / Métricas | Radix Tabs + `AnimatePresence mode="wait"` | INVESTIGAR | `mode="wait"` foi removido de Goals/Home por risco de "tela preta" (S158/S189) — aqui ainda está |
+| C36 | `ClientDetailModal` — 4 MetricCards (Total Eventos / Faturamento Real / A Receber / Horas) | | CORRIGIR | "Faturamento Real" = `Σ paid_amount` onde `paid_amount > 0` → **R$ 0 hoje** (100% dos pagos sem `paid_amount`) |
+| C37 | `ClientDetailModal` — Próximos Eventos (até 3) | | MANTER | — |
+| C38 | `ClientDetailModal` — Informações de Contato (email/phone/notes) | notes cru | MELHORAR | Mostra `Razão Social:` + CNPJ + CNAE (metadados) misturados nas "Observações" |
+| C39 | `ClientDetailModal` — aba Linha do Tempo (`EventTimelineItem`) | | MANTER | `StatusIcon = statusConfig.icon` → `undefined` (P-6 igual à Agenda) |
+| C40 | `ClientDetailModal` — aba Métricas (valor médio, conversão de pagamento, R$/hora, média horas) | | MANTER | Deriva de "Faturamento Real" zerado → métricas zeradas |
+| C41 | `ClientDetailModal` — footer: Excluir · Fechar · Página Completa · Agendar Show · Editar | 5 botões | SIMPLIFICAR | — |
+| C42 | `ClientDetailModal` — **sem CRM / interações** | — | CORRIGIR | `ClientInteractionLog` só existe em `/client-detail`. Usuário desktop que usa o modal nunca vê follow-ups |
+| C43 | `ClientInsightsModal` (do `···`) — 3 cards: Financeiro / Estatísticas de Eventos / Atividade Recente | | POSSÍVEL REMOÇÃO | Duplica `ClientDetailModal`. Números **diferentes** dos do modal e do card (§12) |
+| C44 | `ClientActionSheet` (mobile) — mini-stats (Eventos, A Receber) + contatos + ações | | MELHORAR | Sem badge Pessoa/Empresa; "A Receber" = `pendingRevenue` (difere do `/client-detail`) |
+| C45 | `/client-detail` (página completa) — header + Editar/Excluir/Novo Evento | | MANTER | Caminho do mobile e do "Página Completa" |
+| C46 | `/client-detail` — card "Informações de Contato" com notas editáveis inline | textarea | CORRIGIR | `saveNotes` sobrescreve `notes` inteiro → **apaga os metadados `Razão Social:`/CNPJ** se o usuário editar |
+| C47 | `/client-detail` — 4 StatCards (Total Eventos / Receita Total / Total Horas / Receita Média) + faixa de avaliação (estrelas) | | MANTER | "Receita Total" = `Σ getEventRevenue` **todos** os eventos (≠ "Faturamento Real" do modal) |
+| C48 | `/client-detail` — "Próximos Shows" (até 4) | `isConfirmed = status==='confirmed' || status==='scheduled'` | CORRIGIR | Trata `confirmed` e `scheduled` como **o mesmo** estado visual — apaga a distinção (viola Decisão 2) |
+| C49 | `/client-detail` — "Resumo Financeiro": Recebido / Pendente / Total / Confiabilidade | | CORRIGIR | "Pendente" = **todos** os `!== 'paid'` (inclui futuros) — muito diferente do "A Receber" do card/modal |
+| C50 | `/client-detail` — `ClientInteractionLog` (CRM: WhatsApp/Ligação/Email/Reunião/Outro + follow-up date) | colapsável | MELHORAR | Não dá para **marcar follow-up como concluído** — só deletar a interação inteira. Alerta `crm_followup` (Agenda) fica pendente pra sempre |
+| C51 | `/client-detail` — `ReportsChart` + `ReportEventList` (histórico) | grid | MANTER | 4º/5º bloco de dados na mesma página |
+| C52 | `/client-detail` — modais: `ClientForm`, `EventForm`, `EventDetailModal` (reports) | `AnimatePresence` | MANTER | — |
+| C53 | Colunas legadas Base44 em `clients`: `company` (text), `total_events`, `total_spent`, `is_favorite` | **0 registros preenchidos** | POSSÍVEL REMOÇÃO | Confirmado vazio na base; nenhum código do app lê. Candidatas a cleanup de schema (fase separada) |
+
+### 2. Mapa de componentes
+
+```
+Clients.jsx (/clients)
+├── hooks: useClients (select '*', SEM join) · useEvents · useDailyWork · useFinancialVisibility · useConnectivity · useMediaQuery
+├── clientsWithStats  ← calcula stats por cliente em memória (revenue, pendingRevenue, paymentScore, isActive, last/next event, unpaidEvents)
+├── NeonGlass (busca + 6 filtros + 4 sorts)
+├── InactiveClientsPanel (lazy)  ← recebe clientsWithStats
+├── grid de Card por cliente
+│   └── botão ··· → ClientInsightsModal (lazy)   ← RECALCULA stats (diferente de clientsWithStats)
+├── ClientForm (lazy) ── CompanySearchInput ── {searchLocal, edge fn search-company, parseNFeXML}
+│                    └── useCompanies / companyService  ── companies (tabela GLOBAL compartilhada)
+├── ClientDetailModal (lazy, desktop) ── useEvents + useDailyWork  ← RECALCULA clientData (diferente de clientsWithStats E de Insights)
+├── ClientActionSheet (lazy, mobile) ── recebe stats de clientsWithStats
+└── ConfirmDialog (excluir)
+
+/client-detail (ClientDetail.jsx)
+├── hooks: useClients + useEvents + useDailyWork + useExpenses (4 hooks completos, filtra em memória)
+├── stats  ← RECALCULA (4ª implementação de "stats do cliente")
+├── ClientInteractionLog ── useClientInteractions ── client_interactions (tabela)
+├── ReportsChart + ReportEventList
+└── modais: ClientForm · EventForm · EventDetailModal (reports)
+```
+
+### 3. Arquitetura de dados
+
+| Tabela | Escopo | Chave | Observação |
+|---|---|---|---|
+| `clients` | **por usuário** (`user_id`) | `id` | `select('*')` sem join; enriquecido em memória com eventos. Sem `cnpj`/`cpf`/`razao_social`. Tem legado `company`/`total_events`/`total_spent`/`is_favorite` (vazios) |
+| `companies` | **GLOBAL — compartilhada entre todos os usuários** | `id`, dedup por `cnpj` → `name` | `created_by`. 13 registros, 1 verificada. `clients.company_id` → `companies.id` |
+| `client_interactions` | por usuário | `id` | CRM: `type`, `notes`, `follow_up_date`, `created_at`. Sem "resolvido" |
+| `events` | por usuário | `client_id` FK | 0 eventos sem cliente na base |
+
+**Fluxo de criação de empresa (efeito colateral relevante):** criar/editar um cliente do tipo `empresa` **grava
+automaticamente** um registro em `companies` (global) via `upsertCompanyRecord` / `linkClientToCompanyAfterCreate`
+(`source: 'manual'`, `verified: false`). 12 das 13 companies da base são assim. Excluir o cliente **não remove** a company.
+
+### 4. Jornada — criar cliente
+
+| Caminho | Passos | Fricção |
+|---|---|---|
+| **Direto** (`/clients` → Novo Cliente) | toggle tipo → (empresa: buscar Receita OU manual) → nome + cor + contato + email/phone + políticas + logo → Criar | Formulário longo (1 tela rolável). Políticas de pagamento no meio competem com o básico |
+| **Dentro do EventForm** (`ClientQuickCreateDialog`) | combobox → digitar (≥2) → "Criar X" → dialog aninhado (`z-[106]`, EventForm vira `modal={false}`) → (empresa: `CompanySearchInput` opcional) → Criar → volta ao form com cliente selecionado | ~5–7 toques + 2 dialogs sobrepostos. `showCreate` some se um nome de company compartilhada bate com o digitado (mostra só a linha "usar cadastro compartilhado") |
+| A partir de `ClientDetailModal`/`/client-detail` → "Agendar Show" | leva a `/calendar?action=new-event&client_id=X` | OK |
+
+### 5. Jornada — editar cliente
+
+- Desktop: card → `ClientDetailModal` → "Editar" (fecha modal, abre `ClientForm`). **OU** `/clients` não tem edição direta no card.
+- Mobile: card → `ClientActionSheet` → "Editar".
+- `/client-detail` → "Editar Cliente".
+- **Problemas:** `CompanySearchInput` some ao editar (C23); "Razão Social" volta em branco e some do form (C24); editar "Observações" pode apagar metadados (C46).
+
+### 6. Jornada — abrir cliente
+
+**4 destinos diferentes** para "ver um cliente":
+1. `ClientDetailModal` (desktop, clique no card) — 3 abas
+2. `ClientInsightsModal` (clique no `···`) — 3 cards
+3. `ClientActionSheet` (mobile, toque no card) — sheet
+4. `/client-detail` (via "Página Completa", "Ver Detalhes Completos", InactivePanel, ou mobile) — página inteira + CRM
+
+1, 2 e 4 mostram quase a mesma informação com **números diferentes** (§12).
+
+### 7. Jornada — cliente → evento
+
+`ClientDetailModal`/`/client-detail`/`ClientActionSheet` → "Agendar Show" / "Novo Evento" →
+`EventForm` (via `/calendar?action=new-event&client_id=X` ou `initialData={{ client_id }}`). Cliente pré-selecionado. OK.
+Nota: `EventForm.handleClientChange` puxa `default_daily_cache` e `policy_default_payment_model` do cliente.
+
+### 8. Jornada — cliente → cobrança
+
+- Card / modal / sheet / página têm botão WhatsApp que **vira "Cobrar R$ X"** quando `pendingRevenue > 0`.
+- Usa `buildChargeMessage({ clientName, events: unpaidEvents, totalAmount })`.
+- **3+ formatadores de número WhatsApp diferentes**: `formatWhatsAppNumber` (Clients card, InactivePanel), inline `cleanPhone.length > 11 ? ... : '55'+...` (ClientDetailModal, ClientDetail page), `openWhatsAppCharge` (AReceber). Comportam-se diferente para números com/sem DDI.
+- Sem telefone → toast + (no card) nada / (na Home) `hardNavigate('/clients')`.
+
+### 9. Problemas encontrados
+
+| # | Problema | Arquivo | Gravidade |
+|---|---|---|---|
+| CL-1 | **`paid_amount` NULL em 100% dos pagos** → "Faturamento Real" (modal) e Metas = R$ 0 | dados + `ClientDetailModal`, `goalMetrics` | P0 |
+| CL-2 | **Sem coluna `cnpj`/`cpf`** em `clients`; `EventDetailModal` lê `client?.cnpj` → sempre `undefined` (card NF-e sem CNPJ) | schema + `reports/EventDetailModal.jsx:506` | P1 |
+| CL-3 | **4 implementações de "stats do cliente"** com regras diferentes: `clientsWithStats` (Clients.jsx), `ClientDetailModal.clientData`, `ClientInsightsModal.insights`, `ClientDetail.stats` | 4 arquivos | P1 |
+| CL-4 | **"A Receber / Pendente" do mesmo cliente diverge por tela** (§12) | 4 arquivos | P1 |
+| CL-5 | **3 modais/telas de "ver cliente" quase idênticos** (`ClientDetailModal`, `ClientInsightsModal`, `/client-detail`) | — | P1 |
+| CL-6 | `ClientDetailModal` **sem CRM** — follow-ups só no `/client-detail` | `ClientDetailModal.jsx` | P1 |
+| CL-7 | "Razão Social" não persiste (vai para `notes`, reseta ao editar, pode duplicar) | `ClientForm.jsx` | P1 |
+| CL-8 | Editar "Observações" (modal ou `/client-detail`) **sobrescreve** e pode apagar metadados `Razão Social:`/CNPJ | `ClientForm`, `ClientDetail.saveNotes` | P1 |
+| CL-9 | `/client-detail` "Próximos Shows": `confirmed` e `scheduled` = mesmo visual (viola Decisão 2) | `ClientDetail.jsx:487` | P1 |
+| CL-10 | `ClientDetailModal` overwrita `event.status` com `getEventStatus` (linha 219) — confunde as 2 dimensões de status | `ClientDetailModal.jsx` | P1 |
+| CL-11 | `AnimatePresence mode="wait"` nas abas do `ClientDetailModal` (risco "tela preta" — removido de Goals/Home) | `ClientDetailModal.jsx:423` | P2 (INVESTIGAR) |
+| CL-12 | `getEventStatusConfig(...).icon` → `undefined` (P-6, igual à Agenda) — em `EventTimelineItem`, `MetricCard`, `ClientActionSheet` | `dateUtils.jsx` + 3 componentes | P3 |
+| CL-13 | 3+ formatadores de número WhatsApp divergentes | vários | P2 |
+| CL-14 | Criar cliente empresa grava sempre em `companies` global (mesmo "rascunho") — polui base compartilhada | `useClients`, `companyService` | P2 (INVESTIGAR) |
+| CL-15 | Filtro "Pessoas" sempre vazio hoje (`client_type='pessoa'` = 0) — feature de pessoa física subutilizada | dados | P2 |
+| CL-16 | `useClients` sem JOIN → `clientsWithStats`/modais recompõem em memória | `useClients.js` | P2 |
+| CL-17 | CRM: follow-up não tem "concluído" — só deletar | `ClientInteractionLog`, `useClientInteractions` | P2 |
+| CL-18 | `ClientForm` código defensivo para `client_type`/`brand_color` "coluna pode não existir" — schema já tem ambas (confirmado) | `useClients.js`, `ClientForm.jsx` | P3 (limpeza) |
+| CL-19 | `ClientDraftBadge` renderiza 2× no mesmo card | `Clients.jsx:527,548` | P3 |
+| CL-20 | Colunas legadas Base44 vazias em `clients` | schema | P3 (cleanup separado) |
+
+### 10. Redundâncias
+
+| Onde | Repetição |
+|---|---|
+| "Ver cliente" | `ClientDetailModal` + `ClientInsightsModal` + `ClientActionSheet` + `/client-detail` — **4 superfícies** |
+| "Recebido / Faturamento" do cliente | modal "Faturamento Real" · Insights "Recebido" · `/client-detail` "Recebido" — 3 números, 3 fórmulas |
+| "A Receber / Pendente" do cliente | card · modal · Insights · `/client-detail` — 4 números, 3–4 fórmulas |
+| Sinalização de atividade no card | badge Ativo/Inativo + dot colorido + (InactivePanel no topo) |
+| "Novo evento p/ cliente" | modal footer + `/client-detail` header + `/client-detail` card "Próximos Shows" + ActionSheet |
+| WhatsApp cobrança | card + modal + ActionSheet + `/client-detail` + Home AReceber |
+| Avatar de cliente/empresa | `CompanyAvatar` (combobox, search) vs `Avatar` shadcn (card, modal, sheet) vs `<img>` cru (`/client-detail`) — 3 componentes |
+
+### 11. Inconsistências
+
+| Tipo | Detalhe |
+|---|---|
+| **Status** | `/client-detail` funde `confirmed`+`scheduled`; `ClientDetailModal` sobrescreve `status`; `ClientInsightsModal` usa `getEventStatus`; card usa `getEventStatus` para `completed` mas raw `status !== 'cancelled'` para "próximo evento" |
+| **Financeiras** | ver §12 |
+| **Modal vs Página** | modal (3 abas, sem CRM) vs página (tudo + CRM); mobile força página, desktop força modal |
+| **`razao_social`** | tratada como campo mas gravada em `notes`; nunca relida |
+| **CNPJ** | existe em `companies` e em `notes`; nunca em `clients`; lido de `client.cnpj` (inexistente) |
+| **Nomenclatura** | "Faturamento Real" (modal) vs "Recebido" (Insights, página) vs "Receita Total" (página) — mesmo/parecido conceito |
+
+### 12. Problemas de dados — "quanto o cliente rende" por tela
+
+| Métrica | `Clients.jsx` card | `ClientDetailModal` | `ClientInsightsModal` | `/client-detail` |
+|---|---|---|---|---|
+| **Recebido** | (não mostra) | `Σ paid_amount` onde `paid_amount > 0` → **R$ 0 hoje** | `Σ (paid_amount ?? getEventRevenue)` dos `paid` | `Σ (paid_amount \|\| getEventRevenue)` dos `paid` |
+| **A Receber / Pendente** | `completed && payment_status==='unpaid'` | `completed && payment_status==='unpaid'` | `completed && payment_status!=='paid'` (inclui `pending`/`partial`) | **todos** `payment_status!=='paid'` (inclui futuros/scheduled) |
+| **Receita Total** | `Σ getEventRevenue` (todos) | (não mostra) | `Σ getEventRevenue` (todos) | `Σ getEventRevenue` (todos) |
+| Fonte de status | `getEventStatus` | `getEventStatus` (+ overwrite) | `getEventStatus` | `getEventStatus` |
+
+**Resultado:** o mesmo cliente pode mostrar "A Receber R$ 0" no card e "Pendente R$ 8.000" na página (se tem shows futuros não pagos).
+"Recebido" pode ser R$ 0 no modal e R$ 12.000 na Insights/página.
+
+### 13. Problemas mobile
+
+| # | Problema |
+|---|---|
+| CM-1 | Toque no card → `ClientActionSheet` (mini-stats + ações) → "Ver Detalhes" → **navega para `/client-detail`** (troca de tela, não modal) — 2 contextos |
+| CM-2 | ActionSheet sem indicação Pessoa/Empresa (só iniciais) |
+| CM-3 | Barra de filtros: 6 botões + 4 sorts → quebra em várias linhas em mobile |
+| CM-4 | `/client-detail` carrega 4 hooks completos (`useClients+useEvents+useDailyWork+useExpenses`) para 1 cliente |
+| CM-5 | Tablet retrato (768–1024px) usa o caminho desktop (modal), não o sheet |
+
+### 14. Problemas de UX (carga cognitiva)
+
+- Página Clientes: header + (erro) + **barra de busca/filtro/sort com 12 controles** + InactivePanel + grid de cards densos (cada card = avatar + nome + 2 badges + dot + política + 2 stats + próx.show + barra confiabilidade + 3 ícones).
+- **O que o usuário precisa AGORA numa lista de clientes?** Nome, se deve dinheiro, quando foi o último/próximo show, botão de contato. O resto (confiabilidade %, política H.E./M&D, tipo) é secundário.
+- 3 formas de "ver detalhes" com números que não batem = desconfiança nos dados.
+
+### 15. Riscos técnicos
+
+| # | Risco | Gravidade |
+|---|---|---|
+| CT-1 | 4 implementações de stats do cliente (CL-3) | Alta |
+| CT-2 | `companies` global escrita a cada criação de cliente empresa — sem limpeza; base compartilhada cresce com "rascunhos" de todos os usuários | Média |
+| CT-3 | `notes` como armazenamento estruturado (razão social, CNPJ, CNAE) — frágil, editável, sem parsing na volta | Média |
+| CT-4 | `AnimatePresence mode="wait"` no `ClientDetailModal` (CL-11) | Média |
+| CT-5 | `useClients` sem JOIN (CL-16) | Média |
+| CT-6 | Código defensivo "coluna pode não existir" mascara erros reais de schema | Baixa |
+| CT-7 | Alias offline de `@/lib/useClients` (S181) — confirmar interceptação (mesma dúvida da Agenda T-7) | Média (INVESTIGAR) |
+
+### 16. Classificação P0 / P1 / P2 / P3
+
+**P0**
+- CL-1 — `paid_amount` NULL 100% → "Faturamento Real" e Metas zerados (é o mesmo P0 global de valor recebido).
+
+**P1**
+- CL-2 — sem coluna CNPJ/CPF; `client.cnpj` inexistente quebra NF-e.
+- CL-3 / CL-4 / CL-12(dados) — 4 stats divergentes; "A Receber/Recebido" não batem entre card/modal/insights/página.
+- CL-5 — 3 superfícies de "ver cliente" quase idênticas.
+- CL-6 — CRM ausente no `ClientDetailModal`.
+- CL-7 / CL-8 — "Razão Social" não persiste; editar notas apaga metadados.
+- CL-9 / CL-10 — status de negócio × temporal confundidos (viola Decisão 2).
+
+**P2**
+- CL-11 (INVESTIGAR `mode="wait"`), CL-13 (WhatsApp formatters), CL-14 (companies global polui), CL-15 (pessoa subutilizada), CL-16 (sem JOIN), CL-17 (follow-up sem "concluído"), CT-2, CT-7.
+- Barra de filtros/controles densa demais (§14).
+
+**P3**
+- CL-12 (`icon` undefined), CL-18 (código defensivo), CL-19 (draft badge 2×), CL-20 (colunas legadas), CM-2.
+
+### 17. Oportunidades de simplificação
+
+Aplicando a hierarquia desejada (ESSENCIAL AGORA → AÇÃO PRINCIPAL → INFO SECUNDÁRIA → VER DETALHES → AVANÇADO):
+
+1. **Card de cliente enxuto**: nome + status (1 sinal só) + "deve R$ X" (se houver) + próximo/último show + 1 ação (WhatsApp/Cobrar). Confiabilidade %, política, tipo, barra → dentro do detalhe.
+2. **Uma superfície de detalhe**: fundir `ClientInsightsModal` no `ClientDetailModal`; `ClientDetailModal` e `/client-detail` compartilham o mesmo componente de conteúdo (modal = wrapper). CRM entra nos dois.
+3. **Barra de controles**: busca sempre visível; filtros num dropdown "Filtrar"; sort num dropdown "Ordenar". InactivePanel → um card discreto "N inativos" no fim da lista.
+4. **Um helper de stats do cliente** (deriva do helper global de competência).
+5. **CNPJ/CPF como campo de verdade** (coluna) — resolve NF-e, busca por razão social, e tira metadados do `notes`.
+6. **"Razão Social" como campo real** (ou coluna, ou dentro de `companies`).
+
+### 18. Possíveis remoções — PARA DISCUSSÃO (não autoriza remover)
+
+- `ClientInsightsModal` — funde no `ClientDetailModal`.
+- Colunas legadas `clients.company` / `total_events` / `total_spent` / `is_favorite` — vazias, sem leitura.
+- Um dos 3 componentes de avatar (`CompanyAvatar` vs `Avatar` vs `<img>`).
+- Filtro "Pessoas/Empresas" como botões separados → um toggle no dropdown de filtro.
+- `<img>` cru de logo no `/client-detail` → usar `CompanyAvatar` (fallback consistente).
+
+### 19. Dependências com Agenda / Home / Relatórios
+
+| Dependência | Detalhe |
+|---|---|
+| **Helper de competência/valor (P0 global)** | `clientsWithStats`, `ClientDetailModal`, `ClientInsightsModal`, `/client-detail` todos precisam do mesmo helper que Home/Metas/Relatórios |
+| **`getEventStatus` / status de negócio** | `ClientDetail`/`ClientDetailModal` consomem e confundem as 2 dimensões — mesma decisão global |
+| **`EventDetailModal` (reports)** | `/client-detail` usa o mesmo modal que a Agenda — unificação AG-07 afeta Clientes |
+| **`EventForm` + `ClientQuickCreateDialog`** | fluxo "cliente novo dentro do evento" compartilhado com a Agenda (AG relacionado) |
+| **`AlertsPanel` (Agenda/Home)** | consome `fetchPendingFollowUps` de `client_interactions` — mudança no CRM afeta os alertas |
+| **`clients.company_id` → `companies`** | busca de empresa (`CompanySearchInput`) usada em `ClientForm` **e** `EventForm` |
+| **`policy_default_payment_model` / `default_daily_cache`** | lidos por `EventForm.handleClientChange` e `DailyWorkModal.calculateCache` |
+| **`pendingRevenue` do card** | mesma regra de "A Receber" que Home `AReceber` deveria usar |
+
+### 20. Tabela de handoff futura (Clientes)
+
+> Só entra na fila do Cursor **após revisão estratégica**. Um item por vez.
+
+| ID | Título | Arquivos | Tipo | Prioridade | Depende de |
+|---|---|---|---|---|---|
+| CLI-01 | Helper único de stats do cliente (deriva do helper de competência global) | novo `src/lib/clientStats.js` | refactor | P0/P1 | helper global (AG-01) |
+| CLI-02 | `Clients.jsx` / `ClientDetailModal` / `ClientInsightsModal` / `/client-detail` usam CLI-01 | 4 arquivos | refactor | P1 | CLI-01 |
+| CLI-03 | Coluna `cnpj` (e `cpf`?) em `clients` + campo no `ClientForm` + leitura no `EventDetailModal` | migration + `ClientForm.jsx` + `reports/EventDetailModal.jsx` | feature | P1 | decisão de schema (usuário) |
+| CLI-04 | "Razão Social" como campo real (coluna ou via `companies`) — parar de gravar em `notes` | `ClientForm.jsx` + migration | fix | P1 | decisão de schema |
+| CLI-05 | Separar metadados de `notes` (não sobrescrever ao editar) | `ClientForm.jsx`, `ClientDetail.saveNotes` | fix | P1 | CLI-03/04 |
+| CLI-06 | Fundir `ClientInsightsModal` no `ClientDetailModal`; conteúdo compartilhado modal ↔ `/client-detail`; CRM nos dois | `components/clients/*`, `pages/ClientDetail.jsx` | refactor grande | P1 | CLI-02, AG-07 |
+| CLI-07 | `/client-detail` "Próximos Shows": distinguir `confirmed` de `scheduled` (Decisão 2) | `ClientDetail.jsx` | fix | P1 | modelo de status |
+| CLI-08 | `ClientDetailModal`: parar de sobrescrever `event.status` | `ClientDetailModal.jsx` | fix | P1 | modelo de status |
+| CLI-09 | Card de cliente enxuto (hierarquia §17.1) | `Clients.jsx` | UX | P2 | CLI-02 |
+| CLI-10 | Barra de controles: filtros/sort em dropdown; InactivePanel discreto | `Clients.jsx`, `InactiveClientsPanel.jsx` | UX | P2 | — |
+| CLI-11 | Um formatador de número WhatsApp (`@/lib/whatsapp`) em todos os pontos | vários | limpeza | P2 | — |
+| CLI-12 | CRM: marcar follow-up como concluído | `ClientInteractionLog.jsx`, `useClientInteractions.js`, migration (coluna `done`?) | feature | P2 | — |
+| CLI-13 | INVESTIGAR: `mode="wait"` no `ClientDetailModal`; alias offline de `useClients`; escrita em `companies` global | `ClientDetailModal.jsx`, `vite.config.js`, `companyService.js` | investigação | P2 | — |
+| CLI-14 | `ClientDraftBadge` 1× por card; `getEventStatusConfig` `icon` ou parar de ler | `Clients.jsx`, `dateUtils.jsx` + 3 | limpeza | P3 | — |
+| CLI-15 | Cleanup de colunas legadas Base44 em `clients` | migration | limpeza | P3 (fase separada) | — |
+| CLI-16 | Um componente de avatar de cliente/empresa | `components/clients/*` | limpeza | P3 | — |
 
 ---
 
@@ -592,3 +1088,5 @@ mas seu badge (vista Lista, via `getEventStatus`) mostra "Concluído". Chip e ba
 | 2026-08-28 | P0 — matriz de números (Home×Metas×Relatórios×Agenda) | Claude Code | Matriz completa TELA→MÉTRICA→FONTE→FILTRO→COMPETÊNCIA→STATUS→FÓRMULA. 8 achados (N1–N8). 3 regras de competência simultâneas, 4 stats paralelas, `paid_amount` opcional |
 | 2026-08-28 | Trilha A — Agenda `/calendar` (READ-ONLY, via código) | Claude Code | 12 partes; ~55 itens; 16 problemas (P-1..P-16); ranking P0–P3; 18 itens de handoff (AG-01..AG-18). Sem alteração de `src/`. Achados-chave: não dá p/ confirmar evento pela Agenda; `scheduled` some; 2 EventDetailModal divergentes; ActionSheet 11 botões |
 | 2026-08-28 | Estado repo + ESLint | Claude Code | `git status` quebrado por worktree órfão com lock de S.O. (evidência de abandono documentada). ESLint: A (~1100 ruído do worktree) / B (7 erros triviais src) / C (9 warnings — 7 exhaustive-deps em createOfflineHook analisados: NÃO adicionar deps, usar disable) |
+| 2026-08-28 | Decisões aprovadas + P0 parciais | Claude Code | Registradas: Modelo oficial de competência (paid_date=recebido, evento=projetado, expense_date=despesa, trabalho=diária, "a receber" a definir); regra do valor recebido (`??` não `||`); P0 pagamentos parciais (`partial` = estado órfão, 0 na base); Status de Negócio × Temporal (proibido aplicar "chips usam getEventStatus"). 4 SELECTs read-only: `paid_amount` NULL 100%, 5 eventos `status='confirmado'` (pt) do Google, `partial`=0, `clients` sem coluna CNPJ |
+| 2026-08-28 | Trilha A — Clientes + `/client-detail` (READ-ONLY) | Claude Code | 20 partes; 53 itens; CL-1..CL-20; ranking; handoff CLI-01..CLI-16. Sem alteração `src/`. Achados: `paid_amount` NULL→Metas/"Faturamento Real" zerados; sem coluna CNPJ→NF-e sem tomador; 4 stats de cliente divergentes; 3 superfícies de "ver cliente"; razão social gravada em `notes` |
