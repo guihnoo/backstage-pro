@@ -8,6 +8,8 @@ export default [
   {
     ignores: [
       'dist',
+      '.claude/**',
+      '**/worktrees/**',
       'design-preview/**',
       'playwright-report/**',
       'test-results/**',
