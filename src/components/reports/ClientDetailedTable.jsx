@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getEventStatus } from '../utils/dateUtils';
 import { getEventCacheAmount } from '@/lib/eventFinance';
+import { getEventReceivedAmount, isReceivedEvent } from '@/lib/financeMetrics';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 export default function ClientDetailedTable({ data, onClientClick }) {
@@ -39,7 +40,7 @@ export default function ClientDetailedTable({ data, onClientClick }) {
         
         const clientWork = work.filter(w => clientEventIds.has(w.event_id));
         const clientExpenses = expenses.filter(e => clientEventIds.has(e.event_id));
-        const paidEvents = clientEvents.filter(e => e.payment_status === 'paid' && e.paid_amount);
+        const paidEvents = clientEvents.filter(isReceivedEvent);
 
         // Usar getEventStatus para calcular os eventos corretos
         const completedEvents = clientEvents.filter(e => getEventStatus(e) === 'completed');
@@ -54,7 +55,10 @@ export default function ClientDetailedTable({ data, onClientClick }) {
         };
 
         const generatedRevenue = clientEvents.reduce((sum, e) => sum + getEventRevenue(e), 0);
-        const receivedRevenue = paidEvents.reduce((sum, e) => sum + (e.paid_amount || getEventRevenue(e)), 0);
+        const receivedRevenue = paidEvents.reduce(
+          (sum, e) => sum + getEventReceivedAmount(e, clientWork.filter(w => w.event_id === e.id)),
+          0
+        );
         const pendingRevenue = completedEvents
             .filter(e => e.payment_status === 'unpaid')
             .reduce((sum, e) => sum + getEventRevenue(e), 0);

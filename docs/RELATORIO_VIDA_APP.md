@@ -3,12 +3,13 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-10-09 (INFRA — projeto movido para fora do OneDrive; Claude Code)  
+**Última atualização:** 2026-10-09 (P0 números — modelo de competência implementado + projeto fora do OneDrive; Claude Code)  
+**Pendente de deploy:** tudo de 2026-10-09 (nada publicado na Vercel) · migration `034_events_payment_method.sql` **não aplicada** em produção  
 **Pasta local:** `C:\dev\backstage-pro` (desde 2026-10-09; a cópia antiga em `OneDrive\Documentos\backstage-pro` não é mais a pasta de trabalho)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-06-25 — S179+S180 skeletons shimmer + PWA offline Fase 1 (`4709123`)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` v29 (auto-disconnect token inválido) + `analyze-nfe` v5 (Files API + maxOutputTokens 8192 + thinkingBudget 0 — **testado e funcionando em produção** ✅) deployadas no Supabase ✅  
-**Smoke E2E:** 33/33 passando (`npm run test:e2e:smoke`)  
+**E2E:** 66/66 passando em 2026-10-09 (`npm run test:e2e`, smoke + regression) · unit 112/112  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
 ---
@@ -18,6 +19,8 @@
 | Área | Status |
 |------|--------|
 | Core (eventos, clientes, despesas, horas) | Funcional |
+| **Números entre telas (2026-10-09)** | Regra única em `src/lib/financeMetrics.js`: recebido por `paid_date`, previsto pela data do show, despesa por `expense_date`. Home, Metas, Relatórios e telas de cliente consomem as mesmas funções; todo "marcar pago" grava `paid_amount`. **Não recalcular dinheiro inline — usar o módulo.** Detalhe em `PLANO_REVISAO_GERAL.md` § Implementação |
+| Confirmar Recebimento (`PaymentConfirmModal`) | Estava quebrado em produção desde S82: enviava `payment_method`, coluna que não existe em `events`. Agora só envia/mostra a forma de recebimento se a coluna existir; migration 034 pronta, **aguardando ok para aplicar** |
 | Clientes — Empresa vs Pessoa | `client_type` coluna DB; toggle visual em form/combobox/cards/modais ✅ sessão 20–22 |
 | Google Calendar OAuth + sync | UI + dedupe + smoke E2E mock ✅; **OAuth real pendente** (GCP Testing → Production + reconectar no Perfil) |
 | Editar/excluir eventos (todas as telas) | Home, Metas, Agenda, Relatórios, ClientDetail, **NotificationCenter** ✅ |
@@ -175,6 +178,24 @@ Use este roteiro para fechar o item **#8** em `IDEIAS_PENDENTES.md`.
 ---
 
 ## Changelog
+
+### 2026-10-09 — P0 números: modelo de competência + valor recebido (Claude Code)
+
+**Pedido do usuário:** "números que não batem" entre Home, Metas e Relatórios. Implementado o modelo aprovado em 2026-08-28.
+
+**O que mudou**
+- **Novo `src/lib/financeMetrics.js`** — fonte única de: valor recebido de um evento (`paid_amount` → `actual_revenue` → valor de "A receber"), recebido por período (`paid_date`), previsto por período (data do show), despesas (`expense_date`), horas (dia trabalhado) e os payloads de marcar/desmarcar pago.
+- **Leitura migrada:** `useHomeDashboard`, `useStats`, `useMeiStats`, `goalMetrics`, `Goals.jsx`, `Reports.jsx`, `MonthlyTrend`, `YearOverYear`, `IRSummary`, `ExportManager`/`exportReport`, `ClientDetailedTable`, `ClientDetailModal`, `ClientDetail`, `ClientInsightsModal`.
+- **Gravação:** `usePaymentToggle`, `Calendar.handleMarkPaid` e os dois `markClientPaid` gravam `paid_date` (data local, não UTC) + `paid_amount`; desmarcar limpa os dois.
+- **Home:** a query do cockpit passou a trazer também shows de outros meses pagos no mês atual.
+- **Metas:** histórico, streak e painel anual usam o novo `usePaidEvents` (antes só eventos com `status='completed'` — 1 de 21 pagos na base real).
+- **Relatórios:** "Faturamento" inclui pagos antigos sem `paid_date`; a projeção do próximo período agora é a soma da própria lista; modal do KPI mostra o valor recebido (antes vinha vazio sem `paid_amount`).
+- **`PaymentConfirmModal`:** prefill pelo valor canônico; não envia `payment_method` quando a coluna não existe (era o que derrubava o update em produção).
+- **Migration nova:** `supabase/migrations/034_events_payment_method.sql` (não aplicada).
+
+**Verificação:** unit 112/112 · build ✅ · lint: só os 2 erros antigos (e2e/marketing) · E2E 66/66 (2 specs novos) · conferência read-only na base: Metas ia de R$ 0 / R$ 0 / R$ 0 para R$ 0 / R$ 2.000 / R$ 14.225,50 (jun/jul/ago).
+
+**Sem deploy.** Nada disso está em produção ainda.
 
 ### 2026-10-09 — INFRA: projeto fora do OneDrive (Claude Code)
 
@@ -671,6 +692,9 @@ Use este roteiro para fechar o item **#8** em `IDEIAS_PENDENTES.md`.
 3. OAuth Google — checklist E2E manual (validar com sua conta real)
 4. ~~Deploy sessão 11~~ — ✅ `0b666c7` em prod
 5. Testar `CompanySearchInput` aba CNPJ com `42.993.331/0001-10` (Amarrok)
+- (2026-10-09) **Aplicar migration `034_events_payment_method.sql` em produção** e publicar as correções de números (precisa de ok do usuário para os dois)
+- (2026-10-09) Datas "hoje" em UTC (`new Date().toISOString().split('T')[0]`) em Metas, Clientes, Próximo Show, IA Mentor, notificações — depois das 21h (BRT) viram "amanhã"; trocar por `todayLocalISO()`
+- (2026-10-09) Repositório GitHub está **público** e recebe o backup automático — decidir se fica privado
 
 ### Média
 6. Animações financeiras / charts animados no dashboard (`vendor-charts` já bundlado)

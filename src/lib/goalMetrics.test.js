@@ -8,7 +8,7 @@ import {
 
 const REF = new Date(2026, 5, 15); // 15/jun/2026
 
-describe('paidRevenueInMonth — caracterização de competência (comportamento existente)', () => {
+describe('paidRevenueInMonth — competência pela data do pagamento', () => {
   const month = '2026-06';
 
   it('paid com paid_date no mês conta paid_amount', () => {
@@ -21,9 +21,17 @@ describe('paidRevenueInMonth — caracterização de competência (comportamento
     expect(paidRevenueInMonth(events, month)).toBe(2500);
   });
 
-  it('paid com paid_amount null soma 0', () => {
-    const events = [{ payment_status: 'paid', paid_date: '2026-06-05', paid_amount: null, start_date: '2026-06-01' }];
-    expect(paidRevenueInMonth(events, month)).toBe(0);
+  it('paid com paid_amount null soma o valor do evento', () => {
+    const events = [
+      {
+        payment_status: 'paid',
+        paid_date: '2026-06-05',
+        paid_amount: null,
+        estimated_revenue: 1800,
+        start_date: '2026-06-01',
+      },
+    ];
+    expect(paidRevenueInMonth(events, month)).toBe(1800);
   });
 
   it('paid com paid_amount 0 soma 0', () => {
@@ -60,6 +68,18 @@ describe('computeGoalStreak', () => {
       { payment_status: 'paid', start_date: `${monthKeyFromOffset(3, REF)}-01`, paid_amount: 4_000 },
     ];
     expect(computeGoalStreak(events, 10_000, REF)).toBe(2);
+  });
+
+  it('pagos sem paid_amount contam pelo valor do evento', () => {
+    const events = [
+      {
+        payment_status: 'paid',
+        paid_date: `${monthKeyFromOffset(1, REF)}-10`,
+        paid_amount: null,
+        estimated_revenue: 10_000,
+      },
+    ];
+    expect(computeGoalStreak(events, 10_000, REF)).toBe(1);
   });
 });
 

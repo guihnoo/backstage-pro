@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef, useCallback, lazy, Suspense } fro
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/authContext';
 import { useProfile } from '@/lib/profileOfflineContext';
-import { useStats, useEvents, useMeiStats } from '@/lib/useBackstageData';
+import { useStats, useEvents, useMeiStats, usePaidEvents } from '@/lib/useBackstageData';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
@@ -29,7 +29,7 @@ import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
 import EventHeading from '@/components/events/EventHeading';
 import { Ellipsis } from '@/components/ui/overflowText';
-import { computeEventsNeededForGoal, computeGoalStreak } from '@/lib/goalMetrics';
+import { computeEventsNeededForGoal, computeGoalStreak, paidRevenueInMonth } from '@/lib/goalMetrics';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function CirclesSkeleton() {
@@ -293,6 +293,9 @@ export default function Goals() {
   // Total de eventos histórico (para nível) — todos os tempos, só completados
   const { events: allEvents, refetch: refetchAllEvents } = useEvents(userId, { status: 'completed' });
 
+  // Recebido por mês (histórico, streak, painel anual) — todo evento pago, pela data do pagamento
+  const { paidEvents, workByEvent, refetch: refetchPaidEvents } = usePaidEvents(userId);
+
   // Próximos shows agendados
   const today = new Date().toISOString().split('T')[0];
   const { events: upcomingEvents, refetch: refetchUpcoming } = useEvents(userId, { from: today, limit: 4, ascending: true });
@@ -301,8 +304,9 @@ export default function Goals() {
     refetchStats();
     refetchMei();
     refetchAllEvents();
+    refetchPaidEvents();
     refetchUpcoming();
-  }, [refetchStats, refetchMei, refetchAllEvents, refetchUpcoming]);
+  }, [refetchStats, refetchMei, refetchAllEvents, refetchPaidEvents, refetchUpcoming]);
 
   const pullRefreshGoals = useCallback(async () => {
     await refreshData();
@@ -392,7 +396,7 @@ export default function Goals() {
     },
   ], [totalEvents, stats, diariasMes, metaDiarias, metaReceita, config]);
 
-  // Histórico mensal dos últimos 4 meses (receita paga, via allEvents)
+  // Histórico mensal dos últimos 4 meses (receita recebida)
   const monthlyHistory = useMemo(() => {
     const now = new Date();
     return [3, 2, 1, 0].map(monthsBack => {
@@ -401,28 +405,22 @@ export default function Goals() {
       const month = String(d.getMonth() + 1).padStart(2, '0');
       const monthStr = `${year}-${month}`;
       const label = d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
-      const monthEvents = allEvents.filter(e => {
-        if (e.payment_status !== 'paid') return false;
-        const refDate = e.paid_date || e.start_date || '';
-        return refDate.startsWith(monthStr);
-      });
-      const revenue = monthEvents.reduce((sum, e) =>
-        sum + (Number(e.paid_amount) > 0 ? Number(e.paid_amount) : getEventCacheAmount(e)), 0);
+      const revenue = paidRevenueInMonth(paidEvents, monthStr, workByEvent);
       const pct = metaReceita > 0 ? Math.min((revenue / metaReceita) * 100, 100) : null;
       const hit = metaReceita > 0 && revenue >= metaReceita;
       const isCurrent = monthsBack === 0;
       return { monthStr, label, revenue, pct, hit, isCurrent };
     });
-  }, [allEvents, metaReceita]);
+  }, [paidEvents, workByEvent, metaReceita]);
 
   const goalStreak = useMemo(
-    () => computeGoalStreak(allEvents, metaReceita),
-    [allEvents, metaReceita],
+    () => computeGoalStreak(paidEvents, metaReceita, undefined, workByEvent),
+    [paidEvents, workByEvent, metaReceita],
   );
 
   const eventsNeededForGoal = useMemo(
-    () => computeEventsNeededForGoal(allEvents, metaReceita, stats.faturamento_pago),
-    [allEvents, metaReceita, stats.faturamento_pago],
+    () => computeEventsNeededForGoal(paidEvents, metaReceita, stats.faturamento_pago, undefined, workByEvent),
+    [paidEvents, workByEvent, metaReceita, stats.faturamento_pago],
   );
 
   const yearlyPanel = useMemo(() => {
@@ -432,13 +430,7 @@ export default function Goals() {
 
     const months = Array.from({ length: 12 }, (_, i) => {
       const monthStr = `${year}-${String(i + 1).padStart(2, '0')}`;
-      const revenue = allEvents
-        .filter(e => {
-          if (e.payment_status !== 'paid') return false;
-          const refDate = e.paid_date || e.start_date || '';
-          return refDate.startsWith(monthStr);
-        })
-        .reduce((s, e) => s + (Number(e.paid_amount) || 0), 0);
+      const revenue = paidRevenueInMonth(paidEvents, monthStr, workByEvent);
       const isCurrent = i === currentMonthIndex;
       const isFuture = i > currentMonthIndex;
       const hit = metaReceita > 0 && revenue >= metaReceita && !isFuture;
@@ -458,7 +450,7 @@ export default function Goals() {
     const monthsHit = months.filter(m => m.hit).length;
 
     return { months, totalYear, projected, monthsHit, monthsElapsed };
-  }, [allEvents, metaReceita]);
+  }, [paidEvents, workByEvent, metaReceita]);
 
   // Detecta badges recém-desbloqueados
   useEffect(() => {

@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { supabase } from './supabase';
 import appToast from '@/lib/appToast';
 import { haptics } from '@/lib/haptics';
+import { buildMarkPaidUpdate, buildMarkUnpaidUpdate } from '@/lib/financeMetrics';
 
 export function usePaymentToggle() {
   const [toggling, setToggling] = useState(null);
@@ -12,8 +13,14 @@ export function usePaymentToggle() {
     haptics[newStatus === 'paid' ? 'success' : 'light']();
     setToggling(event.id);
     try {
-      const updateData = { payment_status: newStatus };
-      if (newStatus === 'paid') updateData.paid_date = new Date().toISOString().split('T')[0];
+      let updateData = buildMarkUnpaidUpdate();
+      if (newStatus === 'paid') {
+        const { data: eventWork } = await supabase
+          .from('daily_work')
+          .select('daily_cache')
+          .eq('event_id', event.id);
+        updateData = buildMarkPaidUpdate(event, eventWork || []);
+      }
       const { error } = await supabase
         .from('events')
         .update(updateData)

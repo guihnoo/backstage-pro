@@ -3,12 +3,13 @@ import { TrendingUp, TrendingDown, Minus, CalendarDays } from 'lucide-react';
 import { getYear, getMonth, getDate, parseISO } from 'date-fns';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
+import { buildWorkByEvent, paidEventsInPeriod, sumReceived, toDateKey } from '@/lib/financeMetrics';
 
 function parseEventDate(event) {
   try { return parseISO(event.start_date); } catch { return null; }
 }
 
-function calcMetrics(events, clients, yearFilter, monthFilter, dayFilter) {
+function calcMetrics(events, clients, yearFilter, monthFilter, dayFilter, workByEvent) {
   const evts = events.filter(e => {
     const d = parseEventDate(e);
     if (!d) return false;
@@ -18,8 +19,12 @@ function calcMetrics(events, clients, yearFilter, monthFilter, dayFilter) {
     return e.status !== 'cancelled';
   });
 
-  const paid = evts.filter(e => e.payment_status === 'paid');
-  const revenue = paid.reduce((s, e) => s + Number(e.paid_amount || 0), 0);
+  // Receita recebida: pela data do pagamento, de 1º/jan até o mesmo dia do ano comparado
+  const paid = paidEventsInPeriod(events, {
+    start: `${yearFilter}-01-01`,
+    end: monthFilter === null ? `${yearFilter}-12-31` : toDateKey(new Date(yearFilter, monthFilter, dayFilter)),
+  });
+  const revenue = sumReceived(paid, workByEvent);
   const avgTicket = paid.length > 0 ? revenue / paid.length : 0;
 
   const clientIds = new Set(evts.map(e => e.client_id).filter(Boolean));
@@ -54,7 +59,7 @@ function delta(curr, prev) {
   return ((curr - prev) / prev) * 100;
 }
 
-const YearOverYear = ({ events = [], clients = [] }) => {
+const YearOverYear = ({ events = [], clients = [], work = [] }) => {
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const { primaryHex } = useCategoryTheme();
 
@@ -71,14 +76,16 @@ const YearOverYear = ({ events = [], clients = [] }) => {
     });
   }, [events, prevYear]);
 
+  const workByEvent = useMemo(() => buildWorkByEvent(work), [work]);
+
   const curr = useMemo(
-    () => calcMetrics(events, clients, currYear, curMonth, curDay),
-    [events, clients, currYear, curMonth, curDay]
+    () => calcMetrics(events, clients, currYear, curMonth, curDay, workByEvent),
+    [events, clients, currYear, curMonth, curDay, workByEvent]
   );
 
   const prev = useMemo(
-    () => calcMetrics(events, clients, prevYear, curMonth, curDay),
-    [events, clients, prevYear, curMonth, curDay]
+    () => calcMetrics(events, clients, prevYear, curMonth, curDay, workByEvent),
+    [events, clients, prevYear, curMonth, curDay, workByEvent]
   );
 
   if (!hasData) return null;

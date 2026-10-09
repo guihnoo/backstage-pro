@@ -5,9 +5,9 @@
 > Este documento ataca: "isso funciona de verdade no meu dia a dia?" e "por que tem tanta coisa na tela?".
 
 **Criado:** 2026-08-28 (Claude Code)
-**Status:** 🔄 Trilha A — Home ✅ · Agenda ✅ · **Clientes + `/client-detail` ✅ (2026-08-28)** · demais ⬜
-**Decisões estratégicas aprovadas (2026-08-28):** ver §"Modelo oficial de competência" e §"Status de Negócio × Status Temporal" — **aprovadas, NÃO autorizam implementação ainda**
-**Prioridades P0:** (1) competência/valor de dinheiro; (2) semântica de pagamentos parciais; (3) duas dimensões de status confundidas
+**Status:** 🔄 Trilha A — Home ✅ · Agenda ✅ · **Clientes + `/client-detail` ✅ (2026-08-28)** · demais ⬜ · **P0 competência/valor recebido ✅ implementado (2026-10-09)**
+**Decisões estratégicas aprovadas (2026-08-28):** ver §"Modelo oficial de competência" (**implementado em 2026-10-09** — ver §"Implementação") e §"Status de Negócio × Status Temporal" (**aprovada, ainda NÃO autoriza implementação**)
+**Prioridades P0:** (1) ~~competência/valor de dinheiro~~ ✅ 2026-10-09; (2) semântica de pagamentos parciais; (3) duas dimensões de status confundidas
 
 ---
 
@@ -633,6 +633,42 @@ Consulta read-only à base de produção (`cwtallnetgodoacuoaow`, dados de 1 usu
   2. Leitura deve usar `paid_amount ?? valorRealDoEvento` (nullish) em todas as métricas de "recebido".
   3. Backfill opcional futuro: `paid_amount := <valor real calculado>` onde `paid AND paid_amount IS NULL` — **plano separado, fora desta fase**.
 
+### IMPLEMENTAÇÃO — 2026-10-09 (Claude Code, autorizada pelo usuário)
+
+**Módulo único:** `src/lib/financeMetrics.js` (+ `financeMetrics.test.js`, 30 testes). Toda métrica de dinheiro por período passa por ele:
+
+| Função | Regra |
+|---|---|
+| `getEventReceivedAmount(event, work)` | `paid_amount` (0 é válido) → `actual_revenue` → valor que estava em "A receber" (`calculateEventReceivableAmount`) |
+| `getEventReceivedDate(event)` | `paid_date` → `start_date` (guarda só na leitura, sem migration) |
+| `paidEventsInPeriod` / `receivedInPeriod` / `sumReceived` | recebido por `paid_date`; cancelados fora |
+| `projectedEventsInPeriod` / `projectedInPeriod` | previsto = shows futuros com `start_date` no período |
+| `expensesInPeriod` / `sumExpenses` | despesas por `expense_date` |
+| `workInPeriod` / `hoursInPeriod` | horas pelo dia trabalhado (`date ?? work_date`) |
+| `buildMarkPaidUpdate` / `buildMarkUnpaidUpdate` / `distributePaidAmount` | gravação: todo "marcar pago" grava `paid_date` + `paid_amount`; desmarcar limpa os dois |
+
+**Quem passou a consumir:** `useHomeDashboard` (Home), `useStats` / `useMeiStats` / novo `usePaidEvents` (Metas, Perfil, IA Mentor, notificações), `goalMetrics`, `Goals.jsx` (histórico, streak, painel anual), `Reports.jsx` (KPIs, modais de KPI, projeção), `MonthlyTrend`, `YearOverYear`, `IRSummary`, `ExportManager` + `exportReport.js`, `ClientDetailedTable`, `ClientDetailModal` ("Faturamento Real"), `ClientDetail`, `ClientInsightsModal`, `PaymentConfirmModal` (prefill).
+**Gravação:** `usePaymentToggle`, `Calendar.handleMarkPaid`, `useHomeDashboard.markClientPaid`, `useReceivable.markClientPaid`.
+
+**Duas causas-raiz novas encontradas nesta fase:**
+
+1. 🔴 **`events.payment_method` não existe em produção.** O `PaymentConfirmModal` ("Confirmar Recebimento", S82) envia esse campo e o PostgREST rejeita o update inteiro → o único fluxo que gravava `paid_amount` **nunca funcionou** em produção. É a origem dos 21/21 pagos sem `paid_amount`. Correção: o modal só envia/mostra a forma de recebimento quando a coluna existe; migration `034_events_payment_method.sql` criada — **ainda não aplicada em produção (aguarda ok do usuário)**.
+2. 🔴 **Metas lia só eventos com `status = 'completed'`** (`useEvents(userId, { status: 'completed' })`) para histórico/streak/anual. Na base real só 1 dos 21 pagos tem esse status → zerado mesmo corrigindo o valor. Agora usa `usePaidEvents` (todo evento pago). `totalEvents`/nível continuam em `status='completed'` (é a Decisão 2 — status — não autorizada).
+
+**Conferência na base de produção (read-only, 2026-10-09):** 21 pagos, todos sem `paid_amount`.
+
+| Mês do recebimento | Pagos | Metas antes | Recebido com a regra nova |
+|---|---|---|---|
+| 2026-06 | 5 | R$ 0 | R$ 0 (os 5 eventos não têm nenhum valor cadastrado) |
+| 2026-07 | 1 | R$ 0 | R$ 2.000,00 |
+| 2026-08 | 15 | R$ 0 | R$ 14.225,50 |
+
+**Achados N1–N8 após a implementação:** N1 ✅ · N2 ✅ · N3 ✅ · N4 — não ativo (em produção `work_date` é NOT NULL e `date` é preenchido; o helper lê os dois) · N5 ⬜ "A receber" segue all-time (decisão adiada para a auditoria de Relatórios) · N6 ✅ (headline da projeção = soma da lista) · N7 🟡 as stats continuam em 3 hooks, mas todos chamam as mesmas funções · N8 ⬜ (`monthStats.received/pending` mortos na Agenda — fora do escopo).
+
+**Fica pendente (não feito de propósito):** aplicar a migration 034; backfill de `paid_amount` nos 21 pagos antigos (hoje a leitura resolve); pagamentos parciais; Decisão 2 (status); regra de período de "A receber"; `ReportEventList` e `calendar/EventDetailModal` ainda mostram o valor do evento por regra própria (exibição por evento, não métrica de período).
+
+**Testes:** unit 112/112 · E2E novos: `goals-streak.spec.js` (pagos sem `paid_amount` e sem `status completed` — falha no código antigo, passa no novo) e `received-consistency.spec.js` (mesmo recebido em Home, Relatórios e Metas).
+
 ---
 
 ## P0 — Semântica de pagamentos parciais (`payment_status = 'partial'`)
@@ -1090,3 +1126,4 @@ Aplicando a hierarquia desejada (ESSENCIAL AGORA → AÇÃO PRINCIPAL → INFO S
 | 2026-08-28 | Estado repo + ESLint | Claude Code | `git status` quebrado por worktree órfão com lock de S.O. (evidência de abandono documentada). ESLint: A (~1100 ruído do worktree) / B (7 erros triviais src) / C (9 warnings — 7 exhaustive-deps em createOfflineHook analisados: NÃO adicionar deps, usar disable) |
 | 2026-08-28 | Decisões aprovadas + P0 parciais | Claude Code | Registradas: Modelo oficial de competência (paid_date=recebido, evento=projetado, expense_date=despesa, trabalho=diária, "a receber" a definir); regra do valor recebido (`??` não `||`); P0 pagamentos parciais (`partial` = estado órfão, 0 na base); Status de Negócio × Temporal (proibido aplicar "chips usam getEventStatus"). 4 SELECTs read-only: `paid_amount` NULL 100%, 5 eventos `status='confirmado'` (pt) do Google, `partial`=0, `clients` sem coluna CNPJ |
 | 2026-08-28 | Trilha A — Clientes + `/client-detail` (READ-ONLY) | Claude Code | 20 partes; 53 itens; CL-1..CL-20; ranking; handoff CLI-01..CLI-16. Sem alteração `src/`. Achados: `paid_amount` NULL→Metas/"Faturamento Real" zerados; sem coluna CNPJ→NF-e sem tomador; 4 stats de cliente divergentes; 3 superfícies de "ver cliente"; razão social gravada em `notes` |
+| 2026-10-09 | **P0 (1) — implementação do modelo de competência + valor recebido** | Claude Code | `src/lib/financeMetrics.js` + migração de Home, Metas, Relatórios e telas de cliente; todo "marcar pago" grava `paid_amount`. 2 causas-raiz novas: coluna `events.payment_method` inexistente (modal de recebimento quebrado desde S82) e Metas lendo só `status='completed'`. Ver §"Implementação — 2026-10-09" |

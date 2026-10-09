@@ -41,6 +41,7 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { getEventCacheAmount } from '@/lib/eventFinance';
+import { getEventReceivedAmount } from '@/lib/financeMetrics';
 import { getEventStatus } from '@/components/utils/dateUtils';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { NeonGlass } from '@/components/design/NeonGlass';
@@ -155,7 +156,7 @@ export default function ClientDetailPage() {
   const chartInput = useMemo(() => ({
     realized: clientEvents
       .filter(e => e.payment_status === 'paid')
-      .map(e => ({ ...e, calculated_value: e.paid_amount || getEventRevenue(e) })),
+      .map(e => ({ ...e, calculated_value: getEventReceivedAmount(e, clientWork.filter(w => w.event_id === e.id)) })),
     receivable: clientEvents
       .filter(e => e.payment_status !== 'paid' && getEventStatus(e) === 'completed')
       .map(e => ({ ...e, calculated_value: getEventRevenue(e) })),
@@ -163,7 +164,7 @@ export default function ClientDetailPage() {
       .filter(e => ['scheduled', 'pending', 'confirmed'].includes(getEventStatus(e)))
       .map(e => ({ ...e, calculated_value: getEventRevenue(e) })),
     expenses: _clientExpenses.map(e => ({ date: e.expense_date || e.date, amount: e.amount })),
-  }), [clientEvents, _clientExpenses, getEventRevenue]);
+  }), [clientEvents, clientWork, _clientExpenses, getEventRevenue]);
 
   const stats = useMemo(() => {
     const getEventRevenue = (event) => {
@@ -178,7 +179,10 @@ export default function ClientDetailPage() {
     const paidEvents = clientEvents.filter(e => e.payment_status === 'paid');
     const unpaidEvents = clientEvents.filter(e => e.payment_status !== 'paid');
 
-    const paidAmount = paidEvents.reduce((sum, e) => sum + (e.paid_amount || getEventRevenue(e)), 0);
+    const paidAmount = paidEvents.reduce(
+      (sum, e) => sum + getEventReceivedAmount(e, clientWork.filter(w => w.event_id === e.id)),
+      0
+    );
     const unpaidAmount = unpaidEvents.reduce((sum, e) => sum + getEventRevenue(e), 0);
 
     const completedEvents = clientEvents.filter(e => getEventStatus(e) === 'completed');

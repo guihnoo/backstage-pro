@@ -91,9 +91,47 @@ export function fakeGoalEvents() {
   ];
 }
 
-export async function installGoalMocks(page) {
+/**
+ * Como a base real: pagos pelo "marcar pago" rápido — sem paid_amount e sem status completed.
+ * O valor recebido vem do cachê e a competência é a data do pagamento.
+ */
+export function fakeQuickPaidEvents() {
+  const quickPaid = (id, monthsBack, value) =>
+    baseEvent({
+      id,
+      start_date: isoInMonth(monthsBack),
+      end_date: isoInMonth(monthsBack),
+      event_date: isoInMonth(monthsBack),
+      status: 'confirmed',
+      daily_cache_value: 0,
+      estimated_revenue: value,
+      paid_amount: null,
+      paid_date: isoInMonth(monthsBack, 20),
+    });
+  return [quickPaid('e2e-quick-prev', 1, 12_000), quickPaid('e2e-quick-curr', 0, 3_000)];
+}
+
+/** Show do mês passado, pago neste mês pelo "marcar pago" rápido: recebido do mês atual = R$ 1.800. */
+export function fakeLastMonthShowPaidThisMonth() {
+  const showDate = isoInMonth(1, 10);
+  return [
+    baseEvent({
+      id: 'e2e-paid-this-month',
+      title: 'Show pago neste mês',
+      start_date: showDate,
+      end_date: showDate,
+      event_date: showDate,
+      status: 'confirmed',
+      daily_cache_value: 0,
+      estimated_revenue: 1800,
+      paid_amount: null,
+      paid_date: isoInMonth(0, 1),
+    }),
+  ];
+}
+
+export async function installGoalMocks(page, events = fakeGoalEvents()) {
   const client = fakeClient();
-  const events = fakeGoalEvents();
 
   await page.route('**/rest/v1/**', async (route) => {
     const url = route.request().url();
@@ -158,8 +196,8 @@ export async function installGoalMocks(page) {
   });
 }
 
-export async function seedGoalsAuth(page) {
+export async function seedGoalsAuth(page, events) {
   const { seedAuth } = await import('./fakeAuth.js');
-  await installGoalMocks(page);
+  await installGoalMocks(page, events);
   await seedAuth(page, { monthly_goal_revenue: 10_000, monthly_goal_events: 10 });
 }

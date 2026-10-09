@@ -2,10 +2,21 @@
 import { motion } from 'framer-motion';
 import { hardNavigate } from '@/lib/hardNavigate';
 import {
-  getEventCacheAmount,
   isReceivableEvent,
   calculateEventReceivableAmount,
 } from '@/lib/eventFinance';
+import {
+  buildWorkByEvent,
+  expensesInPeriod,
+  getEventReceivedAmount,
+  getEventReceivedDate,
+  isDateInRange,
+  paidEventsInPeriod,
+  projectedEventsInPeriod,
+  sumExpenses,
+  sumReceived,
+  workInPeriod,
+} from '@/lib/financeMetrics';
 import { ExternalLink } from 'lucide-react';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
@@ -30,7 +41,7 @@ import {
   Briefcase,
   ChevronDown,
 } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, subMonths, isWithinInterval, parseISO, startOfYear, endOfYear, addMonths, startOfWeek, endOfWeek, subWeeks, addWeeks } from 'date-fns';
+import { format, startOfMonth, endOfMonth, subMonths, parseISO, startOfYear, endOfYear, addMonths, startOfWeek, endOfWeek, subWeeks, addWeeks } from 'date-fns';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import appToast from '@/lib/appToast';
 import { getEventStatus } from '@/components/utils/dateUtils';
@@ -456,7 +467,9 @@ export default function ReportsPage() {
     };
   }, [selectedPeriod]);
 
-  // **LÓGICA REVISADA**: Faturamento baseado na data de pagamento
+  const workByEvent = useMemo(() => buildWorkByEvent(data.dailyWork), [data.dailyWork]);
+
+  // Competências por tipo de valor: ver src/lib/financeMetrics.js
   const processedData = useMemo(() => {
     const { events = [], dailyWork = [], expenses = [], clients = [] } = data;
 
@@ -466,48 +479,20 @@ export default function ReportsPage() {
       calculatedStatus: getEventStatus(event)
     }));
 
-    // Função auxiliar para verificar se uma data está no intervalo
-    const isInRange = (dateStr, range) => {
-      if (!range.start || !range.end || !dateStr) return selectedPeriod === 'all_time';
-      try {
-        const date = parseISO(dateStr);
-        return isWithinInterval(date, { start: range.start, end: range.end });
-      } catch (error) {
-        console.warn('Erro ao parsear data:', dateStr, error);
-        return false;
-      }
-    };
-
-    const calculateRealEventValue = (event) => {
-      if (event.payment_status === 'paid' && event.paid_amount > 0) return event.paid_amount;
-
-      const eventDailyWork = dailyWork.filter((work) => work.event_id === event.id);
-      if (eventDailyWork.length > 0) {
-        const totalFromWork = eventDailyWork.reduce((sum, work) => sum + (work.daily_cache || 0), 0);
-        if (totalFromWork > 0) return totalFromWork;
-      }
-
-      return getEventCacheAmount(event);
-    };
+    const receivedAmount = (event) => getEventReceivedAmount(event, workByEvent[event.id] || []);
+    const projectedAmount = (event) => calculateEventReceivableAmount(event, workByEvent[event.id] || []);
 
     // Processar dados do período atual
     const processForPeriod = (range) => {
-      // **MUDANÇA CRÍTICA**: Faturamento baseado em paid_date, não em start_date
-      const paidEventsInPeriod = eventsWithCorrectStatus.filter((e) =>
-        e.payment_status === 'paid' &&
-        e.paid_date &&
-        isInRange(e.paid_date, range)
-      );
+      // Recebido: pela data do pagamento
+      const paidEventsInRange = paidEventsInPeriod(eventsWithCorrectStatus, range);
 
       // Eventos do período para outras métricas (baseado em start_date)
-      const periodEvents = eventsWithCorrectStatus.filter((e) => e.start_date && isInRange(e.start_date, range));
-      const periodWork = dailyWork.filter((w) => w.date && isInRange(w.date, range));
-      const periodExpenses = expenses.filter((e) => {
-        const expenseDate = e.expense_date || e.date;
-        return expenseDate && isInRange(expenseDate, range);
-      });
+      const periodEvents = eventsWithCorrectStatus.filter((e) => isDateInRange(e.start_date, range));
+      const periodWork = workInPeriod(dailyWork, range);
+      const periodExpenses = expensesInPeriod(expenses, range);
 
-      const realizedRevenue = paidEventsInPeriod.reduce((sum, e) => sum + (e.paid_amount || calculateRealEventValue(e)), 0);
+      const realizedRevenue = sumReceived(paidEventsInRange, workByEvent);
 
       const receivableRevenue = eventsWithCorrectStatus
         .filter(isReceivableEvent)
@@ -516,12 +501,12 @@ export default function ReportsPage() {
           return sum + calculateEventReceivableAmount(e, eventDailyWork);
         }, 0);
 
-      const projectedRevenue = eventsWithCorrectStatus.
-        filter((e) => e.calculatedStatus === 'scheduled').
-        reduce((sum, e) => sum + calculateRealEventValue(e), 0);
+      // Previsto: shows ainda não realizados com início no período
+      const projectedRevenue = projectedEventsInPeriod(eventsWithCorrectStatus, range).
+        reduce((sum, e) => sum + projectedAmount(e), 0);
 
       // Total de despesas
-      const totalExpenses = periodExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+      const totalExpenses = sumExpenses(periodExpenses);
 
       // Receita total (realizada + a receber)
       const totalRevenue = realizedRevenue + receivableRevenue;
@@ -537,9 +522,9 @@ export default function ReportsPage() {
 
       // Cliente com maior faturamento no período (baseado em pagamentos)
       const clientRevenueMap = {};
-      paidEventsInPeriod.forEach((event) => {
+      paidEventsInRange.forEach((event) => {
         if (event.client_id) {
-          clientRevenueMap[event.client_id] = (clientRevenueMap[event.client_id] || 0) + (event.paid_amount || calculateRealEventValue(event));
+          clientRevenueMap[event.client_id] = (clientRevenueMap[event.client_id] || 0) + receivedAmount(event);
         }
       });
 
@@ -561,7 +546,7 @@ export default function ReportsPage() {
         scheduledEventsCount: periodEvents.filter((e) => e.calculatedStatus === 'scheduled').length,
         inProgressEventsCount: periodEvents.filter((e) => e.calculatedStatus === 'in_progress').length,
         events: periodEvents,
-        paidEvents: paidEventsInPeriod, // Eventos pagos no período
+        paidEvents: paidEventsInRange, // Eventos pagos no período
         work: periodWork,
         expenses: periodExpenses
       };
@@ -589,16 +574,17 @@ export default function ReportsPage() {
       },
       // Dados para componentes filhos
       chartInput: {
-        realized: currentData.paidEvents.map((e) => ({ ...e, calculated_value: e.paid_amount || calculateRealEventValue(e) })),
+        // paid_date preenchido também para pagos antigos sem data (o gráfico posiciona por ele)
+        realized: currentData.paidEvents.map((e) => ({ ...e, paid_date: getEventReceivedDate(e), calculated_value: receivedAmount(e) })),
         receivable: eventsWithCorrectStatus.filter(isReceivableEvent).map((e) => {
           const eventDailyWork = dailyWork.filter((work) => work.event_id === e.id);
           return { ...e, calculated_value: calculateEventReceivableAmount(e, eventDailyWork) };
         }),
-        projected: eventsWithCorrectStatus.filter((e) => e.calculatedStatus === 'scheduled').map((e) => ({ ...e, calculated_value: calculateRealEventValue(e) })),
+        projected: eventsWithCorrectStatus.filter((e) => e.calculatedStatus === 'scheduled').map((e) => ({ ...e, calculated_value: projectedAmount(e) })),
         expenses: currentData.expenses
       }
     };
-  }, [data, currentRange, previousRange, nextRange, selectedPeriod]);
+  }, [data, workByEvent, currentRange, previousRange, nextRange]);
 
   // Handlers para KPIs clicáveis
   const handleKPIClick = useCallback((type) => {
@@ -615,7 +601,7 @@ export default function ReportsPage() {
           return {
             title: event.title,
             subtitle: paidDateStr,
-            value: event.paid_amount,
+            value: getEventReceivedAmount(event, workByEvent[event.id] || []),
             date: paidDateStr,
             event_ref: event,
             client,
@@ -657,7 +643,7 @@ export default function ReportsPage() {
         setModalData(activeClients.map((client) => ({
           title: getClientDisplayName(client) || client.name || 'Cliente',
           subtitle: `${current.events.filter((e) => e.client_id === client.id).length} eventos no período`,
-          value: current.paidEvents.filter((e) => e.client_id === client.id).reduce((sum, e) => sum + (e.paid_amount || 0), 0),
+          value: sumReceived(current.paidEvents.filter((e) => e.client_id === client.id), workByEvent),
           client_id: client.id,
         })));
         break;
@@ -668,7 +654,7 @@ export default function ReportsPage() {
 
     setModalType(type);
     setModalOpen(true);
-  }, [processedData, data]);
+  }, [processedData, data, workByEvent]);
 
   // Handler para o clique no gráfico
   const handleChartClick = useCallback((payload) => {
@@ -883,6 +869,8 @@ export default function ReportsPage() {
               <ExportManager
                 data={{
                   events: processedData.current.events,
+                  paidEvents: processedData.current.paidEvents,
+                  allWork: data.dailyWork,
                   work: processedData.current.work,
                   expenses: processedData.current.expenses,
                   clients: data.clients
@@ -1103,6 +1091,7 @@ export default function ReportsPage() {
             <Suspense fallback={<ChartBlockSkeleton className="h-56" />}>
               <MonthlyTrend
                 events={data.events}
+                work={data.dailyWork}
                 goalRevenue={Number(profile?.monthly_goal_revenue) || 0}
               />
             </Suspense>
@@ -1110,7 +1099,7 @@ export default function ReportsPage() {
             {/* Seções secundárias colapsáveis */}
             <ExpandableSection id="yoy" label="Comparativo Ano a Ano">
               <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
-                <YearOverYear events={data.events} clients={data.clients} />
+                <YearOverYear events={data.events} clients={data.clients} work={data.dailyWork} />
               </Suspense>
             </ExpandableSection>
 
@@ -1405,7 +1394,7 @@ export default function ReportsPage() {
               .sort((a, b) => (a.start_date || '').localeCompare(b.start_date || ''))
               .map(event => {
                 const client = data.clients.find(c => c.id === event.client_id);
-                const value = getEventCacheAmount(event);
+                const value = calculateEventReceivableAmount(event, workByEvent[event.id] || []);
                 const dateStr = event.start_date
                   ? new Date(event.start_date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
                   : '—';

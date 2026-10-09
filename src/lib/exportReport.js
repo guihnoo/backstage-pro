@@ -1,6 +1,12 @@
 import { format, parseISO } from 'date-fns';
 import { getEventStatus, getEventStatusLabel } from '@/components/utils/dateUtils';
 import { getEventCacheAmount } from '@/lib/eventFinance';
+import {
+  buildWorkByEvent,
+  getEventReceivedAmount,
+  isReceivedEvent,
+  sumReceived,
+} from '@/lib/financeMetrics';
 import { getClientDisplayName } from '@/lib/eventDisplay';
 
 function periodBounds(period) {
@@ -63,11 +69,16 @@ function downloadBlob(filename, content, mimeType) {
   URL.revokeObjectURL(url);
 }
 
+/** Horas de todos os períodos quando disponíveis: o valor recebido não depende do recorte do relatório. */
+function workByEventOf(data) {
+  return buildWorkByEvent(data.allWork || data.work || []);
+}
+
 function buildSummaryRows(data) {
   const { events = [], work = [], expenses = [], clients = [] } = data;
-  const realized = events
-    .filter((e) => e.payment_status === 'paid')
-    .reduce((sum, e) => sum + Number(e.paid_amount || 0), 0);
+  // Faturamento realizado = recebido no período (data do pagamento), igual ao KPI da tela
+  const paidEvents = data.paidEvents || events.filter(isReceivedEvent);
+  const realized = sumReceived(paidEvents, workByEventOf(data));
   const receivable = events
     .filter((e) => getEventStatus(e) === 'completed' && e.payment_status === 'unpaid')
     .reduce((sum, e) => sum + getEventCacheAmount(e), 0);
@@ -90,6 +101,7 @@ function buildEventRows(data) {
   const rows = [
     ['Evento', 'Cliente', 'Início', 'Fim', 'Status', 'Pagamento', 'Valor pago', 'Cachê'],
   ];
+  const workByEvent = workByEventOf(data);
   for (const event of data.events || []) {
     rows.push([
       event.title || '',
@@ -98,7 +110,7 @@ function buildEventRows(data) {
       formatDate(event.end_date),
       getEventStatusLabel(event),
       event.payment_status || '',
-      formatMoney(event.paid_amount),
+      formatMoney(isReceivedEvent(event) ? getEventReceivedAmount(event, workByEvent[event.id] || []) : 0),
       formatMoney(getEventCacheAmount(event)),
     ]);
   }

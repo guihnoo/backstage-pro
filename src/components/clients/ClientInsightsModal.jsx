@@ -19,6 +19,7 @@ import { useDailyWork } from '@/lib/useDailyWork';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { getEventStatus, formatDisplayDate } from '../utils/dateUtils';
 import { getEventCacheAmount } from '@/lib/eventFinance';
+import { getEventReceivedAmount } from '@/lib/financeMetrics';
 import { parseISO, differenceInDays, isValid } from 'date-fns';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
@@ -60,7 +61,10 @@ export default function ClientInsightsModal({ client, isOpen, onClose }) {
     const paidEvents = clientEvents.filter(e => e.payment_status === 'paid');
     const unpaidEvents = clientEvents.filter(e => e.payment_status !== 'paid' && getEventStatus(e) === 'completed');
 
-    const paidAmount = paidEvents.reduce((sum, e) => sum + (e.paid_amount || getEventRevenue(e)), 0);
+    const paidAmount = paidEvents.reduce(
+      (sum, e) => sum + getEventReceivedAmount(e, clientWork.filter(w => w.event_id === e.id)),
+      0
+    );
     const pendingAmount = unpaidEvents.reduce((sum, e) => sum + getEventRevenue(e), 0);
 
     // Média de receita por evento

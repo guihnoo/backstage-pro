@@ -9,6 +9,32 @@ import {
   isReceivableEvent,
   sumReceivableAmount,
 } from './eventFinance';
+import {
+  buildWorkByEvent,
+  monthRange,
+  receivedInPeriod,
+  yearRange,
+} from './financeMetrics';
+
+const PAID_EVENT_FIELDS =
+  'id, client_id, status, payment_status, paid_amount, paid_date, start_date, end_date, daily_cache_value, actual_revenue, estimated_revenue';
+
+/**
+ * Eventos pagos cuja competência de recebimento cai no período
+ * (paid_date; pagos antigos sem paid_date entram pela data do show). Sem período: todos os pagos.
+ */
+function paidEventsQuery(userId, range) {
+  const query = supabase
+    .from('events')
+    .select(PAID_EVENT_FIELDS)
+    .eq('user_id', userId)
+    .eq('payment_status', 'paid');
+  if (!range) return query;
+  return query.or(
+    `and(paid_date.gte.${range.start},paid_date.lte.${range.end}),` +
+      `and(paid_date.is.null,start_date.gte.${range.start},start_date.lte.${range.end})`
+  );
+}
 
 const eventValue = (e) => {
   if (Number(e.actual_revenue) > 0) return Number(e.actual_revenue);
@@ -45,11 +71,10 @@ export function useStats(userId) {
 
     async function fetchStats() {
       try {
-        const now = new Date();
-        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-        const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+        const month = monthRange();
+        const { start: monthStart, end: monthEnd } = month;
 
-        const [monthEventsRes, receivableEventsRes, monthWorkRes, receivableWorkRes] = await Promise.all([
+        const [monthEventsRes, receivableEventsRes, monthWorkRes, receivableWorkRes, paidEventsRes] = await Promise.all([
           supabase
             .from('events')
             .select('id, payment_status, status, client_id, start_date, end_date, daily_cache_value, actual_revenue, estimated_revenue, paid_amount')
@@ -71,25 +96,15 @@ export function useStats(userId) {
             .from('daily_work')
             .select('event_id, daily_cache')
             .eq('user_id', userId),
+          paidEventsQuery(userId, month),
         ]);
 
         const monthEvents = (monthEventsRes.data || []).filter(e => !isCancelledEvent(e));
         const receivableEvents = receivableEventsRes.data || [];
         const monthWork = monthWorkRes.data || [];
-        const receivableWork = receivableWorkRes.data || [];
+        const workByEvent = buildWorkByEvent(receivableWorkRes.data || []);
 
-        const workByEvent = receivableWork.reduce((acc, w) => {
-          if (!w.event_id) return acc;
-          if (!acc[w.event_id]) acc[w.event_id] = [];
-          acc[w.event_id].push(w);
-          return acc;
-        }, {});
-
-        const paidInMonth = monthEvents.filter(e => e.payment_status === 'paid');
-        const faturamento_pago = paidInMonth.reduce(
-          (sum, e) => sum + (e.paid_amount || eventValue(e)),
-          0
-        );
+        const faturamento_pago = receivedInPeriod(paidEventsRes.data || [], month, workByEvent);
 
         const a_receber = sumReceivableAmount(receivableEvents, workByEvent);
         const horas_trabalhadas = monthWork.reduce((sum, d) => sum + (d.total_hours || 0), 0);
@@ -393,19 +408,18 @@ export function useMeiStats(userId) {
 
     async function fetch() {
       try {
-        const yearStart = `${new Date().getFullYear()}-01-01`;
-        const yearEnd   = `${new Date().getFullYear()}-12-31`;
+        const year = yearRange();
 
-        const { data } = await supabase
-          .from('events')
-          .select('payment_status, paid_amount, start_date, end_date, daily_cache_value, actual_revenue, estimated_revenue')
-          .eq('user_id', userId)
-          .gte('start_date', yearStart)
-          .lte('start_date', yearEnd);
+        const [paidRes, workRes] = await Promise.all([
+          paidEventsQuery(userId, year),
+          supabase.from('daily_work').select('event_id, daily_cache').eq('user_id', userId),
+        ]);
 
-        const total = (data || [])
-          .filter(e => e.payment_status === 'paid')
-          .reduce((sum, e) => sum + (Number(e.paid_amount) > 0 ? Number(e.paid_amount) : eventValue(e)), 0);
+        const total = receivedInPeriod(
+          paidRes.data || [],
+          year,
+          buildWorkByEvent(workRes.data || [])
+        );
 
         if (!cancelled) setAnnualRevenue(total);
       } finally {
@@ -418,4 +432,40 @@ export function useMeiStats(userId) {
   }, [userId, version]);
 
   return { annualRevenue, loading, refetch };
+}
+
+/** Todos os eventos pagos + horas por evento, para métricas de recebido por mês (Metas). */
+export function usePaidEvents(userId) {
+  const [paidEvents, setPaidEvents] = useState([]);
+  const [workByEvent, setWorkByEvent] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [version, setVersion] = useState(0);
+  const refetch = useCallback(() => setVersion(v => v + 1), []);
+
+  useRealtimeRefetch(['events', 'daily_work'], refetch);
+
+  useEffect(() => {
+    if (!userId) { setLoading(false); return; }
+    let cancelled = false;
+
+    async function fetch() {
+      try {
+        const [paidRes, workRes] = await Promise.all([
+          paidEventsQuery(userId),
+          supabase.from('daily_work').select('event_id, daily_cache').eq('user_id', userId),
+        ]);
+
+        if (cancelled) return;
+        setPaidEvents(paidRes.data || []);
+        setWorkByEvent(buildWorkByEvent(workRes.data || []));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetch();
+    return () => { cancelled = true; };
+  }, [userId, version]);
+
+  return { paidEvents, workByEvent, loading, refetch };
 }

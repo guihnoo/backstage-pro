@@ -10,7 +10,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import appToast from '@/lib/appToast';
 import { useEvents } from '@/lib/useEvents';
-import { getEventCacheAmount } from '@/lib/eventFinance';
+import { getEventReceivedAmount } from '@/lib/financeMetrics';
 import EventHeading from '@/components/events/EventHeading';
 
 const PAYMENT_METHODS = [
@@ -21,21 +21,24 @@ const PAYMENT_METHODS = [
   { value: 'cheque', label: 'Cheque' },
 ];
 
-export default function PaymentConfirmModal({ event, client, isOpen, onClose, onSuccess }) {
+export default function PaymentConfirmModal({ event, client, dailyWork = [], isOpen, onClose, onSuccess }) {
   const { update: updateEvent } = useEvents();
   const [paidAmount, setPaidAmount] = useState('');
   const [paidDate, setPaidDate] = useState(new Date());
   const [paymentMethod, setPaymentMethod] = useState('pix');
   const [loading, setLoading] = useState(false);
 
+  const estimatedValue = event ? getEventReceivedAmount(event, dailyWork) : 0;
+  // events.payment_method nasce na migration 034; sem a coluna o PostgREST rejeita o update inteiro
+  const canStoreMethod = Boolean(event) && 'payment_method' in event;
+
   useEffect(() => {
     if (event && isOpen) {
-      const estimatedValue = event.paid_amount || getEventCacheAmount(event) || 0;
       setPaidAmount(estimatedValue > 0 ? estimatedValue.toString() : '');
       setPaidDate(new Date());
       setPaymentMethod(event.payment_method || 'pix');
     }
-  }, [event, isOpen]);
+  }, [event, isOpen, estimatedValue]);
 
   const handleConfirm = async () => {
     if (!paidAmount || Number(paidAmount) <= 0) {
@@ -49,7 +52,7 @@ export default function PaymentConfirmModal({ event, client, isOpen, onClose, on
         payment_status: 'paid',
         paid_amount: Number(paidAmount),
         paid_date: format(paidDate, 'yyyy-MM-dd'),
-        payment_method: paymentMethod,
+        ...(canStoreMethod ? { payment_method: paymentMethod } : {}),
       });
 
       appToast.success('Pagamento confirmado com sucesso!');
@@ -100,6 +103,7 @@ export default function PaymentConfirmModal({ event, client, isOpen, onClose, on
             </div>
           </div>
 
+          {canStoreMethod && (
           <div className="space-y-2">
             <Label className="text-slate-300">Forma de recebimento</Label>
             <div className="flex flex-wrap gap-1.5">
@@ -119,6 +123,7 @@ export default function PaymentConfirmModal({ event, client, isOpen, onClose, on
               ))}
             </div>
           </div>
+          )}
 
           <div className="space-y-2">
             <Label className="text-slate-300">Data do Recebimento</Label>

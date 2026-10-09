@@ -77,6 +77,7 @@ import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { applyAuto12Hours } from '@/lib/applyAuto12Hours';
 import { useUserSettings } from '@/lib/useUserSettings';
 import { getEventCacheAmount } from '@/lib/eventFinance';
+import { buildMarkPaidUpdate, buildMarkUnpaidUpdate } from '@/lib/financeMetrics';
 import { captureEventLocationFromGps } from '@/lib/eventLocation';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
 import EventHeading from '@/components/events/EventHeading';
@@ -715,8 +716,12 @@ export default function CalendarPage() {
       if (!eventToUpdate) return;
       const newStatus = eventToUpdate.payment_status === 'paid' ? 'unpaid' : 'paid';
       try {
-        const updateData = { payment_status: newStatus };
-        if (newStatus === 'paid') updateData.paid_date = new Date().toISOString().split('T')[0];
+        const updateData = newStatus === 'paid'
+          ? buildMarkPaidUpdate(
+              eventToUpdate,
+              dailyWork.filter((w) => w.event_id === eventToUpdate.id)
+            )
+          : buildMarkUnpaidUpdate();
         await updateEvent(eventToUpdate.id, updateData);
         appToast.success(
           newStatus === 'paid'
@@ -729,7 +734,7 @@ export default function CalendarPage() {
         appToast.error('Erro ao atualizar status de pagamento.');
       }
     },
-    [handleFormSuccess, updateEvent]
+    [handleFormSuccess, updateEvent, dailyWork]
   );
 
   // New action sheet handlers

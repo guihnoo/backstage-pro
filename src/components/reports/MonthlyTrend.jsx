@@ -5,6 +5,7 @@ import { ptBR } from 'date-fns/locale';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
+import { buildWorkByEvent, monthKeyRange, paidEventsInPeriod, sumReceived } from '@/lib/financeMetrics';
 
 const CustomTooltip = ({ active, payload, label, primaryHex }) => {
   const { formatCurrency, isVisible } = useFinancialVisibility();
@@ -24,26 +25,23 @@ const CustomTooltip = ({ active, payload, label, primaryHex }) => {
   );
 };
 
-export default function MonthlyTrend({ events = [], goalRevenue = 0, onMonthClick }) {
+export default function MonthlyTrend({ events = [], work = [], goalRevenue = 0, onMonthClick }) {
   const { profile } = useAuth();
   const primaryHex = getCategoryConfig(profile?.category || 'lighting').primaryHex;
   const { isVisible, formatCurrency } = useFinancialVisibility();
 
   const months = useMemo(() => {
     const now = new Date();
+    const workByEvent = buildWorkByEvent(work);
     return Array.from({ length: 12 }, (_, i) => {
       const d = subMonths(now, 11 - i);
       const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      const monthEvents = events.filter(e => {
-        if (e.payment_status !== 'paid') return false;
-        const refDate = e.paid_date || e.start_date || '';
-        return refDate.startsWith(monthStr);
-      });
-      const revenue = monthEvents.reduce((s, e) => s + (Number(e.paid_amount) || 0), 0);
+      const monthEvents = paidEventsInPeriod(events, monthKeyRange(monthStr));
+      const revenue = sumReceived(monthEvents, workByEvent);
       const label = format(d, 'MMM', { locale: ptBR }).replace('.', '');
       return { monthStr, label, revenue, count: monthEvents.length, goal: goalRevenue };
     });
-  }, [events, goalRevenue]);
+  }, [events, work, goalRevenue]);
 
   const maxVal = Math.max(...months.map(m => m.revenue), goalRevenue || 0, 1);
   const total = months.reduce((s, m) => s + m.revenue, 0);

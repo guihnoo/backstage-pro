@@ -1061,6 +1061,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
           <PaymentConfirmModal
             event={event}
             client={client}
+            dailyWork={dailyWork}
             isOpen={showPaymentConfirm}
             onClose={() => setShowPaymentConfirm(false)}
             onSuccess={handlePaymentSuccess} />

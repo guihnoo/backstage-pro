@@ -1,6 +1,13 @@
 import { useMemo, useState } from 'react';
 import { FileText, TrendingUp, TrendingDown, Minus, Share2, ChevronDown, ChevronUp, Info } from 'lucide-react';
-import { getEventCacheAmount } from '@/lib/eventFinance';
+import {
+  buildWorkByEvent,
+  monthKeyRange,
+  paidEventsInPeriod,
+  receivedInPeriod,
+  sumReceived,
+  yearRange,
+} from '@/lib/financeMetrics';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import appToast from '@/lib/appToast';
 
@@ -22,31 +29,15 @@ export default function IRSummary({ events = [], expenses = [], work = [] }) {
   const [year, setYear] = useState(currentYear);
   const [showMonths, setShowMonths] = useState(false);
 
-  const workByEvent = useMemo(() => {
-    const map = {};
-    work.forEach(w => {
-      if (!w.event_id) return;
-      if (!map[w.event_id]) map[w.event_id] = [];
-      map[w.event_id].push(w);
-    });
-    return map;
-  }, [work]);
+  const workByEvent = useMemo(() => buildWorkByEvent(work), [work]);
 
   const data = useMemo(() => {
     const yearStr = String(year);
 
     // Receita: eventos pagos no ano (pelo paid_date — competência de recebimento)
-    const paidEvents = events.filter(ev => {
-      if (ev.payment_status !== 'paid' || ev.status === 'cancelled') return false;
-      const refDate = ev.paid_date || ev.start_date || '';
-      return refDate.startsWith(yearStr);
-    });
+    const paidEvents = paidEventsInPeriod(events, yearRange(year));
 
-    const totalRevenue = paidEvents.reduce((s, ev) => {
-      const wk = workByEvent[ev.id] || [];
-      const fromWork = wk.reduce((a, w) => a + (w.daily_cache || 0), 0);
-      return s + (fromWork > 0 ? fromWork : (Number(ev.paid_amount) || getEventCacheAmount(ev)));
-    }, 0);
+    const totalRevenue = sumReceived(paidEvents, workByEvent);
 
     // Despesas do ano
     const yearExpenses = expenses.filter(exp => {
@@ -66,13 +57,7 @@ export default function IRSummary({ events = [], expenses = [], work = [] }) {
     const months = Array.from({ length: 12 }, (_, i) => {
       const m = String(i + 1).padStart(2, '0');
       const prefix = `${yearStr}-${m}`;
-      const rev = paidEvents
-        .filter(ev => (ev.paid_date || ev.start_date || '').startsWith(prefix))
-        .reduce((s, ev) => {
-          const wk = workByEvent[ev.id] || [];
-          const fromWork = wk.reduce((a, w) => a + (w.daily_cache || 0), 0);
-          return s + (fromWork > 0 ? fromWork : (Number(ev.paid_amount) || getEventCacheAmount(ev)));
-        }, 0);
+      const rev = receivedInPeriod(paidEvents, monthKeyRange(prefix), workByEvent);
       const exp = yearExpenses
         .filter(e => (e.expense_date || e.date || '').startsWith(prefix))
         .reduce((s, e) => s + (e.amount || 0), 0);
