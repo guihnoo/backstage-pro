@@ -55,7 +55,7 @@ Criei uma **estrutura completa** com scripts automáticos para:
 ```powershell
 # 1. Abra PowerShell
 # 2. Vá para o projeto
-cd "C:\Users\monte\OneDrive\Documentos\backstage-pro"
+cd "C:\dev\backstage-pro"
 
 # 3. Execute o menu de setup
 .\scripts\setup-all.ps1
@@ -340,7 +340,7 @@ Depois de tudo pronto (ordem sugerida):
 ```powershell
 # 1. Abra PowerShell
 # 2. Digite:
-cd "C:\Users\monte\OneDrive\Documentos\backstage-pro"
+cd "C:\dev\backstage-pro"
 .\scripts\setup-all.ps1
 
 # 3. Siga o menu

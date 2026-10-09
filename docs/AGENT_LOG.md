@@ -2759,3 +2759,15 @@ Registro cronológico de tarefas executadas por agentes.
 - **Arquivo**: `docs/BACKSTAGE_PRO_GUIA_COMPLETO.md` — consolida objetivo, arquitetura, estado atual, destino, divisão Cursor/Claude e referências
 - **Motivo**: pedido do usuário para documento único de download com tudo que os agentes sabem sobre o Backstage Pro
 - **Build**: N/A (somente docs)
+
+---
+
+## 2026-10-09
+
+### INFRA — Projeto movido para fora do OneDrive (Claude Code) ✅
+- **Pasta de trabalho nova**: `C:\dev\backstage-pro` — clone de `origin/main` (`da2f390`) + `npm ci`. A pasta antiga (`OneDrive\Documentos\backstage-pro`) foi mantida intacta, mas não deve mais ser usada.
+- **Motivo**: OneDrive fechado deixava 1060/1201 arquivos do projeto e 90 mil de `node_modules` só na nuvem ("O provedor do arquivo de nuvem não está em execução")
+- **Copiados da pasta antiga**: `.env.local`, `.env.vercel*`, `.vercel/`, `supabase/.temp/`, `agent-review/incoming/`, `.agents/`, `.codex/` (não copiados: `dist/`, `playwright-report/`, `test-results/`, worktree órfão `agent-abd00af5c51a7f7b6`)
+- **Arquivos**: `.codex/hooks.json` (caminho do hook), `SETUP.md`, `GUIA_COMPLETO.md` (`cd` da pasta nova), `docs/RELATORIO_VIDA_APP.md`
+- **Build**: ✅ · unit 81/81 ✅ · dev server ✅ · lint: 2 erros `no-unused-vars` pré-existentes (`e2e/helpers/fakeGoogleCalendar.js`, `marketing/instagram-stories/marketingMocks.js`)
+- **Deploy**: nenhum

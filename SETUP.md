@@ -18,7 +18,7 @@
 ### 1. Instalar dependências
 
 ```powershell
-cd "C:\Users\monte\OneDrive\Documentos\backstage-pro"
+cd "C:\dev\backstage-pro"
 npm install
 ```
 

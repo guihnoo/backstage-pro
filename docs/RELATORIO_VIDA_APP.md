@@ -3,7 +3,8 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-06-25 (S187–S189 — auditoria mobile Clientes/Despesas/Metas; Cursor)  
+**Última atualização:** 2026-10-09 (INFRA — projeto movido para fora do OneDrive; Claude Code)  
+**Pasta local:** `C:\dev\backstage-pro` (desde 2026-10-09; a cópia antiga em `OneDrive\Documentos\backstage-pro` não é mais a pasta de trabalho)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-06-25 — S179+S180 skeletons shimmer + PWA offline Fase 1 (`4709123`)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` v29 (auto-disconnect token inválido) + `analyze-nfe` v5 (Files API + maxOutputTokens 8192 + thinkingBudget 0 — **testado e funcionando em produção** ✅) deployadas no Supabase ✅  
@@ -174,6 +175,16 @@ Use este roteiro para fechar o item **#8** em `IDEIAS_PENDENTES.md`.
 ---
 
 ## Changelog
+
+### 2026-10-09 — INFRA: projeto fora do OneDrive (Claude Code)
+
+**Motivo:** com o OneDrive fechado, 1060 de 1201 arquivos do projeto (e 90 mil de `node_modules`) ficavam só na nuvem e nada abria; o OneDrive também já tinha causado lock no `git worktree prune` e bug no Supabase CLI.
+
+**O que mudou:** clone novo em `C:\dev\backstage-pro` (mesmo commit `da2f390`), com `.env.local`, `.env.vercel*`, `.vercel/`, `supabase/.temp/`, `.agents/` e `.codex/` copiados da pasta antiga. `npm ci` limpo. Caminho do hook em `.codex/hooks.json` e os `cd` de `SETUP.md` / `GUIA_COMPLETO.md` apontam para a pasta nova.
+
+**Verificação:** build ✅ · unit 81/81 ✅ · dev server responde ✅ · lint com 2 erros `no-unused-vars` que já existiam (`e2e/helpers/fakeGoogleCalendar.js`, `marketing/instagram-stories/marketingMocks.js`).
+
+**Atenção:** abrir **a pasta nova** no Cursor/Codex — a antiga ainda existe e tem o hook de backup automático apontando para o mesmo `origin`. O worktree órfão `agent-abd00af5c51a7f7b6` ficou só na pasta antiga (o gitlink continua no índice).
 
 ### 2026-06-14 (sessões S69–S74) — Claude Code: insights, templates, PDFs, CRM e agenda
 
