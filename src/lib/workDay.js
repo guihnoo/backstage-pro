@@ -122,6 +122,16 @@ export const REGIME_POR_DIA_ATIVO = (() => {
   }
 })();
 
+/** Data (YYYY-MM-DD) em que o Lote 2 foi ativado: início da telemetria lançado x estimado. */
+export const REGIME_POR_DIA_DESDE = (() => {
+  try {
+    const v = import.meta.env?.VITE_REGIME_POR_DIA_DESDE;
+    return /^\d{4}-\d{2}-\d{2}$/.test(v || '') ? v : null;
+  } catch {
+    return null;
+  }
+})();
+
 export const REGIMES = [
   { value: 'meia', label: '½', descricao: 'Meia (metade do cachê)', fator: 0.5 },
   { value: 'cheia', label: '1', descricao: 'Cachê cheio', fator: 1 },

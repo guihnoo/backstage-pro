@@ -81,6 +81,8 @@ const SeasonalityChart = lazy(() => import('@/components/reports/SeasonalityChar
 const WeekdayBreakdown = lazy(() => import('@/components/reports/WeekdayBreakdown'));
 const NfTracker = lazy(() => import('@/components/reports/NfTracker'));
 const WorkAnalytics = lazy(() => import('@/components/reports/WorkAnalytics'));
+const HoursOriginChart = lazy(() => import('@/components/reports/HoursOriginChart'));
+const HoursReviewList = lazy(() => import('@/components/reports/HoursReviewList'));
 const CashflowForecast = lazy(() => import('@/components/reports/CashflowForecast'));
 const CategoryBreakdown = lazy(() => import('@/components/reports/CategoryBreakdown'));
 const TopClients = lazy(() => import('@/components/reports/TopClients'));
@@ -1159,13 +1161,27 @@ export default function ReportsPage() {
         }
 
         {selectedView === 'work' && (
-          <Suspense fallback={<ChartBlockSkeleton className="h-80" />}>
-            <WorkAnalytics
-              work={processedData.current.work}
-              events={data.events}
-              clients={data.clients}
-            />
-          </Suspense>
+          <div className="space-y-6">
+            <Suspense fallback={<ChartBlockSkeleton className="h-80" />}>
+              <WorkAnalytics
+                work={processedData.current.work}
+                events={data.events}
+                clients={data.clients}
+              />
+            </Suspense>
+            {/* Lote 4 — horas e cachê v2: telemetria e revisão do passado (sem correção automática) */}
+            <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
+              <HoursOriginChart dailyWork={data.dailyWork} />
+            </Suspense>
+            <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
+              <HoursReviewList
+                events={data.events}
+                dailyWork={data.dailyWork}
+                clients={data.clients}
+                onOpenEvent={(ev) => setSelectedEvent(ev)}
+              />
+            </Suspense>
+          </div>
         )}
 
         {selectedView === 'activity' && (
