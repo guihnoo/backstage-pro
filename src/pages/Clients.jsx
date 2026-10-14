@@ -31,7 +31,7 @@ import {
 } from 'date-fns';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { getEventStatus } from '@/components/utils/dateUtils';
-import { getEventCacheAmount } from '@/lib/eventFinance';
+import { calculateEventReceivableAmount } from '@/lib/eventFinance';
 import { openWhatsAppCharge, buildChargeMessage, formatWhatsAppNumber } from '@/lib/whatsapp';
 import { useMediaQuery } from '@/components/hooks/useMediaQuery';
 import { useAuth } from '@/lib/authContext';
@@ -121,10 +121,9 @@ export default function ClientsPage() {
       const clientWork = work.filter(w => clientEventIds.has(w.event_id));
 
       const getEventRevenue = (event) => {
-        const fromWork = clientWork
-          .filter(w => w.event_id === event.id)
-          .reduce((sum, w) => sum + (w.daily_cache || 0), 0);
-        return fromWork > 0 ? fromWork : getEventCacheAmount(event);
+        const workForEvent = clientWork
+          .filter(w => w.event_id === event.id);
+        return calculateEventReceivableAmount(event, workForEvent);
       };
 
       const generatedRevenue = clientEvents.reduce((sum, e) => sum + getEventRevenue(e), 0);

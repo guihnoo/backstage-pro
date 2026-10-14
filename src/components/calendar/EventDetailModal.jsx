@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
-import { getEventCacheAmount } from '@/lib/eventFinance';
+import { getEventCacheAmount, calculateEventReceivableAmount, getEventHoursStatus, isEstimatedWork } from '@/lib/eventFinance';
+import { buildHoursGateMessage, shouldBlockPayment } from '@/lib/hoursGate';
 import { Dialog, DialogContent, DialogHeader, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -255,6 +256,7 @@ export default function EventDetailModal({
   const [workModalDate, setWorkModalDate] = useState(null);
   const [editingWorkEntry, setEditingWorkEntry] = useState(null);
   const [confirmDeleteWorkId, setConfirmDeleteWorkId] = useState(null);
+  const [hoursGateOpen, setHoursGateOpen] = useState(false);
   const [showExpenses, setShowExpenses] = useState(true);
   const [locDraft, setLocDraft] = useState({
     location: '',
@@ -355,7 +357,7 @@ export default function EventDetailModal({
   const handleChargeWhatsApp = () => {
     const phone = client?.phone;
     if (!phone) { appToast.error('Cliente sem telefone cadastrado.'); return; }
-    const value = getEventCacheAmount(event);
+    const value = receivableAmount;
     const message = buildChargeMessage({
       clientName: client?.name,
       events: [{ title: event.title, start_date: event.start_date, amount: value }],
@@ -367,7 +369,7 @@ export default function EventDetailModal({
   const handleCopyPix = () => {
     const pixKey = userSettings?.pix_key;
     if (!pixKey) { appToast.error('Chave PIX não cadastrada.', { description: 'Adicione sua chave PIX no Perfil.' }); return; }
-    const amount = getEventCacheAmount(event);
+    const amount = receivableAmount;
     const payload = generatePixPayload({
       pixKey,
       merchantName: userSettings?.report_full_name || profile?.full_name || 'Tecnico',
@@ -384,7 +386,7 @@ export default function EventDetailModal({
     const phone = client?.phone;
     const pixKey = userSettings?.pix_key;
     if (!pixKey) { appToast.error('Chave PIX não cadastrada no Perfil.'); return; }
-    const amount = getEventCacheAmount(event);
+    const amount = receivableAmount;
     const payload = generatePixPayload({
       pixKey,
       merchantName: userSettings?.report_full_name || profile?.full_name || 'Tecnico',
@@ -562,6 +564,17 @@ export default function EventDetailModal({
     return { totalHours, totalOvertime, totalEarned, hourlyRate };
   }, [eventWork]);
 
+  // Valor único do evento: horas lançadas + diária dos dias sem registro (Lote 3).
+  // É o mesmo número da cobrança (WhatsApp/PIX), do "a receber" e do recebimento.
+  const receivableAmount = useMemo(
+    () => (event ? calculateEventReceivableAmount(event, eventWork) : 0),
+    [event, eventWork]
+  );
+  const hoursStatus = useMemo(
+    () => (event ? getEventHoursStatus(event, eventWork) : null),
+    [event, eventWork]
+  );
+
   const estimatedValue = useMemo(() => {
     if (!event || eventWork.length > 0) return null;
     return getEventCacheAmount(event);
@@ -570,7 +583,7 @@ export default function EventDetailModal({
   const eventDays = useMemo(() => {
     const start = event?.start_date;
     const end = event?.end_date || event?.start_date;
-    if (!start || !end || start === end) return [];
+    if (!start || !end) return [];
     const days = [];
     const cursor = new Date(start + 'T00:00:00');
     const last = new Date(end + 'T00:00:00');
@@ -597,14 +610,24 @@ export default function EventDetailModal({
 
   const profitSummary = useMemo(() => {
     if (!event) return null;
-    const revenue = Number(event.paid_amount) > 0 ? Number(event.paid_amount) : getEventCacheAmount(event) || 0;
+    const revenue = Number(event.paid_amount) > 0 ? Number(event.paid_amount) : receivableAmount || 0;
     if (revenue <= 0 && expenseTotals.total <= 0) return null;
     const profit = revenue - expenseTotals.total;
     const margin = revenue > 0 ? (profit / revenue) * 100 : null;
     return { revenue, expenses: expenseTotals.total, profit, margin };
-  }, [event, expenseTotals.total]);
+  }, [event, expenseTotals.total, receivableAmount]);
 
   if (!event) return null;
+
+  // Confirmar recebimento só com as horas preenchidas (regra do dono); o usuário pode
+  // escolher "cobrar assim mesmo".
+  const requestMarkPaid = () => {
+    if (event.payment_status !== 'paid' && shouldBlockPayment(hoursStatus)) {
+      setHoursGateOpen(true);
+      return;
+    }
+    onMarkPaid?.();
+  };
 
   const today = normalizeDateString(new Date());
   const eventStart = event.start_date || '';
@@ -642,7 +665,7 @@ export default function EventDetailModal({
     );
   } else if ((status === 'completed' || status === 'archived') && event.payment_status !== 'paid') {
     primaryCTA = (
-      <Button onClick={onMarkPaid} className="flex-1 bg-emerald-700 hover:bg-emerald-600">
+      <Button onClick={requestMarkPaid} className="flex-1 bg-emerald-700 hover:bg-emerald-600">
         <CheckCircle2 className="w-4 h-4 mr-2" />Confirmar Recebimento
       </Button>
     );
@@ -755,7 +778,7 @@ export default function EventDetailModal({
             </div>
             {!pagamentoDone && (
               <div className="flex gap-1.5 flex-shrink-0 flex-wrap justify-end">
-                <Button size="sm" onClick={onMarkPaid} className="h-7 px-2 text-xs bg-emerald-700 hover:bg-emerald-600">
+                <Button size="sm" onClick={requestMarkPaid} className="h-7 px-2 text-xs bg-emerald-700 hover:bg-emerald-600">
                   <CheckCircle2 className="w-3 h-3 mr-1" />Pago
                 </Button>
                 {userSettings?.pix_key && (
@@ -979,8 +1002,8 @@ export default function EventDetailModal({
                           <p className="text-base font-bold text-orange-400">{totals.totalOvertime}h</p>
                         </div>
                         <div>
-                          <p className="text-[10px] text-slate-500 mb-0.5">Total ganho</p>
-                          <p className="text-base font-bold text-green-400">{isVisible ? formatCurrency(totals.totalEarned) : '••••'}</p>
+                          <p className="text-[10px] text-slate-500 mb-0.5">Total a receber</p>
+                          <p className="text-base font-bold text-green-400">{isVisible ? formatCurrency(receivableAmount) : '••••'}</p>
                         </div>
                       </div>
                     </>
@@ -1104,7 +1127,8 @@ export default function EventDetailModal({
                               openWorkModal(date, work || null);
                             }}
                             className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg border text-xs font-medium transition-all ${
-                              work ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
+                              work && isEstimatedWork(work) ? 'bg-amber-500/10 border-amber-500/40 text-amber-300'
+                              : work ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
                               : isToday ? 'border-2 text-white hover:opacity-80'
                               : isPast ? 'bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20'
                               : 'bg-slate-800 border-slate-700 text-slate-600 cursor-not-allowed'
@@ -1113,7 +1137,7 @@ export default function EventDetailModal({
                           >
                             <span>{label}</span>
                             <span className="text-[9px] opacity-80">
-                              {work ? `${work.total_hours || 0}h` : isToday ? 'hoje' : isPast ? 'faltou' : '—'}
+                              {work ? (isEstimatedWork(work) ? '12h est.' : `${work.total_hours || 0}h`) : isToday ? 'hoje' : isPast ? 'faltou' : '—'}
                             </span>
                           </button>
                         );
@@ -1122,6 +1146,11 @@ export default function EventDetailModal({
                     {eventDays.some(d => d.isPast && !d.work) && (
                       <p className="text-[11px] text-red-400/70 mt-2">
                         Toque num dia vermelho para registrar horas em atraso.
+                      </p>
+                    )}
+                    {eventDays.some(d => d.work && isEstimatedWork(d.work)) && (
+                      <p className="text-[11px] text-amber-400/70 mt-2">
+                        Dias em âmbar foram fechados com 12 h automáticas — toque para lançar as horas reais.
                       </p>
                     )}
                     {eventDays.some(d => d.work) && (
@@ -1461,6 +1490,15 @@ export default function EventDetailModal({
       onSuccess={closeWorkModal}
     />
 
+    <ConfirmDialog
+      open={hoursGateOpen}
+      onOpenChange={setHoursGateOpen}
+      title="Faltam horas neste evento"
+      description={buildHoursGateMessage(hoursStatus)}
+      cancelLabel="Lançar horas"
+      confirmLabel="Cobrar assim mesmo"
+      onConfirm={() => { setHoursGateOpen(false); onMarkPaid?.(); }}
+    />
     <ConfirmDialog
       open={!!confirmDeleteWorkId}
       onOpenChange={(open) => !open && setConfirmDeleteWorkId(null)}

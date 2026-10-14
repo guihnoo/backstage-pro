@@ -22,7 +22,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { getEventStatusLabel, getEventStatusConfig, getEventStatus, formatDisplayDate, formatFullDate, timeRangeLabel } from '../utils/dateUtils';
-import { getEventCacheAmount } from '@/lib/eventFinance';
+import { getEventCacheAmount, calculateEventReceivableAmount } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import PaymentConfirmModal from './PaymentConfirmModal';
 import {
@@ -452,8 +452,8 @@ const EventDetailModal = React.memo(function EventDetailModal({
     if (!event || !dailyWork) return {};
     const totalHours = dailyWork.reduce((sum, work) => sum + (work.total_hours || 0), 0);
     const totalOvertime = dailyWork.reduce((sum, work) => sum + (work.overtime_hours || 0), 0);
-    const fromWork = dailyWork.reduce((sum, work) => sum + (work.daily_cache || 0), 0);
-    const totalRevenue = fromWork > 0 ? fromWork : getEventCacheAmount(event);
+    const workForEvent = dailyWork;
+    const totalRevenue = calculateEventReceivableAmount(event, workForEvent);
     const totalExpenses = expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
     const netRevenue = totalRevenue - totalExpenses;
     return { totalHours, totalOvertime, totalRevenue, totalExpenses, netRevenue };
@@ -504,7 +504,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
     event.start_date ? `Data: ${formatDisplayDate(event.start_date)}` : null,
     client ? `Tomador: ${getClientDisplayName(client)}` : null,
     client?.cnpj ? `CNPJ: ${formatCNPJ(client.cnpj)}` : null,
-    `Valor: ${formatCurrency(getEventCacheAmount(event))}`,
+    `Valor: ${formatCurrency(Number(event.paid_amount) > 0 ? Number(event.paid_amount) : stats.totalRevenue)}`,
     event.location_city ? `Local: ${event.location_city}` : null,
   ].filter(Boolean).join('\n');
 

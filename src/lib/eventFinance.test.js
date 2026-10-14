@@ -10,6 +10,8 @@ import {
   daysOverduePayment,
   isPaymentOverdue,
   dedupeWorkByDay,
+  getEventHoursStatus,
+  isEstimatedWork,
 } from './eventFinance';
 import { getEventStatus, todayLocalISO } from '@/components/utils/dateUtils';
 
@@ -173,6 +175,37 @@ describe('calculateEventReceivableAmount — revisão independente do Lote 1', (
   it('com actual_revenue total e registro parcial, o dia faltante vale o total dividido pelos dias', () => {
     const ev = { actual_revenue: 2000, start_date: '2026-10-01', end_date: '2026-10-02' };
     expect(calculateEventReceivableAmount(ev, [{ date: '2026-10-01', daily_cache: 1000 }])).toBe(2000);
+  });
+});
+
+describe('getEventHoursStatus — Lote 3', () => {
+  const ev = { start_date: '2026-10-01', end_date: '2026-10-04' };
+  const work = [
+    { date: '2026-10-01', daily_cache: 1200, origem: 'lancada' },
+    { date: '2026-10-02', daily_cache: 1200, notes: '12h automáticas' },
+  ];
+
+  it('classifica cada dia: lançado, estimado, pendente e futuro', () => {
+    const r = getEventHoursStatus(ev, work, '2026-10-03');
+    expect(r.days.map((d) => d.status)).toEqual(['lancado', 'estimado', 'pendente', 'futuro']);
+    expect(r.missing).toEqual(['2026-10-03']);
+    expect(r.estimated).toEqual(['2026-10-02']);
+    expect(r.complete).toBe(false);
+  });
+
+  it('completo quando todos os dias até hoje têm registro', () => {
+    const r = getEventHoursStatus(ev, work, '2026-10-02');
+    expect(r.complete).toBe(true);
+  });
+
+  it('coluna origem tem prioridade sobre a nota', () => {
+    expect(isEstimatedWork({ origem: 'lancada', notes: '12h automáticas' })).toBe(false);
+    expect(isEstimatedWork({ origem: 'estimada' })).toBe(true);
+  });
+
+  it('evento de um dia só', () => {
+    const r = getEventHoursStatus({ start_date: '2026-10-05', end_date: '2026-10-05' }, [], '2026-10-06');
+    expect(r.missing).toEqual(['2026-10-05']);
   });
 });
 

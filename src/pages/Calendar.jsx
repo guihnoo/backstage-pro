@@ -56,7 +56,8 @@ import {
   getEventsForDate,
   getEventStatus,
 } from '@/components/utils/dateUtils';
-import { isCancelledEvent } from '@/lib/eventFinance';
+import { isCancelledEvent, getEventHoursStatus, calculateEventReceivableAmount } from '@/lib/eventFinance';
+import { buildHoursGateMessage, shouldBlockPayment } from '@/lib/hoursGate';
 import AnimatedStatValue from '@/components/home/AnimatedStatValue';
 import CalendarPageHeader from '@/components/calendar/CalendarPageHeader';
 import CalendarTodayStrip from '@/components/calendar/CalendarTodayStrip';
@@ -737,6 +738,26 @@ export default function CalendarPage() {
     [handleFormSuccess, updateEvent, dailyWork]
   );
 
+  // Trava do recebimento pelo menu rápido (Lote 3): avisa se falta lançar horas.
+  const [hoursGate, setHoursGate] = useState(null); // { event, status }
+  const requestMarkPaid = useCallback(
+    (eventToUpdate) => {
+      if (!eventToUpdate) return;
+      if (eventToUpdate.payment_status !== 'paid') {
+        const status = getEventHoursStatus(
+          eventToUpdate,
+          dailyWork.filter((w) => w.event_id === eventToUpdate.id)
+        );
+        if (shouldBlockPayment(status)) {
+          setHoursGate({ event: eventToUpdate, status });
+          return;
+        }
+      }
+      handleMarkPaid(eventToUpdate);
+    },
+    [dailyWork, handleMarkPaid]
+  );
+
   // New action sheet handlers
   const handleActionSheetViewDetails = useCallback(() => {
     if (selectedActionSheetEvent) {
@@ -927,10 +948,9 @@ export default function CalendarPage() {
 
     // Receita: soma getEventCacheAmount por evento (usa daily_cache_value como campo primário)
     const totalRevenue = monthEvents.reduce((sum, event) => {
-      const fromWork = dailyWork
-        .filter(w => w.event_id === event.id)
-        .reduce((s, w) => s + (Number(w.daily_cache) || 0), 0);
-      return sum + (fromWork > 0 ? fromWork : getEventCacheAmount(event));
+      const workForEvent = dailyWork
+        .filter(w => w.event_id === event.id);
+      return sum + (calculateEventReceivableAmount(event, workForEvent));
     }, 0);
 
     const monthClientIds = new Set(monthEvents.map((e) => e.client_id).filter(Boolean));
@@ -965,10 +985,9 @@ export default function CalendarPage() {
         const client = clientMap.get(event.client_id);
         const startDate = parseISO(event.start_date);
         const endDate = parseISO(event.end_date);
-        const fromWork = dailyWork
-          .filter(w => w.event_id === event.id)
-          .reduce((s, w) => s + (Number(w.daily_cache) || 0), 0);
-        const value = fromWork > 0 ? fromWork : getEventCacheAmount(event);
+        const workForEvent = dailyWork
+          .filter(w => w.event_id === event.id);
+        const value = calculateEventReceivableAmount(event, workForEvent);
         return {
           title: event.title,
           subtitle: `${getClientDisplayName(client) || 'Sem empresa'} · ${isValid(startDate) ? format(startDate, 'dd/MM', { locale: ptBR }) : ''}${
@@ -1049,10 +1068,9 @@ export default function CalendarPage() {
       .map((event) => {
         const client = clientMap.get(event.client_id);
         const startDate = parseISO(event.start_date);
-        const fromWork = dailyWork
-          .filter(w => w.event_id === event.id)
-          .reduce((s, w) => s + (Number(w.daily_cache) || 0), 0);
-        const value = fromWork > 0 ? fromWork : getEventCacheAmount(event);
+        const workForEvent = dailyWork
+          .filter(w => w.event_id === event.id);
+        const value = calculateEventReceivableAmount(event, workForEvent);
         const statusLabel = event.payment_status === 'paid' ? 'Pago' : event.payment_status === 'partial' ? 'Parcial' : 'Pendente';
         return {
           title: event.title,
@@ -2054,7 +2072,7 @@ export default function CalendarPage() {
           }}
           onMarkPaid={() => {
             if (selectedActionSheetEvent) {
-              handleMarkPaid(selectedActionSheetEvent);
+              requestMarkPaid(selectedActionSheetEvent);
               setSelectedActionSheetEvent(null);
             }
           }}
@@ -2085,6 +2103,20 @@ export default function CalendarPage() {
           />
         )}
       </AnimatePresence>
+
+      <ConfirmDialog
+        open={!!hoursGate}
+        onOpenChange={(open) => !open && setHoursGate(null)}
+        title="Faltam horas neste evento"
+        description={buildHoursGateMessage(hoursGate?.status)}
+        cancelLabel="Lançar horas"
+        confirmLabel="Cobrar assim mesmo"
+        onConfirm={() => {
+          const ev = hoursGate?.event;
+          setHoursGate(null);
+          if (ev) handleMarkPaid(ev);
+        }}
+      />
 
       <ConfirmDialog
         open={!!confirmWork}

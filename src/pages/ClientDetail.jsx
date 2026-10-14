@@ -40,7 +40,7 @@ import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { hardNavigate } from '@/lib/hardNavigate';
-import { getEventCacheAmount } from '@/lib/eventFinance';
+import { calculateEventReceivableAmount } from '@/lib/eventFinance';
 import { getEventReceivedAmount } from '@/lib/financeMetrics';
 import { getEventStatus } from '@/components/utils/dateUtils';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
@@ -147,10 +147,9 @@ export default function ClientDetailPage() {
   );
 
   const getEventRevenue = useCallback((event) => {
-    const fromWork = clientWork
-      .filter(w => w.event_id === event.id)
-      .reduce((sum, w) => sum + (w.daily_cache || 0), 0);
-    return fromWork > 0 ? fromWork : getEventCacheAmount(event);
+    const workForEvent = clientWork
+      .filter(w => w.event_id === event.id);
+    return calculateEventReceivableAmount(event, workForEvent);
   }, [clientWork]);
 
   const chartInput = useMemo(() => ({
@@ -168,10 +167,9 @@ export default function ClientDetailPage() {
 
   const stats = useMemo(() => {
     const getEventRevenue = (event) => {
-      const fromWork = clientWork
-        .filter(w => w.event_id === event.id)
-        .reduce((sum, w) => sum + (w.daily_cache || 0), 0);
-      return fromWork > 0 ? fromWork : getEventCacheAmount(event);
+      const workForEvent = clientWork
+        .filter(w => w.event_id === event.id);
+      return calculateEventReceivableAmount(event, workForEvent);
     };
 
     const totalRevenue = clientEvents.reduce((sum, e) => sum + getEventRevenue(e), 0);

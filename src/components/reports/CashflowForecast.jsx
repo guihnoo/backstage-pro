@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { format, addMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO, addDays, isAfter, isBefore, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { TrendingUp, CalendarDays } from 'lucide-react';
-import { getEventCacheAmount } from '@/lib/eventFinance';
+import { calculateEventReceivableAmount } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import EventHeading from '@/components/events/EventHeading';
 import { buildClientMap, resolveClientForEvent } from '@/lib/eventDisplay';
@@ -67,8 +67,8 @@ export default function CashflowForecast({ events = [], work = [], clients = [] 
       })
       .map(ev => {
         const wk = workByEvent[ev.id] || [];
-        const fromWork = wk.reduce((s, w) => s + (w.daily_cache || 0), 0);
-        const value = fromWork > 0 ? fromWork : getEventCacheAmount(ev);
+        const workForEvent = wk;
+        const value = calculateEventReceivableAmount(ev, workForEvent);
         return { ...ev, _value: value, _statusKey: getStatusKey(ev) };
       })
       .filter(ev => ev._value > 0)

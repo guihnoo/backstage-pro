@@ -97,6 +97,34 @@ export function useDailyWork() {
   const create = useCallback(
     async (data) => {
       const payload = mapPayloadToDb({ ...data, user_id: userId });
+
+      // Um registro por dia (Lote 3): se o dia já tem registro neste evento
+      // (outra aba, outro aparelho), atualiza esse registro em vez de duplicar.
+      if (payload.event_id && payload.date) {
+        const { data: sameDay, error: findErr } = await supabase
+          .from('daily_work')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('event_id', payload.event_id)
+          .eq('date', payload.date)
+          .limit(1);
+        if (findErr) throw findErr;
+        if (sameDay?.[0]?.id) {
+          const patch = { ...payload };
+          delete patch.user_id;
+          const { data: updated, error: updErr } = await supabase
+            .from('daily_work')
+            .update(patch)
+            .eq('id', sameDay[0].id)
+            .select()
+            .single();
+          if (updErr) throw updErr;
+          const mappedUpdate = mapRowFromDb(updated);
+          setDailyWork((prev) => [mappedUpdate, ...prev.filter((w) => w.id !== mappedUpdate.id)]);
+          return mappedUpdate;
+        }
+      }
+
       const { data: result, error: err } = await supabase
         .from('daily_work')
         .insert(payload)

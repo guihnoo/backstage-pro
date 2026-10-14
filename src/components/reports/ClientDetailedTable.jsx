@@ -17,7 +17,7 @@ import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getEventStatus } from '../utils/dateUtils';
-import { getEventCacheAmount } from '@/lib/eventFinance';
+import { calculateEventReceivableAmount } from '@/lib/eventFinance';
 import { getEventReceivedAmount, isReceivedEvent } from '@/lib/financeMetrics';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
@@ -48,10 +48,9 @@ export default function ClientDetailedTable({ data, onClientClick }) {
         const inProgressEvents = clientEvents.filter(e => getEventStatus(e) === 'in_progress');
 
         const getEventRevenue = (event) => {
-          const fromWork = clientWork
-            .filter(w => w.event_id === event.id)
-            .reduce((sum, w) => sum + (w.daily_cache || 0), 0);
-          return fromWork > 0 ? fromWork : getEventCacheAmount(event);
+          const workForEvent = clientWork
+            .filter(w => w.event_id === event.id);
+          return calculateEventReceivableAmount(event, workForEvent);
         };
 
         const generatedRevenue = clientEvents.reduce((sum, e) => sum + getEventRevenue(e), 0);

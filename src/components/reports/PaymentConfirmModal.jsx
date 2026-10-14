@@ -12,6 +12,8 @@ import appToast from '@/lib/appToast';
 import { useEvents } from '@/lib/useEvents';
 import { getEventReceivedAmount } from '@/lib/financeMetrics';
 import EventHeading from '@/components/events/EventHeading';
+import { getEventHoursStatus } from '@/lib/eventFinance';
+import { buildHoursGateMessage, shouldBlockPayment } from '@/lib/hoursGate';
 
 const PAYMENT_METHODS = [
   { value: 'pix', label: 'PIX' },
@@ -27,20 +29,31 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
   const [paidDate, setPaidDate] = useState(new Date());
   const [paymentMethod, setPaymentMethod] = useState('pix');
   const [loading, setLoading] = useState(false);
+  const [ackMissingHours, setAckMissingHours] = useState(false);
 
   const estimatedValue = event ? getEventReceivedAmount(event, dailyWork) : 0;
   // events.payment_method nasce na migration 034; sem a coluna o PostgREST rejeita o update inteiro
   const canStoreMethod = Boolean(event) && 'payment_method' in event;
+
+  // Lote 3: recebimento só com as horas preenchidas, ou com "cobrar assim mesmo".
+  const hoursStatus = event ? getEventHoursStatus(event, dailyWork) : null;
+  const hoursMessage = buildHoursGateMessage(hoursStatus);
+  const blockedByHours = shouldBlockPayment(hoursStatus) && !ackMissingHours;
 
   useEffect(() => {
     if (event && isOpen) {
       setPaidAmount(estimatedValue > 0 ? estimatedValue.toString() : '');
       setPaidDate(new Date());
       setPaymentMethod(event.payment_method || 'pix');
+      setAckMissingHours(false);
     }
   }, [event, isOpen, estimatedValue]);
 
   const handleConfirm = async () => {
+    if (blockedByHours) {
+      appToast.error('Faltam horas neste evento.', { description: 'Lance as horas ou marque "cobrar assim mesmo".' });
+      return;
+    }
     if (!paidAmount || Number(paidAmount) <= 0) {
       appToast.error('Informe um valor válido para o pagamento.');
       return;
@@ -83,6 +96,27 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
             <p className="text-sm text-slate-400">Evento:</p>
             <EventHeading event={event} client={client} size="sm" />
           </div>
+
+          {hoursMessage && (
+            <div className={`p-3 rounded-lg border text-sm space-y-2 ${
+              shouldBlockPayment(hoursStatus)
+                ? 'border-amber-500/40 bg-amber-500/10 text-amber-200'
+                : 'border-slate-600 bg-slate-800/60 text-slate-300'
+            }`}>
+              <p>{hoursMessage}</p>
+              {shouldBlockPayment(hoursStatus) && (
+                <label className="flex items-center gap-2 text-amber-100">
+                  <input
+                    type="checkbox"
+                    checked={ackMissingHours}
+                    onChange={(e) => setAckMissingHours(e.target.checked)}
+                    className="w-4 h-4"
+                  />
+                  Cobrar assim mesmo
+                </label>
+              )}
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="paid_amount" className="text-slate-300">
@@ -161,7 +195,7 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
           </Button>
           <Button
             onClick={handleConfirm}
-            disabled={loading}
+            disabled={loading || blockedByHours}
             className="bg-green-600 hover:bg-green-700 text-white"
           >
             {loading ? 'Confirmando...' : 'Confirmar Pagamento'}

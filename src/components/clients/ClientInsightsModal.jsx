@@ -18,7 +18,7 @@ import { useEvents } from '@/lib/useEvents';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { getEventStatus, formatDisplayDate } from '../utils/dateUtils';
-import { getEventCacheAmount } from '@/lib/eventFinance';
+import { calculateEventReceivableAmount } from '@/lib/eventFinance';
 import { getEventReceivedAmount } from '@/lib/financeMetrics';
 import { parseISO, differenceInDays, isValid } from 'date-fns';
 import { useAuth } from '@/lib/authContext';
@@ -41,10 +41,9 @@ export default function ClientInsightsModal({ client, isOpen, onClose }) {
     const clientWork = dailyWork.filter(w => clientEventIds.has(w.event_id));
 
     const getEventRevenue = (event) => {
-      const fromWork = clientWork
-        .filter(w => w.event_id === event.id)
-        .reduce((sum, w) => sum + (w.daily_cache || 0), 0);
-      return fromWork > 0 ? fromWork : getEventCacheAmount(event);
+      const workForEvent = clientWork
+        .filter(w => w.event_id === event.id);
+      return calculateEventReceivableAmount(event, workForEvent);
     };
 
     // Receita total

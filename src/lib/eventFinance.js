@@ -111,6 +111,47 @@ export function calculateEventReceivableAmount(event, dailyWorkForEvent = []) {
   return Math.round((fromWork + missingDays * perDay) * 100) / 100;
 }
 
+function eachDayKey(start, end) {
+  const s = Date.parse(String(start || '').slice(0, 10) + 'T00:00:00Z');
+  const e = Date.parse(String(end || start || '').slice(0, 10) + 'T00:00:00Z');
+  if (Number.isNaN(s) || Number.isNaN(e) || e < s) return [];
+  const days = [];
+  for (let t = s; t <= e && days.length < 400; t += 86400000) {
+    days.push(new Date(t).toISOString().slice(0, 10));
+  }
+  return days;
+}
+
+/** Dia preenchido pelas 12 h automáticas (coluna nova `origem` ou marca antiga nas notas). */
+export function isEstimatedWork(work) {
+  if (!work) return false;
+  if (work.origem) return work.origem === 'estimada';
+  return /^12h automáticas/i.test(String(work.notes || work.description || ''));
+}
+
+/**
+ * Situação das horas de cada dia do evento (Lote 3).
+ * status: 'lancado' (horas reais) | 'estimado' (12 h automáticas) | 'pendente' (já passou, sem horas) | 'futuro'.
+ * `missing` = dias até hoje sem nenhum registro; `estimated` = dias com 12 h automáticas.
+ */
+export function getEventHoursStatus(event, dailyWorkForEvent = [], today = todayLocalISO()) {
+  const byDay = new Map();
+  for (const work of dedupeWorkByDay(dailyWorkForEvent || [])) {
+    const key = workDayKey(work);
+    if (key) byDay.set(key, work);
+  }
+  const days = eachDayKey(event?.start_date, event?.end_date || event?.start_date).map((date) => {
+    const work = byDay.get(date) || null;
+    let status = 'futuro';
+    if (work) status = isEstimatedWork(work) ? 'estimado' : 'lancado';
+    else if (date <= today) status = 'pendente';
+    return { date, work, status };
+  });
+  const missing = days.filter((d) => d.status === 'pendente').map((d) => d.date);
+  const estimated = days.filter((d) => d.status === 'estimado').map((d) => d.date);
+  return { days, missing, estimated, complete: missing.length === 0 };
+}
+
 /** Soma valores a receber com a mesma regra do bloco A Receber. */
 export function sumReceivableAmount(events = [], workByEvent = {}) {
   return events.reduce((sum, event) => {
