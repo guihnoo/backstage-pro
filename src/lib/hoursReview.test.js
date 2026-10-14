@@ -83,3 +83,46 @@ describe('hoursOriginStats', () => {
     expect(r.months[1]).toMatchObject({ lancados: 2, estimados: 1 });
   });
 });
+
+
+describe('Lote 4 — revisao Codex', () => {
+  it('cards e barras excluem juntos os meses anteriores a janela exibida', () => {
+    const work = [
+      { event_id: 'antigo', date: '2026-01-10', daily_cache: 5000, origem: 'lancada', overtime_hours: 8 },
+      { event_id: 'atual', date: '2026-10-02', daily_cache: 1200, origem: 'lancada', overtime_hours: 1 },
+    ];
+    const r = hoursOriginStats(work, '2026-01-01', { today: TODAY, months: 2 });
+    expect(r.periodStart).toBe('2026-09-01');
+    expect(r.totalLancados).toBe(1);
+    expect(r.months.reduce((sum, m) => sum + m.lancados, 0)).toBe(r.totalLancados);
+    expect(r.mediaLancado).toBe(1200);
+    expect(r.horasExtrasLancadas).toBe(1);
+  });
+
+  it('reenvio de um dia usa o registro mais recente sem fundir eventos diferentes', () => {
+    const work = [
+      { event_id: 'e1', date: '2026-10-02', daily_cache: 1200, origem: 'estimada', updated_at: '2026-10-02T10:00:00Z' },
+      { event_id: 'e1', date: '2026-10-02', daily_cache: 600, origem: 'lancada', updated_at: '2026-10-02T11:00:00Z' },
+      { event_id: 'e2', date: '2026-10-02', daily_cache: 900, origem: 'lancada' },
+    ];
+    const r = hoursOriginStats(work, '2026-10-01', { today: TODAY });
+    expect(r.totalLancados).toBe(2);
+    expect(r.totalEstimados).toBe(0);
+    expect(r.mediaLancado).toBe(750);
+    expect(r.months.at(-1)).toMatchObject({ lancados: 2, estimados: 0 });
+  });
+
+  it('revisao de duplicatas usa a mesma escolha do financeiro, nao o maior valor antigo', () => {
+    const work = [
+      { event_id: 'e1', date: '2026-09-01', daily_cache: 1200, updated_at: '2026-09-01T10:00:00Z' },
+      { event_id: 'e1', date: '2026-09-01', daily_cache: 600, updated_at: '2026-09-01T11:00:00Z' },
+    ];
+    const r = findHoursIssues([ev()], work, { today: TODAY });
+    expect(r.find((i) => i.tipo === 'dia_repetido')).toMatchObject({ valorGravado: 1800, valorRegraAtual: 600 });
+  });
+
+  it('data de ativacao invalida nao derruba a tela com Invalid Date', () => {
+    expect(hoursOriginStats([], '2026-02-31', { today: TODAY })).toBeNull();
+    expect(hoursOriginStats([], '2026-99-99', { today: TODAY })).toBeNull();
+  });
+});

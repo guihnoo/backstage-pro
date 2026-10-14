@@ -4,7 +4,7 @@
  * caso a caso (decisão do dono, 13/10/2026) e conta dias lançados x estimados.
  */
 import { computeWorkDay, isSameEntryExit, isValidRegime } from './workDay';
-import { isEstimatedWork, calculateEventReceivableAmount, isCancelledEvent } from './eventFinance';
+import { isEstimatedWork, calculateEventReceivableAmount, isCancelledEvent, dedupeWorkByDay } from './eventFinance';
 import { todayLocalISO } from '@/components/utils/dateUtils';
 
 const TOLERANCIA = 0.5; // R$ — evita apontar diferença de arredondamento
@@ -53,7 +53,7 @@ export function findHoursIssues(events = [], dailyWork = [], { today = todayLoca
         issues.push({
           ...base, date, tipo: 'dia_repetido', titulo: TIPOS_PROBLEMA.dia_repetido,
           valorGravado: money(rows.reduce((s, w) => s + (Number(w.daily_cache) || 0), 0)),
-          valorRegraAtual: money(Math.max(...rows.map((w) => Number(w.daily_cache) || 0))),
+          valorRegraAtual: money(dedupeWorkByDay(rows).reduce((sum, w) => sum + (Number(w.daily_cache) || 0), 0)),
           registros: rows.length,
         });
       }
@@ -110,10 +110,9 @@ export function findHoursIssues(events = [], dailyWork = [], { today = todayLoca
 export function hoursOriginStats(dailyWork = [], since, { months = 6, today = todayLocalISO() } = {}) {
   if (!since) return null;
   const sinceKey = String(since).slice(0, 10);
-  const rows = (dailyWork || []).filter((w) => {
-    const k = dayKey(w);
-    return k && k >= sinceKey && k <= today;
-  });
+  const parsedSince = Date.parse(sinceKey + 'T00:00:00Z');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(sinceKey) || !Number.isFinite(parsedSince)
+      || new Date(parsedSince).toISOString().slice(0, 10) !== sinceKey) return null;
 
   const [y, m] = today.split('-').map(Number);
   const buckets = [];
@@ -122,6 +121,23 @@ export function hoursOriginStats(dailyWork = [], since, { months = 6, today = to
     buckets.push({ month: d.toISOString().slice(0, 7), lancados: 0, estimados: 0 });
   }
   const byMonth = new Map(buckets.map((b) => [b.month, b]));
+
+  // Cards e barras usam a mesma janela. Um reenvio do mesmo dia nao vira um
+  // dia extra; dias de eventos diferentes continuam sendo trabalhos distintos.
+  const periodStart = sinceKey > (buckets[0]?.month + '-01') ? sinceKey : buckets[0]?.month + '-01';
+  const grouped = new Map();
+  const legacy = [];
+  for (const w of dailyWork || []) {
+    if (!w) continue;
+    if (!w.event_id) { legacy.push(w); continue; }
+    if (!grouped.has(w.event_id)) grouped.set(w.event_id, []);
+    grouped.get(w.event_id).push(w);
+  }
+  const uniqueDays = [...legacy, ...[...grouped.values()].flatMap((work) => dedupeWorkByDay(work))];
+  const rows = uniqueDays.filter((w) => {
+    const k = dayKey(w);
+    return k && k >= sinceKey && k <= today && byMonth.has(k.slice(0, 7));
+  });
 
   let somaLancados = 0; let qtdLancados = 0;
   let somaEstimados = 0; let qtdEstimados = 0;
@@ -139,6 +155,7 @@ export function hoursOriginStats(dailyWork = [], since, { months = 6, today = to
 
   return {
     since: sinceKey,
+    periodStart,
     months: buckets,
     totalLancados: qtdLancados,
     totalEstimados: qtdEstimados,

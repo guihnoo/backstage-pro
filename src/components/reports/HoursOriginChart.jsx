@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useReducedMotion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -36,6 +37,7 @@ function TooltipConteudo({ active, payload, label }) {
  */
 export default function HoursOriginChart({ dailyWork = [], since = REGIME_POR_DIA_DESDE }) {
   const { formatCurrency, isVisible } = useFinancialVisibility();
+  const reducedMotion = useReducedMotion();
   const stats = useMemo(() => hoursOriginStats(dailyWork, since), [dailyWork, since]);
 
   if (!stats) {
@@ -66,7 +68,7 @@ export default function HoursOriginChart({ dailyWork = [], since = REGIME_POR_DI
           <Clock className="w-4 h-4 text-emerald-400" /> Horas lançadas × 12 h automáticas
         </h3>
         <p className="text-xs text-slate-500 mt-0.5">
-          Desde {format(parseISO(stats.since), 'dd/MM/yyyy')} · {total} dia{total === 1 ? '' : 's'} de trabalho
+          Neste período, desde {format(parseISO(stats.periodStart), 'dd/MM/yyyy')} · {total} dia{total === 1 ? '' : 's'} de trabalho
         </p>
       </div>
 
@@ -97,9 +99,9 @@ export default function HoursOriginChart({ dailyWork = [], since = REGIME_POR_DI
               formatter={(value) => <span style={{ color: '#cbd5e1' }}>{value}</span>}
             />
             <Bar dataKey="lancados" name="Horas lançadas" stackId="dias" fill={COR_LANCADO}
-                 stroke={SUPERFICIE} strokeWidth={2} maxBarSize={28} />
+                 isAnimationActive={!reducedMotion} stroke={SUPERFICIE} strokeWidth={2} maxBarSize={28} />
             <Bar dataKey="estimados" name="12 h automáticas" stackId="dias" fill={COR_ESTIMADO}
-                 stroke={SUPERFICIE} strokeWidth={2} radius={[4, 4, 0, 0]} maxBarSize={28} />
+                 isAnimationActive={!reducedMotion} stroke={SUPERFICIE} strokeWidth={2} radius={[4, 4, 0, 0]} maxBarSize={28} />
           </BarChart>
         </ResponsiveContainer>
       </div>
