@@ -25,6 +25,11 @@ export function mapPayloadToDb(payload = {}) {
     notes: payload.description ?? payload.notes ?? null,
     photo_url: payload.photo_url ?? null,
     status: payload.status || 'completed',
+    // Lote 2 (migration 035). Só são enviados quando definidos — com a escolha por dia
+    // desligada (VITE_REGIME_POR_DIA), nada muda no que é gravado.
+    regime: payload.regime ?? null,
+    hora_extra: typeof payload.hora_extra === 'boolean' ? payload.hora_extra : null,
+    origem: payload.origem ?? null,
   };
 
   Object.keys(mapped).forEach((key) => {

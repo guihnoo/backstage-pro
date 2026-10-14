@@ -15,7 +15,8 @@ import { useAppScrollLock } from '@/lib/useAppScrollLock';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import EventHeading from '@/components/events/EventHeading';
-import { computeWorkDay, addMinutesToClock, isSameEntryExit } from '@/lib/workDay';
+import { computeWorkDay, addMinutesToClock, isSameEntryExit, REGIME_POR_DIA_ATIVO, defaultDayChoice } from '@/lib/workDay';
+import DayChoicePicker from '@/components/hours/DayChoicePicker';
 
 export default function EventHoursSheet({ 
   isOpen, 
@@ -68,7 +69,11 @@ export default function EventHoursSheet({
           notes: existingWork.notes || '',
           photo_url: existingWork.photo_url || '',
           next_day: isSameEntryExit(existingWork.entry_time, existingWork.exit_time)
-            && Number(existingWork.total_hours) >= 24
+            && Number(existingWork.total_hours) >= 24,
+          ...(() => {
+            const choice = defaultDayChoice(event, existingWork);
+            return { regime: choice.regime, hora_extra: choice.horaExtra };
+          })()
         });
       } else {
         // NOVO registro
@@ -86,7 +91,11 @@ export default function EventHoursSheet({
           exit_time: event?.end_time || '',
           notes: '',
           photo_url: '',
-          next_day: false
+          next_day: false,
+          ...(() => {
+            const choice = defaultDayChoice(event);
+            return { regime: choice.regime, hora_extra: choice.horaExtra };
+          })()
         });
       }
       
@@ -105,6 +114,8 @@ export default function EventHoursSheet({
     entry: formData.entry_time,
     exit: formData.exit_time,
     nextDay: formData.next_day,
+    // Lote 2: a escolha do dia (½ / 1 / 2 e hora extra) só vale com a migration 035 aplicada.
+    ...(REGIME_POR_DIA_ATIVO ? { regime: formData.regime, horaExtra: formData.hora_extra } : {}),
   });
 
   const validateField = (name, value) => {
@@ -216,7 +227,10 @@ export default function EventHoursSheet({
         overtime_hours: overtime,
         daily_cache: dailyCache,
         notes: formData.notes || null,
-        photo_url: formData.photo_url || null
+        photo_url: formData.photo_url || null,
+        ...(REGIME_POR_DIA_ATIVO
+          ? { regime: formData.regime, hora_extra: Boolean(formData.hora_extra), origem: 'lancada' }
+          : {})
       };
 
       if (existingWork?.id) {
@@ -417,6 +431,18 @@ export default function EventHoursSheet({
                   </div>
                 </div>
                 </div>
+
+                {REGIME_POR_DIA_ATIVO && (
+                  <DayChoicePicker
+                    regime={formData.regime}
+                    horaExtra={formData.hora_extra}
+                    accentColor={primaryHex}
+                    onChange={({ regime, horaExtra }) => {
+                      handleChange('regime', regime);
+                      handleChange('hora_extra', horaExtra);
+                    }}
+                  />
+                )}
 
                 {sameEntryExit && (
                   <label className="flex items-center gap-2 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-200 text-sm">

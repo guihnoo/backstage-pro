@@ -2,7 +2,7 @@ import { eachDayOfInterval, format, parseISO } from 'date-fns';
 import { supabase } from './supabase';
 import { mapPayloadToDb } from './useDailyWork';
 import { getEventStatus } from '@/components/utils/dateUtils';
-import { dayCacheForMinutes, JORNADA_PADRAO_MIN } from './workDay';
+import { dayCacheForMinutes, JORNADA_PADRAO_MIN, REGIME_POR_DIA_ATIVO } from './workDay';
 
 const DEFAULT_ENTRY = '08:00';
 const DEFAULT_EXIT = '20:00';
@@ -65,6 +65,18 @@ export async function applyAuto12Hours({ eventId, userId, origin = 'manual_12h' 
     }
 
     const dailyCache = dayCacheForMinutes(event, JORNADA_PADRAO_MIN);
+
+    // Lote 2 (migration 035): uma única transação no banco, com trava no evento,
+    // grava os dias faltantes como 'estimada' e liga a flag. Não duplica com duas abas.
+    if (REGIME_POR_DIA_ATIVO) {
+      const { data: created, error: rpcErr } = await supabase.rpc('aplicar_12h_automaticas', {
+        p_event_id: eventId,
+        p_daily_cache: dailyCache,
+        p_nota: origin === 'manual_12h' ? '12h automáticas (manual)' : '12h automáticas',
+      });
+      if (rpcErr) throw rpcErr;
+      return { data: { success: true, daysCreated: Number(created) || 0 } };
+    }
     const note = origin === 'manual_12h' ? '12h automáticas (manual)' : '12h automáticas';
 
     const rows = days.map((day) =>

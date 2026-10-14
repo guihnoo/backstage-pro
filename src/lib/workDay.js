@@ -111,21 +111,74 @@ export function dayCacheForMinutes(event, minutes) {
 }
 
 /**
+ * Lote 2: escolha por dia. Liga só depois que a migration 035 estiver aplicada no banco
+ * (senão o Supabase recusa as colunas novas). Variável de ambiente: VITE_REGIME_POR_DIA=true.
+ */
+export const REGIME_POR_DIA_ATIVO = (() => {
+  try {
+    return import.meta.env?.VITE_REGIME_POR_DIA === 'true';
+  } catch {
+    return false;
+  }
+})();
+
+export const REGIMES = [
+  { value: 'meia', label: '½', descricao: 'Meia (metade do cachê)', fator: 0.5 },
+  { value: 'cheia', label: '1', descricao: 'Cachê cheio', fator: 1 },
+  { value: 'dobra', label: '2', descricao: 'Dobra (2x o cachê)', fator: 2 },
+];
+
+const FATOR_REGIME = Object.fromEntries(REGIMES.map((r) => [r.value, r.fator]));
+
+export function isValidRegime(regime) {
+  return Object.prototype.hasOwnProperty.call(FATOR_REGIME, regime);
+}
+
+/** Sugestão inicial para um dia novo: cachê cheio; hora extra ligada se o evento é "Horas Extras". */
+export function defaultDayChoice(event, existing = null) {
+  return {
+    regime: isValidRegime(existing?.regime) ? existing.regime : 'cheia',
+    horaExtra: typeof existing?.hora_extra === 'boolean'
+      ? existing.hora_extra
+      : paymentModelOf(event) === MODELO_HORAS_EXTRAS,
+  };
+}
+
+/**
+ * Cachê do dia com a escolha do usuário: base x (½, 1 ou 2) + hora extra (cachê/12 por hora
+ * acima de 12 h) se ligada. A quantidade de horas NÃO muda o regime.
+ */
+export function dayCacheForChoice(event, minutes, { regime, horaExtra }) {
+  const mins = Math.max(0, Math.round(Number(minutes) || 0));
+  if (!event || mins <= 0) return 0;
+  const base = dailyBaseValue(event);
+  const fator = FATOR_REGIME[regime] ?? 1;
+  const overtimeMin = horaExtra ? Math.max(0, mins - JORNADA_PADRAO_MIN) : 0;
+  return round2(base * fator + (overtimeMin / 60) * (base / 12));
+}
+
+/**
  * Cálculo completo de um dia de trabalho.
  * Use `durationMinutes` quando a duração real é conhecida (ex.: cronômetro), o que
  * permite jornadas de 24 h ou mais, que o relógio HH:MM sozinho não representa.
+ * Com `regime` válido usa a escolha do usuário (Lote 2); sem ele, a regra antiga por modelo.
  */
-export function computeWorkDay({ event, entry, exit, nextDay = false, durationMinutes = null } = {}) {
+export function computeWorkDay({
+  event, entry, exit, nextDay = false, durationMinutes = null, regime = null, horaExtra = null,
+} = {}) {
   const minutes = durationMinutes != null && Number.isFinite(Number(durationMinutes))
     ? Math.max(0, Math.round(Number(durationMinutes)))
     : workedMinutes(entry, exit, { nextDay });
   const overtimeMinutes = Math.max(0, minutes - JORNADA_PADRAO_MIN);
+  const useChoice = isValidRegime(regime);
   return {
     minutes,
     overtimeMinutes,
     totalHours: round1(minutes / 60),
     overtimeHours: round1(overtimeMinutes / 60),
-    cache: dayCacheForMinutes(event, minutes),
+    cache: useChoice
+      ? dayCacheForChoice(event, minutes, { regime, horaExtra: Boolean(horaExtra) })
+      : dayCacheForMinutes(event, minutes),
     needsNextDayAnswer: durationMinutes == null && !nextDay && isSameEntryExit(entry, exit),
   };
 }

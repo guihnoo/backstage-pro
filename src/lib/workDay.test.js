@@ -8,6 +8,8 @@ import {
   dayCacheForMinutes,
   computeWorkDay,
   elapsedMsToMinutes,
+  dayCacheForChoice,
+  defaultDayChoice,
 } from './workDay';
 
 const horasExtras = { payment_model: 'HORAS_EXTRAS', daily_cache_value: 1200 };
@@ -127,6 +129,53 @@ describe('computeWorkDay', () => {
     const r = computeWorkDay({ event: horasExtras, entry: '08:00', exit: '20:30' });
     expect(r.cache).toBe(1250);
     expect(r.overtimeHours).toBe(0.5);
+  });
+});
+
+describe('Lote 2 — escolha por dia (½ / 1 / 2 e hora extra)', () => {
+  const ev = { payment_model: 'MEIO_CACHE_E_DOBRA', daily_cache_value: 500 };
+
+  it('meia = metade, cheia = cachê, dobra = 2x — independente das horas', () => {
+    expect(dayCacheForChoice(ev, 840, { regime: 'meia', horaExtra: false })).toBe(250);
+    expect(dayCacheForChoice(ev, 240, { regime: 'cheia', horaExtra: false })).toBe(500);
+    expect(dayCacheForChoice(ev, 300, { regime: 'dobra', horaExtra: false })).toBe(1000);
+  });
+
+  it('12:03 não dobra sozinho: com regime cheia continua o cachê', () => {
+    const r = computeWorkDay({ event: ev, entry: '08:00', exit: '20:03', regime: 'cheia', horaExtra: false });
+    expect(r.cache).toBe(500);
+  });
+
+  it('hora extra ligada soma cachê/12 por hora acima de 12 h', () => {
+    const r = computeWorkDay({ event: horasExtras, entry: '08:00', exit: '22:00', regime: 'cheia', horaExtra: true });
+    expect(r.cache).toBe(1400);
+  });
+
+  it('hora extra desligada não soma nada', () => {
+    const r = computeWorkDay({ event: horasExtras, entry: '08:00', exit: '22:00', regime: 'cheia', horaExtra: false });
+    expect(r.cache).toBe(1200);
+  });
+
+  it('dobra com hora extra: 2x + extras', () => {
+    expect(dayCacheForChoice(horasExtras, 840, { regime: 'dobra', horaExtra: true })).toBe(2600);
+  });
+
+  it('0 minuto não cobra, mesmo com escolha', () => {
+    expect(dayCacheForChoice(ev, 0, { regime: 'dobra', horaExtra: true })).toBe(0);
+  });
+
+  it('regime inválido cai na regra antiga por modelo', () => {
+    const r = computeWorkDay({ event: ev, entry: '08:00', exit: '12:00', regime: 'xyz' });
+    expect(r.cache).toBe(250);
+  });
+
+  it('sugestão: cheia; hora extra ligada só para evento "Horas Extras"', () => {
+    expect(defaultDayChoice(horasExtras)).toEqual({ regime: 'cheia', horaExtra: true });
+    expect(defaultDayChoice(ev)).toEqual({ regime: 'cheia', horaExtra: false });
+  });
+
+  it('sugestão respeita o que já foi gravado no dia', () => {
+    expect(defaultDayChoice(horasExtras, { regime: 'dobra', hora_extra: false })).toEqual({ regime: 'dobra', horaExtra: false });
   });
 });
 

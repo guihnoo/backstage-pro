@@ -8,7 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Clock, Loader2, Timer, Zap } from 'lucide-react';
 import appToast from '@/lib/appToast';
 import { getTimer, getElapsedMs, formatElapsed } from '@/lib/timerStore';
-import { computeWorkDay, addMinutesToClock, isSameEntryExit, elapsedMsToMinutes } from '@/lib/workDay';
+import { computeWorkDay, addMinutesToClock, isSameEntryExit, elapsedMsToMinutes, REGIME_POR_DIA_ATIVO, defaultDayChoice } from '@/lib/workDay';
+import DayChoicePicker from '@/components/hours/DayChoicePicker';
 import { normalizeDateString, formatDisplayDate } from '@/components/utils/dateUtils';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { useAuth } from '@/lib/authContext';
@@ -22,6 +23,8 @@ const emptyState = {
   notes: '',
   next_day: false,
   duration_min: null, // duração real vinda do cronômetro (permite 24 h ou mais)
+  regime: 'cheia',
+  hora_extra: true,
 };
 
 export default function DailyWorkModal({ isOpen, onClose, date, event, existingWork, onSuccess }) {
@@ -62,6 +65,8 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
         next_day: isSameEntryExit(existingWork.entry_time, existingWork.exit_time)
           && Number(existingWork.hours_worked ?? existingWork.total_hours) >= 24,
         duration_min: null,
+        regime: defaultDayChoice(event, existingWork).regime,
+        hora_extra: defaultDayChoice(event, existingWork).horaExtra,
       });
       return;
     }
@@ -73,6 +78,8 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
       notes: '',
       next_day: false,
       duration_min: null,
+      regime: defaultDayChoice(event).regime,
+      hora_extra: defaultDayChoice(event).horaExtra,
     });
   }, [isOpen, existingWork, date, event]);
 
@@ -84,9 +91,11 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
       exit: formData.exit_time,
       nextDay: formData.next_day,
       durationMinutes: formData.duration_min,
+      // Lote 2: a escolha do dia só vale com a migration 035 aplicada.
+      ...(REGIME_POR_DIA_ATIVO ? { regime: formData.regime, horaExtra: formData.hora_extra } : {}),
     });
     return { ...day, total: day.totalHours, overtime: day.overtimeHours };
-  }, [formData.entry_time, formData.exit_time, formData.next_day, formData.duration_min, event]);
+  }, [formData.entry_time, formData.exit_time, formData.next_day, formData.duration_min, formData.regime, formData.hora_extra, event]);
 
   const sameEntryExit = isSameEntryExit(formData.entry_time, formData.exit_time) && formData.duration_min == null;
 
@@ -136,6 +145,9 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
         overtime_hours: summary.overtime,
         daily_cache: summary.cache,
         description: formData.notes || null,
+        ...(REGIME_POR_DIA_ATIVO
+          ? { regime: formData.regime, hora_extra: Boolean(formData.hora_extra), origem: 'lancada' }
+          : {}),
       };
 
       if (existingWork?.id) {
@@ -247,6 +259,14 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                 </div>
               </div>
 
+              {REGIME_POR_DIA_ATIVO && (
+                <DayChoicePicker
+                  regime={formData.regime}
+                  horaExtra={formData.hora_extra}
+                  accentColor={primaryHex}
+                  onChange={({ regime, horaExtra }) => setFormData((prev) => ({ ...prev, regime, hora_extra: horaExtra }))}
+                />
+              )}
               {sameEntryExit && (
                 <label className="flex items-center gap-2 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-200 text-sm">
                   <input

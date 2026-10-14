@@ -6,7 +6,7 @@ import appToast from '@/lib/appToast';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/authContext';
 import { todayLocalISO } from '@/components/utils/dateUtils';
-import { computeWorkDay } from '@/lib/workDay';
+import { computeWorkDay, REGIME_POR_DIA_ATIVO, defaultDayChoice } from '@/lib/workDay';
 
 function nowTimeString() {
   const d = new Date();
@@ -90,7 +90,13 @@ export default function ModoPalcoActions({ event, accentColor = getCategoryConfi
     try {
       const exitTime = nowTimeString();
       // Regra única de horas e cachê (src/lib/workDay.js)
-      const day = computeWorkDay({ event, entry: record.entry_time, exit: exitTime });
+      const choice = defaultDayChoice(event, record);
+      const day = computeWorkDay({
+        event,
+        entry: record.entry_time,
+        exit: exitTime,
+        ...(REGIME_POR_DIA_ATIVO ? { regime: choice.regime, horaExtra: choice.horaExtra } : {}),
+      });
       const worked = { total: day.totalHours, overtime: day.overtimeHours };
       const cache = day.cache;
 
@@ -102,6 +108,9 @@ export default function ModoPalcoActions({ event, accentColor = getCategoryConfi
           overtime_hours: worked.overtime,
           daily_cache: cache,
           status: 'completed',
+          ...(REGIME_POR_DIA_ATIVO
+            ? { regime: choice.regime, hora_extra: choice.horaExtra, origem: 'lancada' }
+            : {}),
         })
         .eq('id', record.id)
         .select()
