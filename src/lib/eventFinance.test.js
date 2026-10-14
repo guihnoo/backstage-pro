@@ -9,8 +9,9 @@ import {
   sumReceivableAmount,
   daysOverduePayment,
   isPaymentOverdue,
+  dedupeWorkByDay,
 } from './eventFinance';
-import { getEventStatus } from '@/components/utils/dateUtils';
+import { getEventStatus, todayLocalISO } from '@/components/utils/dateUtils';
 
 const yesterday = format(addDays(new Date(), -1), 'yyyy-MM-dd');
 const twoDaysAgo = format(addDays(new Date(), -2), 'yyyy-MM-dd');
@@ -107,6 +108,45 @@ describe('calculateEventReceivableAmount — daily_work vs fallback', () => {
   it('cai no getEventCacheAmount quando work está vazio', () => {
     const ev = { estimated_revenue: 4500, start_date: yesterday, end_date: yesterday };
     expect(calculateEventReceivableAmount(ev, [])).toBe(4500);
+  });
+
+  it('evento de 3 dias com 1 registro: os outros 2 dias contam a diária (auditoria 1A)', () => {
+    const ev = { daily_cache_value: 1200, start_date: '2026-10-01', end_date: '2026-10-03' };
+    expect(calculateEventReceivableAmount(ev, [{ date: '2026-10-01', daily_cache: 1200 }])).toBe(3600);
+  });
+
+  it('dia com hora extra soma ao restante dos dias', () => {
+    const ev = { daily_cache_value: 1200, start_date: '2026-10-01', end_date: '2026-10-03' };
+    expect(calculateEventReceivableAmount(ev, [{ date: '2026-10-02', daily_cache: 1400 }])).toBe(3800);
+  });
+
+  it('dois registros no mesmo dia contam uma vez (vale o mais recente)', () => {
+    const ev = { daily_cache_value: 1200, start_date: '2026-10-01', end_date: '2026-10-01' };
+    const work = [
+      { date: '2026-10-01', daily_cache: 1200, updated_at: '2026-10-01T10:00:00Z' },
+      { date: '2026-10-01', daily_cache: 1400, updated_at: '2026-10-01T23:00:00Z' },
+    ];
+    expect(calculateEventReceivableAmount(ev, work)).toBe(1400);
+  });
+
+  it('sem daily_cache_value, dia faltante usa o total do evento dividido pelos dias', () => {
+    const ev = { estimated_revenue: 3000, start_date: '2026-10-01', end_date: '2026-10-03' };
+    expect(calculateEventReceivableAmount(ev, [{ date: '2026-10-01', daily_cache: 1000 }])).toBe(3000);
+  });
+});
+
+describe('todayLocalISO — fuso de São Paulo (auditorias 1A/1B)', () => {
+  it('23 h em São Paulo ainda é o mesmo dia, mesmo já sendo dia seguinte em UTC', () => {
+    expect(todayLocalISO(new Date('2026-10-14T02:00:00Z'))).toBe('2026-10-13');
+  });
+  it('depois da meia-noite em São Paulo vira o dia', () => {
+    expect(todayLocalISO(new Date('2026-10-14T03:30:00Z'))).toBe('2026-10-14');
+  });
+});
+
+describe('dedupeWorkByDay', () => {
+  it('mantém registros sem data', () => {
+    expect(dedupeWorkByDay([{ daily_cache: 1 }, { daily_cache: 2 }])).toHaveLength(2);
   });
 });
 

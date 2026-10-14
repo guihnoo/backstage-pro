@@ -72,10 +72,29 @@ export const isSameDay = (date1, date2) => {
   return normalized1 === normalized2;
 };
 
+export const APP_TIME_ZONE = 'America/Sao_Paulo';
+
+let saoPauloDateFormatter = null;
+
 /**
- * Data de hoje no fuso local (YYYY-MM-DD). Preferir em vez de toISOString().split('T')[0] (UTC).
+ * Data de hoje no fuso de São Paulo (YYYY-MM-DD), independente do relógio/fuso do aparelho.
+ * Preferir em vez de toISOString().split('T')[0] (UTC). Aceita `now` para testes.
  */
-export const todayLocalISO = () => format(new Date(), 'yyyy-MM-dd');
+export const todayLocalISO = (now = new Date()) => {
+  try {
+    if (!saoPauloDateFormatter) {
+      saoPauloDateFormatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: APP_TIME_ZONE,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
+    }
+    return saoPauloDateFormatter.format(now);
+  } catch {
+    return format(now, 'yyyy-MM-dd');
+  }
+};
 
 /**
  * Verifica se uma data é hoje

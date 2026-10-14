@@ -1,5 +1,5 @@
 import { parseISO, differenceInDays } from 'date-fns';
-import { getEventStatus } from '@/components/utils/dateUtils';
+import { getEventStatus, todayLocalISO } from '@/components/utils/dateUtils';
 
 const UNPAID_STATUSES = new Set(['pending', 'unpaid', 'partial']);
 
@@ -43,16 +43,56 @@ export function getEventCacheAmount(event) {
   return Number(event.daily_cache) || 0;
 }
 
-export function calculateEventReceivableAmount(event, dailyWorkForEvent = []) {
-  if (dailyWorkForEvent.length > 0) {
-    const fromWork = dailyWorkForEvent.reduce(
-      (sum, w) => sum + (w.daily_cache || w.daily_rate || 0),
-      0
-    );
-    if (fromWork > 0) return fromWork;
-  }
+function workDayKey(work) {
+  const raw = work?.date || work?.work_date;
+  return raw ? String(raw).slice(0, 10) : null;
+}
 
-  return getEventCacheAmount(event);
+function workStamp(work) {
+  return Date.parse(work?.updated_at || work?.created_at || '') || 0;
+}
+
+/**
+ * Um registro por dia: se houver dois no mesmo dia, vale o mais recente.
+ * Registros sem data são mantidos como estão (legado).
+ */
+export function dedupeWorkByDay(dailyWork = []) {
+  const byDay = new Map();
+  const undated = [];
+  for (const work of dailyWork) {
+    const key = workDayKey(work);
+    if (!key) {
+      undated.push(work);
+      continue;
+    }
+    const previous = byDay.get(key);
+    if (!previous || workStamp(work) >= workStamp(previous)) byDay.set(key, work);
+  }
+  return [...byDay.values(), ...undated];
+}
+
+/**
+ * Valor do evento considerando as horas lançadas.
+ * Cachê é por DIA de evento: cada dia lançado vale o que foi calculado nele e
+ * cada dia ainda sem registro vale a diária combinada. Um registro nunca apaga
+ * os outros dias (antes: evento de 3 dias com 1 registro caía de 3 para 1 diária).
+ */
+export function calculateEventReceivableAmount(event, dailyWorkForEvent = []) {
+  const rows = dedupeWorkByDay(dailyWorkForEvent || []);
+  const fromWork = rows.reduce(
+    (sum, w) => sum + (Number(w.daily_cache) || Number(w.daily_rate) || 0),
+    0
+  );
+  if (rows.length === 0 || fromWork <= 0) return getEventCacheAmount(event);
+
+  const days = calcEventDays(event);
+  const missingDays = Math.max(0, days - rows.length);
+  if (missingDays === 0) return Math.round(fromWork * 100) / 100;
+
+  const perDay = Number(event?.daily_cache_value) > 0
+    ? Number(event.daily_cache_value)
+    : getEventCacheAmount(event) / days;
+  return Math.round((fromWork + missingDays * perDay) * 100) / 100;
 }
 
 /** Soma valores a receber com a mesma regra do bloco A Receber. */
@@ -100,8 +140,8 @@ export function daysOverduePayment(event) {
 export function isPaymentOverdue(event) {
   if (!event || event.payment_status === 'paid') return false;
   if (event.payment_due_date) {
-    const today = new Date().toISOString().slice(0, 10);
-    return event.payment_due_date < today;
+    // "Hoje" no fuso de São Paulo (antes: UTC, que virava o dia às 21 h).
+    return String(event.payment_due_date).slice(0, 10) < todayLocalISO();
   }
   return daysSinceEventEnd(event) >= 7;
 }

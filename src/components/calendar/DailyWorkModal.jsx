@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Clock, Loader2, Timer, Zap } from 'lucide-react';
 import appToast from '@/lib/appToast';
-import { getTimer, getElapsedMs, formatElapsed, elapsedToHours } from '@/lib/timerStore';
+import { getTimer, getElapsedMs, formatElapsed } from '@/lib/timerStore';
+import { computeWorkDay, addMinutesToClock, isSameEntryExit, elapsedMsToMinutes } from '@/lib/workDay';
 import { normalizeDateString, formatDisplayDate } from '@/components/utils/dateUtils';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { useAuth } from '@/lib/authContext';
@@ -19,42 +20,8 @@ const emptyState = {
   entry_time: '',
   exit_time: '',
   notes: '',
-};
-
-const calculateHours = (entry, exit) => {
-  if (!entry || !exit) return { total: 0, overtime: 0 };
-
-  const [entryH, entryM] = entry.split(':').map(Number);
-  const [exitH, exitM] = exit.split(':').map(Number);
-  let entryMinutes = entryH * 60 + entryM;
-  let exitMinutes = exitH * 60 + exitM;
-
-  if (exitMinutes < entryMinutes) exitMinutes += 24 * 60;
-
-  const total = (exitMinutes - entryMinutes) / 60;
-  const overtime = Math.max(0, total - 12);
-
-  return {
-    total: Math.round(total * 10) / 10,
-    overtime: Math.round(overtime * 10) / 10,
-  };
-};
-
-const calculateCache = (event, totalHours, overtimeHours) => {
-  if (!event) return 0;
-
-  const baseValue = Number(event.daily_cache_value || 0);
-  const paymentModel = event.payment_model || 'HORAS_EXTRAS';
-
-  if (paymentModel === 'MEIO_CACHE_E_DOBRA') {
-    const base = Number(event.cache_valor_base || baseValue);
-    if (totalHours <= 6) return Math.round((base / 2) * 100) / 100;
-    if (totalHours <= 12) return Math.round(baseValue * 100) / 100;
-    return Math.round(base * 2 * 100) / 100;
-  }
-
-  const overtimeRate = baseValue / 12;
-  return Math.round((baseValue + overtimeHours * overtimeRate) * 100) / 100;
+  next_day: false,
+  duration_min: null, // duração real vinda do cronômetro (permite 24 h ou mais)
 };
 
 export default function DailyWorkModal({ isOpen, onClose, date, event, existingWork, onSuccess }) {
@@ -92,6 +59,9 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
         entry_time: existingWork.entry_time || '',
         exit_time: existingWork.exit_time || '',
         notes: existingWork.description || existingWork.notes || '',
+        next_day: isSameEntryExit(existingWork.entry_time, existingWork.exit_time)
+          && Number(existingWork.hours_worked ?? existingWork.total_hours) >= 24,
+        duration_min: null,
       });
       return;
     }
@@ -101,19 +71,32 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
       entry_time: event?.start_time || '',
       exit_time: event?.end_time || '',
       notes: '',
+      next_day: false,
+      duration_min: null,
     });
   }, [isOpen, existingWork, date, event]);
 
+  // Regra única de horas e cachê (src/lib/workDay.js)
   const summary = useMemo(() => {
-    const worked = calculateHours(formData.entry_time, formData.exit_time);
-    return {
-      ...worked,
-      cache: calculateCache(event, worked.total, worked.overtime),
-    };
-  }, [formData.entry_time, formData.exit_time, event]);
+    const day = computeWorkDay({
+      event,
+      entry: formData.entry_time,
+      exit: formData.exit_time,
+      nextDay: formData.next_day,
+      durationMinutes: formData.duration_min,
+    });
+    return { ...day, total: day.totalHours, overtime: day.overtimeHours };
+  }, [formData.entry_time, formData.exit_time, formData.next_day, formData.duration_min, event]);
+
+  const sameEntryExit = isSameEntryExit(formData.entry_time, formData.exit_time) && formData.duration_min == null;
 
   const setField = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+      // horário digitado à mão substitui a duração do cronômetro
+      ...(field === 'entry_time' || field === 'exit_time' ? { duration_min: null } : {}),
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -126,6 +109,16 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
 
     if (!formData.date || !formData.entry_time || !formData.exit_time) {
       appToast.error('Preencha data, entrada e saída.');
+      return;
+    }
+
+    if (summary.needsNextDayAnswer) {
+      appToast.error('Entrada e saída iguais. Se foram 24 horas, marque "Terminou no dia seguinte".');
+      return;
+    }
+
+    if (summary.minutes <= 0) {
+      appToast.error('Confira os horários de entrada e saída.');
       return;
     }
 
@@ -210,13 +203,17 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                     variant="outline"
                     className="text-xs border-amber-500/40 text-amber-300 hover:bg-amber-500/20 flex-shrink-0"
                     onClick={() => {
-                      const hours = elapsedToHours(timerElapsed);
-                      const totalMin = Math.round(hours * 60);
-                      const h = Math.floor(totalMin / 60);
-                      const m = totalMin % 60;
-                      const exitH = (parseInt(formData.entry_time?.split(':')[0] || '0', 10) + h) % 24;
-                      const exitM = (parseInt(formData.entry_time?.split(':')[1] || '0', 10) + m) % 60;
-                      setField('exit_time', `${String(exitH).padStart(2,'0')}:${String(exitM).padStart(2,'0')}`);
+                      // Duração real do cronômetro, em minutos, sem cortar em 24 h (auditoria 1A).
+                      const minutes = elapsedMsToMinutes(timerElapsed);
+                      const startedAt = new Date(timerForThisEvent.startedAt);
+                      const entry = formData.entry_time
+                        || `${String(startedAt.getHours()).padStart(2, '0')}:${String(startedAt.getMinutes()).padStart(2, '0')}`;
+                      setFormData((prev) => ({
+                        ...prev,
+                        entry_time: entry,
+                        exit_time: addMinutesToClock(entry, minutes),
+                        duration_min: minutes,
+                      }));
                     }}
                   >
                     Usar tempo
@@ -235,13 +232,7 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                         <button
                           key={h}
                           type="button"
-                          onClick={() => {
-                            const [entH, entM] = formData.entry_time.split(':').map(Number);
-                            const totalMin = entH * 60 + entM + h * 60;
-                            const exitH = Math.floor(totalMin / 60) % 24;
-                            const exitM = totalMin % 60;
-                            setField('exit_time', `${String(exitH).padStart(2,'0')}:${String(exitM).padStart(2,'0')}`);
-                          }}
+                          onClick={() => setField('exit_time', addMinutesToClock(formData.entry_time, h * 60))}
                           className="text-[10px] font-semibold px-1.5 py-0.5 rounded border border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200 transition-colors"
                         >
                           {h}h
@@ -255,6 +246,21 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                   <Input type="time" value={formData.exit_time} onChange={(e) => setField('exit_time', e.target.value)} className="bg-slate-800 border-slate-700 h-12 text-base" aria-label="Horário de saída" />
                 </div>
               </div>
+
+              {sameEntryExit && (
+                <label className="flex items-center gap-2 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-200 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={formData.next_day}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, next_day: e.target.checked }))}
+                    className="w-4 h-4"
+                  />
+                  Entrada e saída iguais: terminou no dia seguinte (24 h)?
+                </label>
+              )}
+              {formData.duration_min != null && (
+                <p className="text-xs text-amber-300 -mt-1">Usando a duração do cronômetro: {summary.total.toFixed(1)} h.</p>
+              )}
 
               {summary.total > 0 && (
                 <div className="grid grid-cols-3 gap-2">

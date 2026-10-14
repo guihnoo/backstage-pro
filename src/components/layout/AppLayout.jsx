@@ -3,10 +3,8 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import RouteSkeleton from '@/components/layout/RouteSkeleton';
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { Home, Calendar, BarChart2, Menu, Users, Receipt, Target, Sparkles, X } from 'lucide-react';
-import { useAuth } from '@/lib/authContext';
 import { useProfile } from '@/lib/profileOfflineContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
-import { checkCompletedEventsForAutoHours } from '@/lib/checkCompletedEventsForAutoHours';
 import AppTopBar, { getAppTopBarOffset } from '@/components/layout/AppTopBar';
 import OfflineBanner from '@/components/layout/OfflineBanner';
 import { prefetchRoute, prefetchCriticalRoutes } from '@/lib/routePrefetch';
@@ -35,21 +33,16 @@ function isNavActive(pathname, matchPath, end) {
 }
 
 export default function AppLayout() {
-  const { user } = useAuth();
   const profile = useProfile();
   const config = getCategoryConfig(profile?.category || 'lighting');
-  const autoHoursChecked = useRef(false);
   const mainRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
   const [showMoreSheet, setShowMoreSheet] = useState(false);
 
-  useEffect(() => {
-    const userId = user?.id;
-    if (!userId || autoHoursChecked.current) return;
-    autoHoursChecked.current = true;
-    checkCompletedEventsForAutoHours({ userId }).catch(() => {});
-  }, [user?.id]);
+  // As 12 h automáticas não rodam mais sozinhas ao abrir o app (auditoria 1B):
+  // o usuário aplica pelo botão "12h" do evento, e só os dias sem registro são preenchidos.
+  // Enquanto isso, dia sem registro já conta a diária no valor do evento (eventFinance).
 
   useEffect(() => {
     prefetchCriticalRoutes();

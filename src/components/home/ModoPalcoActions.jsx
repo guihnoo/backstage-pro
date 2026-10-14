@@ -6,39 +6,11 @@ import appToast from '@/lib/appToast';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/authContext';
 import { todayLocalISO } from '@/components/utils/dateUtils';
+import { computeWorkDay } from '@/lib/workDay';
 
 function nowTimeString() {
   const d = new Date();
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-}
-
-function calculateHours(entry, exit) {
-  if (!entry || !exit) return { total: 0, overtime: 0 };
-  const [entryH, entryM] = entry.split(':').map(Number);
-  const [exitH, exitM] = exit.split(':').map(Number);
-  let entryMinutes = entryH * 60 + entryM;
-  let exitMinutes = exitH * 60 + exitM;
-  if (exitMinutes < entryMinutes) exitMinutes += 24 * 60;
-  const total = (exitMinutes - entryMinutes) / 60;
-  const overtime = Math.max(0, total - 12);
-  return {
-    total: Math.round(total * 10) / 10,
-    overtime: Math.round(overtime * 10) / 10,
-  };
-}
-
-function calculateCache(event, totalHours, overtimeHours) {
-  if (!event) return 0;
-  const baseValue = Number(event.daily_cache_value || event.estimated_revenue || 0);
-  const paymentModel = event.payment_model || 'HORAS_EXTRAS';
-  if (paymentModel === 'MEIO_CACHE_E_DOBRA') {
-    const base = Number(event.cache_valor_base || baseValue);
-    if (totalHours <= 6) return Math.round((base / 2) * 100) / 100;
-    if (totalHours <= 12) return Math.round(baseValue * 100) / 100;
-    return Math.round(base * 2 * 100) / 100;
-  }
-  const overtimeRate = baseValue / 12;
-  return Math.round((baseValue + overtimeHours * overtimeRate) * 100) / 100;
 }
 
 import { getCategoryConfig } from '@/lib/categoryConfig';
@@ -117,8 +89,10 @@ export default function ModoPalcoActions({ event, accentColor = getCategoryConfi
     setSaving(true);
     try {
       const exitTime = nowTimeString();
-      const worked = calculateHours(record.entry_time, exitTime);
-      const cache = calculateCache(event, worked.total, worked.overtime);
+      // Regra única de horas e cachê (src/lib/workDay.js)
+      const day = computeWorkDay({ event, entry: record.entry_time, exit: exitTime });
+      const worked = { total: day.totalHours, overtime: day.overtimeHours };
+      const cache = day.cache;
 
       const { data, error } = await supabase
         .from('daily_work')
