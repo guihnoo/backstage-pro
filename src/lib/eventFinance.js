@@ -113,8 +113,10 @@ export function calculateEventReceivableAmount(event, dailyWorkForEvent = []) {
 
 function eachDayKey(start, end) {
   const s = Date.parse(String(start || '').slice(0, 10) + 'T00:00:00Z');
-  const e = Date.parse(String(end || start || '').slice(0, 10) + 'T00:00:00Z');
-  if (Number.isNaN(s) || Number.isNaN(e) || e < s) return [];
+  let e = Date.parse(String(end || start || '').slice(0, 10) + 'T00:00:00Z');
+  if (Number.isNaN(s)) return [];
+  // Fim inválido ou antes do início: conta pelo menos o dia de início (não libera a trava).
+  if (Number.isNaN(e) || e < s) e = s;
   const days = [];
   for (let t = s; t <= e && days.length < 400; t += 86400000) {
     days.push(new Date(t).toISOString().slice(0, 10));

@@ -107,6 +107,7 @@ export function useDailyWork() {
           .eq('user_id', userId)
           .eq('event_id', payload.event_id)
           .eq('date', payload.date)
+          .order('updated_at', { ascending: false })
           .limit(1);
         if (findErr) throw findErr;
         if (sameDay?.[0]?.id) {
@@ -131,7 +132,26 @@ export function useDailyWork() {
         .select()
         .single();
 
-      if (err) throw err;
+      if (err) {
+        // Corrida entre abas com o índice único (migration 036): vira atualização do dia.
+        if (err.code === '23505' && payload.event_id && payload.date) {
+          const patch = { ...payload };
+          delete patch.user_id;
+          const { data: raced, error: racedErr } = await supabase
+            .from('daily_work')
+            .update(patch)
+            .eq('user_id', userId)
+            .eq('event_id', payload.event_id)
+            .eq('date', payload.date)
+            .select()
+            .single();
+          if (racedErr) throw racedErr;
+          const mappedRaced = mapRowFromDb(raced);
+          setDailyWork((prev) => [mappedRaced, ...prev.filter((w) => w.id !== mappedRaced.id)]);
+          return mappedRaced;
+        }
+        throw err;
+      }
 
       const mapped = mapRowFromDb(result);
       setDailyWork((prev) => [mapped, ...prev]);

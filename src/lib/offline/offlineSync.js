@@ -204,6 +204,7 @@ async function findSameDayWork(userId, dbPayload) {
     .eq('user_id', userId)
     .eq('event_id', dbPayload.event_id)
     .eq('date', dbPayload.date)
+    .order('updated_at', { ascending: false })
     .limit(1);
   if (error) throw error;
   return data?.[0] || null;

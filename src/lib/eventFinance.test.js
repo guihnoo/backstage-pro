@@ -203,6 +203,22 @@ describe('getEventHoursStatus — Lote 3', () => {
     expect(isEstimatedWork({ origem: 'estimada' })).toBe(true);
   });
 
+  it('fim antes do início não libera a trava (conta o dia de início)', () => {
+    const r = getEventHoursStatus({ start_date: '2026-10-05', end_date: '2026-10-01' }, [], '2026-10-06');
+    expect(r.missing).toEqual(['2026-10-05']);
+    expect(r.complete).toBe(false);
+  });
+
+  it('sem end_date usa o dia de início', () => {
+    const r = getEventHoursStatus({ start_date: '2026-10-05' }, [], '2026-10-06');
+    expect(r.days).toHaveLength(1);
+  });
+
+  it('dia futuro não bloqueia', () => {
+    const r = getEventHoursStatus({ start_date: '2026-10-10', end_date: '2026-10-11' }, [], '2026-10-06');
+    expect(r.complete).toBe(true);
+  });
+
   it('evento de um dia só', () => {
     const r = getEventHoursStatus({ start_date: '2026-10-05', end_date: '2026-10-05' }, [], '2026-10-06');
     expect(r.missing).toEqual(['2026-10-05']);
