@@ -21,7 +21,13 @@ Com a variável desligada, o app funciona igual ao Lote 1 e não envia as coluna
 
 ## Como foi testado
 - Vitest: 161/161, incluindo as regras de escolha por dia e o mapeamento das colunas.
-- Laboratório local em PGlite (`C:\dev\_lab\ledger-pglite\daily-work-035.mjs`), sem tocar no Supabase: 18/18. Cobre:
+- Revisão independente (Cursor) da SQL. Ajustes aplicados:
+  - `revoke execute from public` (só usuário logado executa);
+  - tabelas qualificadas e `search_path = public, pg_temp`;
+  - `on conflict do nothing`;
+  - teto de 60 dias por evento.
+  - A política de `events` é "for all", então cobre o `for update` e o `update` da flag.
+- Laboratório local em PGlite (`C:\dev\_lab\ledger-pglite\daily-work-035.mjs`), sem tocar no Supabase: 22/22. Cobre:
   - migration idempotente e backfill;
   - restrições de valores;
   - a função cria só os dias faltantes e não duplica;

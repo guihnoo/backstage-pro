@@ -43,7 +43,7 @@ create or replace function aplicar_12h_automaticas(
 returns integer
 language plpgsql
 security invoker
-set search_path = public
+set search_path = public, pg_temp
 as $$
 declare
   v_event events%rowtype;
@@ -54,7 +54,7 @@ begin
   end if;
 
   select * into v_event
-    from events
+    from public.events
    where id = p_event_id and user_id = auth.uid()
    for update;
 
@@ -64,9 +64,12 @@ begin
   if v_event.status in ('cancelled', 'cancelado') then
     raise exception 'evento cancelado';
   end if;
+  if coalesce(v_event.end_date, v_event.start_date) - v_event.start_date > 60 then
+    raise exception 'evento com mais de 60 dias: lance as horas manualmente';
+  end if;
 
   -- work_date: coluna legada que o app também grava (mapPayloadToDb envia date e work_date).
-  insert into daily_work (user_id, event_id, date, work_date, entry_time, exit_time,
+  insert into public.daily_work (user_id, event_id, date, work_date, entry_time, exit_time,
                           total_hours, overtime_hours, daily_cache, status, notes,
                           regime, hora_extra, origem)
   select auth.uid(), p_event_id, d::date, d::date, '08:00', '20:00',
@@ -74,18 +77,21 @@ begin
          'cheia', false, 'estimada'
     from generate_series(v_event.start_date, coalesce(v_event.end_date, v_event.start_date), interval '1 day') as d
    where not exists (
-           select 1 from daily_work w
+           select 1 from public.daily_work w
             where w.user_id = auth.uid()
               and w.event_id = p_event_id
               and w.date = d::date
-         );
+         )
+  on conflict do nothing; -- com o índice da 036, um insert direto concorrente não aborta a série
   get diagnostics v_criados = row_count;
 
-  update events set auto_hours_applied = true
+  update public.events set auto_hours_applied = true
    where id = p_event_id and user_id = auth.uid();
 
   return v_criados;
 end;
 $$;
 
+-- Só usuários logados executam (o Postgres dá EXECUTE a PUBLIC por padrão).
+revoke execute on function aplicar_12h_automaticas(uuid, numeric, text) from public;
 grant execute on function aplicar_12h_automaticas(uuid, numeric, text) to authenticated;
