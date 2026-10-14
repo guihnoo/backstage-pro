@@ -148,6 +148,32 @@ describe('dedupeWorkByDay', () => {
   it('mantém registros sem data', () => {
     expect(dedupeWorkByDay([{ daily_cache: 1 }, { daily_cache: 2 }])).toHaveLength(2);
   });
+
+  it('turno aberto mais novo (valor 0) não apaga o dia já fechado', () => {
+    const rows = dedupeWorkByDay([
+      { date: '2026-10-01', daily_cache: 1200, updated_at: '2026-10-01T10:00:00Z' },
+      { date: '2026-10-01', daily_cache: 0, updated_at: '2026-10-01T23:00:00Z' },
+    ]);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].daily_cache).toBe(1200);
+  });
+});
+
+describe('calculateEventReceivableAmount — revisão independente do Lote 1', () => {
+  it('registro fora das datas do evento não ocupa um dia do evento', () => {
+    const ev = { daily_cache_value: 1000, start_date: '2026-10-01', end_date: '2026-10-02' };
+    expect(calculateEventReceivableAmount(ev, [{ date: '2026-09-30', daily_cache: 1000 }])).toBe(3000);
+  });
+
+  it('dia faltante usa cache_valor_base quando não há daily_cache_value', () => {
+    const ev = { cache_valor_base: 800, start_date: '2026-10-01', end_date: '2026-10-02' };
+    expect(calculateEventReceivableAmount(ev, [{ date: '2026-10-01', daily_cache: 800 }])).toBe(1600);
+  });
+
+  it('com actual_revenue total e registro parcial, o dia faltante vale o total dividido pelos dias', () => {
+    const ev = { actual_revenue: 2000, start_date: '2026-10-01', end_date: '2026-10-02' };
+    expect(calculateEventReceivableAmount(ev, [{ date: '2026-10-01', daily_cache: 1000 }])).toBe(2000);
+  });
 });
 
 describe('isReceivableEvent — payment_status (comportamento existente)', () => {

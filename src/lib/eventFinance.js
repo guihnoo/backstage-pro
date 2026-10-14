@@ -1,5 +1,6 @@
 import { parseISO, differenceInDays } from 'date-fns';
 import { getEventStatus, todayLocalISO } from '@/components/utils/dateUtils';
+import { dailyBaseValue } from './workDay';
 
 const UNPAID_STATUSES = new Set(['pending', 'unpaid', 'partial']);
 
@@ -52,8 +53,13 @@ function workStamp(work) {
   return Date.parse(work?.updated_at || work?.created_at || '') || 0;
 }
 
+function workValue(work) {
+  return Number(work?.daily_cache) || Number(work?.daily_rate) || 0;
+}
+
 /**
- * Um registro por dia: se houver dois no mesmo dia, vale o mais recente.
+ * Um registro por dia: se houver dois no mesmo dia, vale o mais recente que tenha
+ * valor (um turno ainda aberto, com valor 0, não apaga o dia já fechado).
  * Registros sem data são mantidos como estão (legado).
  */
 export function dedupeWorkByDay(dailyWork = []) {
@@ -66,9 +72,19 @@ export function dedupeWorkByDay(dailyWork = []) {
       continue;
     }
     const previous = byDay.get(key);
-    if (!previous || workStamp(work) >= workStamp(previous)) byDay.set(key, work);
+    const better = !previous
+      || (workValue(work) > 0 && workValue(previous) <= 0)
+      || ((workValue(work) > 0) === (workValue(previous) > 0) && workStamp(work) >= workStamp(previous));
+    if (better) byDay.set(key, work);
   }
   return [...byDay.values(), ...undated];
+}
+
+function isWithinEvent(event, dayKey) {
+  const start = String(event?.start_date || '').slice(0, 10);
+  const end = String(event?.end_date || event?.start_date || '').slice(0, 10);
+  if (!start) return true;
+  return dayKey >= start && dayKey <= end;
 }
 
 /**
@@ -79,19 +95,19 @@ export function dedupeWorkByDay(dailyWork = []) {
  */
 export function calculateEventReceivableAmount(event, dailyWorkForEvent = []) {
   const rows = dedupeWorkByDay(dailyWorkForEvent || []);
-  const fromWork = rows.reduce(
-    (sum, w) => sum + (Number(w.daily_cache) || Number(w.daily_rate) || 0),
-    0
-  );
+  const fromWork = rows.reduce((sum, w) => sum + workValue(w), 0);
   if (rows.length === 0 || fromWork <= 0) return getEventCacheAmount(event);
 
   const days = calcEventDays(event);
-  const missingDays = Math.max(0, days - rows.length);
+  // Só registros dentro das datas do evento ocupam um dia (sem data = legado, ocupa).
+  const coveredDays = rows.filter((w) => {
+    const key = workDayKey(w);
+    return !key || isWithinEvent(event, key);
+  }).length;
+  const missingDays = Math.max(0, days - coveredDays);
   if (missingDays === 0) return Math.round(fromWork * 100) / 100;
 
-  const perDay = Number(event?.daily_cache_value) > 0
-    ? Number(event.daily_cache_value)
-    : getEventCacheAmount(event) / days;
+  const perDay = dailyBaseValue(event) || getEventCacheAmount(event) / days;
   return Math.round((fromWork + missingDays * perDay) * 100) / 100;
 }
 
