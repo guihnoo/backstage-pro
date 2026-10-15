@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from './supabase';
 import { useRealtimeRefetch } from './useRealtimeRefetch';
+import { withCompanyLogo } from './companyEnrichment';
 import { differenceInDays, parseISO } from 'date-fns';
 import { todayLocalISO, countUniqueWorkDays } from '@/components/utils/dateUtils';
 import {
@@ -267,12 +268,12 @@ export function useClients(userId) {
       try {
         const { data, error: err } = await supabase
           .from('clients')
-          .select('*')
+          .select('*, company:companies(logo_url)')
           .eq('user_id', userId)
           .order('created_at', { ascending: false });
 
         if (err) throw err;
-        setClients(data || []);
+        setClients((data || []).map(withCompanyLogo));
       } catch (err) {
         setError(err.message);
       } finally {

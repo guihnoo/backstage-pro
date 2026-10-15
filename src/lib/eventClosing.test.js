@@ -38,6 +38,15 @@ describe('buildEventClosing — relatório de fechamento do evento inteiro', () 
     expect(r.total).toBe(1350);
   });
 
+  it('reembolso já pago não é cobrado de novo e valor em texto é somado', () => {
+    const r = buildEventClosing({ ...ev, end_date: '2026-10-01' }, [{ date: '2026-10-01', daily_cache: 1200 }], [
+      { amount: '150.50', is_reimbursable: true },
+      { amount: 99, is_reimbursable: true, reimbursed: true },
+    ]);
+    expect(r.totalReembolsos).toBe(150.5);
+    expect(r.total).toBe(1350.5);
+  });
+
   it('meia/dobra: valor do dia vira diária, sem hora extra separada', () => {
     const e = { payment_model: 'MEIO_CACHE_E_DOBRA', daily_cache_value: 500, start_date: '2026-10-01', end_date: '2026-10-01' };
     const r = buildEventClosing(e, [{ date: '2026-10-01', total_hours: 14, overtime_hours: 2, daily_cache: 1000 }]);

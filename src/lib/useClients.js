@@ -1,9 +1,12 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from './supabase';
 import { useAuth } from './authContext';
 import { useRealtimeRefetch } from './useRealtimeRefetch';
-import { companyPatchFromClient } from './companyEnrichment';
+import { companyPatchFromClient, stripInheritedLogo, withCompanyLogo } from './companyEnrichment';
 import { enrichCompanyById, upsertCompanyRecord } from './companyService';
+
+/** Ficha pessoal + só o logo do catálogo (para mostrar quando a ficha não tem logo próprio). */
+export const CLIENT_SELECT = '*, company:companies(logo_url)';
 
 export async function linkClientToCompanyAfterCreate(client, userId) {
   if (!client || client.client_type === 'pessoa' || !userId) return client;
@@ -16,9 +19,7 @@ export async function linkClientToCompanyAfterCreate(client, userId) {
         {
           name: client.name.trim(),
           trading_name: client.name.trim(),
-          phone: client.phone,
-          email: client.email,
-          logo_url: client.logo_url,
+          logo_url: client.logo_from_company ? null : client.logo_url,
           source: 'manual',
         },
         userId,
@@ -59,6 +60,8 @@ export function useClients() {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const clientsRef = useRef(clients);
+  clientsRef.current = clients;
 
   const refetch = useCallback(async ({ silent = false } = {}) => {
     if (!userId) {
@@ -70,11 +73,11 @@ export function useClients() {
     try {
       const { data, error: err } = await supabase
         .from('clients')
-        .select('*')
+        .select(CLIENT_SELECT)
         .eq('user_id', userId)
         .order('name', { ascending: true });
       if (err) throw err;
-      setClients(data || []);
+      setClients((data || []).map(withCompanyLogo));
     } catch (e) {
       setError(e.message);
     } finally {
@@ -87,7 +90,7 @@ export function useClients() {
   useEffect(() => { refetch(); }, [refetch]);
 
   const create = useCallback(async (data) => {
-    const payload = { ...data, user_id: userId };
+    const payload = { ...stripInheritedLogo(data), user_id: userId };
     delete payload.owner_id;
 
     let { data: result, error: err } = await supabase
@@ -114,17 +117,19 @@ export function useClients() {
   }, [userId]);
 
   const update = useCallback(async (id, data) => {
-    const payload = { ...data };
+    const original = clientsRef.current.find((c) => c.id === id);
+    const payload = stripInheritedLogo(data, original);
     delete payload.id;
     delete payload.user_id;
     delete payload.owner_id;
-    const { data: result, error: err } = await supabase
+    const { data: row, error: err } = await supabase
       .from('clients')
       .update(payload)
       .eq('id', id)
-      .select()
+      .select(CLIENT_SELECT)
       .single();
     if (err) throw err;
+    const result = withCompanyLogo(row);
 
     const companyId = result.company_id;
     const patch = companyPatchFromClient(result);

@@ -8,7 +8,7 @@ import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import {
   User, Phone, MapPin, Mail, LogOut, Save, Loader2, CheckCircle, Eye, EyeOff, Download,
-  DollarSign, Target, Calendar, Camera, MessageCircle, Inbox, ChevronRight, Compass, BookOpen,
+  DollarSign, Target, Calendar, Camera, MessageCircle, Inbox, Building2, ChevronRight, Compass, BookOpen,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import FeedbackModal from '@/components/feedback/FeedbackModal';
@@ -638,6 +638,18 @@ export default function ProfileSimple() {
                 )}
                 <ChevronRight className="w-4 h-4 text-slate-600" />
               </div>
+            </Link>
+          )}
+          {owner && (
+            <Link
+              to="/admin/empresas"
+              className="w-full flex items-center justify-between gap-3 py-3 px-4 rounded-xl border border-slate-700/50 hover:bg-slate-800/40 transition-colors min-w-0"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <Building2 className="w-5 h-5 shrink-0" style={{ color: config.primaryHex }} />
+                <span className="text-sm font-semibold text-white">Catálogo de empresas</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-600 shrink-0" />
             </Link>
           )}
         </NeonGlass>

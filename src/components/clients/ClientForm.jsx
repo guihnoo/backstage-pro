@@ -159,12 +159,14 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
     const autoNotes = buildCompanyNotes(company);
     const clearbitLogo = company.domain ? `https://logo.clearbit.com/${company.domain}` : null;
 
+    // Contato só é copiado quando é dado oficial (consulta de CNPJ), nunca o que outro usuário digitou.
+    const official = company.verified === true || ['brasilapi', 'cnpja', 'nfe'].includes(company.source);
     setFormData(prev => ({
       ...prev,
       name: nomeFantasia || prev.name,
       razao_social: razaoSocial || prev.razao_social,
-      email: company.email || prev.email,
-      phone: company.phone || prev.phone,
+      email: (official && company.email) || prev.email,
+      phone: (official && company.phone) || prev.phone,
       contact_person: company.contact_person || prev.contact_person,
       logo_url: prev.logo_url || company.logo_url || clearbitLogo || '',
       notes: autoNotes
@@ -215,6 +217,11 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
       return;
     }
 
+    // Logo herdado do catálogo (ficha sem logo próprio) não é gravado na ficha pessoal.
+    const ownLogo = client?.logo_from_company && formData.logo_url === client.logo_url
+      ? null
+      : formData.logo_url || null;
+
     setLoading(true);
 
     try {
@@ -230,8 +237,6 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
           const companyPayload = selectedCompany || {
             name: formData.name.trim(),
             trading_name: formData.name.trim(),
-            phone: formData.phone || null,
-            email: formData.email || null,
             logo_url: formData.logo_url || null,
             source: 'manual',
           };
@@ -257,7 +262,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
         contact_person: formData.contact_person || null,
         email: formData.email || null,
         phone: formData.phone || null,
-        logo_url: formData.logo_url || null,
+        logo_url: ownLogo,
         invoice_portal_url: formData.invoice_portal_url || null,
         notes: notesValue,
         policy_default_payment_model: formData.policy_default_payment_model || null,
@@ -291,7 +296,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
             contact_person: formData.contact_person || null,
             email: formData.email || null,
             phone: formData.phone || null,
-            logo_url: formData.logo_url || null,
+            logo_url: ownLogo,
             invoice_portal_url: formData.invoice_portal_url || null,
             notes: formData.notes || null,
             policy_default_payment_model: formData.policy_default_payment_model || null,

@@ -20,7 +20,9 @@ const C = {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function fmt(value) {
-  const n = typeof value === 'number' && !Number.isNaN(value) ? value : 0;
+  // O banco pode devolver valores como texto ("150.50"); converte antes de formatar.
+  const parsed = Number(value);
+  const n = Number.isFinite(parsed) ? parsed : 0;
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n);
 }
 

@@ -78,7 +78,8 @@ export function buildEventClosing(event, dailyWork = [], expenses = []) {
     };
   });
 
-  const reembolsaveis = (expenses || []).filter((e) => e?.is_reimbursable);
+  // Só cobra do cliente o reembolso que ainda não foi pago.
+  const reembolsaveis = (expenses || []).filter((e) => e?.is_reimbursable && !e?.reimbursed);
   const totalDiarias = money(rows.reduce((s, r) => s + r.diaria, 0));
   const totalHorasExtras = money(rows.reduce((s, r) => s + r.horasExtras, 0));
   const totalAlimentacao = money(rows.reduce((s, r) => s + r.alimentacao, 0));
