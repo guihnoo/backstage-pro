@@ -30,6 +30,7 @@ const ReceiptAnalyzer = lazy(() => import('@/components/expenses/ReceiptAnalyzer
 
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { todayLocalISO } from '@/components/utils/dateUtils';
 
 const CATEGORY_LABELS = {
   transporte: 'Transporte',
@@ -209,7 +210,7 @@ export default function ExpensesPage() {
     const { pullDistance, isRefreshing, threshold } = usePullToRefresh(refreshExpenses);
 
     const allExpenses = useMemo(() => Array.isArray(expenses) ? expenses : [], [expenses]);
-    const currentMonthKey = new Date().toISOString().substring(0, 7);
+    const currentMonthKey = todayLocalISO().slice(0, 7);
 
     // Eventos que têm pelo menos uma despesa
     const eventsWithExpenses = useMemo(() => {

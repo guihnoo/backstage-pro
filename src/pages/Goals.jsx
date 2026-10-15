@@ -31,6 +31,7 @@ import EventHeading from '@/components/events/EventHeading';
 import { Ellipsis } from '@/components/ui/overflowText';
 import { computeEventsNeededForGoal, computeGoalStreak, paidRevenueInMonth } from '@/lib/goalMetrics';
 import { Skeleton } from '@/components/ui/skeleton';
+import { todayLocalISO } from '@/components/utils/dateUtils';
 
 function CirclesSkeleton() {
   return (
@@ -297,7 +298,7 @@ export default function Goals() {
   const { paidEvents, workByEvent, refetch: refetchPaidEvents } = usePaidEvents(userId);
 
   // Próximos shows agendados
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayLocalISO();
   const { events: upcomingEvents, refetch: refetchUpcoming } = useEvents(userId, { from: today, limit: 4, ascending: true });
 
   const refreshData = useCallback(async () => {

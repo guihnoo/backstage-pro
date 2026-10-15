@@ -1,4 +1,5 @@
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { buildEventClosing } from './eventClosing';
 
 // ── Palette (matches the reference PDF) ──────────────────────────────────────
 const C = {
@@ -179,7 +180,7 @@ const COL1 = [
   { label: 'Subtotal',          flex: 0.9  },
 ];
 
-function DailyTable({ work, event }) {
+function DailyTable({ rows, event }) {
   const totalFlex = COL1.reduce((s, c) => s + c.flex, 0);
   return (
     <View>
@@ -191,29 +192,28 @@ function DailyTable({ work, event }) {
           </View>
         ))}
       </View>
-      {/* rows */}
-      {work.map((w, i) => {
-        const isTravel = !w.entry_time && !w.exit_time;
-        const schedule = isTravel
-          ? 'Deslocamento / Viagem'
-          : `${w.entry_time || ''} às ${w.exit_time || ''}`;
-        const local = w.notes ? String(w.notes).substring(0, 22) : (event?.location || '-');
-        const heHours = w.overtime_hours ? `${w.overtime_hours}h` : '-';
-        const totalH = w.total_hours ? `${w.total_hours}h` : '-';
-        const meal = w.meal_allowance ? fmt(w.meal_allowance) : 'R$ 0,00';
-        const base = w.daily_cache || 0;
-        const subtotal = base + (w.meal_allowance || 0);
+      {/* rows: todos os dias do evento (fechamento do evento inteiro) */}
+      {rows.map((r, i) => {
+        const w = r.work;
+        let schedule;
+        if (!w) schedule = 'Sem horas lançadas (diária)';
+        else if (!w.entry_time && !w.exit_time) schedule = 'Deslocamento / Viagem';
+        else schedule = `${w.entry_time || ''} às ${w.exit_time || ''}${r.status === 'estimado' ? ' (12 h automáticas)' : ''}`;
+        const local = w?.notes && r.status !== 'estimado' ? String(w.notes).substring(0, 22) : (event?.location || '-');
+        const heHours = r.overtimeHours ? `${r.overtimeHours}h` : '-';
+        const totalH = r.totalHours ? `${r.totalHours}h` : '-';
+        const meal = r.alimentacao ? fmt(r.alimentacao) : 'R$ 0,00';
         const rowStyle = [s.tRow, i % 2 === 1 ? { backgroundColor: C.rowAlt } : {}];
         return (
-          <View key={w.id || i} style={rowStyle} wrap={false}>
-            <View style={{ flex: COL1[0].flex / totalFlex }}><Text style={s.tCell}>{fmtShortDate(w.date || w.work_date)}</Text></View>
+          <View key={r.date || i} style={rowStyle} wrap={false}>
+            <View style={{ flex: COL1[0].flex / totalFlex }}><Text style={s.tCell}>{fmtShortDate(r.date)}</Text></View>
             <View style={{ flex: COL1[1].flex / totalFlex }}><Text style={s.tCell}>{local}</Text></View>
             <View style={{ flex: COL1[2].flex / totalFlex }}><Text style={s.tCellMuted}>{schedule}</Text></View>
             <View style={{ flex: COL1[3].flex / totalFlex }}><Text style={s.tCell}>{totalH}</Text></View>
             <View style={{ flex: COL1[4].flex / totalFlex }}><Text style={s.tCell}>{heHours}</Text></View>
             <View style={{ flex: COL1[5].flex / totalFlex }}><Text style={s.tCellMuted}>{meal}</Text></View>
-            <View style={{ flex: COL1[6].flex / totalFlex }}><Text style={s.tCell}>{fmt(base)}</Text></View>
-            <View style={{ flex: COL1[7].flex / totalFlex }}><Text style={{ ...s.tCell, fontFamily: 'Helvetica-Bold' }}>{fmt(subtotal)}</Text></View>
+            <View style={{ flex: COL1[6].flex / totalFlex }}><Text style={s.tCell}>{fmt(r.diaria)}</Text></View>
+            <View style={{ flex: COL1[7].flex / totalFlex }}><Text style={{ ...s.tCell, fontFamily: 'Helvetica-Bold' }}>{fmt(r.subtotal)}</Text></View>
           </View>
         );
       })}
@@ -230,15 +230,14 @@ const COL2 = [
   { label: 'Total\nAcumulado',       flex: 1.0 },
 ];
 
-function OvertimeTable({ work, dailyRate }) {
+function OvertimeTable({ closing }) {
   const totalFlex = COL2.reduce((s, c) => s + c.flex, 0);
-  const totalOT = work.reduce((sum, w) => sum + (w.overtime_hours || 0), 0);
-  if (totalOT === 0) return null;
-
-  const avgDailyCache = work.filter(w => w.daily_cache).reduce((sum, w) => sum + (w.daily_cache || 0), 0)
-    / (work.filter(w => w.daily_cache).length || 1);
-  const hourCost = (dailyRate || avgDailyCache || 0) / 12;
-  const totalOTValue = totalOT * hourCost;
+  // Mesmos números do fechamento: a hora extra já faz parte do valor de cada dia,
+  // aqui ela só é detalhada (não é somada de novo).
+  const totalOT = closing.totalHorasExtrasQtd;
+  const hourCost = closing.valorHora;
+  const totalOTValue = closing.totalHorasExtras;
+  if (!totalOTValue) return null;
 
   return (
     <View>
@@ -251,7 +250,7 @@ function OvertimeTable({ work, dailyRate }) {
       </View>
       <View style={[s.tRow]} wrap={false}>
         <View style={{ flex: COL2[0].flex / totalFlex }}>
-          <Text style={s.tCell}>Horas Extras Executadas (Acúmulo do período das diárias)</Text>
+          <Text style={s.tCell}>Horas extras acima de 12 h por dia (já incluídas no subtotal de cada dia)</Text>
         </View>
         <View style={{ flex: COL2[1].flex / totalFlex }}>
           <Text style={s.tCell}>{totalOT} {totalOT === 1 ? 'hora' : 'horas'}</Text>
@@ -346,34 +345,20 @@ export function EventPDFDocument({ event, client, work = [], expenses = [], prof
   const periodo = endDate ? `${startDate} a ${endDate}` : startDate;
   const emissao = new Date().toLocaleDateString('pt-BR');
 
-  // Trabalho ordenado por data
-  const sortedWork = [...work].sort((a, b) => {
-    const da = a.date || a.work_date || '';
-    const db = b.date || b.work_date || '';
-    return da < db ? -1 : da > db ? 1 : 0;
-  });
+  // Fechamento do evento inteiro (todos os dias, sem somar hora extra duas vezes)
+  const closing = buildEventClosing(event, work, expenses);
+  const workDays = closing.rows.filter((r) => r.work && (r.work.entry_time || r.work.exit_time)).length
+    + closing.semHoras.length;
+  const travelDays = closing.rows.filter((r) => r.work && !r.work.entry_time && !r.work.exit_time).length;
 
-  // Cálculos
-  const dailyRate = profile.daily_rate || 0;
-  const workDays = sortedWork.filter(w => w.entry_time || w.exit_time).length;
-  const travelDays = sortedWork.filter(w => !w.entry_time && !w.exit_time).length;
+  const subtotalDiarias = closing.totalDiarias + closing.totalAlimentacao;
+  const totalOT = closing.totalHorasExtrasQtd;
+  const subtotalHE = closing.totalHorasExtras;
+  const reimbursable = closing.reembolsaveis;
+  const subtotalReembolsos = closing.totalReembolsos;
+  const totalReceber = closing.total;
 
-  const subtotalDiarias = sortedWork.reduce((sum, w) => {
-    return sum + (w.daily_cache || 0) + (w.meal_allowance || 0);
-  }, 0);
-
-  const totalOT = sortedWork.reduce((sum, w) => sum + (w.overtime_hours || 0), 0);
-  const avgDaily = sortedWork.filter(w => w.daily_cache).reduce((sum, w) => sum + (w.daily_cache || 0), 0)
-    / (sortedWork.filter(w => w.daily_cache).length || 1);
-  const hourCost = (dailyRate || avgDaily || 0) / 12;
-  const subtotalHE = totalOT * hourCost;
-
-  const reimbursable = expenses.filter(e => e.is_reimbursable);
-  const subtotalReembolsos = reimbursable.reduce((sum, e) => sum + (e.amount || 0), 0);
-
-  const totalReceber = subtotalDiarias + subtotalHE + subtotalReembolsos;
-
-  const hasHE = totalOT > 0;
+  const hasHE = subtotalHE > 0;
   const hasReembolsos = reimbursable.length > 0;
 
   const diariasLabel = travelDays > 0
@@ -413,10 +398,10 @@ export function EventPDFDocument({ event, client, work = [], expenses = [], prof
         </View>
 
         {/* ── Seção 1 ───────────────────────────────────────────────────── */}
-        {sortedWork.length > 0 && (
+        {closing.rows.length > 0 && (
           <View>
             <SectionTitle>1. CONTROLE DE DIÁRIAS E HORAS TRABALHADAS</SectionTitle>
-            <DailyTable work={sortedWork} event={event} />
+            <DailyTable rows={closing.rows} event={event} />
           </View>
         )}
 
@@ -424,7 +409,7 @@ export function EventPDFDocument({ event, client, work = [], expenses = [], prof
         {hasHE && (
           <View>
             <SectionTitle>2. APURAÇÃO DE HORAS EXTRAS (H.E.)</SectionTitle>
-            <OvertimeTable work={sortedWork} dailyRate={dailyRate} />
+            <OvertimeTable closing={closing} />
           </View>
         )}
 
@@ -441,7 +426,7 @@ export function EventPDFDocument({ event, client, work = [], expenses = [], prof
         {/* ── Summary ───────────────────────────────────────────────────── */}
         <View style={s.summaryWrap}>
           <View style={s.summaryBox}>
-            {sortedWork.length > 0 && (
+            {closing.rows.length > 0 && (
               <View style={s.summaryRow}>
                 <Text style={s.summaryLabel}>Subtotal Diárias ({diariasLabel}):</Text>
                 <Text style={s.summaryVal}>{fmt(subtotalDiarias)}</Text>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from './supabase';
 import { useAuth } from './authContext';
+import { todayLocalISO } from '@/components/utils/dateUtils';
 
 export const INTERACTION_TYPES = {
   whatsapp: { label: 'WhatsApp', color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/20' },
@@ -52,7 +53,7 @@ export function useClientInteractions(clientId) {
 
 // Para o AlertsPanel — busca follow-ups pendentes de todos os clientes
 export async function fetchPendingFollowUps(userId) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayLocalISO();
   const { data } = await supabase
     .from('client_interactions')
     .select('*, clients(name)')

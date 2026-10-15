@@ -2,7 +2,7 @@
  * Utilitários WhatsApp — cobrança, contato e relatório de evento (Brasil).
  */
 
-import { getEventCacheAmount } from '@/lib/eventFinance';
+import { buildEventClosing } from './eventClosing';
 
 export function formatWhatsAppNumber(phone) {
   if (!phone) return null;
@@ -140,10 +140,11 @@ export function buildEventReport({ event, client, work = [], expenses = [] }) {
     : null;
   const dateLine = endDate ? `${startDate} a ${endDate}` : (startDate || '');
 
-  const totalHours = work.reduce((sum, w) => sum + (w.total_hours || 0), 0);
-  const totalEarned = work.reduce((sum, w) => sum + (w.daily_cache || 0), 0);
-
-  const cacheValue = totalEarned > 0 ? totalEarned : getEventCacheAmount(event);
+  // Fechamento do evento inteiro: todos os dias, dia sem horas entra com a diária
+  // (antes um único dia lançado substituía as outras diárias — auditoria 15/10).
+  const closing = buildEventClosing(event, work, expenses);
+  const totalHours = closing.totalHoras;
+  const cacheValue = closing.totalServicos;
 
   const reimbursableExpenses = expenses.filter(e => e.is_reimbursable && !e.reimbursed);
   const totalReimbursable = reimbursableExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
@@ -167,6 +168,23 @@ export function buildEventReport({ event, client, work = [], expenses = [] }) {
 
   if (totalHours > 0) {
     lines.push(`Horas trabalhadas: ${totalHours.toFixed(1)}h`);
+  }
+  if (closing.totalHorasExtras > 0) {
+    lines.push(`Horas extras: ${closing.totalHorasExtrasQtd}h (${formatBRL(closing.totalHorasExtras)}, já no cachê)`);
+  }
+  if (closing.rows.length > 1 || closing.semHoras.length > 0) {
+    lines.push(``);
+    lines.push(`*Dias do evento*`);
+    for (const r of closing.rows) {
+      const dia = `${r.date.slice(8, 10)}/${r.date.slice(5, 7)}`;
+      if (r.status === 'sem_horas') {
+        lines.push(`• ${dia} — diária ${formatBRL(r.subtotal)} (sem horas lançadas)`);
+      } else {
+        const horario = r.entry && r.exit ? `${r.entry}–${r.exit} · ` : '';
+        const extra = r.overtimeHours > 0 ? ` (${r.overtimeHours}h extra)` : '';
+        lines.push(`• ${dia} — ${horario}${r.totalHours}h${extra} · ${formatBRL(r.subtotal)}`);
+      }
+    }
   }
 
   if (expenses.length > 0) {

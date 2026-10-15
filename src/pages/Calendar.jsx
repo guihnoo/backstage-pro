@@ -298,7 +298,11 @@ export default function CalendarPage() {
     const map = new Map();
     for (const day of weekDays) {
       const iso = format(day, 'yyyy-MM-dd');
-      map.set(iso, filteredEvents.filter(ev => (ev.start_date || '').slice(0, 10) === iso));
+      map.set(iso, filteredEvents.filter(ev => {
+        const start = (ev.start_date || '').slice(0, 10);
+        const end = (ev.end_date || ev.start_date || '').slice(0, 10);
+        return start && iso >= start && iso <= end;
+      }));
     }
     return map;
   }, [weekDays, filteredEvents]);
@@ -307,8 +311,8 @@ export default function CalendarPage() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayIso = format(today, 'yyyy-MM-dd');
-    const upcoming = activeEvents
-      .filter(ev => (ev.start_date || '') >= todayIso)
+    const upcoming = filteredEvents
+      .filter(ev => (ev.end_date || ev.start_date || '') >= todayIso)
       .sort((a, b) => (a.start_date > b.start_date ? 1 : -1));
 
     const groups = [];
@@ -316,7 +320,8 @@ export default function CalendarPage() {
       const evDate = parseISO(ev.start_date);
       const diff = differenceInCalendarDays(evDate, today);
       let groupKey, groupLabel;
-      if (diff === 0)        { groupKey = 'hoje';         groupLabel = 'Hoje'; }
+      // diff < 0: show de vários dias que já começou e ainda não terminou
+      if (diff <= 0)         { groupKey = 'hoje';         groupLabel = 'Hoje'; }
       else if (diff === 1)   { groupKey = 'amanha';       groupLabel = 'Amanhã'; }
       else if (diff <= 7)    { groupKey = 'esta_semana';  groupLabel = 'Esta semana'; }
       else if (diff <= 14)   { groupKey = 'proxima';      groupLabel = 'Próxima semana'; }
@@ -328,7 +333,7 @@ export default function CalendarPage() {
       g.events.push({ ev, diff });
     }
     return groups;
-  }, [activeEvents]);
+  }, [filteredEvents]);
 
   const todayStr = todayLocalISO();
   const isLiveShiftToday = useMemo(() => {
@@ -1788,7 +1793,7 @@ export default function CalendarPage() {
                           {canQuickPay && (
                             <button
                               type="button"
-                              onClick={() => handleMarkPaid(ev)}
+                              onClick={() => requestMarkPaid(ev)}
                               title="Marcar como pago"
                               className="p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition-colors"
                             >
@@ -2111,6 +2116,15 @@ export default function CalendarPage() {
         description={buildHoursGateMessage(hoursGate?.status)}
         cancelLabel="Lançar horas"
         confirmLabel="Cobrar assim mesmo"
+        onCancel={() => {
+          const ev = hoursGate?.event;
+          const date = hoursGate?.status?.missing?.[0];
+          setHoursGate(null);
+          if (ev && date) {
+            setMobileHoursEventData({ event: ev, date, existingWork: undefined });
+            setShowMobileHoursSheet(true);
+          }
+        }}
         onConfirm={() => {
           const ev = hoursGate?.event;
           setHoursGate(null);

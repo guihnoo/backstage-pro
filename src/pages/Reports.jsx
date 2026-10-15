@@ -510,8 +510,10 @@ export default function ReportsPage() {
       // Total de despesas
       const totalExpenses = sumExpenses(periodExpenses);
 
-      // Receita total (realizada + a receber)
-      const totalRevenue = realizedRevenue + receivableRevenue;
+      // Receita do período = o que foi RECEBIDO no período (caixa).
+      // "A receber" é o saldo em aberto hoje, de todos os meses: não entra no lucro do mês
+      // (antes entrava e misturava meses — auditoria 15/10, P0).
+      const totalRevenue = realizedRevenue;
 
       // Lucro líquido
       const netProfit = totalRevenue - totalExpenses;
@@ -570,7 +572,8 @@ export default function ReportsPage() {
       next: nextData,
       trends: {
         revenue: calculateTrend(currentData.totalRevenue, previousData.totalRevenue),
-        receivable: calculateTrend(currentData.receivableRevenue, previousData.receivableRevenue),
+        // Saldo em aberto não tem comparação por período.
+        receivable: null,
         profit: calculateTrend(currentData.netProfit, previousData.netProfit),
         clients: calculateTrend(currentData.activeClientsCount, previousData.activeClientsCount)
       },
@@ -632,9 +635,9 @@ export default function ReportsPage() {
       case 'lucro':
         setModalTitle('Composição do Lucro Líquido');
         setModalData([
-          { title: 'Receita Total', subtitle: 'Faturamento + A Receber', value: current.totalRevenue },
+          { title: 'Recebido no período', subtitle: 'Pagamentos com data neste período', value: current.totalRevenue },
           { title: 'Despesas Totais', subtitle: 'Gastos do período', value: -current.totalExpenses },
-          { title: 'Lucro Líquido', subtitle: 'Receita - Despesas', value: current.netProfit }]
+          { title: 'Lucro Líquido', subtitle: 'Recebido - Despesas', value: current.netProfit }]
         );
         break;
       case 'clientes': {

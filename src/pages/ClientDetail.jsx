@@ -40,9 +40,9 @@ import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { hardNavigate } from '@/lib/hardNavigate';
-import { calculateEventReceivableAmount } from '@/lib/eventFinance';
+import { calculateEventReceivableAmount, isReceivableEvent } from '@/lib/eventFinance';
 import { getEventReceivedAmount } from '@/lib/financeMetrics';
-import { getEventStatus } from '@/components/utils/dateUtils';
+import { getEventStatus, todayLocalISO } from '@/components/utils/dateUtils';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import { DEFAULT_EVENT_COLOR } from '@/lib/brandColors';
@@ -114,7 +114,7 @@ export default function ClientDetailPage() {
     [events, clientId]
   );
 
-  const todayIso = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const todayIso = useMemo(() => todayLocalISO(), []);
 
   const upcomingEvents = useMemo(() =>
     clientEvents
@@ -175,7 +175,9 @@ export default function ClientDetailPage() {
     const totalRevenue = clientEvents.reduce((sum, e) => sum + getEventRevenue(e), 0);
     const totalHours = clientWork.reduce((sum, work) => sum + (work.total_hours || 0), 0);
     const paidEvents = clientEvents.filter(e => e.payment_status === 'paid');
-    const unpaidEvents = clientEvents.filter(e => e.payment_status !== 'paid');
+    // Mesma regra do "a receber" em todo o app: show concluído, não cancelado e não pago.
+    // Antes entravam shows futuros e cancelados (auditoria 15/10).
+    const unpaidEvents = clientEvents.filter(isReceivableEvent);
 
     const paidAmount = paidEvents.reduce(
       (sum, e) => sum + getEventReceivedAmount(e, clientWork.filter(w => w.event_id === e.id)),

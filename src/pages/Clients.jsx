@@ -30,7 +30,7 @@ import {
   isValid
 } from 'date-fns';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
-import { getEventStatus } from '@/components/utils/dateUtils';
+import { getEventStatus, todayLocalISO } from '@/components/utils/dateUtils';
 import { calculateEventReceivableAmount } from '@/lib/eventFinance';
 import { openWhatsAppCharge, buildChargeMessage, formatWhatsAppNumber } from '@/lib/whatsapp';
 import { useMediaQuery } from '@/components/hooks/useMediaQuery';
@@ -158,7 +158,7 @@ export default function ClientsPage() {
       });
       const isActive = recentEvents.length > 0;
 
-      const todayStr = new Date().toISOString().split('T')[0];
+      const todayStr = todayLocalISO();
       const sortedEvents = clientEvents
         .filter(e => e.start_date)
         .sort((a, b) => new Date(b.start_date) - new Date(a.start_date));
@@ -581,7 +581,7 @@ export default function ClientsPage() {
                         </div>
                       </div>
                       {client.stats.nextEventDate && (() => {
-                        const diffDays = Math.round((new Date(client.stats.nextEventDate + 'T00:00:00') - new Date(new Date().toISOString().split('T')[0] + 'T00:00:00')) / 86400000);
+                        const diffDays = Math.round((new Date(client.stats.nextEventDate + 'T00:00:00') - new Date(todayLocalISO() + 'T00:00:00')) / 86400000);
                         return (
                           <div className="mt-3 flex items-center gap-2">
                             <Calendar className="w-3.5 h-3.5 flex-shrink-0 text-slate-500" />

@@ -362,7 +362,7 @@ export function useCountdown(eventDate) {
     function updateCountdown() {
       const target = parseISO(eventDate);
       const now = new Date();
-      const todayStr = now.toISOString().split('T')[0];
+      const todayStr = todayLocalISO(now);
       setIsTodayFlag(eventDate.startsWith(todayStr));
 
       const diff = target - now;

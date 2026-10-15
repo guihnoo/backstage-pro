@@ -17,6 +17,7 @@ import { getEventCacheAmount } from '@/lib/eventFinance';
 import { useStatusToggle } from '@/lib/useStatusToggle';
 import { useEvents } from '@/lib/useEvents';
 import { captureEventLocationFromGps, mapsUrlForCoords } from '@/lib/eventLocation';
+import { todayLocalISO } from '@/components/utils/dateUtils';
 
 function getEventDateStr(event) {
   return event?.start_date || event?.event_date || null;
@@ -72,7 +73,7 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
   };
 
   const live = isOnStage || isLiveShift;
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = todayLocalISO();
   const isToday = !live && eventDateStr === todayStr;
 
   if (isLoading) {

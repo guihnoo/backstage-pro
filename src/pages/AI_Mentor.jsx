@@ -17,6 +17,7 @@ import { getEventCacheAmount } from '@/lib/eventFinance';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import LiveClockBar from '@/components/home/LiveClockBar';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
+import { todayLocalISO } from '@/components/utils/dateUtils';
 
 const STORAGE_KEY = 'backstage_ai_conversations';
 const MAX_HISTORY = 20;
@@ -119,7 +120,7 @@ export default function AIMentorPage() {
   const { user, profile } = useAuth();
   const { stats } = useStats(user?.id);
   const { clients } = useClients();
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayLocalISO();
   const { events } = useEvents(user?.id, { from: today, limit: 10, ascending: true });
   const config = getCategoryConfig(profile?.category || 'lighting');
   const { formatCurrency, isVisible } = useFinancialVisibility();

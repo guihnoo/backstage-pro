@@ -1496,6 +1496,11 @@ export default function EventDetailModal({
       title="Faltam horas neste evento"
       description={buildHoursGateMessage(hoursStatus)}
       cancelLabel="Lançar horas"
+      onCancel={() => {
+        const date = hoursStatus?.missing?.[0];
+        setActiveTab('trabalho');
+        if (date) openWorkModal(date, null);
+      }}
       confirmLabel="Cobrar assim mesmo"
       onConfirm={() => { setHoursGateOpen(false); onMarkPaid?.(); }}
     />

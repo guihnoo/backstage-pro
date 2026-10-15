@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import { getEventCacheAmount } from '@/lib/eventFinance';
+import { todayLocalISO } from '@/components/utils/dateUtils';
 
 const C = {
   navy:    '#1B4882',
@@ -97,13 +98,13 @@ export function ReceiptPDFDocument({ event, client, settings = {} }) {
 
   const amount = event?.paid_amount ? Number(event.paid_amount) : getEventCacheAmount(event);
 
-  const paidDateStr  = event?.paid_date ? fmtLong(event.paid_date) : fmtLong(new Date().toISOString().slice(0, 10));
+  const paidDateStr  = event?.paid_date ? fmtLong(event.paid_date) : fmtLong(todayLocalISO());
   const eventDateStr = event?.start_date ? fmtDate(event.start_date) : '';
   const eventEndStr  = event?.end_date   ? fmtDate(event.end_date)   : '';
   const venue        = event?.location   || '';
   const city         = event?.location_city || '';
   const rn           = recNum();
-  const today        = fmtLong(new Date().toISOString().slice(0, 10));
+  const today        = fmtLong(todayLocalISO());
 
   return (
     <Document title={`Recibo ${rn}`} author={techName}>

@@ -24,6 +24,7 @@ import { differenceInDays, parseISO, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { buildUserNotifications } from '@/lib/notificationRules';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
+import { todayLocalISO } from '@/components/utils/dateUtils';
 
 const DISMISSED_KEY = 'backstage_dismissed_notifications';
 
@@ -135,7 +136,7 @@ export default function NotificationCenter({ compact = false }) {
   // Limpa dismissed antigos (> 3 dias) a cada abertura
   useEffect(() => {
     if (!isOpen) return;
-    const today = new Date().toISOString().split('T')[0];
+    const today = todayLocalISO();
     setDismissed(prev => {
       const fresh = new Set(
         [...prev].filter(id => {
