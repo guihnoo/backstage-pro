@@ -8,6 +8,11 @@
 -- ORDEM SEGURA: aplicar esta migration ANTES de ligar VITE_REGIME_POR_DIA=true no app.
 -- É idempotente (pode rodar de novo sem erro).
 
+-- O app (e a migration 005) grava a observação em "notes", mas no banco real a tabela só
+-- tinha "description" (conferido em 16/10): salvar horas com observação e as 12 h automáticas
+-- falhavam. Cria a coluna; os textos antigos continuam em "description" e o app lê os dois.
+alter table daily_work add column if not exists notes text;
+
 alter table daily_work add column if not exists regime text;
 alter table daily_work add column if not exists hora_extra boolean;
 alter table daily_work add column if not exists origem text not null default 'lancada';
@@ -29,7 +34,7 @@ end $$;
 update daily_work
    set origem = 'estimada'
  where origem = 'lancada'
-   and notes like '12h automáticas%';
+   and coalesce(notes, description) like '12h automáticas%';
 
 -- 12 h automáticas numa única transação, só nos dias sem registro.
 -- SECURITY INVOKER: roda com as permissões (RLS) do próprio usuário.
