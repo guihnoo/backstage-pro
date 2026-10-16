@@ -20,7 +20,6 @@ import { withChunkReload } from '@/lib/chunkReload';
 // logado não baixa as telas de login/cadastro/termos.
 const LoginNew = lazy(withChunkReload(() => import('./pages/LoginNew')));
 const SignupNew = lazy(withChunkReload(() => import('./pages/SignupNew')));
-const AppLayout = lazy(withChunkReload(() => import('@/components/layout/AppLayout')));
 const PrivacyPolicyPage = lazy(withChunkReload(() => import('./pages/PrivacyPolicy')));
 const TermsOfServicePage = lazy(withChunkReload(() => import('./pages/TermsOfService')));
 
@@ -130,13 +129,21 @@ export const router = createBrowserRouter([
       },
       {
         path: '/',
-        element: (
-          <PrivateRoute>
-            <FinancialVisibilityProvider>
-              <AppLayout />
-            </FinancialVisibilityProvider>
-          </PrivateRoute>
-        ),
+        // Moldura carregada pelo próprio roteador: assim ela e a tela (Início, Agenda…) são
+        // baixadas AO MESMO TEMPO. Antes a moldura só começava depois da tela (3,4 s no celular).
+        lazy: async () => {
+          const { default: AppLayout } = await withChunkReload(() => import('@/components/layout/AppLayout'))();
+          function PrivateAppLayout() {
+            return (
+              <PrivateRoute>
+                <FinancialVisibilityProvider>
+                  <AppLayout />
+                </FinancialVisibilityProvider>
+              </PrivateRoute>
+            );
+          }
+          return { Component: PrivateAppLayout, HydrateFallback: RouteLoading };
+        },
         children: [
           { index: true, lazy: wrapPage(() => import('./pages/Home')) },
           { path: 'calendar', lazy: wrapPage(() => import('./pages/Calendar')) },

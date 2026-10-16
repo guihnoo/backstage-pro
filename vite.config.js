@@ -85,6 +85,9 @@ export default defineConfig({
           if (/\/node_modules\/(clsx|tailwind-merge|class-variance-authority)\//.test(p)) return 'vendor-utils';
           if (/\/node_modules\/(recharts|recharts-scale|victory-vendor|d3-[^/]+|internmap|decimal\.js-light)\//.test(p)) return 'vendor-charts';
           if (/\/node_modules\/@svg-maps\/brazil\//.test(p)) return 'vendor-brazil-map';
+          // Ícones num arquivo só: separados, cada ícone virava um arquivo e o celular fazia
+          // dezenas de pedidos minúsculos em fila (1,6 s na abertura do Início).
+          if (/\/node_modules\/lucide-react\//.test(p)) return 'vendor-icons';
           // @radix-ui fica sem grupo: cada tela baixa só os componentes que usa
           // (o login usa 1 ou 2; o grupo inteiro tinha 58 KB gzip).
           return undefined;

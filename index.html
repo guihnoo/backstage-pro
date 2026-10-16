@@ -34,7 +34,16 @@
   </script>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- Tela inicial instantânea: aparece antes de qualquer JavaScript (antes ficava tudo
+         preto por ~4 s no celular) e o React a substitui quando o app abre. -->
+    <style>
+      #bp-boot{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#050609;color:#e5e7eb;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+      #bp-boot b{font-size:20px;letter-spacing:.04em}
+      #bp-boot i{display:block;width:120px;height:3px;border-radius:2px;background:linear-gradient(90deg,transparent,#EAB308,transparent);background-size:200% 100%;animation:bpb 1.1s linear infinite}
+      @keyframes bpb{from{background-position:200% 0}to{background-position:-200% 0}}
+      @media (prefers-reduced-motion:reduce){#bp-boot i{animation:none;background:#EAB30866}}
+    </style>
+    <div id="root"><div id="bp-boot" role="status" aria-label="Abrindo o Backstage Pro"><b>BACKSTAGE PRO</b><i></i></div></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
