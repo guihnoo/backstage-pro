@@ -32,6 +32,9 @@ import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
 import { useExpenses } from '@/lib/useExpenses';
 import { useDailyWork } from '@/lib/useDailyWork';
+import { LOOP } from '@/lib/liteMotion';
+import { buildMonthSummary, findRecentMissingHours } from '@/lib/homeSummary';
+import HomeMonthSummary from '@/components/home/HomeMonthSummary';
 
 const EventDetailModal = lazy(() => import('@/components/calendar/EventDetailModal'));
 const EventForm = lazy(() => import('@/components/calendar/EventForm'));
@@ -184,11 +187,17 @@ export default function Home() {
 
   const todayWork = useMemo(() => getWorkForDate(cockpitDailyWork, today), [cockpitDailyWork, today]);
 
+  const monthSummary = useMemo(() => buildMonthSummary(cockpitStats, profile), [cockpitStats, profile]);
+  const missingHours = useMemo(
+    () => findRecentMissingHours(events || [], hookDailyWork || [], today),
+    [events, hookDailyWork, today],
+  );
+
   const currentMonth = today.substring(0, 7); // 'YYYY-MM'
   const despesasMes = useMemo(
     () => (expenses || [])
       .filter(e => (e.expense_date || e.date || '').startsWith(currentMonth))
-      .reduce((sum, e) => sum + (e.amount || 0), 0),
+      .reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
     [expenses, currentMonth]
   );
 
@@ -264,7 +273,7 @@ export default function Home() {
           className="absolute top-0 left-0 right-0 h-0.5 z-10"
           style={{ background: `linear-gradient(90deg, transparent, ${config.primaryHex}, transparent)` }}
           animate={{ opacity: palcoAtivo ? [0.6, 1, 0.6] : 0.4 }}
-          transition={{ duration: 2, repeat: Infinity }}
+          transition={{ duration: 2, repeat: LOOP }}
         />
         <div className="relative z-10 px-4 pt-2 pb-5 max-w-2xl mx-auto">
           <div className="mb-5 pr-28">
@@ -304,7 +313,7 @@ export default function Home() {
               >
                 <motion.span
                   animate={{ scale: [1, 1.05, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
+                  transition={{ duration: 1, repeat: LOOP }}
                   className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold w-fit"
                   style={{ background: `${config.primaryHex}33`, border: `1px solid ${config.primaryHex}66` }}
                 >
@@ -334,6 +343,16 @@ export default function Home() {
       </motion.header>
 
       <div className="px-4 py-6 max-w-2xl xl:max-w-6xl mx-auto w-full min-w-0 pb-28">
+        {/* Resumo do mês + lembrete de horas (Conselho #3, ideias 2 e 3) */}
+        {!cockpitLoading && (
+          <HomeMonthSummary
+            summary={monthSummary}
+            missing={missingHours}
+            onOpenEvent={setDetailEvent}
+            primaryHex={config.primaryHex}
+          />
+        )}
+
         {/* Bloco 1 — Palco */}
         <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Palco">
           {cockpitLoading ? (

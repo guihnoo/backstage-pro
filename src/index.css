@@ -359,3 +359,18 @@ body:has([role="alertdialog"][data-state="open"]) [data-app-scroll] {
   --tw-ring-shadow: 0 0 #0000;
   --tw-ring-offset-shadow: 0 0 #0000;
 }
+
+/* Animações leves em CSS (substituem framer-motion na primeira carga: spinner e avisos). */
+@keyframes bp-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes bp-toast-in {
+  from { opacity: 0; transform: translateY(-12px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+.bp-fade-in { animation: bp-fade-in 0.2s ease-out both; }
+.bp-toast-in { animation: bp-toast-in 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.15) both; }
+@media (prefers-reduced-motion: reduce) {
+  .bp-fade-in, .bp-toast-in { animation: none; }
+}

@@ -71,13 +71,23 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-motion': ['framer-motion'],
-          'vendor-supabase': ['@supabase/supabase-js'],
-          'vendor-charts': ['recharts'],
-          'vendor-brazil-map': ['@svg-maps/brazil'],
-          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-select', '@radix-ui/react-dropdown-menu', '@radix-ui/react-popover', '@radix-ui/react-tabs', '@radix-ui/react-tooltip'],
+        // Separação por pacote exato. A forma antiga (lista de pacotes) puxava as dependências
+        // junto: o "clsx" do recharts caía em vendor-charts e o login baixava os gráficos
+        // inteiros (113 KB gzip) só para juntar nomes de classes CSS.
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined;
+          const p = id.replace(/\\/g, '/');
+          if (/\/node_modules\/(react|react-dom|react-router|react-router-dom|scheduler)\//.test(p)) return 'vendor-react';
+          if (/\/node_modules\/(framer-motion|motion-dom|motion-utils)\//.test(p)) return 'vendor-motion';
+          if (/\/node_modules\/@supabase\//.test(p)) return 'vendor-supabase';
+          // Utilitários pequenos usados pelo app inteiro E pelo recharts: pacote próprio,
+          // senão o Rollup os coloca dentro de vendor-charts.
+          if (/\/node_modules\/(clsx|tailwind-merge|class-variance-authority)\//.test(p)) return 'vendor-utils';
+          if (/\/node_modules\/(recharts|recharts-scale|victory-vendor|d3-[^/]+|internmap|decimal\.js-light)\//.test(p)) return 'vendor-charts';
+          if (/\/node_modules\/@svg-maps\/brazil\//.test(p)) return 'vendor-brazil-map';
+          // @radix-ui fica sem grupo: cada tela baixa só os componentes que usa
+          // (o login usa 1 ou 2; o grupo inteiro tinha 58 KB gzip).
+          return undefined;
         },
       },
     },

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from './supabase';
 import { useRealtimeRefetch } from './useRealtimeRefetch';
 import { withCompanyLogo } from './companyEnrichment';
+import { dedupeRequest } from './requestDedupe';
 import { differenceInDays, parseISO } from 'date-fns';
 import { todayLocalISO, countUniqueWorkDays } from '@/components/utils/dateUtils';
 import {
@@ -266,11 +267,12 @@ export function useClients(userId) {
 
     async function fetchClients() {
       try {
-        const { data, error: err } = await supabase
+        // Mesma consulta da lista de clientes (useClients): pedidos simultâneos viram um só.
+        const { data, error: err } = await dedupeRequest(`clients:${userId}`, () => supabase
           .from('clients')
           .select('*, company:companies(logo_url)')
           .eq('user_id', userId)
-          .order('created_at', { ascending: false });
+          .order('name', { ascending: true }));
 
         if (err) throw err;
         setClients((data || []).map(withCompanyLogo));

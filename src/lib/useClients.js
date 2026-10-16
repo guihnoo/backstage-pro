@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from './supabase';
 import { useAuth } from './authContext';
 import { useRealtimeRefetch } from './useRealtimeRefetch';
+import { dedupeRequest } from './requestDedupe';
 import { companyPatchFromClient, stripInheritedLogo, withCompanyLogo } from './companyEnrichment';
 import { enrichCompanyById, upsertCompanyRecord } from './companyService';
 
@@ -71,11 +72,11 @@ export function useClients() {
     if (!silent) setLoading(true);
     setError(null);
     try {
-      const { data, error: err } = await supabase
+      const { data, error: err } = await dedupeRequest(`clients:${userId}`, () => supabase
         .from('clients')
         .select(CLIENT_SELECT)
         .eq('user_id', userId)
-        .order('name', { ascending: true });
+        .order('name', { ascending: true }));
       if (err) throw err;
       setClients((data || []).map(withCompanyLogo));
     } catch (e) {

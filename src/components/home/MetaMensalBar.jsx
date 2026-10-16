@@ -3,6 +3,7 @@ import { Target, ChevronRight, Trophy } from 'lucide-react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LOOP } from '@/lib/liteMotion';
 
 function ProgressBar({ value, max, color }) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
@@ -87,7 +88,7 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           {bothGoalsReached
-            ? <motion.div animate={{ rotate: [0, -10, 10, 0] }} transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 3 }}><Trophy className="w-4 h-4 text-amber-400" /></motion.div>
+            ? <motion.div animate={{ rotate: [0, -10, 10, 0] }} transition={{ duration: 0.6, repeat: LOOP, repeatDelay: 3 }}><Trophy className="w-4 h-4 text-amber-400" /></motion.div>
             : <Target className="w-4 h-4" style={{ color: accentColor }} />
           }
           <span className="text-sm font-bold text-white">Meta do mês</span>

@@ -8,7 +8,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Bell, Clock, Calendar, DollarSign, Target, X, Zap, MessageCircle } from 'lucide-react';
-import EventDetailModal from '@/components/calendar/EventDetailModal';
+// Só carrega ao tocar numa notificação: o sino fica na barra de todas as telas.
+const EventDetailModal = lazy(() => import('@/components/calendar/EventDetailModal'));
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { useAuth } from '@/lib/authContext';
 import { useStats } from '@/lib/useBackstageData';

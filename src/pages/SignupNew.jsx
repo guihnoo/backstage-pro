@@ -18,6 +18,7 @@ import { NeonGlass } from '@/components/design/NeonGlass';
 import { LightingBeams } from '@/components/design/LightingBeams';
 import appToast from '@/lib/appToast';
 import BackstageLogo from '@/components/brand/BackstageLogo';
+import { LOOP } from '@/lib/liteMotion';
 
 const hero = getCategoryConfig(AUTH_HERO_CATEGORY);
 
@@ -40,7 +41,7 @@ export default function SignupNew() {
       <div className="min-h-screen bg-[#050609] flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1 }}
+          transition={{ repeat: LOOP, duration: 1 }}
           className="w-8 h-8 border-2 border-t-transparent rounded-full"
           style={{ borderColor: hero.primaryHex, borderTopColor: 'transparent' }}
         />

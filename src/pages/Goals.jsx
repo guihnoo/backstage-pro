@@ -32,6 +32,7 @@ import { Ellipsis } from '@/components/ui/overflowText';
 import { computeEventsNeededForGoal, computeGoalStreak, paidRevenueInMonth } from '@/lib/goalMetrics';
 import { Skeleton } from '@/components/ui/skeleton';
 import { todayLocalISO } from '@/components/utils/dateUtils';
+import { LOOP } from '@/lib/liteMotion';
 
 function CirclesSkeleton() {
   return (
@@ -107,7 +108,7 @@ function BadgeCelebration({ badge, onClose }) {
 
         <motion.div
           animate={{ scale: [1, 1.15, 1] }}
-          transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+          transition={{ duration: 1.4, repeat: LOOP, ease: 'easeInOut' }}
           className="w-20 h-20 rounded-full mx-auto mb-5 flex items-center justify-center"
           style={{ background: `${badge.color}22`, border: `2px solid ${badge.color}60` }}
         >
@@ -503,7 +504,7 @@ export default function Goals() {
           className="absolute top-0 left-0 right-0 h-0.5"
           style={{ background: `linear-gradient(90deg, transparent, ${config.primaryHex}, transparent)` }}
           animate={{ opacity: [0.4, 0.8, 0.4] }}
-          transition={{ duration: 3, repeat: Infinity }}
+          transition={{ duration: 3, repeat: LOOP }}
         />
         <div className="max-w-2xl xl:max-w-6xl mx-auto flex items-start justify-between">
           <div>

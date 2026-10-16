@@ -2,6 +2,7 @@
 import { supabase } from './supabase';
 import { useAuth } from './authContext';
 import { useRealtimeRefetch } from './useRealtimeRefetch';
+import { dedupeRequest } from './requestDedupe';
 
 /** Mapeia payload da UI para colunas reais do Supabase (date, total_hours, notes). */
 export function mapPayloadToDb(payload = {}) {
@@ -73,11 +74,11 @@ export function useDailyWork() {
     setError(null);
 
     try {
-      const { data, error: err } = await supabase
+      const { data, error: err } = await dedupeRequest(`daily_work:${userId}`, () => supabase
         .from('daily_work')
         .select('*')
         .eq('user_id', userId)
-        .order('date', { ascending: false });
+        .order('date', { ascending: false }));
 
       if (err) throw err;
       setDailyWork((data || []).map(mapRowFromDb));

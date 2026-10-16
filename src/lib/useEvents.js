@@ -4,6 +4,7 @@ import { supabase } from './supabase';
 import { useAuth } from './authContext';
 import { syncEventToGoogleCalendar } from '@/lib/googleCalendarPush';
 import { useRealtimeRefetch } from './useRealtimeRefetch';
+import { dedupeRequest } from './requestDedupe';
 
 function normalizeCoord(value) {
   if (value === '' || value === undefined || value === null) return null;
@@ -67,11 +68,11 @@ export function useEvents() {
     setError(null);
 
     try {
-      const { data, error: err } = await supabase
+      const { data, error: err } = await dedupeRequest(`events:${userId}`, () => supabase
         .from('events')
         .select('*')
         .eq('user_id', userId)
-        .order('start_date', { ascending: true });
+        .order('start_date', { ascending: true }));
 
       if (err) throw err;
       setEvents((data || []).map(mapRowFromDb));

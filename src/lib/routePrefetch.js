@@ -21,12 +21,15 @@ export function prefetchRoute(matchPath) {
 /** Pré-carrega rotas principais após login — reduz tela em branco na 1ª navegação. */
 export function prefetchCriticalRoutes() {
   if (typeof window === 'undefined') return;
-  const run = () => {
-    ['/', '/calendar', '/reports', '/clients'].forEach(prefetchRoute);
+  // Em rede lenta ou com economia de dados, não pré-carrega nada: a banda vai para os
+  // dados da tela atual. As outras telas carregam ao tocar no menu (prefetchRoute no toque).
+  const conn = navigator.connection;
+  if (conn?.saveData || /(^|-)2g$|3g/.test(conn?.effectiveType || '')) return;
+  // Só a Agenda (tela mais usada) e só depois que a tela atual já carregou.
+  const run = () => prefetchRoute('/calendar');
+  const later = () => {
+    if ('requestIdleCallback' in window) window.requestIdleCallback(run, { timeout: 6000 });
+    else window.setTimeout(run, 1500);
   };
-  if ('requestIdleCallback' in window) {
-    window.requestIdleCallback(run, { timeout: 2500 });
-  } else {
-    window.setTimeout(run, 800);
-  }
+  window.setTimeout(later, 3000);
 }
