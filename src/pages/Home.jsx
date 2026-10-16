@@ -345,6 +345,7 @@ export default function Home() {
               isOnStage={isShowToday}
               isLiveShift={isLiveShift}
               isLoading={false}
+              loadError={Boolean(error) && !(events?.length)}
               onViewEvent={setDetailEvent}
               onRefresh={refreshCockpit}
             />

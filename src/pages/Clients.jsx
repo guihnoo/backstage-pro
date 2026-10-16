@@ -195,7 +195,7 @@ export default function ClientsPage() {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(client =>
-        client.name.toLowerCase().includes(term) ||
+        (client.name || '').toLowerCase().includes(term) ||
         (client.contact_person && client.contact_person.toLowerCase().includes(term)) ||
         (client.razao_social && client.razao_social.toLowerCase().includes(term)) ||
         (client.email && client.email.toLowerCase().includes(term)) ||
@@ -216,7 +216,7 @@ export default function ClientsPage() {
       );
     }
 
-    if (sortBy === 'nome') filtered.sort((a, b) => a.name.localeCompare(b.name));
+    if (sortBy === 'nome') filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     else if (sortBy === 'pendencia') filtered.sort((a, b) => b.stats.pendingRevenue - a.stats.pendingRevenue);
     else if (sortBy === 'eventos') filtered.sort((a, b) => b.stats.totalEvents - a.stats.totalEvents);
     else if (sortBy === 'recente') filtered.sort((a, b) => {

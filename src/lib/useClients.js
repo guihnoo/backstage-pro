@@ -112,7 +112,7 @@ export function useClients() {
     if (err) throw err;
 
     const enriched = await linkClientToCompanyAfterCreate(result, userId);
-    setClients((prev) => [...prev, enriched].sort((a, b) => a.name.localeCompare(b.name)));
+    setClients((prev) => [...prev, enriched].sort((a, b) => (a.name || '').localeCompare(b.name || '')));
     return enriched;
   }, [userId]);
 

@@ -222,7 +222,7 @@ export default function ExpensesPage() {
         return allExpenses
             .filter(exp => {
                 const searchMatch = searchTerm ? (
-                    exp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (exp.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                     exp.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     exp.description?.toLowerCase().includes(searchTerm.toLowerCase())
                 ) : true;

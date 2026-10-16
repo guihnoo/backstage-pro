@@ -28,7 +28,15 @@ function eventHasLocation(event) {
   return Boolean(event.location?.trim()) || (event.location_lat != null && event.location_lng != null);
 }
 
-export default function ProximoShow({ event, userCategory, isOnStage, isLiveShift, isLoading, onViewEvent, onRefresh }) {
+const STATUS_LABELS = {
+  confirmed: 'Confirmado',
+  scheduled: 'Agendado',
+  completed: 'Concluído',
+  cancelled: 'Cancelado',
+  pending: 'Pendente',
+};
+
+export default function ProximoShow({ event, userCategory, isOnStage, isLiveShift, isLoading, loadError, onViewEvent, onRefresh }) {
   const eventDateStr = getEventDateStr(event);
   const { countdown } = useCountdown(eventDateStr);
   const config = getCategoryConfig(userCategory);
@@ -103,6 +111,25 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
     );
   }
 
+  // Falha ao carregar não é "agenda vazia": avisa e oferece tentar de novo.
+  if (!event && loadError) {
+    return (
+      <div className="mb-8 p-5 sm:p-8 rounded-2xl bg-slate-900 border border-amber-500/30 text-center">
+        <h2 className="text-lg font-bold mb-2 text-amber-300">Não foi possível carregar seus eventos</h2>
+        <p className="text-slate-400 mb-5 text-sm">
+          Confira a internet. Seus dados não foram perdidos.
+        </p>
+        <button
+          type="button"
+          onClick={() => onRefresh?.()}
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-600 text-white text-sm font-semibold"
+        >
+          Tentar de novo
+        </button>
+      </div>
+    );
+  }
+
   if (!event) {
     return (
       <motion.div
@@ -110,12 +137,11 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
         animate={{ opacity: 1, y: 0 }}
         className="mb-8 p-5 sm:p-8 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50 text-center"
       >
-        <div className="text-6xl mb-4">🎭</div>
         <h2 className="text-2xl font-bold mb-2" style={gradientText}>
-          Palco Limpo
+          Nenhum show agendado
         </h2>
         <p className="text-slate-400 mb-5">
-          Desfrute da calma antes da tormenta. Seus próximos eventos aparecem aqui.
+          Seus próximos eventos aparecem aqui.
         </p>
         <motion.button
           whileTap={{ scale: 0.96 }}
@@ -233,7 +259,7 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
             <div className="text-sm">
               <p className="text-slate-500 text-xs">Status</p>
               <p className="font-semibold">
-                {event.status === 'confirmed' ? 'Confirmado' : 'Pendente'}
+                {STATUS_LABELS[event.status] || 'Pendente'}
               </p>
             </div>
           </div>

@@ -88,8 +88,9 @@ export default function EventForm({
       title: seed.title || '',
       start_date: seed.start_date ? normalizeDateString(seed.start_date) : '',
       end_date: seed.end_date ? normalizeDateString(seed.end_date) : '',
-      start_time: seed.start_time || '09:00',
-      end_time: seed.end_time || '18:00',
+      // Sem horário inventado: evento novo começa vazio (antes gravava 09:00–18:00 escondido).
+      start_time: seed.start_time || '',
+      end_time: seed.end_time || '',
       payment_due_date: seed.payment_due_date ? normalizeDateString(seed.payment_due_date) : '',
       payment_status: seed.payment_status || 'unpaid',
       payment_model: seed.payment_model || 'HORAS_EXTRAS',
@@ -105,6 +106,10 @@ export default function EventForm({
       nf_number: seed.nf_number || '',
       nf_issued_at: seed.nf_issued_at ? seed.nf_issued_at.slice(0, 10) : '',
     });
+    // "Repetir" sempre começa desligado ao abrir o formulário (antes ficava ligado e duplicava séries).
+    setRepeatEnabled(false);
+    setRepeatTimes(3);
+    setRepeatUnit('weeks');
     if (!isOpen) setExtraClients([]);
   }, [isOpen, event, prefillData, initialData]);
 
@@ -117,7 +122,7 @@ export default function EventForm({
     [...clients, ...extraClients].forEach((c) => {
       if (c?.id) map.set(c.id, c);
     });
-    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+    return Array.from(map.values()).sort((a, b) => (a.name || '').localeCompare(b.name || '', 'pt-BR'));
   }, [clients, extraClients]);
 
   const selectedClient = useMemo(
@@ -293,8 +298,10 @@ export default function EventForm({
         payment_status: formData.payment_status || 'pending',
         ...(event?.id ? { status: event.status || 'pending' } : { status: 'pending' }),
         payment_model: formData.payment_model || 'HORAS_EXTRAS',
-        daily_cache_value: formData.daily_cache_value === '' ? 0 : Number(formData.daily_cache_value),
-        cache_valor_base: formData.cache_valor_base === '' ? null : Number(formData.cache_valor_base),
+        daily_cache_value: Number.isFinite(Number(formData.daily_cache_value)) ? Number(formData.daily_cache_value) || 0 : 0,
+        cache_valor_base: formData.cache_valor_base === '' || !Number.isFinite(Number(formData.cache_valor_base))
+          ? null
+          : Number(formData.cache_valor_base),
         color: resolveEventColor({ client_id: formData.client_id, color: formData.color }, selectedClient),
         location: formData.location?.trim() || null,
         location_city: formData.location_city || null,
@@ -315,15 +322,30 @@ export default function EventForm({
           const addFn = repeatUnit === 'weeks' ? addWeeks : addMonths;
           const startBase = parseISO(payload.start_date);
           const endBase = parseISO(payload.end_date || payload.start_date);
+          // Cada repetição é tentada uma vez. Se alguma falhar, o formulário fecha mesmo assim
+          // (antes ficava aberto e, ao tentar de novo, duplicava os shows já criados).
+          const falharam = [];
           for (let i = 1; i <= repeatTimes; i++) {
-            await createEvent({
-              ...payload,
-              start_date: format(addFn(startBase, i), 'yyyy-MM-dd'),
-              end_date: format(addFn(endBase, i), 'yyyy-MM-dd'),
-              payment_status: 'pending',
-            });
+            const start_date = format(addFn(startBase, i), 'yyyy-MM-dd');
+            try {
+              await createEvent({
+                ...payload,
+                start_date,
+                end_date: format(addFn(endBase, i), 'yyyy-MM-dd'),
+                payment_status: 'pending',
+              });
+            } catch {
+              falharam.push(start_date);
+            }
           }
-          appToast.success(`${repeatTimes + 1} eventos criados`, { description: `Série de ${repeatTimes + 1} shows adicionada à agenda.` });
+          const criados = repeatTimes + 1 - falharam.length;
+          if (falharam.length) {
+            appToast.error(`${criados} de ${repeatTimes + 1} shows criados`, {
+              description: `Não foi possível criar: ${falharam.map((d) => d.split('-').reverse().join('/')).join(', ')}. Crie essas datas de novo.`,
+            });
+          } else {
+            appToast.success(`${criados} eventos criados`, { description: `Série de ${criados} shows adicionada à agenda.` });
+          }
         } else {
           appToast.success('Evento criado', { description: 'Já está na sua agenda.' });
         }

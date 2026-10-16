@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
-import { getEventCacheAmount, calculateEventReceivableAmount, getEventHoursStatus, isEstimatedWork } from '@/lib/eventFinance';
+import { getEventCacheAmount, calculateEventReceivableAmount, getEventHoursStatus, isEstimatedWork, isCancelledEvent } from '@/lib/eventFinance';
+import { buildEventClosing } from '@/lib/eventClosing';
 import { buildHoursGateMessage, shouldBlockPayment } from '@/lib/hoursGate';
 import { Dialog, DialogContent, DialogHeader, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -619,6 +620,57 @@ export default function EventDetailModal({
 
   if (!event) return null;
 
+  // Fechamento do evento inteiro (todos os dias) — aparece em destaque quando o evento terminou.
+  const closingTodayIso = normalizeDateString(new Date());
+  const closingEnd = event.end_date || event.start_date || '';
+  const eventEnded = Boolean(closingEnd) && closingEnd < closingTodayIso && !isCancelledEvent(event);
+  const closing = eventEnded ? buildEventClosing(event, eventWork, eventExpenses) : null;
+  const fmtDayShort = (iso) => String(iso || '').slice(5, 10).split('-').reverse().join('/');
+  const closingCard = closing ? (
+    <Card className="bg-slate-800/70 border-slate-600">
+      <CardContent className="p-4 space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-xs uppercase tracking-wider text-slate-400">Fechamento do evento</p>
+            <p className="text-2xl font-black text-white font-mono">
+              {isVisible ? formatCurrency(closing.total) : '••••'}
+            </p>
+            <p className="text-xs text-slate-400">
+              {closing.rows.length} {closing.rows.length === 1 ? 'dia' : 'dias'} · {closing.totalHoras} h
+              {closing.totalReembolsos > 0 && isVisible ? ` · reembolso ${formatCurrency(closing.totalReembolsos)}` : ''}
+            </p>
+          </div>
+        </div>
+        {closing.semHoras.length > 0 && (
+          <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-200">
+            <p className="flex items-center gap-1.5 font-semibold">
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              Faltam horas em {closing.semHoras.length} {closing.semHoras.length === 1 ? 'dia' : 'dias'}: {closing.semHoras.map(fmtDayShort).join(', ')}
+            </p>
+            <p className="text-xs text-amber-200/80 mt-1">Esses dias entram no relatório com a diária, sem horas extras.</p>
+            <button
+              type="button"
+              onClick={() => { setActiveTab('trabalho'); openWorkModal(closing.semHoras[0], null); }}
+              className="mt-2 text-xs font-semibold underline underline-offset-2"
+            >
+              Lançar horas agora
+            </button>
+          </div>
+        )}
+        <div className="flex gap-2">
+          <Button onClick={handleDownloadPDF} disabled={generatingPDF} className="flex-1 bg-slate-700 hover:bg-slate-600">
+            {generatingPDF ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
+            PDF
+          </Button>
+          <Button onClick={handleSendReport} className="flex-1 bg-emerald-700 hover:bg-emerald-600">
+            <MessageCircle className="w-4 h-4 mr-2" />
+            WhatsApp
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  ) : null;
+
   // Confirmar recebimento só com as horas preenchidas (regra do dono); o usuário pode
   // escolher "cobrar assim mesmo".
   const requestMarkPaid = () => {
@@ -891,6 +943,8 @@ export default function EventDetailModal({
 
             {/* ── RESUMO ── */}
             <TabsContent value="resumo" className="mt-0 pt-4 space-y-4 pb-6 data-[state=inactive]:hidden">
+
+              {closingCard}
 
               {crmCard}
 

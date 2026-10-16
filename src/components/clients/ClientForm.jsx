@@ -53,16 +53,22 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
 
   useEffect(() => {
     if (client) {
+      // A razão social é guardada como 1ª linha das observações ("Razão Social: ...").
+      // Ao editar, ela volta para o campo próprio e sai do texto das observações.
+      const razaoMatch = String(client.notes || '').match(/^Razão Social: (.+)$/m);
+      const notesSemRazao = razaoMatch
+        ? String(client.notes).replace(razaoMatch[0], '').replace(/^\s*\n/, '').trim()
+        : client.notes || '';
       setFormData({
         client_type: client.client_type || 'empresa',
         name: client.name || '',
-        razao_social: '',
+        razao_social: client.razao_social || razaoMatch?.[1]?.trim() || '',
         contact_person: client.contact_person || '',
         email: client.email || '',
         phone: client.phone || '',
         logo_url: client.logo_url || '',
         invoice_portal_url: client.invoice_portal_url || '',
-        notes: client.notes || '',
+        notes: notesSemRazao,
         policy_default_payment_model: client.policy_default_payment_model || null,
         policy_allows_meio_e_dobra_juntos: client.policy_allows_meio_e_dobra_juntos || false,
         default_daily_cache: client.default_daily_cache > 0 ? String(client.default_daily_cache) : '',
@@ -217,6 +223,20 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
       return;
     }
 
+    // Cachê padrão: aceita "1.200,50" ou "1200.5"; valor inválido vira 0 (nunca NaN no banco).
+    const cacheText = String(formData.default_daily_cache ?? '').trim();
+    const cacheParsed = Number(cacheText.includes(',') ? cacheText.replace(/\./g, '').replace(',', '.') : cacheText);
+    const safeCache = Number.isFinite(cacheParsed) && cacheParsed > 0 ? cacheParsed : 0;
+
+    // Razão social vai como 1ª linha das observações (o formulário a separa de novo ao editar).
+    let notesValue = formData.notes || null;
+    if (formData.razao_social?.trim()) {
+      const razaoLine = `Razão Social: ${formData.razao_social.trim()}`;
+      if (!notesValue?.includes(razaoLine)) {
+        notesValue = notesValue ? `${razaoLine}\n${notesValue}` : razaoLine;
+      }
+    }
+
     // Logo herdado do catálogo (ficha sem logo próprio) não é gravado na ficha pessoal.
     const ownLogo = client?.logo_from_company && formData.logo_url === client.logo_url
       ? null
@@ -247,15 +267,6 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
         }
       }
 
-      // Prepend razão social to notes if filled and not already present
-      let notesValue = formData.notes || null;
-      if (formData.razao_social?.trim()) {
-        const razaoLine = `Razão Social: ${formData.razao_social.trim()}`;
-        if (!notesValue?.includes(razaoLine)) {
-          notesValue = notesValue ? `${razaoLine}\n${notesValue}` : razaoLine;
-        }
-      }
-
       const clientData = {
         client_type: formData.client_type || 'empresa',
         name: formData.name.trim(),
@@ -267,9 +278,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
         notes: notesValue,
         policy_default_payment_model: formData.policy_default_payment_model || null,
         policy_allows_meio_e_dobra_juntos: formData.policy_allows_meio_e_dobra_juntos || false,
-        default_daily_cache: formData.default_daily_cache === ''
-          ? 0
-          : Number(formData.default_daily_cache),
+        default_daily_cache: safeCache,
         brand_color: formData.brand_color || pickDefaultClientColor(formData.name),
         ...(companyId ? { company_id: companyId } : {}),
       };
@@ -298,10 +307,10 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
             phone: formData.phone || null,
             logo_url: ownLogo,
             invoice_portal_url: formData.invoice_portal_url || null,
-            notes: formData.notes || null,
+            notes: notesValue,
             policy_default_payment_model: formData.policy_default_payment_model || null,
             policy_allows_meio_e_dobra_juntos: formData.policy_allows_meio_e_dobra_juntos || false,
-            default_daily_cache: formData.default_daily_cache === '' ? 0 : Number(formData.default_daily_cache),
+            default_daily_cache: safeCache,
           };
           const result = await updateClient(client.id, withoutColor);
           appToast.success('Cliente atualizado (cor será salva após atualização do banco).');
