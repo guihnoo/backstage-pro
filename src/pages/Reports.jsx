@@ -37,7 +37,6 @@ import {
   ArrowDown,
   Minus,
   XCircle,
-  Activity,
   Receipt,
   Briefcase,
   ChevronDown,
@@ -49,7 +48,6 @@ import { getEventStatus } from '@/components/utils/dateUtils';
 
 // Component imports — charts/map/modais em lazy para reduzir chunk inicial
 import ReportEventList from '@/components/reports/ReportEventList';
-import FinancialSummary from '@/components/reports/FinancialSummary';
 import { Skeleton } from '@/components/ui/skeleton';
 import EmptyState from '@/components/layout/EmptyState';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
@@ -88,7 +86,6 @@ const CashflowForecast = lazy(() => import('@/components/reports/CashflowForecas
 const CategoryBreakdown = lazy(() => import('@/components/reports/CategoryBreakdown'));
 const TopClients = lazy(() => import('@/components/reports/TopClients'));
 const ReceivablesAging = lazy(() => import('@/components/reports/ReceivablesAging'));
-const SmartInsights = lazy(() => import('@/components/reports/SmartInsights'));
 const YearOverYear = lazy(() => import('@/components/reports/YearOverYear'));
 const CacheEvolutionChart = lazy(() => import('@/components/reports/CacheEvolutionChart'));
 const IRSummary = lazy(() => import('@/components/reports/IRSummary'));
@@ -935,10 +932,6 @@ export default function ReportsPage() {
           </div>
         )}
 
-        <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
-          <BrazilVisitedMap events={data.events} clients={data.clients} />
-        </Suspense>
-
         {!isDataReady ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Skeleton className="h-32 rounded-lg" />
@@ -1029,11 +1022,9 @@ export default function ReportsPage() {
         <div className="relative border-b border-slate-800">
           <div className="flex items-center gap-1 overflow-x-auto pb-px scrollbar-none">
             {[
-              { id: 'overview', label: 'Visão Geral', short: 'Geral', icon: BarChart3, count: null },
-              { id: 'clients', label: 'Clientes', short: 'Clientes', icon: Users, count: data.clients.length },
+              { id: 'overview', label: 'Geral', short: 'Geral', icon: BarChart3, count: null },
               { id: 'expenses', label: 'Despesas', short: 'Despesas', icon: DollarSign, count: processedData.current.expenses.length },
               { id: 'work', label: 'Trabalho', short: 'Trabalho', icon: Briefcase, count: processedData.current.work.length || null },
-              { id: 'activity', label: 'Atividade', short: 'Ativ.', icon: Activity, count: null },
               {
                 id: 'fiscal', label: 'Fiscal', short: 'Fiscal', icon: Receipt,
                 count: data.events.filter(isNfPendingEvent).length || null,
@@ -1068,15 +1059,6 @@ export default function ReportsPage() {
         {/* Content based on selected view */}
         {selectedView === 'overview' && (
           <div className="space-y-4">
-            <Suspense fallback={<ChartBlockSkeleton className="h-24" />}>
-              <SmartInsights
-                events={data.events}
-                clients={data.clients}
-                expenses={data.expenses}
-                work={data.dailyWork}
-                profile={profile}
-              />
-            </Suspense>
             <Suspense fallback={<ChartBlockSkeleton className="h-40" />}>
               <ReceivablesAging
                 events={data.events}
@@ -1084,16 +1066,13 @@ export default function ReportsPage() {
                 work={data.dailyWork}
               />
             </Suspense>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Suspense fallback={<ChartBlockSkeleton />}>
-                <ReportsChart
-                  chartInput={processedData.chartInput}
-                  period={selectedPeriod}
-                  onDataClick={handleChartClick}
-                />
-              </Suspense>
-              <FinancialSummary stats={processedData.current} />
-            </div>
+            <Suspense fallback={<ChartBlockSkeleton />}>
+              <ReportsChart
+                chartInput={processedData.chartInput}
+                period={selectedPeriod}
+                onDataClick={handleChartClick}
+              />
+            </Suspense>
             <Suspense fallback={<ChartBlockSkeleton className="h-56" />}>
               <MonthlyTrend
                 events={data.events}
@@ -1135,21 +1114,25 @@ export default function ReportsPage() {
                 />
               </Suspense>
             </ExpandableSection>
-          </div>
-        )}
 
-        {selectedView === 'clients' && (
-          <Suspense fallback={<ChartBlockSkeleton className="h-96" />}>
-            <ClientDetailedTable
-              data={{
-                clients: data.clients,
-                events: processedData.current.events,
-                work: processedData.current.work,
-                expenses: processedData.current.expenses
-              }}
-              onClientClick={handleClientDetail}
-            />
-          </Suspense>
+            <ExpandableSection id="clients-detail" label="Clientes em detalhe">
+              <Suspense fallback={<ChartBlockSkeleton className="h-96" />}>
+                <ClientDetailedTable
+                  data={{
+                    clients: data.clients,
+                    events: processedData.current.events,
+                    work: processedData.current.work,
+                    expenses: processedData.current.expenses
+                  }}
+                  onClientClick={handleClientDetail}
+                />
+              </Suspense>
+            </ExpandableSection>
+
+            <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
+              <BrazilVisitedMap events={data.events} clients={data.clients} />
+            </Suspense>
+          </div>
         )}
 
         {selectedView === 'expenses' &&
@@ -1185,11 +1168,6 @@ export default function ReportsPage() {
                 onOpenEvent={(ev) => setSelectedEvent(ev)}
               />
             </Suspense>
-          </div>
-        )}
-
-        {selectedView === 'activity' && (
-          <div className="space-y-6">
             <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
               <Suspense fallback={<ChartBlockSkeleton className="h-32" />}>
                 <ActivityHeatmap events={data.events} />
@@ -1228,6 +1206,7 @@ export default function ReportsPage() {
           </div>
         )}
 
+        {selectedView === 'overview' && (<>
         {/* Events List - AGORA FILTRÁVEL e com MODAL */}
         <div className="space-y-2">
           {chartFilter && (
@@ -1249,6 +1228,7 @@ export default function ReportsPage() {
             onEventClick={(event) => setSelectedEvent(event)} // NOVO: handler para abrir modal
           />
         </div>
+        </>)}
 
         {/* Empty State */}
         {processedData.current.events.length === 0 && !chartFilter &&
