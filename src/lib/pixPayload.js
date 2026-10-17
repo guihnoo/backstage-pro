@@ -79,6 +79,36 @@ export function generatePixPayload({
 }
 
 /**
+ * Gera a imagem QR Code PIX em formato Data URL (base64 PNG) compatível com @react-pdf/renderer e <img />.
+ */
+export async function generatePixQrDataUrl({
+  pixKey,
+  merchantName = 'Tecnico',
+  merchantCity = 'Brasil',
+  amount = 0,
+  txId = '***',
+}) {
+  if (!pixKey) return null;
+  try {
+    const { createStaticPix, hasError } = await import('pix-utils');
+    const name = normalizeField(merchantName, 25);
+    const city = normalizeField(merchantCity, 15);
+    const txid = txId.replace(/[^a-zA-Z0-9]/g, '').slice(0, 25) || '***';
+    const pix = createStaticPix({
+      merchantName: name,
+      merchantCity: city,
+      pixKey: String(pixKey).trim(),
+      transactionAmount: Number(amount) > 0 ? Number(Number(amount).toFixed(2)) : undefined,
+      txid,
+    });
+    if (hasError(pix)) return null;
+    return await pix.toImage();
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Monta a mensagem WhatsApp com chave PIX + payload copia e cola.
  */
 export function buildPixWhatsAppMessage({ clientName, eventTitle, amount, pixKey, pixKeyType, pixPayloadStr }) {

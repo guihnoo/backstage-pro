@@ -10,15 +10,12 @@ import { todayLocalISO, isDateBetween, getWorkForDate } from '@/components/utils
 import { isCancelledEvent } from '@/lib/eventFinance';
 import ProximoShow from '@/components/home/ProximoShow';
 import MetaMensalBar from '@/components/home/MetaMensalBar';
-import QuickStats from '@/components/home/QuickStats';
 import AReceber from '@/components/home/AReceber';
-import AlertasBastidao from '@/components/home/AlertasBastidao';
 import PipelineFinanceiro from '@/components/home/PipelineFinanceiro';
 import ProximosEventos from '@/components/home/ProximosEventos';
 import FloatingActions from '@/components/home/FloatingActions';
 import LiveClockBar from '@/components/home/LiveClockBar';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
-import { NeonGlass } from '@/components/design/NeonGlass';
 import { LightingBeams } from '@/components/design/LightingBeams';
 import { NeonLevelBars } from '@/components/design/NeonLevelBars';
 import { NeonSectionFrame } from '@/components/design/NeonSectionFrame';
@@ -33,12 +30,11 @@ import { useClients } from '@/lib/useClients';
 import { useExpenses } from '@/lib/useExpenses';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { LOOP } from '@/lib/liteMotion';
-import { buildMonthSummary, findRecentMissingHours } from '@/lib/homeSummary';
+import { findRecentMissingHours } from '@/lib/homeSummary';
 import HomeMonthSummary from '@/components/home/HomeMonthSummary';
 
 const EventDetailModal = lazy(() => import('@/components/calendar/EventDetailModal'));
 const EventForm = lazy(() => import('@/components/calendar/EventForm'));
-const ForecastWidget = lazy(() => import('@/components/home/ForecastWidget'));
 
 function PalcoSkeleton() {
   return (
@@ -70,7 +66,6 @@ function PalcoSkeleton() {
 function FinanceiroSkeleton() {
   return (
     <div className="p-4 space-y-4">
-      {/* AReceber rows */}
       {[0,1].map(i => (
         <div key={i} className="flex items-center gap-3">
           <Skeleton className="w-8 h-8 rounded-full shrink-0" />
@@ -81,12 +76,6 @@ function FinanceiroSkeleton() {
           <Skeleton className="w-20 h-7 rounded-lg" />
         </div>
       ))}
-      {/* QuickStats grid */}
-      <div className="grid grid-cols-2 gap-3 pt-1">
-        <Skeleton className="h-16 rounded-xl" />
-        <Skeleton className="h-16 rounded-xl" />
-      </div>
-      {/* MetaMensalBar */}
       <div className="space-y-2">
         <div className="flex justify-between">
           <Skeleton className="h-3 w-24 rounded" />
@@ -119,6 +108,7 @@ export default function Home() {
   const { user } = useAuth();
   const profile = useProfile();
   const [detailEvent, setDetailEvent] = useState(null);
+  const [detailInitialTab, setDetailInitialTab] = useState('resumo');
   const [editingEvent, setEditingEvent] = useState(null);
   const [showEventForm, setShowEventForm] = useState(false);
   const [confirmDeleteEventId, setConfirmDeleteEventId] = useState(null);
@@ -142,7 +132,6 @@ export default function Home() {
   const {
     stats,
     proximoEvento,
-    alerts,
     receivableRows,
     totalReceivable,
     upcomingEvents,
@@ -153,21 +142,24 @@ export default function Home() {
     markClientPaid,
   } = useHomeDashboard(userId);
 
+  const enrichedEvents = useMemo(
+    () => enrichEventsWithClients(events || [], clients || []),
+    [events, clients]
+  );
+
   const fallbackDashboard = useMemo(() => {
     if (!userId) return null;
     const hasEvents = Array.isArray(events) && events.length > 0;
     const hasWork = Array.isArray(hookDailyWork) && hookDailyWork.length > 0;
     if (!hasEvents && !hasWork) return null;
-    const enriched = enrichEventsWithClients(events || [], clients || []);
-    return deriveDashboard(enriched, hookDailyWork || []);
-  }, [userId, events, clients, hookDailyWork]);
+    return deriveDashboard(enrichedEvents, hookDailyWork || []);
+  }, [userId, events, enrichedEvents, hookDailyWork]);
 
   const useFallback = Boolean((loading || error) && fallbackDashboard);
   const cockpitLoading = loading && !fallbackDashboard;
 
   const cockpitStats = useFallback ? fallbackDashboard.stats : stats;
   const cockpitProximo = useFallback ? fallbackDashboard.proximoEvento : proximoEvento;
-  const cockpitAlerts = useFallback ? fallbackDashboard.alerts : alerts;
   const cockpitReceivableRows = useFallback ? fallbackDashboard.receivableRows : receivableRows;
   const cockpitUpcoming = useFallback ? fallbackDashboard.upcomingEvents : upcomingEvents;
   const cockpitDailyWork = useFallback ? fallbackDashboard.dailyWork : dailyWork;
@@ -175,19 +167,17 @@ export default function Home() {
     ? fallbackDashboard.receivableRows.reduce((sum, r) => sum + r.totalAmount, 0)
     : totalReceivable;
 
+  // Exclui o próximo evento já exibido em destaque no bloco Palco para não duplicar na lista Agenda
   const proximosEventos = useMemo(
-    () => cockpitUpcoming.filter((e) => !isCancelledEvent(e)).slice(0, 5),
-    [cockpitUpcoming]
-  );
-
-  const forecastEvents = useMemo(
-    () => cockpitUpcoming.filter((e) => !isCancelledEvent(e)),
-    [cockpitUpcoming]
+    () =>
+      cockpitUpcoming
+        .filter((e) => !isCancelledEvent(e) && e.id !== cockpitProximo?.id)
+        .slice(0, 5),
+    [cockpitUpcoming, cockpitProximo?.id]
   );
 
   const todayWork = useMemo(() => getWorkForDate(cockpitDailyWork, today), [cockpitDailyWork, today]);
 
-  const monthSummary = useMemo(() => buildMonthSummary(cockpitStats, profile), [cockpitStats, profile]);
   const missingHours = useMemo(
     () => findRecentMissingHours(events || [], hookDailyWork || [], today),
     [events, hookDailyWork, today],
@@ -218,7 +208,6 @@ export default function Home() {
   );
 
   const palcoAtivo = isLiveShift || isShowToday;
-  const hasAlerts = cockpitAlerts.length > 0;
 
   const refreshCockpit = useCallback(async () => {
     await refetch({ silent: true });
@@ -343,13 +332,15 @@ export default function Home() {
       </motion.header>
 
       <div className="px-4 py-6 max-w-2xl xl:max-w-6xl mx-auto w-full min-w-0 pb-28">
-        {/* Resumo do mês + lembrete de horas (Conselho #3, ideias 2 e 3) */}
+        {/* Alerta enxuto apenas quando houver dias recentes sem horas lançadas */}
         {!cockpitLoading && (
           <HomeMonthSummary
-            summary={monthSummary}
             missing={missingHours}
-            onOpenEvent={setDetailEvent}
-            primaryHex={config.primaryHex}
+            onOpenEvent={(ev) => {
+              const full = enrichedEvents.find((x) => x.id === ev.id) || ev;
+              setDetailInitialTab('trabalho');
+              setDetailEvent(full);
+            }}
           />
         )}
 
@@ -365,19 +356,16 @@ export default function Home() {
               isLiveShift={isLiveShift}
               isLoading={false}
               loadError={Boolean(error) && !(events?.length)}
-              onViewEvent={setDetailEvent}
+              onViewEvent={(ev) => {
+                setDetailInitialTab('resumo');
+                setDetailEvent(ev);
+              }}
+              onCreateEvent={() => {
+                setEditingEvent(null);
+                setShowEventForm(true);
+              }}
               onRefresh={refreshCockpit}
             />
-          )}
-          {hasAlerts && (
-            <div className="mt-3">
-              <AlertasBastidao
-                alerts={cockpitAlerts}
-                isLoading={cockpitLoading}
-                primaryHex={config.primaryHex}
-                accentHex={config.accentHex}
-              />
-            </div>
           )}
         </NeonSectionFrame>
 
@@ -391,10 +379,16 @@ export default function Home() {
               totalReceivable={cockpitTotalReceivable}
               isLoading={false}
               onMarkPaid={handleMarkPaid}
+              onOpenEvent={(ev, tab = 'fiscal') => {
+                const full = enrichedEvents.find((x) => x.id === ev.id) || ev;
+                setDetailInitialTab(tab);
+                setDetailEvent(full);
+              }}
             />
           )}
-          <QuickStats
+          <PipelineFinanceiro
             stats={cockpitStats}
+            despesasMes={despesasMes}
             isLoading={cockpitLoading}
             primaryHex={config.primaryHex}
             accentHex={config.accentHex}
@@ -407,45 +401,27 @@ export default function Home() {
               accentColor={config.primaryHex}
             />
           </div>
-          <PipelineFinanceiro
-            stats={cockpitStats}
-            despesasMes={despesasMes}
-            isLoading={cockpitLoading}
-            primaryHex={config.primaryHex}
-            accentHex={config.accentHex}
-          />
-          <Suspense
-            fallback={
-              <NeonGlass primary={config.primaryHex} className="mb-8 p-5">
-                <Skeleton className="h-4 w-32 rounded mb-2" />
-                <Skeleton className="h-8 w-24 rounded" />
-              </NeonGlass>
-            }
-          >
-            <ForecastWidget
-              events={forecastEvents}
-              isLoading={cockpitLoading}
-              primaryHex={config.primaryHex}
-              accentHex={config.accentHex}
-              metaReceita={profile?.monthly_goal_revenue || 0}
-            />
-          </Suspense>
         </NeonSectionFrame>
 
-        {/* Bloco 3 — Agenda */}
-        <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Agenda">
-          {cockpitLoading ? (
-            <AgendaSkeleton />
-          ) : (
-            <ProximosEventos
-              events={proximosEventos}
-              isLoading={false}
-              userCategory={categoryId}
-              onRefresh={refreshCockpit}
-              onViewEvent={setDetailEvent}
-            />
-          )}
-        </NeonSectionFrame>
+        {/* Bloco 3 — Agenda (apenas se houver outros eventos além do Próximo Show já exibido acima) */}
+        {(cockpitLoading || proximosEventos.length > 0 || !cockpitProximo) && (
+          <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Agenda">
+            {cockpitLoading ? (
+              <AgendaSkeleton />
+            ) : (
+              <ProximosEventos
+                events={proximosEventos}
+                isLoading={false}
+                userCategory={categoryId}
+                onRefresh={refreshCockpit}
+                onViewEvent={(ev) => {
+                  setDetailInitialTab('resumo');
+                  setDetailEvent(ev);
+                }}
+              />
+            )}
+          </NeonSectionFrame>
+        )}
       </div>
 
       <FloatingActions />
@@ -455,6 +431,7 @@ export default function Home() {
           <EventDetailModal
             event={detailEvent}
             client={detailEvent.clients || null}
+            initialTab={detailInitialTab}
             onClose={() => setDetailEvent(null)}
             onEdit={(event) => {
               setDetailEvent(null);

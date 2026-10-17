@@ -27,4 +27,21 @@ describe('relatório do WhatsApp = fechamento do PDF', () => {
     expect(formatBRL('150.50')).toBe(formatBRL(150.5));
     expect(formatBRL('abc')).toBe(formatBRL(0));
   });
+
+  it('inclui NF-e, chave PIX, Copia e Cola e assinatura do prestador quando informados', () => {
+    const text = buildEventReport({
+      event: { ...event, nfe_numero: '000421' },
+      client: { name: 'Produtora Alpha' },
+      work,
+      expenses,
+      pixKey: '12.345.678/0001-99',
+      pixKeyType: 'CNPJ',
+      pixPayloadStr: '00020126360014BR.GOV.BCB.PIX',
+      providerName: 'Will Monteiro',
+    });
+    expect(text).toContain('Nº 000421');
+    expect(text).toContain('CNPJ: *12.345.678/0001-99*');
+    expect(text).toContain('00020126360014BR.GOV.BCB.PIX');
+    expect(text).toContain('Will Monteiro');
+  });
 });

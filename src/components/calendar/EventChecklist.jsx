@@ -7,32 +7,85 @@ import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 const TEMPLATES = {
   audio: {
-    label: 'Áudio',
-    items: ['Mesa de som', 'Cabos XLR', 'Microfones', 'Pedestais', 'Amplificadores', 'DI Box', 'In-ears / monitores', 'Power conditioner'],
+    label: '🎙️ Técnico de Som',
+    items: [
+      'Line check e conferência de patch XLR / Stagebox',
+      'Coordenação de RF e baterias de microfones / IEM',
+      'Alinhamento de PA (FOH) e passagem de som',
+      'Salvar cena do show na console + backup no pendrive',
+      'Conferência de microfones, garras, DI Box e cabos no load-out',
+    ],
   },
   lighting: {
-    label: 'Iluminação',
-    items: ['Mesa DMX', 'Cabos DMX', 'Moving heads', 'PAR LED', 'Strobo', 'Rack de dimmer', 'Extensões', 'Truss / suportes'],
+    label: '💡 Iluminação',
+    items: [
+      'Conferir patch DMX / universos e rede Art-Net / sACN',
+      'Teste de Moving Heads, PAR LED, Strobo e Hazer',
+      'Focus / posicionamento de presets de palco',
+      'Salvar showfile na console (MA2/MA3/Avolites) + backup no pendrive',
+      'Desmontagem segura e conferência de cases e garras',
+    ],
   },
-  dj: {
-    label: 'DJ',
-    items: ['Controladora DJ', 'Laptop', 'Interface de áudio', 'Fones de ouvido', 'Cabos RCA/XLR', 'Mesa de som', 'Pen drives backup', 'Carregador notebook'],
+  video: {
+    label: '🎬 Vídeo / Painel LED',
+    items: [
+      'Conferir cabeamento de sinal (SDI / HDMI / Fibra) e energia do LED',
+      'Mapear processadora (Novastar) e testar dead pixels / módulos reserva',
+      'Testar resolução, mídia do cliente e timecode no servidor (Resolume/vMix)',
+      'Gravação PGM / ISO verificada (espaço em cartão/SSD)',
+      'Desmontagem e conferência de placas, cabos e cases',
+    ],
   },
   photo: {
-    label: 'Foto/Vídeo',
-    items: ['Câmera principal', 'Câmera backup', 'Lentes', 'Cartões de memória', 'Baterias carregadas', 'Tripé', 'Flash / softbox', 'HD externo'],
+    label: '📷 Fotografia',
+    items: [
+      'Baterias 100% carregadas + cartões SD/CFexpress formatados',
+      'Credenciamento / acesso ao fosso e backstage liberado',
+      'Checklist de lentes (grande angular, 24-70mm, 70-200mm / prime)',
+      'Seleção expressa de fotos para imprensa / redes sociais no evento',
+      'Backup duplo (SSD externo + nuvem) pós-show',
+    ],
+  },
+  dj: {
+    label: '🎧 DJ / Música',
+    items: [
+      'Pen drives Rekordbox (Principal + Backup) testados',
+      'Conferir link de rede dos CDJs e canais do mixer',
+      'Ajustar nível de retorno da cabine (Booth Monitor) sem clipar',
+      'Cabos RCA/XLR, adaptador P10/P2 e fone de ouvido conferidos',
+      'Guardar equipamentos e conferir cabos ao fim do set',
+    ],
+  },
+  production: {
+    label: '📋 Produção / Operação',
+    items: [
+      'Cronograma de montagem, passagem e abertura alinhado',
+      'Logística de chegada, transporte e alimentação definidos',
+      'Credenciamento e contato do contratante / responsável local',
+      'Registrar horários de entrada e saída (controle de diária / H.E.)',
+      'Separar comprovantes de reembolso, anexar NF-e e enviar Fechamento PIX',
+    ],
   },
   general: {
-    label: 'Geral',
-    items: ['RG / Documentos', 'Carregador celular', 'Água e lanche', 'Ferramentas básicas', 'Cabos extensão', 'Fita isolante', 'Lanterna', 'Contrato impresso'],
+    label: '⚡ Kit Básico de Estrada',
+    items: [
+      'Documento com foto / credencial',
+      'Carregador + powerbank',
+      'Leatherman / ferramentas + fita gaffer / isolante',
+      'Lanterna tática / headlamp',
+      'Protetor auricular / IEM',
+    ],
   },
 };
 
 export function EventChecklist({ items = [], onChange, readOnly = false }) {
-  const { primaryHex } = useCategoryTheme();
+  const { primaryHex, categoryId } = useCategoryTheme();
   const [collapsed, setCollapsed] = useState(false);
   const [newText, setNewText] = useState('');
   const [showTemplates, setShowTemplates] = useState(false);
+
+  const userTemplateKey = TEMPLATES[categoryId] ? categoryId : 'production';
+  const userTemplate = TEMPLATES[userTemplateKey];
 
   const checked = items.filter(i => i.checked).length;
   const total = items.length;
@@ -74,7 +127,7 @@ export function EventChecklist({ items = [], onChange, readOnly = false }) {
         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-700/20 transition-colors"
       >
         <ClipboardList className="w-4 h-4 shrink-0" style={{ color: primaryHex }} />
-        <span className="text-sm font-medium text-white flex-1 text-left">Checklist</span>
+        <span className="text-sm font-medium text-white flex-1 text-left">Checklist Técnico de Palco</span>
         {total > 0 && (
           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
             checked === total ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-700 text-slate-300'
@@ -107,9 +160,25 @@ export function EventChecklist({ items = [], onChange, readOnly = false }) {
 
               {/* Items */}
               {items.length === 0 && (
-                <p className="text-xs text-slate-500 text-center py-2">
-                  Nenhum item. Adicione abaixo ou use um template.
-                </p>
+                <div className="text-center py-2.5 space-y-2 border border-dashed border-slate-700/70 rounded-lg p-3">
+                  <p className="text-xs text-slate-400">
+                    Carregue seu checklist de palco com 1 toque ou adicione itens abaixo:
+                  </p>
+                  {!readOnly && (
+                    <button
+                      type="button"
+                      onClick={() => applyTemplate(userTemplateKey)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90 border"
+                      style={{
+                        borderColor: `${primaryHex}66`,
+                        color: '#ffffff',
+                        backgroundColor: `${primaryHex}28`,
+                      }}
+                    >
+                      Carregar preset {userTemplate.label}
+                    </button>
+                  )}
+                </div>
               )}
               <ul className="space-y-1.5">
                 <AnimatePresence>

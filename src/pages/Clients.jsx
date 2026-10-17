@@ -523,7 +523,6 @@ export default function ClientsPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 min-w-0">
                         <h3 className="font-bold text-white truncate min-w-0" title={client.name}>{client.name}</h3>
-                        {client.profile_complete === false && <ClientDraftBadge />}
                       </div>
                       {client.contact_person && (
                         <p className="text-sm text-slate-400 truncate min-w-0" title={client.contact_person}>

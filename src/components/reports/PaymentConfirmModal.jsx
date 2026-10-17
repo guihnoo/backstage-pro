@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import appToast from '@/lib/appToast';
 import { useEvents } from '@/lib/useEvents';
-import { getEventReceivedAmount } from '@/lib/financeMetrics';
+import { getEventReceivedAmount, buildMarkPaidUpdate } from '@/lib/financeMetrics';
 import EventHeading from '@/components/events/EventHeading';
 import { getEventHoursStatus } from '@/lib/eventFinance';
 import { buildHoursGateMessage, shouldBlockPayment } from '@/lib/hoursGate';
@@ -54,17 +54,21 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
       appToast.error('Faltam horas neste evento.', { description: 'Lance as horas ou marque "cobrar assim mesmo".' });
       return;
     }
-    if (!paidAmount || Number(paidAmount) <= 0) {
-      appToast.error('Informe um valor válido para o pagamento.');
+    const rawText = String(paidAmount ?? '').trim();
+    const parsedAmount = Number(rawText.includes(',') ? rawText.replace(/\./g, '').replace(',', '.') : rawText);
+    if (!rawText || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      appToast.error('Informe o valor real recebido em conta.');
       return;
     }
 
     setLoading(true);
     try {
+      const updatePayload = buildMarkPaidUpdate(event, dailyWork, {
+        paidAmount: parsedAmount,
+        paidDate: format(paidDate, 'yyyy-MM-dd'),
+      });
       await updateEvent(event.id, {
-        payment_status: 'paid',
-        paid_amount: Number(paidAmount),
-        paid_date: format(paidDate, 'yyyy-MM-dd'),
+        ...updatePayload,
         ...(canStoreMethod ? { payment_method: paymentMethod } : {}),
       });
 
@@ -120,13 +124,17 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
 
           <div className="space-y-2">
             <Label htmlFor="paid_amount" className="text-slate-300">
-              Valor Recebido (R$)
+              Valor Real Recebido em Conta (R$)
             </Label>
+            <p className="text-xs text-slate-400">
+              Preenchido com o valor total do evento. Se o valor depositado pelo cliente foi diferente, ajuste aqui.
+            </p>
             <div className="relative">
               <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input
                 id="paid_amount"
                 type="number"
+                inputMode="decimal"
                 step="0.01"
                 min="0"
                 value={paidAmount}

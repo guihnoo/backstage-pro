@@ -1,4 +1,4 @@
-﻿import {
+import {
   useState,
   useEffect,
   useRef
@@ -280,6 +280,9 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
         policy_allows_meio_e_dobra_juntos: formData.policy_allows_meio_e_dobra_juntos || false,
         default_daily_cache: safeCache,
         brand_color: formData.brand_color || pickDefaultClientColor(formData.name),
+        // Salvar o formulário completo conclui o cadastro (sai do estado "rascunho"
+        // criado pelo cadastro rápido / catálogo sem CNPJ).
+        profile_complete: true,
         ...(companyId ? { company_id: companyId } : {}),
       };
 

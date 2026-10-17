@@ -91,7 +91,12 @@ export default function ProfileSimple() {
   const [exporting, setExporting] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
-  const [pixForm, setPixForm] = useState({ pix_key: '', pix_key_type: 'CPF' });
+  const [pixForm, setPixForm] = useState({
+    pix_key: '',
+    pix_key_type: 'CPF',
+    cpf_cnpj: '',
+    report_subtitle: '',
+  });
   const [savingPix, setSavingPix] = useState(false);
   const photoInputRef = useRef(null);
   const owner = isAppOwner(user, profile);
@@ -118,6 +123,8 @@ export default function ProfileSimple() {
       setPixForm({
         pix_key: userSettings.pix_key || '',
         pix_key_type: userSettings.pix_key_type || 'CPF',
+        cpf_cnpj: userSettings.cpf_cnpj || '',
+        report_subtitle: userSettings.report_subtitle || '',
       });
     }
   }, [userSettings]);
@@ -125,10 +132,15 @@ export default function ProfileSimple() {
   const handleSavePix = async () => {
     setSavingPix(true);
     try {
-      await upsertSettings({ pix_key: pixForm.pix_key.trim(), pix_key_type: pixForm.pix_key_type });
-      appToast.success('Chave PIX salva!');
+      await upsertSettings({
+        pix_key: pixForm.pix_key.trim(),
+        pix_key_type: pixForm.pix_key_type,
+        cpf_cnpj: pixForm.cpf_cnpj.trim() || null,
+        report_subtitle: pixForm.report_subtitle.trim() || null,
+      });
+      appToast.success('Dados de PIX e PDF salvos!');
     } catch {
-      appToast.error('Erro ao salvar chave PIX.');
+      appToast.error('Erro ao salvar dados de PIX.');
     } finally {
       setSavingPix(false);
     }
@@ -523,11 +535,11 @@ export default function ProfileSimple() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.315 }}>
           <NeonGlass primary={config.primaryHex} className="p-5 space-y-4">
             <div>
-              <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider font-mono">Dados de Pagamento (PIX)</h2>
-              <p className="text-xs text-slate-500 mt-1">Usados para gerar cobrança via WhatsApp e nos relatórios PDF.</p>
+              <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider font-mono">Dados de Pagamento (PIX) &amp; Relatório PDF</h2>
+              <p className="text-xs text-slate-500 mt-1">Usados para gerar cobrança via WhatsApp, código PIX Copia e Cola e cabeçalho do Relatório PDF de Fechamento.</p>
             </div>
             <div>
-              <label htmlFor="pix-key-type" className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Tipo de chave</label>
+              <label htmlFor="pix-key-type" className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Tipo de chave PIX</label>
               <select
                 id="pix-key-type"
                 value={pixForm.pix_key_type}
@@ -551,15 +563,40 @@ export default function ProfileSimple() {
                 />
               </div>
             </div>
+            <div>
+              <label htmlFor="profile-cpf-cnpj" className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">CPF ou CNPJ (MEI/Empresa para o PDF)</label>
+              <div className="relative">
+                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
+                <input
+                  id="profile-cpf-cnpj"
+                  type="text"
+                  value={pixForm.cpf_cnpj}
+                  onChange={e => setPixForm(f => ({ ...f, cpf_cnpj: e.target.value }))}
+                  placeholder="00.000.000/0001-00 ou 000.000.000-00"
+                  className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-600 transition-colors"
+                />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="profile-report-subtitle" className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Subtítulo / Nome Fantasia no Relatório PDF (opcional)</label>
+              <input
+                id="profile-report-subtitle"
+                type="text"
+                value={pixForm.report_subtitle}
+                onChange={e => setPixForm(f => ({ ...f, report_subtitle: e.target.value }))}
+                placeholder="Ex: Engenharia de Áudio & RF · MEI"
+                className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-600 transition-colors"
+              />
+            </div>
             <motion.button
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleSavePix}
-              disabled={savingPix || !pixForm.pix_key.trim()}
+              disabled={savingPix || (!pixForm.pix_key.trim() && !pixForm.cpf_cnpj.trim() && !pixForm.report_subtitle.trim())}
               className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
               style={{ background: `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})` }}
             >
-              {savingPix ? <><Loader2 className="w-4 h-4 animate-spin" /> Salvando...</> : <><Save className="w-4 h-4" /> Salvar PIX</>}
+              {savingPix ? <><Loader2 className="w-4 h-4 animate-spin" /> Salvando...</> : <><Save className="w-4 h-4" /> Salvar PIX e Dados do PDF</>}
             </motion.button>
           </NeonGlass>
         </motion.div>

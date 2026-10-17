@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { differenceInDays, parseISO, format, isValid, addWeeks, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -82,6 +82,8 @@ export default function EventForm({
     if (!isOpen) return;
 
     const seed = event || prefillData || initialData || {};
+    const isEditing = Boolean(event?.id);
+    const defaultDailyRate = !isEditing && Number(profile?.daily_rate) > 0 ? String(profile.daily_rate) : '';
     setFormData({
       ...defaultState,
       client_id: seed.client_id || '',
@@ -94,7 +96,7 @@ export default function EventForm({
       payment_due_date: seed.payment_due_date ? normalizeDateString(seed.payment_due_date) : '',
       payment_status: seed.payment_status || 'unpaid',
       payment_model: seed.payment_model || 'HORAS_EXTRAS',
-      daily_cache_value: seed.daily_cache_value ?? '',
+      daily_cache_value: seed.daily_cache_value ?? defaultDailyRate,
       cache_valor_base: seed.cache_valor_base ?? '',
       color: seed.color || resolveEventColor({ client_id: seed.client_id, color: seed.color }, clients.find((c) => c.id === seed.client_id)) || theme.primaryHex,
       location: seed.location || '',
@@ -103,7 +105,7 @@ export default function EventForm({
       location_lat: seed.location_lat ?? null,
       location_lng: seed.location_lng ?? null,
       observacoes_md: seed.observacoes_md || '',
-      nf_number: seed.nf_number || '',
+      nf_number: seed.nf_number || seed.nfe_numero || '',
       nf_issued_at: seed.nf_issued_at ? seed.nf_issued_at.slice(0, 10) : '',
     });
     // "Repetir" sempre começa desligado ao abrir o formulário (antes ficava ligado e duplicava séries).
@@ -111,7 +113,7 @@ export default function EventForm({
     setRepeatTimes(3);
     setRepeatUnit('weeks');
     if (!isOpen) setExtraClients([]);
-  }, [isOpen, event, prefillData, initialData]);
+  }, [isOpen, event, prefillData, initialData, profile?.daily_rate, clients, theme.primaryHex]);
 
   const setField = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -155,6 +157,23 @@ export default function EventForm({
     try {
       const created = await createClient(data);
       setExtraClients((prev) => [...prev, created]);
+      if (created?.id && !event?.id) {
+        setFormData((prev) => {
+          const next = { ...prev, client_id: created.id };
+          const fromClient = Number(created.default_daily_cache) || 0;
+          const fromProfile = Number(profile?.daily_rate) || 0;
+          if (fromClient > 0) {
+            next.daily_cache_value = fromClient;
+          } else if ((prev.daily_cache_value === '' || prev.daily_cache_value == null) && fromProfile > 0) {
+            next.daily_cache_value = fromProfile;
+          }
+          if (created.policy_default_payment_model) {
+            next.payment_model = created.policy_default_payment_model;
+          }
+          next.color = resolveEventColor({ client_id: created.id }, created);
+          return next;
+        });
+      }
       return created;
     } catch (error) {
       appToast.error('Não foi possível criar o cliente.', {
@@ -162,7 +181,7 @@ export default function EventForm({
       });
       throw error;
     }
-  }, [createClient]);
+  }, [createClient, event?.id, profile?.daily_rate]);
 
   const conflictingEvents = useMemo(() => {
     if (!formData.start_date) return [];

@@ -1,4 +1,4 @@
-﻿
+
 import { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useQueryAction } from '@/lib/useQueryAction';
@@ -1076,7 +1076,7 @@ export default function CalendarPage() {
         const workForEvent = dailyWork
           .filter(w => w.event_id === event.id);
         const value = calculateEventReceivableAmount(event, workForEvent);
-        const statusLabel = event.payment_status === 'paid' ? 'Pago' : event.payment_status === 'partial' ? 'Parcial' : 'Pendente';
+        const statusLabel = event.payment_status === 'paid' ? 'Pago' : 'Pendente';
         return {
           title: event.title,
           subtitle: `${client?.name || 'Cliente'} · ${statusLabel}`,
@@ -1119,6 +1119,12 @@ export default function CalendarPage() {
     }
     setQuickActions({ open: false, date: null, target: null });
   }, [quickActions.date, handleQuickWorkEntry]);
+
+  // Toque longo / duplo toque em um dia da grade → registrar horas daquele dia.
+  const handleGridQuickAction = useCallback((type, day) => {
+    setQuickActions({ open: false, date: null, target: null });
+    if (type === 'work') handleQuickWorkEntry(day instanceof Date ? day : new Date(day));
+  }, [handleQuickWorkEntry]);
 
   if (authLoading && !user) {
     return (
@@ -1416,6 +1422,7 @@ export default function CalendarPage() {
                 dailyWork={dailyWork}
                 selectedDate={selectedDate}
                 onDateSelect={handleDayClick}
+                onQuickAction={handleGridQuickAction}
                 onEventClick={handleEventClick}
                 onEventQuickLog={handleQuickLogForEvent}
                 loading={false}
@@ -1502,7 +1509,7 @@ export default function CalendarPage() {
                       {/* Cabeçalho do dia */}
                       <button
                         type="button"
-                        onClick={() => handleDayClick(day)}
+                        onClick={(e) => handleDayClick(day, e.currentTarget)}
                         className={`px-2 pt-2 pb-1 border-b text-left w-full group ${isToday ? 'bp-today-surface' : 'border-slate-700/40'}`}
                         title={`Novo evento em ${format(day, "d 'de' MMM", { locale: ptBR })}`}
                       >
@@ -1562,7 +1569,7 @@ export default function CalendarPage() {
                         {overflow > 0 && (
                           <button
                             type="button"
-                            onClick={() => handleDayClick(day)}
+                            onClick={(e) => handleDayClick(day, e.currentTarget)}
                             className="text-[10px] text-slate-500 text-center mt-0.5 w-full py-0.5 rounded hover:text-slate-300 transition-colors"
                           >
                             +{overflow} mais
@@ -1673,11 +1680,11 @@ export default function CalendarPage() {
                         </div>
                         <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                           <div className="flex items-center gap-1.5">
-                            {ev.status === 'completed' && (ev.nfe_arquivo_url || ev.nfe_numero) && (
+                            {(ev.nfe_arquivo_url || ev.nfe_numero || ev.nf_number) && (
                               <FileText
                                 className="w-3.5 h-3.5"
                                 style={{ color: ev.nfe_analise?.cliente_reconhecido ? '#34d399' : '#60a5fa' }}
-                                title={ev.nfe_analise?.cliente_reconhecido ? 'NF-e verificada' : 'NF-e registrada'}
+                                title={ev.nfe_analise?.cliente_reconhecido ? 'NF-e verificada' : 'NF-e anexada'}
                               />
                             )}
                             <StatusIcon className="w-4 h-4" style={{ color: statusColor }} />
@@ -1783,11 +1790,11 @@ export default function CalendarPage() {
                           )}
                         </button>
                         <div className="flex items-center gap-2 flex-shrink-0">
-                          {evStatus === 'completed' && (ev.nfe_arquivo_url || ev.nfe_numero) && (
+                          {(ev.nfe_arquivo_url || ev.nfe_numero || ev.nf_number) && (
                             <FileText
                               className="w-3.5 h-3.5 flex-shrink-0"
                               style={{ color: ev.nfe_analise?.cliente_reconhecido ? '#34d399' : '#60a5fa' }}
-                              title={ev.nfe_analise?.cliente_reconhecido ? 'NF-e verificada' : 'NF-e registrada'}
+                              title={ev.nfe_analise?.cliente_reconhecido ? 'NF-e verificada' : 'NF-e anexada'}
                             />
                           )}
                           {canQuickPay && (
@@ -1856,11 +1863,11 @@ export default function CalendarPage() {
                     </div>
                     <div className="flex flex-col items-end gap-1 flex-shrink-0">
                       <div className="flex items-center gap-1.5">
-                        {ev.status === 'completed' && (ev.nfe_arquivo_url || ev.nfe_numero) && (
+                        {(ev.nfe_arquivo_url || ev.nfe_numero || ev.nf_number) && (
                           <FileText
                             className="w-3.5 h-3.5"
                             style={{ color: ev.nfe_analise?.cliente_reconhecido ? '#34d399' : '#60a5fa' }}
-                            title={ev.nfe_analise?.cliente_reconhecido ? 'NF-e verificada' : 'NF-e registrada'}
+                            title={ev.nfe_analise?.cliente_reconhecido ? 'NF-e verificada' : 'NF-e anexada'}
                           />
                         )}
                         <StatusIcon className="w-4 h-4" style={{ color: statusColor }} />

@@ -130,9 +130,19 @@ export function buildProposalMessage({
  * Gera um relatório final do evento para enviar ao cliente.
  * Inclui cachê, horas trabalhadas e despesas (reembolsáveis destacadas).
  */
-export function buildEventReport({ event, client, work = [], expenses = [] }) {
+export function buildEventReport({
+  event,
+  client,
+  work = [],
+  expenses = [],
+  pixKey = '',
+  pixKeyType = 'Chave PIX',
+  pixPayloadStr = '',
+  providerName = '',
+}) {
   const clientName = client?.name || 'Cliente';
   const eventTitle = event?.title || 'Evento';
+  const nfeNum = event?.nfe_numero || event?.nf_number || event?.nfe_analise?.numero_nota || '';
 
   const startDate = event?.start_date
     ? new Date(event.start_date + 'T12:00:00').toLocaleDateString('pt-BR')
@@ -161,6 +171,7 @@ export function buildEventReport({ event, client, work = [], expenses = [] }) {
   lines.push(`🏢 ${clientName}`);
   if (dateLine) lines.push(`📅 ${dateLine}`);
   if (event?.location) lines.push(`📍 ${event.location}`);
+  if (nfeNum) lines.push(`📄 NF-e / NFS-e: *Nº ${nfeNum}*`);
 
   lines.push(``);
   lines.push(`━━━━━━━━━━━━━━━━━━━━`);
@@ -226,8 +237,19 @@ export function buildEventReport({ event, client, work = [], expenses = [] }) {
     lines.push(`✅ *TOTAL: ${formatBRL(cacheValue)}*`);
   }
 
+  if (pixKey) {
+    lines.push(``);
+    lines.push(`🔑 *DADOS PARA PAGAMENTO (PIX)*`);
+    if (providerName) lines.push(`Favorecido: ${providerName}`);
+    lines.push(`${pixKeyType || 'Chave PIX'}: *${pixKey}*`);
+    if (pixPayloadStr) {
+      lines.push(`📋 *PIX Copia e Cola:*`);
+      lines.push(pixPayloadStr);
+    }
+  }
+
   lines.push(``);
-  lines.push(`Qualquer dúvida, estou à disposição. 🙏`);
+  lines.push(`Qualquer dúvida, estou à disposição. 🙏${providerName ? `\n— ${providerName}` : ''}`);
 
   return lines.join('\n');
 }

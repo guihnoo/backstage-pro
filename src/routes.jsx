@@ -118,6 +118,7 @@ export const router = createBrowserRouter([
       { path: '/privacy', element: <PrivacyPolicyPage /> },
       { path: '/termos', element: <TermsOfServicePage /> },
       { path: '/terms', element: <TermsOfServicePage /> },
+      { path: '/fechamento', lazy: wrapPage(() => import('./pages/PublicClosingPage')) },
       {
         path: '/onboarding',
         element: (

@@ -6,6 +6,8 @@ import { useDailyWork } from '@/lib/useDailyWork';
 import appToast from '@/lib/appToast';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { format } from 'date-fns';
+import { supabase } from '@/lib/supabase';
+import { computeWorkDay, defaultDayChoice, elapsedMsToMinutes, REGIME_POR_DIA_ATIVO } from '@/lib/workDay';
 
 export function FloatingTimer() {
   const { primaryHex } = useCategoryTheme();
@@ -46,20 +48,50 @@ export function FloatingTimer() {
     setSaving(true);
     try {
       const ms = getElapsedMs(timer);
-      const hours = elapsedToHours(ms);
-      const today = format(new Date(), 'yyyy-MM-dd');
+      const startedAt = new Date(timer.startedAt || Date.now() - ms);
+      const endedAt = new Date();
+      const durationMinutes = elapsedMsToMinutes(ms);
+      // Data do turno = dia em que o cronômetro foi iniciado (turno pode virar a meia-noite).
+      const workDate = format(startedAt, 'yyyy-MM-dd');
+      const entry = format(startedAt, 'HH:mm');
+      const exit = format(endedAt, 'HH:mm');
+
+      // Regra única de horas e cachê (src/lib/workDay.js) — mesma do Modo Palco / DailyWorkModal.
+      let event = null;
+      if (timer.eventId) {
+        const { data, error } = await supabase.from('events').select('*').eq('id', timer.eventId).maybeSingle();
+        if (error) throw error;
+        event = data;
+      }
+      const choice = event ? defaultDayChoice(event, null) : null;
+      const day = computeWorkDay({
+        event: event || {},
+        entry,
+        exit,
+        durationMinutes,
+        ...(REGIME_POR_DIA_ATIVO && choice ? { regime: choice.regime, horaExtra: choice.horaExtra } : {}),
+      });
+      const hours = day.totalHours ?? elapsedToHours(ms);
 
       await createWork({
         event_id: timer.eventId,
-        date: today,
+        date: workDate,
+        entry_time: entry,
+        exit_time: exit,
         total_hours: hours,
+        ...(event ? { overtime_hours: day.overtimeHours, daily_cache: day.cache } : {}),
+        ...(event && REGIME_POR_DIA_ATIVO && choice
+          ? { regime: choice.regime, hora_extra: Boolean(choice.horaExtra), origem: 'lancada' }
+          : {}),
         notes: `Registrado via Timer — ${formatElapsed(ms)} de trabalho`,
       });
 
       stopTimer();
       setConfirming(false);
       appToast.success('Horas registradas!', {
-        description: `${hours}h adicionadas ao evento "${timer.eventTitle}".`,
+        description: event
+          ? `${hours}h · cachê do dia ${Number(day.cache || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} em "${timer.eventTitle}".`
+          : `${hours}h registradas.`,
       });
     } catch (err) {
       appToast.error('Erro ao salvar horas', { description: err.message });

@@ -48,6 +48,8 @@ import {
   Share2 as ShareIcon,
   MoreHorizontal,
   Receipt,
+  Send,
+  MessageCircle,
 } from 'lucide-react';
 import EventLocationSection from '@/components/events/EventLocationSection';
 import { useEvents } from '@/lib/useEvents';
@@ -58,6 +60,11 @@ import { getClientDisplayName } from '@/lib/eventDisplay';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { formatCNPJ } from '@/lib/cnpjSearch';
 import NFeAttachment from '@/components/shared/NFeAttachment';
+import { useAuth } from '@/lib/authContext';
+import { useUserSettings } from '@/lib/useUserSettings';
+import { generatePixPayload, generatePixQrDataUrl } from '@/lib/pixPayload';
+import { buildEventReport, openWhatsAppCharge } from '@/lib/whatsapp';
+import { buildClosingShareUrl } from '@/lib/closingShareLink';
 
 const InlineNotes = ({ event, updateEvent }) => {
   const { primaryHex } = useCategoryTheme();
@@ -101,7 +108,7 @@ const InlineNotes = ({ event, updateEvent }) => {
           value={draft}
           onChange={e => setDraft(e.target.value)}
           rows={4}
-          placeholder="Anote informações do evento: contato do local, estacionamento, rider técnico…"
+          placeholder="Anote informações do evento: contato do local, estacionamento, logística e condições…"
           className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2.5 text-sm text-slate-200 placeholder:text-slate-500 resize-none focus:outline-none transition-colors bp-focus-input"
         />
         <div className="flex gap-2 justify-end">
@@ -377,6 +384,8 @@ const EventDetailModal = React.memo(function EventDetailModal({
 }) {
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
   const [activeTab, setActiveTab] = useState('resumo');
+  const { user, profile } = useAuth();
+  const { settings: userSettings, upsert: upsertUserSettings } = useUserSettings();
   const { update: updateEvent } = useEvents();
   const { primaryHex, accentHex } = useCategoryTheme();
   const { formatCurrency, isVisible } = useFinancialVisibility();
@@ -385,6 +394,12 @@ const EventDetailModal = React.memo(function EventDetailModal({
   const [ratingDraft, setRatingDraft] = useState(null);
   const [ratingNotesDraft, setRatingNotesDraft] = useState('');
   const [ratingHover, setRatingHover] = useState(0);
+  const [generatingPDF, setGeneratingPDF] = useState(false);
+  const [sharingPDF, setSharingPDF] = useState(false);
+  const [editingPixInline, setEditingPixInline] = useState(false);
+  const [quickPixType, setQuickPixType] = useState('CPF');
+  const [quickPixKey, setQuickPixKey] = useState('');
+  const [savingQuickPix, setSavingQuickPix] = useState(false);
   const [locDraft, setLocDraft] = useState({
     location: '',
     location_city: '',
@@ -392,6 +407,31 @@ const EventDetailModal = React.memo(function EventDetailModal({
     location_lat: null,
     location_lng: null,
   });
+
+  useEffect(() => {
+    if (userSettings) {
+      setQuickPixKey(userSettings.pix_key || '');
+      setQuickPixType(userSettings.pix_key_type || 'CPF');
+    }
+  }, [userSettings]);
+
+  const handleSaveQuickPix = async () => {
+    if (!quickPixKey.trim()) return;
+    setSavingQuickPix(true);
+    try {
+      await upsertUserSettings({
+        pix_key: quickPixKey.trim(),
+        pix_key_type: quickPixType,
+        report_full_name: userSettings?.report_full_name || profile?.name || null,
+      });
+      setEditingPixInline(false);
+      appToast.success('Chave PIX salva!', { description: 'Já incluída no PDF de Fechamento e WhatsApp.' });
+    } catch (err) {
+      appToast.error('Não foi possível salvar o PIX', { description: err.message });
+    } finally {
+      setSavingQuickPix(false);
+    }
+  };
 
   useEffect(() => {
     if (!event) return;
@@ -496,6 +536,202 @@ const EventDetailModal = React.memo(function EventDetailModal({
       appToast.error('Erro ao atualizar status do evento.');
     } finally {
       setMarkingDone(false);
+    }
+  };
+
+  const buildFullReportMessage = () => {
+    const pixKey = userSettings?.pix_key || '';
+    const pixKeyType = userSettings?.pix_key_type || 'Chave PIX';
+    const providerName = userSettings?.report_full_name || profile?.name || profile?.full_name || '';
+    const pixPayloadStr = pixKey
+      ? generatePixPayload({
+          pixKey,
+          merchantName: providerName || 'Tecnico',
+          merchantCity: profile?.city || event.location_city || 'Brasil',
+          amount: stats.totalRevenue || 0,
+          txId: (event.title || 'show').replace(/[^a-zA-Z0-9]/g, '').slice(0, 25) || '***',
+        })
+      : '';
+    return buildEventReport({
+      event,
+      client,
+      work: dailyWork,
+      expenses,
+      pixKey,
+      pixKeyType,
+      pixPayloadStr,
+      providerName,
+    });
+  };
+
+  const handleSendReport = () => {
+    const phone = client?.phone;
+    const message = buildFullReportMessage();
+    if (!phone) {
+      navigator.clipboard?.writeText(message).then(() =>
+        appToast.success('Relatório completo copiado!', { description: 'Cole no WhatsApp do contratante.' })
+      );
+      return;
+    }
+    const ok = openWhatsAppCharge(phone, message);
+    if (!ok) appToast.error('Não foi possível abrir o WhatsApp.');
+  };
+
+  const handleCopyClosingLink = async () => {
+    try {
+      const url = buildClosingShareUrl({
+        event,
+        client,
+        work: dailyWork,
+        expenses,
+        profile: { ...(profile || {}), email: profile?.email || user?.email || '' },
+        userSettings: userSettings || {},
+      });
+      await navigator.clipboard?.writeText(url);
+      appToast.success('Link de Fechamento & PIX copiado!', {
+        description: 'Envie para a produtora visualizar o fechamento, QR Code PIX e NF-e no navegador.',
+      });
+    } catch (err) {
+      appToast.error('Não foi possível copiar o link', { description: err.message });
+    }
+  };
+
+  const generateClosingPdfBlob = async () => {
+    const { pdf } = await import('@react-pdf/renderer');
+    const { EventPDFDocument } = await import('@/lib/EventPDFDocument');
+    const pixKey = userSettings?.pix_key || null;
+    const providerName = userSettings?.report_full_name || profile?.name || profile?.full_name || 'Prestador';
+    let pixQrDataUrl = '';
+    if (pixKey) {
+      pixQrDataUrl = await generatePixQrDataUrl({
+        pixKey,
+        merchantName: providerName,
+        merchantCity: profile?.city || event?.location_city || 'Brasil',
+        amount: stats.totalRevenue || 0,
+        txId: (event?.title || client?.name || 'SHOW').replace(/[^a-zA-Z0-9]/g, '').slice(0, 25) || '***',
+      });
+    }
+    const reportSettings = {
+      report_full_name:  userSettings?.report_full_name  || profile?.name || profile?.full_name || null,
+      report_subtitle:   userSettings?.report_subtitle   || null,
+      report_profession: userSettings?.report_profession || null,
+      cpf_cnpj:          userSettings?.cpf_cnpj          || profile?.cnpj || profile?.cpf_cnpj || null,
+      phone:             profile?.phone                  || null,
+      email:             profile?.email                  || user?.email || null,
+      pix_key:           pixKey,
+      pix_key_type:      userSettings?.pix_key_type      || 'Chave PIX',
+      pix_qr_data_url:   pixQrDataUrl || null,
+    };
+    const enrichedProfile = {
+      ...(profile || {}),
+      email: profile?.email || user?.email || '',
+    };
+    const enrichedExpenses = await Promise.all(
+      (expenses || []).map(async (exp) => {
+        if (!exp.is_reimbursable || !exp.receipt_url) return exp;
+        if (String(exp.receipt_url).startsWith('data:image/')) {
+          return { ...exp, receipt_data_url: exp.receipt_url };
+        }
+        try {
+          const resp = await fetch(exp.receipt_url);
+          if (!resp.ok) return exp;
+          const b = await resp.blob();
+          const dataUrl = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(String(reader.result || ''));
+            reader.onerror = () => resolve('');
+            reader.readAsDataURL(b);
+          });
+          return dataUrl.startsWith('data:image/') ? { ...exp, receipt_data_url: dataUrl } : exp;
+        } catch {
+          return exp;
+        }
+      })
+    );
+    const blob = await pdf(
+      <EventPDFDocument
+        event={event}
+        client={client}
+        work={dailyWork}
+        expenses={enrichedExpenses}
+        profile={enrichedProfile}
+        reportSettings={reportSettings}
+      />
+    ).toBlob();
+    const clientSlug = (client?.name || event?.title || 'cliente').replace(/\s+/g, '_').substring(0, 20);
+    const dateSlug = event?.start_date ? event.start_date.replace(/-/g, '') : new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const filename = `Fechamento_${clientSlug}_${dateSlug}.pdf`;
+    return { blob, filename };
+  };
+
+  const handleDownloadPDF = async () => {
+    if (generatingPDF) return;
+    setGeneratingPDF(true);
+    try {
+      const { blob, filename } = await generateClosingPdfBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+      appToast.success('PDF de Fechamento gerado!', { description: filename });
+    } catch (err) {
+      appToast.error('Erro ao gerar PDF', { description: err.message });
+    } finally {
+      setGeneratingPDF(false);
+    }
+  };
+
+  const handleSharePDF = async () => {
+    if (sharingPDF) return;
+    setSharingPDF(true);
+    try {
+      const { blob, filename } = await generateClosingPdfBlob();
+      const message = buildFullReportMessage();
+      const pdfFile = new File([blob], filename, { type: 'application/pdf' });
+      const filesToShare = [pdfFile];
+      if (event?.nfe_arquivo_url) {
+        try {
+          const resp = await fetch(event.nfe_arquivo_url);
+          if (resp.ok) {
+            const nfeBlob = await resp.blob();
+            const nfeName = event.nfe_arquivo_nome || `NFe_${event.nfe_numero || event.nf_number || 'anexo'}.pdf`;
+            filesToShare.push(new File([nfeBlob], nfeName, { type: nfeBlob.type || 'application/pdf' }));
+          }
+        } catch {
+          // Envia ao menos o PDF de Fechamento
+        }
+      }
+      const shareableFiles = (typeof navigator !== 'undefined' && navigator.canShare)
+        ? (navigator.canShare({ files: filesToShare })
+            ? filesToShare
+            : (navigator.canShare({ files: [pdfFile] }) ? [pdfFile] : null))
+        : null;
+      if (shareableFiles) {
+        await navigator.share({
+          title: `Fechamento — ${event?.title || client?.name || 'Evento'}`,
+          text: message,
+          files: shareableFiles,
+        });
+        appToast.success(shareableFiles.length > 1 ? 'PDF de Fechamento + NF-e prontos para envio!' : 'PDF pronto para envio!');
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = filename; a.click();
+        URL.revokeObjectURL(url);
+        if (client?.phone) {
+          openWhatsAppCharge(client.phone, message);
+          appToast.success('PDF baixado + WhatsApp aberto!');
+        } else {
+          await navigator.clipboard?.writeText(message);
+          appToast.success('PDF baixado + Relatório copiado!');
+        }
+      }
+    } catch (err) {
+      if (err?.name !== 'AbortError') {
+        appToast.error('Erro ao enviar PDF', { description: err.message });
+      }
+    } finally {
+      setSharingPDF(false);
     }
   };
 
@@ -627,7 +863,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
                   value="fiscal"
                   className="flex-1 text-xs h-8 data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:shadow-sm text-slate-400 rounded-md"
                 >
-                  Fiscal{(event.nfe_arquivo_url || event.nfe_numero) ? ' ●' : ''}
+                  Fiscal{(event.nfe_arquivo_url || event.nfe_numero || event.nf_number) ? ' ●' : ''}
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -968,24 +1204,116 @@ const EventDetailModal = React.memo(function EventDetailModal({
                   </AnimatePresence>
 
                   {/* Anexo NF-e */}
-                  {status === 'completed' && (
-                    <div>
-                      <h3 className="font-semibold text-white text-sm mb-3 flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-blue-400" />
-                        Nota Fiscal Eletrônica
-                      </h3>
-                      <NFeAttachment event={event} client={client} />
-                    </div>
-                  )}
+                  <div>
+                    <h3 className="font-semibold text-white text-sm mb-3 flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-blue-400" />
+                      Nota Fiscal Eletrônica (NF-e / NFS-e)
+                    </h3>
+                    <NFeAttachment event={event} client={client} />
+                  </div>
 
-                  {status !== 'completed' && !showNFeCard && (
-                    <div className="text-center py-8 text-slate-500">
-                      <FileText className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                      <p className="text-sm">Disponível após o evento ser marcado como realizado.</p>
+                  {/* PIX */}
+                  <div className="space-y-3 pt-2 border-t border-slate-800">
+                    <div className="flex items-center justify-between gap-2">
+                      <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+                        <Receipt className="w-4 h-4 text-emerald-400" />
+                        Dados de Pagamento (PIX no PDF)
+                      </h4>
+                      {userSettings?.pix_key && (
+                        <button
+                          type="button"
+                          onClick={() => setEditingPixInline((v) => !v)}
+                          className="text-xs text-slate-400 hover:text-white underline underline-offset-2"
+                        >
+                          {editingPixInline ? 'Fechar edição' : 'Alterar chave'}
+                        </button>
+                      )}
                     </div>
-                  )}
 
-                  {status === 'completed' && !showNFeCard && (
+                    {userSettings?.pix_key && !editingPixInline ? (
+                      <p className="text-xs text-slate-300 bg-slate-800/70 border border-slate-700/70 rounded-lg px-3 py-2 font-mono">
+                        {userSettings.pix_key_type || 'Chave PIX'}: <span className="text-emerald-300 font-bold">{userSettings.pix_key}</span>
+                      </p>
+                    ) : (
+                      <div className="rounded-lg border border-dashed border-emerald-800/50 bg-emerald-950/10 p-3 space-y-2.5">
+                        <p className="text-xs text-slate-400">
+                          Cadastre sua chave PIX para que ela, o QR Code e o Copia e Cola saiam automaticamente no PDF de Fechamento.
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          <select
+                            value={quickPixType}
+                            onChange={(e) => setQuickPixType(e.target.value)}
+                            className="h-9 rounded-md bg-slate-800 border border-slate-700 px-2.5 text-xs text-white"
+                          >
+                            {['CPF', 'CNPJ', 'E-mail', 'Telefone', 'Chave aleatória'].map((t) => (
+                              <option key={t} value={t}>{t}</option>
+                            ))}
+                          </select>
+                          <input
+                            type="text"
+                            value={quickPixKey}
+                            onChange={(e) => setQuickPixKey(e.target.value)}
+                            placeholder="Sua chave PIX..."
+                            className="h-9 flex-1 min-w-[150px] rounded-md bg-slate-800 border border-slate-700 px-3 text-xs text-white placeholder:text-slate-500"
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            disabled={savingQuickPix || !quickPixKey.trim()}
+                            onClick={handleSaveQuickPix}
+                            className="h-9 px-3 text-xs bg-emerald-700 hover:bg-emerald-600 text-white"
+                          >
+                            {savingQuickPix ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Salvar PIX'}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Documentos e Fechamento */}
+                  <div className="space-y-2 pt-2 border-t border-slate-800">
+                    <h4 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-slate-400" />
+                      Relatório de Fechamento & Cobrança
+                    </h4>
+                    <Button
+                      type="button"
+                      onClick={handleDownloadPDF}
+                      disabled={generatingPDF}
+                      variant="outline"
+                      className="w-full justify-start border-blue-600/50 hover:bg-blue-900/20 text-blue-300"
+                    >
+                      {generatingPDF ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
+                      Baixar Relatório de Fechamento (PDF completo)
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleSharePDF}
+                      disabled={sharingPDF}
+                      variant="outline"
+                      className="w-full justify-start border-emerald-600/50 hover:bg-emerald-900/20 text-emerald-300"
+                    >
+                      {sharingPDF ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
+                      Enviar PDF de Fechamento + NF-e (WhatsApp / Compartilhar)
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleSendReport}
+                      variant="outline"
+                      className="w-full justify-start border-green-600/50 hover:bg-green-900/20 text-green-300"
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      Enviar Relatório em Texto no WhatsApp
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleCopyClosingLink}
+                      variant="outline"
+                      className="w-full justify-start border-amber-600/50 hover:bg-amber-900/20 text-amber-300"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Copiar Link Interativo de Fechamento & PIX (Web)
+                    </Button>
                     <Button
                       type="button"
                       variant="outline"
@@ -995,7 +1323,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
                       <ExternalLink className="w-4 h-4 mr-2" />
                       Portal NFS-e Nacional
                     </Button>
-                  )}
+                  </div>
                 </TabsContent>
 
               </div>

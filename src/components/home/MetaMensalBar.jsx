@@ -36,6 +36,19 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
   const metaDiarias = Number(profile?.monthly_goal_events) || 0;
   const hasGoals = metaReceita > 0 || metaDiarias > 0;
 
+  const receitaAtual = stats?.faturamento_pago ?? 0;
+  const diariasAtual = Math.round(stats?.diarias_count ?? 0);
+  const horasAtual = Number(stats?.horas_trabalhadas ?? 0);
+  const pctReceita = metaReceita > 0 ? Math.min((receitaAtual / metaReceita) * 100, 100) : 0;
+  const pctDiarias = metaDiarias > 0 ? Math.min((diariasAtual / metaDiarias) * 100, 100) : 0;
+  const goalReached = pctReceita >= 100 || pctDiarias >= 100;
+  const bothGoalsReached = (metaReceita === 0 || pctReceita >= 100) && (metaDiarias === 0 || pctDiarias >= 100);
+
+  const pctMes = Math.round((dayOfMonth / daysInMonth) * 100);
+  const projecaoReceita = dayOfMonth > 0 && receitaAtual > 0
+    ? Math.round((receitaAtual / dayOfMonth) * daysInMonth)
+    : 0;
+
   if (!hasGoals && !isLoading) {
     return (
       <motion.button
@@ -50,7 +63,9 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
             <Target className="w-4 h-4" style={{ color: accentColor }} />
             <div>
               <span className="text-sm font-bold text-white block">Defina sua meta do mês</span>
-              <span className="text-xs text-gray-500">Faturamento e diárias — acompanhe o progresso aqui</span>
+              <span className="text-xs text-gray-400">
+                Este mês: {diariasAtual} diária{diariasAtual !== 1 ? 's' : ''} · {horasAtual.toFixed(1)}h trabalhadas
+              </span>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors" />
@@ -58,18 +73,6 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
       </motion.button>
     );
   }
-
-  const receitaAtual = stats?.faturamento_pago ?? 0;
-  const diariasAtual = stats?.diarias_count ?? 0;
-  const pctReceita = metaReceita > 0 ? Math.min((receitaAtual / metaReceita) * 100, 100) : 0;
-  const pctDiarias = metaDiarias > 0 ? Math.min((diariasAtual / metaDiarias) * 100, 100) : 0;
-  const goalReached = pctReceita >= 100 || pctDiarias >= 100;
-  const bothGoalsReached = (metaReceita === 0 || pctReceita >= 100) && (metaDiarias === 0 || pctDiarias >= 100);
-
-  const pctMes = Math.round((dayOfMonth / daysInMonth) * 100);
-  const projecaoReceita = dayOfMonth > 0 && receitaAtual > 0
-    ? Math.round((receitaAtual / dayOfMonth) * daysInMonth)
-    : 0;
 
   return (
     <motion.button
@@ -91,7 +94,7 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
             ? <motion.div animate={{ rotate: [0, -10, 10, 0] }} transition={{ duration: 0.6, repeat: LOOP, repeatDelay: 3 }}><Trophy className="w-4 h-4 text-amber-400" /></motion.div>
             : <Target className="w-4 h-4" style={{ color: accentColor }} />
           }
-          <span className="text-sm font-bold text-white">Meta do mês</span>
+          <span className="text-sm font-bold text-white">Meta & Ritmo do Mês</span>
           {bothGoalsReached && (
             <motion.span
               initial={{ opacity: 0, scale: 0 }}
@@ -102,7 +105,10 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
             </motion.span>
           )}
         </div>
-        <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors" />
+        <span className="text-xs font-mono text-slate-400 flex items-center gap-1">
+          ⏱️ {horasAtual.toFixed(1)}h no mês
+          <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors" />
+        </span>
       </div>
 
       {isLoading ? (
@@ -132,7 +138,7 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
               <ProgressBar value={receitaAtual} max={metaReceita} color={pctReceita >= 100 ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' : accentColor} />
             </div>
           )}
-          {metaDiarias > 0 && (
+          {metaDiarias > 0 ? (
             <div>
               <div className="flex justify-between text-xs text-gray-400 mb-1.5">
                 <span>Diárias</span>
@@ -143,12 +149,17 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
               </div>
               <ProgressBar value={diariasAtual} max={metaDiarias} color={pctDiarias >= 100 ? 'linear-gradient(90deg, #10b981, #34d399)' : accentColor} />
             </div>
+          ) : (
+            <div className="flex justify-between text-xs text-gray-400">
+              <span>Diárias no mês</span>
+              <span className="font-mono font-semibold text-white">{diariasAtual} dia{diariasAtual !== 1 ? 's' : ''}</span>
+            </div>
           )}
 
           {/* Ritmo do mês */}
           {!bothGoalsReached && (
             <div className="pt-3 mt-1 border-t border-gray-800/50 flex items-center justify-between">
-              <span className="text-[10px] text-slate-600">
+              <span className="text-[10px] text-slate-500">
                 Dia {dayOfMonth}/{daysInMonth} · {pctMes}% do mês
               </span>
               {metaReceita > 0 && projecaoReceita > 0 && (

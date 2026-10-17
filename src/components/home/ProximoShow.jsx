@@ -37,7 +37,7 @@ const STATUS_LABELS = {
   pending: 'Pendente',
 };
 
-export default function ProximoShow({ event, userCategory, isOnStage, isLiveShift, isLoading, loadError, onViewEvent, onRefresh }) {
+export default function ProximoShow({ event, userCategory, isOnStage, isLiveShift, isLoading, loadError, onViewEvent, onCreateEvent, onRefresh }) {
   const eventDateStr = getEventDateStr(event);
   const { countdown } = useCountdown(eventDateStr);
   const config = getCategoryConfig(userCategory);
@@ -123,7 +123,7 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
         <button
           type="button"
           onClick={() => onRefresh?.()}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-600 text-white text-sm font-semibold"
+          className="inline-flex items-center gap-2 px-5 py-2.5 min-h-[44px] rounded-xl border border-slate-600 text-white text-sm font-semibold"
         >
           Tentar de novo
         </button>
@@ -141,13 +141,13 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
         <h2 className="text-2xl font-bold mb-2" style={gradientText}>
           Nenhum show agendado
         </h2>
-        <p className="text-slate-400 mb-5">
-          Seus próximos eventos aparecem aqui.
+        <p className="text-slate-300 mb-5 text-sm">
+          Cadastre seu primeiro evento — sua diária padrão já vem preenchida.
         </p>
         <motion.button
           whileTap={{ scale: 0.96 }}
-          onClick={() => hardNavigate('/calendar?action=new-event')}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-semibold hover:shadow-lg transition-all"
+          onClick={() => (onCreateEvent ? onCreateEvent() : hardNavigate('/calendar?action=new-event'))}
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 min-h-[44px] rounded-xl text-white text-sm font-semibold hover:shadow-lg transition-all"
           style={{ ...gradientBg, boxShadow: `0 8px 24px ${config.primaryHex}30` }}
         >
           <Navigation className="w-4 h-4" />
