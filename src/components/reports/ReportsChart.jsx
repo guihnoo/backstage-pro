@@ -11,6 +11,7 @@ import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
+import { LITE_MOTION } from '@/lib/liteMotion';
 
 const CHART_ANIM_MS = 900;
 
@@ -174,7 +175,7 @@ export default function ReportsChart({ chartInput, onDataClick }) {
               fill="url(#gradRealized)"
               dot={{ r: 3, fill: primaryHex, strokeWidth: 0 }}
               activeDot={{ r: 6, fill: '#fff', stroke: primaryHex, strokeWidth: 2 }}
-              isAnimationActive
+              isAnimationActive={!LITE_MOTION}
               animationDuration={CHART_ANIM_MS}
               animationEasing="ease-out"
             />
@@ -190,7 +191,7 @@ export default function ReportsChart({ chartInput, onDataClick }) {
             <Tooltip content={<CustomTooltip chartView={chartView} primaryHex={primaryHex} />} />
             <Legend wrapperStyle={legendStyle} />
             <Bar dataKey="receivable" name="A Receber" fill="url(#gradReceivable)" radius={[6, 6, 0, 0]}
-              isAnimationActive animationDuration={CHART_ANIM_MS} animationEasing="ease-out" maxBarSize={40}>
+              isAnimationActive={!LITE_MOTION} animationDuration={CHART_ANIM_MS} animationEasing="ease-out" maxBarSize={40}>
               {chartData.map((_, i) => <Cell key={i} fill="url(#gradReceivable)" />)}
             </Bar>
           </BarChart>
@@ -205,7 +206,7 @@ export default function ReportsChart({ chartInput, onDataClick }) {
             <Tooltip content={<CustomTooltip chartView={chartView} primaryHex={primaryHex} />} />
             <Legend wrapperStyle={legendStyle} />
             <Bar dataKey="projected" name="Projetado" fill="url(#gradProjected)" radius={[6, 6, 0, 0]}
-              isAnimationActive animationDuration={CHART_ANIM_MS} animationEasing="ease-out" maxBarSize={40}>
+              isAnimationActive={!LITE_MOTION} animationDuration={CHART_ANIM_MS} animationEasing="ease-out" maxBarSize={40}>
               {chartData.map((_, i) => <Cell key={i} fill="url(#gradProjected)" />)}
             </Bar>
           </BarChart>
@@ -220,9 +221,9 @@ export default function ReportsChart({ chartInput, onDataClick }) {
             <Tooltip content={<CustomTooltip chartView={chartView} primaryHex={primaryHex} />} />
             <Legend wrapperStyle={legendStyle} />
             <Bar dataKey="overview_receita" name="Receita" fill="url(#gradReceita)" radius={[4, 4, 0, 0]}
-              isAnimationActive animationDuration={CHART_ANIM_MS} animationEasing="ease-out" maxBarSize={28} />
+              isAnimationActive={!LITE_MOTION} animationDuration={CHART_ANIM_MS} animationEasing="ease-out" maxBarSize={28} />
             <Bar dataKey="overview_despesas" name="Despesas" fill="url(#gradDespesas)" radius={[4, 4, 0, 0]}
-              isAnimationActive animationDuration={CHART_ANIM_MS} animationBegin={120} animationEasing="ease-out" maxBarSize={28} />
+              isAnimationActive={!LITE_MOTION} animationDuration={CHART_ANIM_MS} animationBegin={120} animationEasing="ease-out" maxBarSize={28} />
           </BarChart>
         );
     }

@@ -1,6 +1,9 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/lib/authContext';
 import { useUserSettings } from '@/lib/useUserSettings';
+
+// Criar o formatador é caro; um só para o app inteiro.
+const BRL_FORMATTER = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
 const STORAGE_KEY_PREFIX = 'backstage:financial_visibility:';
 
@@ -71,29 +74,22 @@ export const FinancialVisibilityProvider = ({ children }) => {
     }
   }, [user?.id, isVisible, upsert]);
 
-  const formatCurrency = (value) => {
-    if (!isVisible) return '•••••';
-    if (typeof value !== 'number') return 'R$ 0,00';
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
-  };
-
-  const formatValue = (value, unit = '') => {
-    if (!isVisible) return '•••••';
-    return `${value}${unit}`;
-  };
+  const contextValue = useMemo(() => {
+    const formatCurrency = (value) => {
+      if (!isVisible) return '•••••';
+      if (typeof value !== 'number') return 'R$ 0,00';
+      return BRL_FORMATTER.format(value);
+    };
+    const formatValue = (value, unit = '') => {
+      if (!isVisible) return '•••••';
+      return `${value}${unit}`;
+    };
+    return { isVisible, loading, toggleVisibility, formatCurrency, formatValue };
+  }, [isVisible, loading, toggleVisibility]);
 
   return (
     <FinancialVisibilityContext.Provider
-      value={{
-        isVisible,
-        loading,
-        toggleVisibility,
-        formatCurrency,
-        formatValue,
-      }}
+      value={contextValue}
     >
       {children}
     </FinancialVisibilityContext.Provider>

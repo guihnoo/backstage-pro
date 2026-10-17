@@ -80,7 +80,14 @@ let saoPauloDateFormatter = null;
  * Data de hoje no fuso de São Paulo (YYYY-MM-DD), independente do relógio/fuso do aparelho.
  * Preferir em vez de toISOString().split('T')[0] (UTC). Aceita `now` para testes.
  */
+// A data só muda na virada de um minuto: guarda o último resultado por minuto
+// (o app chamava o Intl centenas de vezes ao abrir o Início).
+let todayCacheMinute = null;
+let todayCacheValue = '';
+
 export const todayLocalISO = (now = new Date()) => {
+  const minute = Math.floor(now.getTime() / 60000);
+  if (minute === todayCacheMinute && todayCacheValue) return todayCacheValue;
   try {
     if (!saoPauloDateFormatter) {
       saoPauloDateFormatter = new Intl.DateTimeFormat('en-CA', {
@@ -90,7 +97,9 @@ export const todayLocalISO = (now = new Date()) => {
         day: '2-digit',
       });
     }
-    return saoPauloDateFormatter.format(now);
+    todayCacheValue = saoPauloDateFormatter.format(now);
+    todayCacheMinute = minute;
+    return todayCacheValue;
   } catch {
     return format(now, 'yyyy-MM-dd');
   }

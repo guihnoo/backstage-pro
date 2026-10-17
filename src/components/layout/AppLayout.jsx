@@ -48,7 +48,14 @@ export default function AppLayout() {
     prefetchCriticalRoutes();
   }, []);
 
+  // Na primeira abertura a página já começa no topo: rolar aqui obrigaria o celular
+  // a medir a tela inteira no meio do desenho (~0,6 s com CPU lenta).
+  const firstPathRef = useRef(true);
   useEffect(() => {
+    if (firstPathRef.current) {
+      firstPathRef.current = false;
+      return;
+    }
     if (mainRef.current) {
       mainRef.current.scrollTop = 0;
     }
