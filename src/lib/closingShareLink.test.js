@@ -1,13 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   buildClosingShareData,
-  encodeClosingSharePayload,
-  decodeClosingSharePayload,
-  buildClosingShareUrl,
+  createClosingShareLink,
+  fetchClosingShare,
 } from './closingShareLink';
 
 describe('closingShareLink', () => {
-  it('codifica e decodifica dados completos de fechamento (UTF-8, NF-e e PIX)', () => {
+  it('monta os dados do fechamento (UTF-8, NF-e e PIX) sem PIX pronto no link', () => {
     const sample = buildClosingShareData({
       event: {
         id: 'ev-1',
@@ -60,25 +59,31 @@ describe('closingShareLink', () => {
       },
     });
 
-    const token = encodeClosingSharePayload(sample);
-    const decoded = decodeClosingSharePayload(token);
+    expect(sample.provider.name).toBe('Will Monteiro');
+    expect(sample.nfe.number).toBe('000458');
+    expect(sample.pix.key).toBe('12345678909');
+    expect(sample.pix.payload).toBeUndefined();
+    expect(sample.closing.totalReembolsos).toBe(85.5);
+    expect(sample.closing.total).toBeGreaterThan(1000);
+  });
 
-    expect(decoded).not.toBeNull();
-    expect(decoded.provider.name).toBe('Will Monteiro');
-    expect(decoded.client.name).toBe('Produtora Luz & Ação Ltda');
-    expect(decoded.nfe.number).toBe('000458');
-    expect(decoded.pix.key).toBe('12345678909');
-    expect(decoded.pix.payload.toUpperCase()).toContain('BR.GOV.BCB.PIX');
-    expect(decoded.closing.totalReembolsos).toBe(85.5);
-    expect(decoded.closing.total).toBeGreaterThan(1000);
-
-    const url = buildClosingShareUrl(
-      {
-        event: { title: 'Show', start_date: '2026-10-15', daily_rate: 500 },
-        client: { name: 'Cliente' },
-      },
-      'https://backstagepro.app'
+  it('cria o link pelo banco e a URL leva so o codigo', async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: 'a'.repeat(64), error: null });
+    const url = await createClosingShareLink(
+      { event: { id: 'ev-9', title: 'Show', start_date: '2026-10-15', daily_rate: 500 }, client: { name: 'Cliente' },
+        userSettings: { pix_key: '123', cpf_cnpj: '123.456.789-09' } },
+      { client: { rpc }, origin: 'https://backstagepro.app' }
     );
-    expect(url.startsWith('https://backstagepro.app/fechamento?d=')).toBe(true);
+    expect(url).toBe(`https://backstagepro.app/fechamento?t=${'a'.repeat(64)}`);
+    expect(url).not.toMatch(/123\.456|pix|cpf/i);
+    expect(rpc).toHaveBeenCalledWith('criar_link_fechamento', expect.objectContaining({ p_event_id: 'ev-9', p_dias: 30 }));
+  });
+
+  it('erro do banco vira erro claro e codigo invalido nao busca nada', async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: null, error: { message: 'evento nao encontrado' } });
+    await expect(createClosingShareLink({ event: { id: 'x' } }, { client: { rpc }, origin: 'https://a' })).rejects.toThrow('evento nao encontrado');
+    const rpc2 = vi.fn();
+    expect(await fetchClosingShare('curto', { client: { rpc: rpc2 } })).toBeNull();
+    expect(rpc2).not.toHaveBeenCalled();
   });
 });

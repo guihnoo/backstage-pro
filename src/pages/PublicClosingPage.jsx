@@ -14,8 +14,8 @@ import {
   UserCheck,
   Building2,
 } from 'lucide-react';
-import { decodeClosingSharePayload } from '@/lib/closingShareLink';
-import { generatePixQrDataUrl } from '@/lib/pixPayload';
+import { fetchClosingShare } from '@/lib/closingShareLink';
+import { generatePixQrDataUrl, generatePixPayload } from '@/lib/pixPayload';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import appToast from '@/lib/appToast';
 
@@ -43,8 +43,36 @@ const fmtShort = (iso) => {
 
 export default function PublicClosingPage() {
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('d') || '';
-  const data = useMemo(() => decodeClosingSharePayload(token), [token]);
+  const token = searchParams.get('t') || '';
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(Boolean(token));
+
+  useEffect(() => {
+    let active = true;
+    if (!token) { setLoading(false); return undefined; }
+    fetchClosingShare(token).then((d) => {
+      if (!active) return;
+      setData(d);
+      setLoading(false);
+    });
+    return () => { active = false; };
+  }, [token]);
+
+  // PIX copia e cola gerado aqui, a partir da chave gravada pelo servidor (nunca vem pronto no link).
+  const pixPayload = useMemo(() => {
+    if (!data?.pix?.key) return '';
+    try {
+      return generatePixPayload({
+        pixKey: data.pix.key,
+        merchantName: data.provider?.name || 'Prestador',
+        merchantCity: (data.provider?.city || 'Brasil').split(' - ')[0] || 'Brasil',
+        amount: data.closing?.total || 0,
+        txId: (data.event?.title || 'SHOW').replace(/[^a-zA-Z0-9]/g, '').slice(0, 25) || '***',
+      }) || '';
+    } catch {
+      return '';
+    }
+  }, [data]);
 
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [copiedPayload, setCopiedPayload] = useState(false);
@@ -71,6 +99,14 @@ export default function PublicClosingPage() {
     };
   }, [data]);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#030712] text-slate-400 flex items-center justify-center p-6">
+        Carregando fechamento...
+      </div>
+    );
+  }
+
   if (!data) {
     return (
       <div className="min-h-screen bg-[#030712] text-slate-100 flex items-center justify-center p-6">
@@ -91,8 +127,8 @@ export default function PublicClosingPage() {
       : fmtDate(event.startDate);
 
   const handleCopyPayload = async () => {
-    if (!pix?.payload) return;
-    await navigator.clipboard?.writeText(pix.payload);
+    if (!pixPayload) return;
+    await navigator.clipboard?.writeText(pixPayload);
     setCopiedPayload(true);
     appToast.success('PIX Copia e Cola copiado!', {
       description: 'Abra o app do banco e escolha PIX Copia e Cola.',
@@ -438,7 +474,7 @@ export default function PublicClosingPage() {
               )}
             </div>
 
-            {pix.payload && (
+            {pixPayload && (
               <div className="space-y-2 pt-2 border-t border-emerald-500/20">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-semibold text-emerald-300">
@@ -449,7 +485,7 @@ export default function PublicClosingPage() {
                   <input
                     type="text"
                     readOnly
-                    value={pix.payload}
+                    value={pixPayload}
                     className="flex-1 rounded-xl bg-slate-950/90 border border-slate-800 px-3 py-2.5 text-[11px] font-mono text-slate-300 select-all"
                   />
                   <button

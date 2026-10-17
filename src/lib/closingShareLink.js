@@ -1,23 +1,5 @@
 import { buildEventClosing } from '@/lib/eventClosing';
-import { generatePixPayload } from '@/lib/pixPayload';
 import { getCategoryLabel } from '@/lib/categoryConfig';
-
-function toBase64Url(str) {
-  const utf8 = encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p1) =>
-    String.fromCharCode(parseInt(p1, 16))
-  );
-  return btoa(utf8).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-function fromBase64Url(b64url) {
-  const b64 = String(b64url || '').replace(/-/g, '+').replace(/_/g, '/');
-  const pad = b64.length % 4 === 0 ? '' : '='.repeat(4 - (b64.length % 4));
-  const bin = atob(b64 + pad);
-  const pct = Array.from(bin)
-    .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-    .join('');
-  return decodeURIComponent(pct);
-}
 
 /**
  * Monta um payload compacto e autocontido do Fechamento de Evento
@@ -50,15 +32,6 @@ export function buildClosingShareData({
   const pixKeyType = userSettings?.pix_key_type || profile?.pix_key_type || 'Chave PIX';
   const clientName = client?.name || event?.client_name || 'Contratante';
 
-  const pixPayloadStr = pixKey
-    ? generatePixPayload({
-        pixKey,
-        merchantName: providerName,
-        merchantCity: profile?.city || event?.location_city || 'Brasil',
-        amount: closing.total,
-        txId: (event?.title || clientName || 'SHOW').replace(/[^a-zA-Z0-9]/g, '').slice(0, 25) || '***',
-      })
-    : '';
 
   return {
     v: 1,
@@ -106,7 +79,6 @@ export function buildClosingShareData({
     pix: {
       key: pixKey,
       type: pixKeyType,
-      payload: pixPayloadStr,
     },
     closing: {
       totalDiarias: closing.totalDiarias,
@@ -138,25 +110,30 @@ export function buildClosingShareData({
   };
 }
 
-export function encodeClosingSharePayload(data) {
-  return toBase64Url(JSON.stringify(data));
-}
-
-export function decodeClosingSharePayload(token) {
-  if (!token) return null;
-  try {
-    const parsed = JSON.parse(fromBase64Url(token));
-    if (!parsed || typeof parsed !== 'object' || !parsed.closing) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-export function buildClosingShareUrl(params, origin = '') {
-  const base =
-    origin || (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : '');
+/**
+ * Cria o link seguro no banco (migration 040) e devolve a URL publica com um codigo aleatorio.
+ * Nenhum dado pessoal vai na URL; nome do prestador e chave PIX sao gravados pelo servidor
+ * a partir do cadastro do usuario.
+ */
+export async function createClosingShareLink(params, { client: sb, origin = '', dias = 30 } = {}) {
+  const supa = sb || (await import('@/lib/supabase')).supabase;
   const data = buildClosingShareData(params);
-  const token = encodeClosingSharePayload(data);
-  return `${base}/fechamento?d=${token}`;
+  const { data: token, error } = await supa.rpc('criar_link_fechamento', {
+    p_event_id: params?.event?.id,
+    p_snapshot: data,
+    p_dias: dias,
+  });
+  if (error) throw new Error(error.message || 'Nao foi possivel criar o link');
+  if (!token) throw new Error('Link nao foi criado');
+  const base = origin || (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : '');
+  return `${base}/fechamento?t=${encodeURIComponent(token)}`;
+}
+
+/** Busca o fechamento pelo codigo do link (visitante sem login). */
+export async function fetchClosingShare(token, { client: sb } = {}) {
+  if (!token || String(token).length < 48) return null;
+  const supa = sb || (await import('@/lib/supabase')).supabase;
+  const { data, error } = await supa.rpc('ver_link_fechamento', { p_token: token });
+  if (error) return null;
+  return data && typeof data === 'object' && data.closing ? data : null;
 }

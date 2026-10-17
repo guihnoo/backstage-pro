@@ -61,7 +61,7 @@ import { applyAuto12Hours } from '@/api/functions';
 import { useStatusToggle } from '@/lib/useStatusToggle';
 import { openWhatsAppCharge, buildEventReport, buildChargeMessage, buildProposalMessage } from '@/lib/whatsapp';
 import { generatePixPayload, generatePixQrDataUrl, buildPixWhatsAppMessage } from '@/lib/pixPayload';
-import { buildClosingShareUrl } from '@/lib/closingShareLink';
+import { createClosingShareLink } from '@/lib/closingShareLink';
 import { startTimer, getTimer, stopTimer } from '@/lib/timerStore';
 import appToast from '@/lib/appToast';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
@@ -512,7 +512,7 @@ export default function EventDetailModal({
 
   const handleCopyClosingLink = async () => {
     try {
-      const url = buildClosingShareUrl({
+      const url = await createClosingShareLink({
         event,
         client,
         work: eventWork,

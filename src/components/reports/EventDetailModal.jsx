@@ -64,7 +64,7 @@ import { useAuth } from '@/lib/authContext';
 import { useUserSettings } from '@/lib/useUserSettings';
 import { generatePixPayload, generatePixQrDataUrl } from '@/lib/pixPayload';
 import { buildEventReport, openWhatsAppCharge } from '@/lib/whatsapp';
-import { buildClosingShareUrl } from '@/lib/closingShareLink';
+import { createClosingShareLink } from '@/lib/closingShareLink';
 
 const InlineNotes = ({ event, updateEvent }) => {
   const { primaryHex } = useCategoryTheme();
@@ -579,7 +579,7 @@ const EventDetailModal = React.memo(function EventDetailModal({
 
   const handleCopyClosingLink = async () => {
     try {
-      const url = buildClosingShareUrl({
+      const url = await createClosingShareLink({
         event,
         client,
         work: dailyWork,
