@@ -204,3 +204,19 @@ export function isPaymentOverdue(event) {
   }
   return daysSinceEventEnd(event) >= 7;
 }
+
+/** Evento ja tem nota fiscal registrada (qualquer um dos campos usados no app). */
+export function hasNfFor(event) {
+  return Boolean(event?.nf_number) || Boolean(event?.nfe_numero) || Boolean(event?.nfe_arquivo_url);
+}
+
+/**
+ * NF pendente: evento ja concluido (pela data ou manualmente), nao cancelado, com valor e sem nota.
+ * Evento futuro nunca conta como pendente (a nota pode ser emitida antes, e entao aparece como emitida).
+ */
+export function isNfPendingEvent(event) {
+  if (!event || isCancelledEvent(event)) return false;
+  if (getEventStatus(event) !== 'completed') return false;
+  if (hasNfFor(event)) return false;
+  return Number(event.paid_amount) > 0 || getEventCacheAmount(event) > 0;
+}

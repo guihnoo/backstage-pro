@@ -17,7 +17,7 @@ import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { getEventStatus } from '../utils/dateUtils';
-import { calculateEventReceivableAmount } from '@/lib/eventFinance';
+import { calculateEventReceivableAmount, isReceivableEvent } from '@/lib/eventFinance';
 import { getEventReceivedAmount, isReceivedEvent } from '@/lib/financeMetrics';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
@@ -58,8 +58,8 @@ export default function ClientDetailedTable({ data, onClientClick }) {
           (sum, e) => sum + getEventReceivedAmount(e, clientWork.filter(w => w.event_id === e.id)),
           0
         );
-        const pendingRevenue = completedEvents
-            .filter(e => e.payment_status === 'unpaid')
+        const pendingRevenue = clientEvents
+            .filter(isReceivableEvent) // concluido, nao cancelado, pending/unpaid
             .reduce((sum, e) => sum + getEventRevenue(e), 0);
         
         const totalHours = clientWork.reduce((sum, w) => sum + (w.total_hours || 0), 0);

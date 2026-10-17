@@ -1,8 +1,9 @@
 import { useState, useMemo, useEffect } from 'react';
+import PaymentConfirmModal from '@/components/reports/PaymentConfirmModal';
 import { getEventCacheAmount, calculateEventReceivableAmount, getEventHoursStatus, isEstimatedWork, isCancelledEvent } from '@/lib/eventFinance';
 import { buildEventClosing } from '@/lib/eventClosing';
 import { buildMarkPaidUpdate } from '@/lib/financeMetrics';
-import { buildHoursGateMessage, shouldBlockPayment } from '@/lib/hoursGate';
+import { buildHoursGateMessage } from '@/lib/hoursGate';
 import { Dialog, DialogContent, DialogHeader, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -263,6 +264,7 @@ export default function EventDetailModal({
   const [editingWorkEntry, setEditingWorkEntry] = useState(null);
   const [confirmDeleteWorkId, setConfirmDeleteWorkId] = useState(null);
   const [hoursGateOpen, setHoursGateOpen] = useState(false);
+  const [payModalOpen, setPayModalOpen] = useState(false);
   const [showExpenses, setShowExpenses] = useState(true);
   const [editingPixInline, setEditingPixInline] = useState(false);
   const [quickPixType, setQuickPixType] = useState('CPF');
@@ -900,12 +902,11 @@ export default function EventDetailModal({
 
   // Confirmar recebimento só com as horas preenchidas (regra do dono); o usuário pode
   // escolher "cobrar assim mesmo".
+  // Confirmar recebimento usa a mesma janela das outras telas: o usuario digita o VALOR REAL
+  // que caiu na conta (regra do dono), escolhe a forma e a data; a janela ja trava se faltarem horas.
   const requestMarkPaid = () => {
-    if (event.payment_status !== 'paid' && shouldBlockPayment(hoursStatus)) {
-      setHoursGateOpen(true);
-      return;
-    }
-    persistMarkPaid();
+    if (event.payment_status === 'paid') return;
+    setPayModalOpen(true);
   };
 
   const today = normalizeDateString(new Date());
@@ -1333,7 +1334,7 @@ export default function EventDetailModal({
               </Card>
 
               {/* Cronômetro */}
-              {['pending', 'scheduled', 'confirmed'].includes(status) && (
+              {['pending', 'scheduled', 'confirmed', 'in_progress'].includes(status) && (
                 <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700">
                   <div>
                     <p className="text-sm font-medium text-white">Cronômetro</p>
@@ -1706,7 +1707,7 @@ export default function EventDetailModal({
                       Recibo de Pagamento
                     </Button>
                   )}
-                  {['pending', 'scheduled', 'confirmed'].includes(status) && (
+                  {['pending', 'scheduled', 'confirmed', 'in_progress'].includes(status) && (
                     <Button
                       onClick={handleDownloadContract}
                       disabled={generatingContract}
@@ -1850,6 +1851,14 @@ export default function EventDetailModal({
         setShowExpenseForm(false);
       }}
     />
+      <PaymentConfirmModal
+        event={event}
+        client={client}
+        dailyWork={eventWork}
+        isOpen={payModalOpen}
+        onClose={() => setPayModalOpen(false)}
+        onSuccess={() => { setPayModalOpen(false); onMarkPaid?.(); }}
+      />
     </>
   );
 }

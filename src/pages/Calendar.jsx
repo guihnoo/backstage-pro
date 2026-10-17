@@ -170,6 +170,17 @@ const StatCard = ({
   </Card>
 );
 
+
+/**
+ * Chips da Agenda: "Concluidos" segue a data (mesmo criterio do badge do card);
+ * "Pendentes"/"Confirmados" sao o status do negocio, so para eventos que ainda nao terminaram.
+ */
+function matchesStatusChip(event, key) {
+  const done = getEventStatus(event) === 'completed';
+  if (key === 'completed') return done;
+  return !done && event.status === key;
+}
+
 export default function CalendarPage() {
   const location = useLocation();
   const { user, loading: authLoading } = useAuth();
@@ -260,7 +271,7 @@ export default function CalendarPage() {
   const filteredEvents = useMemo(() => {
     let base = activeEvents;
     if (statusFilter === 'paid') base = base.filter((e) => e.payment_status === 'paid');
-    else if (statusFilter !== 'all') base = base.filter((e) => e.status === statusFilter);
+    else if (statusFilter !== 'all') base = base.filter((e) => matchesStatusChip(e, statusFilter));
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       const cmap = new Map(clients.map(c => [c.id, c]));
@@ -1304,9 +1315,9 @@ export default function CalendarPage() {
         <div className="flex items-center gap-2 flex-wrap">
           {[
             { key: 'all', label: 'Todos', count: activeEvents.length },
-            { key: 'pending', label: 'Pendentes', count: activeEvents.filter(e => e.status === 'pending').length },
-            { key: 'confirmed', label: 'Confirmados', count: activeEvents.filter(e => e.status === 'confirmed').length },
-            { key: 'completed', label: 'Concluídos', count: activeEvents.filter(e => e.status === 'completed').length },
+            { key: 'pending', label: 'Pendentes', count: activeEvents.filter(e => matchesStatusChip(e, 'pending')).length },
+            { key: 'confirmed', label: 'Confirmados', count: activeEvents.filter(e => matchesStatusChip(e, 'confirmed')).length },
+            { key: 'completed', label: 'Concluídos', count: activeEvents.filter(e => matchesStatusChip(e, 'completed')).length },
             { key: 'paid', label: 'Pagos', count: activeEvents.filter(e => e.payment_status === 'paid').length },
           ].map(({ key, label, count }) => (
             <button

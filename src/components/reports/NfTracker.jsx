@@ -3,7 +3,7 @@ import { FileText, CheckCircle2, AlertCircle, ChevronDown, ChevronUp, ExternalLi
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
-import { getEventCacheAmount } from '@/lib/eventFinance';
+import { getEventCacheAmount, hasNfFor, isNfPendingEvent } from '@/lib/eventFinance';
 import EventHeading from '@/components/events/EventHeading';
 
 function StatCard({ icon: Icon, label, value, sub, iconClass }) {
@@ -77,13 +77,12 @@ export default function NfTracker({ events = [], clients = [], onOpenEvent }) {
   }, [clients]);
 
   const { pending, issued } = useMemo(() => {
-    const hasNfFor = (e) => Boolean(e.nf_number) || Boolean(e.nfe_numero) || Boolean(e.nfe_arquivo_url);
     const relevant = events.filter(e =>
       e.status !== 'cancelled' &&
       (Number(e.paid_amount) > 0 || getEventCacheAmount(e) > 0)
     );
     const p = relevant
-      .filter(e => !hasNfFor(e))
+      .filter(isNfPendingEvent)
       .sort((a, b) => (b.start_date || '') > (a.start_date || '') ? 1 : -1);
     const i = relevant
       .filter(e => hasNfFor(e))

@@ -12,6 +12,7 @@ import { ptBR } from 'date-fns/locale';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { LITE_MOTION } from '@/lib/liteMotion';
+import { getExpenseDate } from '@/lib/financeMetrics';
 
 const CHART_ANIM_MS = 900;
 
@@ -115,9 +116,9 @@ export default function ReportsChart({ chartInput, onDataClick }) {
       processItem(e.paid_date, e.calculated_value, 'overview_receita');
       processItem(e.paid_date, e.calculated_value, 'realized');
     });
-    expenses.forEach(e => processItem(e.date, e.amount, 'overview_despesas'));
+    expenses.forEach(e => processItem(getExpenseDate(e), e.amount, 'overview_despesas'));
     receivable.forEach(e => processItem(e.end_date, e.calculated_value, 'receivable'));
-    projected.forEach(e => processItem(e.end_date, e.calculated_value, 'projected'));
+    projected.forEach(e => processItem(e.start_date, e.calculated_value, 'projected')); // mesmo dia do filtro ao clicar
 
     return Object.values(dataByDate)
       .sort((a, b) => a.date.localeCompare(b.date))

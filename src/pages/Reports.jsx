@@ -4,6 +4,7 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import {
   isReceivableEvent,
   calculateEventReceivableAmount,
+  isNfPendingEvent,
 } from '@/lib/eventFinance';
 import {
   buildWorkByEvent,
@@ -1035,7 +1036,7 @@ export default function ReportsPage() {
               { id: 'activity', label: 'Atividade', short: 'Ativ.', icon: Activity, count: null },
               {
                 id: 'fiscal', label: 'Fiscal', short: 'Fiscal', icon: Receipt,
-                count: data.events.filter(e => e.status !== 'cancelled' && !e.nf_number && (Number(e.paid_amount) > 0 || Number(e.estimated_revenue) > 0 || Number(e.actual_revenue) > 0)).length || null,
+                count: data.events.filter(isNfPendingEvent).length || null,
               },
             ].map((view) => (
               <button
