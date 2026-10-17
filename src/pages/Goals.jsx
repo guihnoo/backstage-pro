@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
+import { projectYearEnd } from '@/lib/yearProjection';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/authContext';
 import { useProfile } from '@/lib/profileOfflineContext';
@@ -441,14 +442,9 @@ export default function Goals() {
       return { monthStr, label, revenue, pct, hit, isCurrent, isFuture };
     });
 
-    const pastMonths = months.filter(m => !m.isFuture && !m.isCurrent);
     const totalYear = months.reduce((s, m) => s + m.revenue, 0);
     const monthsElapsed = currentMonthIndex + 1;
-    const monthsWithRevenue = pastMonths.filter(m => m.revenue > 0).length;
-    const avgPerMonth = monthsWithRevenue > 0
-      ? pastMonths.reduce((s, m) => s + m.revenue, 0) / monthsWithRevenue
-      : 0;
-    const projected = totalYear + avgPerMonth * Math.max(0, 12 - monthsElapsed);
+    const projected = projectYearEnd(totalYear, monthsElapsed);
     const monthsHit = months.filter(m => m.hit).length;
 
     return { months, totalYear, projected, monthsHit, monthsElapsed };

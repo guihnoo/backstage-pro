@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { projectYearEnd } from '@/lib/yearProjection';
 import { motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertTriangle, CheckCircle2, TrendingUp, Calendar, Info, ExternalLink } from 'lucide-react';
@@ -101,8 +102,8 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
   const now = new Date();
   const monthsElapsed = now.getMonth() + 1;
   const monthsRemaining = 12 - monthsElapsed;
-  const monthlyAvg = monthsElapsed > 0 ? annualRevenue / monthsElapsed : 0;
-  const projectedYear = monthlyAvg * 12;
+  const projectedYear = projectYearEnd(annualRevenue, monthsElapsed);
+  const monthlyAvg = projectedYear / 12;
   const projectedPct = Math.min((projectedYear / MEI_LIMIT) * 100, 100);
 
   const circumference = 2 * Math.PI * 52;
