@@ -1218,75 +1218,6 @@ export default function CalendarPage() {
           </Alert>
         )}
 
-        <AlertsPanel
-          events={activeEvents}
-          dailyWork={dailyWork}
-          onRegisterWork={handleQuickWorkEntry}
-          onLocationCheckIn={handleEventLocationCheckIn}
-          onOpenEvent={setSelectedEvent}
-        />
-
-        <CalendarTodayStrip
-          events={activeEvents}
-          dailyWork={dailyWork}
-          clients={clients}
-          primaryHex={config.primaryHex}
-          accentHex={config.accentHex}
-          onEventClick={handleEventClick}
-          onRegisterWork={() => handleQuickWorkEntry()}
-          onNewEvent={() => handleNewEvent()}
-        />
-
-        {/* Monthly Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-          <StatCard
-            title="Eventos"
-            value={monthStats.totalEvents}
-            numericValue={monthStats.totalEvents}
-            formatValue={(v) => String(Math.round(v))}
-            subtext={monthStats.totalEvents === 1 ? 'evento' : 'eventos'}
-            icon={Calendar}
-            color="bp-text-primary"
-            onClick={handleEventsClick}
-            loading={isCoreLoading || isSecondaryLoading}
-          />
-
-          <StatCard
-            title="Dias"
-            value={monthStats.workDays}
-            numericValue={monthStats.workDays}
-            formatValue={(v) => String(Math.round(v))}
-            subtext={monthStats.workDays === 1 ? 'dia' : 'dias'}
-            icon={CheckCircle2}
-            color="text-green-400"
-            onClick={handleWorkDaysClick}
-            loading={isCoreLoading || isSecondaryLoading}
-          />
-
-          <StatCard
-            title="Horas"
-            value={`${monthStats.totalHours}h`}
-            numericValue={monthStats.totalHours}
-            formatValue={(v) => `${Number(v).toFixed(1)}h`}
-            subtext="trabalhadas"
-            icon={Clock}
-            color="text-amber-400"
-            onClick={handleHoursClick}
-            loading={isCoreLoading || isSecondaryLoading}
-          />
-
-          <StatCard
-            title="Receita"
-            value={isVisible ? formatCurrency(monthStats.totalRevenue) : '••••'}
-            numericValue={isVisible ? monthStats.totalRevenue : null}
-            formatValue={formatCurrency}
-            subtext="estimada no mês"
-            icon={TrendingUp}
-            color="text-emerald-400"
-            onClick={handleRevenueClick}
-            loading={isCoreLoading || isSecondaryLoading}
-          />
-        </div>
 
         {/* Busca de eventos */}
         <div className="relative">
@@ -1894,6 +1825,79 @@ export default function CalendarPage() {
               })}
           </div>
         )}
+
+        {/* Resumos abaixo do calendario (17/10): a grade aparece primeiro no celular. */}
+        <AlertsPanel
+          events={activeEvents}
+          dailyWork={dailyWork}
+          onRegisterWork={handleQuickWorkEntry}
+          onLocationCheckIn={handleEventLocationCheckIn}
+          onOpenEvent={setSelectedEvent}
+        />
+
+        {(!isMobile || viewMode !== 'week') && (
+          <CalendarTodayStrip
+            events={activeEvents}
+            dailyWork={dailyWork}
+            clients={clients}
+            primaryHex={config.primaryHex}
+            accentHex={config.accentHex}
+            onEventClick={handleEventClick}
+            onRegisterWork={() => handleQuickWorkEntry()}
+            onNewEvent={() => handleNewEvent()}
+          />
+        )}
+
+        {/* Monthly Stats */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+          <StatCard
+            title="Eventos"
+            value={monthStats.totalEvents}
+            numericValue={monthStats.totalEvents}
+            formatValue={(v) => String(Math.round(v))}
+            subtext={monthStats.totalEvents === 1 ? 'evento' : 'eventos'}
+            icon={Calendar}
+            color="bp-text-primary"
+            onClick={handleEventsClick}
+            loading={isCoreLoading || isSecondaryLoading}
+          />
+
+          <StatCard
+            title="Dias"
+            value={monthStats.workDays}
+            numericValue={monthStats.workDays}
+            formatValue={(v) => String(Math.round(v))}
+            subtext={monthStats.workDays === 1 ? 'dia' : 'dias'}
+            icon={CheckCircle2}
+            color="text-green-400"
+            onClick={handleWorkDaysClick}
+            loading={isCoreLoading || isSecondaryLoading}
+          />
+
+          <StatCard
+            title="Horas"
+            value={`${monthStats.totalHours}h`}
+            numericValue={monthStats.totalHours}
+            formatValue={(v) => `${Number(v).toFixed(1)}h`}
+            subtext="trabalhadas"
+            icon={Clock}
+            color="text-amber-400"
+            onClick={handleHoursClick}
+            loading={isCoreLoading || isSecondaryLoading}
+          />
+
+          <StatCard
+            title="Receita"
+            value={isVisible ? formatCurrency(monthStats.totalRevenue) : '••••'}
+            numericValue={isVisible ? monthStats.totalRevenue : null}
+            formatValue={formatCurrency}
+            subtext="estimada no mês"
+            icon={TrendingUp}
+            color="text-emerald-400"
+            onClick={handleRevenueClick}
+            loading={isCoreLoading || isSecondaryLoading}
+          />
+        </div>
       </motion.div>
 
       {/* Ações Rápidas Desktop */}
