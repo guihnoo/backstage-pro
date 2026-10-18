@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/authContext';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { hardNavigate } from '@/lib/hardNavigate';
-import { getCategoryConfig, CATEGORIES } from '@/lib/categoryConfig';
+import { getCategoryConfig, CATEGORIES, resolveCategoryId } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import {
@@ -82,7 +82,7 @@ export default function ProfileSimple() {
     daily_rate: profile?.daily_rate || '',
     monthly_goal_revenue: profile?.monthly_goal_revenue || '',
     monthly_goal_events: profile?.monthly_goal_events || '',
-    category: profile?.category || '',
+    category: resolveCategoryId(profile?.category || ''),
   });
 
   const config = getCategoryConfig(form.category || categoryId);
@@ -114,7 +114,7 @@ export default function ProfileSimple() {
         daily_rate: profile.daily_rate || '',
         monthly_goal_revenue: profile.monthly_goal_revenue || '',
         monthly_goal_events: profile.monthly_goal_events || '',
-        category: profile.category || '',
+        category: resolveCategoryId(profile.category || ''),
       });
     }
   }, [profile]);

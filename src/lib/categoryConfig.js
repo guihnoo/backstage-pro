@@ -166,8 +166,26 @@ export const CATEGORIES = {
   }
 };
 
+// Palco/Rigging existe no cadastro (onboarding) mas nao tinha tema: usuario caia como Iluminacao.
+// Usa o visual de Producao, mantendo o nome e as especialidades de palco.
+CATEGORIES.stage = {
+  ...CATEGORIES.production,
+  id: 'stage',
+  label: 'Palco/Rigging',
+  description: 'Montagem, rigging e estrutura',
+  specialties: ['Montagem de Palco', 'Rigging', 'Carpintaria', 'Estrutura Treliça', 'Backline'],
+};
+
+// IDs antigos do cadastro que tem tema equivalente (mesmo nome/especialidades).
+export const CATEGORY_ALIASES = { art: 'scenography', catering: 'hospitality' };
+
+/** ID que vale para tema/rotulo (alias resolvido). Desconhecido continua como esta. */
+export function resolveCategoryId(categoryId) {
+  return CATEGORY_ALIASES[categoryId] || categoryId;
+}
+
 export function getCategoryConfig(categoryId) {
-  return CATEGORIES[categoryId] || CATEGORIES.lighting;
+  return CATEGORIES[resolveCategoryId(categoryId)] || CATEGORIES.lighting;
 }
 
 export function getAllCategories() {
