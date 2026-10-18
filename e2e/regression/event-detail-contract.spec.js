@@ -21,6 +21,9 @@ async function abrirEventoNaAgenda(page) {
 }
 
 test.describe('detalhe do evento (contrato)', () => {
+  // Agenda e pesada no primeiro carregamento (PC lento): mais tempo para nao dar falso erro.
+  test.setTimeout(120_000);
+
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
   });

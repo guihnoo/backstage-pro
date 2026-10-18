@@ -68,6 +68,7 @@ import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import EventHeading from '@/components/events/EventHeading';
 import EventLocationSection from '@/components/events/EventLocationSection';
 import { EventChecklist } from '@/components/calendar/EventChecklist';
+import ClientRatingSection from '@/components/events/ClientRatingSection';
 import { useEvents } from '@/lib/useEvents';
 import { useExpenses } from '@/lib/useExpenses';
 import ExpenseForm from '@/components/expenses/ExpenseForm';
@@ -1227,6 +1228,9 @@ export default function EventDetailModal({
                 items={event.checklist_items ?? []}
                 onChange={async (next) => { await updateEvent(event.id, { checklist_items: next }); }}
               />
+
+              {/* Avaliacao do cliente (vinha so na janela dos Relatorios) */}
+              <ClientRatingSection event={event} updateEvent={updateEvent} />
             </TabsContent>
 
             {/* ── TRABALHO ── */}
