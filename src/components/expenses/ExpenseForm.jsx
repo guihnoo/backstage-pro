@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Camera, ImagePlus, Loader2, RefreshCw, Sparkles, Trash2 } from 'lucide-react';
 import appToast from '@/lib/appToast';
+import { parseBRL, toBRLInput } from '@/lib/money';
 
 import { normalizeDateString } from '@/components/utils/dateUtils';
 import { useExpenses } from '@/lib/useExpenses';
@@ -144,7 +145,7 @@ export default function ExpenseForm({
         setFormData((prev) => ({
           ...prev,
           title: prev.title || extracted.title || '',
-          amount: prev.amount || (extracted.amount > 0 ? String(extracted.amount) : ''),
+          amount: prev.amount || (extracted.amount > 0 ? toBRLInput(extracted.amount) : ''),
           date: extracted.date || prev.date,
           category: extracted.category || prev.category,
           notes: prev.notes || extracted.notes || '',
@@ -161,7 +162,8 @@ export default function ExpenseForm({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.title || !formData.amount || !formData.date) {
+    const amountValue = parseBRL(formData.amount); // aceita 45,90 / 1.200,50
+    if (!formData.title || !formData.date || !Number.isFinite(amountValue) || amountValue <= 0) {
       appToast.error('Preencha título, valor e data da despesa.');
       return;
     }
@@ -172,7 +174,7 @@ export default function ExpenseForm({
       const payload = {
         event_id: formData.event_id || null,
         title: formData.title.trim(),
-        amount: Number(formData.amount),
+        amount: amountValue,
         category: formData.category || 'outros',
         payment_method: formData.payment_method || null,
         expense_date: normalizeDateString(formData.date),
@@ -218,7 +220,7 @@ export default function ExpenseForm({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Valor</Label>
-                  <Input type="number" step="0.01" min="0" value={formData.amount} onChange={(e) => setField('amount', e.target.value)} className="bg-slate-800 border-slate-700 h-12 text-base" />
+                  <Input type="text" inputMode="decimal" placeholder="0,00" value={formData.amount} onChange={(e) => setField('amount', e.target.value)} className="bg-slate-800 border-slate-700 h-12 text-base" />
                 </div>
                 <div className="space-y-2">
                   <Label>Data</Label>

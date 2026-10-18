@@ -24,6 +24,10 @@ import { useClients } from '@/lib/useClients';
 import ClientCombobox from '@/components/clients/ClientCombobox';
 import EventLocationSection from '@/components/events/EventLocationSection';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
+import { parseBRL } from '@/lib/money';
+
+// Dinheiro digitado (1.200,50 / 1200.5); invalido vira 0, nunca NaN.
+const moneyNum = (v) => { const n = parseBRL(v); return Number.isFinite(n) ? n : 0; };
 
 const PAYMENT_MODELS = [
   { value: 'HORAS_EXTRAS', label: 'Horas Extras' },
@@ -203,7 +207,7 @@ export default function EventForm({
   }, [formData.start_date, formData.end_date, allEvents, event]);
 
   const eventSummary = useMemo(() => {
-    const daily = Number(formData.daily_cache_value) || 0;
+    const daily = moneyNum(formData.daily_cache_value);
     if (!formData.start_date || daily <= 0) return null;
     try {
       const start = parseISO(formData.start_date);
@@ -275,7 +279,7 @@ export default function EventForm({
         name: formData.title.trim(),
         title: formData.title.trim(),
         payment_model: formData.payment_model,
-        daily_cache_value: formData.daily_cache_value === '' ? 0 : Number(formData.daily_cache_value),
+        daily_cache_value: moneyNum(formData.daily_cache_value),
         color: formData.color,
       });
       appToast.success('Template salvo!', { description: `"${formData.title}" disponível para próximos eventos.` });
@@ -317,7 +321,7 @@ export default function EventForm({
         payment_status: formData.payment_status || 'pending',
         ...(event?.id ? { status: event.status || 'pending' } : { status: 'pending' }),
         payment_model: formData.payment_model || 'HORAS_EXTRAS',
-        daily_cache_value: Number.isFinite(Number(formData.daily_cache_value)) ? Number(formData.daily_cache_value) || 0 : 0,
+        daily_cache_value: moneyNum(formData.daily_cache_value),
         cache_valor_base: formData.cache_valor_base === '' || !Number.isFinite(Number(formData.cache_valor_base))
           ? null
           : Number(formData.cache_valor_base),
@@ -531,7 +535,7 @@ export default function EventForm({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="ef-cache">Cachê por Dia (R$)</Label>
-              <Input id="ef-cache" type="number" step="0.01" min="0" value={formData.daily_cache_value} onChange={(e) => setField('daily_cache_value', e.target.value)} className="bg-slate-800 border-slate-700" />
+              <Input id="ef-cache" type="text" inputMode="decimal" placeholder="0,00" value={formData.daily_cache_value} onChange={(e) => setField('daily_cache_value', e.target.value)} className="bg-slate-800 border-slate-700" />
               {clientCacheHint && (
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-[11px] text-slate-500">
@@ -582,7 +586,7 @@ export default function EventForm({
               style={theme.activeSurfaceStyle}
             >
               <span className="text-slate-400">
-                {eventSummary.days} {eventSummary.days === 1 ? 'dia' : 'dias'} × R$ {Number(formData.daily_cache_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                {eventSummary.days} {eventSummary.days === 1 ? 'dia' : 'dias'} × R$ {moneyNum(formData.daily_cache_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </span>
               <span className="font-bold" style={theme.accentStyle}>
                 = R$ {eventSummary.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}

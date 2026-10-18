@@ -244,7 +244,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
 
     // Cachê padrão: aceita "1.200,50" ou "1200.5"; valor inválido vira 0 (nunca NaN no banco).
     const cacheText = String(formData.default_daily_cache ?? '').trim();
-    const cacheParsed = Number(cacheText.includes(',') ? cacheText.replace(/\./g, '').replace(',', '.') : cacheText);
+    const cacheParsed = parseBRL(cacheText);
     const safeCache = Number.isFinite(cacheParsed) && cacheParsed > 0 ? cacheParsed : 0;
 
     // Razão social vai como 1ª linha das observações (o formulário a separa de novo ao editar).
@@ -610,9 +610,8 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                 </p>
                 <Input
                   id="default_daily_cache"
-                  type="number"
-                  min="0"
-                  step="50"
+                  type="text"
+                  inputMode="decimal"
                   value={formData.default_daily_cache}
                   onChange={(e) => handleChange('default_daily_cache', e.target.value)}
                   className="bg-slate-800 border-slate-700 text-white h-12 text-base touch-manipulation"
