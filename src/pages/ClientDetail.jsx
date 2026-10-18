@@ -52,7 +52,7 @@ import EmptyState from '@/components/layout/EmptyState';
 import ClientForm from '@/components/clients/ClientForm';
 import { ClientInteractionLog } from '@/components/clients/ClientInteractionLog';
 import EventForm from '@/components/calendar/EventForm';
-import EventDetailModal from '@/components/reports/EventDetailModal';
+import EventDetailModal from '@/components/calendar/EventDetailModal';
 import ReportEventList from '@/components/reports/ReportEventList';
 import ReportsChart from '@/components/reports/ReportsChart';
 import { ClampedText } from '@/components/ui/overflowText';
@@ -614,14 +614,10 @@ export default function ClientDetailPage() {
             event={selectedEvent}
             client={client}
             onClose={() => setShowEventDetail(false)}
-            dailyWork={dailyWork.filter(w => w.event_id === selectedEvent.id)}
-            expenses={expenses.filter(e => e.event_id === selectedEvent.id)}
-            onPaymentUpdate={handleSuccess}
             onEdit={handleEditEvent}
             onDelete={handleDeleteEvent}
-            onWorkEdit={handleSuccess}
-            onAddExpense={handleSuccess}
-            onExpenseEdit={handleSuccess}
+            // So atualiza a tela: quem grava o pagamento e a janela do valor real.
+            onMarkPaid={handleSuccess}
           />
         )}
       </AnimatePresence>
