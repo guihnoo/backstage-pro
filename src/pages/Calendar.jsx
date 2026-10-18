@@ -48,7 +48,7 @@ import { ptBR } from 'date-fns/locale';
 import BackstageCalendarGrid from '@/components/calendar/BackstageCalendarGrid';
 import EventForm from '@/components/calendar/EventForm';
 import DailyWorkModal from '@/components/calendar/DailyWorkModal';
-import EventDetailModal from '@/components/reports/EventDetailModal';
+import EventDetailModal from '@/components/calendar/EventDetailModal';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import {
   normalizeDateString,
@@ -189,7 +189,7 @@ export default function CalendarPage() {
   const { events, loading: eventsLoading, error: eventsError, refetch: refetchEvents, update: updateEvent, delete: deleteEvent } = useEvents();
   const { clients, loading: clientsLoading } = useClients();
   const { dailyWork, loading: dailyWorkLoading, refetch: refetchDailyWork, delete: deleteDailyWorkEntry } = useDailyWork();
-  const { expenses, loading: expensesLoading, refetch: refetchExpenses } = useExpenses();
+  const { loading: expensesLoading, refetch: refetchExpenses } = useExpenses();
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const { settings: userSettings } = useUserSettings();
   const { offline } = useConnectivity();
@@ -621,26 +621,6 @@ export default function CalendarPage() {
     [closeModals]
   );
 
-  const handleEditWork = useCallback(
-    (work) => {
-      closeModals();
-
-      if (work && !work.id) {
-        setEditingWork(null); // This is a new work entry
-        setFormPrefilledData(work);
-        if (work.date) {
-          setSelectedDate(new Date(work.date + 'T00:00:00'));
-        }
-      } else {
-        setEditingWork(work); // This is an existing work entry
-        if (work?.date) {
-          setSelectedDate(new Date(work.date + 'T00:00:00'));
-        }
-      }
-      setShowDailyWorkModal(true); // Renamed state
-    },
-    [closeModals]
-  );
 
   const handleFormSuccess = useCallback(() => {
     closeModals();
@@ -650,13 +630,6 @@ export default function CalendarPage() {
     refetchExpenses();
   }, [closeModals, closeActionSheets, refetchEvents, refetchDailyWork, refetchExpenses]);
 
-  const handleWorkDelete = useCallback(
-    (workId) => {
-      if (!workId) return;
-      setConfirmWork(workId);
-    },
-    []
-  );
 
   const handleConfirmWorkDelete = useCallback(async () => {
     try {
@@ -680,30 +653,7 @@ export default function CalendarPage() {
     [closeModals]
   );
 
-  const handleAddWorkForEvent = useCallback(
-    (event) => {
-      closeModals();
-      const today = normalizeDateString(new Date());
-      const start = normalizeDateString(event.start_date);
-      const end = normalizeDateString(event.end_date || event.start_date);
-      // Use today if within event range, otherwise use event start date
-      const workDate = today >= start && today <= end ? today : start;
-      setFormPrefilledData({ event_id: event.id, date: workDate });
-      setSelectedDate(new Date(workDate + 'T00:00:00'));
-      setShowDailyWorkModal(true);
-    },
-    [closeModals]
-  );
 
-  const handleEditExpense = useCallback(
-    (expense, event) => {
-      closeModals();
-      setPrefilledEventIdForExpense(event.id);
-      setEditingExpense(expense);
-      setShowExpenseForm(true);
-    },
-    [closeModals]
-  );
 
   const handleDeleteEvent = useCallback(
     (eventId) => {
@@ -1969,22 +1919,13 @@ export default function CalendarPage() {
         {selectedEvent && (
           <EventDetailModal
             event={selectedEvent}
+            client={clientMap.get(selectedEvent.client_id)}
             onClose={closeModals}
             onEdit={handleEditEvent}
             onDelete={handleDeleteEvent}
             onDuplicate={handleDuplicateEvent}
-            onPaymentUpdate={handleFormSuccess}
-            onWorkEdit={handleEditWork}
-            onWorkDelete={handleWorkDelete}
-            onAddWork={handleAddWorkForEvent}
-            onAddExpense={handleAddExpenseForEvent}
-            onExpenseEdit={handleEditExpense}
-            onExpenseDelete={handleFormSuccess}
-            onApply12h={handleEventActionSheetApplyManual12h}
-            onMarkPaid={handleMarkPaid}
-            dailyWork={dailyWork.filter((w) => w?.event_id === selectedEvent?.id)}
-            expenses={expenses.filter((e) => e?.event_id === selectedEvent?.id)}
-            client={clientMap.get(selectedEvent.client_id)}
+            // So atualiza a tela: quem grava o pagamento e a janela do valor real (PaymentConfirmModal).
+            onMarkPaid={handleFormSuccess}
           />
         )}
 
