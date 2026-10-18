@@ -88,7 +88,8 @@ export function useUserSettings() {
     } catch {
       // Caso a migration 039 ainda não tenha sido aplicada no Supabase remoto, mantém funcionando via localStorage
       setSettings((prev) => ({ ...(prev || {}), ...localSaved }));
-      return { ...(settings || {}), ...localSaved };
+      // Marca para a tela avisar: ficou so neste aparelho, nao no servidor.
+      return { ...(settings || {}), ...localSaved, _somenteNoAparelho: true };
     }
   }, [userId, settings]);
 

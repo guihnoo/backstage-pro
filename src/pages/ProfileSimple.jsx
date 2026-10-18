@@ -98,7 +98,6 @@ export default function ProfileSimple() {
     cpf_cnpj: '',
     report_subtitle: '',
   });
-  const [savingPix, setSavingPix] = useState(false);
   const photoInputRef = useRef(null);
   const owner = isAppOwner(user, profile);
   const { newCount: ownerNewFeedbacks } = useOwnerFeedbacks(owner);
@@ -130,23 +129,6 @@ export default function ProfileSimple() {
     }
   }, [userSettings]);
 
-  const handleSavePix = async () => {
-    setSavingPix(true);
-    try {
-      await upsertSettings({
-        pix_key: pixForm.pix_key.trim(),
-        pix_key_type: pixForm.pix_key_type,
-        cpf_cnpj: pixForm.cpf_cnpj.trim() || null,
-        report_subtitle: pixForm.report_subtitle.trim() || null,
-      });
-      appToast.success('Dados de PIX e PDF salvos!');
-    } catch {
-      appToast.error('Erro ao salvar dados de PIX.');
-    } finally {
-      setSavingPix(false);
-    }
-  };
-
   const handleExportData = async () => {
     setExporting(true);
     try {
@@ -163,8 +145,11 @@ export default function ProfileSimple() {
     }
   };
 
+  // Um botao Salvar so (missao 196d6): grava perfil e PIX/PDF. Se uma parte falhar, avisa qual
+  // e mantem o que foi digitado na tela para tentar de novo.
   const handleSave = async () => {
     setSaving(true);
+    let perfilOk = false;
     try {
       await updateProfile({
         ...form,
@@ -173,11 +158,28 @@ export default function ProfileSimple() {
         monthly_goal_revenue: form.monthly_goal_revenue !== '' ? Number(form.monthly_goal_revenue) : null,
         monthly_goal_events: form.monthly_goal_events !== '' ? Number(form.monthly_goal_events) : null,
       });
+      perfilOk = true;
+      const temPix = pixForm.pix_key.trim() || pixForm.cpf_cnpj.trim() || pixForm.report_subtitle.trim()
+        || userSettings?.pix_key || userSettings?.cpf_cnpj || userSettings?.report_subtitle;
+      if (temPix) {
+        const r = await upsertSettings({
+          pix_key: pixForm.pix_key.trim(),
+          pix_key_type: pixForm.pix_key_type,
+          cpf_cnpj: pixForm.cpf_cnpj.trim() || null,
+          report_subtitle: pixForm.report_subtitle.trim() || null,
+        });
+        if (r?._somenteNoAparelho) {
+          appToast.warning('Perfil salvo. PIX salvo so neste aparelho.', {
+            description: 'O servidor nao recebeu o PIX. Tente de novo mais tarde.',
+          });
+          return;
+        }
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (err) {
       console.error('Erro ao salvar:', err);
-      appToast.error('Erro ao salvar perfil.', { description: err?.message });
+      appToast.error(perfilOk ? 'Perfil salvo, mas o PIX nao foi salvo.' : 'Erro ao salvar perfil.', { description: err?.message });
     } finally {
       setSaving(false);
     }
@@ -345,28 +347,6 @@ export default function ProfileSimple() {
             </div>
           </div>
 
-          {/* Botão salvar */}
-          <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleSave}
-            disabled={saving}
-            className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
-            style={{
-              background: saved
-                ? 'linear-gradient(135deg, #10b981, #059669)'
-                : `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})`,
-              opacity: saving ? 0.7 : 1,
-            }}
-          >
-            {saving ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Salvando...</>
-            ) : saved ? (
-              <><CheckCircle className="w-4 h-4" /> Salvo!</>
-            ) : (
-              <><Save className="w-4 h-4" /> Salvar alterações</>
-            )}
-          </motion.button>
         </NeonGlass>
         </motion.div>
 
@@ -451,38 +431,7 @@ export default function ProfileSimple() {
             </div>
           ))}
 
-          <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleSave}
-            disabled={saving}
-            className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
-            style={{
-              background: saved
-                ? 'linear-gradient(135deg, #10b981, #059669)'
-                : `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})`,
-              opacity: saving ? 0.7 : 1,
-            }}
-          >
-            {saving ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Salvando...</>
-            ) : saved ? (
-              <><CheckCircle className="w-4 h-4" /> Salvo!</>
-            ) : (
-              <><Save className="w-4 h-4" /> Salvar metas</>
-            )}
-          </motion.button>
         </NeonGlass>
-        </motion.div>
-
-        {/* Alertas no celular */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.31 }}>
-          <PushNotificationSettings />
-        </motion.div>
-
-        {/* Google Calendar */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }}>
-          <GoogleCalendarSync />
         </motion.div>
 
         {/* PIX */}
@@ -542,17 +491,42 @@ export default function ProfileSimple() {
                 className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-600 transition-colors"
               />
             </div>
-            <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleSavePix}
-              disabled={savingPix || (!pixForm.pix_key.trim() && !pixForm.cpf_cnpj.trim() && !pixForm.report_subtitle.trim())}
-              className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
-              style={{ background: `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})` }}
-            >
-              {savingPix ? <><Loader2 className="w-4 h-4 animate-spin" /> Salvando...</> : <><Save className="w-4 h-4" /> Salvar PIX e Dados do PDF</>}
-            </motion.button>
           </NeonGlass>
+        </motion.div>
+
+        {/* Salvar unico: dados, area, metas e PIX */}
+        <div className="sticky bottom-24 z-10">
+          <motion.button
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleSave}
+            disabled={saving}
+            className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg"
+            style={{
+              background: saved
+                ? 'linear-gradient(135deg, #10b981, #059669)'
+                : `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})`,
+              opacity: saving ? 0.7 : 1,
+            }}
+          >
+            {saving ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Salvando...</>
+            ) : saved ? (
+              <><CheckCircle className="w-4 h-4" /> Salvo!</>
+            ) : (
+              <><Save className="w-4 h-4" /> Salvar alterações</>
+            )}
+          </motion.button>
+        </div>
+
+        {/* Alertas no celular */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.31 }}>
+          <PushNotificationSettings />
+        </motion.div>
+
+        {/* Google Calendar */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }}>
+          <GoogleCalendarSync />
         </motion.div>
 
         {/* Ajuda do app */}
