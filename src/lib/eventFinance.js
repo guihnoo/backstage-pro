@@ -24,7 +24,10 @@ export function calcEventDays(event) {
   try {
     const start = parseISO(event.start_date);
     const end = parseISO(event.end_date || event.start_date);
-    return Math.max(1, differenceInDays(end, start) + 1);
+    const diff = differenceInDays(end, start);
+    // Data invalida nao lanca erro: vira NaN e "contaminava" cache e a receber. Conta 1 dia.
+    if (!Number.isFinite(diff)) return 1;
+    return Math.max(1, diff + 1);
   } catch {
     return 1;
   }
