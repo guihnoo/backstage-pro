@@ -1,9 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import PaymentConfirmModal from '@/components/reports/PaymentConfirmModal';
-import { getEventCacheAmount, calculateEventReceivableAmount, getEventHoursStatus, isEstimatedWork, isCancelledEvent } from '@/lib/eventFinance';
+import { getEventCacheAmount, calculateEventReceivableAmount, isEstimatedWork, isCancelledEvent } from '@/lib/eventFinance';
 import { buildEventClosing } from '@/lib/eventClosing';
-import { buildMarkPaidUpdate } from '@/lib/financeMetrics';
-import { buildHoursGateMessage } from '@/lib/hoursGate';
 import { Dialog, DialogContent, DialogHeader, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -257,14 +255,12 @@ export default function EventDetailModal({
   const [generatingContract, setGeneratingContract] = useState(false);
   const [generatingReceipt, setGeneratingReceipt] = useState(false);
   const [applying12h, setApplying12h] = useState(false);
-  const [markingPaid, setMarkingPaid] = useState(false);
   const [savingLocation, setSavingLocation] = useState(false);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [showWorkModal, setShowWorkModal] = useState(false);
   const [workModalDate, setWorkModalDate] = useState(null);
   const [editingWorkEntry, setEditingWorkEntry] = useState(null);
   const [confirmDeleteWorkId, setConfirmDeleteWorkId] = useState(null);
-  const [hoursGateOpen, setHoursGateOpen] = useState(false);
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [showExpenses, setShowExpenses] = useState(true);
   const [editingPixInline, setEditingPixInline] = useState(false);
@@ -770,10 +766,6 @@ export default function EventDetailModal({
     () => (event ? calculateEventReceivableAmount(event, eventWork) : 0),
     [event, eventWork]
   );
-  const hoursStatus = useMemo(
-    () => (event ? getEventHoursStatus(event, eventWork) : null),
-    [event, eventWork]
-  );
 
   const estimatedValue = useMemo(() => {
     if (!event || eventWork.length > 0) return null;
@@ -884,23 +876,6 @@ export default function EventDetailModal({
     </Card>
   ) : null;
 
-  // Grava a quitação integral (regra: cliente sempre paga 100%) e só então
-  // avisa o pai para atualizar a tela. Antes, apenas onMarkPaid era chamado e
-  // nada era salvo quando o modal era aberto pela Home / Sino / Metas.
-  const persistMarkPaid = async () => {
-    if (markingPaid) return;
-    setMarkingPaid(true);
-    try {
-      await updateEvent(event.id, buildMarkPaidUpdate(event, eventWork));
-      appToast.success(`"${event.title}" marcado como pago!`);
-      onMarkPaid?.();
-    } catch (err) {
-      appToast.error('Erro ao confirmar recebimento', { description: err?.message || 'Tente novamente.' });
-    } finally {
-      setMarkingPaid(false);
-    }
-  };
-
   // Confirmar recebimento só com as horas preenchidas (regra do dono); o usuário pode
   // escolher "cobrar assim mesmo".
   // Confirmar recebimento usa a mesma janela das outras telas: o usuario digita o VALOR REAL
@@ -946,8 +921,8 @@ export default function EventDetailModal({
     );
   } else if ((status === 'completed' || status === 'archived') && event.payment_status !== 'paid') {
     primaryCTA = (
-      <Button onClick={requestMarkPaid} disabled={markingPaid} className="flex-1 bg-emerald-700 hover:bg-emerald-600">
-        {markingPaid ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}Confirmar Recebimento
+      <Button onClick={requestMarkPaid} className="flex-1 bg-emerald-700 hover:bg-emerald-600">
+        <CheckCircle2 className="w-4 h-4 mr-2" />Confirmar Recebimento
       </Button>
     );
   } else if ((status === 'completed' || status === 'archived') && event.payment_status === 'paid') {
@@ -1822,20 +1797,6 @@ export default function EventDetailModal({
       onSuccess={closeWorkModal}
     />
 
-    <ConfirmDialog
-      open={hoursGateOpen}
-      onOpenChange={setHoursGateOpen}
-      title="Faltam horas neste evento"
-      description={buildHoursGateMessage(hoursStatus)}
-      cancelLabel="Lançar horas"
-      onCancel={() => {
-        const date = hoursStatus?.missing?.[0];
-        setActiveTab('trabalho');
-        if (date) openWorkModal(date, null);
-      }}
-      confirmLabel="Cobrar assim mesmo"
-      onConfirm={() => { setHoursGateOpen(false); persistMarkPaid(); }}
-    />
     <ConfirmDialog
       open={!!confirmDeleteWorkId}
       onOpenChange={(open) => !open && setConfirmDeleteWorkId(null)}
