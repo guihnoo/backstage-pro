@@ -15,6 +15,9 @@ import { useDailyWork } from '@/lib/useDailyWork';
 import { useAuth } from '@/lib/authContext';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
+import { useClients } from '@/lib/useClients';
+import { resolveMealPolicy } from '@/lib/mealPolicy';
+import { parseBRL, toBRLInput } from '@/lib/money';
 
 const emptyState = {
   date: '',
@@ -25,6 +28,7 @@ const emptyState = {
   duration_min: null, // duração real vinda do cronômetro (permite 24 h ou mais)
   regime: 'cheia',
   hora_extra: true,
+  meal: '',
 };
 
 export default function DailyWorkModal({ isOpen, onClose, date, event, existingWork, onSuccess }) {
@@ -32,6 +36,9 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
   const { create: createDailyWork, update: updateDailyWork } = useDailyWork();
   const { primaryHex } = useCategoryTheme();
   const { formatCurrency, isVisible } = useFinancialVisibility();
+  const { clients } = useClients();
+  const mealClient = (clients || []).find((c) => c.id === event?.client_id) || null;
+  const mealPolicy = resolveMealPolicy(event, mealClient);
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState(emptyState);
@@ -62,6 +69,7 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
         entry_time: existingWork.entry_time || '',
         exit_time: existingWork.exit_time || '',
         notes: existingWork.description || existingWork.notes || '',
+        meal: Number(existingWork.meal_allowance) > 0 ? toBRLInput(existingWork.meal_allowance) : '',
         next_day: isSameEntryExit(existingWork.entry_time, existingWork.exit_time)
           && Number(existingWork.hours_worked ?? existingWork.total_hours) >= 24,
         duration_min: null,
@@ -76,6 +84,7 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
       entry_time: event?.start_time || '',
       exit_time: event?.end_time || '',
       notes: '',
+      meal: '',
       next_day: false,
       duration_min: null,
       regime: defaultDayChoice(event).regime,
@@ -145,6 +154,10 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
         overtime_hours: summary.overtime,
         daily_cache: summary.cache,
         description: formData.notes || null,
+        // Alimentacao so quando o cliente reembolsa; vazio = valor padrao do cliente.
+        ...(mealPolicy === 'reembolso'
+          ? { meal_allowance: Math.max(0, Number.isFinite(parseBRL(formData.meal)) ? parseBRL(formData.meal) : Number(mealClient?.meal_daily_value) || 0) }
+          : {}),
         ...(REGIME_POR_DIA_ATIVO
           ? { regime: formData.regime, hora_extra: Boolean(formData.hora_extra), origem: 'lancada' }
           : {}),
@@ -304,6 +317,21 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                 <p className="text-[11px] text-slate-600 -mt-1">
                   Modelo: {event.payment_model === 'MEIO_CACHE_E_DOBRA' ? 'Meio Cache e Dobra' : 'Cachê + Horas Extras'}
                 </p>
+              )}
+
+              {mealPolicy === 'reembolso' && (
+                <div className="space-y-2">
+                  <Label htmlFor="dw-meal">Alimentação do dia (cliente reembolsa)</Label>
+                  <Input
+                    id="dw-meal"
+                    type="text"
+                    inputMode="decimal"
+                    value={formData.meal}
+                    onChange={(e) => setField('meal', e.target.value)}
+                    className="bg-slate-800 border-slate-700"
+                    placeholder={Number(mealClient?.meal_daily_value) > 0 ? `Padrão do cliente: ${toBRLInput(mealClient.meal_daily_value)}` : 'Ex: 45,00'}
+                  />
+                </div>
               )}
 
               <div className="space-y-2">

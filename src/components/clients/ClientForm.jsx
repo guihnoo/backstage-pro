@@ -11,6 +11,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Building2, User, DollarSign, X, AlertCircle, Phone, Mail, FileText, Camera, ImagePlus } from 'lucide-react';
 import appToast from '@/lib/appToast';
+import { parseBRL, toBRLInput } from '@/lib/money';
+import { MEAL_POLICY_LABELS } from '@/lib/mealPolicy';
 
 import { useAuth } from '@/lib/authContext';
 import { useClients } from '@/lib/useClients';
@@ -22,6 +24,17 @@ import ColorGridPicker from '@/components/ui/ColorGridPicker';
 import { pickDefaultClientColor, DEFAULT_CLIENT_COLOR } from '@/lib/brandColors';
 import CompanySearchInput from './CompanySearchInput';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
+
+// So manda a alimentacao quando o usuario mudou (assim quem nao usa nao depende da migration 041).
+function buildMealPatch(formData, client) {
+  const policy = formData.meal_policy || null;
+  const v = parseBRL(formData.meal_daily_value);
+  const value = policy === 'reembolso' && Number.isFinite(v) && v >= 0 ? v : null;
+  const beforeP = client?.meal_policy ?? null;
+  const beforeV = client?.meal_daily_value != null ? Number(client.meal_daily_value) : null;
+  if (policy === beforeP && value === beforeV) return {};
+  return { meal_policy: policy, meal_daily_value: value };
+}
 
 export default function ClientForm({ client, onSuccess, onCancel }) {
   const { user } = useAuth();
@@ -48,6 +61,8 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
     policy_default_payment_model: null,
     policy_allows_meio_e_dobra_juntos: false,
     default_daily_cache: '',
+    meal_policy: null,
+    meal_daily_value: '',
     brand_color: DEFAULT_CLIENT_COLOR,
   });
 
@@ -72,6 +87,8 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
         policy_default_payment_model: client.policy_default_payment_model || null,
         policy_allows_meio_e_dobra_juntos: client.policy_allows_meio_e_dobra_juntos || false,
         default_daily_cache: client.default_daily_cache > 0 ? String(client.default_daily_cache) : '',
+        meal_policy: client.meal_policy || null,
+        meal_daily_value: client.meal_daily_value > 0 ? toBRLInput(client.meal_daily_value) : '',
         brand_color: client.brand_color || DEFAULT_CLIENT_COLOR,
       });
     } else {
@@ -88,6 +105,8 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
         policy_default_payment_model: null,
         policy_allows_meio_e_dobra_juntos: false,
         default_daily_cache: '',
+        meal_policy: null,
+        meal_daily_value: '',
         brand_color: DEFAULT_CLIENT_COLOR,
       });
     }
@@ -279,6 +298,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
         policy_default_payment_model: formData.policy_default_payment_model || null,
         policy_allows_meio_e_dobra_juntos: formData.policy_allows_meio_e_dobra_juntos || false,
         default_daily_cache: safeCache,
+        ...buildMealPatch(formData, client),
         brand_color: formData.brand_color || pickDefaultClientColor(formData.name),
         // Salvar o formulário completo conclui o cadastro (sai do estado "rascunho"
         // criado pelo cadastro rápido / catálogo sem CNPJ).
@@ -598,6 +618,36 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                   className="bg-slate-800 border-slate-700 text-white h-12 text-base touch-manipulation"
                   placeholder="Ex: 800"
                 />
+              </div>
+
+              {/* Alimentacao: cada cliente faz de um jeito (regra do dono) */}
+              <div className="space-y-2">
+                <Label className="text-slate-300 text-sm font-medium">Alimentação</Label>
+                <p className="text-xs text-slate-500">Só &quot;Cliente reembolsa&quot; soma no a receber e no fechamento.</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[[null, 'Não definido'], ...Object.entries(MEAL_POLICY_LABELS)].map(([key, label]) => (
+                    <Button
+                      key={key || 'none'}
+                      type="button"
+                      variant={(formData.meal_policy || null) === key ? 'default' : 'outline'}
+                      onClick={() => handleChange('meal_policy', key)}
+                      className="h-auto min-h-[44px] p-3 text-sm bg-slate-700/50 border-slate-600 hover:bg-slate-600/50"
+                    >
+                      {label}
+                    </Button>
+                  ))}
+                </div>
+                {formData.meal_policy === 'reembolso' && (
+                  <Input
+                    id="meal_daily_value"
+                    type="text"
+                    inputMode="decimal"
+                    value={formData.meal_daily_value}
+                    onChange={(e) => handleChange('meal_daily_value', e.target.value)}
+                    className="bg-slate-800 border-slate-700 text-white h-12 text-base"
+                    placeholder="Valor por dia (opcional), ex: 45,00"
+                  />
+                )}
               </div>
 
               {formData.policy_default_payment_model === 'MEIO_CACHE_E_DOBRA' && (

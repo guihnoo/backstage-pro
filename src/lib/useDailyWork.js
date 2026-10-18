@@ -23,6 +23,8 @@ export function mapPayloadToDb(payload = {}) {
     overtime_hours:
       payload.overtime_hours != null ? Number(payload.overtime_hours) : null,
     daily_cache: payload.daily_cache != null ? Number(payload.daily_cache) : null,
+    // Alimentacao do dia (migration 041). So vai quando a tela manda (regra = reembolso).
+    meal_allowance: payload.meal_allowance != null ? Number(payload.meal_allowance) : null,
     notes: payload.description ?? payload.notes ?? null,
     photo_url: payload.photo_url ?? null,
     status: payload.status || 'completed',
