@@ -25,13 +25,10 @@ import {
   User,
   Calendar,
 } from 'lucide-react';
-import {
-  parseISO,
-  isValid
-} from 'date-fns';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { getEventStatus, todayLocalISO } from '@/components/utils/dateUtils';
 import { calculateEventReceivableAmount } from '@/lib/eventFinance';
+import { getClientActivity } from '@/lib/clientActivity';
 import { openWhatsAppCharge, buildChargeMessage, formatWhatsAppNumber } from '@/lib/whatsapp';
 import { useMediaQuery } from '@/components/hooks/useMediaQuery';
 import { useAuth } from '@/lib/authContext';
@@ -145,25 +142,9 @@ export default function ClientsPage() {
           : 'text-red-400 border-red-500/30 bg-red-500/10',
       };
 
-      const sixMonthsAgo = new Date();
-      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-      
-      const recentEvents = clientEvents.filter(e => {
-        try {
-          const eventDate = parseISO(e.start_date);
-          return isValid(eventDate) && eventDate >= sixMonthsAgo;
-        } catch {
-          return false;
-        }
-      });
-      const isActive = recentEvents.length > 0;
+      const activity = getClientActivity(clientEvents);
 
       const todayStr = todayLocalISO();
-      const sortedEvents = clientEvents
-        .filter(e => e.start_date)
-        .sort((a, b) => new Date(b.start_date) - new Date(a.start_date));
-      const lastEvent = sortedEvents[0];
-
       const nextEvent = clientEvents
         .filter(e => e.start_date >= todayStr && e.status !== 'cancelled')
         .sort((a, b) => (a.start_date > b.start_date ? 1 : -1))[0];
@@ -174,8 +155,7 @@ export default function ClientsPage() {
           totalEvents: clientEvents.length,
           generatedRevenue,
           pendingRevenue,
-          isActive,
-          lastEventDate: lastEvent?.start_date,
+          ...activity,
           nextEventDate: nextEvent?.start_date,
           paymentScore,
           unpaidEvents: completedUnpaidEvents.map(e => ({
@@ -553,14 +533,6 @@ export default function ClientsPage() {
                               {client.stats.isActive ? 'Ativo' : 'Inativo'}
                             </Badge>
                           )}
-                          {(() => {
-                            const last = client.stats.lastEventDate;
-                            if (!last) return <span title="Sem histórico de eventos" className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" style={{ boxShadow: '0 0 5px #ef444480' }} />;
-                            const days = Math.floor((Date.now() - new Date(last).getTime()) / 86400000);
-                            if (days <= 30) return <span title={`Último show há ${days}d`} className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" style={{ boxShadow: '0 0 5px #34d39980' }} />;
-                            if (days <= 90) return <span title={`Último show há ${days}d`} className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" style={{ boxShadow: '0 0 5px #fbbf2480' }} />;
-                            return <span title={`Último show há ${days}d`} className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" style={{ boxShadow: '0 0 5px #ef444480' }} />;
-                          })()}
                           {client.policy_default_payment_model && (
                             <Badge variant="outline" className="text-xs border-slate-700 text-slate-400">
                               {client.policy_default_payment_model === 'HORAS_EXTRAS' ? 'H.E.' : 'M&D'}

@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { differenceInDays, parseISO } from 'date-fns';
 import { UserX, MessageCircle, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
 import { buildReactivationMessage, formatWhatsAppNumber } from '@/lib/whatsapp';
 import { hardNavigate } from '@/lib/hardNavigate';
@@ -8,7 +7,7 @@ import { useAuth } from '@/lib/authContext';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import appToast from '@/lib/appToast';
 
-const INACTIVE_DAYS = 90;
+import { ACTIVE_CLIENT_DAYS as INACTIVE_DAYS } from '@/lib/clientActivity';
 
 export default function InactiveClientsPanel({ clientsWithStats = [] }) {
   const { profile } = useAuth();
@@ -18,16 +17,12 @@ export default function InactiveClientsPanel({ clientsWithStats = [] }) {
   const techName = profile?.name || '';
 
   const inactive = useMemo(() => {
-    const today = new Date();
+    // Mesma regra da lista: inativo com historico (sem nenhum show nao ha o que reativar).
     return clientsWithStats
-      .filter(c => {
-        if (!c.stats.lastEventDate) return false; // sem nenhum evento, não é "inativo"
-        const days = differenceInDays(today, parseISO(c.stats.lastEventDate));
-        return days >= INACTIVE_DAYS;
-      })
+      .filter(c => !c.stats.isActive && c.stats.daysSinceLastEvent != null)
       .map(c => ({
         ...c,
-        daysSince: differenceInDays(today, parseISO(c.stats.lastEventDate)),
+        daysSince: c.stats.daysSinceLastEvent,
       }))
       .sort((a, b) => b.daysSince - a.daysSince);
   }, [clientsWithStats]);
