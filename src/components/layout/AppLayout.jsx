@@ -11,6 +11,7 @@ import { prefetchRoute, prefetchCriticalRoutes } from '@/lib/routePrefetch';
 import AppTour from '@/components/tour/AppTour';
 import { FloatingTimer } from '@/components/timer/FloatingTimer';
 import { haptics } from '@/lib/haptics';
+import { useUnstickBody } from '@/lib/useUnstickBody';
 
 // 4 abas primárias
 const primaryNavItems = [
@@ -33,6 +34,7 @@ function isNavActive(pathname, matchPath, end) {
 }
 
 export default function AppLayout() {
+  useUnstickBody(); // destrava a tela se uma janela fechar e deixar o app sem toque
   const profile = useProfile();
   const config = getCategoryConfig(profile?.category || 'lighting');
   const mainRef = useRef(null);

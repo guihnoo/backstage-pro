@@ -374,3 +374,12 @@ body:has([role="alertdialog"][data-state="open"]) [data-app-scroll] {
 @media (prefers-reduced-motion: reduce) {
   .bp-fade-in, .bp-toast-in { animation: none; }
 }
+
+/* iPhone: campo com letra menor que 16px da zoom sozinho ao tocar e nao volta (achado do Guih, 18/10). */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
