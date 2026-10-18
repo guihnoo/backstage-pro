@@ -72,8 +72,6 @@ const ExpenseAnalysis = lazy(() => import('@/components/reports/ExpenseAnalysis'
 const ExportManager = lazy(() => import('@/components/reports/ExportManager'));
 const EventDetailModal = lazy(() => import('@/components/calendar/EventDetailModal'));
 const EventForm = lazy(() => import('@/components/calendar/EventForm'));
-const ExpenseForm = lazy(() => import('@/components/expenses/ExpenseForm'));
-const DailyWorkModal = lazy(() => import('@/components/calendar/DailyWorkModal'));
 const ActivityHeatmap = lazy(() => import('@/components/reports/ActivityHeatmap'));
 const SeasonalityChart = lazy(() => import('@/components/reports/SeasonalityChart'));
 const WeekdayBreakdown = lazy(() => import('@/components/reports/WeekdayBreakdown'));
@@ -308,8 +306,8 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type, onItemClick
 export default function ReportsPage() {
   const { events, loading: eventsLoading, error: eventsError, refetch: refetchEvents, delete: deleteEvent } = useEvents();
   const { clients, loading: clientsLoading, error: clientsError, refetch: refetchClients } = useClients();
-  const { dailyWork, loading: dailyWorkLoading, error: dailyWorkError, refetch: refetchDailyWork, delete: deleteWork } = useDailyWork();
-  const { expenses, loading: expensesLoading, error: expensesError, refetch: refetchExpenses, delete: deleteExpense } = useExpenses();
+  const { dailyWork, loading: dailyWorkLoading, error: dailyWorkError, refetch: refetchDailyWork } = useDailyWork();
+  const { expenses, loading: expensesLoading, error: expensesError, refetch: refetchExpenses } = useExpenses();
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const { profile } = useAuth();
   const { offline } = useConnectivity();
@@ -377,12 +375,7 @@ export default function ReportsPage() {
   // State para o EventDetailModal e formulários de edição
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [editingEvent, setEditingEvent] = useState(null);
-  const [editingExpense, setEditingExpense] = useState(null);
   const [confirmDeleteEvent, setConfirmDeleteEvent] = useState(null);
-  const [confirmDeleteWork, setConfirmDeleteWork] = useState(null);
-  const [showWorkModal, setShowWorkModal] = useState(false);
-  const [editingWorkEntry, setEditingWorkEntry] = useState(null);
-  const [confirmDeleteExpense, setConfirmDeleteExpense] = useState(null);
 
   const eventsReady = !loading.events;
   const isDataReady = eventsReady && !loading.clients && !loading.dailyWork && !loading.expenses;
@@ -744,30 +737,6 @@ export default function ReportsPage() {
       appToast.error('Erro ao excluir evento');
     } finally {
       setConfirmDeleteEvent(null);
-    }
-  };
-
-  const handleConfirmWorkDelete = async () => {
-    try {
-      await deleteWork(confirmDeleteWork);
-      appToast.success('Registro de trabalho excluído!');
-      refreshData();
-    } catch (_e) {
-      appToast.error('Erro ao excluir registro');
-    } finally {
-      setConfirmDeleteWork(null);
-    }
-  };
-
-  const handleConfirmExpenseDelete = async () => {
-    try {
-      await deleteExpense(confirmDeleteExpense);
-      appToast.success('Despesa excluída!');
-      refreshData();
-    } catch (_e) {
-      appToast.error('Erro ao excluir despesa');
-    } finally {
-      setConfirmDeleteExpense(null);
     }
   };
 
@@ -1222,30 +1191,6 @@ export default function ReportsPage() {
         </Suspense>
       )}
 
-      {showWorkModal && selectedEvent && (
-        <Suspense fallback={null}>
-          <DailyWorkModal
-            isOpen={showWorkModal}
-            onClose={() => {
-              setShowWorkModal(false);
-              setEditingWorkEntry(null);
-            }}
-            date={
-              editingWorkEntry?.date || editingWorkEntry?.work_date
-                ? new Date(`${(editingWorkEntry.date || editingWorkEntry.work_date).slice(0, 10)}T00:00:00`)
-                : new Date()
-            }
-            event={selectedEvent}
-            existingWork={editingWorkEntry}
-            onSuccess={() => {
-              setShowWorkModal(false);
-              setEditingWorkEntry(null);
-              refreshData({ silent: true });
-            }}
-          />
-        </Suspense>
-      )}
-
       {/* Form de edição de evento */}
       {editingEvent && (
         <Suspense fallback={null}>
@@ -1259,19 +1204,6 @@ export default function ReportsPage() {
         </Suspense>
       )}
 
-      {/* Form de edição de despesa */}
-      {editingExpense && (
-        <Suspense fallback={null}>
-          <ExpenseForm
-            open={!!editingExpense}
-            onOpenChange={(open) => { if (!open) setEditingExpense(null); }}
-            expense={editingExpense}
-            events={data.events}
-            onSuccess={() => { setEditingExpense(null); refreshData({ silent: true }); }}
-          />
-        </Suspense>
-      )}
-
       <ConfirmDialog
         open={!!confirmDeleteEvent}
         onOpenChange={(open) => !open && setConfirmDeleteEvent(null)}
@@ -1280,24 +1212,6 @@ export default function ReportsPage() {
         confirmLabel="Excluir"
         destructive
         onConfirm={handleConfirmEventDelete}
-      />
-      <ConfirmDialog
-        open={!!confirmDeleteWork}
-        onOpenChange={(open) => !open && setConfirmDeleteWork(null)}
-        title="Excluir registro de trabalho?"
-        description="Esta ação não pode ser desfeita."
-        confirmLabel="Excluir"
-        destructive
-        onConfirm={handleConfirmWorkDelete}
-      />
-      <ConfirmDialog
-        open={!!confirmDeleteExpense}
-        onOpenChange={(open) => !open && setConfirmDeleteExpense(null)}
-        title="Excluir despesa?"
-        description="Esta ação não pode ser desfeita."
-        confirmLabel="Excluir"
-        destructive
-        onConfirm={handleConfirmExpenseDelete}
       />
 
       {/* Modal de Projeção do Próximo Período */}
