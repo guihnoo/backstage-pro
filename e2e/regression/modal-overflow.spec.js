@@ -15,19 +15,15 @@ test.describe('overflow em modais e sheets (mobile)', () => {
     await page.setViewportSize({ width: 390, height: 844 });
   });
 
-  test('client action sheet sem overflow horizontal', async ({ page }) => {
+  test('card do cliente abre a pagina de detalhe sem overflow (celular)', async ({ page }) => {
     await gotoAuthed(page, '/clients');
-    await page.getByText('E2E Cliente Demo').click();
-    await expect(page.getByRole('button', { name: /ver detalhes/i })).toBeVisible({
-      timeout: 10_000,
-    });
+    await page.getByText('E2E Cliente Demo').first().click();
+    await expect(page).toHaveURL(/\/client-detail\?id=/, { timeout: 15_000 });
+    await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 15_000 });
 
     const audit = await auditOverlayOverflow(page);
     expect(audit.docHorizontal).toBe(false);
     expect(audit.bodyHorizontal).toBe(false);
-    if (audit.offenders.length > 0) {
-      console.warn('[modal-overflow] client sheet', audit.offenders[0]);
-    }
   });
 
   test('goals badge sheet sem overflow horizontal', async ({ page }) => {
@@ -66,18 +62,22 @@ test.describe('overflow em modais (desktop)', () => {
     }
   });
 
-  test('client detail dialog sem overflow horizontal', async ({ page }) => {
+  test('card do cliente abre a pagina de detalhe (computador)', async ({ page }) => {
     await gotoAuthed(page, '/clients');
-    await page.getByText('E2E Cliente Demo').click();
-    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 10_000 });
+    await page.getByText('E2E Cliente Demo').first().click();
+    await expect(page).toHaveURL(/\/client-detail\?id=/, { timeout: 15_000 });
+    await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 15_000 });
 
     const audit = await auditOverlayOverflow(page);
     expect(audit.docHorizontal).toBe(false);
     expect(audit.bodyHorizontal).toBe(false);
+  });
 
-    const scroll = await scrollModalBody(page);
-    if (scroll.ok && scroll.canScroll) {
-      expect(scroll.moved).toBeGreaterThanOrEqual(0);
-    }
+  test('menu ... do cliente abre Editar sem sair da lista', async ({ page }) => {
+    await gotoAuthed(page, '/clients');
+    await page.getByRole('button', { name: /ações do cliente/i }).first().click();
+    await page.getByRole('menuitem', { name: 'Editar' }).click();
+    await expect(page).toHaveURL(/\/clients/);
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 10_000 });
   });
 });

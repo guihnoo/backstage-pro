@@ -549,7 +549,7 @@ export default function ClientDetailPage() {
 
         <NeonGlass primary={config.primaryHex} className="p-5">
           <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono mb-4">Resumo Financeiro</h2>
-          <div className={`grid gap-3 ${stats.paymentScore ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-1 sm:grid-cols-3'}`}>
+          <div className={`grid gap-3 ${stats.paymentScore ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2'}`}>
             <div className="rounded-lg p-3 text-center bg-emerald-500/8 border border-emerald-500/20">
               <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Recebido</p>
               <p className="text-lg font-black text-emerald-400 font-mono leading-tight">{isVisible ? formatCurrency(stats.paidAmount) : '••••'}</p>
@@ -557,10 +557,6 @@ export default function ClientDetailPage() {
             <div className="rounded-lg p-3 text-center bg-amber-500/8 border border-amber-500/20">
               <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Pendente</p>
               <p className="text-lg font-black text-amber-400 font-mono leading-tight">{isVisible ? formatCurrency(stats.unpaidAmount) : '••••'}</p>
-            </div>
-            <div className="rounded-lg p-3 text-center bg-slate-800/60 border border-slate-700/60">
-              <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Total</p>
-              <p className="text-lg font-black text-slate-200 font-mono leading-tight">{isVisible ? formatCurrency(stats.totalRevenue) : '••••'}</p>
             </div>
             {stats.paymentScore && (
               <div className="rounded-lg p-3 text-center border" style={{ background: `${stats.paymentScore.hex}10`, borderColor: `${stats.paymentScore.hex}30` }}>

@@ -30,7 +30,12 @@ import { getEventStatus, todayLocalISO } from '@/components/utils/dateUtils';
 import { calculateEventReceivableAmount } from '@/lib/eventFinance';
 import { getClientActivity } from '@/lib/clientActivity';
 import { openWhatsAppCharge, buildChargeMessage, formatWhatsAppNumber } from '@/lib/whatsapp';
-import { useMediaQuery } from '@/components/hooks/useMediaQuery';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { AUTH_HERO_PRIMARY } from '@/lib/categoryGear';
@@ -41,9 +46,6 @@ import { useConnectivity } from '@/lib/offline/useConnectivity';
 
 const InactiveClientsPanel = lazy(() => import('@/components/clients/InactiveClientsPanel'));
 const ClientForm = lazy(() => import('@/components/clients/ClientForm'));
-const ClientDetailModal = lazy(() => import('@/components/clients/ClientDetailModal'));
-const ClientActionSheet = lazy(() => import('@/components/mobile/ClientActionSheet'));
-const ClientInsightsModal = lazy(() => import('@/components/clients/ClientInsightsModal'));
 import EmptyState from '@/components/layout/EmptyState';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { ClientDraftBadge } from '@/components/clients/ClientDraftBadge';
@@ -92,16 +94,12 @@ export default function ClientsPage() {
   const { profile } = useAuth();
   const { offline } = useConnectivity();
   const config = getCategoryConfig(profile?.category || 'lighting');
-  const isMobile = useMediaQuery("(max-width: 768px)");
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterActive, setFilterActive] = useState('all');
   const [sortBy, setSortBy] = useState('nome');
   const [showClientForm, setShowClientForm] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
-  const [selectedClient, setSelectedClient] = useState(null);
-  const [actionSheetClient, setActionSheetClient] = useState(null);
-  const [insightsClient, setInsightsClient] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   useQueryAction('new-client', useCallback(() => {
@@ -208,18 +206,10 @@ export default function ClientsPage() {
     return filtered;
   }, [clientsWithStats, searchTerm, filterActive, sortBy]);
 
+  // Uma tela so de detalhe (celular e computador): o card abre a pagina do cliente.
   const handleClientClick = useCallback((client) => {
-    if (isMobile) {
-      setActionSheetClient(client);
-    } else {
-      setSelectedClient(client);
-    }
-  }, [isMobile]);
-
-  const handleOpenInsights = (e, client) => {
-    e.stopPropagation(); // Impede que o clique no botão de insights também abra o modal de detalhes
-    setInsightsClient(client);
-  };
+    hardNavigate(`/client-detail?id=${client.id}`);
+  }, []);
 
   const handleNewClient = useCallback(() => {
     setEditingClient(null);
@@ -252,7 +242,6 @@ export default function ClientsPage() {
     try {
       await deleteClient(confirmDeleteId);
       appToast.success("Cliente excluído com sucesso.");
-      setSelectedClient(null);
     } catch (err) {
       console.error("Erro ao excluir cliente:", err);
       appToast.error("Não foi possível excluir o cliente.", {
@@ -263,12 +252,7 @@ export default function ClientsPage() {
     }
   }, [deleteClient, confirmDeleteId]);
 
-  const handleActionSheetViewDetails = useCallback((client) => {
-    setActionSheetClient(null);
-    hardNavigate(`/client-detail?id=${client.id}`);
-  }, []);
-
-  const handleActionSheetContact = useCallback((client, type) => {
+  const handleContact = useCallback((client, type) => {
     switch (type) {
       case 'phone':
         if (client.phone) window.open(`tel:${client.phone}`, '_blank');
@@ -510,15 +494,23 @@ export default function ClientsPage() {
                         </p>
                       )}
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-full h-8 w-8 flex-shrink-0"
-                      onClick={(e) => handleOpenInsights(e, client)}
-                      aria-label="Mais detalhes"
-                    >
-                        <MoreHorizontal className="w-4 h-4"/>
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-full h-10 w-10 flex-shrink-0"
+                          onClick={(e) => e.stopPropagation()}
+                          aria-label="Ações do cliente"
+                        >
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenuItem onSelect={() => handleEditClient(client)}>Editar</DropdownMenuItem>
+                        <DropdownMenuItem className="text-red-400" onSelect={() => handleDeleteClient(client.id)}>Excluir</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </CardHeader>
                   <CardContent className="pt-0 flex-grow flex flex-col justify-between">
                     <div>
@@ -617,7 +609,7 @@ export default function ClientsPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={(e) => { e.stopPropagation(); handleActionSheetContact(client, 'whatsapp'); }}
+                            onClick={(e) => { e.stopPropagation(); handleContact(client, 'whatsapp'); }}
                             className={`h-9 px-2 relative group transition-colors ${client.stats.pendingRevenue > 0 ? 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'}`}
                             aria-label={client.stats.pendingRevenue > 0 ? 'Cobrar via WhatsApp' : 'WhatsApp'}
                             title={client.stats.pendingRevenue > 0 ? `Cobrar ${isVisible ? formatCurrency(client.stats.pendingRevenue) : '••••'} via WhatsApp` : 'Abrir WhatsApp'}
@@ -657,46 +649,6 @@ export default function ClientsPage() {
             client={editingClient}
             onSuccess={handleFormSuccess}
             onCancel={() => setShowClientForm(false)}
-          />
-        </Suspense>
-      )}
-
-      {selectedClient && (
-        <Suspense fallback={null}>
-          <ClientDetailModal
-            client={selectedClient}
-            onClose={() => setSelectedClient(null)}
-            onEdit={handleEditClient}
-            onDelete={handleDeleteClient}
-          />
-        </Suspense>
-      )}
-
-      <Suspense fallback={null}>
-        <ClientActionSheet
-          client={actionSheetClient}
-          stats={actionSheetClient?.stats}
-          isOpen={!!actionSheetClient}
-          onClose={() => setActionSheetClient(null)}
-          onViewDetails={handleActionSheetViewDetails}
-          onContact={handleActionSheetContact}
-          onEdit={(client) => {
-            setActionSheetClient(null);
-            handleEditClient(client);
-          }}
-          onDelete={(clientId) => {
-            setActionSheetClient(null);
-            handleDeleteClient(clientId);
-          }}
-        />
-      </Suspense>
-
-      {insightsClient && (
-        <Suspense fallback={null}>
-          <ClientInsightsModal
-            client={insightsClient}
-            isOpen={!!insightsClient}
-            onClose={() => setInsightsClient(null)}
           />
         </Suspense>
       )}
