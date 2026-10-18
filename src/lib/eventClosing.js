@@ -11,6 +11,7 @@
  */
 import { dedupeWorkByDay, isEstimatedWork, calculateEventReceivableAmount, getEventCacheAmount } from './eventFinance';
 import { dailyBaseValue, paymentModelOf, MODELO_HORAS_EXTRAS, isValidRegime } from './workDay';
+import { resolveMealPolicy, mealOfDay } from './mealPolicy';
 
 const money = (n) => Math.round((Number(n) || 0) * 100) / 100;
 const dayKey = (w) => (w?.date || w?.work_date ? String(w.date || w.work_date).slice(0, 10) : null);
@@ -37,6 +38,8 @@ function overtimePortion(event, work, base) {
 }
 
 export function buildEventClosing(event, dailyWork = [], expenses = []) {
+  // Alimentacao so e cobrada quando o cliente reembolsa (igual ao "a receber").
+  const mealCharged = resolveMealPolicy(event) === 'reembolso';
   const totalDias = Math.max(1, eachDay(event?.start_date, event?.end_date || event?.start_date).length);
   // Mesma diária que o "a receber" usa para dia sem registro.
   const base = dailyBaseValue(event) || getEventCacheAmount(event) / totalDias;
@@ -63,7 +66,7 @@ export function buildEventClosing(event, dailyWork = [], expenses = []) {
     }
     const valor = money(work.daily_cache || work.daily_rate || 0);
     const he = overtimePortion(event, work, base);
-    const alimentacao = money(work.meal_allowance || 0);
+    const alimentacao = mealCharged ? mealOfDay(work) : 0;
     return {
       date, work,
       status: isEstimatedWork(work) ? 'estimado' : 'lancado',

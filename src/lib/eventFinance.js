@@ -1,6 +1,7 @@
 import { parseISO, differenceInDays } from 'date-fns';
 import { getEventStatus, todayLocalISO } from '@/components/utils/dateUtils';
 import { dailyBaseValue } from './workDay';
+import { reimbursableMeals } from './mealPolicy';
 
 const UNPAID_STATUSES = new Set(['pending', 'unpaid', 'partial']);
 
@@ -95,8 +96,10 @@ function isWithinEvent(event, dayKey) {
  */
 export function calculateEventReceivableAmount(event, dailyWorkForEvent = []) {
   const rows = dedupeWorkByDay(dailyWorkForEvent || []);
+  // Alimentacao so entra quando o cliente reembolsa (sem regra = 0, dados antigos nao mudam).
+  const meals = reimbursableMeals(event, rows);
   const fromWork = rows.reduce((sum, w) => sum + workValue(w), 0);
-  if (rows.length === 0 || fromWork <= 0) return getEventCacheAmount(event);
+  if (rows.length === 0 || fromWork <= 0) return Math.round((getEventCacheAmount(event) + meals) * 100) / 100;
 
   const days = calcEventDays(event);
   // Só registros dentro das datas do evento ocupam um dia (sem data = legado, ocupa).
@@ -105,10 +108,10 @@ export function calculateEventReceivableAmount(event, dailyWorkForEvent = []) {
     return !key || isWithinEvent(event, key);
   }).length;
   const missingDays = Math.max(0, days - coveredDays);
-  if (missingDays === 0) return Math.round(fromWork * 100) / 100;
+  if (missingDays === 0) return Math.round((fromWork + meals) * 100) / 100;
 
   const perDay = dailyBaseValue(event) || getEventCacheAmount(event) / days;
-  return Math.round((fromWork + missingDays * perDay) * 100) / 100;
+  return Math.round((fromWork + missingDays * perDay + meals) * 100) / 100;
 }
 
 function eachDayKey(start, end) {
