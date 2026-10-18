@@ -14,6 +14,7 @@ import { getEventReceivedAmount, buildMarkPaidUpdate } from '@/lib/financeMetric
 import EventHeading from '@/components/events/EventHeading';
 import { getEventHoursStatus } from '@/lib/eventFinance';
 import { buildHoursGateMessage, shouldBlockPayment } from '@/lib/hoursGate';
+import { parseBRL, toBRLInput } from '@/lib/money';
 
 const PAYMENT_METHODS = [
   { value: 'pix', label: 'PIX' },
@@ -42,7 +43,7 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
 
   useEffect(() => {
     if (event && isOpen) {
-      setPaidAmount(estimatedValue > 0 ? estimatedValue.toString() : '');
+      setPaidAmount(estimatedValue > 0 ? toBRLInput(estimatedValue) : '');
       setPaidDate(new Date());
       setPaymentMethod(event.payment_method || 'pix');
       setAckMissingHours(false);
@@ -55,7 +56,7 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
       return;
     }
     const rawText = String(paidAmount ?? '').trim();
-    const parsedAmount = Number(rawText.includes(',') ? rawText.replace(/\./g, '').replace(',', '.') : rawText);
+    const parsedAmount = parseBRL(rawText); // aceita 1.200,50 / 1200,50 / 1.200 / 1200.50
     if (!rawText || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
       appToast.error('Informe o valor real recebido em conta.');
       return;
@@ -133,14 +134,13 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
               <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input
                 id="paid_amount"
-                type="number"
+                type="text"
                 inputMode="decimal"
-                step="0.01"
-                min="0"
+                autoComplete="off"
                 value={paidAmount}
                 onChange={(e) => setPaidAmount(e.target.value)}
                 className="pl-10 bg-slate-800 border-slate-700 text-white"
-                placeholder="0.00"
+                placeholder="0,00"
               />
             </div>
           </div>
