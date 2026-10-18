@@ -49,6 +49,7 @@ import BackstageCalendarGrid from '@/components/calendar/BackstageCalendarGrid';
 import EventForm from '@/components/calendar/EventForm';
 import DailyWorkModal from '@/components/calendar/DailyWorkModal';
 import EventDetailModal from '@/components/calendar/EventDetailModal';
+import PaymentConfirmModal from '@/components/reports/PaymentConfirmModal';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import {
   normalizeDateString,
@@ -56,8 +57,7 @@ import {
   getEventsForDate,
   getEventStatus,
 } from '@/components/utils/dateUtils';
-import { isCancelledEvent, getEventHoursStatus, calculateEventReceivableAmount } from '@/lib/eventFinance';
-import { buildHoursGateMessage, shouldBlockPayment } from '@/lib/hoursGate';
+import { isCancelledEvent, calculateEventReceivableAmount } from '@/lib/eventFinance';
 import AnimatedStatValue from '@/components/home/AnimatedStatValue';
 import CalendarPageHeader from '@/components/calendar/CalendarPageHeader';
 import CalendarTodayStrip from '@/components/calendar/CalendarTodayStrip';
@@ -704,24 +704,19 @@ export default function CalendarPage() {
     [handleFormSuccess, updateEvent, dailyWork]
   );
 
-  // Trava do recebimento pelo menu rápido (Lote 3): avisa se falta lançar horas.
-  const [hoursGate, setHoursGate] = useState(null); // { event, status }
+  // Pagamento SEMPRE pela janela do valor real (regra do dono: digita o que caiu na conta).
+  // A propria janela avisa se faltam horas e tem o "cobrar assim mesmo".
+  const [payEvent, setPayEvent] = useState(null);
   const requestMarkPaid = useCallback(
     (eventToUpdate) => {
       if (!eventToUpdate) return;
-      if (eventToUpdate.payment_status !== 'paid') {
-        const status = getEventHoursStatus(
-          eventToUpdate,
-          dailyWork.filter((w) => w.event_id === eventToUpdate.id)
-        );
-        if (shouldBlockPayment(status)) {
-          setHoursGate({ event: eventToUpdate, status });
-          return;
-        }
+      if (eventToUpdate.payment_status === 'paid') {
+        handleMarkPaid(eventToUpdate); // desmarcar pago continua direto
+        return;
       }
-      handleMarkPaid(eventToUpdate);
+      setPayEvent(eventToUpdate);
     },
-    [dailyWork, handleMarkPaid]
+    [handleMarkPaid]
   );
 
   // New action sheet handlers
@@ -2072,27 +2067,13 @@ export default function CalendarPage() {
         )}
       </AnimatePresence>
 
-      <ConfirmDialog
-        open={!!hoursGate}
-        onOpenChange={(open) => !open && setHoursGate(null)}
-        title="Faltam horas neste evento"
-        description={buildHoursGateMessage(hoursGate?.status)}
-        cancelLabel="Lançar horas"
-        confirmLabel="Cobrar assim mesmo"
-        onCancel={() => {
-          const ev = hoursGate?.event;
-          const date = hoursGate?.status?.missing?.[0];
-          setHoursGate(null);
-          if (ev && date) {
-            setMobileHoursEventData({ event: ev, date, existingWork: undefined });
-            setShowMobileHoursSheet(true);
-          }
-        }}
-        onConfirm={() => {
-          const ev = hoursGate?.event;
-          setHoursGate(null);
-          if (ev) handleMarkPaid(ev);
-        }}
+      <PaymentConfirmModal
+        event={payEvent}
+        client={payEvent ? clientMap.get(payEvent.client_id) : null}
+        dailyWork={payEvent ? dailyWork.filter((w) => w.event_id === payEvent.id) : []}
+        isOpen={!!payEvent}
+        onClose={() => setPayEvent(null)}
+        onSuccess={() => { setPayEvent(null); handleFormSuccess(); }}
       />
 
       <ConfirmDialog

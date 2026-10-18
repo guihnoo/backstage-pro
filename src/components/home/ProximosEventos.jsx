@@ -1,10 +1,12 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { format, parseISO, differenceInCalendarDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Clock, MapPin, CheckCircle2, Loader2, ChevronRight, Plus } from 'lucide-react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { usePaymentToggle } from '@/lib/usePaymentToggle';
+import { useDailyWork } from '@/lib/useDailyWork';
+import PaymentConfirmModal from '@/components/reports/PaymentConfirmModal';
 import { useStatusToggle } from '@/lib/useStatusToggle';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { getEventCacheAmount } from '@/lib/eventFinance';
@@ -33,6 +35,9 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
   const config = getCategoryConfig(userCategory || 'lighting');
   const proximosEventos = events.slice(0, 6);
   const { togglePayment, toggling: togglingPayment } = usePaymentToggle();
+  // Marcar pago abre a janela do valor real (regra do dono); desmarcar continua direto.
+  const [payEvent, setPayEvent] = useState(null);
+  const { dailyWork } = useDailyWork();
   const { confirmEvent, toggling: togglingStatus } = useStatusToggle();
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const today = new Date();
@@ -247,7 +252,8 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
                     disabled={isToggling}
                     onClick={(e) => {
                       e.stopPropagation();
-                      togglePayment(event, onRefresh);
+                      if (isPaid) togglePayment(event, onRefresh);
+                      else setPayEvent(event);
                     }}
                     className={`flex items-center gap-1 text-[10px] font-semibold px-2 py-1.5 rounded-full border transition-all active:scale-95 ${
                       isPaid
@@ -269,6 +275,13 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
           );
         })}
       </div>
+      <PaymentConfirmModal
+        event={payEvent}
+        dailyWork={payEvent ? (dailyWork || []).filter((w) => w.event_id === payEvent.id) : []}
+        isOpen={!!payEvent}
+        onClose={() => setPayEvent(null)}
+        onSuccess={() => { setPayEvent(null); onRefresh?.(); }}
+      />
     </div>
   );
 }
