@@ -67,7 +67,8 @@ function ProfileSkeleton() {
 export default function ProfileSimple() {
   const { user, profile, signOut, updateProfile } = useAuth();
   const { settings: userSettings, upsert: upsertSettings } = useUserSettings();
-  const { stats, refetch: refetchStats } = useStats(user?.id);
+  // Resumo do mes saiu do Perfil (repetia Home/Metas); fica so o "puxar para atualizar".
+  const { refetch: refetchStats } = useStats(user?.id);
   const { pullDistance, isRefreshing, threshold } = usePullToRefresh(refetchStats);
   const { isVisible, toggleVisibility } = useFinancialVisibility();
   const categoryId = profile?.category || 'lighting';
@@ -302,50 +303,6 @@ export default function ProfileSimple() {
 
       <div className="px-4 max-w-2xl xl:max-w-6xl mx-auto space-y-4 w-full min-w-0">
 
-        {/* Resumo do mês */}
-        {(stats.faturamento_pago > 0 || stats.a_receber > 0 || stats.diarias_count > 0 || stats.clientes_ativos > 0) && (
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
-            <NeonGlass primary={config.primaryHex} className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">Este mês</h2>
-                <button type="button" onClick={toggleVisibility} className="text-slate-600 hover:text-slate-400 transition-colors">
-                  {isVisible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                </button>
-              </div>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                <div className="rounded-lg p-3 bg-emerald-500/8 border border-emerald-500/20 text-center">
-                  <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Recebido</p>
-                  <p className="text-base font-black text-emerald-400 font-mono leading-tight">
-                    {isVisible
-                      ? stats.faturamento_pago.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 })
-                      : '••••'}
-                  </p>
-                </div>
-                <div className="rounded-lg p-3 bg-amber-500/8 border border-amber-500/20 text-center">
-                  <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">A Receber</p>
-                  <p className="text-base font-black text-amber-400 font-mono leading-tight">
-                    {isVisible
-                      ? stats.a_receber.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 })
-                      : '••••'}
-                  </p>
-                </div>
-                <div className="rounded-lg p-3 bg-slate-800/60 border border-slate-700/60 text-center">
-                  <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Diárias</p>
-                  <p className="text-base font-black text-slate-200 font-mono">
-                    {stats.diarias_count}
-                  </p>
-                </div>
-                <div className="rounded-lg p-3 bg-slate-800/60 border border-slate-700/60 text-center">
-                  <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Clientes</p>
-                  <p className="text-base font-black text-slate-200 font-mono">
-                    {stats.clientes_ativos}
-                  </p>
-                </div>
-              </div>
-            </NeonGlass>
-          </motion.div>
-        )}
-
         {/* Dados pessoais */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
         <NeonGlass primary={config.primaryHex} glow className="p-5 space-y-4">
@@ -479,9 +436,6 @@ export default function ProfileSimple() {
             <div key={key}>
               <label htmlFor={`goals-${key}`} className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">{label}</label>
               {hint && <p className="text-[10px] text-slate-600 mb-1.5">{hint}</p>}
-              {key === 'monthly_goal_events' && stats?.diarias_count != null && (
-                <p className="text-[10px] mb-1.5" style={{ color: `${config.primaryHex}cc` }}>Este mês: {stats.diarias_count} diária{stats.diarias_count !== 1 ? 's' : ''} registrada{stats.diarias_count !== 1 ? 's' : ''}</p>
-              )}
               <div className="relative">
                 <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
                 <input
@@ -726,6 +680,20 @@ export default function ProfileSimple() {
         </NeonGlass>
         </motion.div>
 
+        <EventTemplatesManager primaryHex={config.primaryHex} />
+
+        <InstallPwaCard primaryHex={config.primaryHex} />
+
+        <button
+          type="button"
+          onClick={handleExportData}
+          disabled={exporting}
+          className="w-full flex items-center justify-center gap-2 py-2 text-slate-500 hover:text-slate-300 text-xs font-mono transition-all disabled:opacity-50"
+        >
+          {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+          {exporting ? 'Exportando...' : 'Exportar meus dados'}
+        </button>
+
         {/* Logout */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
         <NeonGlass primary={config.primaryHex} className="p-4">
@@ -762,19 +730,6 @@ export default function ProfileSimple() {
         </NeonGlass>
         </motion.div>
 
-        <EventTemplatesManager primaryHex={config.primaryHex} />
-
-        <InstallPwaCard primaryHex={config.primaryHex} />
-
-        <button
-          type="button"
-          onClick={handleExportData}
-          disabled={exporting}
-          className="w-full flex items-center justify-center gap-2 py-2 text-slate-500 hover:text-slate-300 text-xs font-mono transition-all disabled:opacity-50"
-        >
-          {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-          {exporting ? 'Exportando...' : 'Exportar meus dados'}
-        </button>
         <p className="text-center text-slate-700 text-xs pb-2 font-mono">Backstage Pro v1.0</p>
       </div>
 
