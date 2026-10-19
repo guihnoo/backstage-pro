@@ -28,18 +28,18 @@ test.describe('detalhe do evento (contrato)', () => {
     await page.setViewportSize({ width: 1280, height: 800 });
   });
 
-  test('mostra titulo e as abas Resumo, Trabalho e Fiscal', async ({ page }) => {
+  test('mostra titulo e as abas Resumo, Horas e Dinheiro', async ({ page }) => {
     const { dialog } = await abrirEventoNaAgenda(page);
     await expect(dialog.getByText('E2E Show Demo').first()).toBeVisible();
-    for (const aba of [/resumo/i, /trabalho/i, /fiscal/i]) {
+    for (const aba of [/resumo/i, /horas/i, /dinheiro/i]) {
       await expect(dialog.getByRole('tab', { name: aba })).toBeVisible();
     }
   });
 
   test('abrir, trocar de aba e fechar nao grava nada', async ({ page }) => {
     const { dialog, escritas } = await abrirEventoNaAgenda(page);
-    await dialog.getByRole('tab', { name: /trabalho/i }).click();
-    await dialog.getByRole('tab', { name: /fiscal/i }).click();
+    await dialog.getByRole('tab', { name: /horas/i }).click();
+    await dialog.getByRole('tab', { name: /dinheiro/i }).click();
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden({ timeout: 10_000 });
     expect(escritas).toEqual([]);

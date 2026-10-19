@@ -116,7 +116,7 @@ test.describe('auditor de uso no celular', () => {
       nome: 'detalhe do evento (Agenda)',
       path: '/calendar',
       open: openDemoEvent,
-      tabs: [/resumo/i, /trabalho/i, /fiscal/i],
+      tabs: [/resumo/i, /horas/i, /dinheiro/i],
     },
     {
       nome: 'novo evento',

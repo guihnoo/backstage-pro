@@ -297,10 +297,26 @@ body:has([role="alertdialog"][data-state="open"]) [data-app-scroll] {
   border-color: color-mix(in srgb, var(--bp-primary) 35%, transparent);
 }
 
+/* Visual "All Access": a cor principal virou amarelo (#ffd400). Botões antigos que pintam o fundo
+   com a cor principal e usam texto branco ficariam ilegíveis — esta rede de segurança deixa o
+   texto preto sempre que o fundo inline é o amarelo sólido (ou gradiente com ele). */
+[style*="background-color: rgb(255, 212, 0)"],
+[style*="background: rgb(255, 212, 0)"],
+[style*="gradient"][style*="rgb(255, 212, 0)"]:not([style*="clip: text"]) {
+  color: #0a0a0a !important;
+}
+[style*="background-color: rgb(255, 212, 0)"].text-white,
+[style*="background: rgb(255, 212, 0)"].text-white,
+[style*="gradient"][style*="rgb(255, 212, 0)"]:not([style*="clip: text"]).text-white,
+[style*="background-color: rgb(255, 212, 0)"] > .text-white,
+[style*="background: rgb(255, 212, 0)"] > .text-white {
+  color: #0a0a0a !important;
+}
+
 /* Fallback de marca (lighting) + entidade Pessoa — AppLayout sobrescreve --bp-primary/--bp-accent */
 :root {
-  --bp-primary: #A64AFF;
-  --bp-accent: #FFB700;
+  --bp-primary: #ffd400;
+  --bp-accent: #ff2e88;
   --bp-person: #8b5cf6;
   --bp-person-contrast: #ffffff;
 }

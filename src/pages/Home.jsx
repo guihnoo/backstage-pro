@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, lazy, Suspense } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useAuth } from '@/lib/authContext';
 import { useProfile } from '@/lib/profileOfflineContext';
@@ -14,10 +15,6 @@ import AReceber from '@/components/home/AReceber';
 import PipelineFinanceiro from '@/components/home/PipelineFinanceiro';
 import ProximosEventos from '@/components/home/ProximosEventos';
 import LiveClockBar from '@/components/home/LiveClockBar';
-import { NeonPageShell } from '@/components/design/NeonPageShell';
-import { LightingBeams } from '@/components/design/LightingBeams';
-import { NeonLevelBars } from '@/components/design/NeonLevelBars';
-import { NeonSectionFrame } from '@/components/design/NeonSectionFrame';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
@@ -28,12 +25,21 @@ import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
 import { useExpenses } from '@/lib/useExpenses';
 import { useDailyWork } from '@/lib/useDailyWork';
-import { LOOP, loopAnim } from '@/lib/liteMotion';
 import { findRecentMissingHours } from '@/lib/homeSummary';
 import HomeMonthSummary from '@/components/home/HomeMonthSummary';
 
 const EventDetailModal = lazy(() => import('@/components/calendar/EventDetailModal'));
 const EventForm = lazy(() => import('@/components/calendar/EventForm'));
+
+// Bloco da Início no visual "All Access": etiqueta de credencial + conteúdo.
+function HomeSection({ label, children }) {
+  return (
+    <section className="mb-7 min-w-0">
+      <p className="font-tag text-[11px] font-bold tracking-[0.2em] text-[#a8a8a8] mb-2">{label}</p>
+      {children}
+    </section>
+  );
+}
 
 function PalcoSkeleton() {
   return (
@@ -128,6 +134,7 @@ export default function Home() {
   })();
 
   const today = todayLocalISO();
+  const todayLabel = format(new Date(), 'EEE d MMM', { locale: ptBR }).replace('.', '').toUpperCase();
   const {
     stats,
     proximoEvento,
@@ -238,97 +245,41 @@ export default function Home() {
   );
 
   return (
-    <NeonPageShell primary={config.primaryHex} accent={config.accentHex} stage={palcoAtivo}>
+    <div className="relative min-h-full overflow-x-clip bg-[#0a0a0a] text-white">
       <PullToRefreshIndicator
         pullDistance={pullDistance}
         isRefreshing={isRefreshing}
         threshold={threshold}
-        primaryHex={config.primaryHex}
+        primaryHex="#ffd400"
       />
-      <motion.header
-        data-tour="home-header"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden"
-        style={{
-          background: palcoAtivo
-            ? `linear-gradient(165deg, ${config.primaryHex}33, ${config.accentHex}14 45%, transparent 80%)`
-            : 'linear-gradient(180deg, #11131c 0%, #050609 100%)',
-        }}
-      >
-        {isLiveShift && <LightingBeams primary={config.primaryHex} accent={config.accentHex} />}
-        <motion.div
-          className="absolute top-0 left-0 right-0 h-0.5 z-10"
-          style={{ background: `linear-gradient(90deg, transparent, ${config.primaryHex}, transparent)` }}
-          animate={loopAnim({ opacity: palcoAtivo ? [0.6, 1, 0.6] : 0.4 })}
-          transition={{ duration: 2, repeat: LOOP }}
-        />
-        <div className="relative z-10 px-4 pt-2 pb-5 max-w-2xl mx-auto">
-          <div className="mb-5 pr-28">
-            <LiveClockBar primaryHex={config.primaryHex} isLive={isLiveShift} />
-            <p className="text-xs font-semibold uppercase tracking-wider mt-1" style={{ color: config.primaryHex }}>
-              {config.emoji} {config.label}
+      <header data-tour="home-header" className="relative">
+        <div className="px-4 pt-2 pb-4 max-w-2xl mx-auto">
+          <div className="pr-28">
+            <LiveClockBar primaryHex="#ffd400" isLive={isLiveShift} />
+            <p className="font-tag text-[11px] font-bold uppercase tracking-[0.16em] mt-1 text-[#a8a8a8]">
+              {todayLabel} · {config.label}
             </p>
           </div>
-          <motion.h1
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-3xl font-extrabold leading-tight tracking-tight truncate"
-          >
+          <h1 className="font-poster text-[40px] leading-[0.95] uppercase tracking-wide mt-3 break-words">
             {greeting},{' '}
-            <span
-              className="inline-block max-w-[min(100%,14rem)] truncate align-bottom"
-              style={{
-                WebkitTextStroke: `1px ${config.primaryHex}`,
-                textShadow: `0 0 30px ${config.primaryHex}60`,
-              }}
-              title={firstName}
-            >
-              {firstName}
-            </span>
+            <span className="text-[#ffd400]" title={firstName}>{firstName}</span>
             .
-          </motion.h1>
-          <AnimatePresence initial={false}>
-            {palcoAtivo ? (
-              <motion.div
-                key="palco"
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
-                className="flex flex-col gap-3 mt-3"
-              >
-                <motion.span
-                  animate={loopAnim({ scale: [1, 1.05, 1] })}
-                  transition={{ duration: 1, repeat: LOOP }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold w-fit"
-                  style={{ background: `${config.primaryHex}33`, border: `1px solid ${config.primaryHex}66` }}
-                >
-                  <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: config.primaryHex }} />
-                  {isLiveShift ? 'TURNO AO VIVO' : 'SHOW HOJE'}
-                </motion.span>
-                {isLiveShift && (
-                  <NeonLevelBars primary={config.primaryHex} accent={config.accentHex} className="max-w-[200px]" />
-                )}
-              </motion.div>
-            ) : (
-              <motion.div
-                key="motivation"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className="mt-2"
-              >
-                <ClampedText lines={2} className="text-sm text-[#8a91a1] italic font-mono">
-                  &ldquo;{motivation}&rdquo;
-                </ClampedText>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          </h1>
+          {palcoAtivo ? (
+            <span
+              className="inline-flex items-center gap-1.5 mt-3 h-7 px-3 rounded-full font-tag text-[11px] font-bold w-fit"
+              style={{ background: '#ff2e88', color: '#0a0a0a' }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0a0a0a] animate-pulse" />
+              {isLiveShift ? 'TURNO AO VIVO' : 'SHOW HOJE'}
+            </span>
+          ) : (
+            <ClampedText lines={2} className="mt-2 text-sm text-[#a8a8a8]">
+              {motivation}
+            </ClampedText>
+          )}
         </div>
-      </motion.header>
+      </header>
 
       <div className="px-4 py-6 max-w-2xl xl:max-w-6xl mx-auto w-full min-w-0 pb-28">
         {/* Alerta enxuto apenas quando houver dias recentes sem horas lançadas */}
@@ -344,7 +295,7 @@ export default function Home() {
         )}
 
         {/* Bloco 1 — Palco */}
-        <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Palco">
+        <HomeSection label="PRÓXIMO SHOW">
           {cockpitLoading ? (
             <PalcoSkeleton />
           ) : (
@@ -366,10 +317,10 @@ export default function Home() {
               onRefresh={refreshCockpit}
             />
           )}
-        </NeonSectionFrame>
+        </HomeSection>
 
         {/* Bloco 2 — Financeiro */}
-        <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Financeiro">
+        <HomeSection label="DINHEIRO">
           {cockpitLoading ? (
             <FinanceiroSkeleton />
           ) : (
@@ -389,22 +340,22 @@ export default function Home() {
             stats={cockpitStats}
             despesasMes={despesasMes}
             isLoading={cockpitLoading}
-            primaryHex={config.primaryHex}
-            accentHex={config.accentHex}
+            primaryHex="#ffd400"
+            accentHex="#ff2e88"
           />
           <div data-tour="home-meta">
             <MetaMensalBar
               profile={profile}
               stats={cockpitStats}
               isLoading={cockpitLoading}
-              accentColor={config.primaryHex}
+              accentColor="#ffd400"
             />
           </div>
-        </NeonSectionFrame>
+        </HomeSection>
 
         {/* Bloco 3 — Agenda (apenas se houver outros eventos além do Próximo Show já exibido acima) */}
         {(cockpitLoading || proximosEventos.length > 0 || !cockpitProximo) && (
-          <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Agenda">
+          <HomeSection label="AGENDA">
             {cockpitLoading ? (
               <AgendaSkeleton />
             ) : (
@@ -419,7 +370,7 @@ export default function Home() {
                 }}
               />
             )}
-          </NeonSectionFrame>
+          </HomeSection>
         )}
       </div>
 
@@ -476,6 +427,6 @@ export default function Home() {
         destructive
         onConfirm={handleConfirmDeleteEvent}
       />
-    </NeonPageShell>
+    </div>
   );
 }

@@ -1,24 +1,25 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Clock, User, ChevronRight, Navigation, CheckCircle2, Loader2, Circle } from 'lucide-react';
+import { MapPin, ChevronRight, Navigation, CheckCircle2, Loader2, Plus } from 'lucide-react';
 import appToast from '@/lib/appToast';
-
-import { getCategoryConfig } from '@/lib/categoryConfig';
 import { useCountdown } from '@/lib/useBackstageData';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, parseISO, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import ModoPalcoActions from '@/components/home/ModoPalcoActions';
-import EventHeading from '@/components/events/EventHeading';
-import { ClampedText, Ellipsis } from '@/components/ui/overflowText';
+import { ClampedText } from '@/components/ui/overflowText';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { useStatusToggle } from '@/lib/useStatusToggle';
 import { useEvents } from '@/lib/useEvents';
 import { captureEventLocationFromGps, mapsUrlForCoords } from '@/lib/eventLocation';
 import { todayLocalISO } from '@/components/utils/dateUtils';
-import { LOOP, loopAnim } from '@/lib/liteMotion';
+import { getEventDisplay } from '@/lib/eventDisplay';
+
+// Visual "All Access": a credencial amarela do próximo show.
+const Y = '#ffd400';
+const PINK = '#ff2e88';
 
 function getEventDateStr(event) {
   return event?.start_date || event?.event_date || null;
@@ -37,22 +38,27 @@ const STATUS_LABELS = {
   pending: 'Pendente',
 };
 
-export default function ProximoShow({ event, userCategory, isOnStage, isLiveShift, isLoading, loadError, onViewEvent, onCreateEvent, onRefresh }) {
+function InfoCell({ label, children }) {
+  return (
+    <div className="min-w-0">
+      <p className="font-tag text-[10px] font-bold tracking-[0.12em] opacity-70">{label}</p>
+      <p className="text-[15px] font-extrabold leading-tight truncate">{children}</p>
+    </div>
+  );
+}
+
+function CountdownBox({ value, label }) {
+  return (
+    <div className="text-center min-w-[52px]">
+      <div className="font-poster text-4xl leading-none" style={{ color: Y }}>{value}</div>
+      <div className="font-tag text-[10px] text-[#a8a8a8] mt-1">{label}</div>
+    </div>
+  );
+}
+
+export default function ProximoShow({ event, isOnStage, isLiveShift, isLoading, loadError, onViewEvent, onCreateEvent, onRefresh }) {
   const eventDateStr = getEventDateStr(event);
   const { countdown } = useCountdown(eventDateStr);
-  const config = getCategoryConfig(userCategory);
-  const gradientBg = { background: `linear-gradient(to right, ${config.primaryHex}, ${config.accentHex})` };
-  const gradientText = {
-    backgroundImage: `linear-gradient(to right, ${config.primaryHex}, ${config.accentHex})`,
-    WebkitBackgroundClip: 'text',
-    backgroundClip: 'text',
-    color: 'transparent',
-  };
-  const primarySurface = {
-    borderColor: `${config.primaryHex}66`,
-    background: `${config.primaryHex}1a`,
-    color: config.primaryHex,
-  };
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const { confirmEvent, toggling } = useStatusToggle();
   const { update: updateEvent } = useEvents();
@@ -87,27 +93,9 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
 
   if (isLoading) {
     return (
-      <div className="p-4 space-y-4">
-        <div className="flex items-center gap-3">
-          <Skeleton className="w-10 h-10 rounded-full shrink-0" />
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-4 w-3/4 rounded" />
-            <Skeleton className="h-3 w-1/2 rounded" />
-          </div>
-          <Skeleton className="w-16 h-6 rounded-full" />
-        </div>
-        <div className="grid grid-cols-3 gap-2">
-          {[0,1,2].map(i => (
-            <div key={i} className="space-y-1.5">
-              <Skeleton className="h-2.5 w-10 rounded" />
-              <Skeleton className="h-4 w-full rounded" />
-            </div>
-          ))}
-        </div>
-        <div className="flex gap-2 pt-1">
-          <Skeleton className="h-10 flex-1 rounded-lg" />
-          <Skeleton className="h-10 w-28 rounded-lg" />
-        </div>
+      <div className="space-y-3">
+        <Skeleton className="h-48 w-full rounded-2xl" />
+        <Skeleton className="h-12 w-full rounded-full" />
       </div>
     );
   }
@@ -115,15 +103,15 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
   // Falha ao carregar não é "agenda vazia": avisa e oferece tentar de novo.
   if (!event && loadError) {
     return (
-      <div className="mb-8 p-5 sm:p-8 rounded-2xl bg-slate-900 border border-amber-500/30 text-center">
-        <h2 className="text-lg font-bold mb-2 text-amber-300">Não foi possível carregar seus eventos</h2>
-        <p className="text-slate-400 mb-5 text-sm">
-          Confira a internet. Seus dados não foram perdidos.
-        </p>
+      <div className="p-5 rounded-2xl bg-[#161616] text-center" style={{ border: `2px solid ${PINK}` }}>
+        <h2 className="font-poster text-2xl tracking-wide mb-1" style={{ color: PINK }}>
+          NÃO FOI POSSÍVEL CARREGAR SEUS EVENTOS
+        </h2>
+        <p className="text-[#c8c8c8] mb-4 text-sm">Confira a internet. Seus dados não foram perdidos.</p>
         <button
           type="button"
           onClick={() => onRefresh?.()}
-          className="inline-flex items-center gap-2 px-5 py-2.5 min-h-[44px] rounded-xl border border-slate-600 text-white text-sm font-semibold"
+          className="inline-flex items-center gap-2 px-5 min-h-[44px] rounded-full border border-[#333333] text-white text-sm font-extrabold"
         >
           Tentar de novo
         </button>
@@ -133,292 +121,172 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
 
   if (!event) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8 p-5 sm:p-8 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50 text-center"
-      >
-        <h2 className="text-2xl font-bold mb-2" style={gradientText}>
-          Nenhum show agendado
-        </h2>
-        <p className="text-slate-300 mb-5 text-sm">
-          Cadastre seu primeiro evento — sua diária padrão já vem preenchida.
-        </p>
-        <motion.button
-          whileTap={{ scale: 0.96 }}
+      <div className="p-5 rounded-2xl text-center" style={{ border: '2px dashed #333333', background: '#121212' }}>
+        <p className="font-tag text-[11px] tracking-[0.2em] text-[#a8a8a8]">SEM CREDENCIAL AINDA</p>
+        <h2 className="font-poster text-3xl tracking-wide text-white mt-1 mb-1">NENHUM SHOW AGENDADO</h2>
+        <p className="text-[#c8c8c8] mb-4 text-sm">Cadastre o próximo trabalho — sua diária padrão já vem preenchida.</p>
+        <button
+          type="button"
           onClick={() => (onCreateEvent ? onCreateEvent() : hardNavigate('/calendar?action=new-event'))}
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 min-h-[44px] rounded-xl text-white text-sm font-semibold hover:shadow-lg transition-all"
-          style={{ ...gradientBg, boxShadow: `0 8px 24px ${config.primaryHex}30` }}
+          className="inline-flex items-center justify-center gap-2 px-6 min-h-[48px] rounded-full text-sm font-extrabold active:scale-95 transition-transform"
+          style={{ background: Y, color: '#0a0a0a' }}
         >
-          <Navigation className="w-4 h-4" />
+          <Plus className="w-4 h-4" strokeWidth={3} />
           Criar próximo show
-        </motion.button>
-      </motion.div>
+        </button>
+      </div>
     );
   }
 
   const eventDate = eventDateStr ? parseISO(eventDateStr) : null;
-  const formattedDate = eventDate && isValid(eventDate)
-    ? format(eventDate, "EEEE, d 'de' MMMM", { locale: ptBR })
-    : 'Data a definir';
+  const shortDate = eventDate && isValid(eventDate)
+    ? format(eventDate, 'EEE d MMM', { locale: ptBR }).replace('.', '').toUpperCase()
+    : 'DATA A DEFINIR';
   const formattedTime = event.start_time
     ? format(parseISO(`2000-01-01T${event.start_time}`), 'HH:mm', { locale: ptBR })
-    : 'Horário a definir';
+    : 'A definir';
+  const { companyName, eventName, showEventSubtitle } = getEventDisplay(event, event.clients);
+  const bigTitle = showEventSubtitle ? eventName : companyName;
+  const tag = live
+    ? (isLiveShift ? 'AO VIVO · TURNO ROLANDO' : `HOJE · ${shortDate}`)
+    : isToday
+      ? `HOJE · ${shortDate}`
+      : `PRÓXIMO · ${shortDate}`;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`mb-8 rounded-2xl border-2 overflow-hidden ${
-        live
-          ? `bg-gradient-to-br from-slate-900 to-slate-800 ${config.borderGlow}`
-          : isToday
-          ? 'bg-gradient-to-br from-amber-950/20 to-slate-900/80 border-amber-500/40'
-          : 'bg-gradient-to-br from-slate-900/80 to-slate-800/50 border-slate-700/30'
-      }`}
-    >
-      {live && (
-        <motion.div
-          animate={loopAnim({ opacity: [0.5, 1, 0.5] })}
-          transition={{ duration: 2, repeat: LOOP }}
-          className="h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent"
-        />
-      )}
-      {isToday && (
-        <motion.div
-          animate={loopAnim({ opacity: [0.4, 0.9, 0.4] })}
-          transition={{ duration: 2.5, repeat: LOOP }}
-          className="h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent"
-        />
-      )}
-
-      <div className="p-5 sm:p-8">
-        {/* Header com Badge */}
-        <div className="flex items-start justify-between mb-5 sm:mb-6 gap-3 min-w-0">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2 sm:mb-3">
-              <span className="text-2xl sm:text-3xl flex-shrink-0">{config.emoji}</span>
-              {live && (
-                <motion.span
-                  animate={loopAnim({ scale: [1, 1.1, 1] })}
-                  transition={{ duration: 1, repeat: LOOP }}
-                  className="px-3 py-1 rounded-full bg-red-600 text-white text-xs font-bold flex items-center gap-1"
-                >
-                  <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                  AO VIVO
-                </motion.span>
-              )}
-              {isToday && (
-                <motion.span
-                  animate={loopAnim({ opacity: [0.75, 1, 0.75] })}
-                  transition={{ duration: 1.8, repeat: LOOP }}
-                  className="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold"
-                >
-                  HOJE
-                </motion.span>
-              )}
-            </div>
-            <EventHeading event={event} client={event.clients} size="lg" className="mb-2" />
-            {event.client_id ? (
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); hardNavigate(`/client-detail?id=${event.client_id}`); }}
-                className="text-sm text-slate-400 transition-colors flex items-center gap-1.5 group max-w-full min-w-0 bp-hover-primary"
-              >
-                <User className="w-3 h-3 flex-shrink-0 bp-text-primary opacity-70 group-hover:opacity-100" />
-                <Ellipsis as="span" className="text-left">Ver página do cliente</Ellipsis>
-              </button>
-            ) : (
-              <p className="text-sm text-slate-500">Sem cliente vinculado</p>
-            )}
+    <div className="space-y-3">
+      {/* Credencial amarela */}
+      <motion.button
+        type="button"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        onClick={() => (onViewEvent ? onViewEvent(event) : hardNavigate('/calendar'))}
+        aria-label={`Abrir ${bigTitle}`}
+        className="relative w-full text-left rounded-2xl overflow-hidden active:scale-[0.99] transition-transform"
+        style={{ background: Y, color: '#0a0a0a' }}
+      >
+        {/* furo do cordão da credencial */}
+        <span aria-hidden="true" className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-2 rounded-full bg-[#0a0a0a]/80" />
+        <div className="px-4 pt-7 pb-4">
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-tag text-[11px] font-bold tracking-[0.14em] flex items-center gap-1.5">
+              {live && <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: PINK }} />}
+              {tag}
+            </span>
+            <span className="h-6 px-2 rounded-full bg-[#0a0a0a] font-tag text-[10px] font-bold flex items-center" style={{ color: Y }}>
+              {(STATUS_LABELS[event.status] || 'Pendente').toUpperCase()}
+            </span>
           </div>
-        </div>
-
-        {/* Info Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="flex items-center gap-2 text-slate-300">
-            <Clock className="w-4 h-4 flex-shrink-0" style={{ color: config.primaryHex }} />
-            <div className="text-sm">
-              <p className="text-slate-500 text-xs">Horário</p>
-              <p className="font-semibold">{formattedTime}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 text-slate-300 min-w-0">
-            <MapPin className="w-4 h-4 text-amber-400 shrink-0" />
-            <div className="text-sm min-w-0">
-              <p className="text-slate-500 text-xs">Local</p>
-              <p className="font-semibold truncate">{event.location || 'Sem local'}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 text-slate-300">
-            {event.status === 'confirmed'
-              ? <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              : <Circle className="w-4 h-4" style={{ color: config.primaryHex }} />
-            }
-            <div className="text-sm">
-              <p className="text-slate-500 text-xs">Status</p>
-              <p className="font-semibold">
-                {STATUS_LABELS[event.status] || 'Pendente'}
-              </p>
-            </div>
-          </div>
-
-          <div className="text-slate-300">
-            <div className="text-sm">
-              <p className="text-slate-500 text-xs">Cachê</p>
-              <p className="font-semibold">
-                {isVisible
-                  ? formatCurrency(getEventCacheAmount(event))
-                  : '•••••'}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {isOnStage && (
-          <div className="mb-6 space-y-3">
-            <ModoPalcoActions event={event} accentColor={config.primaryHex} onRefresh={onRefresh} />
-            {!eventHasLocation(event) && (
-              <motion.button
-                type="button"
-                whileTap={{ scale: 0.98 }}
-                disabled={locationSaving}
-                onClick={handleGpsCheckIn}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border font-semibold text-sm hover:brightness-110 transition-all disabled:opacity-60"
-                style={primarySurface}
-              >
-                {locationSaving ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <MapPin className="w-4 h-4" />
-                )}
-                Check-in no local (GPS)
-              </motion.button>
-            )}
-          </div>
-        )}
-
-        {/* Countdown */}
-        {countdown && !live && (
-          <motion.div
-            className="rounded-xl p-4 mb-6 border"
-            style={isToday
-              ? { background: `${config.primaryHex}12`, borderColor: `${config.primaryHex}40` }
-              : { background: 'rgba(15,17,27,0.5)', borderColor: 'rgba(100,116,139,0.5)' }
-            }
-          >
-            {isToday ? (
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider mb-0.5" style={{ color: config.primaryHex }}>Show hoje às</p>
-                  <p className="text-3xl font-black text-white">{formattedTime}</p>
-                </div>
-                {countdown.hours >= 0 && (
-                  <div className="text-right">
-                    <p className="text-xs text-slate-500 mb-0.5">faltam</p>
-                    <p className="text-lg font-bold text-slate-300">
-                      {countdown.hours > 0 ? `${countdown.hours}h ` : ''}{String(countdown.minutes).padStart(2, '0')}min
-                    </p>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="text-center">
-                <p className="text-xs text-slate-400 mb-2">ACONTECE EM</p>
-                <div className="flex justify-center gap-4">
-                  {countdown.days > 0 && (
-                    <div className="text-center">
-                      <div className="text-2xl font-black" style={{ color: config.primaryHex }}>{countdown.days}</div>
-                      <div className="text-xs text-slate-500">dia{countdown.days !== 1 ? 's' : ''}</div>
-                    </div>
-                  )}
-                  {(countdown.days > 0 || countdown.hours > 0) && (
-                    <>
-                      <div className="text-slate-600">:</div>
-                      <div className="text-center">
-                        <div className="text-2xl font-black" style={{ color: config.primaryHex }}>
-                          {String(countdown.hours).padStart(2, '0')}
-                        </div>
-                        <div className="text-xs text-slate-500">horas</div>
-                      </div>
-                    </>
-                  )}
-                  {countdown.minutes >= 0 && (
-                    <>
-                      <div className="text-slate-600">:</div>
-                      <div className="text-center">
-                        <div className="text-2xl font-black" style={{ color: config.primaryHex }}>
-                          {String(countdown.minutes).padStart(2, '0')}
-                        </div>
-                        <div className="text-xs text-slate-500">min</div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-          </motion.div>
-        )}
-
-        {/* Data */}
-        <p className="text-sm text-slate-400 mb-6">{formattedDate.toUpperCase()}</p>
-
-        {/* Descrição */}
-        {event.description && (
-          <div className="bg-slate-900/50 rounded-lg p-4 mb-6 border border-slate-700/30 min-w-0">
-            <ClampedText lines={4} className="text-sm text-slate-300">{event.description}</ClampedText>
-          </div>
-        )}
-
-        {/* Buttons */}
-        <div className="flex gap-3 flex-wrap">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => onViewEvent ? onViewEvent(event) : hardNavigate('/calendar')}
-            className="flex-1 min-w-[120px] px-4 py-3 rounded-lg text-white font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
-            style={{ ...gradientBg, boxShadow: `0 4px 16px ${config.primaryHex}40` }}
-          >
-            <span>Ver Detalhes</span>
-            <ChevronRight className="w-4 h-4" />
-          </motion.button>
-
-          {(event.status === 'pending' || event.status === 'scheduled') && (
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              disabled={toggling === event.id}
-              onClick={() => confirmEvent(event, onRefresh)}
-              className="px-4 py-3 rounded-lg border border-blue-500/40 bg-blue-900/20 text-blue-300 font-semibold hover:bg-blue-900/40 transition-all flex items-center gap-2 disabled:opacity-60"
-            >
-              {toggling === event.id
-                ? <Loader2 className="w-4 h-4 animate-spin" />
-                : <CheckCircle2 className="w-4 h-4" />
-              }
-              Confirmar
-            </motion.button>
+          <h2 className="font-poster text-[34px] leading-[0.95] uppercase mt-2 break-words">{bigTitle}</h2>
+          {showEventSubtitle && event.client_id && companyName !== 'Sem empresa' && (
+            <p className="text-sm font-bold mt-1 truncate">{companyName}</p>
           )}
+          <div className="grid grid-cols-3 gap-3 mt-4 pt-3 border-t-2 border-dashed border-[#0a0a0a]/25">
+            <InfoCell label="HORÁRIO">{formattedTime}</InfoCell>
+            <InfoCell label="LOCAL">{event.location_city || event.location || 'Sem local'}</InfoCell>
+            <InfoCell label="CACHÊ">{isVisible ? formatCurrency(getEventCacheAmount(event)) : '•••••'}</InfoCell>
+          </div>
+        </div>
+        <div className="h-3" style={{ background: 'repeating-linear-gradient(90deg, #0a0a0a 0 14px, transparent 14px 20px)' }} />
+      </motion.button>
 
-          {eventHasLocation(event) && (
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => {
-                const url = event.location_lat != null && event.location_lng != null
-                  ? mapsUrlForCoords(event.location_lat, event.location_lng)
-                  : `https://maps.google.com/?q=${encodeURIComponent(event.location)}`;
-                window.open(url, '_blank');
-              }}
-              className="px-4 py-3 rounded-lg border border-slate-700 text-slate-300 font-semibold bp-hover-primary hover:bg-[color-mix(in_srgb,var(--bp-primary)_10%,transparent)] transition-all flex items-center gap-2"
+      {isOnStage && (
+        <div className="space-y-3">
+          <ModoPalcoActions event={event} accentColor={Y} onRefresh={onRefresh} />
+          {!eventHasLocation(event) && (
+            <button
+              type="button"
+              disabled={locationSaving}
+              onClick={handleGpsCheckIn}
+              className="w-full flex items-center justify-center gap-2 px-4 min-h-[48px] rounded-full font-extrabold text-sm disabled:opacity-60"
+              style={{ border: `1px solid ${Y}`, color: Y }}
             >
-              <Navigation className="w-4 h-4 text-amber-400" />
-              Rota
-            </motion.button>
+              {locationSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <MapPin className="w-4 h-4" />}
+              Marcar o local pelo GPS
+            </button>
           )}
         </div>
+      )}
+
+      {/* Contagem regressiva */}
+      {countdown && !live && (
+        <div className="rounded-2xl bg-[#161616] px-4 py-3 flex items-center justify-between gap-3">
+          <p className="font-tag text-[11px] tracking-[0.14em] text-[#a8a8a8]">{isToday ? 'SHOW HOJE ÀS' : 'ACONTECE EM'}</p>
+          {isToday ? (
+            <div className="flex items-baseline gap-3">
+              <span className="font-poster text-4xl leading-none text-white">{formattedTime}</span>
+              {countdown.hours >= 0 && (
+                <span className="font-tag text-xs text-[#a8a8a8]">
+                  faltam {countdown.hours > 0 ? `${countdown.hours}h ` : ''}{String(countdown.minutes).padStart(2, '0')}min
+                </span>
+              )}
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              {countdown.days > 0 && <CountdownBox value={countdown.days} label={countdown.days !== 1 ? 'dias' : 'dia'} />}
+              {(countdown.days > 0 || countdown.hours > 0) && <CountdownBox value={String(countdown.hours).padStart(2, '0')} label="horas" />}
+              {countdown.minutes >= 0 && <CountdownBox value={String(countdown.minutes).padStart(2, '0')} label="min" />}
+            </div>
+          )}
+        </div>
+      )}
+
+      {event.description && (
+        <div className="rounded-2xl px-4 py-3 border border-dashed border-[#333333] min-w-0">
+          <ClampedText lines={3} className="text-sm text-[#c8c8c8]">{event.description}</ClampedText>
+        </div>
+      )}
+
+      {/* Ações */}
+      <div className="flex gap-2 flex-wrap">
+        <button
+          type="button"
+          onClick={() => (onViewEvent ? onViewEvent(event) : hardNavigate('/calendar'))}
+          className="flex-1 min-w-[120px] min-h-[48px] px-4 rounded-full font-extrabold text-sm flex items-center justify-center gap-1 active:scale-95 transition-transform"
+          style={{ background: Y, color: '#0a0a0a' }}
+        >
+          Ver detalhes
+          <ChevronRight className="w-4 h-4" />
+        </button>
+
+        {(event.status === 'pending' || event.status === 'scheduled') && (
+          <button
+            type="button"
+            disabled={toggling === event.id}
+            onClick={() => confirmEvent(event, onRefresh)}
+            className="min-h-[48px] px-4 rounded-full border border-[#333333] text-white font-extrabold text-sm flex items-center gap-2 disabled:opacity-60"
+          >
+            {toggling === event.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+            Confirmar
+          </button>
+        )}
+
+        {eventHasLocation(event) && (
+          <button
+            type="button"
+            onClick={() => {
+              const url = event.location_lat != null && event.location_lng != null
+                ? mapsUrlForCoords(event.location_lat, event.location_lng)
+                : `https://maps.google.com/?q=${encodeURIComponent(event.location)}`;
+              window.open(url, '_blank');
+            }}
+            className="min-h-[48px] px-4 rounded-full border border-[#333333] text-white font-extrabold text-sm flex items-center gap-2"
+          >
+            <Navigation className="w-4 h-4" style={{ color: Y }} />
+            Rota
+          </button>
+        )}
+
+        {event.client_id && (
+          <button
+            type="button"
+            onClick={() => hardNavigate(`/client-detail?id=${event.client_id}`)}
+            className="min-h-[48px] px-4 rounded-full border border-[#333333] text-[#c8c8c8] font-extrabold text-sm"
+          >
+            Cliente
+          </button>
+        )}
       </div>
-    </motion.div>
+    </div>
   );
 }

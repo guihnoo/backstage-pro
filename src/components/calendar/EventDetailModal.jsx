@@ -4,7 +4,6 @@ import { getEventCacheAmount, calculateEventReceivableAmount, isEstimatedWork, i
 import { buildEventClosing } from '@/lib/eventClosing';
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -63,7 +62,7 @@ import { createClosingShareLink } from '@/lib/closingShareLink';
 import { startTimer, getTimer, stopTimer } from '@/lib/timerStore';
 import appToast from '@/lib/appToast';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
-import EventHeading from '@/components/events/EventHeading';
+import { getEventDisplay } from '@/lib/eventDisplay';
 import EventLocationSection from '@/components/events/EventLocationSection';
 import { EventChecklist } from '@/components/calendar/EventChecklist';
 import ClientRatingSection from '@/components/events/ClientRatingSection';
@@ -1058,7 +1057,7 @@ export default function EventDetailModal({
               onClick={() => setActiveTab('fiscal')}
               className="flex-shrink-0 flex items-center gap-1 text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors"
             >
-              Abrir Fiscal <ArrowRight className="w-3 h-3" />
+              Abrir Dinheiro <ArrowRight className="w-3 h-3" />
             </button>
           </div>
         </CardContent>
@@ -1066,34 +1065,51 @@ export default function EventDetailModal({
     )
   ) : null;
 
+  // Cabeçalho "credencial": data curta + título grande (empresa/evento)
+  const headerDisplay = (() => {
+    const { companyName, eventName, showEventSubtitle } = getEventDisplay(event, client);
+    return showEventSubtitle
+      ? { bigTitle: eventName, subtitle: event?.client_id && companyName !== 'Sem empresa' ? companyName : null }
+      : { bigTitle: companyName, subtitle: null };
+  })();
+  const headerDateLabel = (() => {
+    const start = event?.start_date ? new Date(`${String(event.start_date).slice(0, 10)}T12:00:00`) : null;
+    const end = event?.end_date ? new Date(`${String(event.end_date).slice(0, 10)}T12:00:00`) : null;
+    if (!start || Number.isNaN(start.getTime())) return 'DATA A DEFINIR';
+    const fmt = (d) => format(d, 'EEE d MMM', { locale: ptBR }).replace(/\./g, '').toUpperCase();
+    if (end && !Number.isNaN(end.getTime()) && end.getTime() !== start.getTime()) return `${fmt(start)} → ${fmt(end)}`;
+    return fmt(start);
+  })();
+
   return (
     <>
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-3xl h-[95dvh] bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200 flex flex-col p-0 overflow-hidden bp-focus-scope">
+      <DialogContent className="sm:max-w-3xl h-[95dvh] bg-[#0a0a0a] border-[#222222] text-slate-200 flex flex-col p-0 overflow-hidden bp-focus-scope [&>button:last-child]:text-[#0a0a0a] [&>button:last-child]:opacity-100">
 
-        {/* Header */}
-        <DialogHeader className="px-6 pt-5 pb-4 border-b border-slate-800 flex-shrink-0">
+        {/* Header: credencial amarela do evento (visual All Access) */}
+        <DialogHeader className="flex-shrink-0 space-y-0 text-left">
           {/* Titulo para leitor de tela (exigido pelo Radix) */}
           <DialogTitle className="sr-only">{event?.title || client?.name || 'Detalhes do evento'}</DialogTitle>
           <DialogDescription className="sr-only">Detalhes, horas e pagamento do evento</DialogDescription>
-          <div className="flex items-start gap-4">
-            <div className="flex-1 min-w-0">
-              <div className="mb-2">
-                <EventHeading event={event} client={client} size="lg" />
-              </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge className={statusConfig.badgeClass}>
-                  {StatusIcon && <StatusIcon className="w-4 h-4 mr-1" />}
-                  {statusConfig.label}
-                </Badge>
-                {event.payment_status === 'paid' && (
-                  <Badge className="bg-green-100 text-green-800">
-                    <CheckCircle2 className="w-4 h-4 mr-1" />Pago
-                  </Badge>
-                )}
-              </div>
+          <div className="px-5 pt-4 pb-4" style={{ background: '#ffd400', color: '#0a0a0a' }}>
+            <p className="font-tag text-[11px] font-bold tracking-[0.14em] pr-10">{headerDateLabel}</p>
+            <p className="font-poster text-[30px] leading-[0.95] uppercase mt-1.5 pr-8 break-words">{headerDisplay.bigTitle}</p>
+            {headerDisplay.subtitle && (
+              <p className="text-sm font-bold mt-1 truncate">{headerDisplay.subtitle}</p>
+            )}
+            <div className="flex items-center gap-1.5 flex-wrap mt-2.5">
+              <span className="inline-flex items-center gap-1 h-6 px-2.5 rounded-full bg-[#0a0a0a] text-[#ffd400] font-tag text-[10px] font-bold uppercase">
+                {StatusIcon && <StatusIcon className="w-3.5 h-3.5" />}
+                {statusConfig.label}
+              </span>
+              {event.payment_status === 'paid' && (
+                <span className="inline-flex items-center gap-1 h-6 px-2.5 rounded-full bg-[#0a0a0a] text-white font-tag text-[10px] font-bold uppercase">
+                  <CheckCircle2 className="w-3.5 h-3.5" />Pago
+                </span>
+              )}
             </div>
           </div>
+          <div className="h-2" style={{ background: 'repeating-linear-gradient(90deg, #ffd400 0 14px, #0a0a0a 14px 20px)' }} />
         </DialogHeader>
 
         {/* Lifecycle bar */}
@@ -1101,25 +1117,25 @@ export default function EventDetailModal({
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0">
-          <div className="px-6 pt-3 flex-shrink-0">
-            <TabsList className="w-full bg-slate-800/60 border border-slate-700/40 h-9 p-0.5">
+          <div className="px-5 pt-3 flex-shrink-0">
+            <TabsList className="w-full bg-transparent h-10 p-0 gap-1.5">
               <TabsTrigger
                 value="resumo"
-                className="flex-1 text-xs h-8 data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:shadow-sm text-slate-400 rounded-md"
+                className="flex-1 text-[13px] font-extrabold h-10 rounded-full border border-[#333333] text-white data-[state=active]:bg-[#ffd400] data-[state=active]:border-[#ffd400] data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-none"
               >
                 Resumo
               </TabsTrigger>
               <TabsTrigger
                 value="trabalho"
-                className="flex-1 text-xs h-8 data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:shadow-sm text-slate-400 rounded-md"
+                className="flex-1 text-[13px] font-extrabold h-10 rounded-full border border-[#333333] text-white data-[state=active]:bg-[#ffd400] data-[state=active]:border-[#ffd400] data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-none"
               >
-                Trabalho{eventWork.length > 0 ? ` (${eventWork.length})` : ''}
+                Horas{eventWork.length > 0 ? ` (${eventWork.length})` : ''}
               </TabsTrigger>
               <TabsTrigger
                 value="fiscal"
-                className="flex-1 text-xs h-8 data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:shadow-sm text-slate-400 rounded-md"
+                className="flex-1 text-[13px] font-extrabold h-10 rounded-full border border-[#333333] text-white data-[state=active]:bg-[#ffd400] data-[state=active]:border-[#ffd400] data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-none"
               >
-                Fiscal{(event.nfe_arquivo_url || event.nfe_numero) ? ' ●' : ''}
+                Dinheiro{(event.nfe_arquivo_url || event.nfe_numero) ? ' ●' : ''}
               </TabsTrigger>
             </TabsList>
           </div>
@@ -1132,7 +1148,7 @@ export default function EventDetailModal({
               {crmCard}
 
               {/* Informações básicas */}
-              <Card className="bg-slate-800/50 border-slate-700">
+              <Card className="bg-[#161616] border-[#222222]">
                 <CardHeader className="pb-2 pt-4 px-4">
                   <CardTitle className="text-sm flex items-center gap-2 text-slate-300">
                     <Calendar className="w-4 h-4 bp-text-primary" />
@@ -1167,7 +1183,7 @@ export default function EventDetailModal({
               </Card>
 
               {/* Local */}
-              <Card className="bg-slate-800/50 border-slate-700">
+              <Card className="bg-[#161616] border-[#222222]">
                 <CardHeader className="pb-2 pt-4 px-4">
                   <CardTitle className="text-sm flex items-center gap-2 text-slate-300">
                     <MapPin className="w-4 h-4 bp-text-primary" />
@@ -1215,7 +1231,7 @@ export default function EventDetailModal({
             <TabsContent value="trabalho" className="mt-0 pt-4 space-y-4 pb-6 data-[state=inactive]:hidden">
 
               {/* Financeiro */}
-              <Card className="bg-slate-800/50 border-slate-700">
+              <Card className="bg-[#161616] border-[#222222]">
                 <CardHeader className="pb-2 pt-4 px-4">
                   <CardTitle className="text-sm flex items-center gap-2 text-slate-300">
                     <DollarSign className="w-4 h-4 text-green-400" />
@@ -1345,7 +1361,7 @@ export default function EventDetailModal({
 
               {/* Timeline de dias (multi-day) */}
               {eventDays.length > 0 && (
-                <Card className="bg-slate-800/50 border-slate-700">
+                <Card className="bg-[#161616] border-[#222222]">
                   <CardHeader className="pb-2 pt-4 px-4">
                     <CardTitle className="text-sm flex items-center gap-2 text-slate-300">
                       <CalendarDays className="w-4 h-4 bp-text-primary" />
