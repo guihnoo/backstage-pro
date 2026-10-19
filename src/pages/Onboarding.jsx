@@ -428,7 +428,7 @@ export default function Onboarding() {
 
                   <div>
                     <h3 className="text-2xl font-black text-white mb-2">Tudo pronto, {name}! 🎉</h3>
-                    <p className="text-slate-400">Seu perfil foi criado com sucesso</p>
+                    <p className="text-slate-400">Confira seus dados e toque em Entrar para salvar</p>
                   </div>
 
                   <div className="bg-slate-800/50 rounded-lg p-6 text-left space-y-3 border border-slate-700">
