@@ -10,6 +10,7 @@ import { useEvents } from '@/lib/useEvents';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { getClientDisplayName } from '@/lib/eventDisplay';
 import { toast } from 'sonner';
+import { todayLocalISO } from '@/components/utils/dateUtils';
 
 const BUCKET = 'backstage';
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
@@ -236,7 +237,7 @@ export default function NFeAttachment({ event, client }) {
         nfe_arquivo_nome: file.name,
         nfe_numero: resolvedNum,
         nf_number: resolvedNum,
-        nf_issued_at: issuedAt || event?.nf_issued_at || new Date().toISOString().slice(0, 10),
+        nf_issued_at: issuedAt || event?.nf_issued_at || todayLocalISO(),
         nfe_analise: null, // limpa análise anterior
       });
 
@@ -256,7 +257,7 @@ export default function NFeAttachment({ event, client }) {
     setSavingNumero(true);
     try {
       const cleanNum = numero.trim();
-      const cleanDate = issuedAt || event?.nf_issued_at || new Date().toISOString().slice(0, 10);
+      const cleanDate = issuedAt || event?.nf_issued_at || todayLocalISO();
       await safeUpdateNFe({
         nfe_numero: cleanNum,
         nf_number: cleanNum,

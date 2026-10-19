@@ -1,5 +1,6 @@
 import { buildEventClosing } from '@/lib/eventClosing';
 import { getCategoryLabel } from '@/lib/categoryConfig';
+import { todayLocalISO } from '@/components/utils/dateUtils';
 
 /**
  * Monta um payload compacto e autocontido do Fechamento de Evento
@@ -35,7 +36,7 @@ export function buildClosingShareData({
 
   return {
     v: 1,
-    emittedAt: new Date().toISOString().slice(0, 10),
+    emittedAt: todayLocalISO(),
     provider: {
       name: providerName,
       role: categoryLabel,

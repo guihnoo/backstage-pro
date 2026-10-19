@@ -917,7 +917,7 @@ export default function Goals() {
                       let cur = new Date(ev.start_date + 'T00:00:00');
                       const end = new Date(ev.end_date + 'T00:00:00');
                       while (cur <= end) {
-                        const ds = cur.toISOString().split('T')[0];
+                        const ds = format(cur, 'yyyy-MM-dd');
                         if (ds.startsWith(monthStr)) eventDates.add(ds);
                         cur.setDate(cur.getDate() + 1);
                       }

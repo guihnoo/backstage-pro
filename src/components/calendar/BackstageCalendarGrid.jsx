@@ -276,7 +276,7 @@ export default function BackstageCalendarGrid({
       let cur = new Date(block.start.getTime());
       const endTime = block.end.getTime();
       while (cur.getTime() < endTime) {
-        const key = cur.toISOString().split('T')[0];
+        const key = normalizeDateString(cur);
         if (!map[key]) map[key] = [];
         map[key].push({ color: block.color, status: block.events[0]?.payment_status });
         cur = new Date(cur.getTime() + 86400000);
