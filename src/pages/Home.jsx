@@ -13,7 +13,6 @@ import MetaMensalBar from '@/components/home/MetaMensalBar';
 import AReceber from '@/components/home/AReceber';
 import PipelineFinanceiro from '@/components/home/PipelineFinanceiro';
 import ProximosEventos from '@/components/home/ProximosEventos';
-import FloatingActions from '@/components/home/FloatingActions';
 import LiveClockBar from '@/components/home/LiveClockBar';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { LightingBeams } from '@/components/design/LightingBeams';
@@ -423,8 +422,6 @@ export default function Home() {
           </NeonSectionFrame>
         )}
       </div>
-
-      <FloatingActions />
 
       {detailEvent && (
         <Suspense fallback={null}>

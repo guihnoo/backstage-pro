@@ -2,7 +2,7 @@
 export const TOUR_SELECTORS = {
   homeHeader: '[data-tour="home-header"]',
   homeMeta: '[data-tour="home-meta"]',
-  fab: '[data-tour="fab-actions"]',
+  fab: '[data-tour="nav-new-event"]',
   bottomNav: '[data-tour="bottom-nav"]',
   navCalendar: '[data-tour="nav-calendar"]',
   navReports: '[data-tour="nav-reports"]',
@@ -46,11 +46,11 @@ export function buildAppTourSteps({ pathname = '/' } = {}) {
     {
       element: TOUR_SELECTORS.fab,
       popover: {
-        title: 'Ações rápidas',
+        title: 'Novo trabalho',
         description:
-          'Toque no + para criar evento, cliente ou despesa sem sair da tela atual — ideal entre um show e outro.',
-        side: 'left',
-        align: 'end',
+          'O + amarelo no meio da barra cadastra um trabalho novo de qualquer tela — ideal entre um show e outro.',
+        side: 'top',
+        align: 'center',
       },
     },
     {
@@ -58,7 +58,7 @@ export function buildAppTourSteps({ pathname = '/' } = {}) {
       popover: {
         title: 'Menu inferior',
         description:
-          'Home, Agenda e Relatório ficam sempre visíveis. Toque em "Mais" para acessar Clientes, Metas, Despesas e IA Mentor.',
+          'Início, Agenda e Dinheiro ficam sempre à mão. Em "Mais" estão Mapa, Clientes, Despesas, Metas, Mentor e Perfil.',
         side: 'top',
         align: 'center',
       },
@@ -90,9 +90,9 @@ export function buildAppTourSteps({ pathname = '/' } = {}) {
     steps.push({
       element: TOUR_SELECTORS.navReports,
       popover: {
-        title: 'Relatórios',
+        title: 'Dinheiro',
         description:
-          'KPIs financeiros, gráficos e o mapa do Brasil com os locais dos seus shows. Preencha cidade/estado no evento para marcar o mapa.',
+          'Quanto entrou, quanto falta receber, gráficos e o mapa do Brasil com os locais dos seus shows. Preencha cidade/estado no evento para marcar o mapa.',
         side: 'top',
         align: 'center',
       },

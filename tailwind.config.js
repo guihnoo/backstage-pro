@@ -9,7 +9,20 @@ module.exports = {
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
   		},
+  		fontFamily: {
+  			// Visual "All Access": títulos de cartaz, texto e etiquetas de credencial
+  			poster: ['Anton', 'Impact', 'sans-serif'],
+  			tag: ['"Space Mono"', 'ui-monospace', 'monospace'],
+  		},
   		colors: {
+  			aa: {
+  				black: '#0a0a0a',
+  				card: '#161616',
+  				line: '#2a2a2a',
+  				yellow: '#ffd400',
+  				pink: '#ff2e88',
+  				muted: '#a8a8a8',
+  			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {

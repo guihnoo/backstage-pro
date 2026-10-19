@@ -1,4 +1,5 @@
-﻿import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
+﻿import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { hardNavigate } from '@/lib/hardNavigate';
 import {
@@ -363,6 +364,25 @@ export default function ReportsPage() {
   const [selectedPeriod, setSelectedPeriod] = useState('this_month');
   const [selectedView, setSelectedView] = useState('overview');
   const [showProjection, setShowProjection] = useState(false);
+
+  // "Mais > Mapa" abre esta página com #mapa: mostra a visão geral e rola até o mapa.
+  const routerLocation = useLocation();
+  useEffect(() => {
+    if (routerLocation.hash !== '#mapa') return undefined;
+    setSelectedView('overview');
+    let tries = 0;
+    const timer = setInterval(() => {
+      tries += 1;
+      const el = document.getElementById('mapa-visitado');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        clearInterval(timer);
+      } else if (tries > 30) {
+        clearInterval(timer);
+      }
+    }, 150);
+    return () => clearInterval(timer);
+  }, [routerLocation.hash, routerLocation.key]);
   const [selectedClientFilter, setSelectedClientFilter] = useState(null);
 
   // Modal states
@@ -1046,9 +1066,11 @@ export default function ReportsPage() {
               </Suspense>
             </ExpandableSection>
 
-            <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
-              <BrazilVisitedMap events={data.events} clients={data.clients} />
-            </Suspense>
+            <div id="mapa-visitado" className="scroll-mt-20">
+              <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
+                <BrazilVisitedMap events={data.events} clients={data.clients} />
+              </Suspense>
+            </div>
           </div>
         )}
 
