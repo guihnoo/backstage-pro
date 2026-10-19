@@ -13,7 +13,7 @@ import StageBackdrop from '@/components/auth/StageBackdrop';
 import SpotlightRays from '@/components/auth/SpotlightRays';
 import FloatingEquipment from '@/components/auth/FloatingEquipment';
 import { getCategoryConfig } from '@/lib/categoryConfig';
-import { LOOP } from '@/lib/liteMotion';
+import { LOOP, loopAnim } from '@/lib/liteMotion';
 
 /** Converte texto do formulário em número ("1.200,50", "1200.5"); inválido → fallback. */
 function toNumber(value, fallback) {
@@ -144,7 +144,7 @@ export default function Onboarding() {
 
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
-          animate={{ opacity: [0.1, 0.3, 0.1] }}
+          animate={loopAnim({ opacity: [0.1, 0.3, 0.1] })}
           transition={{ duration: 4, repeat: LOOP }}
           className="absolute top-0 left-1/4 w-96 h-96 bg-amber-500 rounded-full blur-3xl opacity-20"
         />
@@ -461,7 +461,7 @@ export default function Onboarding() {
                   </div>
 
                   <motion.div
-                    animate={{ y: [0, -10, 0] }}
+                    animate={loopAnim({ y: [0, -10, 0] })}
                     transition={{ duration: 2, repeat: LOOP }}
                   >
                     <Sparkles className="w-8 h-8 text-amber-400 mx-auto opacity-50" />

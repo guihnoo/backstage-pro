@@ -18,7 +18,7 @@ import { useStatusToggle } from '@/lib/useStatusToggle';
 import { useEvents } from '@/lib/useEvents';
 import { captureEventLocationFromGps, mapsUrlForCoords } from '@/lib/eventLocation';
 import { todayLocalISO } from '@/components/utils/dateUtils';
-import { LOOP } from '@/lib/liteMotion';
+import { LOOP, loopAnim } from '@/lib/liteMotion';
 
 function getEventDateStr(event) {
   return event?.start_date || event?.event_date || null;
@@ -179,14 +179,14 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
     >
       {live && (
         <motion.div
-          animate={{ opacity: [0.5, 1, 0.5] }}
+          animate={loopAnim({ opacity: [0.5, 1, 0.5] })}
           transition={{ duration: 2, repeat: LOOP }}
           className="h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent"
         />
       )}
       {isToday && (
         <motion.div
-          animate={{ opacity: [0.4, 0.9, 0.4] }}
+          animate={loopAnim({ opacity: [0.4, 0.9, 0.4] })}
           transition={{ duration: 2.5, repeat: LOOP }}
           className="h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent"
         />
@@ -200,7 +200,7 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
               <span className="text-2xl sm:text-3xl flex-shrink-0">{config.emoji}</span>
               {live && (
                 <motion.span
-                  animate={{ scale: [1, 1.1, 1] }}
+                  animate={loopAnim({ scale: [1, 1.1, 1] })}
                   transition={{ duration: 1, repeat: LOOP }}
                   className="px-3 py-1 rounded-full bg-red-600 text-white text-xs font-bold flex items-center gap-1"
                 >
@@ -210,7 +210,7 @@ export default function ProximoShow({ event, userCategory, isOnStage, isLiveShif
               )}
               {isToday && (
                 <motion.span
-                  animate={{ opacity: [0.75, 1, 0.75] }}
+                  animate={loopAnim({ opacity: [0.75, 1, 0.75] })}
                   transition={{ duration: 1.8, repeat: LOOP }}
                   className="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold"
                 >

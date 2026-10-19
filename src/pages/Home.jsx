@@ -29,7 +29,7 @@ import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
 import { useExpenses } from '@/lib/useExpenses';
 import { useDailyWork } from '@/lib/useDailyWork';
-import { LOOP } from '@/lib/liteMotion';
+import { LOOP, loopAnim } from '@/lib/liteMotion';
 import { findRecentMissingHours } from '@/lib/homeSummary';
 import HomeMonthSummary from '@/components/home/HomeMonthSummary';
 
@@ -261,7 +261,7 @@ export default function Home() {
         <motion.div
           className="absolute top-0 left-0 right-0 h-0.5 z-10"
           style={{ background: `linear-gradient(90deg, transparent, ${config.primaryHex}, transparent)` }}
-          animate={{ opacity: palcoAtivo ? [0.6, 1, 0.6] : 0.4 }}
+          animate={loopAnim({ opacity: palcoAtivo ? [0.6, 1, 0.6] : 0.4 })}
           transition={{ duration: 2, repeat: LOOP }}
         />
         <div className="relative z-10 px-4 pt-2 pb-5 max-w-2xl mx-auto">
@@ -301,7 +301,7 @@ export default function Home() {
                 className="flex flex-col gap-3 mt-3"
               >
                 <motion.span
-                  animate={{ scale: [1, 1.05, 1] }}
+                  animate={loopAnim({ scale: [1, 1.05, 1] })}
                   transition={{ duration: 1, repeat: LOOP }}
                   className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold w-fit"
                   style={{ background: `${config.primaryHex}33`, border: `1px solid ${config.primaryHex}66` }}

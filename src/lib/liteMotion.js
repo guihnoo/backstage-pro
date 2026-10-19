@@ -17,3 +17,9 @@ export const LITE_MOTION = detectLite();
 
 /** Use no lugar de `repeat: Infinity` em animações só decorativas. */
 export const LOOP = LITE_MOTION ? 0 : Infinity;
+
+/**
+ * Animacao decorativa em loop: no celular/aparelho modesto NAO anima nada (nem uma vez).
+ * Medido em 19/10: rodar "uma vez" justo na abertura custava processador no pior momento.
+ */
+export const loopAnim = (anim) => (LITE_MOTION ? undefined : anim);
