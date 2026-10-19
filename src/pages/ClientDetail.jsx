@@ -591,10 +591,11 @@ export default function ClientDetailPage() {
 
       <AnimatePresence>
         {showClientForm && (
-          <ClientForm client={client} onSuccess={handleSuccess} onCancel={() => setShowClientForm(false)} />
+          <ClientForm key="m-client-form" client={client} onSuccess={handleSuccess} onCancel={() => setShowClientForm(false)} />
         )}
         {showEventForm && (
           <EventForm
+            key="m-event-form"
             isOpen={showEventForm}
             clients={clients}
             event={editingEvent}
@@ -611,6 +612,7 @@ export default function ClientDetailPage() {
         )}
         {showEventDetail && selectedEvent && (
           <EventDetailModal
+            key="m-event-detail"
             event={selectedEvent}
             client={client}
             onClose={() => setShowEventDetail(false)}

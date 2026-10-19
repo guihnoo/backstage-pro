@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import PaymentConfirmModal from '@/components/reports/PaymentConfirmModal';
 import { getEventCacheAmount, calculateEventReceivableAmount, isEstimatedWork, isCancelledEvent } from '@/lib/eventFinance';
 import { buildEventClosing } from '@/lib/eventClosing';
-import { Dialog, DialogContent, DialogHeader, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -1073,6 +1073,9 @@ export default function EventDetailModal({
 
         {/* Header */}
         <DialogHeader className="px-6 pt-5 pb-4 border-b border-slate-800 flex-shrink-0">
+          {/* Titulo para leitor de tela (exigido pelo Radix) */}
+          <DialogTitle className="sr-only">{event?.title || client?.name || 'Detalhes do evento'}</DialogTitle>
+          <DialogDescription className="sr-only">Detalhes, horas e pagamento do evento</DialogDescription>
           <div className="flex items-start gap-4">
             <div className="flex-1 min-w-0">
               <div className="mb-2">

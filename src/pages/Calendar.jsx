@@ -1886,6 +1886,7 @@ export default function CalendarPage() {
       <AnimatePresence>
         {showEventForm && (
           <EventForm
+            key="m-event-form"
             isOpen={showEventForm}
             onClose={() => {
               setShowEventForm(false);
@@ -1902,6 +1903,7 @@ export default function CalendarPage() {
 
         {showDailyWorkModal && (
           <DailyWorkModal
+            key="m-daily-work"
             isOpen={showDailyWorkModal}
             onClose={closeModals}
             date={selectedDate}
@@ -1913,6 +1915,7 @@ export default function CalendarPage() {
 
         {selectedEvent && (
           <EventDetailModal
+            key="m-event-detail"
             event={selectedEvent}
             client={clientMap.get(selectedEvent.client_id)}
             onClose={closeModals}
@@ -1926,6 +1929,7 @@ export default function CalendarPage() {
 
         {showExpenseForm && (
           <ExpenseForm
+            key="m-expense"
             open={showExpenseForm}
             onOpenChange={setShowExpenseForm}
             expense={editingExpense}
@@ -1937,6 +1941,7 @@ export default function CalendarPage() {
 
         {multipleEventsModal && (
           <motion.div
+            key="m-multiple-events"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -1995,6 +2000,7 @@ export default function CalendarPage() {
 
         {drilldownOpen && (
           <DrilldownModal
+            key="m-drilldown"
             open={drilldownOpen}
             onOpenChange={setDrilldownOpen}
             title={drilldownTitle}
@@ -2005,6 +2011,7 @@ export default function CalendarPage() {
 
         {/* Action Sheets Mobile */}
         <EventActionSheet
+          key="m-action-sheet"
           event={selectedActionSheetEvent}
           client={selectedActionSheetEvent ? clientMap.get(selectedActionSheetEvent.client_id) : null}
           isOpen={!!selectedActionSheetEvent}
@@ -2043,6 +2050,7 @@ export default function CalendarPage() {
 
         {showMobileHoursSheet && mobileHoursEventData && (
           <EventHoursSheet
+            key="m-hours-sheet"
             event={mobileHoursEventData.event}
             client={mobileHoursEventData.event ? clientMap.get(mobileHoursEventData.event.client_id) : null}
             isOpen={showMobileHoursSheet}
@@ -2058,6 +2066,7 @@ export default function CalendarPage() {
 
         {activeNotesEvent && (
           <NotesSheet
+            key="m-notes-sheet"
             event={activeNotesEvent}
             client={activeNotesEvent ? clientMap.get(activeNotesEvent.client_id) : null}
             isOpen={!!activeNotesEvent}
