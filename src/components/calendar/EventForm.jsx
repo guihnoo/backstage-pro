@@ -25,6 +25,7 @@ import ClientCombobox from '@/components/clients/ClientCombobox';
 import EventLocationSection from '@/components/events/EventLocationSection';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { parseBRL } from '@/lib/money';
+import { MEAL_POLICY_LABELS } from '@/lib/mealPolicy';
 
 // Dinheiro digitado (1.200,50 / 1200.5); invalido vira 0, nunca NaN.
 const moneyNum = (v) => { const n = parseBRL(v); return Number.isFinite(n) ? n : 0; };
@@ -46,6 +47,7 @@ const defaultState = {
   payment_model: 'HORAS_EXTRAS',
   daily_cache_value: '',
   cache_valor_base: '',
+  meal_policy: null,
   color: DEFAULT_EVENT_COLOR,
   location: '',
   location_city: '',
@@ -102,6 +104,7 @@ export default function EventForm({
       payment_model: seed.payment_model || 'HORAS_EXTRAS',
       daily_cache_value: seed.daily_cache_value ?? defaultDailyRate,
       cache_valor_base: seed.cache_valor_base ?? '',
+      meal_policy: seed.meal_policy || null,
       color: seed.color || resolveEventColor({ client_id: seed.client_id, color: seed.color }, clients.find((c) => c.id === seed.client_id)) || theme.primaryHex,
       location: seed.location || '',
       location_city: seed.location_city || '',
@@ -325,6 +328,8 @@ export default function EventForm({
         cache_valor_base: formData.cache_valor_base === '' || !Number.isFinite(Number(formData.cache_valor_base))
           ? null
           : Number(formData.cache_valor_base),
+        // Alimentacao: so manda quando trocou (depende da migration 041).
+        ...((formData.meal_policy || null) !== (event?.meal_policy ?? null) ? { meal_policy: formData.meal_policy || null } : {}),
         color: resolveEventColor({ client_id: formData.client_id, color: formData.color }, selectedClient),
         location: formData.location?.trim() || null,
         location_city: formData.location_city || null,
@@ -567,6 +572,24 @@ export default function EventForm({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Alimentacao so deste evento (padrao vem do cliente) */}
+          <div className="space-y-2">
+            <Label>Alimentação neste evento</Label>
+            <Select value={formData.meal_policy || '__cliente__'} onValueChange={(v) => setField('meal_policy', v === '__cliente__' ? null : v)}>
+              <SelectTrigger className="bg-slate-800 border-slate-700">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-800 border-slate-700">
+                <SelectItem value="__cliente__">
+                  Igual ao cliente{selectedClient?.meal_policy ? ` (${MEAL_POLICY_LABELS[selectedClient.meal_policy] || ''})` : ''}
+                </SelectItem>
+                {Object.entries(MEAL_POLICY_LABELS).map(([key, label]) => (
+                  <SelectItem key={key} value={key}>{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
