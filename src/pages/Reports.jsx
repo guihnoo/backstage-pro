@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from 'react';
+import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { hardNavigate } from '@/lib/hardNavigate';
@@ -824,125 +824,10 @@ export default function ReportsPage() {
           />
         </div>
         <div id="mapa-visitado" className="scroll-mt-20">
-              <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
-                <BrazilVisitedMap events={data.events} clients={data.clients} />
-              </Suspense>
-            </div>
-          </div>
-        )}
-
-        {selectedView === 'expenses' &&
-          <Suspense fallback={<ChartBlockSkeleton className="h-80" />}>
-            <ExpenseAnalysis
-              expenses={processedData.current.expenses}
-              period={selectedPeriod}
-              onSliceClick={(category) => {
-                appToast.info(`Visualizando despesas da categoria: ${category}`);
-              }}
-            />
+          <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
+            <BrazilVisitedMap events={data.events} clients={data.clients} />
           </Suspense>
-        }
-
-        {selectedView === 'work' && (
-          <div className="space-y-6">
-            <Suspense fallback={<ChartBlockSkeleton className="h-80" />}>
-              <WorkAnalytics
-                work={processedData.current.work}
-                events={data.events}
-                clients={data.clients}
-              />
-            </Suspense>
-            {/* Lote 4 — horas e cachê v2: telemetria e revisão do passado (sem correção automática) */}
-            <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
-              <HoursOriginChart dailyWork={data.dailyWork} />
-            </Suspense>
-            <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
-              <HoursReviewList
-                events={data.events}
-                dailyWork={data.dailyWork}
-                clients={data.clients}
-                onOpenEvent={(ev) => setSelectedEvent(ev)}
-              />
-            </Suspense>
-            <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
-              <Suspense fallback={<ChartBlockSkeleton className="h-32" />}>
-                <ActivityHeatmap events={data.events} />
-              </Suspense>
-            </div>
-            <Suspense fallback={<ChartBlockSkeleton className="h-64" />}>
-              <CacheEvolutionChart events={data.events} />
-            </Suspense>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Suspense fallback={<ChartBlockSkeleton />}>
-                <SeasonalityChart events={data.events} />
-              </Suspense>
-              <Suspense fallback={<ChartBlockSkeleton />}>
-                <WeekdayBreakdown events={data.events} />
-              </Suspense>
-            </div>
-          </div>
-        )}
-
-        {selectedView === 'fiscal' && (
-          <div>
-            <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
-              <NfTracker
-                events={data.events}
-                clients={data.clients}
-                onOpenEvent={(ev) => setSelectedEvent(ev)}
-              />
-            </Suspense>
-            <Suspense fallback={<ChartBlockSkeleton className="h-64" />}>
-              <IRSummary
-                events={data.events}
-                expenses={data.expenses}
-                work={data.dailyWork}
-              />
-            </Suspense>
-          </div>
-        )}
-
-        {selectedView === 'overview' && (<>
-        {/* Events List - AGORA FILTRÁVEL e com MODAL */}
-        <div className="space-y-2">
-          {chartFilter && (
-            <div className="flex items-center justify-between bg-slate-800/50 p-2 rounded-lg gap-2 min-w-0">
-              <p className="text-sm bp-text-primary truncate min-w-0 flex-1">
-                Filtro ativo: Mostrando eventos para <strong>{chartFilter.date ? format(parseISO(chartFilter.date), 'dd/MM/yyyy') : '--'}</strong>
-              </p>
-              <Button variant="ghost" size="sm" onClick={clearChartFilter} className="text-slate-400 hover:text-white">
-                <XCircle className="w-4 h-4 mr-2" />
-                Limpar Filtro
-              </Button>
-            </div>
-          )}
-          <ReportEventList
-            events={filteredEventList} // USANDO A LISTA FILTRADA
-            clients={data.clients}
-            dailyWork={data.dailyWork} // Passando todo o dailyWork
-            title={`Eventos do Período (${filteredEventList.length})`}
-            onEventClick={(event) => setSelectedEvent(event)} // NOVO: handler para abrir modal
-          />
         </div>
-        </>)}
-
-        {/* Empty State */}
-        {processedData.current.events.length === 0 && !chartFilter &&
-          <EmptyState
-            icon={FileText}
-            title="Nenhum dado encontrado"
-            description="Não há eventos registrados para o período selecionado." />
-
-        }
-        {processedData.current.events.length > 0 && chartFilter && filteredEventList.length === 0 &&
-          <EmptyState
-            icon={FileText}
-            title="Nenhum evento encontrado para o filtro"
-            description="Não há eventos correspondentes à data selecionada no gráfico." />
-
-        }
-        </>
-        )}
       </motion.div>
 
       {/* Modal de detalhes dos KPIs */}

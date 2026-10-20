@@ -2935,3 +2935,14 @@ Registro cronológico de tarefas executadas por agentes.
 - **Build**: ✅ `npm run build` aprovado com código 0.
 - **Lint**: ✅ `npm run lint` 0 erros.
 - **Testes**: ✅ `npx playwright test e2e/regression/console-clean.spec.js e2e/smoke/bottom-nav-navigation.spec.js` 100% verdes.
+
+### Entrada 2026-10-20 (Correção JSX e Limpeza de Resíduos em Reports)
+- **Problema**: `Reports.jsx` possuía fragmentos de JSX órfãos remanescentes da refatoração anterior (`)}` e `</>` desbalanceados nas seções antigas de visão de abas), além de um cabeçalho com UTF-8 BOM que provocou falha no build do deploy da Vercel.
+- **Resolução**:
+  - Removido bloco órfão de 118 linhas em `src/pages/Reports.jsx` que continha tags desbalanceadas.
+  - Mantido componente `BrazilVisitedMap` e o disparador de `ExportManager`.
+  - Removido UTF-8 BOM (`\uFEFF`) do arquivo `src/pages/Reports.jsx`.
+- **Validação**:
+  - `npm run lint`: 0 erros.
+  - `npm run build`: gerou todos os assets em `dist/` com saída limpa código 0.
+  - E2E smoke tests: 100% aprovados.
