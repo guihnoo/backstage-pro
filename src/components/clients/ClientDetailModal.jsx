@@ -1,6 +1,7 @@
-﻿import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getEventCacheAmount } from '@/lib/eventFinance';
+import { getEventCacheAmount, isReceivableEvent, calculateEventReceivableAmount } from '@/lib/eventFinance';
+import { getEventReceivedAmount, isReceivedEvent } from '@/lib/financeMetrics';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -229,27 +230,22 @@ export default function ClientDetailModal({
       ['scheduled', 'in_progress', 'pending', 'confirmed'].includes(getEventStatus(event))
     );
 
-    const paidEventsList = clientEvents.filter((event) =>
-      event.payment_status === 'paid' && event.paid_amount !== undefined && event.paid_amount !== null && event.paid_amount > 0
-    );
+    const paidEventsList = clientEvents.filter(isReceivedEvent);
 
     const totalRevenue = paidEventsList.reduce((sum, event) => {
-      return sum + (parseFloat(event.paid_amount) || 0);
+      const eventWork = workDataFilteredByClientEvents.filter((work) => work.event_id === event.id);
+      return sum + getEventReceivedAmount(event, eventWork);
     }, 0);
 
     const totalHours = workDataFilteredByClientEvents.reduce((sum, work) => sum + (work.total_hours || 0), 0);
 
-    const unpaidCompletedEventsList = completedEventsList.filter((event) =>
-      event.payment_status === 'unpaid'
-    );
+    // Regra única do "a receber" em todo o app: show concluído, não cancelado e não pago
+    // (inclui 'pending', status padrão — antes só 'unpaid' era contado).
+    const unpaidCompletedEventsList = clientEvents.filter(isReceivableEvent);
 
     const totalPending = unpaidCompletedEventsList.reduce((sum, event) => {
       const eventWork = workDataFilteredByClientEvents.filter((work) => work.event_id === event.id);
-      if (eventWork.length > 0) {
-        const fromWork = eventWork.reduce((workSum, work) => workSum + (work.daily_cache || 0), 0);
-        if (fromWork > 0) return sum + fromWork;
-      }
-      return sum + getEventCacheAmount(event);
+      return sum + calculateEventReceivableAmount(event, eventWork);
     }, 0);
 
     const completedEventsCount = completedEventsList.length;

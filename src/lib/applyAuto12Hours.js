@@ -2,27 +2,15 @@ import { eachDayOfInterval, format, parseISO } from 'date-fns';
 import { supabase } from './supabase';
 import { mapPayloadToDb } from './useDailyWork';
 import { getEventStatus } from '@/components/utils/dateUtils';
+import { dayCacheForMinutes, JORNADA_PADRAO_MIN, REGIME_POR_DIA_ATIVO } from './workDay';
 
 const DEFAULT_ENTRY = '08:00';
 const DEFAULT_EXIT = '20:00';
-const AUTO_HOURS = 12;
-
-function calculateDailyCache(event) {
-  const baseValue = Number(event.daily_cache_value || event.estimated_revenue || 0);
-  const paymentModel = event.payment_model || 'HORAS_EXTRAS';
-
-  if (paymentModel === 'MEIO_CACHE_E_DOBRA') {
-    const base = Number(event.cache_valor_base || baseValue);
-    if (AUTO_HOURS <= 6) return Math.round((base / 2) * 100) / 100;
-    if (AUTO_HOURS <= 12) return Math.round(baseValue * 100) / 100;
-    return Math.round(base * 2 * 100) / 100;
-  }
-
-  return Math.round(baseValue * 100) / 100;
-}
+const AUTO_HOURS = JORNADA_PADRAO_MIN / 60;
 
 /**
- * Aplica 12h automáticas para cada dia do evento (Supabase).
+ * Aplica 12h automáticas nos dias do evento que ainda NÃO têm registro (Supabase).
+ * Dias já lançados nunca são alterados nem duplicados.
  * Retorno compatível com o contrato legado Base44: { data: { success, error?, daysCreated? } }
  */
 export async function applyAuto12Hours({ eventId, userId, origin = 'manual_12h' }) {
@@ -58,24 +46,37 @@ export async function applyAuto12Hours({ eventId, userId, origin = 'manual_12h' 
 
     const { data: existingWork, error: workErr } = await supabase
       .from('daily_work')
-      .select('id')
+      .select('id, date')
       .eq('event_id', eventId)
       .eq('user_id', resolvedUserId);
 
     if (workErr) throw workErr;
-    if (existingWork?.length > 0) {
-      return {
-        data: {
-          success: false,
-          error: 'Já existem registros de horas. Edite ou remova antes de aplicar 12h.',
-        },
-      };
-    }
+    const datesWithWork = new Set(
+      (existingWork || []).map((w) => (w.date ? String(w.date).slice(0, 10) : null)).filter(Boolean)
+    );
 
     const start = parseISO(event.start_date);
     const end = parseISO(event.end_date || event.start_date);
-    const days = eachDayOfInterval({ start, end });
-    const dailyCache = calculateDailyCache(event);
+    const days = eachDayOfInterval({ start, end })
+      .filter((day) => !datesWithWork.has(format(day, 'yyyy-MM-dd')));
+
+    if (days.length === 0) {
+      return { data: { success: false, error: 'Todos os dias deste evento já têm horas lançadas.' } };
+    }
+
+    const dailyCache = dayCacheForMinutes(event, JORNADA_PADRAO_MIN);
+
+    // Lote 2 (migration 035): uma única transação no banco, com trava no evento,
+    // grava os dias faltantes como 'estimada' e liga a flag. Não duplica com duas abas.
+    if (REGIME_POR_DIA_ATIVO) {
+      const { data: created, error: rpcErr } = await supabase.rpc('aplicar_12h_automaticas', {
+        p_event_id: eventId,
+        p_daily_cache: dailyCache,
+        p_nota: origin === 'manual_12h' ? '12h automáticas (manual)' : '12h automáticas',
+      });
+      if (rpcErr) throw rpcErr;
+      return { data: { success: true, daysCreated: Number(created) || 0 } };
+    }
     const note = origin === 'manual_12h' ? '12h automáticas (manual)' : '12h automáticas';
 
     const rows = days.map((day) =>

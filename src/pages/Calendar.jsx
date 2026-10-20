@@ -1,4 +1,4 @@
-﻿
+
 import { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useQueryAction } from '@/lib/useQueryAction';
@@ -48,7 +48,8 @@ import { ptBR } from 'date-fns/locale';
 import BackstageCalendarGrid from '@/components/calendar/BackstageCalendarGrid';
 import EventForm from '@/components/calendar/EventForm';
 import DailyWorkModal from '@/components/calendar/DailyWorkModal';
-import EventDetailModal from '@/components/reports/EventDetailModal';
+import EventDetailModal from '@/components/calendar/EventDetailModal';
+import PaymentConfirmModal from '@/components/reports/PaymentConfirmModal';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import {
   normalizeDateString,
@@ -56,7 +57,7 @@ import {
   getEventsForDate,
   getEventStatus,
 } from '@/components/utils/dateUtils';
-import { isCancelledEvent } from '@/lib/eventFinance';
+import { isCancelledEvent, calculateEventReceivableAmount } from '@/lib/eventFinance';
 import AnimatedStatValue from '@/components/home/AnimatedStatValue';
 import CalendarPageHeader from '@/components/calendar/CalendarPageHeader';
 import CalendarTodayStrip from '@/components/calendar/CalendarTodayStrip';
@@ -77,6 +78,7 @@ import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { applyAuto12Hours } from '@/lib/applyAuto12Hours';
 import { useUserSettings } from '@/lib/useUserSettings';
 import { getEventCacheAmount } from '@/lib/eventFinance';
+import { buildMarkPaidUpdate, buildMarkUnpaidUpdate } from '@/lib/financeMetrics';
 import { captureEventLocationFromGps } from '@/lib/eventLocation';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
 import EventHeading from '@/components/events/EventHeading';
@@ -168,6 +170,17 @@ const StatCard = ({
   </Card>
 );
 
+
+/**
+ * Chips da Agenda: "Concluidos" segue a data (mesmo criterio do badge do card);
+ * "Pendentes"/"Confirmados" sao o status do negocio, so para eventos que ainda nao terminaram.
+ */
+function matchesStatusChip(event, key) {
+  const done = getEventStatus(event) === 'completed';
+  if (key === 'completed') return done;
+  return !done && event.status === key;
+}
+
 export default function CalendarPage() {
   const location = useLocation();
   const { user, loading: authLoading } = useAuth();
@@ -176,7 +189,7 @@ export default function CalendarPage() {
   const { events, loading: eventsLoading, error: eventsError, refetch: refetchEvents, update: updateEvent, delete: deleteEvent } = useEvents();
   const { clients, loading: clientsLoading } = useClients();
   const { dailyWork, loading: dailyWorkLoading, refetch: refetchDailyWork, delete: deleteDailyWorkEntry } = useDailyWork();
-  const { expenses, loading: expensesLoading, refetch: refetchExpenses } = useExpenses();
+  const { loading: expensesLoading, refetch: refetchExpenses } = useExpenses();
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const { settings: userSettings } = useUserSettings();
   const { offline } = useConnectivity();
@@ -258,7 +271,7 @@ export default function CalendarPage() {
   const filteredEvents = useMemo(() => {
     let base = activeEvents;
     if (statusFilter === 'paid') base = base.filter((e) => e.payment_status === 'paid');
-    else if (statusFilter !== 'all') base = base.filter((e) => e.status === statusFilter);
+    else if (statusFilter !== 'all') base = base.filter((e) => matchesStatusChip(e, statusFilter));
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       const cmap = new Map(clients.map(c => [c.id, c]));
@@ -296,7 +309,11 @@ export default function CalendarPage() {
     const map = new Map();
     for (const day of weekDays) {
       const iso = format(day, 'yyyy-MM-dd');
-      map.set(iso, filteredEvents.filter(ev => (ev.start_date || '').slice(0, 10) === iso));
+      map.set(iso, filteredEvents.filter(ev => {
+        const start = (ev.start_date || '').slice(0, 10);
+        const end = (ev.end_date || ev.start_date || '').slice(0, 10);
+        return start && iso >= start && iso <= end;
+      }));
     }
     return map;
   }, [weekDays, filteredEvents]);
@@ -305,8 +322,8 @@ export default function CalendarPage() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayIso = format(today, 'yyyy-MM-dd');
-    const upcoming = activeEvents
-      .filter(ev => (ev.start_date || '') >= todayIso)
+    const upcoming = filteredEvents
+      .filter(ev => (ev.end_date || ev.start_date || '') >= todayIso)
       .sort((a, b) => (a.start_date > b.start_date ? 1 : -1));
 
     const groups = [];
@@ -314,7 +331,8 @@ export default function CalendarPage() {
       const evDate = parseISO(ev.start_date);
       const diff = differenceInCalendarDays(evDate, today);
       let groupKey, groupLabel;
-      if (diff === 0)        { groupKey = 'hoje';         groupLabel = 'Hoje'; }
+      // diff < 0: show de vários dias que já começou e ainda não terminou
+      if (diff <= 0)         { groupKey = 'hoje';         groupLabel = 'Hoje'; }
       else if (diff === 1)   { groupKey = 'amanha';       groupLabel = 'Amanhã'; }
       else if (diff <= 7)    { groupKey = 'esta_semana';  groupLabel = 'Esta semana'; }
       else if (diff <= 14)   { groupKey = 'proxima';      groupLabel = 'Próxima semana'; }
@@ -326,7 +344,7 @@ export default function CalendarPage() {
       g.events.push({ ev, diff });
     }
     return groups;
-  }, [activeEvents]);
+  }, [filteredEvents]);
 
   const todayStr = todayLocalISO();
   const isLiveShiftToday = useMemo(() => {
@@ -603,26 +621,6 @@ export default function CalendarPage() {
     [closeModals]
   );
 
-  const handleEditWork = useCallback(
-    (work) => {
-      closeModals();
-
-      if (work && !work.id) {
-        setEditingWork(null); // This is a new work entry
-        setFormPrefilledData(work);
-        if (work.date) {
-          setSelectedDate(new Date(work.date + 'T00:00:00'));
-        }
-      } else {
-        setEditingWork(work); // This is an existing work entry
-        if (work?.date) {
-          setSelectedDate(new Date(work.date + 'T00:00:00'));
-        }
-      }
-      setShowDailyWorkModal(true); // Renamed state
-    },
-    [closeModals]
-  );
 
   const handleFormSuccess = useCallback(() => {
     closeModals();
@@ -632,13 +630,6 @@ export default function CalendarPage() {
     refetchExpenses();
   }, [closeModals, closeActionSheets, refetchEvents, refetchDailyWork, refetchExpenses]);
 
-  const handleWorkDelete = useCallback(
-    (workId) => {
-      if (!workId) return;
-      setConfirmWork(workId);
-    },
-    []
-  );
 
   const handleConfirmWorkDelete = useCallback(async () => {
     try {
@@ -662,30 +653,7 @@ export default function CalendarPage() {
     [closeModals]
   );
 
-  const handleAddWorkForEvent = useCallback(
-    (event) => {
-      closeModals();
-      const today = normalizeDateString(new Date());
-      const start = normalizeDateString(event.start_date);
-      const end = normalizeDateString(event.end_date || event.start_date);
-      // Use today if within event range, otherwise use event start date
-      const workDate = today >= start && today <= end ? today : start;
-      setFormPrefilledData({ event_id: event.id, date: workDate });
-      setSelectedDate(new Date(workDate + 'T00:00:00'));
-      setShowDailyWorkModal(true);
-    },
-    [closeModals]
-  );
 
-  const handleEditExpense = useCallback(
-    (expense, event) => {
-      closeModals();
-      setPrefilledEventIdForExpense(event.id);
-      setEditingExpense(expense);
-      setShowExpenseForm(true);
-    },
-    [closeModals]
-  );
 
   const handleDeleteEvent = useCallback(
     (eventId) => {
@@ -715,8 +683,12 @@ export default function CalendarPage() {
       if (!eventToUpdate) return;
       const newStatus = eventToUpdate.payment_status === 'paid' ? 'unpaid' : 'paid';
       try {
-        const updateData = { payment_status: newStatus };
-        if (newStatus === 'paid') updateData.paid_date = new Date().toISOString().split('T')[0];
+        const updateData = newStatus === 'paid'
+          ? buildMarkPaidUpdate(
+              eventToUpdate,
+              dailyWork.filter((w) => w.event_id === eventToUpdate.id)
+            )
+          : buildMarkUnpaidUpdate();
         await updateEvent(eventToUpdate.id, updateData);
         appToast.success(
           newStatus === 'paid'
@@ -729,7 +701,22 @@ export default function CalendarPage() {
         appToast.error('Erro ao atualizar status de pagamento.');
       }
     },
-    [handleFormSuccess, updateEvent]
+    [handleFormSuccess, updateEvent, dailyWork]
+  );
+
+  // Pagamento SEMPRE pela janela do valor real (regra do dono: digita o que caiu na conta).
+  // A propria janela avisa se faltam horas e tem o "cobrar assim mesmo".
+  const [payEvent, setPayEvent] = useState(null);
+  const requestMarkPaid = useCallback(
+    (eventToUpdate) => {
+      if (!eventToUpdate) return;
+      if (eventToUpdate.payment_status === 'paid') {
+        handleMarkPaid(eventToUpdate); // desmarcar pago continua direto
+        return;
+      }
+      setPayEvent(eventToUpdate);
+    },
+    [handleMarkPaid]
   );
 
   // New action sheet handlers
@@ -922,10 +909,9 @@ export default function CalendarPage() {
 
     // Receita: soma getEventCacheAmount por evento (usa daily_cache_value como campo primário)
     const totalRevenue = monthEvents.reduce((sum, event) => {
-      const fromWork = dailyWork
-        .filter(w => w.event_id === event.id)
-        .reduce((s, w) => s + (Number(w.daily_cache) || 0), 0);
-      return sum + (fromWork > 0 ? fromWork : getEventCacheAmount(event));
+      const workForEvent = dailyWork
+        .filter(w => w.event_id === event.id);
+      return sum + (calculateEventReceivableAmount(event, workForEvent));
     }, 0);
 
     const monthClientIds = new Set(monthEvents.map((e) => e.client_id).filter(Boolean));
@@ -960,10 +946,9 @@ export default function CalendarPage() {
         const client = clientMap.get(event.client_id);
         const startDate = parseISO(event.start_date);
         const endDate = parseISO(event.end_date);
-        const fromWork = dailyWork
-          .filter(w => w.event_id === event.id)
-          .reduce((s, w) => s + (Number(w.daily_cache) || 0), 0);
-        const value = fromWork > 0 ? fromWork : getEventCacheAmount(event);
+        const workForEvent = dailyWork
+          .filter(w => w.event_id === event.id);
+        const value = calculateEventReceivableAmount(event, workForEvent);
         return {
           title: event.title,
           subtitle: `${getClientDisplayName(client) || 'Sem empresa'} · ${isValid(startDate) ? format(startDate, 'dd/MM', { locale: ptBR }) : ''}${
@@ -1044,11 +1029,10 @@ export default function CalendarPage() {
       .map((event) => {
         const client = clientMap.get(event.client_id);
         const startDate = parseISO(event.start_date);
-        const fromWork = dailyWork
-          .filter(w => w.event_id === event.id)
-          .reduce((s, w) => s + (Number(w.daily_cache) || 0), 0);
-        const value = fromWork > 0 ? fromWork : getEventCacheAmount(event);
-        const statusLabel = event.payment_status === 'paid' ? 'Pago' : event.payment_status === 'partial' ? 'Parcial' : 'Pendente';
+        const workForEvent = dailyWork
+          .filter(w => w.event_id === event.id);
+        const value = calculateEventReceivableAmount(event, workForEvent);
+        const statusLabel = event.payment_status === 'paid' ? 'Pago' : 'Pendente';
         return {
           title: event.title,
           subtitle: `${client?.name || 'Cliente'} · ${statusLabel}`,
@@ -1091,6 +1075,12 @@ export default function CalendarPage() {
     }
     setQuickActions({ open: false, date: null, target: null });
   }, [quickActions.date, handleQuickWorkEntry]);
+
+  // Toque longo / duplo toque em um dia da grade → registrar horas daquele dia.
+  const handleGridQuickAction = useCallback((type, day) => {
+    setQuickActions({ open: false, date: null, target: null });
+    if (type === 'work') handleQuickWorkEntry(day instanceof Date ? day : new Date(day));
+  }, [handleQuickWorkEntry]);
 
   if (authLoading && !user) {
     return (
@@ -1173,75 +1163,6 @@ export default function CalendarPage() {
           </Alert>
         )}
 
-        <AlertsPanel
-          events={activeEvents}
-          dailyWork={dailyWork}
-          onRegisterWork={handleQuickWorkEntry}
-          onLocationCheckIn={handleEventLocationCheckIn}
-          onOpenEvent={setSelectedEvent}
-        />
-
-        <CalendarTodayStrip
-          events={activeEvents}
-          dailyWork={dailyWork}
-          clients={clients}
-          primaryHex={config.primaryHex}
-          accentHex={config.accentHex}
-          onEventClick={handleEventClick}
-          onRegisterWork={() => handleQuickWorkEntry()}
-          onNewEvent={() => handleNewEvent()}
-        />
-
-        {/* Monthly Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-          <StatCard
-            title="Eventos"
-            value={monthStats.totalEvents}
-            numericValue={monthStats.totalEvents}
-            formatValue={(v) => String(Math.round(v))}
-            subtext={monthStats.totalEvents === 1 ? 'evento' : 'eventos'}
-            icon={Calendar}
-            color="bp-text-primary"
-            onClick={handleEventsClick}
-            loading={isCoreLoading || isSecondaryLoading}
-          />
-
-          <StatCard
-            title="Dias"
-            value={monthStats.workDays}
-            numericValue={monthStats.workDays}
-            formatValue={(v) => String(Math.round(v))}
-            subtext={monthStats.workDays === 1 ? 'dia' : 'dias'}
-            icon={CheckCircle2}
-            color="text-green-400"
-            onClick={handleWorkDaysClick}
-            loading={isCoreLoading || isSecondaryLoading}
-          />
-
-          <StatCard
-            title="Horas"
-            value={`${monthStats.totalHours}h`}
-            numericValue={monthStats.totalHours}
-            formatValue={(v) => `${Number(v).toFixed(1)}h`}
-            subtext="trabalhadas"
-            icon={Clock}
-            color="text-amber-400"
-            onClick={handleHoursClick}
-            loading={isCoreLoading || isSecondaryLoading}
-          />
-
-          <StatCard
-            title="Receita"
-            value={isVisible ? formatCurrency(monthStats.totalRevenue) : '••••'}
-            numericValue={isVisible ? monthStats.totalRevenue : null}
-            formatValue={formatCurrency}
-            subtext="estimada no mês"
-            icon={TrendingUp}
-            color="text-emerald-400"
-            onClick={handleRevenueClick}
-            loading={isCoreLoading || isSecondaryLoading}
-          />
-        </div>
 
         {/* Busca de eventos */}
         <div className="relative">
@@ -1270,9 +1191,9 @@ export default function CalendarPage() {
         <div className="flex items-center gap-2 flex-wrap">
           {[
             { key: 'all', label: 'Todos', count: activeEvents.length },
-            { key: 'pending', label: 'Pendentes', count: activeEvents.filter(e => e.status === 'pending').length },
-            { key: 'confirmed', label: 'Confirmados', count: activeEvents.filter(e => e.status === 'confirmed').length },
-            { key: 'completed', label: 'Concluídos', count: activeEvents.filter(e => e.status === 'completed').length },
+            { key: 'pending', label: 'Pendentes', count: activeEvents.filter(e => matchesStatusChip(e, 'pending')).length },
+            { key: 'confirmed', label: 'Confirmados', count: activeEvents.filter(e => matchesStatusChip(e, 'confirmed')).length },
+            { key: 'completed', label: 'Concluídos', count: activeEvents.filter(e => matchesStatusChip(e, 'completed')).length },
             { key: 'paid', label: 'Pagos', count: activeEvents.filter(e => e.payment_status === 'paid').length },
           ].map(({ key, label, count }) => (
             <button
@@ -1388,6 +1309,7 @@ export default function CalendarPage() {
                 dailyWork={dailyWork}
                 selectedDate={selectedDate}
                 onDateSelect={handleDayClick}
+                onQuickAction={handleGridQuickAction}
                 onEventClick={handleEventClick}
                 onEventQuickLog={handleQuickLogForEvent}
                 loading={false}
@@ -1474,7 +1396,7 @@ export default function CalendarPage() {
                       {/* Cabeçalho do dia */}
                       <button
                         type="button"
-                        onClick={() => handleDayClick(day)}
+                        onClick={(e) => handleDayClick(day, e.currentTarget)}
                         className={`px-2 pt-2 pb-1 border-b text-left w-full group ${isToday ? 'bp-today-surface' : 'border-slate-700/40'}`}
                         title={`Novo evento em ${format(day, "d 'de' MMM", { locale: ptBR })}`}
                       >
@@ -1534,7 +1456,7 @@ export default function CalendarPage() {
                         {overflow > 0 && (
                           <button
                             type="button"
-                            onClick={() => handleDayClick(day)}
+                            onClick={(e) => handleDayClick(day, e.currentTarget)}
                             className="text-[10px] text-slate-500 text-center mt-0.5 w-full py-0.5 rounded hover:text-slate-300 transition-colors"
                           >
                             +{overflow} mais
@@ -1645,11 +1567,11 @@ export default function CalendarPage() {
                         </div>
                         <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                           <div className="flex items-center gap-1.5">
-                            {ev.status === 'completed' && (ev.nfe_arquivo_url || ev.nfe_numero) && (
+                            {(ev.nfe_arquivo_url || ev.nfe_numero || ev.nf_number) && (
                               <FileText
                                 className="w-3.5 h-3.5"
                                 style={{ color: ev.nfe_analise?.cliente_reconhecido ? '#34d399' : '#60a5fa' }}
-                                title={ev.nfe_analise?.cliente_reconhecido ? 'NF-e verificada' : 'NF-e registrada'}
+                                title={ev.nfe_analise?.cliente_reconhecido ? 'NF-e verificada' : 'NF-e anexada'}
                               />
                             )}
                             <StatusIcon className="w-4 h-4" style={{ color: statusColor }} />
@@ -1755,17 +1677,17 @@ export default function CalendarPage() {
                           )}
                         </button>
                         <div className="flex items-center gap-2 flex-shrink-0">
-                          {evStatus === 'completed' && (ev.nfe_arquivo_url || ev.nfe_numero) && (
+                          {(ev.nfe_arquivo_url || ev.nfe_numero || ev.nf_number) && (
                             <FileText
                               className="w-3.5 h-3.5 flex-shrink-0"
                               style={{ color: ev.nfe_analise?.cliente_reconhecido ? '#34d399' : '#60a5fa' }}
-                              title={ev.nfe_analise?.cliente_reconhecido ? 'NF-e verificada' : 'NF-e registrada'}
+                              title={ev.nfe_analise?.cliente_reconhecido ? 'NF-e verificada' : 'NF-e anexada'}
                             />
                           )}
                           {canQuickPay && (
                             <button
                               type="button"
-                              onClick={() => handleMarkPaid(ev)}
+                              onClick={() => requestMarkPaid(ev)}
                               title="Marcar como pago"
                               className="p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition-colors"
                             >
@@ -1828,11 +1750,11 @@ export default function CalendarPage() {
                     </div>
                     <div className="flex flex-col items-end gap-1 flex-shrink-0">
                       <div className="flex items-center gap-1.5">
-                        {ev.status === 'completed' && (ev.nfe_arquivo_url || ev.nfe_numero) && (
+                        {(ev.nfe_arquivo_url || ev.nfe_numero || ev.nf_number) && (
                           <FileText
                             className="w-3.5 h-3.5"
                             style={{ color: ev.nfe_analise?.cliente_reconhecido ? '#34d399' : '#60a5fa' }}
-                            title={ev.nfe_analise?.cliente_reconhecido ? 'NF-e verificada' : 'NF-e registrada'}
+                            title={ev.nfe_analise?.cliente_reconhecido ? 'NF-e verificada' : 'NF-e anexada'}
                           />
                         )}
                         <StatusIcon className="w-4 h-4" style={{ color: statusColor }} />
@@ -1848,6 +1770,79 @@ export default function CalendarPage() {
               })}
           </div>
         )}
+
+        {/* Resumos abaixo do calendario (17/10): a grade aparece primeiro no celular. */}
+        <AlertsPanel
+          events={activeEvents}
+          dailyWork={dailyWork}
+          onRegisterWork={handleQuickWorkEntry}
+          onLocationCheckIn={handleEventLocationCheckIn}
+          onOpenEvent={setSelectedEvent}
+        />
+
+        {(!isMobile || viewMode !== 'week') && (
+          <CalendarTodayStrip
+            events={activeEvents}
+            dailyWork={dailyWork}
+            clients={clients}
+            primaryHex={config.primaryHex}
+            accentHex={config.accentHex}
+            onEventClick={handleEventClick}
+            onRegisterWork={() => handleQuickWorkEntry()}
+            onNewEvent={() => handleNewEvent()}
+          />
+        )}
+
+        {/* Monthly Stats */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+          <StatCard
+            title="Eventos"
+            value={monthStats.totalEvents}
+            numericValue={monthStats.totalEvents}
+            formatValue={(v) => String(Math.round(v))}
+            subtext={monthStats.totalEvents === 1 ? 'evento' : 'eventos'}
+            icon={Calendar}
+            color="bp-text-primary"
+            onClick={handleEventsClick}
+            loading={isCoreLoading || isSecondaryLoading}
+          />
+
+          <StatCard
+            title="Dias"
+            value={monthStats.workDays}
+            numericValue={monthStats.workDays}
+            formatValue={(v) => String(Math.round(v))}
+            subtext={monthStats.workDays === 1 ? 'dia' : 'dias'}
+            icon={CheckCircle2}
+            color="text-green-400"
+            onClick={handleWorkDaysClick}
+            loading={isCoreLoading || isSecondaryLoading}
+          />
+
+          <StatCard
+            title="Horas"
+            value={`${monthStats.totalHours}h`}
+            numericValue={monthStats.totalHours}
+            formatValue={(v) => `${Number(v).toFixed(1)}h`}
+            subtext="trabalhadas"
+            icon={Clock}
+            color="text-amber-400"
+            onClick={handleHoursClick}
+            loading={isCoreLoading || isSecondaryLoading}
+          />
+
+          <StatCard
+            title="Receita"
+            value={isVisible ? formatCurrency(monthStats.totalRevenue) : '••••'}
+            numericValue={isVisible ? monthStats.totalRevenue : null}
+            formatValue={formatCurrency}
+            subtext="estimada no mês"
+            icon={TrendingUp}
+            color="text-emerald-400"
+            onClick={handleRevenueClick}
+            loading={isCoreLoading || isSecondaryLoading}
+          />
+        </div>
       </motion.div>
 
       {/* Ações Rápidas Desktop */}
@@ -1891,6 +1886,7 @@ export default function CalendarPage() {
       <AnimatePresence>
         {showEventForm && (
           <EventForm
+            key="m-event-form"
             isOpen={showEventForm}
             onClose={() => {
               setShowEventForm(false);
@@ -1907,6 +1903,7 @@ export default function CalendarPage() {
 
         {showDailyWorkModal && (
           <DailyWorkModal
+            key="m-daily-work"
             isOpen={showDailyWorkModal}
             onClose={closeModals}
             date={selectedDate}
@@ -1918,28 +1915,21 @@ export default function CalendarPage() {
 
         {selectedEvent && (
           <EventDetailModal
+            key="m-event-detail"
             event={selectedEvent}
+            client={clientMap.get(selectedEvent.client_id)}
             onClose={closeModals}
             onEdit={handleEditEvent}
             onDelete={handleDeleteEvent}
             onDuplicate={handleDuplicateEvent}
-            onPaymentUpdate={handleFormSuccess}
-            onWorkEdit={handleEditWork}
-            onWorkDelete={handleWorkDelete}
-            onAddWork={handleAddWorkForEvent}
-            onAddExpense={handleAddExpenseForEvent}
-            onExpenseEdit={handleEditExpense}
-            onExpenseDelete={handleFormSuccess}
-            onApply12h={handleEventActionSheetApplyManual12h}
-            onMarkPaid={handleMarkPaid}
-            dailyWork={dailyWork.filter((w) => w?.event_id === selectedEvent?.id)}
-            expenses={expenses.filter((e) => e?.event_id === selectedEvent?.id)}
-            client={clientMap.get(selectedEvent.client_id)}
+            // So atualiza a tela: quem grava o pagamento e a janela do valor real (PaymentConfirmModal).
+            onMarkPaid={handleFormSuccess}
           />
         )}
 
         {showExpenseForm && (
           <ExpenseForm
+            key="m-expense"
             open={showExpenseForm}
             onOpenChange={setShowExpenseForm}
             expense={editingExpense}
@@ -1951,6 +1941,7 @@ export default function CalendarPage() {
 
         {multipleEventsModal && (
           <motion.div
+            key="m-multiple-events"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -2009,6 +2000,7 @@ export default function CalendarPage() {
 
         {drilldownOpen && (
           <DrilldownModal
+            key="m-drilldown"
             open={drilldownOpen}
             onOpenChange={setDrilldownOpen}
             title={drilldownTitle}
@@ -2019,6 +2011,7 @@ export default function CalendarPage() {
 
         {/* Action Sheets Mobile */}
         <EventActionSheet
+          key="m-action-sheet"
           event={selectedActionSheetEvent}
           client={selectedActionSheetEvent ? clientMap.get(selectedActionSheetEvent.client_id) : null}
           isOpen={!!selectedActionSheetEvent}
@@ -2049,7 +2042,7 @@ export default function CalendarPage() {
           }}
           onMarkPaid={() => {
             if (selectedActionSheetEvent) {
-              handleMarkPaid(selectedActionSheetEvent);
+              requestMarkPaid(selectedActionSheetEvent);
               setSelectedActionSheetEvent(null);
             }
           }}
@@ -2057,6 +2050,7 @@ export default function CalendarPage() {
 
         {showMobileHoursSheet && mobileHoursEventData && (
           <EventHoursSheet
+            key="m-hours-sheet"
             event={mobileHoursEventData.event}
             client={mobileHoursEventData.event ? clientMap.get(mobileHoursEventData.event.client_id) : null}
             isOpen={showMobileHoursSheet}
@@ -2072,6 +2066,7 @@ export default function CalendarPage() {
 
         {activeNotesEvent && (
           <NotesSheet
+            key="m-notes-sheet"
             event={activeNotesEvent}
             client={activeNotesEvent ? clientMap.get(activeNotesEvent.client_id) : null}
             isOpen={!!activeNotesEvent}
@@ -2080,6 +2075,15 @@ export default function CalendarPage() {
           />
         )}
       </AnimatePresence>
+
+      <PaymentConfirmModal
+        event={payEvent}
+        client={payEvent ? clientMap.get(payEvent.client_id) : null}
+        dailyWork={payEvent ? dailyWork.filter((w) => w.event_id === payEvent.id) : []}
+        isOpen={!!payEvent}
+        onClose={() => setPayEvent(null)}
+        onSuccess={() => { setPayEvent(null); handleFormSuccess(); }}
+      />
 
       <ConfirmDialog
         open={!!confirmWork}

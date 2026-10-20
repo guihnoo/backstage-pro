@@ -40,8 +40,9 @@ import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { hardNavigate } from '@/lib/hardNavigate';
-import { getEventCacheAmount } from '@/lib/eventFinance';
-import { getEventStatus } from '@/components/utils/dateUtils';
+import { calculateEventReceivableAmount, isReceivableEvent } from '@/lib/eventFinance';
+import { getEventReceivedAmount } from '@/lib/financeMetrics';
+import { getEventStatus, todayLocalISO } from '@/components/utils/dateUtils';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import { DEFAULT_EVENT_COLOR } from '@/lib/brandColors';
@@ -51,7 +52,7 @@ import EmptyState from '@/components/layout/EmptyState';
 import ClientForm from '@/components/clients/ClientForm';
 import { ClientInteractionLog } from '@/components/clients/ClientInteractionLog';
 import EventForm from '@/components/calendar/EventForm';
-import EventDetailModal from '@/components/reports/EventDetailModal';
+import EventDetailModal from '@/components/calendar/EventDetailModal';
 import ReportEventList from '@/components/reports/ReportEventList';
 import ReportsChart from '@/components/reports/ReportsChart';
 import { ClampedText } from '@/components/ui/overflowText';
@@ -113,7 +114,7 @@ export default function ClientDetailPage() {
     [events, clientId]
   );
 
-  const todayIso = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const todayIso = useMemo(() => todayLocalISO(), []);
 
   const upcomingEvents = useMemo(() =>
     clientEvents
@@ -146,16 +147,15 @@ export default function ClientDetailPage() {
   );
 
   const getEventRevenue = useCallback((event) => {
-    const fromWork = clientWork
-      .filter(w => w.event_id === event.id)
-      .reduce((sum, w) => sum + (w.daily_cache || 0), 0);
-    return fromWork > 0 ? fromWork : getEventCacheAmount(event);
+    const workForEvent = clientWork
+      .filter(w => w.event_id === event.id);
+    return calculateEventReceivableAmount(event, workForEvent);
   }, [clientWork]);
 
   const chartInput = useMemo(() => ({
     realized: clientEvents
       .filter(e => e.payment_status === 'paid')
-      .map(e => ({ ...e, calculated_value: e.paid_amount || getEventRevenue(e) })),
+      .map(e => ({ ...e, calculated_value: getEventReceivedAmount(e, clientWork.filter(w => w.event_id === e.id)) })),
     receivable: clientEvents
       .filter(e => e.payment_status !== 'paid' && getEventStatus(e) === 'completed')
       .map(e => ({ ...e, calculated_value: getEventRevenue(e) })),
@@ -163,22 +163,26 @@ export default function ClientDetailPage() {
       .filter(e => ['scheduled', 'pending', 'confirmed'].includes(getEventStatus(e)))
       .map(e => ({ ...e, calculated_value: getEventRevenue(e) })),
     expenses: _clientExpenses.map(e => ({ date: e.expense_date || e.date, amount: e.amount })),
-  }), [clientEvents, _clientExpenses, getEventRevenue]);
+  }), [clientEvents, clientWork, _clientExpenses, getEventRevenue]);
 
   const stats = useMemo(() => {
     const getEventRevenue = (event) => {
-      const fromWork = clientWork
-        .filter(w => w.event_id === event.id)
-        .reduce((sum, w) => sum + (w.daily_cache || 0), 0);
-      return fromWork > 0 ? fromWork : getEventCacheAmount(event);
+      const workForEvent = clientWork
+        .filter(w => w.event_id === event.id);
+      return calculateEventReceivableAmount(event, workForEvent);
     };
 
     const totalRevenue = clientEvents.reduce((sum, e) => sum + getEventRevenue(e), 0);
     const totalHours = clientWork.reduce((sum, work) => sum + (work.total_hours || 0), 0);
     const paidEvents = clientEvents.filter(e => e.payment_status === 'paid');
-    const unpaidEvents = clientEvents.filter(e => e.payment_status !== 'paid');
+    // Mesma regra do "a receber" em todo o app: show concluído, não cancelado e não pago.
+    // Antes entravam shows futuros e cancelados (auditoria 15/10).
+    const unpaidEvents = clientEvents.filter(isReceivableEvent);
 
-    const paidAmount = paidEvents.reduce((sum, e) => sum + (e.paid_amount || getEventRevenue(e)), 0);
+    const paidAmount = paidEvents.reduce(
+      (sum, e) => sum + getEventReceivedAmount(e, clientWork.filter(w => w.event_id === e.id)),
+      0
+    );
     const unpaidAmount = unpaidEvents.reduce((sum, e) => sum + getEventRevenue(e), 0);
 
     const completedEvents = clientEvents.filter(e => getEventStatus(e) === 'completed');
@@ -545,7 +549,7 @@ export default function ClientDetailPage() {
 
         <NeonGlass primary={config.primaryHex} className="p-5">
           <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono mb-4">Resumo Financeiro</h2>
-          <div className={`grid gap-3 ${stats.paymentScore ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-1 sm:grid-cols-3'}`}>
+          <div className={`grid gap-3 ${stats.paymentScore ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2'}`}>
             <div className="rounded-lg p-3 text-center bg-emerald-500/8 border border-emerald-500/20">
               <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Recebido</p>
               <p className="text-lg font-black text-emerald-400 font-mono leading-tight">{isVisible ? formatCurrency(stats.paidAmount) : '••••'}</p>
@@ -553,10 +557,6 @@ export default function ClientDetailPage() {
             <div className="rounded-lg p-3 text-center bg-amber-500/8 border border-amber-500/20">
               <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Pendente</p>
               <p className="text-lg font-black text-amber-400 font-mono leading-tight">{isVisible ? formatCurrency(stats.unpaidAmount) : '••••'}</p>
-            </div>
-            <div className="rounded-lg p-3 text-center bg-slate-800/60 border border-slate-700/60">
-              <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Total</p>
-              <p className="text-lg font-black text-slate-200 font-mono leading-tight">{isVisible ? formatCurrency(stats.totalRevenue) : '••••'}</p>
             </div>
             {stats.paymentScore && (
               <div className="rounded-lg p-3 text-center border" style={{ background: `${stats.paymentScore.hex}10`, borderColor: `${stats.paymentScore.hex}30` }}>
@@ -591,10 +591,11 @@ export default function ClientDetailPage() {
 
       <AnimatePresence>
         {showClientForm && (
-          <ClientForm client={client} onSuccess={handleSuccess} onCancel={() => setShowClientForm(false)} />
+          <ClientForm key="m-client-form" client={client} onSuccess={handleSuccess} onCancel={() => setShowClientForm(false)} />
         )}
         {showEventForm && (
           <EventForm
+            key="m-event-form"
             isOpen={showEventForm}
             clients={clients}
             event={editingEvent}
@@ -611,17 +612,14 @@ export default function ClientDetailPage() {
         )}
         {showEventDetail && selectedEvent && (
           <EventDetailModal
+            key="m-event-detail"
             event={selectedEvent}
             client={client}
             onClose={() => setShowEventDetail(false)}
-            dailyWork={dailyWork.filter(w => w.event_id === selectedEvent.id)}
-            expenses={expenses.filter(e => e.event_id === selectedEvent.id)}
-            onPaymentUpdate={handleSuccess}
             onEdit={handleEditEvent}
             onDelete={handleDeleteEvent}
-            onWorkEdit={handleSuccess}
-            onAddExpense={handleSuccess}
-            onExpenseEdit={handleSuccess}
+            // So atualiza a tela: quem grava o pagamento e a janela do valor real.
+            onMarkPaid={handleSuccess}
           />
         )}
       </AnimatePresence>

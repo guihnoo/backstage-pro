@@ -10,12 +10,10 @@ import { useOwnerFeedbacks } from '@/lib/useFeedback';
 import GlobalSearch from '@/components/layout/GlobalSearch';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
-const TOP_BAR_HEIGHT = '3.25rem';
+import { TOP_BAR_HEIGHT, getAppTopBarOffset } from '@/lib/appTopBarOffset';
 
 // eslint-disable-next-line react-refresh/only-export-components
-export function getAppTopBarOffset() {
-  return `calc(${TOP_BAR_HEIGHT} + env(safe-area-inset-top, 0px))`;
-}
+export { getAppTopBarOffset };
 
 function ProfileAvatar({ profile, primaryHex, active }) {
   const initial = (profile?.name || profile?.email || 'P').charAt(0).toUpperCase();

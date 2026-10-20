@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import { getEventCacheAmount } from '@/lib/eventFinance';
+import { todayLocalISO } from '@/components/utils/dateUtils';
 
 const C = {
   navy:    '#1B4882',
@@ -89,7 +90,7 @@ export function ContractPDFDocument({ event, client, settings = {} }) {
   const startDate = fmtDate(event?.start_date);
   const endDate = event?.end_date && event.end_date !== event.start_date ? fmtDate(event.end_date) : null;
   const datePeriod = endDate ? `${startDate} a ${endDate}` : startDate;
-  const contractDate = fmtLong(new Date().toISOString().slice(0, 10));
+  const contractDate = fmtLong(todayLocalISO());
   const docNum = `CTR-${Date.now().toString().slice(-6)}`;
 
   const defaultClauses = [

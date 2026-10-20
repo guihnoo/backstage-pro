@@ -2,6 +2,7 @@
 import { supabase } from './supabase';
 import { useAuth } from './authContext';
 import { useRealtimeRefetch } from './useRealtimeRefetch';
+import { dedupeRequest } from './requestDedupe';
 
 const mapPayloadToDb = (payload = {}) => {
   const mapped = {
@@ -50,11 +51,11 @@ export function useExpenses() {
     setError(null);
 
     try {
-      const { data, error: err } = await supabase
+      const { data, error: err } = await dedupeRequest(`expenses:${userId}`, () => supabase
         .from('expenses')
         .select('*')
         .eq('user_id', userId)
-        .order('expense_date', { ascending: false });
+        .order('expense_date', { ascending: false }));
 
       if (err) throw err;
       setExpenses((data || []).map(mapRowFromDb));

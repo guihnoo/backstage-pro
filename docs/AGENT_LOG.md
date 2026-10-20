@@ -2759,3 +2759,29 @@ Registro cronológico de tarefas executadas por agentes.
 - **Arquivo**: `docs/BACKSTAGE_PRO_GUIA_COMPLETO.md` — consolida objetivo, arquitetura, estado atual, destino, divisão Cursor/Claude e referências
 - **Motivo**: pedido do usuário para documento único de download com tudo que os agentes sabem sobre o Backstage Pro
 - **Build**: N/A (somente docs)
+
+---
+
+## 2026-10-09
+
+### INFRA — Projeto movido para fora do OneDrive (Claude Code) ✅
+- **Pasta de trabalho nova**: `C:\dev\backstage-pro` — clone de `origin/main` (`da2f390`) + `npm ci`. A pasta antiga (`OneDrive\Documentos\backstage-pro`) foi mantida intacta, mas não deve mais ser usada.
+- **Motivo**: OneDrive fechado deixava 1060/1201 arquivos do projeto e 90 mil de `node_modules` só na nuvem ("O provedor do arquivo de nuvem não está em execução")
+- **Copiados da pasta antiga**: `.env.local`, `.env.vercel*`, `.vercel/`, `supabase/.temp/`, `agent-review/incoming/`, `.agents/`, `.codex/` (não copiados: `dist/`, `playwright-report/`, `test-results/`, worktree órfão `agent-abd00af5c51a7f7b6`)
+- **Arquivos**: `.codex/hooks.json` (caminho do hook), `SETUP.md`, `GUIA_COMPLETO.md` (`cd` da pasta nova), `docs/RELATORIO_VIDA_APP.md`
+- **Build**: ✅ · unit 81/81 ✅ · dev server ✅ · lint: 2 erros `no-unused-vars` pré-existentes (`e2e/helpers/fakeGoogleCalendar.js`, `marketing/instagram-stories/marketingMocks.js`)
+- **Deploy**: nenhum
+
+### P0-NUMEROS — Modelo de competência + valor recebido implementados (Claude Code) ✅
+- **Autorização**: usuário liberou a implementação do modelo aprovado em 2026-08-28 e pediu que fosse feita por aqui (Claude Code em `src/`)
+- **Novo**: `src/lib/financeMetrics.js` + `financeMetrics.test.js` (30 testes) — recebido por `paid_date`, previsto pela data do show, despesas por `expense_date`, horas pelo dia trabalhado; `buildMarkPaidUpdate` / `buildMarkUnpaidUpdate` / `distributePaidAmount` para a gravação
+- **Leitura migrada**: `useHomeDashboard.js`, `useBackstageData.js` (`useStats`, `useMeiStats`, novo `usePaidEvents`), `goalMetrics.js`, `Goals.jsx`, `Reports.jsx`, `MonthlyTrend.jsx`, `YearOverYear.jsx`, `IRSummary.jsx`, `ExportManager.jsx`, `exportReport.js`, `ClientDetailedTable.jsx`, `ClientDetailModal.jsx`, `ClientDetail.jsx`, `ClientInsightsModal.jsx`
+- **Gravação migrada**: `usePaymentToggle.js`, `Calendar.jsx` (`handleMarkPaid`), `useHomeDashboard.markClientPaid`, `useReceivable.markClientPaid` — gravam `paid_date` (data local) + `paid_amount`; desmarcar limpa os dois
+- **Causa-raiz 1**: `events.payment_method` não existe em produção → o update do `PaymentConfirmModal` era rejeitado inteiro desde S82; por isso 21/21 pagos sem `paid_amount`. Modal agora só envia/mostra a forma de recebimento se a coluna existir. Migration `supabase/migrations/034_events_payment_method.sql` criada, **não aplicada**
+- **Causa-raiz 2**: Metas calculava histórico/streak/anual sobre `useEvents({ status: 'completed' })` — 1 de 21 pagos na base real. Agora `usePaidEvents`
+- **Conferência (SELECT read-only em produção)**: recebido por mês com a regra nova — jun R$ 0 (5 pagos sem valor cadastrado), jul R$ 2.000, ago R$ 14.225,50; Metas mostrava R$ 0 nos três
+- **E2E**: `e2e/helpers/fakeGoals.js` (datasets novos, parâmetro `events` opcional), `e2e/smoke/goals-streak.spec.js` (+1 teste: falha no código antigo, passa no novo), `e2e/smoke/received-consistency.spec.js` (novo: mesmo recebido em Home, Relatórios e Metas)
+- **Docs**: `PLANO_REVISAO_GERAL.md` (§ Implementação — 2026-10-09), `RELATORIO_VIDA_APP.md`, `AUDITORIA_PAGINAS.md` (bugs conhecidos), `IDEIAS_PENDENTES.md` (#19)
+- **Não feito de propósito**: backfill de `paid_amount` nos pagos antigos, pagamentos parciais, Decisão 2 (status), período de "A receber", aplicar a migration 034
+- **Build**: ✅ · unit 112/112 ✅ · E2E 66/66 ✅ · lint `src` limpo (restam os 2 erros antigos em e2e/marketing)
+- **Deploy**: nenhum — correções ainda não estão em produção

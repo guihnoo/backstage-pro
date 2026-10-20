@@ -195,10 +195,58 @@ async function syncExpenseDelete(userId, recordId) {
   if (error) throw error;
 }
 
-async function syncDailyWorkCreate(userId, payload, tempId) {
-  const dbPayload = mapDailyWorkPayload({ ...payload, user_id: userId });
-  const { data, error } = await supabase.from('daily_work').insert(dbPayload).select().single();
+/** Registro já existente do mesmo dia no mesmo evento (um registro por dia). */
+async function findSameDayWork(userId, dbPayload) {
+  if (!dbPayload?.event_id || !dbPayload?.date) return null;
+  const { data, error } = await supabase
+    .from('daily_work')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('event_id', dbPayload.event_id)
+    .eq('date', dbPayload.date)
+    .order('updated_at', { ascending: false })
+    .limit(1);
   if (error) throw error;
+  return data?.[0] || null;
+}
+
+async function updateSameDayWork(userId, existing, dbPayload, tempId) {
+  const patch = { ...dbPayload };
+  delete patch.user_id;
+  const { data, error } = await supabase.from('daily_work').update(patch).eq('id', existing.id).select().single();
+  if (error) throw error;
+  const mapped = mapDailyWorkRow(data);
+  if (tempId) await saveIdMapping(userId, tempId, mapped.id, 'daily_work');
+  return mapped;
+}
+
+/**
+ * Cria o registro do dia sem duplicar (auditoria 1C / Lote 3):
+ * - item reenviado depois de já ter subido (o mapa tempId → id existe): não insere de novo;
+ * - já existe registro do mesmo dia (outra aba, outro aparelho): atualiza esse registro;
+ * - com o índice único da migration 036, uma corrida perdida (23505) também vira atualização.
+ */
+async function syncDailyWorkCreate(userId, payload, tempId) {
+  if (tempId) {
+    const resolved = await resolveRecordId(userId, tempId);
+    if (resolved && resolved !== tempId) {
+      const { data: already } = await supabase.from('daily_work').select('*').eq('id', resolved).maybeSingle();
+      if (already) return mapDailyWorkRow(already);
+    }
+  }
+
+  const dbPayload = mapDailyWorkPayload({ ...payload, user_id: userId });
+  const sameDay = await findSameDayWork(userId, dbPayload);
+  if (sameDay) return updateSameDayWork(userId, sameDay, dbPayload, tempId);
+
+  const { data, error } = await supabase.from('daily_work').insert(dbPayload).select().single();
+  if (error) {
+    if (error.code === '23505') {
+      const raced = await findSameDayWork(userId, dbPayload);
+      if (raced) return updateSameDayWork(userId, raced, dbPayload, tempId);
+    }
+    throw error;
+  }
   const mapped = mapDailyWorkRow(data);
   if (tempId) await saveIdMapping(userId, tempId, mapped.id, 'daily_work');
   return mapped;

@@ -1,11 +1,24 @@
-﻿import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
+﻿import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { hardNavigate } from '@/lib/hardNavigate';
 import {
-  getEventCacheAmount,
   isReceivableEvent,
   calculateEventReceivableAmount,
+  isNfPendingEvent,
 } from '@/lib/eventFinance';
+import {
+  buildWorkByEvent,
+  expensesInPeriod,
+  getEventReceivedAmount,
+  getEventReceivedDate,
+  isDateInRange,
+  paidEventsInPeriod,
+  projectedEventsInPeriod,
+  sumExpenses,
+  sumReceived,
+  workInPeriod,
+} from '@/lib/financeMetrics';
 import { ExternalLink } from 'lucide-react';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
@@ -25,26 +38,23 @@ import {
   ArrowDown,
   Minus,
   XCircle,
-  Activity,
   Receipt,
   Briefcase,
   ChevronDown,
 } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, subMonths, isWithinInterval, parseISO, startOfYear, endOfYear, addMonths, startOfWeek, endOfWeek, subWeeks, addWeeks } from 'date-fns';
+import { format, startOfMonth, endOfMonth, subMonths, parseISO, startOfYear, endOfYear, addMonths, startOfWeek, endOfWeek, subWeeks, addWeeks } from 'date-fns';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import appToast from '@/lib/appToast';
 import { getEventStatus } from '@/components/utils/dateUtils';
 
 // Component imports — charts/map/modais em lazy para reduzir chunk inicial
 import ReportEventList from '@/components/reports/ReportEventList';
-import FinancialSummary from '@/components/reports/FinancialSummary';
 import { Skeleton } from '@/components/ui/skeleton';
 import EmptyState from '@/components/layout/EmptyState';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/lib/authContext';
-import { applyAuto12Hours } from '@/lib/applyAuto12Hours';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import LiveClockBar from '@/components/home/LiveClockBar';
@@ -61,20 +71,19 @@ const MonthlyTrend = lazy(() => import('@/components/reports/MonthlyTrend'));
 const ClientDetailedTable = lazy(() => import('@/components/reports/ClientDetailedTable'));
 const ExpenseAnalysis = lazy(() => import('@/components/reports/ExpenseAnalysis'));
 const ExportManager = lazy(() => import('@/components/reports/ExportManager'));
-const EventDetailModal = lazy(() => import('@/components/reports/EventDetailModal'));
+const EventDetailModal = lazy(() => import('@/components/calendar/EventDetailModal'));
 const EventForm = lazy(() => import('@/components/calendar/EventForm'));
-const ExpenseForm = lazy(() => import('@/components/expenses/ExpenseForm'));
-const DailyWorkModal = lazy(() => import('@/components/calendar/DailyWorkModal'));
 const ActivityHeatmap = lazy(() => import('@/components/reports/ActivityHeatmap'));
 const SeasonalityChart = lazy(() => import('@/components/reports/SeasonalityChart'));
 const WeekdayBreakdown = lazy(() => import('@/components/reports/WeekdayBreakdown'));
 const NfTracker = lazy(() => import('@/components/reports/NfTracker'));
 const WorkAnalytics = lazy(() => import('@/components/reports/WorkAnalytics'));
+const HoursOriginChart = lazy(() => import('@/components/reports/HoursOriginChart'));
+const HoursReviewList = lazy(() => import('@/components/reports/HoursReviewList'));
 const CashflowForecast = lazy(() => import('@/components/reports/CashflowForecast'));
 const CategoryBreakdown = lazy(() => import('@/components/reports/CategoryBreakdown'));
 const TopClients = lazy(() => import('@/components/reports/TopClients'));
 const ReceivablesAging = lazy(() => import('@/components/reports/ReceivablesAging'));
-const SmartInsights = lazy(() => import('@/components/reports/SmartInsights'));
 const YearOverYear = lazy(() => import('@/components/reports/YearOverYear'));
 const CacheEvolutionChart = lazy(() => import('@/components/reports/CacheEvolutionChart'));
 const IRSummary = lazy(() => import('@/components/reports/IRSummary'));
@@ -298,10 +307,10 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type, onItemClick
 export default function ReportsPage() {
   const { events, loading: eventsLoading, error: eventsError, refetch: refetchEvents, delete: deleteEvent } = useEvents();
   const { clients, loading: clientsLoading, error: clientsError, refetch: refetchClients } = useClients();
-  const { dailyWork, loading: dailyWorkLoading, error: dailyWorkError, refetch: refetchDailyWork, delete: deleteWork } = useDailyWork();
-  const { expenses, loading: expensesLoading, error: expensesError, refetch: refetchExpenses, delete: deleteExpense } = useExpenses();
+  const { dailyWork, loading: dailyWorkLoading, error: dailyWorkError, refetch: refetchDailyWork } = useDailyWork();
+  const { expenses, loading: expensesLoading, error: expensesError, refetch: refetchExpenses } = useExpenses();
   const { formatCurrency, isVisible } = useFinancialVisibility();
-  const { profile, user } = useAuth();
+  const { profile } = useAuth();
   const { offline } = useConnectivity();
   const config = getCategoryConfig(profile?.category || 'lighting');
 
@@ -355,6 +364,25 @@ export default function ReportsPage() {
   const [selectedPeriod, setSelectedPeriod] = useState('this_month');
   const [selectedView, setSelectedView] = useState('overview');
   const [showProjection, setShowProjection] = useState(false);
+
+  // "Mais > Mapa" abre esta página com #mapa: mostra a visão geral e rola até o mapa.
+  const routerLocation = useLocation();
+  useEffect(() => {
+    if (routerLocation.hash !== '#mapa') return undefined;
+    setSelectedView('overview');
+    let tries = 0;
+    const timer = setInterval(() => {
+      tries += 1;
+      const el = document.getElementById('mapa-visitado');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        clearInterval(timer);
+      } else if (tries > 30) {
+        clearInterval(timer);
+      }
+    }, 150);
+    return () => clearInterval(timer);
+  }, [routerLocation.hash, routerLocation.key]);
   const [selectedClientFilter, setSelectedClientFilter] = useState(null);
 
   // Modal states
@@ -367,12 +395,7 @@ export default function ReportsPage() {
   // State para o EventDetailModal e formulários de edição
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [editingEvent, setEditingEvent] = useState(null);
-  const [editingExpense, setEditingExpense] = useState(null);
   const [confirmDeleteEvent, setConfirmDeleteEvent] = useState(null);
-  const [confirmDeleteWork, setConfirmDeleteWork] = useState(null);
-  const [showWorkModal, setShowWorkModal] = useState(false);
-  const [editingWorkEntry, setEditingWorkEntry] = useState(null);
-  const [confirmDeleteExpense, setConfirmDeleteExpense] = useState(null);
 
   const eventsReady = !loading.events;
   const isDataReady = eventsReady && !loading.clients && !loading.dailyWork && !loading.expenses;
@@ -456,7 +479,9 @@ export default function ReportsPage() {
     };
   }, [selectedPeriod]);
 
-  // **LÓGICA REVISADA**: Faturamento baseado na data de pagamento
+  const workByEvent = useMemo(() => buildWorkByEvent(data.dailyWork), [data.dailyWork]);
+
+  // Competências por tipo de valor: ver src/lib/financeMetrics.js
   const processedData = useMemo(() => {
     const { events = [], dailyWork = [], expenses = [], clients = [] } = data;
 
@@ -466,48 +491,20 @@ export default function ReportsPage() {
       calculatedStatus: getEventStatus(event)
     }));
 
-    // Função auxiliar para verificar se uma data está no intervalo
-    const isInRange = (dateStr, range) => {
-      if (!range.start || !range.end || !dateStr) return selectedPeriod === 'all_time';
-      try {
-        const date = parseISO(dateStr);
-        return isWithinInterval(date, { start: range.start, end: range.end });
-      } catch (error) {
-        console.warn('Erro ao parsear data:', dateStr, error);
-        return false;
-      }
-    };
-
-    const calculateRealEventValue = (event) => {
-      if (event.payment_status === 'paid' && event.paid_amount > 0) return event.paid_amount;
-
-      const eventDailyWork = dailyWork.filter((work) => work.event_id === event.id);
-      if (eventDailyWork.length > 0) {
-        const totalFromWork = eventDailyWork.reduce((sum, work) => sum + (work.daily_cache || 0), 0);
-        if (totalFromWork > 0) return totalFromWork;
-      }
-
-      return getEventCacheAmount(event);
-    };
+    const receivedAmount = (event) => getEventReceivedAmount(event, workByEvent[event.id] || []);
+    const projectedAmount = (event) => calculateEventReceivableAmount(event, workByEvent[event.id] || []);
 
     // Processar dados do período atual
     const processForPeriod = (range) => {
-      // **MUDANÇA CRÍTICA**: Faturamento baseado em paid_date, não em start_date
-      const paidEventsInPeriod = eventsWithCorrectStatus.filter((e) =>
-        e.payment_status === 'paid' &&
-        e.paid_date &&
-        isInRange(e.paid_date, range)
-      );
+      // Recebido: pela data do pagamento
+      const paidEventsInRange = paidEventsInPeriod(eventsWithCorrectStatus, range);
 
       // Eventos do período para outras métricas (baseado em start_date)
-      const periodEvents = eventsWithCorrectStatus.filter((e) => e.start_date && isInRange(e.start_date, range));
-      const periodWork = dailyWork.filter((w) => w.date && isInRange(w.date, range));
-      const periodExpenses = expenses.filter((e) => {
-        const expenseDate = e.expense_date || e.date;
-        return expenseDate && isInRange(expenseDate, range);
-      });
+      const periodEvents = eventsWithCorrectStatus.filter((e) => isDateInRange(e.start_date, range));
+      const periodWork = workInPeriod(dailyWork, range);
+      const periodExpenses = expensesInPeriod(expenses, range);
 
-      const realizedRevenue = paidEventsInPeriod.reduce((sum, e) => sum + (e.paid_amount || calculateRealEventValue(e)), 0);
+      const realizedRevenue = sumReceived(paidEventsInRange, workByEvent);
 
       const receivableRevenue = eventsWithCorrectStatus
         .filter(isReceivableEvent)
@@ -516,15 +513,17 @@ export default function ReportsPage() {
           return sum + calculateEventReceivableAmount(e, eventDailyWork);
         }, 0);
 
-      const projectedRevenue = eventsWithCorrectStatus.
-        filter((e) => e.calculatedStatus === 'scheduled').
-        reduce((sum, e) => sum + calculateRealEventValue(e), 0);
+      // Previsto: shows ainda não realizados com início no período
+      const projectedRevenue = projectedEventsInPeriod(eventsWithCorrectStatus, range).
+        reduce((sum, e) => sum + projectedAmount(e), 0);
 
       // Total de despesas
-      const totalExpenses = periodExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+      const totalExpenses = sumExpenses(periodExpenses);
 
-      // Receita total (realizada + a receber)
-      const totalRevenue = realizedRevenue + receivableRevenue;
+      // Receita do período = o que foi RECEBIDO no período (caixa).
+      // "A receber" é o saldo em aberto hoje, de todos os meses: não entra no lucro do mês
+      // (antes entrava e misturava meses — auditoria 15/10, P0).
+      const totalRevenue = realizedRevenue;
 
       // Lucro líquido
       const netProfit = totalRevenue - totalExpenses;
@@ -537,9 +536,9 @@ export default function ReportsPage() {
 
       // Cliente com maior faturamento no período (baseado em pagamentos)
       const clientRevenueMap = {};
-      paidEventsInPeriod.forEach((event) => {
+      paidEventsInRange.forEach((event) => {
         if (event.client_id) {
-          clientRevenueMap[event.client_id] = (clientRevenueMap[event.client_id] || 0) + (event.paid_amount || calculateRealEventValue(event));
+          clientRevenueMap[event.client_id] = (clientRevenueMap[event.client_id] || 0) + receivedAmount(event);
         }
       });
 
@@ -561,7 +560,7 @@ export default function ReportsPage() {
         scheduledEventsCount: periodEvents.filter((e) => e.calculatedStatus === 'scheduled').length,
         inProgressEventsCount: periodEvents.filter((e) => e.calculatedStatus === 'in_progress').length,
         events: periodEvents,
-        paidEvents: paidEventsInPeriod, // Eventos pagos no período
+        paidEvents: paidEventsInRange, // Eventos pagos no período
         work: periodWork,
         expenses: periodExpenses
       };
@@ -583,22 +582,24 @@ export default function ReportsPage() {
       next: nextData,
       trends: {
         revenue: calculateTrend(currentData.totalRevenue, previousData.totalRevenue),
-        receivable: calculateTrend(currentData.receivableRevenue, previousData.receivableRevenue),
+        // Saldo em aberto não tem comparação por período.
+        receivable: null,
         profit: calculateTrend(currentData.netProfit, previousData.netProfit),
         clients: calculateTrend(currentData.activeClientsCount, previousData.activeClientsCount)
       },
       // Dados para componentes filhos
       chartInput: {
-        realized: currentData.paidEvents.map((e) => ({ ...e, calculated_value: e.paid_amount || calculateRealEventValue(e) })),
+        // paid_date preenchido também para pagos antigos sem data (o gráfico posiciona por ele)
+        realized: currentData.paidEvents.map((e) => ({ ...e, paid_date: getEventReceivedDate(e), calculated_value: receivedAmount(e) })),
         receivable: eventsWithCorrectStatus.filter(isReceivableEvent).map((e) => {
           const eventDailyWork = dailyWork.filter((work) => work.event_id === e.id);
           return { ...e, calculated_value: calculateEventReceivableAmount(e, eventDailyWork) };
         }),
-        projected: eventsWithCorrectStatus.filter((e) => e.calculatedStatus === 'scheduled').map((e) => ({ ...e, calculated_value: calculateRealEventValue(e) })),
+        projected: eventsWithCorrectStatus.filter((e) => e.calculatedStatus === 'scheduled').map((e) => ({ ...e, calculated_value: projectedAmount(e) })),
         expenses: currentData.expenses
       }
     };
-  }, [data, currentRange, previousRange, nextRange, selectedPeriod]);
+  }, [data, workByEvent, currentRange, previousRange, nextRange]);
 
   // Handlers para KPIs clicáveis
   const handleKPIClick = useCallback((type) => {
@@ -615,7 +616,7 @@ export default function ReportsPage() {
           return {
             title: event.title,
             subtitle: paidDateStr,
-            value: event.paid_amount,
+            value: getEventReceivedAmount(event, workByEvent[event.id] || []),
             date: paidDateStr,
             event_ref: event,
             client,
@@ -644,9 +645,9 @@ export default function ReportsPage() {
       case 'lucro':
         setModalTitle('Composição do Lucro Líquido');
         setModalData([
-          { title: 'Receita Total', subtitle: 'Faturamento + A Receber', value: current.totalRevenue },
+          { title: 'Recebido no período', subtitle: 'Pagamentos com data neste período', value: current.totalRevenue },
           { title: 'Despesas Totais', subtitle: 'Gastos do período', value: -current.totalExpenses },
-          { title: 'Lucro Líquido', subtitle: 'Receita - Despesas', value: current.netProfit }]
+          { title: 'Lucro Líquido', subtitle: 'Recebido - Despesas', value: current.netProfit }]
         );
         break;
       case 'clientes': {
@@ -657,7 +658,7 @@ export default function ReportsPage() {
         setModalData(activeClients.map((client) => ({
           title: getClientDisplayName(client) || client.name || 'Cliente',
           subtitle: `${current.events.filter((e) => e.client_id === client.id).length} eventos no período`,
-          value: current.paidEvents.filter((e) => e.client_id === client.id).reduce((sum, e) => sum + (e.paid_amount || 0), 0),
+          value: sumReceived(current.paidEvents.filter((e) => e.client_id === client.id), workByEvent),
           client_id: client.id,
         })));
         break;
@@ -668,7 +669,7 @@ export default function ReportsPage() {
 
     setModalType(type);
     setModalOpen(true);
-  }, [processedData, data]);
+  }, [processedData, data, workByEvent]);
 
   // Handler para o clique no gráfico
   const handleChartClick = useCallback((payload) => {
@@ -759,81 +760,6 @@ export default function ReportsPage() {
     }
   };
 
-  const handleWorkEdit = (work) => {
-    if (!work || !selectedEvent) return;
-    setEditingWorkEntry(work);
-    setShowWorkModal(true);
-  };
-
-  const handleWorkDelete = (workId) => {
-    setConfirmDeleteWork(workId);
-  };
-
-  const handleConfirmWorkDelete = async () => {
-    try {
-      await deleteWork(confirmDeleteWork);
-      appToast.success('Registro de trabalho excluído!');
-      refreshData();
-    } catch (_e) {
-      appToast.error('Erro ao excluir registro');
-    } finally {
-      setConfirmDeleteWork(null);
-    }
-  };
-
-  const handleExpenseEdit = (expense) => {
-    setEditingExpense(expense);
-  };
-
-  const handleExpenseDelete = (expenseId) => {
-    setConfirmDeleteExpense(expenseId);
-  };
-
-  const handleConfirmExpenseDelete = async () => {
-    try {
-      await deleteExpense(confirmDeleteExpense);
-      appToast.success('Despesa excluída!');
-      refreshData();
-    } catch (_e) {
-      appToast.error('Erro ao excluir despesa');
-    } finally {
-      setConfirmDeleteExpense(null);
-    }
-  };
-
-  const handleApply12h = useCallback(
-    async (event) => {
-      if (!event?.id || !user?.id) {
-        appToast.error('Não foi possível aplicar 12h automáticas.');
-        return;
-      }
-      try {
-        const result = await applyAuto12Hours({
-          eventId: event.id,
-          userId: user.id,
-          origin: 'manual_12h',
-        });
-        if (result.data?.success) {
-          appToast.success('12 horas aplicadas automaticamente!', {
-            description: `${result.data.daysCreated || 1} dia(s) registrado(s).`,
-          });
-          setSelectedEvent(null);
-          await refreshData();
-        } else {
-          appToast.error('Erro ao aplicar horas', {
-            description: result.data?.error || 'Tente novamente.',
-          });
-        }
-      } catch (error) {
-        console.error('Erro ao aplicar 12h:', error);
-        appToast.error('Erro ao aplicar horas automáticas', {
-          description: error.message || 'Tente novamente.',
-        });
-      }
-    },
-    [user?.id, refreshData]
-  );
-
   const handleClientDetail = (clientId) => {
     hardNavigate(`/client-detail?id=${clientId}`);
   };
@@ -883,6 +809,8 @@ export default function ReportsPage() {
               <ExportManager
                 data={{
                   events: processedData.current.events,
+                  paidEvents: processedData.current.paidEvents,
+                  allWork: data.dailyWork,
                   work: processedData.current.work,
                   expenses: processedData.current.expenses,
                   clients: data.clients
@@ -940,10 +868,6 @@ export default function ReportsPage() {
             ))}
           </div>
         )}
-
-        <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
-          <BrazilVisitedMap events={data.events} clients={data.clients} />
-        </Suspense>
 
         {!isDataReady ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1035,14 +959,12 @@ export default function ReportsPage() {
         <div className="relative border-b border-slate-800">
           <div className="flex items-center gap-1 overflow-x-auto pb-px scrollbar-none">
             {[
-              { id: 'overview', label: 'Visão Geral', short: 'Geral', icon: BarChart3, count: null },
-              { id: 'clients', label: 'Clientes', short: 'Clientes', icon: Users, count: data.clients.length },
+              { id: 'overview', label: 'Geral', short: 'Geral', icon: BarChart3, count: null },
               { id: 'expenses', label: 'Despesas', short: 'Despesas', icon: DollarSign, count: processedData.current.expenses.length },
               { id: 'work', label: 'Trabalho', short: 'Trabalho', icon: Briefcase, count: processedData.current.work.length || null },
-              { id: 'activity', label: 'Atividade', short: 'Ativ.', icon: Activity, count: null },
               {
                 id: 'fiscal', label: 'Fiscal', short: 'Fiscal', icon: Receipt,
-                count: data.events.filter(e => e.status !== 'cancelled' && !e.nf_number && (Number(e.paid_amount) > 0 || Number(e.estimated_revenue) > 0 || Number(e.actual_revenue) > 0)).length || null,
+                count: data.events.filter(isNfPendingEvent).length || null,
               },
             ].map((view) => (
               <button
@@ -1074,15 +996,6 @@ export default function ReportsPage() {
         {/* Content based on selected view */}
         {selectedView === 'overview' && (
           <div className="space-y-4">
-            <Suspense fallback={<ChartBlockSkeleton className="h-24" />}>
-              <SmartInsights
-                events={data.events}
-                clients={data.clients}
-                expenses={data.expenses}
-                work={data.dailyWork}
-                profile={profile}
-              />
-            </Suspense>
             <Suspense fallback={<ChartBlockSkeleton className="h-40" />}>
               <ReceivablesAging
                 events={data.events}
@@ -1090,19 +1003,17 @@ export default function ReportsPage() {
                 work={data.dailyWork}
               />
             </Suspense>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Suspense fallback={<ChartBlockSkeleton />}>
-                <ReportsChart
-                  chartInput={processedData.chartInput}
-                  period={selectedPeriod}
-                  onDataClick={handleChartClick}
-                />
-              </Suspense>
-              <FinancialSummary stats={processedData.current} />
-            </div>
+            <Suspense fallback={<ChartBlockSkeleton />}>
+              <ReportsChart
+                chartInput={processedData.chartInput}
+                period={selectedPeriod}
+                onDataClick={handleChartClick}
+              />
+            </Suspense>
             <Suspense fallback={<ChartBlockSkeleton className="h-56" />}>
               <MonthlyTrend
                 events={data.events}
+                work={data.dailyWork}
                 goalRevenue={Number(profile?.monthly_goal_revenue) || 0}
               />
             </Suspense>
@@ -1110,7 +1021,7 @@ export default function ReportsPage() {
             {/* Seções secundárias colapsáveis */}
             <ExpandableSection id="yoy" label="Comparativo Ano a Ano">
               <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
-                <YearOverYear events={data.events} clients={data.clients} />
+                <YearOverYear events={data.events} clients={data.clients} work={data.dailyWork} />
               </Suspense>
             </ExpandableSection>
 
@@ -1140,21 +1051,27 @@ export default function ReportsPage() {
                 />
               </Suspense>
             </ExpandableSection>
-          </div>
-        )}
 
-        {selectedView === 'clients' && (
-          <Suspense fallback={<ChartBlockSkeleton className="h-96" />}>
-            <ClientDetailedTable
-              data={{
-                clients: data.clients,
-                events: processedData.current.events,
-                work: processedData.current.work,
-                expenses: processedData.current.expenses
-              }}
-              onClientClick={handleClientDetail}
-            />
-          </Suspense>
+            <ExpandableSection id="clients-detail" label="Clientes em detalhe">
+              <Suspense fallback={<ChartBlockSkeleton className="h-96" />}>
+                <ClientDetailedTable
+                  data={{
+                    clients: data.clients,
+                    events: processedData.current.events,
+                    work: processedData.current.work,
+                    expenses: processedData.current.expenses
+                  }}
+                  onClientClick={handleClientDetail}
+                />
+              </Suspense>
+            </ExpandableSection>
+
+            <div id="mapa-visitado" className="scroll-mt-20">
+              <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
+                <BrazilVisitedMap events={data.events} clients={data.clients} />
+              </Suspense>
+            </div>
+          </div>
         )}
 
         {selectedView === 'expenses' &&
@@ -1170,17 +1087,26 @@ export default function ReportsPage() {
         }
 
         {selectedView === 'work' && (
-          <Suspense fallback={<ChartBlockSkeleton className="h-80" />}>
-            <WorkAnalytics
-              work={processedData.current.work}
-              events={data.events}
-              clients={data.clients}
-            />
-          </Suspense>
-        )}
-
-        {selectedView === 'activity' && (
           <div className="space-y-6">
+            <Suspense fallback={<ChartBlockSkeleton className="h-80" />}>
+              <WorkAnalytics
+                work={processedData.current.work}
+                events={data.events}
+                clients={data.clients}
+              />
+            </Suspense>
+            {/* Lote 4 — horas e cachê v2: telemetria e revisão do passado (sem correção automática) */}
+            <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
+              <HoursOriginChart dailyWork={data.dailyWork} />
+            </Suspense>
+            <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
+              <HoursReviewList
+                events={data.events}
+                dailyWork={data.dailyWork}
+                clients={data.clients}
+                onOpenEvent={(ev) => setSelectedEvent(ev)}
+              />
+            </Suspense>
             <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
               <Suspense fallback={<ChartBlockSkeleton className="h-32" />}>
                 <ActivityHeatmap events={data.events} />
@@ -1219,6 +1145,7 @@ export default function ReportsPage() {
           </div>
         )}
 
+        {selectedView === 'overview' && (<>
         {/* Events List - AGORA FILTRÁVEL e com MODAL */}
         <div className="space-y-2">
           {chartFilter && (
@@ -1240,6 +1167,7 @@ export default function ReportsPage() {
             onEventClick={(event) => setSelectedEvent(event)} // NOVO: handler para abrir modal
           />
         </div>
+        </>)}
 
         {/* Empty State */}
         {processedData.current.events.length === 0 && !chartFilter &&
@@ -1275,42 +1203,12 @@ export default function ReportsPage() {
           <EventDetailModal
             event={selectedEvent}
             client={data.clients.find(c => c.id === selectedEvent.client_id)}
-            dailyWork={data.dailyWork.filter(w => w.event_id === selectedEvent.id)}
-            expenses={data.expenses.filter(e => e.event_id === selectedEvent.id)}
             onClose={() => setSelectedEvent(null)}
             onEdit={handleEventEdit}
             onDelete={handleEventDelete}
             onDuplicate={handleEventDuplicate}
-            onPaymentUpdate={() => refreshData({ silent: true })}
-            onWorkEdit={handleWorkEdit}
-            onWorkDelete={handleWorkDelete}
-            onExpenseEdit={handleExpenseEdit}
-            onExpenseDelete={handleExpenseDelete}
-            onApply12h={handleApply12h}
-          />
-        </Suspense>
-      )}
-
-      {showWorkModal && selectedEvent && (
-        <Suspense fallback={null}>
-          <DailyWorkModal
-            isOpen={showWorkModal}
-            onClose={() => {
-              setShowWorkModal(false);
-              setEditingWorkEntry(null);
-            }}
-            date={
-              editingWorkEntry?.date || editingWorkEntry?.work_date
-                ? new Date(`${(editingWorkEntry.date || editingWorkEntry.work_date).slice(0, 10)}T00:00:00`)
-                : new Date()
-            }
-            event={selectedEvent}
-            existingWork={editingWorkEntry}
-            onSuccess={() => {
-              setShowWorkModal(false);
-              setEditingWorkEntry(null);
-              refreshData({ silent: true });
-            }}
+            // So atualiza a tela: quem grava o pagamento e a janela do valor real.
+            onMarkPaid={() => refreshData({ silent: true })}
           />
         </Suspense>
       )}
@@ -1328,19 +1226,6 @@ export default function ReportsPage() {
         </Suspense>
       )}
 
-      {/* Form de edição de despesa */}
-      {editingExpense && (
-        <Suspense fallback={null}>
-          <ExpenseForm
-            open={!!editingExpense}
-            onOpenChange={(open) => { if (!open) setEditingExpense(null); }}
-            expense={editingExpense}
-            events={data.events}
-            onSuccess={() => { setEditingExpense(null); refreshData({ silent: true }); }}
-          />
-        </Suspense>
-      )}
-
       <ConfirmDialog
         open={!!confirmDeleteEvent}
         onOpenChange={(open) => !open && setConfirmDeleteEvent(null)}
@@ -1349,24 +1234,6 @@ export default function ReportsPage() {
         confirmLabel="Excluir"
         destructive
         onConfirm={handleConfirmEventDelete}
-      />
-      <ConfirmDialog
-        open={!!confirmDeleteWork}
-        onOpenChange={(open) => !open && setConfirmDeleteWork(null)}
-        title="Excluir registro de trabalho?"
-        description="Esta ação não pode ser desfeita."
-        confirmLabel="Excluir"
-        destructive
-        onConfirm={handleConfirmWorkDelete}
-      />
-      <ConfirmDialog
-        open={!!confirmDeleteExpense}
-        onOpenChange={(open) => !open && setConfirmDeleteExpense(null)}
-        title="Excluir despesa?"
-        description="Esta ação não pode ser desfeita."
-        confirmLabel="Excluir"
-        destructive
-        onConfirm={handleConfirmExpenseDelete}
       />
 
       {/* Modal de Projeção do Próximo Período */}
@@ -1405,7 +1272,7 @@ export default function ReportsPage() {
               .sort((a, b) => (a.start_date || '').localeCompare(b.start_date || ''))
               .map(event => {
                 const client = data.clients.find(c => c.id === event.client_id);
-                const value = getEventCacheAmount(event);
+                const value = calculateEventReceivableAmount(event, workByEvent[event.id] || []);
                 const dateStr = event.start_date
                   ? new Date(event.start_date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
                   : '—';

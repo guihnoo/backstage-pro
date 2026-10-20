@@ -9,8 +9,11 @@ import {
   sumReceivableAmount,
   daysOverduePayment,
   isPaymentOverdue,
+  dedupeWorkByDay,
+  getEventHoursStatus,
+  isEstimatedWork,
 } from './eventFinance';
-import { getEventStatus } from '@/components/utils/dateUtils';
+import { getEventStatus, todayLocalISO } from '@/components/utils/dateUtils';
 
 const yesterday = format(addDays(new Date(), -1), 'yyyy-MM-dd');
 const twoDaysAgo = format(addDays(new Date(), -2), 'yyyy-MM-dd');
@@ -107,6 +110,118 @@ describe('calculateEventReceivableAmount — daily_work vs fallback', () => {
   it('cai no getEventCacheAmount quando work está vazio', () => {
     const ev = { estimated_revenue: 4500, start_date: yesterday, end_date: yesterday };
     expect(calculateEventReceivableAmount(ev, [])).toBe(4500);
+  });
+
+  it('evento de 3 dias com 1 registro: os outros 2 dias contam a diária (auditoria 1A)', () => {
+    const ev = { daily_cache_value: 1200, start_date: '2026-10-01', end_date: '2026-10-03' };
+    expect(calculateEventReceivableAmount(ev, [{ date: '2026-10-01', daily_cache: 1200 }])).toBe(3600);
+  });
+
+  it('dia com hora extra soma ao restante dos dias', () => {
+    const ev = { daily_cache_value: 1200, start_date: '2026-10-01', end_date: '2026-10-03' };
+    expect(calculateEventReceivableAmount(ev, [{ date: '2026-10-02', daily_cache: 1400 }])).toBe(3800);
+  });
+
+  it('dois registros no mesmo dia contam uma vez (vale o mais recente)', () => {
+    const ev = { daily_cache_value: 1200, start_date: '2026-10-01', end_date: '2026-10-01' };
+    const work = [
+      { date: '2026-10-01', daily_cache: 1200, updated_at: '2026-10-01T10:00:00Z' },
+      { date: '2026-10-01', daily_cache: 1400, updated_at: '2026-10-01T23:00:00Z' },
+    ];
+    expect(calculateEventReceivableAmount(ev, work)).toBe(1400);
+  });
+
+  it('sem daily_cache_value, dia faltante usa o total do evento dividido pelos dias', () => {
+    const ev = { estimated_revenue: 3000, start_date: '2026-10-01', end_date: '2026-10-03' };
+    expect(calculateEventReceivableAmount(ev, [{ date: '2026-10-01', daily_cache: 1000 }])).toBe(3000);
+  });
+});
+
+describe('todayLocalISO — fuso de São Paulo (auditorias 1A/1B)', () => {
+  it('23 h em São Paulo ainda é o mesmo dia, mesmo já sendo dia seguinte em UTC', () => {
+    expect(todayLocalISO(new Date('2026-10-14T02:00:00Z'))).toBe('2026-10-13');
+  });
+  it('depois da meia-noite em São Paulo vira o dia', () => {
+    expect(todayLocalISO(new Date('2026-10-14T03:30:00Z'))).toBe('2026-10-14');
+  });
+});
+
+describe('dedupeWorkByDay', () => {
+  it('mantém registros sem data', () => {
+    expect(dedupeWorkByDay([{ daily_cache: 1 }, { daily_cache: 2 }])).toHaveLength(2);
+  });
+
+  it('turno aberto mais novo (valor 0) não apaga o dia já fechado', () => {
+    const rows = dedupeWorkByDay([
+      { date: '2026-10-01', daily_cache: 1200, updated_at: '2026-10-01T10:00:00Z' },
+      { date: '2026-10-01', daily_cache: 0, updated_at: '2026-10-01T23:00:00Z' },
+    ]);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].daily_cache).toBe(1200);
+  });
+});
+
+describe('calculateEventReceivableAmount — revisão independente do Lote 1', () => {
+  it('registro fora das datas do evento não ocupa um dia do evento', () => {
+    const ev = { daily_cache_value: 1000, start_date: '2026-10-01', end_date: '2026-10-02' };
+    expect(calculateEventReceivableAmount(ev, [{ date: '2026-09-30', daily_cache: 1000 }])).toBe(3000);
+  });
+
+  it('dia faltante usa cache_valor_base quando não há daily_cache_value', () => {
+    const ev = { cache_valor_base: 800, start_date: '2026-10-01', end_date: '2026-10-02' };
+    expect(calculateEventReceivableAmount(ev, [{ date: '2026-10-01', daily_cache: 800 }])).toBe(1600);
+  });
+
+  it('com actual_revenue total e registro parcial, o dia faltante vale o total dividido pelos dias', () => {
+    const ev = { actual_revenue: 2000, start_date: '2026-10-01', end_date: '2026-10-02' };
+    expect(calculateEventReceivableAmount(ev, [{ date: '2026-10-01', daily_cache: 1000 }])).toBe(2000);
+  });
+});
+
+describe('getEventHoursStatus — Lote 3', () => {
+  const ev = { start_date: '2026-10-01', end_date: '2026-10-04' };
+  const work = [
+    { date: '2026-10-01', daily_cache: 1200, origem: 'lancada' },
+    { date: '2026-10-02', daily_cache: 1200, notes: '12h automáticas' },
+  ];
+
+  it('classifica cada dia: lançado, estimado, pendente e futuro', () => {
+    const r = getEventHoursStatus(ev, work, '2026-10-03');
+    expect(r.days.map((d) => d.status)).toEqual(['lancado', 'estimado', 'pendente', 'futuro']);
+    expect(r.missing).toEqual(['2026-10-03']);
+    expect(r.estimated).toEqual(['2026-10-02']);
+    expect(r.complete).toBe(false);
+  });
+
+  it('completo quando todos os dias até hoje têm registro', () => {
+    const r = getEventHoursStatus(ev, work, '2026-10-02');
+    expect(r.complete).toBe(true);
+  });
+
+  it('coluna origem tem prioridade sobre a nota', () => {
+    expect(isEstimatedWork({ origem: 'lancada', notes: '12h automáticas' })).toBe(false);
+    expect(isEstimatedWork({ origem: 'estimada' })).toBe(true);
+  });
+
+  it('fim antes do início não libera a trava (conta o dia de início)', () => {
+    const r = getEventHoursStatus({ start_date: '2026-10-05', end_date: '2026-10-01' }, [], '2026-10-06');
+    expect(r.missing).toEqual(['2026-10-05']);
+    expect(r.complete).toBe(false);
+  });
+
+  it('sem end_date usa o dia de início', () => {
+    const r = getEventHoursStatus({ start_date: '2026-10-05' }, [], '2026-10-06');
+    expect(r.days).toHaveLength(1);
+  });
+
+  it('dia futuro não bloqueia', () => {
+    const r = getEventHoursStatus({ start_date: '2026-10-10', end_date: '2026-10-11' }, [], '2026-10-06');
+    expect(r.complete).toBe(true);
+  });
+
+  it('evento de um dia só', () => {
+    const r = getEventHoursStatus({ start_date: '2026-10-05', end_date: '2026-10-05' }, [], '2026-10-06');
+    expect(r.missing).toEqual(['2026-10-05']);
   });
 });
 

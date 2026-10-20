@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { differenceInDays, parseISO, format, isValid, addWeeks, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -24,6 +24,11 @@ import { useClients } from '@/lib/useClients';
 import ClientCombobox from '@/components/clients/ClientCombobox';
 import EventLocationSection from '@/components/events/EventLocationSection';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
+import { parseBRL } from '@/lib/money';
+import { MEAL_POLICY_LABELS } from '@/lib/mealPolicy';
+
+// Dinheiro digitado (1.200,50 / 1200.5); invalido vira 0, nunca NaN.
+const moneyNum = (v) => { const n = parseBRL(v); return Number.isFinite(n) ? n : 0; };
 
 const PAYMENT_MODELS = [
   { value: 'HORAS_EXTRAS', label: 'Horas Extras' },
@@ -42,6 +47,7 @@ const defaultState = {
   payment_model: 'HORAS_EXTRAS',
   daily_cache_value: '',
   cache_valor_base: '',
+  meal_policy: null,
   color: DEFAULT_EVENT_COLOR,
   location: '',
   location_city: '',
@@ -82,19 +88,23 @@ export default function EventForm({
     if (!isOpen) return;
 
     const seed = event || prefillData || initialData || {};
+    const isEditing = Boolean(event?.id);
+    const defaultDailyRate = !isEditing && Number(profile?.daily_rate) > 0 ? String(profile.daily_rate) : '';
     setFormData({
       ...defaultState,
       client_id: seed.client_id || '',
       title: seed.title || '',
       start_date: seed.start_date ? normalizeDateString(seed.start_date) : '',
       end_date: seed.end_date ? normalizeDateString(seed.end_date) : '',
-      start_time: seed.start_time || '09:00',
-      end_time: seed.end_time || '18:00',
+      // Sem horário inventado: evento novo começa vazio (antes gravava 09:00–18:00 escondido).
+      start_time: seed.start_time || '',
+      end_time: seed.end_time || '',
       payment_due_date: seed.payment_due_date ? normalizeDateString(seed.payment_due_date) : '',
       payment_status: seed.payment_status || 'unpaid',
       payment_model: seed.payment_model || 'HORAS_EXTRAS',
-      daily_cache_value: seed.daily_cache_value ?? '',
+      daily_cache_value: seed.daily_cache_value ?? defaultDailyRate,
       cache_valor_base: seed.cache_valor_base ?? '',
+      meal_policy: seed.meal_policy || null,
       color: seed.color || resolveEventColor({ client_id: seed.client_id, color: seed.color }, clients.find((c) => c.id === seed.client_id)) || theme.primaryHex,
       location: seed.location || '',
       location_city: seed.location_city || '',
@@ -102,11 +112,15 @@ export default function EventForm({
       location_lat: seed.location_lat ?? null,
       location_lng: seed.location_lng ?? null,
       observacoes_md: seed.observacoes_md || '',
-      nf_number: seed.nf_number || '',
+      nf_number: seed.nf_number || seed.nfe_numero || '',
       nf_issued_at: seed.nf_issued_at ? seed.nf_issued_at.slice(0, 10) : '',
     });
+    // "Repetir" sempre começa desligado ao abrir o formulário (antes ficava ligado e duplicava séries).
+    setRepeatEnabled(false);
+    setRepeatTimes(3);
+    setRepeatUnit('weeks');
     if (!isOpen) setExtraClients([]);
-  }, [isOpen, event, prefillData, initialData]);
+  }, [isOpen, event, prefillData, initialData, profile?.daily_rate, clients, theme.primaryHex]);
 
   const setField = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -117,7 +131,7 @@ export default function EventForm({
     [...clients, ...extraClients].forEach((c) => {
       if (c?.id) map.set(c.id, c);
     });
-    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+    return Array.from(map.values()).sort((a, b) => (a.name || '').localeCompare(b.name || '', 'pt-BR'));
   }, [clients, extraClients]);
 
   const selectedClient = useMemo(
@@ -150,6 +164,23 @@ export default function EventForm({
     try {
       const created = await createClient(data);
       setExtraClients((prev) => [...prev, created]);
+      if (created?.id && !event?.id) {
+        setFormData((prev) => {
+          const next = { ...prev, client_id: created.id };
+          const fromClient = Number(created.default_daily_cache) || 0;
+          const fromProfile = Number(profile?.daily_rate) || 0;
+          if (fromClient > 0) {
+            next.daily_cache_value = fromClient;
+          } else if ((prev.daily_cache_value === '' || prev.daily_cache_value == null) && fromProfile > 0) {
+            next.daily_cache_value = fromProfile;
+          }
+          if (created.policy_default_payment_model) {
+            next.payment_model = created.policy_default_payment_model;
+          }
+          next.color = resolveEventColor({ client_id: created.id }, created);
+          return next;
+        });
+      }
       return created;
     } catch (error) {
       appToast.error('Não foi possível criar o cliente.', {
@@ -157,7 +188,7 @@ export default function EventForm({
       });
       throw error;
     }
-  }, [createClient]);
+  }, [createClient, event?.id, profile?.daily_rate]);
 
   const conflictingEvents = useMemo(() => {
     if (!formData.start_date) return [];
@@ -179,7 +210,7 @@ export default function EventForm({
   }, [formData.start_date, formData.end_date, allEvents, event]);
 
   const eventSummary = useMemo(() => {
-    const daily = Number(formData.daily_cache_value) || 0;
+    const daily = moneyNum(formData.daily_cache_value);
     if (!formData.start_date || daily <= 0) return null;
     try {
       const start = parseISO(formData.start_date);
@@ -251,7 +282,7 @@ export default function EventForm({
         name: formData.title.trim(),
         title: formData.title.trim(),
         payment_model: formData.payment_model,
-        daily_cache_value: formData.daily_cache_value === '' ? 0 : Number(formData.daily_cache_value),
+        daily_cache_value: moneyNum(formData.daily_cache_value),
         color: formData.color,
       });
       appToast.success('Template salvo!', { description: `"${formData.title}" disponível para próximos eventos.` });
@@ -293,8 +324,12 @@ export default function EventForm({
         payment_status: formData.payment_status || 'pending',
         ...(event?.id ? { status: event.status || 'pending' } : { status: 'pending' }),
         payment_model: formData.payment_model || 'HORAS_EXTRAS',
-        daily_cache_value: formData.daily_cache_value === '' ? 0 : Number(formData.daily_cache_value),
-        cache_valor_base: formData.cache_valor_base === '' ? null : Number(formData.cache_valor_base),
+        daily_cache_value: moneyNum(formData.daily_cache_value),
+        cache_valor_base: formData.cache_valor_base === '' || !Number.isFinite(Number(formData.cache_valor_base))
+          ? null
+          : Number(formData.cache_valor_base),
+        // Alimentacao: so manda quando trocou (depende da migration 041).
+        ...((formData.meal_policy || null) !== (event?.meal_policy ?? null) ? { meal_policy: formData.meal_policy || null } : {}),
         color: resolveEventColor({ client_id: formData.client_id, color: formData.color }, selectedClient),
         location: formData.location?.trim() || null,
         location_city: formData.location_city || null,
@@ -315,15 +350,30 @@ export default function EventForm({
           const addFn = repeatUnit === 'weeks' ? addWeeks : addMonths;
           const startBase = parseISO(payload.start_date);
           const endBase = parseISO(payload.end_date || payload.start_date);
+          // Cada repetição é tentada uma vez. Se alguma falhar, o formulário fecha mesmo assim
+          // (antes ficava aberto e, ao tentar de novo, duplicava os shows já criados).
+          const falharam = [];
           for (let i = 1; i <= repeatTimes; i++) {
-            await createEvent({
-              ...payload,
-              start_date: format(addFn(startBase, i), 'yyyy-MM-dd'),
-              end_date: format(addFn(endBase, i), 'yyyy-MM-dd'),
-              payment_status: 'pending',
-            });
+            const start_date = format(addFn(startBase, i), 'yyyy-MM-dd');
+            try {
+              await createEvent({
+                ...payload,
+                start_date,
+                end_date: format(addFn(endBase, i), 'yyyy-MM-dd'),
+                payment_status: 'pending',
+              });
+            } catch {
+              falharam.push(start_date);
+            }
           }
-          appToast.success(`${repeatTimes + 1} eventos criados`, { description: `Série de ${repeatTimes + 1} shows adicionada à agenda.` });
+          const criados = repeatTimes + 1 - falharam.length;
+          if (falharam.length) {
+            appToast.error(`${criados} de ${repeatTimes + 1} shows criados`, {
+              description: `Não foi possível criar: ${falharam.map((d) => d.split('-').reverse().join('/')).join(', ')}. Crie essas datas de novo.`,
+            });
+          } else {
+            appToast.success(`${criados} eventos criados`, { description: `Série de ${criados} shows adicionada à agenda.` });
+          }
         } else {
           appToast.success('Evento criado', { description: 'Já está na sua agenda.' });
         }
@@ -490,7 +540,7 @@ export default function EventForm({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="ef-cache">Cachê por Dia (R$)</Label>
-              <Input id="ef-cache" type="number" step="0.01" min="0" value={formData.daily_cache_value} onChange={(e) => setField('daily_cache_value', e.target.value)} className="bg-slate-800 border-slate-700" />
+              <Input id="ef-cache" type="text" inputMode="decimal" placeholder="0,00" value={formData.daily_cache_value} onChange={(e) => setField('daily_cache_value', e.target.value)} className="bg-slate-800 border-slate-700" />
               {clientCacheHint && (
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-[11px] text-slate-500">
@@ -524,6 +574,24 @@ export default function EventForm({
             </div>
           </div>
 
+          {/* Alimentacao so deste evento (padrao vem do cliente) */}
+          <div className="space-y-2">
+            <Label>Alimentação neste evento</Label>
+            <Select value={formData.meal_policy || '__cliente__'} onValueChange={(v) => setField('meal_policy', v === '__cliente__' ? null : v)}>
+              <SelectTrigger className="bg-slate-800 border-slate-700">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-800 border-slate-700">
+                <SelectItem value="__cliente__">
+                  Igual ao cliente{selectedClient?.meal_policy ? ` (${MEAL_POLICY_LABELS[selectedClient.meal_policy] || ''})` : ''}
+                </SelectItem>
+                {Object.entries(MEAL_POLICY_LABELS).map(([key, label]) => (
+                  <SelectItem key={key} value={key}>{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="ef-payment-due">Vencimento do pagamento</Label>
             <Input
@@ -541,7 +609,7 @@ export default function EventForm({
               style={theme.activeSurfaceStyle}
             >
               <span className="text-slate-400">
-                {eventSummary.days} {eventSummary.days === 1 ? 'dia' : 'dias'} × R$ {Number(formData.daily_cache_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                {eventSummary.days} {eventSummary.days === 1 ? 'dia' : 'dias'} × R$ {moneyNum(formData.daily_cache_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </span>
               <span className="font-bold" style={theme.accentStyle}>
                 = R$ {eventSummary.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}

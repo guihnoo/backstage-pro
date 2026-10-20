@@ -1,8 +1,9 @@
 import { useState, useMemo, useEffect } from 'react';
-import { getEventCacheAmount } from '@/lib/eventFinance';
-import { Dialog, DialogContent, DialogHeader, DialogFooter } from '@/components/ui/dialog';
+import PaymentConfirmModal from '@/components/reports/PaymentConfirmModal';
+import { getEventCacheAmount, calculateEventReceivableAmount, isEstimatedWork, isCancelledEvent } from '@/lib/eventFinance';
+import { buildEventClosing } from '@/lib/eventClosing';
+import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -56,13 +57,15 @@ import { useDailyWork } from '@/lib/useDailyWork';
 import { applyAuto12Hours } from '@/api/functions';
 import { useStatusToggle } from '@/lib/useStatusToggle';
 import { openWhatsAppCharge, buildEventReport, buildChargeMessage, buildProposalMessage } from '@/lib/whatsapp';
-import { generatePixPayload, buildPixWhatsAppMessage } from '@/lib/pixPayload';
+import { generatePixPayload, generatePixQrDataUrl, buildPixWhatsAppMessage } from '@/lib/pixPayload';
+import { createClosingShareLink } from '@/lib/closingShareLink';
 import { startTimer, getTimer, stopTimer } from '@/lib/timerStore';
 import appToast from '@/lib/appToast';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
-import EventHeading from '@/components/events/EventHeading';
+import { getEventDisplay } from '@/lib/eventDisplay';
 import EventLocationSection from '@/components/events/EventLocationSection';
 import { EventChecklist } from '@/components/calendar/EventChecklist';
+import ClientRatingSection from '@/components/events/ClientRatingSection';
 import { useEvents } from '@/lib/useEvents';
 import { useExpenses } from '@/lib/useExpenses';
 import ExpenseForm from '@/components/expenses/ExpenseForm';
@@ -234,18 +237,20 @@ export default function EventDetailModal({
   onDelete,
   onDuplicate,
   onAddWork: _onAddWork,
-  onMarkPaid
+  onMarkPaid,
+  initialTab = 'resumo',
 }) {
   const { formatCurrency, isVisible } = useFinancialVisibility();
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const { primaryHex } = useCategoryTheme();
   const { dailyWork, delete: deleteDailyWorkEntry } = useDailyWork();
   const { update: updateEvent } = useEvents();
   const { expenses, refetch: refetchExpenses } = useExpenses();
-  const { settings: userSettings } = useUserSettings();
-  const [activeTab, setActiveTab] = useState('resumo');
+  const { settings: userSettings, upsert: upsertUserSettings } = useUserSettings();
+  const [activeTab, setActiveTab] = useState(initialTab || 'resumo');
   const [activeTimer, setActiveTimer] = useState(() => getTimer());
   const [generatingPDF, setGeneratingPDF] = useState(false);
+  const [sharingPDF, setSharingPDF] = useState(false);
   const [generatingContract, setGeneratingContract] = useState(false);
   const [generatingReceipt, setGeneratingReceipt] = useState(false);
   const [applying12h, setApplying12h] = useState(false);
@@ -255,7 +260,12 @@ export default function EventDetailModal({
   const [workModalDate, setWorkModalDate] = useState(null);
   const [editingWorkEntry, setEditingWorkEntry] = useState(null);
   const [confirmDeleteWorkId, setConfirmDeleteWorkId] = useState(null);
+  const [payModalOpen, setPayModalOpen] = useState(false);
   const [showExpenses, setShowExpenses] = useState(true);
+  const [editingPixInline, setEditingPixInline] = useState(false);
+  const [quickPixType, setQuickPixType] = useState('CPF');
+  const [quickPixKey, setQuickPixKey] = useState('');
+  const [savingQuickPix, setSavingQuickPix] = useState(false);
   const [locDraft, setLocDraft] = useState({
     location: '',
     location_city: '',
@@ -264,6 +274,30 @@ export default function EventDetailModal({
     location_lng: null,
   });
   const { confirmEvent, toggling } = useStatusToggle();
+
+  useEffect(() => {
+    if (userSettings) {
+      setQuickPixKey(userSettings.pix_key || '');
+      setQuickPixType(userSettings.pix_key_type || 'CPF');
+    }
+  }, [userSettings]);
+
+  const handleSaveQuickPix = async () => {
+    if (!quickPixKey.trim()) return;
+    setSavingQuickPix(true);
+    try {
+      await upsertUserSettings({
+        pix_key: quickPixKey.trim(),
+        pix_key_type: quickPixType,
+      });
+      setEditingPixInline(false);
+      appToast.success('Chave PIX salva!', { description: 'Já incluída no PDF e na cobrança do evento.' });
+    } catch (err) {
+      appToast.error('Erro ao salvar PIX', { description: err.message });
+    } finally {
+      setSavingQuickPix(false);
+    }
+  };
 
   const closeWorkModal = () => {
     setShowWorkModal(false);
@@ -355,7 +389,7 @@ export default function EventDetailModal({
   const handleChargeWhatsApp = () => {
     const phone = client?.phone;
     if (!phone) { appToast.error('Cliente sem telefone cadastrado.'); return; }
-    const value = getEventCacheAmount(event);
+    const value = receivableAmount;
     const message = buildChargeMessage({
       clientName: client?.name,
       events: [{ title: event.title, start_date: event.start_date, amount: value }],
@@ -367,7 +401,7 @@ export default function EventDetailModal({
   const handleCopyPix = () => {
     const pixKey = userSettings?.pix_key;
     if (!pixKey) { appToast.error('Chave PIX não cadastrada.', { description: 'Adicione sua chave PIX no Perfil.' }); return; }
-    const amount = getEventCacheAmount(event);
+    const amount = receivableAmount;
     const payload = generatePixPayload({
       pixKey,
       merchantName: userSettings?.report_full_name || profile?.full_name || 'Tecnico',
@@ -384,7 +418,7 @@ export default function EventDetailModal({
     const phone = client?.phone;
     const pixKey = userSettings?.pix_key;
     if (!pixKey) { appToast.error('Chave PIX não cadastrada no Perfil.'); return; }
-    const amount = getEventCacheAmount(event);
+    const amount = receivableAmount;
     const payload = generatePixPayload({
       pixKey,
       merchantName: userSettings?.report_full_name || profile?.full_name || 'Tecnico',
@@ -434,50 +468,213 @@ export default function EventDetailModal({
     }
   };
 
+  const buildFullReportMessage = () => {
+    const pixKey = userSettings?.pix_key || '';
+    const pixKeyType = userSettings?.pix_key_type || 'Chave PIX';
+    const providerName = userSettings?.report_full_name || profile?.name || profile?.full_name || '';
+    const pixPayloadStr = pixKey
+      ? generatePixPayload({
+          pixKey,
+          merchantName: providerName || 'Tecnico',
+          merchantCity: profile?.city || event.location_city || 'Brasil',
+          amount: receivableAmount,
+          txId: (event.title || 'show').replace(/[^a-zA-Z0-9]/g, '').slice(0, 25) || '***',
+        })
+      : '';
+    return buildEventReport({
+      event,
+      client,
+      work: eventWork,
+      expenses: eventExpenses,
+      pixKey,
+      pixKeyType,
+      pixPayloadStr,
+      providerName,
+    });
+  };
+
   const handleSendReport = () => {
     const phone = client?.phone;
-    if (!phone) { appToast.error('Cliente sem telefone cadastrado.', { description: 'Adicione o telefone na página do cliente.' }); return; }
-    const message = buildEventReport({ event, client, work: eventWork, expenses: eventExpenses });
+    const message = buildFullReportMessage();
+    if (!phone) {
+      navigator.clipboard?.writeText(message).then(() =>
+        appToast.success('Relatório completo copiado!', { description: 'Cole no WhatsApp do contratante.' })
+      );
+      return;
+    }
     const ok = openWhatsAppCharge(phone, message);
     if (!ok) appToast.error('Não foi possível abrir o WhatsApp.');
+  };
+
+  const handleCopyClosingLink = async () => {
+    try {
+      const url = await createClosingShareLink({
+        event,
+        client,
+        work: eventWork,
+        expenses: eventExpenses,
+        profile: { ...(profile || {}), email: profile?.email || user?.email || '' },
+        userSettings: userSettings || {},
+      });
+      await navigator.clipboard?.writeText(url);
+      appToast.success('Link de Fechamento & PIX copiado!', {
+        description: 'Envie para a produtora visualizar o fechamento, QR Code PIX e NF-e no navegador.',
+      });
+    } catch (err) {
+      appToast.error('Não foi possível copiar o link', { description: err.message });
+    }
+  };
+
+  const generateClosingPdfBlob = async () => {
+    const { pdf } = await import('@react-pdf/renderer');
+    const { EventPDFDocument } = await import('@/lib/EventPDFDocument');
+    const pixKey = userSettings?.pix_key || null;
+    const providerName = userSettings?.report_full_name || profile?.name || profile?.full_name || 'Prestador';
+    let pixQrDataUrl = '';
+    if (pixKey) {
+      pixQrDataUrl = await generatePixQrDataUrl({
+        pixKey,
+        merchantName: providerName,
+        merchantCity: profile?.city || event?.location_city || 'Brasil',
+        amount: receivableAmount,
+        txId: (event?.title || client?.name || 'SHOW').replace(/[^a-zA-Z0-9]/g, '').slice(0, 25) || '***',
+      });
+    }
+    const reportSettings = {
+      report_full_name:  userSettings?.report_full_name  || profile?.name || profile?.full_name || null,
+      report_subtitle:   userSettings?.report_subtitle   || null,
+      report_profession: userSettings?.report_profession || null,
+      cpf_cnpj:          userSettings?.cpf_cnpj          || profile?.cnpj || profile?.cpf_cnpj || null,
+      phone:             profile?.phone                  || null,
+      email:             profile?.email                  || user?.email || null,
+      pix_key:           pixKey,
+      pix_key_type:      userSettings?.pix_key_type      || 'Chave PIX',
+      pix_qr_data_url:   pixQrDataUrl || null,
+    };
+    const enrichedProfile = {
+      ...(profile || {}),
+      email: profile?.email || user?.email || '',
+    };
+    const enrichedExpenses = await Promise.all(
+      (eventExpenses || []).map(async (exp) => {
+        if (!exp.is_reimbursable || !exp.receipt_url) return exp;
+        if (String(exp.receipt_url).startsWith('data:image/')) {
+          return { ...exp, receipt_data_url: exp.receipt_url };
+        }
+        try {
+          const resp = await fetch(exp.receipt_url);
+          if (!resp.ok) return exp;
+          const b = await resp.blob();
+          const dataUrl = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(String(reader.result || ''));
+            reader.onerror = () => resolve('');
+            reader.readAsDataURL(b);
+          });
+          return dataUrl.startsWith('data:image/') ? { ...exp, receipt_data_url: dataUrl } : exp;
+        } catch {
+          return exp;
+        }
+      })
+    );
+    const blob = await pdf(
+      <EventPDFDocument
+        event={event}
+        client={client}
+        work={eventWork}
+        expenses={enrichedExpenses}
+        profile={enrichedProfile}
+        reportSettings={reportSettings}
+      />
+    ).toBlob();
+    const clientSlug = (client?.name || event?.title || 'cliente').replace(/\s+/g, '_').substring(0, 20);
+    const dateSlug = event?.start_date ? event.start_date.replace(/-/g, '') : format(new Date(), 'yyyyMMdd');
+    const filename = `Fechamento_${clientSlug}_${dateSlug}.pdf`;
+    return { blob, filename };
   };
 
   const handleDownloadPDF = async () => {
     if (generatingPDF) return;
     setGeneratingPDF(true);
     try {
-      const { pdf } = await import('@react-pdf/renderer');
-      const { EventPDFDocument } = await import('@/lib/EventPDFDocument');
-      const reportSettings = {
-        report_full_name: userSettings?.report_full_name || null,
-        report_subtitle:  userSettings?.report_subtitle  || null,
-        report_profession:userSettings?.report_profession|| null,
-        pix_key:          userSettings?.pix_key          || null,
-        pix_key_type:     userSettings?.pix_key_type     || 'Chave PIX',
-      };
-      const blob = await pdf(
-        <EventPDFDocument
-          event={event}
-          client={client}
-          work={eventWork}
-          expenses={eventExpenses}
-          profile={profile || {}}
-          reportSettings={reportSettings}
-        />
-      ).toBlob();
-      const clientSlug = (client?.name || 'cliente').replace(/\s+/g, '_').substring(0, 20);
-      const dateSlug = event?.start_date ? event.start_date.replace(/-/g, '') : format(new Date(), 'yyyyMMdd');
-      const filename = `Fechamento_${clientSlug}_${dateSlug}.pdf`;
+      const { blob, filename } = await generateClosingPdfBlob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url; a.download = filename; a.click();
       URL.revokeObjectURL(url);
-      appToast.success('PDF gerado com sucesso!', { description: filename });
+      appToast.success('PDF de Fechamento gerado!', { description: filename });
     } catch (err) {
       console.error('Erro ao gerar PDF:', err);
       appToast.error('Erro ao gerar PDF', { description: err.message });
     } finally {
       setGeneratingPDF(false);
+    }
+  };
+
+  const handleSharePDF = async () => {
+    if (sharingPDF) return;
+    setSharingPDF(true);
+    try {
+      const { blob, filename } = await generateClosingPdfBlob();
+      const message = buildFullReportMessage();
+      const pdfFile = new File([blob], filename, { type: 'application/pdf' });
+      const filesToShare = [pdfFile];
+
+      if (event?.nfe_arquivo_url) {
+        try {
+          const resp = await fetch(event.nfe_arquivo_url);
+          if (resp.ok) {
+            const nfeBlob = await resp.blob();
+            const nfeName = event.nfe_arquivo_nome || `NFe_${event.nfe_numero || event.nf_number || 'anexo'}.pdf`;
+            const nfeFile = new File([nfeBlob], nfeName, { type: nfeBlob.type || 'application/pdf' });
+            filesToShare.push(nfeFile);
+          }
+        } catch {
+          // Em caso de falha de rede/CORS no anexo da NF-e, envia ao menos o PDF de Fechamento
+        }
+      }
+
+      const shareableFiles = (typeof navigator !== 'undefined' && navigator.canShare)
+        ? (navigator.canShare({ files: filesToShare })
+            ? filesToShare
+            : (navigator.canShare({ files: [pdfFile] }) ? [pdfFile] : null))
+        : null;
+
+      if (shareableFiles) {
+        await navigator.share({
+          title: `Fechamento — ${event?.title || client?.name || 'Evento'}`,
+          text: message,
+          files: shareableFiles,
+        });
+        appToast.success(
+          shareableFiles.length > 1
+            ? 'PDF de Fechamento + NF-e prontos para envio!'
+            : 'PDF pronto para envio!'
+        );
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = filename; a.click();
+        URL.revokeObjectURL(url);
+        if (client?.phone) {
+          openWhatsAppCharge(client.phone, message);
+          appToast.success('PDF baixado + WhatsApp aberto!', {
+            description: 'Anexe o PDF recém-baixado na conversa do WhatsApp.',
+          });
+        } else {
+          await navigator.clipboard?.writeText(message);
+          appToast.success('PDF baixado + Relatório copiado!', {
+            description: filename,
+          });
+        }
+      }
+    } catch (err) {
+      if (err?.name !== 'AbortError') {
+        console.error('Erro ao compartilhar PDF:', err);
+        appToast.error('Erro ao enviar PDF', { description: err.message });
+      }
+    } finally {
+      setSharingPDF(false);
     }
   };
 
@@ -562,6 +759,13 @@ export default function EventDetailModal({
     return { totalHours, totalOvertime, totalEarned, hourlyRate };
   }, [eventWork]);
 
+  // Valor único do evento: horas lançadas + diária dos dias sem registro (Lote 3).
+  // É o mesmo número da cobrança (WhatsApp/PIX), do "a receber" e do recebimento.
+  const receivableAmount = useMemo(
+    () => (event ? calculateEventReceivableAmount(event, eventWork) : 0),
+    [event, eventWork]
+  );
+
   const estimatedValue = useMemo(() => {
     if (!event || eventWork.length > 0) return null;
     return getEventCacheAmount(event);
@@ -570,7 +774,7 @@ export default function EventDetailModal({
   const eventDays = useMemo(() => {
     const start = event?.start_date;
     const end = event?.end_date || event?.start_date;
-    if (!start || !end || start === end) return [];
+    if (!start || !end) return [];
     const days = [];
     const cursor = new Date(start + 'T00:00:00');
     const last = new Date(end + 'T00:00:00');
@@ -597,14 +801,88 @@ export default function EventDetailModal({
 
   const profitSummary = useMemo(() => {
     if (!event) return null;
-    const revenue = Number(event.paid_amount) > 0 ? Number(event.paid_amount) : getEventCacheAmount(event) || 0;
+    const revenue = Number(event.paid_amount) > 0 ? Number(event.paid_amount) : receivableAmount || 0;
     if (revenue <= 0 && expenseTotals.total <= 0) return null;
     const profit = revenue - expenseTotals.total;
     const margin = revenue > 0 ? (profit / revenue) * 100 : null;
     return { revenue, expenses: expenseTotals.total, profit, margin };
-  }, [event, expenseTotals.total]);
+  }, [event, expenseTotals.total, receivableAmount]);
 
   if (!event) return null;
+
+  // Fechamento do evento inteiro (todos os dias) — aparece quando o evento terminou ou já possui horas registradas hoje.
+  const closingTodayIso = normalizeDateString(new Date());
+  const closingEnd = event.end_date || event.start_date || '';
+  const hasAnyWork = eventWork.length > 0 || Boolean(event.auto_hours_applied);
+  const eventEnded =
+    Boolean(closingEnd) &&
+    !isCancelledEvent(event) &&
+    (closingEnd < closingTodayIso || (closingEnd === closingTodayIso && hasAnyWork));
+  const closing = eventEnded ? buildEventClosing(event, eventWork, eventExpenses) : null;
+  const fmtDayShort = (iso) => String(iso || '').slice(5, 10).split('-').reverse().join('/');
+  const savedNfeNum = event.nfe_numero || event.nf_number || '';
+  const hasLinkedNfe = Boolean(savedNfeNum || event.nfe_arquivo_url);
+
+  const closingSummaryCard = closing ? (
+    <Card className="bg-slate-800/70 border-slate-600">
+      <CardContent className="p-4 space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-xs uppercase tracking-wider text-slate-400">Valor total no Fechamento</p>
+            <p className="text-2xl font-black text-white font-mono">
+              {isVisible ? formatCurrency(closing.total) : '••••'}
+            </p>
+            <p className="text-xs text-slate-400">
+              {closing.rows.length} {closing.rows.length === 1 ? 'dia' : 'dias'} · {closing.totalHoras} h
+              {closing.totalReembolsos > 0 && isVisible ? ` · reembolso ${formatCurrency(closing.totalReembolsos)}` : ''}
+            </p>
+          </div>
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+              userSettings?.pix_key
+                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                : 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+            }`}>
+              {userSettings?.pix_key ? '✓ PIX no PDF' : '⚠ Sem PIX no PDF'}
+            </span>
+            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+              hasLinkedNfe
+                ? 'bg-blue-500/10 border-blue-500/30 text-blue-300'
+                : 'bg-slate-700/60 border-slate-600 text-slate-300'
+            }`}>
+              {hasLinkedNfe ? `✓ NF-e ${savedNfeNum || 'anexada'}` : 'NF-e opcional'}
+            </span>
+          </div>
+        </div>
+
+        {closing.semHoras.length > 0 && (
+          <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-200">
+            <p className="flex items-center gap-1.5 font-semibold">
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              Faltam horas em {closing.semHoras.length} {closing.semHoras.length === 1 ? 'dia' : 'dias'}: {closing.semHoras.map(fmtDayShort).join(', ')}
+            </p>
+            <p className="text-xs text-amber-200/80 mt-1">Esses dias entram no relatório com a diária, sem horas extras.</p>
+            <button
+              type="button"
+              onClick={() => { setActiveTab('trabalho'); openWorkModal(closing.semHoras[0], null); }}
+              className="mt-2 text-xs font-semibold underline underline-offset-2"
+            >
+              Lançar horas agora
+            </button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  ) : null;
+
+  // Confirmar recebimento só com as horas preenchidas (regra do dono); o usuário pode
+  // escolher "cobrar assim mesmo".
+  // Confirmar recebimento usa a mesma janela das outras telas: o usuario digita o VALOR REAL
+  // que caiu na conta (regra do dono), escolhe a forma e a data; a janela ja trava se faltarem horas.
+  const requestMarkPaid = () => {
+    if (event.payment_status === 'paid') return;
+    setPayModalOpen(true);
+  };
 
   const today = normalizeDateString(new Date());
   const eventStart = event.start_date || '';
@@ -642,7 +920,7 @@ export default function EventDetailModal({
     );
   } else if ((status === 'completed' || status === 'archived') && event.payment_status !== 'paid') {
     primaryCTA = (
-      <Button onClick={onMarkPaid} className="flex-1 bg-emerald-700 hover:bg-emerald-600">
+      <Button onClick={requestMarkPaid} className="flex-1 bg-emerald-700 hover:bg-emerald-600">
         <CheckCircle2 className="w-4 h-4 mr-2" />Confirmar Recebimento
       </Button>
     );
@@ -687,7 +965,7 @@ export default function EventDetailModal({
             onClick={() => setActiveTab('fiscal')}
             className="flex-shrink-0 flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
           >
-            NF-e <ArrowRight className="w-3 h-3" />
+            NF-e & PDF <ArrowRight className="w-3 h-3" />
           </button>
         </CardContent>
       </Card>
@@ -747,7 +1025,7 @@ export default function EventDetailModal({
             }
             <div className="flex-1 min-w-0">
               <p className={`text-sm font-medium ${pagamentoDone ? 'text-slate-400 line-through' : 'text-white'}`}>
-                Confirmar recebimento
+                Confirmar recebimento ({isVisible ? formatCurrency(receivableAmount) : '••••'})
               </p>
               {!pagamentoDone && event.payment_due_date && (
                 <p className="text-xs text-amber-400">Vence {formatDisplayDate(event.payment_due_date)}</p>
@@ -755,53 +1033,31 @@ export default function EventDetailModal({
             </div>
             {!pagamentoDone && (
               <div className="flex gap-1.5 flex-shrink-0 flex-wrap justify-end">
-                <Button size="sm" onClick={onMarkPaid} className="h-7 px-2 text-xs bg-emerald-700 hover:bg-emerald-600">
+                <Button size="sm" onClick={requestMarkPaid} className="h-7 px-2 text-xs bg-emerald-700 hover:bg-emerald-600">
                   <CheckCircle2 className="w-3 h-3 mr-1" />Pago
                 </Button>
-                {userSettings?.pix_key && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={client?.phone ? handlePixWhatsApp : handleCopyPix}
-                    className="h-7 px-2 text-xs border-emerald-700/50 text-emerald-400 hover:bg-emerald-900/20"
-                    title={client?.phone ? 'Enviar PIX via WhatsApp' : 'Copiar PIX'}
-                  >
-                    <Receipt className="w-3 h-3 mr-1" />PIX
-                  </Button>
-                )}
-                {client?.phone && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleChargeWhatsApp}
-                    className="h-7 px-2 text-xs border-green-700/50 text-green-400 hover:bg-green-900/20"
-                    title="Cobrar via WhatsApp"
-                  >
-                    <MessageCircle className="w-3 h-3" />
-                  </Button>
-                )}
               </div>
             )}
           </div>
 
-          {/* NF-e — aponta para aba Fiscal */}
+          {/* Fechamento / NF-e / PDF — aponta para aba Fiscal */}
           <div className="flex items-center gap-3 pt-1 border-t border-slate-700/50">
             {(event.nfe_arquivo_url || event.nfe_numero)
               ? <CheckCircle2 className="w-5 h-5 text-blue-400 flex-shrink-0" />
               : <Circle className="w-5 h-5 text-blue-500/50 flex-shrink-0" />
             }
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white">Emitir e registrar NF-e</p>
+              <p className="text-sm font-medium text-white">Fechamento, NF-e & PDF com PIX</p>
               <p className="text-xs text-slate-400">
-                {event.nfe_numero ? `NF ${event.nfe_numero}` : 'Emita no gov.br e anexe aqui'}
+                {event.nfe_numero ? `NF ${event.nfe_numero} vinculada` : 'Anexar NF-e e gerar relatório PDF'}
               </p>
             </div>
             <button
               type="button"
               onClick={() => setActiveTab('fiscal')}
-              className="flex-shrink-0 flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+              className="flex-shrink-0 flex items-center gap-1 text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors"
             >
-              Fiscal <ArrowRight className="w-3 h-3" />
+              Abrir Dinheiro <ArrowRight className="w-3 h-3" />
             </button>
           </div>
         </CardContent>
@@ -809,31 +1065,51 @@ export default function EventDetailModal({
     )
   ) : null;
 
+  // Cabeçalho "credencial": data curta + título grande (empresa/evento)
+  const headerDisplay = (() => {
+    const { companyName, eventName, showEventSubtitle } = getEventDisplay(event, client);
+    return showEventSubtitle
+      ? { bigTitle: eventName, subtitle: event?.client_id && companyName !== 'Sem empresa' ? companyName : null }
+      : { bigTitle: companyName, subtitle: null };
+  })();
+  const headerDateLabel = (() => {
+    const start = event?.start_date ? new Date(`${String(event.start_date).slice(0, 10)}T12:00:00`) : null;
+    const end = event?.end_date ? new Date(`${String(event.end_date).slice(0, 10)}T12:00:00`) : null;
+    if (!start || Number.isNaN(start.getTime())) return 'DATA A DEFINIR';
+    const fmt = (d) => format(d, 'EEE d MMM', { locale: ptBR }).replace(/\./g, '').toUpperCase();
+    if (end && !Number.isNaN(end.getTime()) && end.getTime() !== start.getTime()) return `${fmt(start)} → ${fmt(end)}`;
+    return fmt(start);
+  })();
+
   return (
     <>
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-3xl h-[95dvh] bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200 flex flex-col p-0 overflow-hidden bp-focus-scope">
+      <DialogContent className="sm:max-w-3xl h-[95dvh] bg-[#0a0a0a] border-[#222222] text-slate-200 flex flex-col p-0 overflow-hidden bp-focus-scope [&>button:last-child]:text-[#0a0a0a] [&>button:last-child]:opacity-100">
 
-        {/* Header */}
-        <DialogHeader className="px-6 pt-5 pb-4 border-b border-slate-800 flex-shrink-0">
-          <div className="flex items-start gap-4">
-            <div className="flex-1 min-w-0">
-              <div className="mb-2">
-                <EventHeading event={event} client={client} size="lg" />
-              </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge className={statusConfig.badgeClass}>
-                  {StatusIcon && <StatusIcon className="w-4 h-4 mr-1" />}
-                  {statusConfig.label}
-                </Badge>
-                {event.payment_status === 'paid' && (
-                  <Badge className="bg-green-100 text-green-800">
-                    <CheckCircle2 className="w-4 h-4 mr-1" />Pago
-                  </Badge>
-                )}
-              </div>
+        {/* Header: credencial amarela do evento (visual All Access) */}
+        <DialogHeader className="flex-shrink-0 space-y-0 text-left">
+          {/* Titulo para leitor de tela (exigido pelo Radix) */}
+          <DialogTitle className="sr-only">{event?.title || client?.name || 'Detalhes do evento'}</DialogTitle>
+          <DialogDescription className="sr-only">Detalhes, horas e pagamento do evento</DialogDescription>
+          <div className="px-5 pt-4 pb-4" style={{ background: '#ffd400', color: '#0a0a0a' }}>
+            <p className="font-tag text-[11px] font-bold tracking-[0.14em] pr-10">{headerDateLabel}</p>
+            <p className="font-poster text-[30px] leading-[0.95] uppercase mt-1.5 pr-8 break-words">{headerDisplay.bigTitle}</p>
+            {headerDisplay.subtitle && (
+              <p className="text-sm font-bold mt-1 truncate">{headerDisplay.subtitle}</p>
+            )}
+            <div className="flex items-center gap-1.5 flex-wrap mt-2.5">
+              <span className="inline-flex items-center gap-1 h-6 px-2.5 rounded-full bg-[#0a0a0a] text-[#ffd400] font-tag text-[10px] font-bold uppercase">
+                {StatusIcon && <StatusIcon className="w-3.5 h-3.5" />}
+                {statusConfig.label}
+              </span>
+              {event.payment_status === 'paid' && (
+                <span className="inline-flex items-center gap-1 h-6 px-2.5 rounded-full bg-[#0a0a0a] text-white font-tag text-[10px] font-bold uppercase">
+                  <CheckCircle2 className="w-3.5 h-3.5" />Pago
+                </span>
+              )}
             </div>
           </div>
+          <div className="h-2" style={{ background: 'repeating-linear-gradient(90deg, #ffd400 0 14px, #0a0a0a 14px 20px)' }} />
         </DialogHeader>
 
         {/* Lifecycle bar */}
@@ -841,25 +1117,25 @@ export default function EventDetailModal({
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0">
-          <div className="px-6 pt-3 flex-shrink-0">
-            <TabsList className="w-full bg-slate-800/60 border border-slate-700/40 h-9 p-0.5">
+          <div className="px-5 pt-3 flex-shrink-0">
+            <TabsList className="w-full bg-transparent h-10 p-0 gap-1.5">
               <TabsTrigger
                 value="resumo"
-                className="flex-1 text-xs h-8 data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:shadow-sm text-slate-400 rounded-md"
+                className="flex-1 text-[13px] font-extrabold h-10 rounded-full border border-[#333333] text-white data-[state=active]:bg-[#ffd400] data-[state=active]:border-[#ffd400] data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-none"
               >
                 Resumo
               </TabsTrigger>
               <TabsTrigger
                 value="trabalho"
-                className="flex-1 text-xs h-8 data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:shadow-sm text-slate-400 rounded-md"
+                className="flex-1 text-[13px] font-extrabold h-10 rounded-full border border-[#333333] text-white data-[state=active]:bg-[#ffd400] data-[state=active]:border-[#ffd400] data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-none"
               >
-                Trabalho{eventWork.length > 0 ? ` (${eventWork.length})` : ''}
+                Horas{eventWork.length > 0 ? ` (${eventWork.length})` : ''}
               </TabsTrigger>
               <TabsTrigger
                 value="fiscal"
-                className="flex-1 text-xs h-8 data-[state=active]:bg-slate-700 data-[state=active]:text-white data-[state=active]:shadow-sm text-slate-400 rounded-md"
+                className="flex-1 text-[13px] font-extrabold h-10 rounded-full border border-[#333333] text-white data-[state=active]:bg-[#ffd400] data-[state=active]:border-[#ffd400] data-[state=active]:text-[#0a0a0a] data-[state=active]:shadow-none"
               >
-                Fiscal{(event.nfe_arquivo_url || event.nfe_numero) ? ' ●' : ''}
+                Dinheiro{(event.nfe_arquivo_url || event.nfe_numero) ? ' ●' : ''}
               </TabsTrigger>
             </TabsList>
           </div>
@@ -872,7 +1148,7 @@ export default function EventDetailModal({
               {crmCard}
 
               {/* Informações básicas */}
-              <Card className="bg-slate-800/50 border-slate-700">
+              <Card className="bg-[#161616] border-[#222222]">
                 <CardHeader className="pb-2 pt-4 px-4">
                   <CardTitle className="text-sm flex items-center gap-2 text-slate-300">
                     <Calendar className="w-4 h-4 bp-text-primary" />
@@ -907,7 +1183,7 @@ export default function EventDetailModal({
               </Card>
 
               {/* Local */}
-              <Card className="bg-slate-800/50 border-slate-700">
+              <Card className="bg-[#161616] border-[#222222]">
                 <CardHeader className="pb-2 pt-4 px-4">
                   <CardTitle className="text-sm flex items-center gap-2 text-slate-300">
                     <MapPin className="w-4 h-4 bp-text-primary" />
@@ -946,13 +1222,16 @@ export default function EventDetailModal({
                 items={event.checklist_items ?? []}
                 onChange={async (next) => { await updateEvent(event.id, { checklist_items: next }); }}
               />
+
+              {/* Avaliacao do cliente (vinha so na janela dos Relatorios) */}
+              <ClientRatingSection event={event} updateEvent={updateEvent} />
             </TabsContent>
 
             {/* ── TRABALHO ── */}
             <TabsContent value="trabalho" className="mt-0 pt-4 space-y-4 pb-6 data-[state=inactive]:hidden">
 
               {/* Financeiro */}
-              <Card className="bg-slate-800/50 border-slate-700">
+              <Card className="bg-[#161616] border-[#222222]">
                 <CardHeader className="pb-2 pt-4 px-4">
                   <CardTitle className="text-sm flex items-center gap-2 text-slate-300">
                     <DollarSign className="w-4 h-4 text-green-400" />
@@ -979,8 +1258,8 @@ export default function EventDetailModal({
                           <p className="text-base font-bold text-orange-400">{totals.totalOvertime}h</p>
                         </div>
                         <div>
-                          <p className="text-[10px] text-slate-500 mb-0.5">Total ganho</p>
-                          <p className="text-base font-bold text-green-400">{isVisible ? formatCurrency(totals.totalEarned) : '••••'}</p>
+                          <p className="text-[10px] text-slate-500 mb-0.5">Total a receber</p>
+                          <p className="text-base font-bold text-green-400">{isVisible ? formatCurrency(receivableAmount) : '••••'}</p>
                         </div>
                       </div>
                     </>
@@ -1053,7 +1332,7 @@ export default function EventDetailModal({
               </Card>
 
               {/* Cronômetro */}
-              {['pending', 'scheduled', 'confirmed'].includes(status) && (
+              {['pending', 'scheduled', 'confirmed', 'in_progress'].includes(status) && (
                 <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700">
                   <div>
                     <p className="text-sm font-medium text-white">Cronômetro</p>
@@ -1082,7 +1361,7 @@ export default function EventDetailModal({
 
               {/* Timeline de dias (multi-day) */}
               {eventDays.length > 0 && (
-                <Card className="bg-slate-800/50 border-slate-700">
+                <Card className="bg-[#161616] border-[#222222]">
                   <CardHeader className="pb-2 pt-4 px-4">
                     <CardTitle className="text-sm flex items-center gap-2 text-slate-300">
                       <CalendarDays className="w-4 h-4 bp-text-primary" />
@@ -1104,7 +1383,8 @@ export default function EventDetailModal({
                               openWorkModal(date, work || null);
                             }}
                             className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg border text-xs font-medium transition-all ${
-                              work ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
+                              work && isEstimatedWork(work) ? 'bg-amber-500/10 border-amber-500/40 text-amber-300'
+                              : work ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
                               : isToday ? 'border-2 text-white hover:opacity-80'
                               : isPast ? 'bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20'
                               : 'bg-slate-800 border-slate-700 text-slate-600 cursor-not-allowed'
@@ -1113,7 +1393,7 @@ export default function EventDetailModal({
                           >
                             <span>{label}</span>
                             <span className="text-[9px] opacity-80">
-                              {work ? `${work.total_hours || 0}h` : isToday ? 'hoje' : isPast ? 'faltou' : '—'}
+                              {work ? (isEstimatedWork(work) ? '12h est.' : `${work.total_hours || 0}h`) : isToday ? 'hoje' : isPast ? 'faltou' : '—'}
                             </span>
                           </button>
                         );
@@ -1122,6 +1402,11 @@ export default function EventDetailModal({
                     {eventDays.some(d => d.isPast && !d.work) && (
                       <p className="text-[11px] text-red-400/70 mt-2">
                         Toque num dia vermelho para registrar horas em atraso.
+                      </p>
+                    )}
+                    {eventDays.some(d => d.work && isEstimatedWork(d.work)) && (
+                      <p className="text-[11px] text-amber-400/70 mt-2">
+                        Dias em âmbar foram fechados com 12 h automáticas — toque para lançar as horas reais.
                       </p>
                     )}
                     {eventDays.some(d => d.work) && (
@@ -1282,6 +1567,8 @@ export default function EventDetailModal({
             {/* ── FISCAL ── */}
             <TabsContent value="fiscal" className="mt-0 pt-4 space-y-5 pb-6 data-[state=inactive]:hidden">
 
+              {closingSummaryCard}
+
               {/* NF-e upload + AI */}
               <div>
                 <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
@@ -1294,32 +1581,82 @@ export default function EventDetailModal({
               <Separator className="bg-slate-800" />
 
               {/* PIX */}
-              {userSettings?.pix_key && (
-                <div>
-                  <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <h4 className="text-sm font-semibold text-white flex items-center gap-2">
                     <Receipt className="w-4 h-4 text-emerald-400" />
-                    PIX
+                    Dados de Pagamento (PIX no PDF)
                   </h4>
-                  <div className="flex gap-2 flex-wrap">
-                    <Button
-                      variant="outline"
-                      onClick={handleCopyPix}
-                      className="flex-1 min-w-[120px] border-emerald-700/50 text-emerald-400 hover:bg-emerald-900/20"
+                  {userSettings?.pix_key && (
+                    <button
+                      type="button"
+                      onClick={() => setEditingPixInline((v) => !v)}
+                      className="text-xs text-slate-400 hover:text-white underline underline-offset-2"
                     >
-                      <Copy className="w-4 h-4 mr-2" />Copiar PIX
-                    </Button>
-                    {client?.phone && (
+                      {editingPixInline ? 'Fechar edição' : 'Alterar chave'}
+                    </button>
+                  )}
+                </div>
+
+                {userSettings?.pix_key && !editingPixInline ? (
+                  <div className="space-y-2">
+                    <p className="text-xs text-slate-300 bg-slate-800/70 border border-slate-700/70 rounded-lg px-3 py-2 font-mono">
+                      {userSettings.pix_key_type || 'Chave PIX'}: <span className="text-emerald-300 font-bold">{userSettings.pix_key}</span>
+                    </p>
+                    <div className="flex gap-2 flex-wrap">
                       <Button
                         variant="outline"
-                        onClick={handlePixWhatsApp}
-                        className="flex-1 min-w-[120px] border-green-700/50 text-green-400 hover:bg-green-900/20"
+                        onClick={handleCopyPix}
+                        className="flex-1 min-w-[120px] border-emerald-700/50 text-emerald-400 hover:bg-emerald-900/20"
                       >
-                        <MessageCircle className="w-4 h-4 mr-2" />Enviar PIX
+                        <Copy className="w-4 h-4 mr-2" />Copiar PIX Copia e Cola
                       </Button>
-                    )}
+                      {client?.phone && (
+                        <Button
+                          variant="outline"
+                          onClick={handlePixWhatsApp}
+                          className="flex-1 min-w-[120px] border-green-700/50 text-green-400 hover:bg-green-900/20"
+                        >
+                          <MessageCircle className="w-4 h-4 mr-2" />Enviar PIX
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="rounded-lg border border-dashed border-emerald-800/50 bg-emerald-950/10 p-3 space-y-2.5">
+                    <p className="text-xs text-slate-400">
+                      Cadastre sua chave PIX para que ela e o código Copia e Cola saiam automaticamente no PDF de Fechamento.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <select
+                        value={quickPixType}
+                        onChange={(e) => setQuickPixType(e.target.value)}
+                        className="h-9 rounded-md bg-slate-800 border border-slate-700 px-2.5 text-xs text-white"
+                      >
+                        {['CPF', 'CNPJ', 'E-mail', 'Telefone', 'Chave aleatória'].map((t) => (
+                          <option key={t} value={t}>{t}</option>
+                        ))}
+                      </select>
+                      <input
+                        type="text"
+                        value={quickPixKey}
+                        onChange={(e) => setQuickPixKey(e.target.value)}
+                        placeholder="Sua chave PIX..."
+                        className="h-9 flex-1 min-w-[150px] rounded-md bg-slate-800 border border-slate-700 px-3 text-xs text-white placeholder:text-slate-500"
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={savingQuickPix || !quickPixKey.trim()}
+                        onClick={handleSaveQuickPix}
+                        className="h-9 px-3 text-xs bg-emerald-700 hover:bg-emerald-600 text-white"
+                      >
+                        {savingQuickPix ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Salvar PIX'}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               <Separator className="bg-slate-800" />
 
@@ -1327,7 +1664,7 @@ export default function EventDetailModal({
               <div>
                 <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
                   <FileText className="w-4 h-4 text-slate-400" />
-                  Documentos
+                  Documentos e Fechamento
                 </h4>
                 <div className="flex flex-col gap-2">
                   <Button
@@ -1337,7 +1674,25 @@ export default function EventDetailModal({
                     className="w-full justify-start border-blue-600/50 hover:bg-blue-900/20 text-blue-300"
                   >
                     {generatingPDF ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
-                    Relatório de Fechamento
+                    Baixar Relatório de Fechamento (PDF completo)
+                  </Button>
+                  <Button
+                    onClick={handleSharePDF}
+                    disabled={sharingPDF}
+                    variant="outline"
+                    className="w-full justify-start border-emerald-600/50 hover:bg-emerald-900/20 text-emerald-300"
+                  >
+                    {sharingPDF ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
+                    Enviar PDF de Fechamento + PIX (WhatsApp / Compartilhar)
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleCopyClosingLink}
+                    variant="outline"
+                    className="w-full justify-start border-amber-600/50 hover:bg-amber-900/20 text-amber-300"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Copiar Link Interativo de Fechamento & PIX (Página Web p/ Produtora)
                   </Button>
                   {event.payment_status === 'paid' && (
                     <Button
@@ -1350,7 +1705,7 @@ export default function EventDetailModal({
                       Recibo de Pagamento
                     </Button>
                   )}
-                  {['pending', 'scheduled', 'confirmed'].includes(status) && (
+                  {['pending', 'scheduled', 'confirmed', 'in_progress'].includes(status) && (
                     <Button
                       onClick={handleDownloadContract}
                       disabled={generatingContract}
@@ -1480,6 +1835,14 @@ export default function EventDetailModal({
         setShowExpenseForm(false);
       }}
     />
+      <PaymentConfirmModal
+        event={event}
+        client={client}
+        dailyWork={eventWork}
+        isOpen={payModalOpen}
+        onClose={() => setPayModalOpen(false)}
+        onSuccess={() => { setPayModalOpen(false); onMarkPaid?.(); }}
+      />
     </>
   );
 }

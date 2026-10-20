@@ -11,6 +11,13 @@ import {
   daysOverduePayment,
   isPaymentOverdue,
 } from './eventFinance';
+import {
+  buildWorkByEvent,
+  distributePaidAmount,
+  monthRange,
+  receivedInPeriod,
+  workInPeriod,
+} from './financeMetrics';
 import { mapRowFromDb } from './useDailyWork';
 import { getClientDisplayName } from './eventDisplay';
 
@@ -34,24 +41,9 @@ function eventValue(e) {
   return 0;
 }
 
-function monthBounds() {
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
-  return { monthStart, monthEnd };
-}
-
-function buildWorkByEvent(workRows) {
-  return workRows.reduce((acc, w) => {
-    if (!w.event_id) return acc;
-    if (!acc[w.event_id]) acc[w.event_id] = [];
-    acc[w.event_id].push(w);
-    return acc;
-  }, {});
-}
-
 function computeStats(events, workRows) {
-  const { monthStart, monthEnd } = monthBounds();
+  const month = monthRange();
+  const { start: monthStart, end: monthEnd } = month;
   const monthEvents = events.filter(
     (e) =>
       !isCancelledEvent(e) &&
@@ -61,17 +53,11 @@ function computeStats(events, workRows) {
   const receivableEvents = events.filter((e) =>
     ['pending', 'unpaid', 'partial'].includes(e.payment_status)
   );
-  const monthWork = workRows.filter((w) => w.date >= monthStart && w.date <= monthEnd);
+  const monthWork = workInPeriod(workRows, month);
   const workByEvent = buildWorkByEvent(workRows);
 
-  const paidInMonth = monthEvents.filter((e) => e.payment_status === 'paid');
-  const faturamento_pago = paidInMonth.reduce(
-    (sum, e) => sum + (e.paid_amount || eventValue(e)),
-    0
-  );
-
   return {
-    faturamento_pago,
+    faturamento_pago: receivedInPeriod(events, month, workByEvent),
     a_receber: sumReceivableAmount(receivableEvents, workByEvent),
     horas_trabalhadas: monthWork.reduce((sum, d) => sum + (d.total_hours || 0), 0),
     eventos_count: monthEvents.length,
@@ -228,7 +214,7 @@ export function useHomeDashboard(userId) {
     }
 
     let cancelled = false;
-    const { monthStart, monthEnd } = monthBounds();
+    const { start: monthStart, end: monthEnd } = monthRange();
     const today = todayLocalISO();
     const silent = silentRef.current;
     silentRef.current = false;
@@ -242,6 +228,8 @@ export function useHomeDashboard(userId) {
       try {
         const eventsFilter = [
           `and(start_date.lte.${monthEnd},end_date.gte.${monthStart})`,
+          // recebido conta pela data do pagamento: shows de outros meses pagos neste mês
+          `and(payment_status.eq.paid,paid_date.gte.${monthStart},paid_date.lte.${monthEnd})`,
           'payment_status.in.(pending,unpaid,partial)',
           `and(end_date.gte.${today},status.neq.cancelled)`,
         ].join(',');
@@ -297,40 +285,25 @@ export function useHomeDashboard(userId) {
       const today = todayLocalISO();
       setReceivableRows((prev) => prev.filter((r) => r.clientId !== clientId));
 
-      const basePayload = { payment_status: 'paid', paid_date: today };
-      if (paidAmount != null && paidAmount > 0 && row.events.length > 0) {
-        const totalCalc = row.events.reduce((s, e) => s + e.amount, 0);
-        const ratio = totalCalc > 0 ? paidAmount / totalCalc : 1;
-        const results = await Promise.all(
-          row.events.map((ev) =>
-            supabase
-              .from('events')
-              .update({
-                ...basePayload,
-                actual_revenue: Math.round(ev.amount * ratio * 100) / 100,
-              })
-              .eq('id', ev.id)
-              .eq('user_id', userId)
-          )
-        );
-        const err = results.find((r) => r.error)?.error;
-        if (err) {
-          refetch();
-          throw err;
-        }
-      } else {
-        const { error: updateError } = await supabase
-          .from('events')
-          .update(basePayload)
-          .in(
-            'id',
-            row.events.map((e) => e.id)
-          )
-          .eq('user_id', userId);
-        if (updateError) {
-          refetch();
-          throw updateError;
-        }
+      const adjusted = paidAmount != null && paidAmount > 0;
+      const results = await Promise.all(
+        distributePaidAmount(row.events, paidAmount).map((share) =>
+          supabase
+            .from('events')
+            .update({
+              payment_status: 'paid',
+              paid_date: today,
+              paid_amount: share.amount > 0 ? share.amount : null,
+              ...(adjusted ? { actual_revenue: share.amount } : {}),
+            })
+            .eq('id', share.id)
+            .eq('user_id', userId)
+        )
+      );
+      const err = results.find((r) => r.error)?.error;
+      if (err) {
+        refetch();
+        throw err;
       }
       refetch();
     },

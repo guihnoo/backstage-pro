@@ -13,6 +13,15 @@ import StageBackdrop from '@/components/auth/StageBackdrop';
 import SpotlightRays from '@/components/auth/SpotlightRays';
 import FloatingEquipment from '@/components/auth/FloatingEquipment';
 import { getCategoryConfig } from '@/lib/categoryConfig';
+import { LOOP, loopAnim } from '@/lib/liteMotion';
+
+/** Converte texto do formulário em número ("1.200,50", "1200.5"); inválido → fallback. */
+function toNumber(value, fallback) {
+  const text = String(value ?? '').trim();
+  if (!text) return fallback;
+  const n = Number(text.includes(',') ? text.replace(/\./g, '').replace(',', '.') : text);
+  return Number.isFinite(n) ? n : fallback;
+}
 
 export default function Onboarding() {
   const { user, profile, updateProfile, isOnboardingComplete } = useAuth();
@@ -112,10 +121,11 @@ export default function Onboarding() {
         category: selectedCategory,
         category_label: categoryLabel,
         specialties: selectedSpecialties,
-        years_experience: yearsExperience,
-        daily_rate: parseFloat(dailyRate),
-        monthly_goal_events: parseInt(monthlyGoalEvents),
-        monthly_goal_revenue: parseFloat(monthlyGoalRevenue),
+        // Campo vazio ou inválido nunca vira NaN no banco.
+        years_experience: Math.max(0, Math.round(toNumber(yearsExperience, 0))),
+        daily_rate: toNumber(dailyRate, 0),
+        monthly_goal_events: Math.max(0, Math.round(toNumber(monthlyGoalEvents, 0))),
+        monthly_goal_revenue: toNumber(monthlyGoalRevenue, 0),
         onboarding_complete: true,
       });
 
@@ -134,8 +144,8 @@ export default function Onboarding() {
 
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
-          animate={{ opacity: [0.1, 0.3, 0.1] }}
-          transition={{ duration: 4, repeat: Infinity }}
+          animate={loopAnim({ opacity: [0.1, 0.3, 0.1] })}
+          transition={{ duration: 4, repeat: LOOP }}
           className="absolute top-0 left-1/4 w-96 h-96 bg-amber-500 rounded-full blur-3xl opacity-20"
         />
         <motion.div
@@ -269,7 +279,14 @@ export default function Onboarding() {
                 >
                   <div>
                     <h3 className="text-lg font-semibold text-white mb-4">Qual é sua área?</h3>
-                    <CategoryPicker selected={selectedCategory} onSelect={setSelectedCategory} />
+                    <CategoryPicker
+                selected={selectedCategory}
+                onSelect={(cat) => {
+                  // Trocar de área limpa as especialidades da área anterior.
+                  if (cat !== selectedCategory) setSelectedSpecialties([]);
+                  setSelectedCategory(cat);
+                }}
+              />
                   </div>
 
                   <Button
@@ -328,7 +345,7 @@ export default function Onboarding() {
                       type="number"
                       min="0"
                       value={yearsExperience}
-                      onChange={(e) => setYearsExperience(parseInt(e.target.value))}
+                      onChange={(e) => setYearsExperience(e.target.value)}
                       placeholder="5"
                       className="bg-slate-800/50 border-slate-700"
                     />
@@ -359,7 +376,7 @@ export default function Onboarding() {
                       type="number"
                       min="1"
                       value={monthlyGoalEvents}
-                      onChange={(e) => setMonthlyGoalEvents(parseInt(e.target.value))}
+                      onChange={(e) => setMonthlyGoalEvents(e.target.value)}
                       placeholder="12"
                       className="bg-slate-800/50 border-slate-700"
                     />
@@ -411,7 +428,7 @@ export default function Onboarding() {
 
                   <div>
                     <h3 className="text-2xl font-black text-white mb-2">Tudo pronto, {name}! 🎉</h3>
-                    <p className="text-slate-400">Seu perfil foi criado com sucesso</p>
+                    <p className="text-slate-400">Confira seus dados e toque em Entrar para salvar</p>
                   </div>
 
                   <div className="bg-slate-800/50 rounded-lg p-6 text-left space-y-3 border border-slate-700">
@@ -439,13 +456,13 @@ export default function Onboarding() {
                     </div>
                     <div>
                       <p className="text-slate-400 text-sm">Valor por diária</p>
-                      <p className="text-white font-semibold">R$ {parseFloat(dailyRate).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                      <p className="text-white font-semibold">R$ {toNumber(dailyRate, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                     </div>
                   </div>
 
                   <motion.div
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
+                    animate={loopAnim({ y: [0, -10, 0] })}
+                    transition={{ duration: 2, repeat: LOOP }}
                   >
                     <Sparkles className="w-8 h-8 text-amber-400 mx-auto opacity-50" />
                   </motion.div>

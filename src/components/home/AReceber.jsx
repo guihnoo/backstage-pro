@@ -7,10 +7,8 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { buildChargeMessage, openWhatsAppCharge } from '@/lib/whatsapp';
 import appToast from '@/lib/appToast';
-import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { Skeleton } from '@/components/ui/skeleton';
 import { haptics } from '@/lib/haptics';
-import { Input } from '@/components/ui/input';
 
 function ReceivableSkeleton() {
   return (
@@ -33,12 +31,10 @@ function ReceivableSkeleton() {
   );
 }
 
-export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid }) {
-  const theme = useCategoryTheme();
-  const { formatCurrency } = useFinancialVisibility();
+export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid, onOpenEvent }) {
+  const { formatCurrency, isVisible } = useFinancialVisibility();
   const [marking, setMarking] = useState(null);
   const [confirming, setConfirming] = useState(null); // clientId awaiting confirm
-  const [paidAmounts, setPaidAmounts] = useState({}); // clientId → typed amount string
   const [expanded, setExpanded] = useState(new Set());
 
   const toggleExpand = (clientId) => {
@@ -55,22 +51,15 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
 
   if (!rows?.length) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8 p-5 rounded-2xl border border-emerald-500/25"
-        style={{ background: `linear-gradient(to right, rgba(16,185,129,0.1), ${theme.primaryHex}08)` }}
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
-            <Wallet className="w-5 h-5 text-emerald-400" />
-          </div>
-          <div>
-            <p className="font-semibold text-emerald-300">A receber zerado</p>
-            <p className="text-sm text-emerald-400/70">Nenhum cachê pendente de clientes.</p>
-          </div>
+      <div className="mb-4 px-4 py-3 rounded-2xl bg-[#161616] flex items-center gap-3">
+        <div className="w-9 h-9 rounded-full bg-[#ffd400] flex items-center justify-center shrink-0">
+          <Wallet className="w-4 h-4 text-[#0a0a0a]" />
         </div>
-      </motion.div>
+        <div>
+          <p className="font-extrabold text-sm text-white">Ninguém te devendo</p>
+          <p className="text-xs text-[#a8a8a8]">Nenhum cachê pendente de clientes.</p>
+        </div>
+      </div>
     );
   }
 
@@ -91,26 +80,13 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
     if (!ok) appToast.error('Não foi possível abrir o WhatsApp.');
   };
 
-  const openConfirm = (row) => {
-    setPaidAmounts(prev => ({ ...prev, [row.clientId]: String(row.totalAmount.toFixed(2)) }));
-    setConfirming(row.clientId);
-  };
-
-  const cancelConfirm = (clientId) => {
-    setConfirming(null);
-    setPaidAmounts(prev => { const n = { ...prev }; delete n[clientId]; return n; });
-  };
-
   const handleMarkPaid = async (row) => {
     haptics.success();
     setConfirming(null);
     setMarking(row.clientId);
-    const typed = parseFloat(paidAmounts[row.clientId]);
-    const actualAmount = isNaN(typed) || typed <= 0 ? undefined : typed;
-    setPaidAmounts(prev => { const n = { ...prev }; delete n[row.clientId]; return n; });
     try {
-      await onMarkPaid?.(row.clientId, actualAmount);
-      appToast.success(`Pagamento de ${row.clientName} marcado como recebido!`);
+      await onMarkPaid?.(row.clientId, row.totalAmount);
+      appToast.success(`Pagamento integral de ${row.clientName} confirmado!`);
     } catch {
       appToast.error('Erro ao marcar pagamento. Tente novamente.');
     } finally {
@@ -124,31 +100,24 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
     <motion.section
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mb-8"
+      className="mb-6"
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Wallet className="w-5 h-5 text-amber-400" />
-          <h3 className="text-lg font-bold text-white">A receber</h3>
+      <div className="flex items-center justify-between mb-3 gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <Wallet className="w-4 h-4 text-[#ff2e88] shrink-0" />
+          <h3 className="font-tag text-xs font-bold tracking-[0.14em] text-[#a8a8a8] uppercase truncate">Clientes em aberto</h3>
+          <span className="font-tag text-xs font-bold text-[#0a0a0a] bg-[#ff2e88] px-2 py-0.5 rounded-full shrink-0">
+            {isVisible ? formatCurrency(totalReceivable) : '••••'}
+          </span>
         </div>
         <button
           type="button"
           onClick={() => hardNavigate('/reports')}
-          className="text-xs text-slate-500 flex items-center gap-1 transition-colors bp-hover-primary"
+          className="text-xs text-slate-500 flex items-center gap-1 transition-colors bp-hover-primary shrink-0"
         >
-          Ver relatório
+          Ver todos
           <ChevronRight className="w-3.5 h-3.5" />
         </button>
-      </div>
-
-      <div className="p-4 mb-3 rounded-xl border border-amber-500/30 bg-gradient-to-r from-amber-500/15 to-amber-600/5">
-        <p className="text-xs uppercase tracking-wider text-amber-400/80 mb-1">Total pendente</p>
-        <p className="text-2xl font-black text-white tabular-nums">
-          {formatCurrency(totalReceivable)}
-        </p>
-        <p className="text-xs text-slate-500 mt-1">
-          {rows.length} cliente{rows.length !== 1 ? 's' : ''} com pagamento em aberto
-        </p>
       </div>
 
       <div className="space-y-2">
@@ -158,9 +127,9 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
             initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: idx * 0.05 }}
-            className="rounded-xl bg-slate-900/60 border border-slate-800/60 overflow-hidden transition-colors"
+            className="rounded-2xl bg-[#161616] border border-[#222222] overflow-hidden transition-colors"
           >
-            <div className="flex items-center gap-3 p-4">
+            <div className="flex items-center gap-3 p-3.5">
               <button
                 type="button"
                 onClick={() => toggleExpand(row.clientId)}
@@ -171,8 +140,8 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
                   <ChevronDown className={`w-3.5 h-3.5 text-slate-500 flex-shrink-0 transition-transform duration-200 ${expanded.has(row.clientId) ? 'rotate-180' : ''}`} />
                 </div>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                  <span className="text-sm font-bold text-amber-300 tabular-nums">
-                    {formatCurrency(row.totalAmount)}
+                  <span className="text-sm font-extrabold text-[#ff2e88] tabular-nums">
+                    {isVisible ? formatCurrency(row.totalAmount) : '••••'}
                   </span>
                   <span className="text-xs text-slate-500">
                     {row.eventsCount} show{row.eventsCount !== 1 ? 's' : ''}
@@ -193,12 +162,12 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
                 <motion.button
                   type="button"
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => confirming === row.clientId ? cancelConfirm(row.clientId) : openConfirm(row)}
+                  onClick={() => confirming === row.clientId ? setConfirming(null) : setConfirming(row.clientId)}
                   disabled={marking === row.clientId}
                   className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-bold transition-colors ${
                     confirming === row.clientId
-                      ? 'bg-slate-700/50 border border-slate-600/50 text-slate-400'
-                      : 'bg-[#1a2a1a] border border-[#2a4a2a] text-[#5a8a5a] hover:border-emerald-500/50 hover:text-emerald-300'
+                      ? 'bg-[#222222] border border-[#333333] text-[#a8a8a8]'
+                      : 'border border-[#333333] text-white'
                   }`}
                 >
                   {confirming === row.clientId ? <X className="w-3.5 h-3.5" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
@@ -208,7 +177,7 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
                   type="button"
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleCharge(row)}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-green-600/20 border border-green-500/40 text-green-300 hover:bg-green-600/30 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-[#ff2e88] text-[#0a0a0a] transition-colors"
                 >
                   <MessageCircle className="w-4 h-4" />
                   Cobrar
@@ -216,7 +185,7 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
               </div>
             </div>
 
-            {/* Painel de eventos individuais */}
+            {/* Painel de eventos individuais (clique no evento abre o Fechamento / PDF) */}
             <AnimatePresence>
               {expanded.has(row.clientId) && (
                 <motion.div
@@ -228,28 +197,35 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
                 >
                   <div className="px-4 pb-3 pt-1 border-t border-slate-700/40 space-y-1.5">
                     {row.events.map(ev => (
-                      <div key={ev.id} className="flex items-center justify-between gap-2 py-1">
+                      <button
+                        key={ev.id}
+                        type="button"
+                        onClick={() => onOpenEvent ? onOpenEvent(ev, 'fiscal') : hardNavigate(`/calendar?event=${ev.id}`)}
+                        className="w-full flex items-center justify-between gap-2 py-1.5 px-2 rounded-lg hover:bg-slate-800/70 transition-colors text-left"
+                      >
                         <div className="flex items-center gap-2 min-w-0">
-                          <div className="w-1 h-1 rounded-full bg-amber-500/60 flex-shrink-0" />
-                          <p className="text-xs text-slate-300 truncate">{ev.title}</p>
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#ff2e88] flex-shrink-0" />
+                          <p className="text-xs text-slate-200 truncate">{ev.title}</p>
                         </div>
-                        <div className="flex items-center gap-3 flex-shrink-0">
+                        <div className="flex items-center gap-2.5 flex-shrink-0">
                           {ev.start_date && (
-                            <span className="text-[10px] text-slate-600 font-mono">
+                            <span className="text-[10px] text-slate-500 font-mono">
                               {format(parseISO(ev.start_date), 'dd/MM', { locale: ptBR })}
                             </span>
                           )}
-                          <span className="text-xs font-bold text-amber-300 tabular-nums">{formatCurrency(ev.amount)}</span>
-                          {ev.daysOverdue > 0 && (
-                            <span className="text-[10px] text-red-400">{ev.daysOverdue}d</span>
-                          )}
+                          <span className="text-xs font-bold text-white tabular-nums">
+                            {isVisible ? formatCurrency(ev.amount) : '••••'}
+                          </span>
+                          <span className="text-[10px] text-blue-400 font-medium">
+                            PDF / NF-e →
+                          </span>
                         </div>
-                      </div>
+                      </button>
                     ))}
                     <button
                       type="button"
                       onClick={() => hardNavigate(`/client-detail?id=${row.clientId}`)}
-                      className="flex items-center gap-1.5 text-[10px] text-slate-600 transition-colors pt-1 bp-hover-primary"
+                      className="flex items-center gap-1.5 text-[10px] text-slate-500 transition-colors pt-1 bp-hover-primary"
                     >
                       <ExternalLink className="w-3 h-3" />
                       Ver página de {row.clientName}
@@ -259,7 +235,7 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
               )}
             </AnimatePresence>
 
-            {/* Painel de confirmação com valor editável */}
+            {/* Confirmação direta de pagamento integral */}
             <AnimatePresence>
               {confirming === row.clientId && (
                 <motion.div
@@ -269,30 +245,19 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid 
                   transition={{ duration: 0.2 }}
                   className="overflow-hidden"
                 >
-                  <div className="px-4 pb-4 pt-1 border-t border-emerald-500/20 bg-emerald-500/5">
-                    <p className="text-xs text-emerald-400/80 mb-2">Valor recebido (ajuste se necessário):</p>
-                    <div className="flex gap-2">
-                      <div className="flex-1 relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-mono">R$</span>
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={paidAmounts[row.clientId] ?? ''}
-                          onChange={e => setPaidAmounts(prev => ({ ...prev, [row.clientId]: e.target.value }))}
-                          className="pl-8 bg-slate-800/80 border-emerald-500/30 text-white h-9 text-sm font-mono"
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        disabled={marking === row.clientId}
-                        onClick={() => handleMarkPaid(row)}
-                        className="flex items-center gap-1.5 px-4 h-9 rounded-lg text-xs font-bold bg-emerald-600/40 border border-emerald-400/60 text-emerald-200 hover:bg-emerald-600/60 transition-colors disabled:opacity-50"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        {marking === row.clientId ? '...' : 'Confirmar'}
-                      </button>
-                    </div>
+                  <div className="px-4 py-3 border-t border-emerald-500/20 bg-emerald-500/5 flex items-center justify-between gap-3">
+                    <p className="text-xs text-emerald-300">
+                      Confirmar recebimento integral de <span className="font-mono font-bold">{isVisible ? formatCurrency(row.totalAmount) : '••••'}</span>?
+                    </p>
+                    <button
+                      type="button"
+                      disabled={marking === row.clientId}
+                      onClick={() => handleMarkPaid(row)}
+                      className="flex items-center gap-1.5 px-3.5 h-8 rounded-lg text-xs font-bold bg-emerald-600/40 border border-emerald-400/60 text-emerald-200 hover:bg-emerald-600/60 transition-colors disabled:opacity-50 shrink-0"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      {marking === row.clientId ? '...' : 'Confirmar'}
+                    </button>
                   </div>
                 </motion.div>
               )}

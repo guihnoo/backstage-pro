@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { DEFAULT_CLIENT_COLOR } from '@/lib/brandColors';
 import { haptics } from '@/lib/haptics';
+import { LOOP, LITE_MOTION, loopAnim } from '@/lib/liteMotion';
 
 export function FloatingActions() {
   const [isOpen, setIsOpen] = useState(false);
@@ -90,11 +91,11 @@ export function FloatingActions() {
       </div>
 
       {/* Glow pulse breathing por baixo do botão */}
-      {!isOpen && (
+      {!isOpen && !LITE_MOTION && (
         <motion.div
           className="absolute inset-0 rounded-full pointer-events-none"
-          animate={{ scale: [1, 1.35, 1], opacity: [0.4, 0, 0.4] }}
-          transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+          animate={loopAnim({ scale: [1, 1.35, 1], opacity: [0.4, 0, 0.4] })}
+          transition={{ duration: 2.8, repeat: LOOP, ease: 'easeInOut' }}
           style={{ background: config.primaryHex }}
         />
       )}

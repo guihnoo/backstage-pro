@@ -1,8 +1,9 @@
 import { useState, useMemo, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
+import { projectYearEnd } from '@/lib/yearProjection';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/authContext';
 import { useProfile } from '@/lib/profileOfflineContext';
-import { useStats, useEvents, useMeiStats } from '@/lib/useBackstageData';
+import { useStats, useEvents, useMeiStats, usePaidEvents } from '@/lib/useBackstageData';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
@@ -29,8 +30,10 @@ import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
 import EventHeading from '@/components/events/EventHeading';
 import { Ellipsis } from '@/components/ui/overflowText';
-import { computeEventsNeededForGoal, computeGoalStreak } from '@/lib/goalMetrics';
+import { computeEventsNeededForGoal, computeGoalStreak, paidRevenueInMonth } from '@/lib/goalMetrics';
 import { Skeleton } from '@/components/ui/skeleton';
+import { todayLocalISO } from '@/components/utils/dateUtils';
+import { LOOP, loopAnim } from '@/lib/liteMotion';
 
 function CirclesSkeleton() {
   return (
@@ -105,8 +108,8 @@ function BadgeCelebration({ badge, onClose }) {
         ))}
 
         <motion.div
-          animate={{ scale: [1, 1.15, 1] }}
-          transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+          animate={loopAnim({ scale: [1, 1.15, 1] })}
+          transition={{ duration: 1.4, repeat: LOOP, ease: 'easeInOut' }}
           className="w-20 h-20 rounded-full mx-auto mb-5 flex items-center justify-center"
           style={{ background: `${badge.color}22`, border: `2px solid ${badge.color}60` }}
         >
@@ -293,16 +296,20 @@ export default function Goals() {
   // Total de eventos histórico (para nível) — todos os tempos, só completados
   const { events: allEvents, refetch: refetchAllEvents } = useEvents(userId, { status: 'completed' });
 
+  // Recebido por mês (histórico, streak, painel anual) — todo evento pago, pela data do pagamento
+  const { paidEvents, workByEvent, refetch: refetchPaidEvents } = usePaidEvents(userId);
+
   // Próximos shows agendados
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayLocalISO();
   const { events: upcomingEvents, refetch: refetchUpcoming } = useEvents(userId, { from: today, limit: 4, ascending: true });
 
   const refreshData = useCallback(async () => {
     refetchStats();
     refetchMei();
     refetchAllEvents();
+    refetchPaidEvents();
     refetchUpcoming();
-  }, [refetchStats, refetchMei, refetchAllEvents, refetchUpcoming]);
+  }, [refetchStats, refetchMei, refetchAllEvents, refetchPaidEvents, refetchUpcoming]);
 
   const pullRefreshGoals = useCallback(async () => {
     await refreshData();
@@ -392,7 +399,7 @@ export default function Goals() {
     },
   ], [totalEvents, stats, diariasMes, metaDiarias, metaReceita, config]);
 
-  // Histórico mensal dos últimos 4 meses (receita paga, via allEvents)
+  // Histórico mensal dos últimos 4 meses (receita recebida)
   const monthlyHistory = useMemo(() => {
     const now = new Date();
     return [3, 2, 1, 0].map(monthsBack => {
@@ -401,28 +408,22 @@ export default function Goals() {
       const month = String(d.getMonth() + 1).padStart(2, '0');
       const monthStr = `${year}-${month}`;
       const label = d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
-      const monthEvents = allEvents.filter(e => {
-        if (e.payment_status !== 'paid') return false;
-        const refDate = e.paid_date || e.start_date || '';
-        return refDate.startsWith(monthStr);
-      });
-      const revenue = monthEvents.reduce((sum, e) =>
-        sum + (Number(e.paid_amount) > 0 ? Number(e.paid_amount) : getEventCacheAmount(e)), 0);
+      const revenue = paidRevenueInMonth(paidEvents, monthStr, workByEvent);
       const pct = metaReceita > 0 ? Math.min((revenue / metaReceita) * 100, 100) : null;
       const hit = metaReceita > 0 && revenue >= metaReceita;
       const isCurrent = monthsBack === 0;
       return { monthStr, label, revenue, pct, hit, isCurrent };
     });
-  }, [allEvents, metaReceita]);
+  }, [paidEvents, workByEvent, metaReceita]);
 
   const goalStreak = useMemo(
-    () => computeGoalStreak(allEvents, metaReceita),
-    [allEvents, metaReceita],
+    () => computeGoalStreak(paidEvents, metaReceita, undefined, workByEvent),
+    [paidEvents, workByEvent, metaReceita],
   );
 
   const eventsNeededForGoal = useMemo(
-    () => computeEventsNeededForGoal(allEvents, metaReceita, stats.faturamento_pago),
-    [allEvents, metaReceita, stats.faturamento_pago],
+    () => computeEventsNeededForGoal(paidEvents, metaReceita, stats.faturamento_pago, undefined, workByEvent),
+    [paidEvents, workByEvent, metaReceita, stats.faturamento_pago],
   );
 
   const yearlyPanel = useMemo(() => {
@@ -432,13 +433,7 @@ export default function Goals() {
 
     const months = Array.from({ length: 12 }, (_, i) => {
       const monthStr = `${year}-${String(i + 1).padStart(2, '0')}`;
-      const revenue = allEvents
-        .filter(e => {
-          if (e.payment_status !== 'paid') return false;
-          const refDate = e.paid_date || e.start_date || '';
-          return refDate.startsWith(monthStr);
-        })
-        .reduce((s, e) => s + (Number(e.paid_amount) || 0), 0);
+      const revenue = paidRevenueInMonth(paidEvents, monthStr, workByEvent);
       const isCurrent = i === currentMonthIndex;
       const isFuture = i > currentMonthIndex;
       const hit = metaReceita > 0 && revenue >= metaReceita && !isFuture;
@@ -447,18 +442,13 @@ export default function Goals() {
       return { monthStr, label, revenue, pct, hit, isCurrent, isFuture };
     });
 
-    const pastMonths = months.filter(m => !m.isFuture && !m.isCurrent);
     const totalYear = months.reduce((s, m) => s + m.revenue, 0);
     const monthsElapsed = currentMonthIndex + 1;
-    const monthsWithRevenue = pastMonths.filter(m => m.revenue > 0).length;
-    const avgPerMonth = monthsWithRevenue > 0
-      ? pastMonths.reduce((s, m) => s + m.revenue, 0) / monthsWithRevenue
-      : 0;
-    const projected = totalYear + avgPerMonth * Math.max(0, 12 - monthsElapsed);
+    const projected = projectYearEnd(totalYear, monthsElapsed);
     const monthsHit = months.filter(m => m.hit).length;
 
     return { months, totalYear, projected, monthsHit, monthsElapsed };
-  }, [allEvents, metaReceita]);
+  }, [paidEvents, workByEvent, metaReceita]);
 
   // Detecta badges recém-desbloqueados
   useEffect(() => {
@@ -509,8 +499,8 @@ export default function Goals() {
         <motion.div
           className="absolute top-0 left-0 right-0 h-0.5"
           style={{ background: `linear-gradient(90deg, transparent, ${config.primaryHex}, transparent)` }}
-          animate={{ opacity: [0.4, 0.8, 0.4] }}
-          transition={{ duration: 3, repeat: Infinity }}
+          animate={loopAnim({ opacity: [0.4, 0.8, 0.4] })}
+          transition={{ duration: 3, repeat: LOOP }}
         />
         <div className="max-w-2xl xl:max-w-6xl mx-auto flex items-start justify-between">
           <div>
@@ -927,7 +917,7 @@ export default function Goals() {
                       let cur = new Date(ev.start_date + 'T00:00:00');
                       const end = new Date(ev.end_date + 'T00:00:00');
                       while (cur <= end) {
-                        const ds = cur.toISOString().split('T')[0];
+                        const ds = format(cur, 'yyyy-MM-dd');
                         if (ds.startsWith(monthStr)) eventDates.add(ds);
                         cur.setDate(cur.getDate() + 1);
                       }

@@ -6,6 +6,7 @@ import {
   startOfDay,
 } from 'date-fns';
 import { getEventCacheAmount } from '@/lib/eventFinance';
+import { todayLocalISO } from '@/components/utils/dateUtils';
 
 /**
  * Regras compartilhadas: NotificationCenter (in-app) e push futuro.
@@ -18,8 +19,8 @@ export function buildUserNotifications({
   today = new Date(),
   formatCurrency,
 }) {
-  const todayStr = today.toISOString().split('T')[0];
-  const tomorrowStr = addDays(today, 1).toISOString().split('T')[0];
+  const todayStr = todayLocalISO(today);
+  const tomorrowStr = todayLocalISO(addDays(today, 1));
   const clientMap = new Map((clients || []).map((c) => [c.id, c]));
   const notes = [];
 

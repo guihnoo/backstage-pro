@@ -3,11 +3,12 @@ import { Target, ChevronRight, Trophy } from 'lucide-react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LOOP, loopAnim } from '@/lib/liteMotion';
 
 function ProgressBar({ value, max, color }) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
   return (
-    <div className="h-2 rounded-full bg-gray-800 overflow-hidden">
+    <div className="h-2.5 rounded-full bg-[#2a2a2a] overflow-hidden">
       <motion.div
         className="h-full rounded-full"
         style={{ background: color }}
@@ -35,31 +36,9 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
   const metaDiarias = Number(profile?.monthly_goal_events) || 0;
   const hasGoals = metaReceita > 0 || metaDiarias > 0;
 
-  if (!hasGoals && !isLoading) {
-    return (
-      <motion.button
-        type="button"
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        onClick={() => hardNavigate('/goals')}
-        className="mb-8 w-full text-left p-5 rounded-2xl border border-dashed border-gray-700/60 bg-gray-900/40 hover:border-gray-600/80 transition-all group"
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Target className="w-4 h-4" style={{ color: accentColor }} />
-            <div>
-              <span className="text-sm font-bold text-white block">Defina sua meta do mês</span>
-              <span className="text-xs text-gray-500">Faturamento e diárias — acompanhe o progresso aqui</span>
-            </div>
-          </div>
-          <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors" />
-        </div>
-      </motion.button>
-    );
-  }
-
   const receitaAtual = stats?.faturamento_pago ?? 0;
-  const diariasAtual = stats?.diarias_count ?? 0;
+  const diariasAtual = Math.round(stats?.diarias_count ?? 0);
+  const horasAtual = Number(stats?.horas_trabalhadas ?? 0);
   const pctReceita = metaReceita > 0 ? Math.min((receitaAtual / metaReceita) * 100, 100) : 0;
   const pctDiarias = metaDiarias > 0 ? Math.min((diariasAtual / metaDiarias) * 100, 100) : 0;
   const goalReached = pctReceita >= 100 || pctDiarias >= 100;
@@ -70,6 +49,31 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
     ? Math.round((receitaAtual / dayOfMonth) * daysInMonth)
     : 0;
 
+  if (!hasGoals && !isLoading) {
+    return (
+      <motion.button
+        type="button"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        onClick={() => hardNavigate('/goals')}
+        className="mb-8 w-full text-left p-5 rounded-2xl border-2 border-dashed border-[#333333] bg-[#121212] transition-all group"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Target className="w-4 h-4" style={{ color: accentColor }} />
+            <div>
+              <span className="text-sm font-bold text-white block">Defina sua meta do mês</span>
+              <span className="text-xs text-gray-400">
+                Este mês: {diariasAtual} diária{diariasAtual !== 1 ? 's' : ''} · {horasAtual.toFixed(1)}h trabalhadas
+              </span>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors" />
+        </div>
+      </motion.button>
+    );
+  }
+
   return (
     <motion.button
       type="button"
@@ -78,19 +82,19 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
       onClick={() => hardNavigate('/goals')}
       className={`mb-8 w-full text-left p-5 rounded-2xl border transition-all group ${
         bothGoalsReached
-          ? 'bg-gradient-to-br from-amber-900/30 to-yellow-900/20 border-amber-500/40 hover:border-amber-400/60'
+          ? 'bg-[#161616] border-[#ffd400]'
           : goalReached
-          ? 'bg-gradient-to-br from-emerald-900/20 to-gray-800/40 border-emerald-600/40 hover:border-emerald-500/50'
-          : 'bg-gradient-to-br from-gray-900/80 to-gray-800/40 border-gray-700/50 hover:border-gray-600/60'
+          ? 'bg-[#161616] border-[#ffd400]/60'
+          : 'bg-[#161616] border-[#222222]'
       }`}
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           {bothGoalsReached
-            ? <motion.div animate={{ rotate: [0, -10, 10, 0] }} transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 3 }}><Trophy className="w-4 h-4 text-amber-400" /></motion.div>
+            ? <motion.div animate={loopAnim({ rotate: [0, -10, 10, 0] })} transition={{ duration: 0.6, repeat: LOOP, repeatDelay: 3 }}><Trophy className="w-4 h-4 text-amber-400" /></motion.div>
             : <Target className="w-4 h-4" style={{ color: accentColor }} />
           }
-          <span className="text-sm font-bold text-white">Meta do mês</span>
+          <span className="font-tag text-xs font-bold tracking-[0.14em] text-[#a8a8a8]">META DO MÊS</span>
           {bothGoalsReached && (
             <motion.span
               initial={{ opacity: 0, scale: 0 }}
@@ -101,7 +105,10 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
             </motion.span>
           )}
         </div>
-        <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors" />
+        <span className="text-xs font-mono text-slate-400 flex items-center gap-1">
+          ⏱️ {horasAtual.toFixed(1)}h no mês
+          <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors" />
+        </span>
       </div>
 
       {isLoading ? (
@@ -131,7 +138,7 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
               <ProgressBar value={receitaAtual} max={metaReceita} color={pctReceita >= 100 ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' : accentColor} />
             </div>
           )}
-          {metaDiarias > 0 && (
+          {metaDiarias > 0 ? (
             <div>
               <div className="flex justify-between text-xs text-gray-400 mb-1.5">
                 <span>Diárias</span>
@@ -142,12 +149,17 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
               </div>
               <ProgressBar value={diariasAtual} max={metaDiarias} color={pctDiarias >= 100 ? 'linear-gradient(90deg, #10b981, #34d399)' : accentColor} />
             </div>
+          ) : (
+            <div className="flex justify-between text-xs text-gray-400">
+              <span>Diárias no mês</span>
+              <span className="font-mono font-semibold text-white">{diariasAtual} dia{diariasAtual !== 1 ? 's' : ''}</span>
+            </div>
           )}
 
           {/* Ritmo do mês */}
           {!bothGoalsReached && (
             <div className="pt-3 mt-1 border-t border-gray-800/50 flex items-center justify-between">
-              <span className="text-[10px] text-slate-600">
+              <span className="text-[10px] text-slate-500">
                 Dia {dayOfMonth}/{daysInMonth} · {pctMes}% do mês
               </span>
               {metaReceita > 0 && projecaoReceita > 0 && (

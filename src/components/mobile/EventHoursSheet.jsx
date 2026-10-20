@@ -15,6 +15,8 @@ import { useAppScrollLock } from '@/lib/useAppScrollLock';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import EventHeading from '@/components/events/EventHeading';
+import { computeWorkDay, addMinutesToClock, isSameEntryExit, REGIME_POR_DIA_ATIVO, defaultDayChoice } from '@/lib/workDay';
+import DayChoicePicker from '@/components/hours/DayChoicePicker';
 
 export default function EventHoursSheet({ 
   isOpen, 
@@ -42,7 +44,8 @@ export default function EventHoursSheet({
     entry_time: '',
     exit_time: '',
     notes: '',
-    photo_url: ''
+    photo_url: '',
+    next_day: false
   });
   
   const [loading, setLoading] = useState(false);
@@ -64,7 +67,13 @@ export default function EventHoursSheet({
           entry_time: existingWork.entry_time || '',
           exit_time: existingWork.exit_time || '',
           notes: existingWork.notes || '',
-          photo_url: existingWork.photo_url || ''
+          photo_url: existingWork.photo_url || '',
+          next_day: isSameEntryExit(existingWork.entry_time, existingWork.exit_time)
+            && Number(existingWork.total_hours) >= 24,
+          ...(() => {
+            const choice = defaultDayChoice(event, existingWork);
+            return { regime: choice.regime, hora_extra: choice.horaExtra };
+          })()
         });
       } else {
         // NOVO registro
@@ -81,7 +90,12 @@ export default function EventHoursSheet({
           entry_time: event?.start_time || '',
           exit_time: event?.end_time || '',
           notes: '',
-          photo_url: ''
+          photo_url: '',
+          next_day: false,
+          ...(() => {
+            const choice = defaultDayChoice(event);
+            return { regime: choice.regime, hora_extra: choice.horaExtra };
+          })()
         });
       }
       
@@ -90,48 +104,19 @@ export default function EventHoursSheet({
     }
   }, [existingWork, initialDate, event, isOpen]);
 
-  const calculateHours = (entry, exit) => {
-    if (!entry || !exit) return { total: 0, overtime: 0 };
-    
-    const [entryH, entryM] = entry.split(':').map(Number);
-    const [exitH, exitM] = exit.split(':').map(Number);
-    
-    let entryMinutes = entryH * 60 + entryM;
-    let exitMinutes = exitH * 60 + exitM;
-    
-    if (exitMinutes < entryMinutes) {
-      exitMinutes += 24 * 60;
-    }
-    
-    const totalMinutes = exitMinutes - entryMinutes;
-    const totalHours = totalMinutes / 60;
-    const standardHours = 12;
-    const overtime = Math.max(0, totalHours - standardHours);
-    
-    return { total: Math.round(totalHours * 10) / 10, overtime: Math.round(overtime * 10) / 10 };
-  };
-
-  const calculateCache = (totalHours, overtimeHours) => {
-    if (!event) return 0;
-
-    const paymentModel = event.payment_model || 'HORAS_EXTRAS';
-    const baseValue = event.daily_cache_value || 0;
-
-    if (paymentModel === 'MEIO_CACHE_E_DOBRA') {
-      const cacheBase = event.cache_valor_base || baseValue;
-      
-      if (totalHours <= 6) {
-        return Math.round((cacheBase / 2) * 100) / 100;
-      } else if (totalHours <= 12) {
-        return Math.round(baseValue * 100) / 100;
-      } else {
-        return Math.round((cacheBase * 2) * 100) / 100;
-      }
-    }
-
-    const overtimeRate = baseValue / 12;
-    return Math.round((baseValue + (overtimeHours * overtimeRate)) * 100) / 100;
-  };
+  // Regra única de horas e cachê (src/lib/workDay.js)
+  // Evento sem cachê preenchido usa o cachê padrão do cliente (auditoria 1C).
+  const eventForCalc = event && !(Number(event.daily_cache_value) > 0) && Number(client?.default_daily_cache) > 0
+    ? { ...event, daily_cache_value: Number(client.default_daily_cache) }
+    : event;
+  const computeDay = () => computeWorkDay({
+    event: eventForCalc,
+    entry: formData.entry_time,
+    exit: formData.exit_time,
+    nextDay: formData.next_day,
+    // Lote 2: a escolha do dia (½ / 1 / 2 e hora extra) só vale com a migration 035 aplicada.
+    ...(REGIME_POR_DIA_ATIVO ? { regime: formData.regime, horaExtra: formData.hora_extra } : {}),
+  });
 
   const validateField = (name, value) => {
     const newErrors = { ...errors };
@@ -216,8 +201,20 @@ export default function EventHoursSheet({
     setLoading(true);
 
     try {
-      const { total, overtime } = calculateHours(formData.entry_time, formData.exit_time);
-      const dailyCache = calculateCache(total, overtime);
+      const day = computeDay();
+      if (day.needsNextDayAnswer) {
+        appToast.error('Entrada e saída iguais. Se foram 24 horas, marque "Terminou no dia seguinte".');
+        setLoading(false);
+        return;
+      }
+      if (day.minutes <= 0) {
+        appToast.error('Confira os horários de entrada e saída.');
+        setLoading(false);
+        return;
+      }
+      const total = day.totalHours;
+      const overtime = day.overtimeHours;
+      const dailyCache = day.cache;
 
       const normalizedDate = normalizeDateString(formData.date);
 
@@ -230,7 +227,10 @@ export default function EventHoursSheet({
         overtime_hours: overtime,
         daily_cache: dailyCache,
         notes: formData.notes || null,
-        photo_url: formData.photo_url || null
+        photo_url: formData.photo_url || null,
+        ...(REGIME_POR_DIA_ATIVO
+          ? { regime: formData.regime, hora_extra: Boolean(formData.hora_extra), origem: 'lancada' }
+          : {})
       };
 
       if (existingWork?.id) {
@@ -253,8 +253,10 @@ export default function EventHoursSheet({
     }
   };
 
-  const hours = calculateHours(formData.entry_time, formData.exit_time);
-  const estimatedCache = calculateCache(hours.total, hours.overtime);
+  const day = computeDay();
+  const hours = { total: day.totalHours, overtime: day.overtimeHours };
+  const estimatedCache = day.cache;
+  const sameEntryExit = isSameEntryExit(formData.entry_time, formData.exit_time);
 
   const handleDelete = async () => {
     if (!existingWork?.id) return;
@@ -372,13 +374,7 @@ export default function EventHoursSheet({
                           <button
                             key={h}
                             type="button"
-                            onClick={() => {
-                              const [entH, entM] = formData.entry_time.split(':').map(Number);
-                              const totalMin = entH * 60 + entM + h * 60;
-                              const exitH = Math.floor(totalMin / 60) % 24;
-                              const exitM = totalMin % 60;
-                              handleChange('exit_time', `${String(exitH).padStart(2,'0')}:${String(exitM).padStart(2,'0')}`);
-                            }}
+                            onClick={() => handleChange('exit_time', addMinutesToClock(formData.entry_time, h * 60))}
                             className="text-[10px] font-semibold px-1.5 py-0.5 rounded border border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200 transition-colors"
                           >
                             {h}h
@@ -435,6 +431,30 @@ export default function EventHoursSheet({
                   </div>
                 </div>
                 </div>
+
+                {REGIME_POR_DIA_ATIVO && (
+                  <DayChoicePicker
+                    regime={formData.regime}
+                    horaExtra={formData.hora_extra}
+                    accentColor={primaryHex}
+                    onChange={({ regime, horaExtra }) => {
+                      handleChange('regime', regime);
+                      handleChange('hora_extra', horaExtra);
+                    }}
+                  />
+                )}
+
+                {sameEntryExit && (
+                  <label className="flex items-center gap-2 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-200 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={formData.next_day}
+                      onChange={(e) => handleChange('next_day', e.target.checked)}
+                      className="w-4 h-4"
+                    />
+                    Entrada e saída iguais: terminou no dia seguinte (24 h)?
+                  </label>
+                )}
 
                 {/* Cálculos — 3 cards visuais */}
                 {hours.total > 0 && (

@@ -51,21 +51,39 @@ const DayCell = React.memo(({ day, isCurrentMonth, isSelected, isToday, onDateSe
     }
   }, [isFocused]);
 
+  const gestureFiredRef = useRef(false);
+
   const handlePointerDown = () => {
+    gestureFiredRef.current = false;
     clearTimeout(pressTimer.current);
     pressTimer.current = setTimeout(() => {
-      if (onQuickAction) onQuickAction('work', day);
+      if (onQuickAction) {
+        gestureFiredRef.current = true;
+        onQuickAction('work', day);
+      }
     }, 500);
 
     const now = Date.now();
     if (now - lastTapRef.current < 300) {
       clearTimeout(pressTimer.current);
-      if (onQuickAction) onQuickAction('work', day);
+      if (onQuickAction) {
+        gestureFiredRef.current = true;
+        onQuickAction('work', day);
+      }
     }
     lastTapRef.current = now;
   };
 
   const handlePointerUp = () => clearTimeout(pressTimer.current);
+
+  const handleClick = (e) => {
+    // Toque longo / duplo toque já abriram o registro de horas: não abre o popover por cima.
+    if (gestureFiredRef.current) {
+      gestureFiredRef.current = false;
+      return;
+    }
+    if (onDateSelect) onDateSelect(day, e.currentTarget);
+  };
 
   return (
     <div
@@ -76,7 +94,7 @@ const DayCell = React.memo(({ day, isCurrentMonth, isSelected, isToday, onDateSe
       aria-label={ariaLabel}
       aria-selected={isSelected || undefined}
       aria-current={isToday ? 'date' : undefined}
-      onClick={() => onDateSelect && onDateSelect(day)}
+      onClick={handleClick}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
@@ -169,7 +187,7 @@ const EventLanesOverlay = React.memo(({ weekStartDate, eventBlocks, clients = []
         >
           <button
             type="button"
-            onClick={() => onDateSelect && onDateSelect(weekStartDate)}
+            onClick={(e) => { e.stopPropagation(); if (onDateSelect) onDateSelect(weekStartDate, e.currentTarget); }}
             className="text-[10px] font-semibold text-slate-400 bg-slate-800/70 border border-slate-700/50 rounded-full px-2 py-0.5 hover:bg-slate-700/70 hover:text-white transition-all bp-hover-primary"
           >
             +{overflow.length} mais
@@ -258,7 +276,7 @@ export default function BackstageCalendarGrid({
       let cur = new Date(block.start.getTime());
       const endTime = block.end.getTime();
       while (cur.getTime() < endTime) {
-        const key = cur.toISOString().split('T')[0];
+        const key = normalizeDateString(cur);
         if (!map[key]) map[key] = [];
         map[key].push({ color: block.color, status: block.events[0]?.payment_status });
         cur = new Date(cur.getTime() + 86400000);

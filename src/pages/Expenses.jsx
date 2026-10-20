@@ -30,6 +30,7 @@ const ReceiptAnalyzer = lazy(() => import('@/components/expenses/ReceiptAnalyzer
 
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { todayLocalISO } from '@/components/utils/dateUtils';
 
 const CATEGORY_LABELS = {
   transporte: 'Transporte',
@@ -209,7 +210,7 @@ export default function ExpensesPage() {
     const { pullDistance, isRefreshing, threshold } = usePullToRefresh(refreshExpenses);
 
     const allExpenses = useMemo(() => Array.isArray(expenses) ? expenses : [], [expenses]);
-    const currentMonthKey = new Date().toISOString().substring(0, 7);
+    const currentMonthKey = todayLocalISO().slice(0, 7);
 
     // Eventos que têm pelo menos uma despesa
     const eventsWithExpenses = useMemo(() => {
@@ -221,12 +222,13 @@ export default function ExpensesPage() {
         return allExpenses
             .filter(exp => {
                 const searchMatch = searchTerm ? (
-                    exp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (exp.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                     exp.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     exp.description?.toLowerCase().includes(searchTerm.toLowerCase())
                 ) : true;
                 const categoryMatch = categoryFilter === 'all' ? true : exp.category === categoryFilter;
                 const statusMatch = statusFilter === 'all' ? true :
+                                    statusFilter === 'this_month' ? (exp.expense_date || exp.date || '').startsWith(currentMonthKey) :
                                     statusFilter === 'reimbursable' ? exp.is_reimbursable && !exp.reimbursed :
                                     statusFilter === 'reimbursed' ? exp.reimbursed : false;
                 const eventMatch = eventFilter === 'all' ? true :
@@ -235,7 +237,7 @@ export default function ExpensesPage() {
                 return searchMatch && categoryMatch && statusMatch && eventMatch;
             })
             .sort((a, b) => new Date(b.expense_date || b.date) - new Date(a.expense_date || a.date));
-    }, [allExpenses, searchTerm, categoryFilter, statusFilter, eventFilter]);
+    }, [allExpenses, searchTerm, categoryFilter, statusFilter, eventFilter, currentMonthKey]);
 
     // Agrupa despesas filtradas por mês
     const groupedByMonth = useMemo(() => {
@@ -344,7 +346,7 @@ export default function ExpensesPage() {
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <StatCard primaryHex={config.primaryHex} accentHex={config.accentHex} title="Gasto Total" value={isVisible ? formatCurrency(expenseStats.total) : '•••••'} onClick={() => setStatusFilter('all')} active={statusFilter === 'all'} />
-                        <StatCard primaryHex={config.primaryHex} accentHex={config.accentHex} title="Este Mês" value={isVisible ? formatCurrency(expenseStats.thisMonth) : '•••••'} onClick={() => setStatusFilter('all')} active={false} />
+                        <StatCard primaryHex={config.primaryHex} accentHex={config.accentHex} title="Este Mês" value={isVisible ? formatCurrency(expenseStats.thisMonth) : '•••••'} onClick={() => setStatusFilter('this_month')} active={statusFilter === 'this_month'} />
                         <StatCard primaryHex={config.primaryHex} accentHex={config.accentHex} title="A Reembolsar" value={isVisible ? formatCurrency(expenseStats.reimbursable) : '•••••'} onClick={() => setStatusFilter('reimbursable')} active={statusFilter === 'reimbursable'} />
                         <StatCard primaryHex={config.primaryHex} accentHex={config.accentHex} title="Reembolsado" value={isVisible ? formatCurrency(expenseStats.reimbursed) : '•••••'} onClick={() => setStatusFilter('reimbursed')} active={statusFilter === 'reimbursed'} />
                     </div>

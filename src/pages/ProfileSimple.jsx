@@ -3,12 +3,12 @@ import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/authContext';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { hardNavigate } from '@/lib/hardNavigate';
-import { getCategoryConfig, CATEGORIES } from '@/lib/categoryConfig';
+import { getCategoryConfig, CATEGORIES, resolveCategoryId } from '@/lib/categoryConfig';
 import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { NeonGlass } from '@/components/design/NeonGlass';
 import {
   User, Phone, MapPin, Mail, LogOut, Save, Loader2, CheckCircle, Eye, EyeOff, Download,
-  DollarSign, Target, Calendar, Camera, MessageCircle, Inbox, ChevronRight, Compass, BookOpen,
+  DollarSign, Target, Calendar, Camera, MessageCircle, Inbox, Building2, ChevronRight, Compass, BookOpen,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import FeedbackModal from '@/components/feedback/FeedbackModal';
@@ -67,7 +67,8 @@ function ProfileSkeleton() {
 export default function ProfileSimple() {
   const { user, profile, signOut, updateProfile } = useAuth();
   const { settings: userSettings, upsert: upsertSettings } = useUserSettings();
-  const { stats, refetch: refetchStats } = useStats(user?.id);
+  // Resumo do mes saiu do Perfil (repetia Home/Metas); fica so o "puxar para atualizar".
+  const { refetch: refetchStats } = useStats(user?.id);
   const { pullDistance, isRefreshing, threshold } = usePullToRefresh(refetchStats);
   const { isVisible, toggleVisibility } = useFinancialVisibility();
   const categoryId = profile?.category || 'lighting';
@@ -81,7 +82,7 @@ export default function ProfileSimple() {
     daily_rate: profile?.daily_rate || '',
     monthly_goal_revenue: profile?.monthly_goal_revenue || '',
     monthly_goal_events: profile?.monthly_goal_events || '',
-    category: profile?.category || '',
+    category: resolveCategoryId(profile?.category || ''),
   });
 
   const config = getCategoryConfig(form.category || categoryId);
@@ -91,8 +92,12 @@ export default function ProfileSimple() {
   const [exporting, setExporting] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
-  const [pixForm, setPixForm] = useState({ pix_key: '', pix_key_type: 'CPF' });
-  const [savingPix, setSavingPix] = useState(false);
+  const [pixForm, setPixForm] = useState({
+    pix_key: '',
+    pix_key_type: 'CPF',
+    cpf_cnpj: '',
+    report_subtitle: '',
+  });
   const photoInputRef = useRef(null);
   const owner = isAppOwner(user, profile);
   const { newCount: ownerNewFeedbacks } = useOwnerFeedbacks(owner);
@@ -108,7 +113,7 @@ export default function ProfileSimple() {
         daily_rate: profile.daily_rate || '',
         monthly_goal_revenue: profile.monthly_goal_revenue || '',
         monthly_goal_events: profile.monthly_goal_events || '',
-        category: profile.category || '',
+        category: resolveCategoryId(profile.category || ''),
       });
     }
   }, [profile]);
@@ -118,21 +123,11 @@ export default function ProfileSimple() {
       setPixForm({
         pix_key: userSettings.pix_key || '',
         pix_key_type: userSettings.pix_key_type || 'CPF',
+        cpf_cnpj: userSettings.cpf_cnpj || '',
+        report_subtitle: userSettings.report_subtitle || '',
       });
     }
   }, [userSettings]);
-
-  const handleSavePix = async () => {
-    setSavingPix(true);
-    try {
-      await upsertSettings({ pix_key: pixForm.pix_key.trim(), pix_key_type: pixForm.pix_key_type });
-      appToast.success('Chave PIX salva!');
-    } catch {
-      appToast.error('Erro ao salvar chave PIX.');
-    } finally {
-      setSavingPix(false);
-    }
-  };
 
   const handleExportData = async () => {
     setExporting(true);
@@ -150,8 +145,11 @@ export default function ProfileSimple() {
     }
   };
 
+  // Um botao Salvar so (missao 196d6): grava perfil e PIX/PDF. Se uma parte falhar, avisa qual
+  // e mantem o que foi digitado na tela para tentar de novo.
   const handleSave = async () => {
     setSaving(true);
+    let perfilOk = false;
     try {
       await updateProfile({
         ...form,
@@ -160,11 +158,28 @@ export default function ProfileSimple() {
         monthly_goal_revenue: form.monthly_goal_revenue !== '' ? Number(form.monthly_goal_revenue) : null,
         monthly_goal_events: form.monthly_goal_events !== '' ? Number(form.monthly_goal_events) : null,
       });
+      perfilOk = true;
+      const temPix = pixForm.pix_key.trim() || pixForm.cpf_cnpj.trim() || pixForm.report_subtitle.trim()
+        || userSettings?.pix_key || userSettings?.cpf_cnpj || userSettings?.report_subtitle;
+      if (temPix) {
+        const r = await upsertSettings({
+          pix_key: pixForm.pix_key.trim(),
+          pix_key_type: pixForm.pix_key_type,
+          cpf_cnpj: pixForm.cpf_cnpj.trim() || null,
+          report_subtitle: pixForm.report_subtitle.trim() || null,
+        });
+        if (r?._somenteNoAparelho) {
+          appToast.warning('Perfil salvo. PIX salvo so neste aparelho.', {
+            description: 'O servidor nao recebeu o PIX. Tente de novo mais tarde.',
+          });
+          return;
+        }
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (err) {
       console.error('Erro ao salvar:', err);
-      appToast.error('Erro ao salvar perfil.', { description: err?.message });
+      appToast.error(perfilOk ? 'Perfil salvo, mas o PIX nao foi salvo.' : 'Erro ao salvar perfil.', { description: err?.message });
     } finally {
       setSaving(false);
     }
@@ -290,50 +305,6 @@ export default function ProfileSimple() {
 
       <div className="px-4 max-w-2xl xl:max-w-6xl mx-auto space-y-4 w-full min-w-0">
 
-        {/* Resumo do mês */}
-        {(stats.faturamento_pago > 0 || stats.a_receber > 0 || stats.diarias_count > 0 || stats.clientes_ativos > 0) && (
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
-            <NeonGlass primary={config.primaryHex} className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">Este mês</h2>
-                <button type="button" onClick={toggleVisibility} className="text-slate-600 hover:text-slate-400 transition-colors">
-                  {isVisible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                </button>
-              </div>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                <div className="rounded-lg p-3 bg-emerald-500/8 border border-emerald-500/20 text-center">
-                  <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Recebido</p>
-                  <p className="text-base font-black text-emerald-400 font-mono leading-tight">
-                    {isVisible
-                      ? stats.faturamento_pago.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 })
-                      : '••••'}
-                  </p>
-                </div>
-                <div className="rounded-lg p-3 bg-amber-500/8 border border-amber-500/20 text-center">
-                  <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">A Receber</p>
-                  <p className="text-base font-black text-amber-400 font-mono leading-tight">
-                    {isVisible
-                      ? stats.a_receber.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 })
-                      : '••••'}
-                  </p>
-                </div>
-                <div className="rounded-lg p-3 bg-slate-800/60 border border-slate-700/60 text-center">
-                  <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Diárias</p>
-                  <p className="text-base font-black text-slate-200 font-mono">
-                    {stats.diarias_count}
-                  </p>
-                </div>
-                <div className="rounded-lg p-3 bg-slate-800/60 border border-slate-700/60 text-center">
-                  <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Clientes</p>
-                  <p className="text-base font-black text-slate-200 font-mono">
-                    {stats.clientes_ativos}
-                  </p>
-                </div>
-              </div>
-            </NeonGlass>
-          </motion.div>
-        )}
-
         {/* Dados pessoais */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
         <NeonGlass primary={config.primaryHex} glow className="p-5 space-y-4">
@@ -376,28 +347,6 @@ export default function ProfileSimple() {
             </div>
           </div>
 
-          {/* Botão salvar */}
-          <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleSave}
-            disabled={saving}
-            className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
-            style={{
-              background: saved
-                ? 'linear-gradient(135deg, #10b981, #059669)'
-                : `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})`,
-              opacity: saving ? 0.7 : 1,
-            }}
-          >
-            {saving ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Salvando...</>
-            ) : saved ? (
-              <><CheckCircle className="w-4 h-4" /> Salvo!</>
-            ) : (
-              <><Save className="w-4 h-4" /> Salvar alterações</>
-            )}
-          </motion.button>
         </NeonGlass>
         </motion.div>
 
@@ -467,9 +416,6 @@ export default function ProfileSimple() {
             <div key={key}>
               <label htmlFor={`goals-${key}`} className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">{label}</label>
               {hint && <p className="text-[10px] text-slate-600 mb-1.5">{hint}</p>}
-              {key === 'monthly_goal_events' && stats?.diarias_count != null && (
-                <p className="text-[10px] mb-1.5" style={{ color: `${config.primaryHex}cc` }}>Este mês: {stats.diarias_count} diária{stats.diarias_count !== 1 ? 's' : ''} registrada{stats.diarias_count !== 1 ? 's' : ''}</p>
-              )}
               <div className="relative">
                 <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
                 <input
@@ -485,49 +431,18 @@ export default function ProfileSimple() {
             </div>
           ))}
 
-          <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleSave}
-            disabled={saving}
-            className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
-            style={{
-              background: saved
-                ? 'linear-gradient(135deg, #10b981, #059669)'
-                : `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})`,
-              opacity: saving ? 0.7 : 1,
-            }}
-          >
-            {saving ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Salvando...</>
-            ) : saved ? (
-              <><CheckCircle className="w-4 h-4" /> Salvo!</>
-            ) : (
-              <><Save className="w-4 h-4" /> Salvar metas</>
-            )}
-          </motion.button>
         </NeonGlass>
-        </motion.div>
-
-        {/* Alertas no celular */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.31 }}>
-          <PushNotificationSettings />
-        </motion.div>
-
-        {/* Google Calendar */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }}>
-          <GoogleCalendarSync />
         </motion.div>
 
         {/* PIX */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.315 }}>
           <NeonGlass primary={config.primaryHex} className="p-5 space-y-4">
             <div>
-              <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider font-mono">Dados de Pagamento (PIX)</h2>
-              <p className="text-xs text-slate-500 mt-1">Usados para gerar cobrança via WhatsApp e nos relatórios PDF.</p>
+              <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider font-mono">Dados de Pagamento (PIX) &amp; Relatório PDF</h2>
+              <p className="text-xs text-slate-500 mt-1">Usados para gerar cobrança via WhatsApp, código PIX Copia e Cola e cabeçalho do Relatório PDF de Fechamento.</p>
             </div>
             <div>
-              <label htmlFor="pix-key-type" className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Tipo de chave</label>
+              <label htmlFor="pix-key-type" className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Tipo de chave PIX</label>
               <select
                 id="pix-key-type"
                 value={pixForm.pix_key_type}
@@ -551,17 +466,67 @@ export default function ProfileSimple() {
                 />
               </div>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleSavePix}
-              disabled={savingPix || !pixForm.pix_key.trim()}
-              className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
-              style={{ background: `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})` }}
-            >
-              {savingPix ? <><Loader2 className="w-4 h-4 animate-spin" /> Salvando...</> : <><Save className="w-4 h-4" /> Salvar PIX</>}
-            </motion.button>
+            <div>
+              <label htmlFor="profile-cpf-cnpj" className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">CPF ou CNPJ (MEI/Empresa para o PDF)</label>
+              <div className="relative">
+                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
+                <input
+                  id="profile-cpf-cnpj"
+                  type="text"
+                  value={pixForm.cpf_cnpj}
+                  onChange={e => setPixForm(f => ({ ...f, cpf_cnpj: e.target.value }))}
+                  placeholder="00.000.000/0001-00 ou 000.000.000-00"
+                  className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-600 transition-colors"
+                />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="profile-report-subtitle" className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Subtítulo / Nome Fantasia no Relatório PDF (opcional)</label>
+              <input
+                id="profile-report-subtitle"
+                type="text"
+                value={pixForm.report_subtitle}
+                onChange={e => setPixForm(f => ({ ...f, report_subtitle: e.target.value }))}
+                placeholder="Ex: Engenharia de Áudio & RF · MEI"
+                className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-600 transition-colors"
+              />
+            </div>
           </NeonGlass>
+        </motion.div>
+
+        {/* Salvar unico: dados, area, metas e PIX */}
+        <div className="sticky bottom-24 z-10">
+          <motion.button
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleSave}
+            disabled={saving}
+            className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg"
+            style={{
+              background: saved
+                ? 'linear-gradient(135deg, #10b981, #059669)'
+                : `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})`,
+              opacity: saving ? 0.7 : 1,
+            }}
+          >
+            {saving ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Salvando...</>
+            ) : saved ? (
+              <><CheckCircle className="w-4 h-4" /> Salvo!</>
+            ) : (
+              <><Save className="w-4 h-4" /> Salvar alterações</>
+            )}
+          </motion.button>
+        </div>
+
+        {/* Alertas no celular */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.31 }}>
+          <PushNotificationSettings />
+        </motion.div>
+
+        {/* Google Calendar */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }}>
+          <GoogleCalendarSync />
         </motion.div>
 
         {/* Ajuda do app */}
@@ -640,6 +605,18 @@ export default function ProfileSimple() {
               </div>
             </Link>
           )}
+          {owner && (
+            <Link
+              to="/admin/empresas"
+              className="w-full flex items-center justify-between gap-3 py-3 px-4 rounded-xl border border-slate-700/50 hover:bg-slate-800/40 transition-colors min-w-0"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <Building2 className="w-5 h-5 shrink-0" style={{ color: config.primaryHex }} />
+                <span className="text-sm font-semibold text-white">Catálogo de empresas</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-600 shrink-0" />
+            </Link>
+          )}
         </NeonGlass>
         </motion.div>
 
@@ -677,6 +654,20 @@ export default function ProfileSimple() {
         </NeonGlass>
         </motion.div>
 
+        <EventTemplatesManager primaryHex={config.primaryHex} />
+
+        <InstallPwaCard primaryHex={config.primaryHex} />
+
+        <button
+          type="button"
+          onClick={handleExportData}
+          disabled={exporting}
+          className="w-full flex items-center justify-center gap-2 py-2 text-slate-500 hover:text-slate-300 text-xs font-mono transition-all disabled:opacity-50"
+        >
+          {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+          {exporting ? 'Exportando...' : 'Exportar meus dados'}
+        </button>
+
         {/* Logout */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
         <NeonGlass primary={config.primaryHex} className="p-4">
@@ -713,19 +704,6 @@ export default function ProfileSimple() {
         </NeonGlass>
         </motion.div>
 
-        <EventTemplatesManager primaryHex={config.primaryHex} />
-
-        <InstallPwaCard primaryHex={config.primaryHex} />
-
-        <button
-          type="button"
-          onClick={handleExportData}
-          disabled={exporting}
-          className="w-full flex items-center justify-center gap-2 py-2 text-slate-500 hover:text-slate-300 text-xs font-mono transition-all disabled:opacity-50"
-        >
-          {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-          {exporting ? 'Exportando...' : 'Exportar meus dados'}
-        </button>
         <p className="text-center text-slate-700 text-xs pb-2 font-mono">Backstage Pro v1.0</p>
       </div>
 

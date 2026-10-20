@@ -10,6 +10,7 @@ import { useEvents } from '@/lib/useEvents';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { getClientDisplayName } from '@/lib/eventDisplay';
 import { toast } from 'sonner';
+import { todayLocalISO } from '@/components/utils/dateUtils';
 
 const BUCKET = 'backstage';
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
@@ -123,19 +124,37 @@ export default function NFeAttachment({ event, client }) {
   const { update: updateEvent } = useEvents();
   const fileInputRef = useRef(null);
 
+  const currentSavedNumero = event?.nfe_numero || event?.nf_number || '';
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
-  const [numero, setNumero] = useState(event?.nfe_numero ?? '');
+  const [numero, setNumero] = useState(currentSavedNumero);
+  const [issuedAt, setIssuedAt] = useState(event?.nf_issued_at || '');
 
   useEffect(() => {
-    setNumero(event?.nfe_numero ?? '');
-  }, [event?.id, event?.nfe_numero]);
+    setNumero(event?.nfe_numero || event?.nf_number || '');
+    setIssuedAt(event?.nf_issued_at || '');
+  }, [event?.id, event?.nfe_numero, event?.nf_number, event?.nf_issued_at]);
   const [savingNumero, setSavingNumero] = useState(false);
 
   const hasArquivo = Boolean(event?.nfe_arquivo_url);
-  const hasNFe = hasArquivo || Boolean(event?.nfe_numero);
+  const hasNFe = hasArquivo || Boolean(currentSavedNumero);
   const analise = event?.nfe_analise ?? null;
   const clienteNome = client ? getClientDisplayName(client) : null;
+
+  async function safeUpdateNFe(patch) {
+    try {
+      return await updateEvent(event.id, patch);
+    } catch (err) {
+      // Fallback caso a migration 034 ainda não tenha sido aplicada no banco remoto
+      if (patch.nfe_numero !== undefined) {
+        return await updateEvent(event.id, {
+          nf_number: patch.nfe_numero,
+          ...(patch.nf_issued_at !== undefined ? { nf_issued_at: patch.nf_issued_at } : {}),
+        });
+      }
+      throw err;
+    }
+  }
 
   async function runAnalise(pdfUrl) {
     setAnalyzing(true);
@@ -155,10 +174,12 @@ export default function NFeAttachment({ event, client }) {
       if (!data?.success) throw new Error(data?.error ?? 'Falha na análise');
 
       const resultado = data.data;
+      const resolvedNum = resultado.nfe_numero ?? currentSavedNumero ?? null;
 
-      await updateEvent(event.id, {
+      await safeUpdateNFe({
         nfe_analise: resultado,
-        nfe_numero: resultado.nfe_numero ?? event.nfe_numero ?? null,
+        nfe_numero: resolvedNum,
+        nf_number: resolvedNum,
       });
 
       if (resultado.cliente_reconhecido && resultado.valor_confere) {
@@ -209,11 +230,14 @@ export default function NFeAttachment({ event, client }) {
 
       const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(data.path);
       const publicUrl = urlData.publicUrl;
+      const resolvedNum = numero.trim() || currentSavedNumero || null;
 
-      await updateEvent(event.id, {
+      await safeUpdateNFe({
         nfe_arquivo_url: publicUrl,
         nfe_arquivo_nome: file.name,
-        nfe_numero: numero.trim() || event.nfe_numero || null,
+        nfe_numero: resolvedNum,
+        nf_number: resolvedNum,
+        nf_issued_at: issuedAt || event?.nf_issued_at || todayLocalISO(),
         nfe_analise: null, // limpa análise anterior
       });
 
@@ -232,10 +256,16 @@ export default function NFeAttachment({ event, client }) {
     if (!numero.trim()) return;
     setSavingNumero(true);
     try {
-      await updateEvent(event.id, { nfe_numero: numero.trim() });
-      toast.success('Número da NF-e salvo.');
+      const cleanNum = numero.trim();
+      const cleanDate = issuedAt || event?.nf_issued_at || todayLocalISO();
+      await safeUpdateNFe({
+        nfe_numero: cleanNum,
+        nf_number: cleanNum,
+        nf_issued_at: cleanDate,
+      });
+      toast.success('Dados da NF-e salvos e incluídos no PDF de Fechamento!');
     } catch {
-      toast.error('Erro ao salvar número.');
+      toast.error('Erro ao salvar número da NF-e.');
     } finally {
       setSavingNumero(false);
     }
@@ -247,13 +277,16 @@ export default function NFeAttachment({ event, client }) {
         const oldPath = extractStoragePath(event.nfe_arquivo_url);
         if (oldPath) await supabase.storage.from(BUCKET).remove([oldPath]);
       }
-      await updateEvent(event.id, {
+      await safeUpdateNFe({
         nfe_arquivo_url: null,
         nfe_arquivo_nome: null,
         nfe_numero: null,
+        nf_number: null,
+        nf_issued_at: null,
         nfe_analise: null,
       });
       setNumero('');
+      setIssuedAt('');
       toast.success('NF-e removida do evento.');
     } catch {
       toast.error('Erro ao remover NF-e.');
@@ -265,21 +298,27 @@ export default function NFeAttachment({ event, client }) {
   // ── NF-e já registrada ────────────────────────────────────────────────────
   if (hasNFe) {
     return (
-      <div className="space-y-2">
-        <div className="bg-blue-950/20 border border-blue-700/30 rounded-lg p-3">
+      <div className="space-y-2.5">
+        <div className="bg-blue-950/20 border border-blue-700/30 rounded-lg p-3 space-y-2.5">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
               <FileText className="w-4 h-4 text-blue-400 flex-shrink-0" />
               <div className="min-w-0">
-                {event.nfe_numero && (
-                  <p className="text-xs font-semibold text-white">NF-e nº {event.nfe_numero}</p>
+                {currentSavedNumero && (
+                  <p className="text-xs font-semibold text-white">
+                    NF-e nº {currentSavedNumero}
+                    {event?.nf_issued_at ? ` · Emitida em ${new Date(event.nf_issued_at + 'T12:00:00').toLocaleDateString('pt-BR')}` : ''}
+                  </p>
                 )}
                 {event.nfe_arquivo_nome && (
                   <p className="text-xs text-slate-400 truncate">{event.nfe_arquivo_nome}</p>
                 )}
-                {!event.nfe_arquivo_nome && !event.nfe_numero && (
+                {!event.nfe_arquivo_nome && !currentSavedNumero && (
                   <p className="text-xs text-slate-400">Arquivo anexado</p>
                 )}
+                <p className="text-[11px] text-emerald-400/90 mt-0.5">
+                  ✓ Vinculada ao Relatório PDF de Fechamento
+                </p>
               </div>
             </div>
 
@@ -292,7 +331,7 @@ export default function NFeAttachment({ event, client }) {
               )}
               {hasArquivo && !isLoading && (
                 <>
-                  <a href={event.nfe_arquivo_url} target="_blank" rel="noopener noreferrer" title="Baixar PDF">
+                  <a href={event.nfe_arquivo_url} target="_blank" rel="noopener noreferrer" title="Baixar PDF da NF-e">
                     <Button type="button" size="sm" variant="outline"
                       className="h-7 w-7 p-0 border-slate-600 text-slate-300 hover:bg-slate-700">
                       <Download className="w-3.5 h-3.5" />
@@ -310,9 +349,10 @@ export default function NFeAttachment({ event, client }) {
                 <>
                   <Button type="button" size="sm" variant="outline"
                     onClick={() => fileInputRef.current?.click()}
-                    title="Substituir arquivo"
-                    className="h-7 w-7 p-0 border-slate-600 text-slate-300 hover:bg-slate-700">
-                    <Upload className="w-3.5 h-3.5" />
+                    title={hasArquivo ? 'Substituir PDF da NF-e' : 'Anexar PDF da NF-e'}
+                    className="h-7 px-2 text-xs border-slate-600 text-slate-300 hover:bg-slate-700">
+                    <Upload className="w-3.5 h-3.5 mr-1" />
+                    {hasArquivo ? 'Trocar PDF' : 'Anexar PDF'}
                   </Button>
                   <Button type="button" size="sm" variant="outline"
                     onClick={handleDelete}
@@ -323,6 +363,31 @@ export default function NFeAttachment({ event, client }) {
                 </>
               )}
             </div>
+          </div>
+
+          {/* Edição rápida do número ou data da NF-e */}
+          <div className="flex flex-wrap gap-2 pt-1 border-t border-blue-900/30">
+            <Input
+              type="text"
+              placeholder="Nº da NF-e (ex: 2026/042)"
+              value={numero}
+              onChange={(e) => setNumero(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSaveNumero()}
+              className="h-8 text-xs bg-slate-900/70 border-slate-700 flex-1 min-w-[130px]"
+            />
+            <Input
+              type="date"
+              value={issuedAt}
+              onChange={(e) => setIssuedAt(e.target.value)}
+              className="h-8 text-xs bg-slate-900/70 border-slate-700 w-[135px]"
+              title="Data de emissão da NF-e"
+            />
+            {(numero.trim() !== currentSavedNumero || issuedAt !== (event?.nf_issued_at || '')) && numero.trim() && (
+              <Button type="button" size="sm" disabled={savingNumero} onClick={handleSaveNumero}
+                className="h-8 px-3 text-xs bg-blue-700 hover:bg-blue-600 text-white flex-shrink-0">
+                {savingNumero ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Atualizar'}
+              </Button>
+            )}
           </div>
         </div>
 
@@ -345,25 +410,32 @@ export default function NFeAttachment({ event, client }) {
     <div className="border border-dashed border-blue-800/40 rounded-lg p-3 space-y-2.5 bg-blue-950/10">
       <div className="flex items-center gap-1.5">
         <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-        <p className="text-xs text-slate-300 font-medium">Registrar NF-e emitida</p>
+        <p className="text-xs text-slate-300 font-medium">Inserir NF-e / NFS-e no evento</p>
       </div>
-      <p className="text-xs text-slate-500">
-        Anexe o PDF — a IA vai ler e confirmar que é a NF do evento e desta empresa.
+      <p className="text-xs text-slate-400">
+        Digite o número ou anexe o PDF da NF-e — os dados entram automaticamente no Relatório PDF de Fechamento.
       </p>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Input
           type="text"
-          placeholder="Número da NF-e (opcional)"
+          placeholder="Número da NF-e (ex: 000142)"
           value={numero}
           onChange={(e) => setNumero(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSaveNumero()}
-          className="h-8 text-sm bg-slate-800/80 border-slate-700 flex-1"
+          className="h-8 text-sm bg-slate-800/80 border-slate-700 flex-1 min-w-[140px]"
         />
-        {numero.trim() && numero.trim() !== (event?.nfe_numero ?? '') && (
+        <Input
+          type="date"
+          value={issuedAt}
+          onChange={(e) => setIssuedAt(e.target.value)}
+          className="h-8 text-xs bg-slate-800/80 border-slate-700 w-[135px]"
+          title="Data de emissão"
+        />
+        {numero.trim() && (
           <Button type="button" size="sm" disabled={savingNumero} onClick={handleSaveNumero}
             className="h-8 px-3 text-xs bg-blue-700 hover:bg-blue-600 text-white flex-shrink-0">
-            {savingNumero ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Salvar'}
+            {savingNumero ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Salvar Nº'}
           </Button>
         )}
       </div>

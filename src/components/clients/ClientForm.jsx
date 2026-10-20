@@ -1,4 +1,4 @@
-﻿import {
+import {
   useState,
   useEffect,
   useRef
@@ -11,6 +11,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Building2, User, DollarSign, X, AlertCircle, Phone, Mail, FileText, Camera, ImagePlus } from 'lucide-react';
 import appToast from '@/lib/appToast';
+import { parseBRL, toBRLInput } from '@/lib/money';
+import { MEAL_POLICY_LABELS } from '@/lib/mealPolicy';
 
 import { useAuth } from '@/lib/authContext';
 import { useClients } from '@/lib/useClients';
@@ -22,6 +24,17 @@ import ColorGridPicker from '@/components/ui/ColorGridPicker';
 import { pickDefaultClientColor, DEFAULT_CLIENT_COLOR } from '@/lib/brandColors';
 import CompanySearchInput from './CompanySearchInput';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
+
+// So manda a alimentacao quando o usuario mudou (assim quem nao usa nao depende da migration 041).
+function buildMealPatch(formData, client) {
+  const policy = formData.meal_policy || null;
+  const v = parseBRL(formData.meal_daily_value);
+  const value = policy === 'reembolso' && Number.isFinite(v) && v >= 0 ? v : null;
+  const beforeP = client?.meal_policy ?? null;
+  const beforeV = client?.meal_daily_value != null ? Number(client.meal_daily_value) : null;
+  if (policy === beforeP && value === beforeV) return {};
+  return { meal_policy: policy, meal_daily_value: value };
+}
 
 export default function ClientForm({ client, onSuccess, onCancel }) {
   const { user } = useAuth();
@@ -48,24 +61,34 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
     policy_default_payment_model: null,
     policy_allows_meio_e_dobra_juntos: false,
     default_daily_cache: '',
+    meal_policy: null,
+    meal_daily_value: '',
     brand_color: DEFAULT_CLIENT_COLOR,
   });
 
   useEffect(() => {
     if (client) {
+      // A razão social é guardada como 1ª linha das observações ("Razão Social: ...").
+      // Ao editar, ela volta para o campo próprio e sai do texto das observações.
+      const razaoMatch = String(client.notes || '').match(/^Razão Social: (.+)$/m);
+      const notesSemRazao = razaoMatch
+        ? String(client.notes).replace(razaoMatch[0], '').replace(/^\s*\n/, '').trim()
+        : client.notes || '';
       setFormData({
         client_type: client.client_type || 'empresa',
         name: client.name || '',
-        razao_social: '',
+        razao_social: client.razao_social || razaoMatch?.[1]?.trim() || '',
         contact_person: client.contact_person || '',
         email: client.email || '',
         phone: client.phone || '',
         logo_url: client.logo_url || '',
         invoice_portal_url: client.invoice_portal_url || '',
-        notes: client.notes || '',
+        notes: notesSemRazao,
         policy_default_payment_model: client.policy_default_payment_model || null,
         policy_allows_meio_e_dobra_juntos: client.policy_allows_meio_e_dobra_juntos || false,
         default_daily_cache: client.default_daily_cache > 0 ? String(client.default_daily_cache) : '',
+        meal_policy: client.meal_policy || null,
+        meal_daily_value: client.meal_daily_value > 0 ? toBRLInput(client.meal_daily_value) : '',
         brand_color: client.brand_color || DEFAULT_CLIENT_COLOR,
       });
     } else {
@@ -82,6 +105,8 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
         policy_default_payment_model: null,
         policy_allows_meio_e_dobra_juntos: false,
         default_daily_cache: '',
+        meal_policy: null,
+        meal_daily_value: '',
         brand_color: DEFAULT_CLIENT_COLOR,
       });
     }
@@ -159,12 +184,14 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
     const autoNotes = buildCompanyNotes(company);
     const clearbitLogo = company.domain ? `https://logo.clearbit.com/${company.domain}` : null;
 
+    // Contato só é copiado quando é dado oficial (consulta de CNPJ), nunca o que outro usuário digitou.
+    const official = company.verified === true || ['brasilapi', 'cnpja', 'nfe'].includes(company.source);
     setFormData(prev => ({
       ...prev,
       name: nomeFantasia || prev.name,
       razao_social: razaoSocial || prev.razao_social,
-      email: company.email || prev.email,
-      phone: company.phone || prev.phone,
+      email: (official && company.email) || prev.email,
+      phone: (official && company.phone) || prev.phone,
       contact_person: company.contact_person || prev.contact_person,
       logo_url: prev.logo_url || company.logo_url || clearbitLogo || '',
       notes: autoNotes
@@ -215,6 +242,25 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
       return;
     }
 
+    // Cachê padrão: aceita "1.200,50" ou "1200.5"; valor inválido vira 0 (nunca NaN no banco).
+    const cacheText = String(formData.default_daily_cache ?? '').trim();
+    const cacheParsed = parseBRL(cacheText);
+    const safeCache = Number.isFinite(cacheParsed) && cacheParsed > 0 ? cacheParsed : 0;
+
+    // Razão social vai como 1ª linha das observações (o formulário a separa de novo ao editar).
+    let notesValue = formData.notes || null;
+    if (formData.razao_social?.trim()) {
+      const razaoLine = `Razão Social: ${formData.razao_social.trim()}`;
+      if (!notesValue?.includes(razaoLine)) {
+        notesValue = notesValue ? `${razaoLine}\n${notesValue}` : razaoLine;
+      }
+    }
+
+    // Logo herdado do catálogo (ficha sem logo próprio) não é gravado na ficha pessoal.
+    const ownLogo = client?.logo_from_company && formData.logo_url === client.logo_url
+      ? null
+      : formData.logo_url || null;
+
     setLoading(true);
 
     try {
@@ -230,8 +276,6 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
           const companyPayload = selectedCompany || {
             name: formData.name.trim(),
             trading_name: formData.name.trim(),
-            phone: formData.phone || null,
-            email: formData.email || null,
             logo_url: formData.logo_url || null,
             source: 'manual',
           };
@@ -242,30 +286,23 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
         }
       }
 
-      // Prepend razão social to notes if filled and not already present
-      let notesValue = formData.notes || null;
-      if (formData.razao_social?.trim()) {
-        const razaoLine = `Razão Social: ${formData.razao_social.trim()}`;
-        if (!notesValue?.includes(razaoLine)) {
-          notesValue = notesValue ? `${razaoLine}\n${notesValue}` : razaoLine;
-        }
-      }
-
       const clientData = {
         client_type: formData.client_type || 'empresa',
         name: formData.name.trim(),
         contact_person: formData.contact_person || null,
         email: formData.email || null,
         phone: formData.phone || null,
-        logo_url: formData.logo_url || null,
+        logo_url: ownLogo,
         invoice_portal_url: formData.invoice_portal_url || null,
         notes: notesValue,
         policy_default_payment_model: formData.policy_default_payment_model || null,
         policy_allows_meio_e_dobra_juntos: formData.policy_allows_meio_e_dobra_juntos || false,
-        default_daily_cache: formData.default_daily_cache === ''
-          ? 0
-          : Number(formData.default_daily_cache),
+        default_daily_cache: safeCache,
+        ...buildMealPatch(formData, client),
         brand_color: formData.brand_color || pickDefaultClientColor(formData.name),
+        // Salvar o formulário completo conclui o cadastro (sai do estado "rascunho"
+        // criado pelo cadastro rápido / catálogo sem CNPJ).
+        profile_complete: true,
         ...(companyId ? { company_id: companyId } : {}),
       };
 
@@ -291,12 +328,12 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
             contact_person: formData.contact_person || null,
             email: formData.email || null,
             phone: formData.phone || null,
-            logo_url: formData.logo_url || null,
+            logo_url: ownLogo,
             invoice_portal_url: formData.invoice_portal_url || null,
-            notes: formData.notes || null,
+            notes: notesValue,
             policy_default_payment_model: formData.policy_default_payment_model || null,
             policy_allows_meio_e_dobra_juntos: formData.policy_allows_meio_e_dobra_juntos || false,
-            default_daily_cache: formData.default_daily_cache === '' ? 0 : Number(formData.default_daily_cache),
+            default_daily_cache: safeCache,
           };
           const result = await updateClient(client.id, withoutColor);
           appToast.success('Cliente atualizado (cor será salva após atualização do banco).');
@@ -573,14 +610,43 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                 </p>
                 <Input
                   id="default_daily_cache"
-                  type="number"
-                  min="0"
-                  step="50"
+                  type="text"
+                  inputMode="decimal"
                   value={formData.default_daily_cache}
                   onChange={(e) => handleChange('default_daily_cache', e.target.value)}
                   className="bg-slate-800 border-slate-700 text-white h-12 text-base touch-manipulation"
                   placeholder="Ex: 800"
                 />
+              </div>
+
+              {/* Alimentacao: cada cliente faz de um jeito (regra do dono) */}
+              <div className="space-y-2">
+                <Label className="text-slate-300 text-sm font-medium">Alimentação</Label>
+                <p className="text-xs text-slate-500">Só &quot;Cliente reembolsa&quot; soma no a receber e no fechamento.</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[[null, 'Não definido'], ...Object.entries(MEAL_POLICY_LABELS)].map(([key, label]) => (
+                    <Button
+                      key={key || 'none'}
+                      type="button"
+                      variant={(formData.meal_policy || null) === key ? 'default' : 'outline'}
+                      onClick={() => handleChange('meal_policy', key)}
+                      className="h-auto min-h-[44px] p-3 text-sm bg-slate-700/50 border-slate-600 hover:bg-slate-600/50"
+                    >
+                      {label}
+                    </Button>
+                  ))}
+                </div>
+                {formData.meal_policy === 'reembolso' && (
+                  <Input
+                    id="meal_daily_value"
+                    type="text"
+                    inputMode="decimal"
+                    value={formData.meal_daily_value}
+                    onChange={(e) => handleChange('meal_daily_value', e.target.value)}
+                    className="bg-slate-800 border-slate-700 text-white h-12 text-base"
+                    placeholder="Valor por dia (opcional), ex: 45,00"
+                  />
+                )}
               </div>
 
               {formData.policy_default_payment_model === 'MEIO_CACHE_E_DOBRA' && (

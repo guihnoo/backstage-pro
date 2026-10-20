@@ -2,11 +2,12 @@ import { useMemo, useState } from 'react';
 import { differenceInDays, parseISO } from 'date-fns';
 import { AlertTriangle, ChevronDown, ChevronUp, MessageCircle, Clock } from 'lucide-react';
 import { buildChargeMessage, openWhatsAppCharge } from '@/lib/whatsapp';
-import { calculateEventReceivableAmount } from '@/lib/eventFinance';
+import { calculateEventReceivableAmount, isReceivableEvent } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import appToast from '@/lib/appToast';
 import EventHeading from '@/components/events/EventHeading';
 import { getClientDisplayName } from '@/lib/eventDisplay';
+import { todayLocalISO } from '@/components/utils/dateUtils';
 
 const BUCKETS = [
   { key: 'hot',    label: '> 90 dias', min: 90,  max: Infinity, color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/30',    dot: 'bg-red-400' },
@@ -16,7 +17,9 @@ const BUCKETS = [
 ];
 
 function getBucket(days) {
-  return BUCKETS.find(b => days >= b.min && days <= b.max) || BUCKETS[3];
+  // 90 dias exatos ficam em "61–90" (antes caíam em "> 90").
+  if (days > 90) return BUCKETS[0];
+  return BUCKETS.find(b => b.key !== 'hot' && days >= b.min && days <= b.max) || BUCKETS[3];
 }
 
 export default function ReceivablesAging({ events = [], clients = [], work = [] }) {
@@ -35,11 +38,11 @@ export default function ReceivablesAging({ events = [], clients = [], work = [] 
 
   const overdue = useMemo(() => {
     const today = new Date();
-    const todayStr = today.toISOString().slice(0, 10);
+    const todayStr = todayLocalISO(today);
     return events
       .filter(ev => {
-        if (ev.status === 'cancelled') return false;
-        if (ev.status !== 'completed' || ev.payment_status === 'paid') return false;
+        // Mesma regra do "a receber": concluído (pela data ou manual), não cancelado, não pago.
+        if (!isReceivableEvent(ev)) return false;
         // Se tem vencimento definido, só mostra após a data de vencimento
         if (ev.payment_due_date) return ev.payment_due_date <= todayStr;
         return true;

@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { todayLocalISO } from '@/components/utils/dateUtils';
 
 /**
  * Exporta todos os dados do usuário autenticado como JSON e dispara download.
@@ -34,7 +35,7 @@ export async function createBackup(_args) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `backstage-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `backstage-backup-${todayLocalISO()}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { LayoutGrid } from 'lucide-react';
 import { getCategoryConfig, getCategoryLabel } from '@/lib/categoryConfig';
-import { getEventCacheAmount } from '@/lib/eventFinance';
+import { calculateEventReceivableAmount } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 
 export default function CategoryBreakdown({ events = [], work = [] }) {
@@ -28,8 +28,8 @@ export default function CategoryBreakdown({ events = [], work = [] }) {
       // Receita: só eventos pagos
       if (ev.payment_status === 'paid') {
         const wk = workByEvent[ev.id] || [];
-        const fromWork = wk.reduce((s, w) => s + (w.daily_cache || 0), 0);
-        map[cat].revenue += fromWork > 0 ? fromWork : getEventCacheAmount(ev);
+        const workForEvent = wk;
+        map[cat].revenue += calculateEventReceivableAmount(ev, workForEvent);
       }
 
       // Horas e cache de work records

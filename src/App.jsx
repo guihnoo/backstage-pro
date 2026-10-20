@@ -4,7 +4,7 @@ import { router } from '@/routes';
 import { Toaster as SonnerToaster } from 'sonner';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import PwaLiveUpdater from '@/components/pwa/PwaLiveUpdater';
-import { getAppTopBarOffset } from '@/components/layout/AppTopBar';
+import { getAppTopBarOffset } from '@/lib/appTopBarOffset';
 
 function ConfigMissingScreen() {
   return (

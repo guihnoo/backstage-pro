@@ -8,10 +8,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Bell, Clock, Calendar, DollarSign, Target, X, Zap, MessageCircle } from 'lucide-react';
-import EventDetailModal from '@/components/calendar/EventDetailModal';
+// Só carrega ao tocar numa notificação: o sino fica na barra de todas as telas.
+const EventDetailModal = lazy(() => import('@/components/calendar/EventDetailModal'));
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { useAuth } from '@/lib/authContext';
-import { useStats } from '@/lib/useBackstageData';
+import { useDailyWork } from '@/lib/useDailyWork';
+import { monthRange } from '@/lib/financeMetrics';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
@@ -24,6 +26,7 @@ import { differenceInDays, parseISO, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { buildUserNotifications } from '@/lib/notificationRules';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
+import { todayLocalISO, countUniqueWorkDays } from '@/components/utils/dateUtils';
 
 const DISMISSED_KEY = 'backstage_dismissed_notifications';
 
@@ -123,7 +126,13 @@ export default function NotificationCenter({ compact = false }) {
   const theme = useCategoryTheme();
   const { events, delete: deleteEvent, refetch: refetchEvents } = useEvents();
   const { clients } = useClients();
-  const { stats } = useStats(user?.id);
+  // So precisa das diarias do mes: usa as horas que o app ja carrega (antes o sino fazia
+  // 5 consultas proprias ao banco em toda tela, inclusive uma de todas as horas).
+  const { dailyWork } = useDailyWork();
+  const diariasMes = useMemo(() => {
+    const { start, end } = monthRange();
+    return countUniqueWorkDays((dailyWork || []).filter((d) => d?.date >= start && d?.date <= end));
+  }, [dailyWork]);
   const { formatCurrency } = useFinancialVisibility();
   const [dismissed, setDismissed] = useState(() => getDismissed());
   const [isOpen, setIsOpen] = useState(false);
@@ -135,7 +144,7 @@ export default function NotificationCenter({ compact = false }) {
   // Limpa dismissed antigos (> 3 dias) a cada abertura
   useEffect(() => {
     if (!isOpen) return;
-    const today = new Date().toISOString().split('T')[0];
+    const today = todayLocalISO();
     setDismissed(prev => {
       const fresh = new Set(
         [...prev].filter(id => {
@@ -160,7 +169,7 @@ export default function NotificationCenter({ compact = false }) {
       events,
       clients,
       profile,
-      diariasCount: stats?.diarias_count ?? 0,
+      diariasCount: diariasMes,
       today: new Date(),
       formatCurrency,
     });
@@ -171,7 +180,7 @@ export default function NotificationCenter({ compact = false }) {
       if (n.type === 'goal_reminder') return { ...n, title: `🎯 ${n.title}` };
       return n;
     });
-  }, [events, clients, profile, stats?.diarias_count, formatCurrency]);
+  }, [events, clients, profile, diariasMes, formatCurrency]);
 
   const visible = useMemo(() =>
     allNotifications.filter(n => !dismissed.has(n.id)),

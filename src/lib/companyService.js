@@ -1,9 +1,53 @@
 import { supabase } from './supabase';
 import {
   buildCompanyPatchDiff,
+  buildCompanySuggestions,
   mergeCompanyRecord,
   normalizeCompanyKey,
 } from './companyEnrichment';
+
+/**
+ * Envia sugestões de correção do catálogo para o dono aprovar. Nunca altera a empresa.
+ * Falhas são ignoradas (tabela ainda não criada, sugestão repetida etc.).
+ */
+export async function submitCompanySuggestions(suggestions) {
+  if (!suggestions?.length) return;
+  for (const s of suggestions) {
+    try {
+      const { error } = await supabase.from('company_suggestions').insert(s);
+      if (error && error.code !== '23505') console.warn('Sugestão de empresa ignorada:', error.message);
+    } catch (e) {
+      console.warn('Sugestão de empresa ignorada:', e.message);
+    }
+  }
+}
+
+/** Fila e histórico do catálogo (só o dono do app consegue ler). */
+export async function listCompanySuggestions(status = 'pendente') {
+  const { data, error } = await supabase
+    .from('company_suggestions')
+    .select('id, company_id, suggested_by, field, current_value, suggested_value, status, created_at, reviewed_at, company:companies(name, trading_name, logo_url)')
+    .eq('status', status)
+    .order('created_at', { ascending: false })
+    .limit(100);
+  if (error) throw error;
+  return data || [];
+}
+
+export async function listCompanyChanges(limit = 200) {
+  const { data, error } = await supabase
+    .from('company_changes')
+    .select('id, company_id, changed_by, changed_at, action, field, old_value, new_value')
+    .order('changed_at', { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return data || [];
+}
+
+export async function reviewCompanySuggestion(id, approve) {
+  const { error } = await supabase.rpc('revisar_sugestao_empresa', { p_id: id, p_aprovar: approve });
+  if (error) throw error;
+}
 
 export async function searchCompaniesLocal(query, limit = 10) {
   if (!query || query.trim().length < 2) return [];
@@ -58,6 +102,8 @@ export async function enrichCompanyById(companyId, patch) {
     .maybeSingle();
   if (readErr) throw readErr;
   if (!existing) return null;
+
+  await submitCompanySuggestions(buildCompanySuggestions(existing, patch));
 
   const merged = mergeCompanyRecord(existing, patch);
   const diff = buildCompanyPatchDiff(existing, merged);

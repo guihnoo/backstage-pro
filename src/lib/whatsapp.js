@@ -2,7 +2,7 @@
  * Utilitários WhatsApp — cobrança, contato e relatório de evento (Brasil).
  */
 
-import { getEventCacheAmount } from '@/lib/eventFinance';
+import { buildEventClosing } from './eventClosing';
 
 export function formatWhatsAppNumber(phone) {
   if (!phone) return null;
@@ -12,7 +12,9 @@ export function formatWhatsAppNumber(phone) {
 }
 
 export function formatBRL(value) {
-  const n = typeof value === 'number' && !Number.isNaN(value) ? value : 0;
+  // O banco pode devolver valores como texto ("150.50"); converte antes de formatar.
+  const parsed = Number(value);
+  const n = Number.isFinite(parsed) ? parsed : 0;
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
@@ -128,9 +130,19 @@ export function buildProposalMessage({
  * Gera um relatório final do evento para enviar ao cliente.
  * Inclui cachê, horas trabalhadas e despesas (reembolsáveis destacadas).
  */
-export function buildEventReport({ event, client, work = [], expenses = [] }) {
+export function buildEventReport({
+  event,
+  client,
+  work = [],
+  expenses = [],
+  pixKey = '',
+  pixKeyType = 'Chave PIX',
+  pixPayloadStr = '',
+  providerName = '',
+}) {
   const clientName = client?.name || 'Cliente';
   const eventTitle = event?.title || 'Evento';
+  const nfeNum = event?.nfe_numero || event?.nf_number || event?.nfe_analise?.numero_nota || '';
 
   const startDate = event?.start_date
     ? new Date(event.start_date + 'T12:00:00').toLocaleDateString('pt-BR')
@@ -140,15 +152,16 @@ export function buildEventReport({ event, client, work = [], expenses = [] }) {
     : null;
   const dateLine = endDate ? `${startDate} a ${endDate}` : (startDate || '');
 
-  const totalHours = work.reduce((sum, w) => sum + (w.total_hours || 0), 0);
-  const totalEarned = work.reduce((sum, w) => sum + (w.daily_cache || 0), 0);
+  // Fechamento do evento inteiro: todos os dias, dia sem horas entra com a diária
+  // (antes um único dia lançado substituía as outras diárias — auditoria 15/10).
+  const closing = buildEventClosing(event, work, expenses);
+  const totalHours = closing.totalHoras;
+  const cacheValue = closing.totalServicos;
 
-  const cacheValue = totalEarned > 0 ? totalEarned : getEventCacheAmount(event);
-
-  const reimbursableExpenses = expenses.filter(e => e.is_reimbursable && !e.reimbursed);
-  const totalReimbursable = reimbursableExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-  const totalExpenses = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-  const totalToReceive = Number(cacheValue) + totalReimbursable;
+  // Mesmo cálculo do PDF (eventClosing): só reembolso ainda não pago.
+  const totalReimbursable = closing.totalReembolsos;
+  const totalExpenses = expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+  const totalToReceive = closing.total;
 
   const lines = [];
 
@@ -158,6 +171,7 @@ export function buildEventReport({ event, client, work = [], expenses = [] }) {
   lines.push(`🏢 ${clientName}`);
   if (dateLine) lines.push(`📅 ${dateLine}`);
   if (event?.location) lines.push(`📍 ${event.location}`);
+  if (nfeNum) lines.push(`📄 NF-e / NFS-e: *Nº ${nfeNum}*`);
 
   lines.push(``);
   lines.push(`━━━━━━━━━━━━━━━━━━━━`);
@@ -167,6 +181,23 @@ export function buildEventReport({ event, client, work = [], expenses = [] }) {
 
   if (totalHours > 0) {
     lines.push(`Horas trabalhadas: ${totalHours.toFixed(1)}h`);
+  }
+  if (closing.totalHorasExtras > 0) {
+    lines.push(`Horas extras: ${closing.totalHorasExtrasQtd}h (${formatBRL(closing.totalHorasExtras)}, já no cachê)`);
+  }
+  if (closing.rows.length > 1 || closing.semHoras.length > 0) {
+    lines.push(``);
+    lines.push(`*Dias do evento*`);
+    for (const r of closing.rows) {
+      const dia = `${r.date.slice(8, 10)}/${r.date.slice(5, 7)}`;
+      if (r.status === 'sem_horas') {
+        lines.push(`• ${dia} — diária ${formatBRL(r.subtotal)} (sem horas lançadas)`);
+      } else {
+        const horario = r.entry && r.exit ? `${r.entry}–${r.exit} · ` : '';
+        const extra = r.overtimeHours > 0 ? ` (${r.overtimeHours}h extra)` : '';
+        lines.push(`• ${dia} — ${horario}${r.totalHours}h${extra} · ${formatBRL(r.subtotal)}`);
+      }
+    }
   }
 
   if (expenses.length > 0) {
@@ -206,8 +237,19 @@ export function buildEventReport({ event, client, work = [], expenses = [] }) {
     lines.push(`✅ *TOTAL: ${formatBRL(cacheValue)}*`);
   }
 
+  if (pixKey) {
+    lines.push(``);
+    lines.push(`🔑 *DADOS PARA PAGAMENTO (PIX)*`);
+    if (providerName) lines.push(`Favorecido: ${providerName}`);
+    lines.push(`${pixKeyType || 'Chave PIX'}: *${pixKey}*`);
+    if (pixPayloadStr) {
+      lines.push(`📋 *PIX Copia e Cola:*`);
+      lines.push(pixPayloadStr);
+    }
+  }
+
   lines.push(``);
-  lines.push(`Qualquer dúvida, estou à disposição. 🙏`);
+  lines.push(`Qualquer dúvida, estou à disposição. 🙏${providerName ? `\n— ${providerName}` : ''}`);
 
   return lines.join('\n');
 }

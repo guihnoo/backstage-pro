@@ -25,15 +25,17 @@ import {
   User,
   Calendar,
 } from 'lucide-react';
-import {
-  parseISO,
-  isValid
-} from 'date-fns';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
-import { getEventStatus } from '@/components/utils/dateUtils';
-import { getEventCacheAmount } from '@/lib/eventFinance';
+import { getEventStatus, todayLocalISO } from '@/components/utils/dateUtils';
+import { calculateEventReceivableAmount } from '@/lib/eventFinance';
+import { getClientActivity } from '@/lib/clientActivity';
 import { openWhatsAppCharge, buildChargeMessage, formatWhatsAppNumber } from '@/lib/whatsapp';
-import { useMediaQuery } from '@/components/hooks/useMediaQuery';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { AUTH_HERO_PRIMARY } from '@/lib/categoryGear';
@@ -44,9 +46,6 @@ import { useConnectivity } from '@/lib/offline/useConnectivity';
 
 const InactiveClientsPanel = lazy(() => import('@/components/clients/InactiveClientsPanel'));
 const ClientForm = lazy(() => import('@/components/clients/ClientForm'));
-const ClientDetailModal = lazy(() => import('@/components/clients/ClientDetailModal'));
-const ClientActionSheet = lazy(() => import('@/components/mobile/ClientActionSheet'));
-const ClientInsightsModal = lazy(() => import('@/components/clients/ClientInsightsModal'));
 import EmptyState from '@/components/layout/EmptyState';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { ClientDraftBadge } from '@/components/clients/ClientDraftBadge';
@@ -95,16 +94,12 @@ export default function ClientsPage() {
   const { profile } = useAuth();
   const { offline } = useConnectivity();
   const config = getCategoryConfig(profile?.category || 'lighting');
-  const isMobile = useMediaQuery("(max-width: 768px)");
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterActive, setFilterActive] = useState('all');
   const [sortBy, setSortBy] = useState('nome');
   const [showClientForm, setShowClientForm] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
-  const [selectedClient, setSelectedClient] = useState(null);
-  const [actionSheetClient, setActionSheetClient] = useState(null);
-  const [insightsClient, setInsightsClient] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   useQueryAction('new-client', useCallback(() => {
@@ -121,10 +116,9 @@ export default function ClientsPage() {
       const clientWork = work.filter(w => clientEventIds.has(w.event_id));
 
       const getEventRevenue = (event) => {
-        const fromWork = clientWork
-          .filter(w => w.event_id === event.id)
-          .reduce((sum, w) => sum + (w.daily_cache || 0), 0);
-        return fromWork > 0 ? fromWork : getEventCacheAmount(event);
+        const workForEvent = clientWork
+          .filter(w => w.event_id === event.id);
+        return calculateEventReceivableAmount(event, workForEvent);
       };
 
       const generatedRevenue = clientEvents.reduce((sum, e) => sum + getEventRevenue(e), 0);
@@ -146,25 +140,9 @@ export default function ClientsPage() {
           : 'text-red-400 border-red-500/30 bg-red-500/10',
       };
 
-      const sixMonthsAgo = new Date();
-      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-      
-      const recentEvents = clientEvents.filter(e => {
-        try {
-          const eventDate = parseISO(e.start_date);
-          return isValid(eventDate) && eventDate >= sixMonthsAgo;
-        } catch {
-          return false;
-        }
-      });
-      const isActive = recentEvents.length > 0;
+      const activity = getClientActivity(clientEvents);
 
-      const todayStr = new Date().toISOString().split('T')[0];
-      const sortedEvents = clientEvents
-        .filter(e => e.start_date)
-        .sort((a, b) => new Date(b.start_date) - new Date(a.start_date));
-      const lastEvent = sortedEvents[0];
-
+      const todayStr = todayLocalISO();
       const nextEvent = clientEvents
         .filter(e => e.start_date >= todayStr && e.status !== 'cancelled')
         .sort((a, b) => (a.start_date > b.start_date ? 1 : -1))[0];
@@ -175,8 +153,7 @@ export default function ClientsPage() {
           totalEvents: clientEvents.length,
           generatedRevenue,
           pendingRevenue,
-          isActive,
-          lastEventDate: lastEvent?.start_date,
+          ...activity,
           nextEventDate: nextEvent?.start_date,
           paymentScore,
           unpaidEvents: completedUnpaidEvents.map(e => ({
@@ -196,7 +173,7 @@ export default function ClientsPage() {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(client =>
-        client.name.toLowerCase().includes(term) ||
+        (client.name || '').toLowerCase().includes(term) ||
         (client.contact_person && client.contact_person.toLowerCase().includes(term)) ||
         (client.razao_social && client.razao_social.toLowerCase().includes(term)) ||
         (client.email && client.email.toLowerCase().includes(term)) ||
@@ -217,7 +194,7 @@ export default function ClientsPage() {
       );
     }
 
-    if (sortBy === 'nome') filtered.sort((a, b) => a.name.localeCompare(b.name));
+    if (sortBy === 'nome') filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     else if (sortBy === 'pendencia') filtered.sort((a, b) => b.stats.pendingRevenue - a.stats.pendingRevenue);
     else if (sortBy === 'eventos') filtered.sort((a, b) => b.stats.totalEvents - a.stats.totalEvents);
     else if (sortBy === 'recente') filtered.sort((a, b) => {
@@ -229,18 +206,10 @@ export default function ClientsPage() {
     return filtered;
   }, [clientsWithStats, searchTerm, filterActive, sortBy]);
 
+  // Uma tela so de detalhe (celular e computador): o card abre a pagina do cliente.
   const handleClientClick = useCallback((client) => {
-    if (isMobile) {
-      setActionSheetClient(client);
-    } else {
-      setSelectedClient(client);
-    }
-  }, [isMobile]);
-
-  const handleOpenInsights = (e, client) => {
-    e.stopPropagation(); // Impede que o clique no botão de insights também abra o modal de detalhes
-    setInsightsClient(client);
-  };
+    hardNavigate(`/client-detail?id=${client.id}`);
+  }, []);
 
   const handleNewClient = useCallback(() => {
     setEditingClient(null);
@@ -273,7 +242,6 @@ export default function ClientsPage() {
     try {
       await deleteClient(confirmDeleteId);
       appToast.success("Cliente excluído com sucesso.");
-      setSelectedClient(null);
     } catch (err) {
       console.error("Erro ao excluir cliente:", err);
       appToast.error("Não foi possível excluir o cliente.", {
@@ -284,12 +252,7 @@ export default function ClientsPage() {
     }
   }, [deleteClient, confirmDeleteId]);
 
-  const handleActionSheetViewDetails = useCallback((client) => {
-    setActionSheetClient(null);
-    hardNavigate(`/client-detail?id=${client.id}`);
-  }, []);
-
-  const handleActionSheetContact = useCallback((client, type) => {
+  const handleContact = useCallback((client, type) => {
     switch (type) {
       case 'phone':
         if (client.phone) window.open(`tel:${client.phone}`, '_blank');
@@ -524,7 +487,6 @@ export default function ClientsPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 min-w-0">
                         <h3 className="font-bold text-white truncate min-w-0" title={client.name}>{client.name}</h3>
-                        {client.profile_complete === false && <ClientDraftBadge />}
                       </div>
                       {client.contact_person && (
                         <p className="text-sm text-slate-400 truncate min-w-0" title={client.contact_person}>
@@ -532,15 +494,23 @@ export default function ClientsPage() {
                         </p>
                       )}
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-full h-8 w-8 flex-shrink-0"
-                      onClick={(e) => handleOpenInsights(e, client)}
-                      aria-label="Mais detalhes"
-                    >
-                        <MoreHorizontal className="w-4 h-4"/>
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-full h-10 w-10 flex-shrink-0"
+                          onClick={(e) => e.stopPropagation()}
+                          aria-label="Ações do cliente"
+                        >
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenuItem onSelect={() => handleEditClient(client)}>Editar</DropdownMenuItem>
+                        <DropdownMenuItem className="text-red-400" onSelect={() => handleDeleteClient(client.id)}>Excluir</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </CardHeader>
                   <CardContent className="pt-0 flex-grow flex flex-col justify-between">
                     <div>
@@ -555,14 +525,6 @@ export default function ClientsPage() {
                               {client.stats.isActive ? 'Ativo' : 'Inativo'}
                             </Badge>
                           )}
-                          {(() => {
-                            const last = client.stats.lastEventDate;
-                            if (!last) return <span title="Sem histórico de eventos" className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" style={{ boxShadow: '0 0 5px #ef444480' }} />;
-                            const days = Math.floor((Date.now() - new Date(last).getTime()) / 86400000);
-                            if (days <= 30) return <span title={`Último show há ${days}d`} className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" style={{ boxShadow: '0 0 5px #34d39980' }} />;
-                            if (days <= 90) return <span title={`Último show há ${days}d`} className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" style={{ boxShadow: '0 0 5px #fbbf2480' }} />;
-                            return <span title={`Último show há ${days}d`} className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" style={{ boxShadow: '0 0 5px #ef444480' }} />;
-                          })()}
                           {client.policy_default_payment_model && (
                             <Badge variant="outline" className="text-xs border-slate-700 text-slate-400">
                               {client.policy_default_payment_model === 'HORAS_EXTRAS' ? 'H.E.' : 'M&D'}
@@ -582,7 +544,7 @@ export default function ClientsPage() {
                         </div>
                       </div>
                       {client.stats.nextEventDate && (() => {
-                        const diffDays = Math.round((new Date(client.stats.nextEventDate + 'T00:00:00') - new Date(new Date().toISOString().split('T')[0] + 'T00:00:00')) / 86400000);
+                        const diffDays = Math.round((new Date(client.stats.nextEventDate + 'T00:00:00') - new Date(todayLocalISO() + 'T00:00:00')) / 86400000);
                         return (
                           <div className="mt-3 flex items-center gap-2">
                             <Calendar className="w-3.5 h-3.5 flex-shrink-0 text-slate-500" />
@@ -647,7 +609,7 @@ export default function ClientsPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={(e) => { e.stopPropagation(); handleActionSheetContact(client, 'whatsapp'); }}
+                            onClick={(e) => { e.stopPropagation(); handleContact(client, 'whatsapp'); }}
                             className={`h-9 px-2 relative group transition-colors ${client.stats.pendingRevenue > 0 ? 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'}`}
                             aria-label={client.stats.pendingRevenue > 0 ? 'Cobrar via WhatsApp' : 'WhatsApp'}
                             title={client.stats.pendingRevenue > 0 ? `Cobrar ${isVisible ? formatCurrency(client.stats.pendingRevenue) : '••••'} via WhatsApp` : 'Abrir WhatsApp'}
@@ -687,46 +649,6 @@ export default function ClientsPage() {
             client={editingClient}
             onSuccess={handleFormSuccess}
             onCancel={() => setShowClientForm(false)}
-          />
-        </Suspense>
-      )}
-
-      {selectedClient && (
-        <Suspense fallback={null}>
-          <ClientDetailModal
-            client={selectedClient}
-            onClose={() => setSelectedClient(null)}
-            onEdit={handleEditClient}
-            onDelete={handleDeleteClient}
-          />
-        </Suspense>
-      )}
-
-      <Suspense fallback={null}>
-        <ClientActionSheet
-          client={actionSheetClient}
-          stats={actionSheetClient?.stats}
-          isOpen={!!actionSheetClient}
-          onClose={() => setActionSheetClient(null)}
-          onViewDetails={handleActionSheetViewDetails}
-          onContact={handleActionSheetContact}
-          onEdit={(client) => {
-            setActionSheetClient(null);
-            handleEditClient(client);
-          }}
-          onDelete={(clientId) => {
-            setActionSheetClient(null);
-            handleDeleteClient(clientId);
-          }}
-        />
-      </Suspense>
-
-      {insightsClient && (
-        <Suspense fallback={null}>
-          <ClientInsightsModal
-            client={insightsClient}
-            isOpen={!!insightsClient}
-            onClose={() => setInsightsClient(null)}
           />
         </Suspense>
       )}

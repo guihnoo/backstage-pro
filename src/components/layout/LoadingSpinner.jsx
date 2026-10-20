@@ -1,5 +1,4 @@
 import { Loader2 } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 export default function LoadingSpinner({ 
   text = 'Carregando...', 
@@ -19,18 +18,15 @@ export default function LoadingSpinner({
   };
 
   const content = (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="flex flex-col items-center justify-center gap-4"
-    >
+    // Sem biblioteca de animação: o spinner aparece na primeira tela e não pode pesar.
+    <div className="flex flex-col items-center justify-center gap-4 bp-fade-in">
       <Loader2 className={`${sizeClasses[size]} bp-text-primary animate-spin`} />
       {text && (
         <p className={`${textSizeClasses[size]} text-slate-400 font-medium`}>
           {text}
         </p>
       )}
-    </motion.div>
+    </div>
   );
 
   if (fullScreen) {

@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, lazy, Suspense } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useAuth } from '@/lib/authContext';
 import { useProfile } from '@/lib/profileOfflineContext';
@@ -10,18 +11,10 @@ import { todayLocalISO, isDateBetween, getWorkForDate } from '@/components/utils
 import { isCancelledEvent } from '@/lib/eventFinance';
 import ProximoShow from '@/components/home/ProximoShow';
 import MetaMensalBar from '@/components/home/MetaMensalBar';
-import QuickStats from '@/components/home/QuickStats';
 import AReceber from '@/components/home/AReceber';
-import AlertasBastidao from '@/components/home/AlertasBastidao';
 import PipelineFinanceiro from '@/components/home/PipelineFinanceiro';
 import ProximosEventos from '@/components/home/ProximosEventos';
-import FloatingActions from '@/components/home/FloatingActions';
 import LiveClockBar from '@/components/home/LiveClockBar';
-import { NeonPageShell } from '@/components/design/NeonPageShell';
-import { NeonGlass } from '@/components/design/NeonGlass';
-import { LightingBeams } from '@/components/design/LightingBeams';
-import { NeonLevelBars } from '@/components/design/NeonLevelBars';
-import { NeonSectionFrame } from '@/components/design/NeonSectionFrame';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
@@ -32,10 +25,21 @@ import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
 import { useExpenses } from '@/lib/useExpenses';
 import { useDailyWork } from '@/lib/useDailyWork';
+import { findRecentMissingHours } from '@/lib/homeSummary';
+import HomeMonthSummary from '@/components/home/HomeMonthSummary';
 
 const EventDetailModal = lazy(() => import('@/components/calendar/EventDetailModal'));
 const EventForm = lazy(() => import('@/components/calendar/EventForm'));
-const ForecastWidget = lazy(() => import('@/components/home/ForecastWidget'));
+
+// Bloco da Início no visual "All Access": etiqueta de credencial + conteúdo.
+function HomeSection({ label, children }) {
+  return (
+    <section className="mb-7 min-w-0">
+      <p className="font-tag text-[11px] font-bold tracking-[0.2em] text-[#a8a8a8] mb-2">{label}</p>
+      {children}
+    </section>
+  );
+}
 
 function PalcoSkeleton() {
   return (
@@ -67,7 +71,6 @@ function PalcoSkeleton() {
 function FinanceiroSkeleton() {
   return (
     <div className="p-4 space-y-4">
-      {/* AReceber rows */}
       {[0,1].map(i => (
         <div key={i} className="flex items-center gap-3">
           <Skeleton className="w-8 h-8 rounded-full shrink-0" />
@@ -78,12 +81,6 @@ function FinanceiroSkeleton() {
           <Skeleton className="w-20 h-7 rounded-lg" />
         </div>
       ))}
-      {/* QuickStats grid */}
-      <div className="grid grid-cols-2 gap-3 pt-1">
-        <Skeleton className="h-16 rounded-xl" />
-        <Skeleton className="h-16 rounded-xl" />
-      </div>
-      {/* MetaMensalBar */}
       <div className="space-y-2">
         <div className="flex justify-between">
           <Skeleton className="h-3 w-24 rounded" />
@@ -116,6 +113,7 @@ export default function Home() {
   const { user } = useAuth();
   const profile = useProfile();
   const [detailEvent, setDetailEvent] = useState(null);
+  const [detailInitialTab, setDetailInitialTab] = useState('resumo');
   const [editingEvent, setEditingEvent] = useState(null);
   const [showEventForm, setShowEventForm] = useState(false);
   const [confirmDeleteEventId, setConfirmDeleteEventId] = useState(null);
@@ -136,10 +134,10 @@ export default function Home() {
   })();
 
   const today = todayLocalISO();
+  const todayLabel = format(new Date(), 'EEE d MMM', { locale: ptBR }).replace('.', '').toUpperCase();
   const {
     stats,
     proximoEvento,
-    alerts,
     receivableRows,
     totalReceivable,
     upcomingEvents,
@@ -150,21 +148,24 @@ export default function Home() {
     markClientPaid,
   } = useHomeDashboard(userId);
 
+  const enrichedEvents = useMemo(
+    () => enrichEventsWithClients(events || [], clients || []),
+    [events, clients]
+  );
+
   const fallbackDashboard = useMemo(() => {
     if (!userId) return null;
     const hasEvents = Array.isArray(events) && events.length > 0;
     const hasWork = Array.isArray(hookDailyWork) && hookDailyWork.length > 0;
     if (!hasEvents && !hasWork) return null;
-    const enriched = enrichEventsWithClients(events || [], clients || []);
-    return deriveDashboard(enriched, hookDailyWork || []);
-  }, [userId, events, clients, hookDailyWork]);
+    return deriveDashboard(enrichedEvents, hookDailyWork || []);
+  }, [userId, events, enrichedEvents, hookDailyWork]);
 
   const useFallback = Boolean((loading || error) && fallbackDashboard);
   const cockpitLoading = loading && !fallbackDashboard;
 
   const cockpitStats = useFallback ? fallbackDashboard.stats : stats;
   const cockpitProximo = useFallback ? fallbackDashboard.proximoEvento : proximoEvento;
-  const cockpitAlerts = useFallback ? fallbackDashboard.alerts : alerts;
   const cockpitReceivableRows = useFallback ? fallbackDashboard.receivableRows : receivableRows;
   const cockpitUpcoming = useFallback ? fallbackDashboard.upcomingEvents : upcomingEvents;
   const cockpitDailyWork = useFallback ? fallbackDashboard.dailyWork : dailyWork;
@@ -172,23 +173,27 @@ export default function Home() {
     ? fallbackDashboard.receivableRows.reduce((sum, r) => sum + r.totalAmount, 0)
     : totalReceivable;
 
+  // Exclui o próximo evento já exibido em destaque no bloco Palco para não duplicar na lista Agenda
   const proximosEventos = useMemo(
-    () => cockpitUpcoming.filter((e) => !isCancelledEvent(e)).slice(0, 5),
-    [cockpitUpcoming]
-  );
-
-  const forecastEvents = useMemo(
-    () => cockpitUpcoming.filter((e) => !isCancelledEvent(e)),
-    [cockpitUpcoming]
+    () =>
+      cockpitUpcoming
+        .filter((e) => !isCancelledEvent(e) && e.id !== cockpitProximo?.id)
+        .slice(0, 5),
+    [cockpitUpcoming, cockpitProximo?.id]
   );
 
   const todayWork = useMemo(() => getWorkForDate(cockpitDailyWork, today), [cockpitDailyWork, today]);
+
+  const missingHours = useMemo(
+    () => findRecentMissingHours(events || [], hookDailyWork || [], today),
+    [events, hookDailyWork, today],
+  );
 
   const currentMonth = today.substring(0, 7); // 'YYYY-MM'
   const despesasMes = useMemo(
     () => (expenses || [])
       .filter(e => (e.expense_date || e.date || '').startsWith(currentMonth))
-      .reduce((sum, e) => sum + (e.amount || 0), 0),
+      .reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
     [expenses, currentMonth]
   );
 
@@ -209,7 +214,6 @@ export default function Home() {
   );
 
   const palcoAtivo = isLiveShift || isShowToday;
-  const hasAlerts = cockpitAlerts.length > 0;
 
   const refreshCockpit = useCallback(async () => {
     await refetch({ silent: true });
@@ -241,101 +245,57 @@ export default function Home() {
   );
 
   return (
-    <NeonPageShell primary={config.primaryHex} accent={config.accentHex} stage={palcoAtivo}>
+    <div className="relative min-h-full overflow-x-clip bg-[#0a0a0a] text-white">
       <PullToRefreshIndicator
         pullDistance={pullDistance}
         isRefreshing={isRefreshing}
         threshold={threshold}
-        primaryHex={config.primaryHex}
+        primaryHex="#ffd400"
       />
-      <motion.header
-        data-tour="home-header"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden"
-        style={{
-          background: palcoAtivo
-            ? `linear-gradient(165deg, ${config.primaryHex}33, ${config.accentHex}14 45%, transparent 80%)`
-            : 'linear-gradient(180deg, #11131c 0%, #050609 100%)',
-        }}
-      >
-        {isLiveShift && <LightingBeams primary={config.primaryHex} accent={config.accentHex} />}
-        <motion.div
-          className="absolute top-0 left-0 right-0 h-0.5 z-10"
-          style={{ background: `linear-gradient(90deg, transparent, ${config.primaryHex}, transparent)` }}
-          animate={{ opacity: palcoAtivo ? [0.6, 1, 0.6] : 0.4 }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
-        <div className="relative z-10 px-4 pt-2 pb-5 max-w-2xl mx-auto">
-          <div className="mb-5 pr-28">
-            <LiveClockBar primaryHex={config.primaryHex} isLive={isLiveShift} />
-            <p className="text-xs font-semibold uppercase tracking-wider mt-1" style={{ color: config.primaryHex }}>
-              {config.emoji} {config.label}
+      <header data-tour="home-header" className="relative">
+        <div className="px-4 pt-2 pb-4 max-w-2xl mx-auto">
+          <div className="pr-28">
+            <LiveClockBar primaryHex="#ffd400" isLive={isLiveShift} />
+            <p className="font-tag text-[11px] font-bold uppercase tracking-[0.16em] mt-1 text-[#a8a8a8]">
+              {todayLabel} · {config.label}
             </p>
           </div>
-          <motion.h1
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-3xl font-extrabold leading-tight tracking-tight truncate"
-          >
+          <h1 className="font-poster text-[40px] leading-[0.95] uppercase tracking-wide mt-3 break-words">
             {greeting},{' '}
-            <span
-              className="inline-block max-w-[min(100%,14rem)] truncate align-bottom"
-              style={{
-                WebkitTextStroke: `1px ${config.primaryHex}`,
-                textShadow: `0 0 30px ${config.primaryHex}60`,
-              }}
-              title={firstName}
-            >
-              {firstName}
-            </span>
+            <span className="text-[#ffd400]" title={firstName}>{firstName}</span>
             .
-          </motion.h1>
-          <AnimatePresence initial={false}>
-            {palcoAtivo ? (
-              <motion.div
-                key="palco"
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
-                className="flex flex-col gap-3 mt-3"
-              >
-                <motion.span
-                  animate={{ scale: [1, 1.05, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold w-fit"
-                  style={{ background: `${config.primaryHex}33`, border: `1px solid ${config.primaryHex}66` }}
-                >
-                  <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: config.primaryHex }} />
-                  {isLiveShift ? 'TURNO AO VIVO' : 'SHOW HOJE'}
-                </motion.span>
-                {isLiveShift && (
-                  <NeonLevelBars primary={config.primaryHex} accent={config.accentHex} className="max-w-[200px]" />
-                )}
-              </motion.div>
-            ) : (
-              <motion.div
-                key="motivation"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className="mt-2"
-              >
-                <ClampedText lines={2} className="text-sm text-[#8a91a1] italic font-mono">
-                  &ldquo;{motivation}&rdquo;
-                </ClampedText>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          </h1>
+          {palcoAtivo ? (
+            <span
+              className="inline-flex items-center gap-1.5 mt-3 h-7 px-3 rounded-full font-tag text-[11px] font-bold w-fit"
+              style={{ background: '#ff2e88', color: '#0a0a0a' }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0a0a0a] animate-pulse" />
+              {isLiveShift ? 'TURNO AO VIVO' : 'SHOW HOJE'}
+            </span>
+          ) : (
+            <ClampedText lines={2} className="mt-2 text-sm text-[#a8a8a8]">
+              {motivation}
+            </ClampedText>
+          )}
         </div>
-      </motion.header>
+      </header>
 
       <div className="px-4 py-6 max-w-2xl xl:max-w-6xl mx-auto w-full min-w-0 pb-28">
+        {/* Alerta enxuto apenas quando houver dias recentes sem horas lançadas */}
+        {!cockpitLoading && (
+          <HomeMonthSummary
+            missing={missingHours}
+            onOpenEvent={(ev) => {
+              const full = enrichedEvents.find((x) => x.id === ev.id) || ev;
+              setDetailInitialTab('trabalho');
+              setDetailEvent(full);
+            }}
+          />
+        )}
+
         {/* Bloco 1 — Palco */}
-        <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Palco">
+        <HomeSection label="PRÓXIMO SHOW">
           {cockpitLoading ? (
             <PalcoSkeleton />
           ) : (
@@ -345,24 +305,22 @@ export default function Home() {
               isOnStage={isShowToday}
               isLiveShift={isLiveShift}
               isLoading={false}
-              onViewEvent={setDetailEvent}
+              loadError={Boolean(error) && !(events?.length)}
+              onViewEvent={(ev) => {
+                setDetailInitialTab('resumo');
+                setDetailEvent(ev);
+              }}
+              onCreateEvent={() => {
+                setEditingEvent(null);
+                setShowEventForm(true);
+              }}
               onRefresh={refreshCockpit}
             />
           )}
-          {hasAlerts && (
-            <div className="mt-3">
-              <AlertasBastidao
-                alerts={cockpitAlerts}
-                isLoading={cockpitLoading}
-                primaryHex={config.primaryHex}
-                accentHex={config.accentHex}
-              />
-            </div>
-          )}
-        </NeonSectionFrame>
+        </HomeSection>
 
         {/* Bloco 2 — Financeiro */}
-        <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Financeiro">
+        <HomeSection label="DINHEIRO">
           {cockpitLoading ? (
             <FinanceiroSkeleton />
           ) : (
@@ -371,70 +329,57 @@ export default function Home() {
               totalReceivable={cockpitTotalReceivable}
               isLoading={false}
               onMarkPaid={handleMarkPaid}
+              onOpenEvent={(ev, tab = 'fiscal') => {
+                const full = enrichedEvents.find((x) => x.id === ev.id) || ev;
+                setDetailInitialTab(tab);
+                setDetailEvent(full);
+              }}
             />
           )}
-          <QuickStats
+          <PipelineFinanceiro
             stats={cockpitStats}
+            despesasMes={despesasMes}
             isLoading={cockpitLoading}
-            primaryHex={config.primaryHex}
-            accentHex={config.accentHex}
+            primaryHex="#ffd400"
+            accentHex="#ff2e88"
           />
           <div data-tour="home-meta">
             <MetaMensalBar
               profile={profile}
               stats={cockpitStats}
               isLoading={cockpitLoading}
-              accentColor={config.primaryHex}
+              accentColor="#ffd400"
             />
           </div>
-          <PipelineFinanceiro
-            stats={cockpitStats}
-            despesasMes={despesasMes}
-            isLoading={cockpitLoading}
-            primaryHex={config.primaryHex}
-            accentHex={config.accentHex}
-          />
-          <Suspense
-            fallback={
-              <NeonGlass primary={config.primaryHex} className="mb-8 p-5">
-                <Skeleton className="h-4 w-32 rounded mb-2" />
-                <Skeleton className="h-8 w-24 rounded" />
-              </NeonGlass>
-            }
-          >
-            <ForecastWidget
-              events={forecastEvents}
-              isLoading={cockpitLoading}
-              primaryHex={config.primaryHex}
-              accentHex={config.accentHex}
-              metaReceita={profile?.monthly_goal_revenue || 0}
-            />
-          </Suspense>
-        </NeonSectionFrame>
+        </HomeSection>
 
-        {/* Bloco 3 — Agenda */}
-        <NeonSectionFrame primary={config.primaryHex} accent={config.accentHex} label="Agenda">
-          {cockpitLoading ? (
-            <AgendaSkeleton />
-          ) : (
-            <ProximosEventos
-              events={proximosEventos}
-              isLoading={false}
-              userCategory={categoryId}
-              onRefresh={refreshCockpit}
-              onViewEvent={setDetailEvent}
-            />
-          )}
-        </NeonSectionFrame>
+        {/* Bloco 3 — Agenda (apenas se houver outros eventos além do Próximo Show já exibido acima) */}
+        {(cockpitLoading || proximosEventos.length > 0 || !cockpitProximo) && (
+          <HomeSection label="AGENDA">
+            {cockpitLoading ? (
+              <AgendaSkeleton />
+            ) : (
+              <ProximosEventos
+                events={proximosEventos}
+                isLoading={false}
+                userCategory={categoryId}
+                onRefresh={refreshCockpit}
+                onViewEvent={(ev) => {
+                  setDetailInitialTab('resumo');
+                  setDetailEvent(ev);
+                }}
+              />
+            )}
+          </HomeSection>
+        )}
       </div>
-
-      <FloatingActions />
 
       {detailEvent && (
         <Suspense fallback={null}>
           <EventDetailModal
             event={detailEvent}
             client={detailEvent.clients || null}
+            initialTab={detailInitialTab}
             onClose={() => setDetailEvent(null)}
             onEdit={(event) => {
               setDetailEvent(null);
@@ -482,6 +427,6 @@ export default function Home() {
         destructive
         onConfirm={handleConfirmDeleteEvent}
       />
-    </NeonPageShell>
+    </div>
   );
 }

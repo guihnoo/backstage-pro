@@ -297,10 +297,26 @@ body:has([role="alertdialog"][data-state="open"]) [data-app-scroll] {
   border-color: color-mix(in srgb, var(--bp-primary) 35%, transparent);
 }
 
+/* Visual "All Access": a cor principal virou amarelo (#ffd400). Botões antigos que pintam o fundo
+   com a cor principal e usam texto branco ficariam ilegíveis — esta rede de segurança deixa o
+   texto preto sempre que o fundo inline é o amarelo sólido (ou gradiente com ele). */
+[style*="background-color: rgb(255, 212, 0)"],
+[style*="background: rgb(255, 212, 0)"],
+[style*="gradient"][style*="rgb(255, 212, 0)"]:not([style*="clip: text"]) {
+  color: #0a0a0a !important;
+}
+[style*="background-color: rgb(255, 212, 0)"].text-white,
+[style*="background: rgb(255, 212, 0)"].text-white,
+[style*="gradient"][style*="rgb(255, 212, 0)"]:not([style*="clip: text"]).text-white,
+[style*="background-color: rgb(255, 212, 0)"] > .text-white,
+[style*="background: rgb(255, 212, 0)"] > .text-white {
+  color: #0a0a0a !important;
+}
+
 /* Fallback de marca (lighting) + entidade Pessoa — AppLayout sobrescreve --bp-primary/--bp-accent */
 :root {
-  --bp-primary: #A64AFF;
-  --bp-accent: #FFB700;
+  --bp-primary: #ffd400;
+  --bp-accent: #ff2e88;
   --bp-person: #8b5cf6;
   --bp-person-contrast: #ffffff;
 }
@@ -358,4 +374,28 @@ body:has([role="alertdialog"][data-state="open"]) [data-app-scroll] {
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--bp-primary) 30%, transparent);
   --tw-ring-shadow: 0 0 #0000;
   --tw-ring-offset-shadow: 0 0 #0000;
+}
+
+/* Animações leves em CSS (substituem framer-motion na primeira carga: spinner e avisos). */
+@keyframes bp-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes bp-toast-in {
+  from { opacity: 0; transform: translateY(-12px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+.bp-fade-in { animation: bp-fade-in 0.2s ease-out both; }
+.bp-toast-in { animation: bp-toast-in 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.15) both; }
+@media (prefers-reduced-motion: reduce) {
+  .bp-fade-in, .bp-toast-in { animation: none; }
+}
+
+/* iPhone: campo com letra menor que 16px da zoom sozinho ao tocar e nao volta (achado do Guih, 18/10). */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }

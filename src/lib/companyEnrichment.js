@@ -6,8 +6,6 @@ export const ENRICHABLE_COMPANY_FIELDS = [
   'city',
   'state',
   'address',
-  'phone',
-  'email',
   'website',
   'logo_url',
   'cnae',
@@ -87,8 +85,9 @@ export function clientDataFromCompany(company, overrides = {}) {
   return {
     client_type: 'empresa',
     name: displayName,
-    email: company.email || null,
-    phone: company.phone || null,
+    // Contato só vem do catálogo quando é dado oficial (consulta de CNPJ), nunca o que outro usuário digitou.
+    email: company.verified ? company.email || null : null,
+    phone: company.verified ? company.phone || null : null,
     logo_url: company.logo_url || null,
     company_id: company.id,
     profile_complete: !!(company.cnpj || company.verified),
@@ -102,14 +101,66 @@ export function companyPatchFromClient(client) {
   if (!client || client.client_type === 'pessoa') return null;
   const name = client.name?.trim();
   if (!name) return null;
+  // Só dado público da empresa vai para o catálogo. Telefone, e-mail e cidade digitados
+  // ficam apenas na carteira de quem digitou.
   return {
     name,
     trading_name: name,
-    phone: client.phone || null,
-    email: client.email || null,
-    logo_url: client.logo_url || null,
-    city: client.city || null,
-    state: client.state || null,
+    logo_url: client.logo_from_company ? null : client.logo_url || null,
     source: 'manual',
   };
+}
+
+/** Cliente sem logo próprio mostra o logo do catálogo (sem gravar na ficha pessoal). */
+export function withCompanyLogo(client) {
+  if (!client) return client;
+  const { company, ...rest } = client;
+  const companyLogo = company?.logo_url || null;
+  if (!rest.logo_url && companyLogo) {
+    return { ...rest, logo_url: companyLogo, logo_from_company: true };
+  }
+  return rest;
+}
+
+/** Na hora de salvar: logo herdado do catálogo não vira logo pessoal. */
+export function stripInheritedLogo(payload, original) {
+  if (!payload) return payload;
+  const next = { ...payload };
+  delete next.company;
+  delete next.logo_from_company;
+  if (original?.logo_from_company && next.logo_url === original.logo_url) {
+    next.logo_url = null;
+  }
+  return next;
+}
+
+/** CNPJ com dígitos verificadores corretos. */
+export function isValidCNPJ(value) {
+  const d = String(value || '').replace(/\D/g, '');
+  if (d.length !== 14 || /^(\d)\1{13}$/.test(d)) return false;
+  const calc = (len) => {
+    const pesos = len === 12 ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2] : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+    const s = pesos.reduce((acc, p, i) => acc + Number(d[i]) * p, 0);
+    const r = s % 11;
+    return r < 2 ? 0 : 11 - r;
+  };
+  return calc(12) === Number(d[12]) && calc(13) === Number(d[13]);
+}
+
+/** Campos em que a troca de um valor já existente vira sugestão para o dono aprovar. */
+export const SUGGESTABLE_COMPANY_FIELDS = ['logo_url'];
+
+/** Diferenças entre o que o usuário tem e o catálogo que viram sugestão (não altera nada). */
+export function buildCompanySuggestions(existing, patch) {
+  if (!existing || !patch) return [];
+  return SUGGESTABLE_COMPANY_FIELDS.filter((field) => {
+    const current = existing[field];
+    const incoming = patch[field];
+    return current && incoming && String(current) !== String(incoming);
+  }).map((field) => ({
+    company_id: existing.id,
+    field,
+    current_value: String(existing[field]),
+    suggested_value: String(patch[field]),
+  }));
 }

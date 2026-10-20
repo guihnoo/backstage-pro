@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
-export default function ConfirmDialog({ open, onOpenChange, title, description, confirmLabel = 'Confirmar', cancelLabel = 'Cancelar', onConfirm, destructive = false }) {
+export default function ConfirmDialog({ open, onOpenChange, title, description, confirmLabel = 'Confirmar', cancelLabel = 'Cancelar', onConfirm, onCancel, destructive = false }) {
   const theme = useCategoryTheme();
 
   return (
@@ -25,7 +25,10 @@ export default function ConfirmDialog({ open, onOpenChange, title, description, 
           )}
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className="bg-transparent border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white">
+          <AlertDialogCancel
+            onClick={onCancel}
+            className="bg-transparent border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+          >
             {cancelLabel}
           </AlertDialogCancel>
           <AlertDialogAction

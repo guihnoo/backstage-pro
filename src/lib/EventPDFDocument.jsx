@@ -1,4 +1,7 @@
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer';
+import { buildEventClosing } from './eventClosing';
+import { getCategoryLabel } from './categoryConfig';
+import { generatePixPayload } from './pixPayload';
 
 // ── Palette (matches the reference PDF) ──────────────────────────────────────
 const C = {
@@ -14,12 +17,17 @@ const C = {
   pixBg:      '#F0FDF4',
   pixBorder:  '#BBF7D0',
   pixText:    '#14532D',
+  nfeBg:      '#EFF6FF',
+  nfeBorder:  '#BFDBFE',
+  nfeText:    '#1E3A8A',
   red:        '#B91C1C',
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function fmt(value) {
-  const n = typeof value === 'number' && !Number.isNaN(value) ? value : 0;
+  // O banco pode devolver valores como texto ("150.50"); converte antes de formatar.
+  const parsed = Number(value);
+  const n = Number.isFinite(parsed) ? parsed : 0;
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n);
 }
 
@@ -132,7 +140,7 @@ const s = StyleSheet.create({
 
   // PIX box
   pixBox: {
-    marginTop: 16,
+    marginTop: 14,
     borderWidth: 1,
     borderColor: C.pixBorder,
     borderRadius: 3,
@@ -140,10 +148,46 @@ const s = StyleSheet.create({
     backgroundColor: C.pixBg,
   },
   pixTitle: { fontSize: 8.5, fontFamily: 'Helvetica-Bold', color: C.pixText, marginBottom: 4 },
-  pixSub: { fontSize: 8, color: C.text, marginBottom: 4 },
-  pixKeyRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  pixSub: { fontSize: 8, color: C.text, marginBottom: 5 },
+  pixKeyRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 3 },
   pixKeyLabel: { fontSize: 8, color: C.muted },
-  pixKeyVal: { fontSize: 11, fontFamily: 'Helvetica-Bold', color: C.text },
+  pixKeyVal: { fontSize: 10.5, fontFamily: 'Helvetica-Bold', color: C.text },
+  pixPayloadBox: {
+    marginTop: 5,
+    padding: 6,
+    backgroundColor: C.white,
+    borderWidth: 0.5,
+    borderColor: C.pixBorder,
+    borderRadius: 2,
+  },
+  pixPayloadLabel: { fontSize: 7, fontFamily: 'Helvetica-Bold', color: C.pixText, marginBottom: 2 },
+  pixPayloadCode: { fontSize: 6.5, fontFamily: 'Courier', color: C.text },
+
+  // NF-e box
+  nfeBox: {
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: C.nfeBorder,
+    borderRadius: 3,
+    padding: 9,
+    backgroundColor: C.nfeBg,
+  },
+  nfeTitle: { fontSize: 8.5, fontFamily: 'Helvetica-Bold', color: C.nfeText, marginBottom: 3 },
+  nfeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 2 },
+  nfeItem: { fontSize: 8, color: C.text },
+  nfeItemBold: { fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.nfeText },
+
+  // Notes box
+  notesBox: {
+    marginTop: 10,
+    borderWidth: 0.75,
+    borderColor: C.border,
+    borderRadius: 3,
+    padding: 8,
+    backgroundColor: C.rowAlt,
+  },
+  notesTitle: { fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.navy, marginBottom: 3 },
+  notesText: { fontSize: 8, color: C.text, lineHeight: 1.35 },
 
   // Page number
   pageNum: {
@@ -179,7 +223,7 @@ const COL1 = [
   { label: 'Subtotal',          flex: 0.9  },
 ];
 
-function DailyTable({ work, event }) {
+function DailyTable({ rows, event }) {
   const totalFlex = COL1.reduce((s, c) => s + c.flex, 0);
   return (
     <View>
@@ -191,29 +235,28 @@ function DailyTable({ work, event }) {
           </View>
         ))}
       </View>
-      {/* rows */}
-      {work.map((w, i) => {
-        const isTravel = !w.entry_time && !w.exit_time;
-        const schedule = isTravel
-          ? 'Deslocamento / Viagem'
-          : `${w.entry_time || ''} às ${w.exit_time || ''}`;
-        const local = w.notes ? String(w.notes).substring(0, 22) : (event?.location || '-');
-        const heHours = w.overtime_hours ? `${w.overtime_hours}h` : '-';
-        const totalH = w.total_hours ? `${w.total_hours}h` : '-';
-        const meal = w.meal_allowance ? fmt(w.meal_allowance) : 'R$ 0,00';
-        const base = w.daily_cache || 0;
-        const subtotal = base + (w.meal_allowance || 0);
+      {/* rows: todos os dias do evento (fechamento do evento inteiro) */}
+      {rows.map((r, i) => {
+        const w = r.work;
+        let schedule;
+        if (!w) schedule = 'Sem horas lançadas (diária)';
+        else if (!w.entry_time && !w.exit_time) schedule = 'Deslocamento / Viagem';
+        else schedule = `${w.entry_time || ''} às ${w.exit_time || ''}${r.status === 'estimado' ? ' (12 h automáticas)' : ''}`;
+        const local = w?.notes && r.status !== 'estimado' ? String(w.notes).substring(0, 22) : (event?.location || '-');
+        const heHours = r.overtimeHours ? `${r.overtimeHours}h` : '-';
+        const totalH = r.totalHours ? `${r.totalHours}h` : '-';
+        const meal = r.alimentacao ? fmt(r.alimentacao) : 'R$ 0,00';
         const rowStyle = [s.tRow, i % 2 === 1 ? { backgroundColor: C.rowAlt } : {}];
         return (
-          <View key={w.id || i} style={rowStyle} wrap={false}>
-            <View style={{ flex: COL1[0].flex / totalFlex }}><Text style={s.tCell}>{fmtShortDate(w.date || w.work_date)}</Text></View>
+          <View key={r.date || i} style={rowStyle} wrap={false}>
+            <View style={{ flex: COL1[0].flex / totalFlex }}><Text style={s.tCell}>{fmtShortDate(r.date)}</Text></View>
             <View style={{ flex: COL1[1].flex / totalFlex }}><Text style={s.tCell}>{local}</Text></View>
             <View style={{ flex: COL1[2].flex / totalFlex }}><Text style={s.tCellMuted}>{schedule}</Text></View>
             <View style={{ flex: COL1[3].flex / totalFlex }}><Text style={s.tCell}>{totalH}</Text></View>
             <View style={{ flex: COL1[4].flex / totalFlex }}><Text style={s.tCell}>{heHours}</Text></View>
             <View style={{ flex: COL1[5].flex / totalFlex }}><Text style={s.tCellMuted}>{meal}</Text></View>
-            <View style={{ flex: COL1[6].flex / totalFlex }}><Text style={s.tCell}>{fmt(base)}</Text></View>
-            <View style={{ flex: COL1[7].flex / totalFlex }}><Text style={{ ...s.tCell, fontFamily: 'Helvetica-Bold' }}>{fmt(subtotal)}</Text></View>
+            <View style={{ flex: COL1[6].flex / totalFlex }}><Text style={s.tCell}>{fmt(r.diaria)}</Text></View>
+            <View style={{ flex: COL1[7].flex / totalFlex }}><Text style={{ ...s.tCell, fontFamily: 'Helvetica-Bold' }}>{fmt(r.subtotal)}</Text></View>
           </View>
         );
       })}
@@ -230,15 +273,14 @@ const COL2 = [
   { label: 'Total\nAcumulado',       flex: 1.0 },
 ];
 
-function OvertimeTable({ work, dailyRate }) {
+function OvertimeTable({ closing }) {
   const totalFlex = COL2.reduce((s, c) => s + c.flex, 0);
-  const totalOT = work.reduce((sum, w) => sum + (w.overtime_hours || 0), 0);
-  if (totalOT === 0) return null;
-
-  const avgDailyCache = work.filter(w => w.daily_cache).reduce((sum, w) => sum + (w.daily_cache || 0), 0)
-    / (work.filter(w => w.daily_cache).length || 1);
-  const hourCost = (dailyRate || avgDailyCache || 0) / 12;
-  const totalOTValue = totalOT * hourCost;
+  // Mesmos números do fechamento: a hora extra já faz parte do valor de cada dia,
+  // aqui ela só é detalhada (não é somada de novo).
+  const totalOT = closing.totalHorasExtrasQtd;
+  const hourCost = closing.valorHora;
+  const totalOTValue = closing.totalHorasExtras;
+  if (!totalOTValue) return null;
 
   return (
     <View>
@@ -251,7 +293,7 @@ function OvertimeTable({ work, dailyRate }) {
       </View>
       <View style={[s.tRow]} wrap={false}>
         <View style={{ flex: COL2[0].flex / totalFlex }}>
-          <Text style={s.tCell}>Horas Extras Executadas (Acúmulo do período das diárias)</Text>
+          <Text style={s.tCell}>Horas extras acima de 12 h por dia (já incluídas no subtotal de cada dia)</Text>
         </View>
         <View style={{ flex: COL2[1].flex / totalFlex }}>
           <Text style={s.tCell}>{totalOT} {totalOT === 1 ? 'hora' : 'horas'}</Text>
@@ -304,7 +346,9 @@ function ReimbursementTable({ expenses }) {
       </View>
       {reimbursable.map((exp, i) => {
         const cat = CATEGORY_LABELS[exp.category] || (exp.category || 'Outros');
-        const desc = exp.notes || exp.title || exp.description || '-';
+        const baseDesc = exp.notes || exp.title || exp.description || '-';
+        const hasReceipt = Boolean(exp.receipt_data_url || exp.receipt_url);
+        const desc = hasReceipt ? `${baseDesc} (Comprovante anexo)` : baseDesc;
         const rowStyle = [s.tRow, i % 2 === 1 ? { backgroundColor: C.rowAlt } : {}];
         return (
           <View key={exp.id || i} style={rowStyle} wrap={false}>
@@ -330,50 +374,76 @@ function ReimbursementTable({ expenses }) {
 // ── Document ──────────────────────────────────────────────────────────────────
 
 export function EventPDFDocument({ event, client, work = [], expenses = [], profile = {}, reportSettings = {} }) {
-  // Dados do prestador
-  const prestadorName = reportSettings.report_full_name || profile.name || 'Prestador';
-  const subtitle = reportSettings.report_subtitle || '';
-  const profession = reportSettings.report_profession || profile.category || '';
+  // Dados completos do prestador
+  const prestadorName = reportSettings.report_full_name || profile.name || profile.full_name || 'Prestador';
+  const categoryLabel = profile.category_label || (profile.category ? getCategoryLabel(profile.category) : '');
+  const profession = reportSettings.report_profession || categoryLabel || '';
+  const specialties = Array.isArray(profile.specialties) && profile.specialties.length > 0
+    ? profile.specialties.join(' · ')
+    : '';
+  const subtitle = reportSettings.report_subtitle || profession || '';
   const cityState = [profile.city, profile.state].filter(Boolean).join(' - ');
-  const pixKey = reportSettings.pix_key || '';
-  const pixKeyType = reportSettings.pix_key_type || 'Chave PIX';
+  const prestadorPhone = reportSettings.phone || profile.phone || '';
+  const prestadorEmail = reportSettings.email || profile.email || '';
+  const prestadorDoc = reportSettings.cpf_cnpj || profile.cnpj || profile.cpf_cnpj || event?.nfe_analise?.prestador_cnpj || '';
+  const pixKey = reportSettings.pix_key || profile.pix_key || '';
+  const pixKeyType = reportSettings.pix_key_type || profile.pix_key_type || 'Chave PIX';
 
-  // Dados do evento
+  // Dados completos do evento e contratante
   const clientName = client?.name || event?.client_name || 'Contratante';
-  const location = event?.location || '';
+  const eventTitle = event?.title && event.title !== clientName ? event.title : (event?.title || '');
+  const clientDoc = client?.cnpj || client?.cpf || '';
+  const clientContact = [client?.contact_name, client?.phone, client?.email].filter(Boolean).join(' · ');
+  const locationParts = [
+    event?.location,
+    [event?.location_city, event?.location_state].filter(Boolean).join('/'),
+  ].filter(Boolean);
+  const location = locationParts.join(' — ');
   const startDate = event?.start_date ? fmtDate(event.start_date) : '';
   const endDate = event?.end_date && event.end_date !== event.start_date ? fmtDate(event.end_date) : null;
   const periodo = endDate ? `${startDate} a ${endDate}` : startDate;
   const emissao = new Date().toLocaleDateString('pt-BR');
+  const dueDate = event?.payment_due_date ? fmtDate(event.payment_due_date) : '';
+  const isPaid = event?.payment_status === 'paid';
+  const paidDate = event?.paid_at ? fmtDate(String(event.paid_at).slice(0, 10)) : '';
+  const eventNotes = (event?.observacoes_md || event?.description || '').trim();
 
-  // Trabalho ordenado por data
-  const sortedWork = [...work].sort((a, b) => {
-    const da = a.date || a.work_date || '';
-    const db = b.date || b.work_date || '';
-    return da < db ? -1 : da > db ? 1 : 0;
-  });
+  // Dados Fiscais (NF-e / NFS-e)
+  const nfeNumber = event?.nfe_numero || event?.nf_number || event?.nfe_analise?.numero_nota || '';
+  const nfeIssuedRaw = event?.nf_issued_at || event?.nfe_analise?.data_emissao || '';
+  const nfeIssued = nfeIssuedRaw
+    ? (/^\d{4}-\d{2}-\d{2}/.test(String(nfeIssuedRaw)) ? fmtDate(String(nfeIssuedRaw).slice(0, 10)) : String(nfeIssuedRaw))
+    : '';
+  const nfeFileName = event?.nfe_arquivo_nome || '';
+  const nfeIssuer = event?.nfe_analise?.prestador_nome || '';
+  const hasNFe = Boolean(nfeNumber || nfeFileName || nfeIssued);
 
-  // Cálculos
-  const dailyRate = profile.daily_rate || 0;
-  const workDays = sortedWork.filter(w => w.entry_time || w.exit_time).length;
-  const travelDays = sortedWork.filter(w => !w.entry_time && !w.exit_time).length;
+  // Fechamento do evento inteiro (todos os dias, sem somar hora extra duas vezes)
+  const closing = buildEventClosing(event, work, expenses);
+  const workDays = closing.rows.filter((r) => r.work && (r.work.entry_time || r.work.exit_time)).length
+    + closing.semHoras.length;
+  const travelDays = closing.rows.filter((r) => r.work && !r.work.entry_time && !r.work.exit_time).length;
 
-  const subtotalDiarias = sortedWork.reduce((sum, w) => {
-    return sum + (w.daily_cache || 0) + (w.meal_allowance || 0);
-  }, 0);
+  const subtotalDiarias = closing.totalDiarias + closing.totalAlimentacao;
+  const totalOT = closing.totalHorasExtrasQtd;
+  const subtotalHE = closing.totalHorasExtras;
+  const reimbursable = closing.reembolsaveis;
+  const subtotalReembolsos = closing.totalReembolsos;
+  const totalReceber = closing.total;
+  const paidAmountVal = isPaid && Number(event?.paid_amount) > 0 ? Number(event.paid_amount) : totalReceber;
 
-  const totalOT = sortedWork.reduce((sum, w) => sum + (w.overtime_hours || 0), 0);
-  const avgDaily = sortedWork.filter(w => w.daily_cache).reduce((sum, w) => sum + (w.daily_cache || 0), 0)
-    / (sortedWork.filter(w => w.daily_cache).length || 1);
-  const hourCost = (dailyRate || avgDaily || 0) / 12;
-  const subtotalHE = totalOT * hourCost;
+  // Payload PIX Copia e Cola (EMV BACEN)
+  const pixPayloadStr = pixKey
+    ? generatePixPayload({
+        pixKey,
+        merchantName: prestadorName,
+        merchantCity: profile.city || event?.location_city || 'Brasil',
+        amount: totalReceber,
+        txId: (event?.title || clientName || 'SHOW').replace(/[^a-zA-Z0-9]/g, '').slice(0, 25) || '***',
+      })
+    : '';
 
-  const reimbursable = expenses.filter(e => e.is_reimbursable);
-  const subtotalReembolsos = reimbursable.reduce((sum, e) => sum + (e.amount || 0), 0);
-
-  const totalReceber = subtotalDiarias + subtotalHE + subtotalReembolsos;
-
-  const hasHE = totalOT > 0;
+  const hasHE = subtotalHE > 0;
   const hasReembolsos = reimbursable.length > 0;
 
   const diariasLabel = travelDays > 0
@@ -389,34 +459,48 @@ export function EventPDFDocument({ event, client, work = [], expenses = [], prof
           <View>
             <Text style={s.headerName}>{prestadorName.toUpperCase()}</Text>
             {subtitle ? <Text style={s.headerSubtitle}>{subtitle.toUpperCase()}</Text> : null}
+            {specialties ? <Text style={s.headerSubtitle}>{specialties}</Text> : null}
           </View>
           <View style={s.headerRight}>
             <Text style={s.headerTitle}>FECHAMENTO DE SERVIÇOS</Text>
             {periodo ? <Text style={s.headerMeta}>Período do Job: {periodo}</Text> : null}
             <Text style={s.headerMeta}>Data de Emissão: {emissao}</Text>
+            {nfeNumber ? <Text style={s.headerMeta}>NF-e / NFS-e Nº: {nfeNumber}</Text> : null}
           </View>
         </View>
 
-        {/* ── Info block ─────────────────────────────────────────────────── */}
+        {/* ── Info block (Prestador & Contratante/Evento) ────────────────── */}
         <View style={s.infoBlock}>
           <View style={[s.infoCol, s.infoColLeft]}>
-            <Text style={s.infoLabel}>PRESTADOR:</Text>
+            <Text style={s.infoLabel}>PRESTADOR DE SERVIÇOS:</Text>
             <Text style={s.infoName}>{prestadorName}</Text>
-            {cityState ? <Text style={s.infoDetail}>{cityState}</Text> : null}
-            {profession ? <Text style={s.infoDetail}>{profession}</Text> : null}
+            {profession ? <Text style={s.infoDetail}>Função: {profession}</Text> : null}
+            {prestadorDoc ? <Text style={s.infoDetail}>CPF/CNPJ: {prestadorDoc}</Text> : null}
+            {prestadorPhone ? <Text style={s.infoDetail}>Tel / WhatsApp: {prestadorPhone}</Text> : null}
+            {prestadorEmail ? <Text style={s.infoDetail}>E-mail: {prestadorEmail}</Text> : null}
+            {cityState ? <Text style={s.infoDetail}>Base: {cityState}</Text> : null}
           </View>
           <View style={s.infoCol}>
-            <Text style={s.infoLabel}>CONTRATANTE:</Text>
+            <Text style={s.infoLabel}>CONTRATANTE &amp; EVENTO:</Text>
             <Text style={s.infoName}>{clientName}</Text>
-            {location ? <Text style={s.infoDetail}>{location}</Text> : null}
+            {eventTitle ? <Text style={s.infoDetail}>Evento: {eventTitle}</Text> : null}
+            {clientDoc ? <Text style={s.infoDetail}>CNPJ/CPF: {clientDoc}</Text> : null}
+            {clientContact ? <Text style={s.infoDetail}>Contato: {clientContact}</Text> : null}
+            {location ? <Text style={s.infoDetail}>Local: {location}</Text> : null}
+            {dueDate && !isPaid ? <Text style={s.infoDetail}>Vencimento acordado: {dueDate}</Text> : null}
+            {isPaid ? (
+              <Text style={{ ...s.infoDetail, color: C.pixText, fontFamily: 'Helvetica-Bold' }}>
+                Status: PAGO EM CONTA ({fmt(paidAmountVal)}{paidDate ? ` em ${paidDate}` : ''})
+              </Text>
+            ) : null}
           </View>
         </View>
 
         {/* ── Seção 1 ───────────────────────────────────────────────────── */}
-        {sortedWork.length > 0 && (
+        {closing.rows.length > 0 && (
           <View>
             <SectionTitle>1. CONTROLE DE DIÁRIAS E HORAS TRABALHADAS</SectionTitle>
-            <DailyTable work={sortedWork} event={event} />
+            <DailyTable rows={closing.rows} event={event} />
           </View>
         )}
 
@@ -424,7 +508,7 @@ export function EventPDFDocument({ event, client, work = [], expenses = [], prof
         {hasHE && (
           <View>
             <SectionTitle>2. APURAÇÃO DE HORAS EXTRAS (H.E.)</SectionTitle>
-            <OvertimeTable work={sortedWork} dailyRate={dailyRate} />
+            <OvertimeTable closing={closing} />
           </View>
         )}
 
@@ -438,10 +522,18 @@ export function EventPDFDocument({ event, client, work = [], expenses = [], prof
           </View>
         )}
 
+        {/* ── Observações do Evento (se houver) ─────────────────────────── */}
+        {eventNotes ? (
+          <View style={s.notesBox} wrap={false}>
+            <Text style={s.notesTitle}>OBSERVAÇÕES DO EVENTO / FECHAMENTO:</Text>
+            <Text style={s.notesText}>{eventNotes}</Text>
+          </View>
+        ) : null}
+
         {/* ── Summary ───────────────────────────────────────────────────── */}
-        <View style={s.summaryWrap}>
+        <View style={s.summaryWrap} wrap={false}>
           <View style={s.summaryBox}>
-            {sortedWork.length > 0 && (
+            {closing.rows.length > 0 && (
               <View style={s.summaryRow}>
                 <Text style={s.summaryLabel}>Subtotal Diárias ({diariasLabel}):</Text>
                 <Text style={s.summaryVal}>{fmt(subtotalDiarias)}</Text>
@@ -460,23 +552,115 @@ export function EventPDFDocument({ event, client, work = [], expenses = [], prof
               </View>
             )}
             <View style={s.totalRow}>
-              <Text style={s.totalLabel}>VALOR TOTAL A RECEBER:</Text>
+              <Text style={s.totalLabel}>{isPaid ? 'VALOR TOTAL FECHADO:' : 'VALOR TOTAL A RECEBER:'}</Text>
               <Text style={s.totalVal}>{fmt(totalReceber)}</Text>
             </View>
           </View>
         </View>
 
-        {/* ── PIX ───────────────────────────────────────────────────────── */}
-        {pixKey ? (
-          <View style={s.pixBox}>
-            <Text style={s.pixTitle}>Dados Cadastrados para Pagamento:</Text>
-            <Text style={s.pixSub}>Favor efetuar o depósito do valor total para a chave informada abaixo.</Text>
-            <View style={s.pixKeyRow}>
-              <Text style={s.pixKeyLabel}>{pixKeyType} ({pixKeyType}):</Text>
-              <Text style={s.pixKeyVal}>{pixKey}</Text>
+        {/* ── NF-e / Dados Fiscais ──────────────────────────────────────── */}
+        {hasNFe ? (
+          <View style={s.nfeBox} wrap={false}>
+            <Text style={s.nfeTitle}>Documento Fiscal Vinculado (NF-e / NFS-e):</Text>
+            <View style={s.nfeRow}>
+              {nfeNumber ? (
+                <Text style={s.nfeItem}>
+                  Número da Nota: <Text style={s.nfeItemBold}>Nº {nfeNumber}</Text>
+                </Text>
+              ) : null}
+              {nfeIssued ? (
+                <Text style={s.nfeItem}>
+                  Emissão: <Text style={s.nfeItemBold}>{nfeIssued}</Text>
+                </Text>
+              ) : null}
+              {nfeIssuer ? (
+                <Text style={s.nfeItem}>
+                  Emitente: <Text style={s.nfeItemBold}>{nfeIssuer}</Text>
+                </Text>
+              ) : null}
+              {nfeFileName ? (
+                <Text style={s.nfeItem}>
+                  Anexo no sistema: <Text style={s.nfeItemBold}>{nfeFileName}</Text>
+                </Text>
+              ) : null}
             </View>
           </View>
         ) : null}
+
+        {/* ── PIX ───────────────────────────────────────────────────────── */}
+        {pixKey ? (
+          <View style={s.pixBox} wrap={false}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+              <View style={{ flex: 1 }}>
+                <Text style={s.pixTitle}>Dados Cadastrados para Pagamento (PIX):</Text>
+                <Text style={s.pixSub}>
+                  Favorecido: {prestadorName}{prestadorDoc ? ` (${prestadorDoc})` : ''} · Valor integral: {fmt(totalReceber)}
+                </Text>
+                <View style={s.pixKeyRow}>
+                  <Text style={s.pixKeyLabel}>{pixKeyType}:</Text>
+                  <Text style={s.pixKeyVal}>{pixKey}</Text>
+                </View>
+                {pixPayloadStr ? (
+                  <View style={s.pixPayloadBox}>
+                    <Text style={s.pixPayloadLabel}>PIX Copia e Cola (padrão BACEN — copie o código abaixo no app do banco):</Text>
+                    <Text style={s.pixPayloadCode}>{pixPayloadStr}</Text>
+                  </View>
+                ) : null}
+              </View>
+              {reportSettings.pix_qr_data_url ? (
+                <View style={{ alignItems: 'center', backgroundColor: C.white, padding: 5, borderRadius: 3, borderWidth: 0.5, borderColor: C.pixBorder }}>
+                  <Image src={reportSettings.pix_qr_data_url} style={{ width: 66, height: 66 }} />
+                  <Text style={{ fontSize: 6.2, fontFamily: 'Helvetica-Bold', color: C.pixText, marginTop: 2 }}>
+                    QR CODE PIX
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+          </View>
+        ) : null}
+
+        {/* ── Anexo de Comprovantes de Reembolso ───────────────────────── */}
+        {(() => {
+          const withReceipts = reimbursable.filter((e) => e.receipt_data_url || (typeof e.receipt_url === 'string' && e.receipt_url.startsWith('data:image/')));
+          if (withReceipts.length === 0) return null;
+          return (
+            <View style={{ marginTop: 14 }}>
+              <SectionTitle>Comprovantes de Despesas Reembolsáveis</SectionTitle>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+                {withReceipts.map((exp, idx) => {
+                  const imgSrc = exp.receipt_data_url || exp.receipt_url;
+                  const cat = CATEGORY_LABELS[exp.category] || (exp.category || 'Outros');
+                  const label = exp.title || exp.notes || exp.description || cat;
+                  return (
+                    <View
+                      key={exp.id || idx}
+                      wrap={false}
+                      style={{
+                        width: 150,
+                        borderWidth: 0.75,
+                        borderColor: C.border,
+                        borderRadius: 3,
+                        padding: 6,
+                        backgroundColor: C.rowAlt,
+                      }}
+                    >
+                      <Image src={imgSrc} style={{ width: 138, height: 110, objectFit: 'contain', backgroundColor: C.white, borderRadius: 2 }} />
+                      <Text style={{ fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.navy, marginTop: 4 }}>
+                        {fmtShortDate(exp.expense_date || exp.date)} · {cat}
+                      </Text>
+                      <Text style={{ fontSize: 7, color: C.text, marginTop: 1 }}>
+                        {String(label).slice(0, 32)}
+                      </Text>
+                      <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.accent, marginTop: 2 }}>
+                        {fmt(exp.amount || 0)}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          );
+        })()}
 
         {/* ── Page number ───────────────────────────────────────────────── */}
         <Text

@@ -23,7 +23,7 @@ test('bottom nav troca pagina sem precisar de refresh', async ({ page }) => {
   await page.goto('/', { waitUntil: 'load' });
   await expect(page).not.toHaveURL(/\/onboarding/, { timeout: 15_000 });
   await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 20_000 });
-  await expect(page.getByRole('navigation').getByRole('link', { name: /^home$/i })).toBeVisible({
+  await expect(page.getByRole('navigation').getByRole('link', { name: /^início$/i })).toBeVisible({
     timeout: 20_000,
   });
   await expectPageShell(page, (p) => p.getByRole('heading', { name: /(bom dia|boa tarde|boa noite)/i }));
@@ -45,15 +45,21 @@ test('bottom nav troca pagina sem precisar de refresh', async ({ page }) => {
     ),
   );
 
-  await clickNavAndWait(page, /^home$/i, /\/$/);
+  await clickNavAndWait(page, /^início$/i, /\/$/);
   await expectPageShell(page, (p) => p.getByRole('heading', { name: /(bom dia|boa tarde|boa noite)/i }));
 });
 
 test('apos FAB novo evento, nav continua funcionando sem refresh', async ({ page }) => {
   await seedAuth(page);
-  await page.goto('/calendar?action=new-event', { waitUntil: 'load' });
+  await page.goto('/', { waitUntil: 'load' });
   await expect(page).not.toHaveURL(/\/onboarding/, { timeout: 15_000 });
   await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 20_000 });
+  // O + da barra abre o Novo trabalho na Agenda
+  await page.getByRole('button', { name: /novo trabalho/i }).click();
+  await expect(page).toHaveURL(/\/calendar/, { timeout: 15_000 });
+  await expect(page.getByRole('dialog').first()).toBeVisible({ timeout: 15_000 });
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
 
   await openMaisAndNavigate(page, /^clientes$/i, /\/clients/);
   await expectPageShell(page, (p) =>

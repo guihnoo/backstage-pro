@@ -6,6 +6,7 @@ import {
   calculateEventReceivableAmount,
   daysOverduePayment,
 } from './eventFinance';
+import { distributePaidAmount } from './financeMetrics';
 
 export function useReceivableByClient(userId) {
   const [rows, setRows] = useState([]);
@@ -108,28 +109,23 @@ export function useReceivableByClient(userId) {
     setRows(prev => prev.filter(r => r.clientId !== clientId));
 
     // Distribute paidAmount proportionally across events if provided
-    const basePayload = { payment_status: 'paid', paid_date: today };
-    if (paidAmount != null && paidAmount > 0 && row.events.length > 0) {
-      const totalCalc = row.events.reduce((s, e) => s + e.amount, 0);
-      const ratio = totalCalc > 0 ? paidAmount / totalCalc : 1;
-      const updates = row.events.map(ev =>
+    const adjusted = paidAmount != null && paidAmount > 0;
+    const results = await Promise.all(
+      distributePaidAmount(row.events, paidAmount).map(share =>
         supabase
           .from('events')
-          .update({ ...basePayload, actual_revenue: Math.round(ev.amount * ratio * 100) / 100 })
-          .eq('id', ev.id)
+          .update({
+            payment_status: 'paid',
+            paid_date: today,
+            paid_amount: share.amount > 0 ? share.amount : null,
+            ...(adjusted ? { actual_revenue: share.amount } : {}),
+          })
+          .eq('id', share.id)
           .eq('user_id', userId)
-      );
-      const results = await Promise.all(updates);
-      const err = results.find(r => r.error)?.error;
-      if (err) { await fetchReceivable(); throw err; }
-    } else {
-      const { error: updateError } = await supabase
-        .from('events')
-        .update(basePayload)
-        .in('id', row.events.map(e => e.id))
-        .eq('user_id', userId);
-      if (updateError) { await fetchReceivable(); throw updateError; }
-    }
+      )
+    );
+    const err = results.find(r => r.error)?.error;
+    if (err) { await fetchReceivable(); throw err; }
   }, [rows, userId, fetchReceivable]);
 
   const totalReceivable = useMemo(

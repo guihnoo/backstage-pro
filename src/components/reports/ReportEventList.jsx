@@ -5,7 +5,8 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { CheckCircle2, BadgeCheck, Clock, PlayCircle } from 'lucide-react';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { formatDisplayDate, getEventStatusConfig } from '@/components/utils/dateUtils';
-import { getEventCacheAmount } from '@/lib/eventFinance';
+import { calculateEventReceivableAmount } from '@/lib/eventFinance';
+import { getEventReceivedAmount } from '@/lib/financeMetrics';
 import EventHeading from '@/components/events/EventHeading';
 import { Ellipsis } from '@/components/ui/overflowText';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
@@ -14,13 +15,11 @@ const EventItem = ({ event, client, work, onClick }) => {
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const { primaryHex } = useCategoryTheme();
 
+  // Mesmo cálculo dos cartões: dias repetidos contam uma vez e dia sem horas entra com a diária.
   const eventWork = work.filter(w => w.event_id === event.id);
-  const workCacheTotal = eventWork.reduce((sum, w) => sum + (w.daily_cache || 0), 0);
-  const eventValue = workCacheTotal > 0
-    ? workCacheTotal
-    : event.paid_amount > 0
-      ? event.paid_amount
-      : getEventCacheAmount(event);
+  const eventValue = event.payment_status === 'paid'
+    ? getEventReceivedAmount(event, eventWork)
+    : calculateEventReceivableAmount(event, eventWork);
 
   const isPaid = event.payment_status === 'paid';
   const isConfirmed = event.status === 'confirmed' || event.status === 'scheduled';

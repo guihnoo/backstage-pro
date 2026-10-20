@@ -135,11 +135,11 @@ export default function ContinuousEventBar({
 
         {/* Right: NF-e badge + status + clock (hover) */}
         <div className="flex items-center gap-1 flex-shrink-0 ml-1">
-          {event.status === 'completed' && (event.nfe_arquivo_url || event.nfe_numero) && (
+          {(event.nfe_arquivo_url || event.nfe_numero || event.nf_number) && (
             <FileText
               className="w-3 h-3 flex-shrink-0"
               style={{ color: event.nfe_analise?.cliente_reconhecido ? '#34d399' : '#60a5fa', opacity: 0.9 }}
-              title={event.nfe_analise?.cliente_reconhecido ? 'NF-e verificada' : 'NF-e registrada'}
+              title={event.nfe_analise?.cliente_reconhecido ? 'NF-e verificada' : 'NF-e anexada'}
             />
           )}
           <StatusIcon

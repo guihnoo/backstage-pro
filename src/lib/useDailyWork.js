@@ -2,6 +2,7 @@
 import { supabase } from './supabase';
 import { useAuth } from './authContext';
 import { useRealtimeRefetch } from './useRealtimeRefetch';
+import { dedupeRequest } from './requestDedupe';
 
 /** Mapeia payload da UI para colunas reais do Supabase (date, total_hours, notes). */
 export function mapPayloadToDb(payload = {}) {
@@ -22,9 +23,16 @@ export function mapPayloadToDb(payload = {}) {
     overtime_hours:
       payload.overtime_hours != null ? Number(payload.overtime_hours) : null,
     daily_cache: payload.daily_cache != null ? Number(payload.daily_cache) : null,
+    // Alimentacao do dia (migration 041). So vai quando a tela manda (regra = reembolso).
+    meal_allowance: payload.meal_allowance != null ? Number(payload.meal_allowance) : null,
     notes: payload.description ?? payload.notes ?? null,
     photo_url: payload.photo_url ?? null,
     status: payload.status || 'completed',
+    // Lote 2 (migration 035). Só são enviados quando definidos — com a escolha por dia
+    // desligada (VITE_REGIME_POR_DIA), nada muda no que é gravado.
+    regime: payload.regime ?? null,
+    hora_extra: typeof payload.hora_extra === 'boolean' ? payload.hora_extra : null,
+    origem: payload.origem ?? null,
   };
 
   Object.keys(mapped).forEach((key) => {
@@ -68,11 +76,11 @@ export function useDailyWork() {
     setError(null);
 
     try {
-      const { data, error: err } = await supabase
+      const { data, error: err } = await dedupeRequest(`daily_work:${userId}`, () => supabase
         .from('daily_work')
         .select('*')
         .eq('user_id', userId)
-        .order('date', { ascending: false });
+        .order('date', { ascending: false }));
 
       if (err) throw err;
       setDailyWork((data || []).map(mapRowFromDb));
@@ -92,13 +100,61 @@ export function useDailyWork() {
   const create = useCallback(
     async (data) => {
       const payload = mapPayloadToDb({ ...data, user_id: userId });
+
+      // Um registro por dia (Lote 3): se o dia já tem registro neste evento
+      // (outra aba, outro aparelho), atualiza esse registro em vez de duplicar.
+      if (payload.event_id && payload.date) {
+        const { data: sameDay, error: findErr } = await supabase
+          .from('daily_work')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('event_id', payload.event_id)
+          .eq('date', payload.date)
+          .order('updated_at', { ascending: false })
+          .limit(1);
+        if (findErr) throw findErr;
+        if (sameDay?.[0]?.id) {
+          const patch = { ...payload };
+          delete patch.user_id;
+          const { data: updated, error: updErr } = await supabase
+            .from('daily_work')
+            .update(patch)
+            .eq('id', sameDay[0].id)
+            .select()
+            .single();
+          if (updErr) throw updErr;
+          const mappedUpdate = mapRowFromDb(updated);
+          setDailyWork((prev) => [mappedUpdate, ...prev.filter((w) => w.id !== mappedUpdate.id)]);
+          return mappedUpdate;
+        }
+      }
+
       const { data: result, error: err } = await supabase
         .from('daily_work')
         .insert(payload)
         .select()
         .single();
 
-      if (err) throw err;
+      if (err) {
+        // Corrida entre abas com o índice único (migration 036): vira atualização do dia.
+        if (err.code === '23505' && payload.event_id && payload.date) {
+          const patch = { ...payload };
+          delete patch.user_id;
+          const { data: raced, error: racedErr } = await supabase
+            .from('daily_work')
+            .update(patch)
+            .eq('user_id', userId)
+            .eq('event_id', payload.event_id)
+            .eq('date', payload.date)
+            .select()
+            .single();
+          if (racedErr) throw racedErr;
+          const mappedRaced = mapRowFromDb(raced);
+          setDailyWork((prev) => [mappedRaced, ...prev.filter((w) => w.id !== mappedRaced.id)]);
+          return mappedRaced;
+        }
+        throw err;
+      }
 
       const mapped = mapRowFromDb(result);
       setDailyWork((prev) => [mapped, ...prev]);

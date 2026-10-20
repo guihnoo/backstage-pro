@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node 'c:\\Users\\monte\\OneDrive\\Documentos\\backstage-pro\\.codex\\hooks\\auto-save-push.mjs'",
+            "command": "node .codex/hooks/auto-save-push.mjs",
             "timeout": 90
           }
         ]

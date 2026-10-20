@@ -143,7 +143,7 @@
 | `ReportEventList` | [x] | 🟢 | `EventHeading` + título truncado ✅ |
 | `KPIDetailModal` | [x] | 🟢 | `EventHeading` em itens de evento; título `Ellipsis` ✅ |
 | `EventDetailModal` (reports) | [x] | 🟢 | `ScrollArea fill` ✅; card NF-e (S137): botões `type="button"` ✅; `InlineNotes`: `role="button"` + `tabIndex` + `onKeyDown` ✅ |
-| `PaymentConfirmModal` | [x] | 🟢 | título do evento com `Ellipsis` ✅ |
+| `PaymentConfirmModal` | [x] | 🟡 | título do evento com `Ellipsis` ✅ · 2026-10-09: update falhava em produção (coluna `payment_method` inexistente) — corrigido no código; seletor de forma de recebimento só volta após aplicar a migration 034 |
 | `DrilldownModal` | [x] | 🟢 | `max-h-[90dvh] flex flex-col overflow-hidden`; `DialogHeader flex-shrink-0`; `ScrollArea fill` ✅ (S136) |
 | `BrazilVisitedMap` | [x] | 🟢 | Lazy subcomponent OK |
 | `ExportManager` PDF/CSV/ICS | [x] | 🟢 | Implementado |
@@ -231,6 +231,10 @@
 | `min-h-screen` em páginas dentro de `data-app-scroll` | ✅ Corrigido | sessão 11 — Calendar, Goals, Home, Profile → `min-h-full` |
 | `DropdownMenuContent` z-50 atrás de Dialog z-101 | ✅ Corrigido | S150 `b4454f6` — `z-[150]`; `TooltipContent` → `z-[200]` |
 | Tab bar Reports overflow em mobile (Fiscal oculto) | ✅ Corrigido | S151 `0232540` — labels curtos + gap menor + fade gradiente direita |
+| "Recebido" calculado inline com regras diferentes por tela (`paid_amount \|\| …`, data do show × data do pagamento) | ✅ Corrigido | 2026-10-09 — usar sempre `src/lib/financeMetrics.js`; dinheiro ausente se testa com `??`/null, nunca `\|\|` |
+| "Marcar pago" sem gravar `paid_amount` (toggle rápido, Agenda, A Receber) | ✅ Corrigido | 2026-10-09 — `buildMarkPaidUpdate` / `distributePaidAmount` |
+| Enviar no update uma coluna que não existe no banco derruba o update inteiro (`events.payment_method`) | ✅ Corrigido | 2026-10-09 — conferir o schema real antes de adicionar campo a um payload; migration 034 |
+| Buscar eventos por `status = 'completed'` para métrica financeira (quase nenhum evento real tem esse status) | ✅ Corrigido em Metas | 2026-10-09 — dinheiro recebido usa `payment_status = 'paid'` (`usePaidEvents`) |
 
 ---
 

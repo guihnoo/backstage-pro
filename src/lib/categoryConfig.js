@@ -166,8 +166,44 @@ export const CATEGORIES = {
   }
 };
 
+// Palco/Rigging existe no cadastro (onboarding) mas nao tinha tema: usuario caia como Iluminacao.
+// Usa o visual de Producao, mantendo o nome e as especialidades de palco.
+CATEGORIES.stage = {
+  ...CATEGORIES.production,
+  id: 'stage',
+  label: 'Palco/Rigging',
+  description: 'Montagem, rigging e estrutura',
+  specialties: ['Montagem de Palco', 'Rigging', 'Carpintaria', 'Estrutura Treliça', 'Backline'],
+};
+
+// IDs antigos do cadastro que tem tema equivalente (mesmo nome/especialidades).
+export const CATEGORY_ALIASES = { art: 'scenography', catering: 'hospitality' };
+
+/** ID que vale para tema/rotulo (alias resolvido). Desconhecido continua como esta. */
+export function resolveCategoryId(categoryId) {
+  return CATEGORY_ALIASES[categoryId] || categoryId;
+}
+
+// Visual "All Access" (validado em 19/10/2026): todas as áreas usam o mesmo par de cores
+// de credencial — amarelo (principal) e rosa (alerta/a receber). A cor antiga de cada área
+// continua disponível em `categoryHex` / `categoryAccentHex` para quem precisar diferenciar.
+const AA_PRIMARY = '#ffd400';
+const AA_ACCENT = '#ff2e88';
+const AA_CATEGORIES = Object.fromEntries(
+  Object.entries(CATEGORIES).map(([id, cfg]) => [
+    id,
+    {
+      ...cfg,
+      categoryHex: cfg.primaryHex,
+      categoryAccentHex: cfg.accentHex,
+      primaryHex: AA_PRIMARY,
+      accentHex: AA_ACCENT,
+    },
+  ]),
+);
+
 export function getCategoryConfig(categoryId) {
-  return CATEGORIES[categoryId] || CATEGORIES.lighting;
+  return AA_CATEGORIES[resolveCategoryId(categoryId)] || AA_CATEGORIES.lighting;
 }
 
 export function getAllCategories() {

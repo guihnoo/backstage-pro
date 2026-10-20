@@ -7,15 +7,18 @@ import { exportReportCsv, exportReportPdf, exportCalendarIcs } from '@/lib/expor
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
+import { buildWorkByEvent, isReceivedEvent, sumReceived } from '@/lib/financeMetrics';
 
 function buildShareText(data, period) {
   const events = data?.events || [];
   const expenses = data?.expenses || [];
   const _clients = data?.clients || [];
 
-  const revenue = events
-    .filter(e => e.payment_status === 'paid')
-    .reduce((s, e) => s + (Number(e.paid_amount) || 0), 0);
+  // Recebido no período (data do pagamento), igual ao KPI "Faturamento" da tela
+  const revenue = sumReceived(
+    data?.paidEvents || events.filter(isReceivedEvent),
+    buildWorkByEvent(data?.allWork || data?.work || [])
+  );
   const totalExpenses = expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
   const profit = revenue - totalExpenses;
   const active = events.filter(e => e.status !== 'cancelled');
