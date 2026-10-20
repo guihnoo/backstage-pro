@@ -74,7 +74,8 @@ import EventHoursSheet from '@/components/mobile/EventHoursSheet';
 import NotesSheet from '@/components/mobile/NotesSheet';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { getCategoryConfig } from '@/lib/categoryConfig';
-import { NeonPageShell } from '@/components/design/NeonPageShell';
+import { usePullToRefresh } from '@/lib/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
 import { applyAuto12Hours } from '@/lib/applyAuto12Hours';
 import { useUserSettings } from '@/lib/useUserSettings';
 import { getEventCacheAmount } from '@/lib/eventFinance';
@@ -144,13 +145,13 @@ const StatCard = ({
   loading = false,
 }) => (
   <Card
-    className={`bg-slate-900/50 border-slate-800 transition-all duration-300 ${onClick ? 'hover:border-slate-700 cursor-pointer hover:scale-[1.02] active:scale-[0.98]' : ''}`}
+    className={`bg-[#121212] border-[#222222] transition-all duration-200 ${onClick ? 'hover:border-slate-700 cursor-pointer hover:scale-[1.02] active:scale-[0.98]' : ''}`}
     onClick={onClick}
   >
     <CardContent className="p-3 sm:p-4">
       <div className="flex items-center justify-between">
         <div className="min-w-0 flex-1 mr-2">
-          <p className="text-slate-400 text-xs uppercase font-medium tracking-wide mb-1 truncate">{title}</p>
+          <p className="font-tag text-[10px] sm:text-[11px] font-bold tracking-[0.16em] text-[#888888] mb-1 truncate">{title}</p>
           {loading ? (
             <Skeleton className="h-7 sm:h-8 w-16" />
           ) : numericValue != null && formatValue ? (
@@ -160,7 +161,7 @@ const StatCard = ({
               className={`text-xl sm:text-2xl font-bold ${color} truncate block`}
             />
           ) : (
-            <p className={`text-xl sm:text-2xl font-bold ${color} truncate`}>{value}</p>
+            <p className={`text-xl sm:text-2xl font-bold font-display tracking-wide ${color || 'text-white'} truncate`}>{value}</p>
           )}
           {subtext && <p className="text-slate-500 text-xs mt-1 truncate">{subtext}</p>}
         </div>
@@ -1098,6 +1099,11 @@ export default function CalendarPage() {
     );
   }
 
+    const handlePullRefresh = useCallback(async () => {
+    await Promise.all([refetchEvents(), refetchDailyWork(), refetchExpenses()]);
+  }, [refetchEvents, refetchDailyWork, refetchExpenses]);
+  const { pullDistance, isRefreshing, threshold } = usePullToRefresh(handlePullRefresh);
+
   const hasError = Boolean(eventsError);
   const showBlockingError = hasError && !offline && !(events?.length > 0);
 
@@ -1115,7 +1121,13 @@ export default function CalendarPage() {
   }
 
   return (
-    <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-full pb-24">
+    <div className="relative min-h-full overflow-x-clip bg-[#0a0a0a] text-white pb-24">
+      <PullToRefreshIndicator
+        pullDistance={pullDistance}
+        isRefreshing={isRefreshing}
+        threshold={threshold}
+        primaryHex="#ffd400"
+      />
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3 sm:space-y-4 md:space-y-6 p-3 sm:p-4 md:p-6">
         <CalendarPageHeader
           currentDate={currentDate}
@@ -1172,7 +1184,7 @@ export default function CalendarPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por título, cliente ou local…"
-            className="w-full bg-slate-800/60 border border-slate-700/60 rounded-lg pl-9 pr-9 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none bp-focus-input transition-colors"
+            className="w-full bg-[#121212] border border-[#242424] rounded-xl pl-9 pr-9 py-2.5 text-sm text-white placeholder-[#666666] focus:outline-none focus:border-[#ffd400]/60 transition-colors"
             aria-label="Buscar eventos"
           />
           {searchQuery && (
@@ -1213,7 +1225,7 @@ export default function CalendarPage() {
             </button>
           ))}
           <div className="ml-auto flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-slate-800/60 border border-slate-700/60 rounded-lg p-0.5">
+            <div className="flex items-center gap-1 bg-[#141414] border border-[#242424] rounded-xl p-1">
               {/* Views primárias */}
               <button
                 type="button"
@@ -2104,7 +2116,7 @@ export default function CalendarPage() {
         destructive
         onConfirm={handleConfirmDeleteEvent}
       />
-    </NeonPageShell>
+    </div>
   );
 }
 

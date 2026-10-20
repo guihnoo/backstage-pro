@@ -2785,3 +2785,32 @@ Registro cronológico de tarefas executadas por agentes.
 - **Não feito de propósito**: backfill de `paid_amount` nos pagos antigos, pagamentos parciais, Decisão 2 (status), período de "A receber", aplicar a migration 034
 - **Build**: ✅ · unit 112/112 ✅ · E2E 66/66 ✅ · lint `src` limpo (restam os 2 erros antigos em e2e/marketing)
 - **Deploy**: nenhum — correções ainda não estão em produção
+
+---
+
+## 2026-10-20
+
+### VISUAL — Entrega 3 do All Access: Agenda (/calendar) ✅
+- **Agente**: Antigravity-Engine
+- **Objetivo**: Estender o design system All Access para a Agenda (/calendar), alinhando à nova barra inferior e à tela Início
+- **Arquivos alterados**:
+  - `src/components/calendar/CalendarPageHeader.jsx` — título em Anton maiúsculo, tipografia Space Mono nas datas, botões no padrão All Access (Novo Evento em amarelo `#ffd400` com texto preto `#0a0a0a font-bold`, Registrar Horas e Hoje em dark credencial `#141414`, badge fora de sincronia em rosa `#ff2e88`).
+  - `src/pages/Calendar.jsx` — remoção do legado `NeonPageShell`, entrada do container limpo `bg-[#0a0a0a] text-white` com `PullToRefreshIndicator` amarelo; `StatCard` com tipografia Anton nos números e tags All Access; barra de busca e visualização de grade/lista harmonizados com bordas sutis.
+- **Build**: ✅ `npm run build` passou com código 0
+- **Testes**: ✅ `npx playwright test e2e/regression/console-clean.spec.js` validado
+- **Status Git**: Branches alinhadas com `origin/main` e hooks portáveis em `.codex/hooks.json`.
+
+---
+
+## 2026-10-20
+
+### SQUAD — Fundação da Software House Autônoma com Subagentes ✅
+- **Agente**: Antigravity-Engine
+- **Objetivo**: Estruturar a empresa autônoma de desenvolvimento com colaboradores especializados (subagentes) e esteira de automação WhatsApp + n8n + GitHub
+- **Subagentes Contratados & Ativos**:
+  - `tech-lead`: Arquiteto Chefe & Product Manager (análise, specs, PRD, critérios de aceite).
+  - `frontend-dev`: Engenheiro de Frontend & UI/UX (React, Vite, All Access #ffd400, PWA).
+  - `qa-security-hacker`: Hacker de QA, Pentester & Testes Automatizados (Playwright, console clean, testes 4G, busca de falhas).
+  - `database-engineer`: Engenheiro DBA Supabase (PostgreSQL, migrations, RLS security).
+- **Documentação**: Criado `docs/EMPRESA_AUTONOMA_SOP.md` com arquitetura completa de esteira WhatsApp (Hostinger n8n) $\leftrightarrow$ GitHub $\leftrightarrow$ Antigravity.
+- **Skills ativas**: `playwright-pro`, `react-best-practices`, `shadcn-dev`, `supabase-official`, `supabase-workflow`, `agent-reach`.
