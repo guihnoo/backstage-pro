@@ -39,8 +39,7 @@ import {
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { AUTH_HERO_PRIMARY } from '@/lib/categoryGear';
-import { NeonPageShell } from '@/components/design/NeonPageShell';
-import { NeonGlass } from '@/components/design/NeonGlass';
+// NeonPageShell e NeonGlass removidos na Entrega 5 All Access
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useConnectivity } from '@/lib/offline/useConnectivity';
 
@@ -308,12 +307,12 @@ export default function ClientsPage() {
   }
 
   return (
-    <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-full pb-24">
+    <div className="relative min-h-full overflow-x-clip bg-[#0a0a0a] text-white pb-24">
       <PullToRefreshIndicator
         pullDistance={pullDistance}
         isRefreshing={isRefreshing}
         threshold={threshold}
-        primaryHex={config.primaryHex}
+        primaryHex="#ffd400"
       />
       <motion.div
         initial={{ opacity: 0 }}
@@ -322,15 +321,14 @@ export default function ClientsPage() {
       >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Clientes</h1>
-            <p className="text-[#8a91a1] text-sm font-mono mt-1">Base de clientes e relacionamento.</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white font-display tracking-wide uppercase truncate">Clientes</h1>
+            <p className="text-xs text-[#a8a8a8] font-mono tracking-tight truncate">Base de clientes e relacionamento comercial.</p>
           </div>
           <Button
             onClick={handleNewClient}
-            className="border-0 text-[#06070a] font-bold"
-            style={{ background: `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})` }}
+            className="bg-[#ffd400] text-[#0a0a0a] hover:bg-[#ffe033] font-bold h-10 px-4 active:scale-95 shadow-sm border-0 transition-transform"
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="w-4 h-4 mr-1.5 stroke-[2.5]" />
             Novo Cliente
           </Button>
         </div>
@@ -344,7 +342,7 @@ export default function ClientsPage() {
           </Alert>
         )}
 
-        <NeonGlass primary={config.primaryHex} className="p-4 space-y-3">
+        <div className="bg-[#121212] border border-[#222222] rounded-xl p-4 space-y-3">
             <div className="flex flex-col lg:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
@@ -352,7 +350,7 @@ export default function ClientsPage() {
                   placeholder="Buscar clientes..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-slate-800 border-slate-700"
+                  className="pl-10 bg-[#161616] border-[#262626] text-white rounded-xl placeholder-[#666666] focus:border-[#ffd400]/60"
                   aria-label="Buscar clientes"
                 />
               </div>
@@ -429,7 +427,7 @@ export default function ClientsPage() {
                 </button>
               ))}
             </div>
-        </NeonGlass>
+        </div>
 
         {filterActive === 'all' && (
           <Suspense fallback={<Skeleton className="h-24 w-full rounded-xl" />}>
@@ -449,7 +447,7 @@ export default function ClientsPage() {
                 whileTap={{ scale: 0.98 }}
               >
                 <Card
-                  className="bg-[#161923]/60 border-[#23262f] cursor-pointer transition-all duration-300 hover:shadow-lg flex flex-col h-full border-l-4 min-w-0 overflow-hidden"
+                  className="bg-[#121212] border-[#222222] hover:border-[#383838] cursor-pointer transition-all duration-200 flex flex-col h-full border-l-4 min-w-0 overflow-hidden rounded-xl"
                   style={{
                     ['--hover-border']: config.primaryHex,
                     borderLeftColor: client.brand_color || AUTH_HERO_PRIMARY,
@@ -532,9 +530,9 @@ export default function ClientsPage() {
                           )}
                         </div>
                       <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div className="rounded-lg p-2.5 bg-slate-800/60 border border-slate-700/40 text-center">
-                          <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">Shows</p>
-                          <p className="font-black text-white text-lg leading-tight">{client.stats.totalEvents}</p>
+                        <div className="rounded-lg p-2.5 bg-[#161616] border border-[#242424] text-center">
+                          <p className="text-[10px] font-tag font-bold text-[#777777] uppercase tracking-wider mb-0.5">Shows</p>
+                          <p className="font-bold font-display text-lg text-white leading-tight">{client.stats.totalEvents}</p>
                         </div>
                         <div className={`rounded-lg p-2.5 border text-center ${client.stats.pendingRevenue > 0 ? 'bg-amber-500/8 border-amber-500/25' : 'bg-slate-800/60 border-slate-700/40'}`}>
                           <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">A Receber</p>
@@ -662,6 +660,6 @@ export default function ClientsPage() {
         destructive
         onConfirm={handleConfirmDeleteClient}
       />
-    </NeonPageShell>
+    </div>
   );
 }

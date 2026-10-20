@@ -2856,3 +2856,20 @@ Registro cronológico de tarefas executadas por agentes.
     - Preservada a âncora `#mapa-visitado` para acesso direto via gaveta "Mais > Mapa".
 - **Build**: ✅ `npm run build` aprovado com código 0.
 - **QA & Testes**: ✅ `npx playwright test e2e/regression/console-clean.spec.js` e `e2e/smoke/bottom-nav-navigation.spec.js` 100% aprovados.
+
+---
+
+## 2026-10-20
+
+### VISUAL — Entrega 5 do All Access: Clientes (/clients) ✅
+- **Agente**: Antigravity-Engine (com Frontend Dev e QA Hacker)
+- **Objetivo**: Migrar a tela de Clientes (/clients) para o design system All Access
+- **Arquivos alterados**:
+  - `src/pages/Clients.jsx`:
+    - Container migrado de `NeonPageShell` e `NeonGlass` para `bg-[#0a0a0a] text-white` com `PullToRefreshIndicator` amarelo (#ffd400).
+    - Título "CLIENTES" em Anton maiúsculo com subtítulo técnico em Space Mono.
+    - Botão "Novo Cliente" atualizado para amarelo All Access (`#ffd400`) com texto preto em negrito (`#0a0a0a font-bold`).
+    - Input de busca e filtros modernizados em cartões escuros (#121212 / borda #222222).
+    - Cards de clientes no padrão dark credencial (#121212 / borda #222222) com subtotais de Shows e A Receber destacados com tipografia de impacto.
+- **Build**: ✅ `npm run build` aprovado com código 0.
+- **QA & Testes**: ✅ `npx playwright test e2e/regression/console-clean.spec.js` 100% verde.
