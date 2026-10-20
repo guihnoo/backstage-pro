@@ -1,0 +1,48 @@
+[mcp_servers.context7]
+command = "cmd"
+args = [
+    "/c",
+    "npx",
+    "-y",
+    "@upstash/context7-mcp@latest",
+]
+
+[mcp_servers.memory]
+command = "cmd"
+args = [
+    "/c",
+    "npx",
+    "-y",
+    "@modelcontextprotocol/server-memory",
+]
+
+[mcp_servers.playwright]
+command = "cmd"
+args = [
+    "/c",
+    "npx",
+    "-y",
+    "@playwright/mcp@latest",
+]
+
+[mcp_servers.sequential-thinking]
+command = "cmd"
+args = [
+    "/c",
+    "npx",
+    "-y",
+    "@modelcontextprotocol/server-sequential-thinking",
+]
+
+[mcp_servers.shadcn]
+command = "cmd"
+args = [
+    "/c",
+    "npx",
+    "-y",
+    "shadcn@latest",
+    "registry:mcp",
+]
+
+[mcp_servers.supabase]
+url = "https://mcp.supabase.com/mcp"
