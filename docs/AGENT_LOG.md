@@ -2946,3 +2946,20 @@ Registro cronológico de tarefas executadas por agentes.
   - `npm run lint`: 0 erros.
   - `npm run build`: gerou todos os assets em `dist/` com saída limpa código 0.
   - E2E smoke tests: 100% aprovados.
+
+### Entrada 2026-10-20 (All Access Board C: Continuidade no Calendário, Detalhes de Cliente e Modais)
+- **Demandas atendidas**:
+  1. **Calendário (`AllAccessCalendar.jsx`)**:
+     - Eventos de múltiplos dias agora formam uma fita contínua sem quebras/gaps entre os dias adjacentes (`gap-x-0` com pontes de `-2px`), exibindo o nome do contratante/empresa no dia inicial e no início de novas linhas semanais.
+     - Cantos arredondados aplicados apenas no início e fim do evento contínuo.
+  2. **Detalhes do Cliente (`ClientDetail.jsx`)**:
+     - Reformulação completa para a credencial All Access (Avatar 72x72 com iniciais em Anton 30px ou logotipo real, faturamento total em Anton, 3 botões de ação rápida WhatsApp/Ligar/Novo Job, grade 2x2 de métricas, histórico de shows com bolinhas de status e notas inline).
+  3. **Modal de Detalhes do Show (`EventDetailModal.jsx`)**:
+     - Substituição de 131 ocorrências de estilos legados (slate/blue) por `#161616`, `#222222`, `#ffd400` e `#ff2e88`.
+  4. **Modais e Páginas Secundárias**:
+     - `EventForm.jsx` e `ClientForm.jsx` padronizados para o tema escuro All Access com inputs `#0a0a0a` e bordas `#333333`.
+     - `Goals.jsx` e `ProfileSimple.jsx` limpos de resíduos slate/blue.
+- **Validação**:
+  - `npm run lint`: 0 erros.
+  - `npm run build`: código 0 com todos os chunks gerados.
+  - Testes Playwright de navegação e integridade de console: 100% aprovados.

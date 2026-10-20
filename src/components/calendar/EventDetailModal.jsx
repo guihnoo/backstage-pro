@@ -99,7 +99,7 @@ function LifecycleBar({ event, hasWork }) {
   ];
 
   return (
-    <div className="px-6 py-2.5 border-b border-slate-800 bg-slate-900/40 flex-shrink-0">
+    <div className="px-6 py-2.5 border-b border-[#222222] bg-[#141414] flex-shrink-0">
       <div className="flex items-center gap-0">
         {steps.map((step, i) => (
           <span key={step.label} className="contents">
@@ -117,7 +117,7 @@ function LifecycleBar({ event, hasWork }) {
                   </svg>
                 )}
               </div>
-              <span className={`text-[9px] font-medium leading-none ${step.done ? 'text-slate-300' : 'text-slate-600'}`}>
+              <span className={`text-[9px] font-medium leading-none ${step.done ? 'text-[#e0e0e0]' : 'text-[#666666]'}`}>
                 {step.label}
               </span>
             </div>
@@ -168,7 +168,7 @@ function InlineNotes({ event, updateEvent }) {
     return (
       <div className="space-y-2">
         <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-          <FileText className="w-4 h-4 text-slate-400" /> Observações
+          <FileText className="w-4 h-4 text-[#a8a8a8]" /> Observações
         </h4>
         <textarea
           autoFocus
@@ -176,10 +176,10 @@ function InlineNotes({ event, updateEvent }) {
           onChange={e => setDraft(e.target.value)}
           rows={3}
           placeholder="Contato do local, estacionamento, rider técnico…"
-          className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 resize-none focus:outline-none bp-focus-input"
+          className="w-full bg-[#1a1a1a] border border-[#333333] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#888888] resize-none focus:outline-none bp-focus-input"
         />
         <div className="flex gap-2 justify-end">
-          <button type="button" onClick={() => setEditing(false)} className="text-xs text-slate-400 hover:text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 transition-colors">
+          <button type="button" onClick={() => setEditing(false)} className="text-xs text-[#a8a8a8] hover:text-white px-3 py-1.5 rounded-lg border border-[#262626] transition-colors">
             Cancelar
           </button>
           <button
@@ -200,7 +200,7 @@ function InlineNotes({ event, updateEvent }) {
     <div className="space-y-1.5">
       <div className="flex items-center justify-between gap-2">
         <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-          <FileText className="w-4 h-4 text-slate-400" /> Observações
+          <FileText className="w-4 h-4 text-[#a8a8a8]" /> Observações
         </h4>
         <button type="button" onClick={startEdit} className="text-[11px] transition-colors" style={{ color: primaryHex }}>
           {localText ? 'Editar' : '+ Adicionar'}
@@ -212,15 +212,15 @@ function InlineNotes({ event, updateEvent }) {
           tabIndex={0}
           onClick={startEdit}
           onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startEdit(); } }}
-          className="bg-slate-800/40 border border-slate-700/60 rounded-lg px-3 py-2.5 cursor-pointer hover:border-slate-600 transition-colors"
+          className="bg-[#141414] border border-[#262626] rounded-lg px-3 py-2.5 cursor-pointer hover:border-[#333333] transition-colors"
         >
-          <p className="text-sm text-slate-300 whitespace-pre-wrap break-words leading-relaxed">{localText}</p>
+          <p className="text-sm text-[#e0e0e0] whitespace-pre-wrap break-words leading-relaxed">{localText}</p>
         </div>
       ) : (
         <button
           type="button"
           onClick={startEdit}
-          className="w-full text-left text-xs text-slate-500 border border-dashed border-slate-700 rounded-lg px-3 py-2.5 hover:border-slate-500 hover:text-slate-400 transition-colors"
+          className="w-full text-left text-xs text-[#888888] border border-dashed border-[#262626] rounded-lg px-3 py-2.5 hover:border-slate-500 hover:text-[#a8a8a8] transition-colors"
         >
           Clique para adicionar observações…
         </button>
@@ -824,15 +824,15 @@ export default function EventDetailModal({
   const hasLinkedNfe = Boolean(savedNfeNum || event.nfe_arquivo_url);
 
   const closingSummaryCard = closing ? (
-    <Card className="bg-slate-800/70 border-slate-600">
+    <Card className="bg-[#161616] border-[#333333]">
       <CardContent className="p-4 space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-xs uppercase tracking-wider text-slate-400">Valor total no Fechamento</p>
+            <p className="text-xs uppercase tracking-wider text-[#a8a8a8]">Valor total no Fechamento</p>
             <p className="text-2xl font-black text-white font-mono">
               {isVisible ? formatCurrency(closing.total) : '••••'}
             </p>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#a8a8a8]">
               {closing.rows.length} {closing.rows.length === 1 ? 'dia' : 'dias'} · {closing.totalHoras} h
               {closing.totalReembolsos > 0 && isVisible ? ` · reembolso ${formatCurrency(closing.totalReembolsos)}` : ''}
             </p>
@@ -847,8 +847,8 @@ export default function EventDetailModal({
             </span>
             <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
               hasLinkedNfe
-                ? 'bg-blue-500/10 border-blue-500/30 text-blue-300'
-                : 'bg-slate-700/60 border-slate-600 text-slate-300'
+                ? 'bg-blue-500/10 border-blue-500/30 text-[#ffd400]'
+                : 'bg-[#222222] border-[#333333] text-[#e0e0e0]'
             }`}>
               {hasLinkedNfe ? `✓ NF-e ${savedNfeNum || 'anexada'}` : 'NF-e opcional'}
             </span>
@@ -926,7 +926,7 @@ export default function EventDetailModal({
     );
   } else if ((status === 'completed' || status === 'archived') && event.payment_status === 'paid') {
     primaryCTA = (
-      <Button onClick={handleDownloadPDF} disabled={generatingPDF} className="flex-1 bg-blue-700 hover:bg-blue-600">
+      <Button onClick={handleDownloadPDF} disabled={generatingPDF} className="flex-1 bg-[#ffd400] text-[#0a0a0a] hover:bg-[#ffe033] font-bold">
         {generatingPDF ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
         PDF Fechamento
       </Button>
@@ -963,14 +963,14 @@ export default function EventDetailModal({
           <button
             type="button"
             onClick={() => setActiveTab('fiscal')}
-            className="flex-shrink-0 flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+            className="flex-shrink-0 flex items-center gap-1 text-xs text-blue-400 hover:text-[#ffd400] transition-colors"
           >
             NF-e & PDF <ArrowRight className="w-3 h-3" />
           </button>
         </CardContent>
       </Card>
     ) : (
-      <Card className="bg-slate-800/60 border-amber-700/40">
+      <Card className="bg-[#161616] border-amber-700/40">
         <CardHeader className="pb-2 pt-4 px-4">
           <CardTitle className="text-sm flex items-center gap-2 text-amber-300">
             <ClipboardCheck className="w-4 h-4" />
@@ -982,10 +982,10 @@ export default function EventDetailModal({
           <div className="flex items-center gap-3">
             {horasDone
               ? <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-              : <Circle className="w-5 h-5 text-slate-500 flex-shrink-0" />
+              : <Circle className="w-5 h-5 text-[#888888] flex-shrink-0" />
             }
             <div className="flex-1 min-w-0">
-              <p className={`text-sm font-medium ${horasDone ? 'text-slate-400 line-through' : 'text-white'}`}>
+              <p className={`text-sm font-medium ${horasDone ? 'text-[#a8a8a8] line-through' : 'text-white'}`}>
                 Registrar horas trabalhadas
               </p>
               {horasDone && totals.totalHours > 0 && (
@@ -1008,7 +1008,7 @@ export default function EventDetailModal({
                     size="sm"
                     variant="outline"
                     onClick={() => openWorkModal(null, null)}
-                    className="h-7 px-2 text-xs border-slate-600 hover:bg-slate-700"
+                    className="h-7 px-2 text-xs border-[#333333] hover:bg-[#222222]"
                   >
                     <Plus className="w-3 h-3 mr-1" />Manual
                   </Button>
@@ -1021,10 +1021,10 @@ export default function EventDetailModal({
           <div className="flex items-center gap-3">
             {pagamentoDone
               ? <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-              : <Circle className="w-5 h-5 text-slate-500 flex-shrink-0" />
+              : <Circle className="w-5 h-5 text-[#888888] flex-shrink-0" />
             }
             <div className="flex-1 min-w-0">
-              <p className={`text-sm font-medium ${pagamentoDone ? 'text-slate-400 line-through' : 'text-white'}`}>
+              <p className={`text-sm font-medium ${pagamentoDone ? 'text-[#a8a8a8] line-through' : 'text-white'}`}>
                 Confirmar recebimento ({isVisible ? formatCurrency(receivableAmount) : '••••'})
               </p>
               {!pagamentoDone && event.payment_due_date && (
@@ -1041,21 +1041,21 @@ export default function EventDetailModal({
           </div>
 
           {/* Fechamento / NF-e / PDF — aponta para aba Fiscal */}
-          <div className="flex items-center gap-3 pt-1 border-t border-slate-700/50">
+          <div className="flex items-center gap-3 pt-1 border-t border-[#262626]">
             {(event.nfe_arquivo_url || event.nfe_numero)
               ? <CheckCircle2 className="w-5 h-5 text-blue-400 flex-shrink-0" />
               : <Circle className="w-5 h-5 text-blue-500/50 flex-shrink-0" />
             }
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-white">Fechamento, NF-e & PDF com PIX</p>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-[#a8a8a8]">
                 {event.nfe_numero ? `NF ${event.nfe_numero} vinculada` : 'Anexar NF-e e gerar relatório PDF'}
               </p>
             </div>
             <button
               type="button"
               onClick={() => setActiveTab('fiscal')}
-              className="flex-shrink-0 flex items-center gap-1 text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors"
+              className="flex-shrink-0 flex items-center gap-1 text-xs font-semibold text-blue-400 hover:text-[#ffd400] transition-colors"
             >
               Abrir Dinheiro <ArrowRight className="w-3 h-3" />
             </button>
@@ -1084,7 +1084,7 @@ export default function EventDetailModal({
   return (
     <>
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-3xl h-[95dvh] bg-[#0a0a0a] border-[#222222] text-slate-200 flex flex-col p-0 overflow-hidden bp-focus-scope [&>button:last-child]:text-[#0a0a0a] [&>button:last-child]:opacity-100">
+      <DialogContent className="sm:max-w-3xl h-[95dvh] bg-[#0a0a0a] border-[#222222] text-white flex flex-col p-0 overflow-hidden bp-focus-scope [&>button:last-child]:text-[#0a0a0a] [&>button:last-child]:opacity-100">
 
         {/* Header: credencial amarela do evento (visual All Access) */}
         <DialogHeader className="flex-shrink-0 space-y-0 text-left">
@@ -1150,7 +1150,7 @@ export default function EventDetailModal({
               {/* Informações básicas */}
               <Card className="bg-[#161616] border-[#222222]">
                 <CardHeader className="pb-2 pt-4 px-4">
-                  <CardTitle className="text-sm flex items-center gap-2 text-slate-300">
+                  <CardTitle className="text-sm flex items-center gap-2 text-[#e0e0e0]">
                     <Calendar className="w-4 h-4 bp-text-primary" />
                     Informações do Evento
                   </CardTitle>
@@ -1158,24 +1158,24 @@ export default function EventDetailModal({
                 <CardContent className="px-4 pb-4 space-y-3">
                   {event.start_date === event.end_date || !event.end_date ? (
                     <div>
-                      <p className="text-xs text-slate-400 mb-1">Data</p>
+                      <p className="text-xs text-[#a8a8a8] mb-1">Data</p>
                       <p className="text-white font-medium text-sm">{formatDisplayDate(event.start_date)}</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <p className="text-xs text-slate-400 mb-1">Data Início</p>
+                        <p className="text-xs text-[#a8a8a8] mb-1">Data Início</p>
                         <p className="text-white font-medium text-sm">{formatDisplayDate(event.start_date)}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-slate-400 mb-1">Data Fim</p>
+                        <p className="text-xs text-[#a8a8a8] mb-1">Data Fim</p>
                         <p className="text-white font-medium text-sm">{formatDisplayDate(event.end_date)}</p>
                       </div>
                     </div>
                   )}
                   {event.description && (
                     <div>
-                      <p className="text-xs text-slate-400 mb-1">Descrição</p>
+                      <p className="text-xs text-[#a8a8a8] mb-1">Descrição</p>
                       <p className="text-white text-sm break-words">{event.description}</p>
                     </div>
                   )}
@@ -1185,7 +1185,7 @@ export default function EventDetailModal({
               {/* Local */}
               <Card className="bg-[#161616] border-[#222222]">
                 <CardHeader className="pb-2 pt-4 px-4">
-                  <CardTitle className="text-sm flex items-center gap-2 text-slate-300">
+                  <CardTitle className="text-sm flex items-center gap-2 text-[#e0e0e0]">
                     <MapPin className="w-4 h-4 bp-text-primary" />
                     Local do evento
                   </CardTitle>
@@ -1233,32 +1233,32 @@ export default function EventDetailModal({
               {/* Financeiro */}
               <Card className="bg-[#161616] border-[#222222]">
                 <CardHeader className="pb-2 pt-4 px-4">
-                  <CardTitle className="text-sm flex items-center gap-2 text-slate-300">
+                  <CardTitle className="text-sm flex items-center gap-2 text-[#e0e0e0]">
                     <DollarSign className="w-4 h-4 text-green-400" />
                     Financeiro
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-4 pb-4 space-y-3">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-slate-400">Cachê contratado</p>
+                    <p className="text-sm text-[#a8a8a8]">Cachê contratado</p>
                     <p className="text-lg font-bold text-green-400">
                       {isVisible ? formatCurrency(getEventCacheAmount(event)) : '••••'}
                     </p>
                   </div>
                   {eventWork.length > 0 && (
                     <>
-                      <Separator className="bg-slate-700" />
+                      <Separator className="bg-[#222222]" />
                       <div className="grid grid-cols-3 gap-2 text-center">
                         <div>
-                          <p className="text-[10px] text-slate-500 mb-0.5">Horas</p>
+                          <p className="text-[10px] text-[#888888] mb-0.5">Horas</p>
                           <p className="text-base font-bold bp-text-primary">{totals.totalHours}h</p>
                         </div>
                         <div>
-                          <p className="text-[10px] text-slate-500 mb-0.5">Extras</p>
+                          <p className="text-[10px] text-[#888888] mb-0.5">Extras</p>
                           <p className="text-base font-bold text-orange-400">{totals.totalOvertime}h</p>
                         </div>
                         <div>
-                          <p className="text-[10px] text-slate-500 mb-0.5">Total a receber</p>
+                          <p className="text-[10px] text-[#888888] mb-0.5">Total a receber</p>
                           <p className="text-base font-bold text-green-400">{isVisible ? formatCurrency(receivableAmount) : '••••'}</p>
                         </div>
                       </div>
@@ -1266,11 +1266,11 @@ export default function EventDetailModal({
                   )}
                   {eventWork.length === 0 && estimatedValue !== null && (
                     <>
-                      <Separator className="bg-slate-700" />
+                      <Separator className="bg-[#222222]" />
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-slate-400">Valor estimado</p>
-                          <p className="text-[10px] text-slate-500">Baseado no cachê × duração</p>
+                          <p className="text-sm text-[#a8a8a8]">Valor estimado</p>
+                          <p className="text-[10px] text-[#888888]">Baseado no cachê × duração</p>
                         </div>
                         <p className="text-lg font-bold text-yellow-400">{isVisible ? formatCurrency(estimatedValue) : '••••'}</p>
                       </div>
@@ -1278,18 +1278,18 @@ export default function EventDetailModal({
                   )}
                   {profitSummary && expenseTotals.total > 0 && (
                     <>
-                      <Separator className="bg-slate-700" />
+                      <Separator className="bg-[#222222]" />
                       <div className="grid grid-cols-3 gap-2 text-center">
                         <div>
-                          <p className="text-[10px] text-slate-500 mb-0.5">Receita</p>
+                          <p className="text-[10px] text-[#888888] mb-0.5">Receita</p>
                           <p className="text-base font-bold bp-text-primary">{isVisible ? formatCurrency(profitSummary.revenue) : '••••'}</p>
                         </div>
                         <div>
-                          <p className="text-[10px] text-slate-500 mb-0.5">Despesas</p>
+                          <p className="text-[10px] text-[#888888] mb-0.5">Despesas</p>
                           <p className="text-base font-bold text-red-400">{isVisible ? formatCurrency(profitSummary.expenses) : '••••'}</p>
                         </div>
                         <div>
-                          <p className="text-[10px] text-slate-500 mb-0.5">Lucro</p>
+                          <p className="text-[10px] text-[#888888] mb-0.5">Lucro</p>
                           <p className={`text-base font-bold ${profitSummary.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                             {isVisible ? formatCurrency(profitSummary.profit) : '••••'}
                           </p>
@@ -1297,13 +1297,13 @@ export default function EventDetailModal({
                       </div>
                       {profitSummary.margin !== null && (
                         <div>
-                          <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+                          <div className="flex items-center justify-between text-[10px] text-[#888888] mb-1">
                             <span>Margem</span>
                             <span className={profitSummary.margin >= 0 ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold'}>
                               {Math.round(profitSummary.margin)}%
                             </span>
                           </div>
-                          <div className="h-1.5 rounded-full bg-slate-700/60 overflow-hidden">
+                          <div className="h-1.5 rounded-full bg-[#222222] overflow-hidden">
                             <div
                               className="h-full rounded-full transition-all duration-700"
                               style={{
@@ -1318,10 +1318,10 @@ export default function EventDetailModal({
                   )}
                   {event.payment_due_date && event.payment_status !== 'paid' && (
                     <>
-                      <Separator className="bg-slate-700" />
+                      <Separator className="bg-[#222222]" />
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-slate-400">Vencimento</p>
+                          <p className="text-sm text-[#a8a8a8]">Vencimento</p>
                           <p className="text-base font-bold text-amber-400">{formatDisplayDate(event.payment_due_date)}</p>
                         </div>
                         <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
@@ -1333,10 +1333,10 @@ export default function EventDetailModal({
 
               {/* Cronômetro */}
               {['pending', 'scheduled', 'confirmed', 'in_progress'].includes(status) && (
-                <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                <div className="flex items-center justify-between p-3 bg-[#161616] rounded-lg border border-[#262626]">
                   <div>
                     <p className="text-sm font-medium text-white">Cronômetro</p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-[#a8a8a8]">
                       {activeTimer?.eventId === event.id ? 'Timer ativo' : 'Registre seu tempo em andamento'}
                     </p>
                   </div>
@@ -1363,7 +1363,7 @@ export default function EventDetailModal({
               {eventDays.length > 0 && (
                 <Card className="bg-[#161616] border-[#222222]">
                   <CardHeader className="pb-2 pt-4 px-4">
-                    <CardTitle className="text-sm flex items-center gap-2 text-slate-300">
+                    <CardTitle className="text-sm flex items-center gap-2 text-[#e0e0e0]">
                       <CalendarDays className="w-4 h-4 bp-text-primary" />
                       Dias do evento
                     </CardTitle>
@@ -1387,7 +1387,7 @@ export default function EventDetailModal({
                               : work ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
                               : isToday ? 'border-2 text-white hover:opacity-80'
                               : isPast ? 'bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20'
-                              : 'bg-slate-800 border-slate-700 text-slate-600 cursor-not-allowed'
+                              : 'bg-[#1a1a1a] border-[#262626] text-[#666666] cursor-not-allowed'
                             }`}
                             style={isToday && !work ? { borderColor: primaryHex, background: `${primaryHex}20`, color: primaryHex } : undefined}
                           >
@@ -1424,21 +1424,21 @@ export default function EventDetailModal({
                   <h4 className="text-sm font-semibold text-white flex items-center gap-2">
                     <Clock className="w-4 h-4 bp-text-primary" />
                     Horas trabalhadas
-                    {eventWork.length > 0 && <span className="text-slate-500 font-normal text-xs">({eventWork.length})</span>}
+                    {eventWork.length > 0 && <span className="text-[#888888] font-normal text-xs">({eventWork.length})</span>}
                   </h4>
                   {todayInEventRange && (
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => openWorkModal(null, null)}
-                      className="h-7 px-2 text-xs border-slate-600 hover:bg-slate-700"
+                      className="h-7 px-2 text-xs border-[#333333] hover:bg-[#222222]"
                     >
                       <Plus className="w-3 h-3 mr-1" />Registrar
                     </Button>
                   )}
                 </div>
                 {eventWork.length === 0 ? (
-                  <p className="text-sm text-slate-500 text-center py-4 border border-dashed border-slate-700 rounded-lg">
+                  <p className="text-sm text-[#888888] text-center py-4 border border-dashed border-[#262626] rounded-lg">
                     Nenhum registro de trabalho ainda.
                   </p>
                 ) : (
@@ -1446,7 +1446,7 @@ export default function EventDetailModal({
                     {eventWork.map((work, idx) => {
                       const dayRate = work.total_hours > 0 && work.daily_cache > 0 ? work.daily_cache / work.total_hours : null;
                       return (
-                        <div key={work.id || idx} className="p-3 bg-slate-900/50 rounded-lg border border-slate-700">
+                        <div key={work.id || idx} className="p-3 bg-[#161616] rounded-lg border border-[#262626]">
                           <div className="flex justify-between items-start mb-2 gap-2">
                             <p className="font-medium text-white text-sm">{formatDisplayDate(work.date)}</p>
                             <div className="flex items-center gap-1 flex-shrink-0">
@@ -1458,7 +1458,7 @@ export default function EventDetailModal({
                                 type="button"
                                 size="sm"
                                 variant="ghost"
-                                className="h-7 px-2 text-xs text-slate-400 hover:text-white"
+                                className="h-7 px-2 text-xs text-[#a8a8a8] hover:text-white"
                                 onClick={() => openWorkModal(normalizeDateString(work.work_date || work.date), work)}
                               >
                                 <Edit className="w-3 h-3 mr-1" />
@@ -1477,11 +1477,11 @@ export default function EventDetailModal({
                             </div>
                           </div>
                           <div className="grid grid-cols-3 gap-2 text-sm">
-                            <div><p className="text-slate-400 text-xs">Entrada</p><p className="text-white">{work.entry_time || '-'}</p></div>
-                            <div><p className="text-slate-400 text-xs">Saída</p><p className="text-white">{work.exit_time || '-'}</p></div>
-                            <div><p className="text-slate-400 text-xs">Horas</p><p className="bp-text-primary font-medium">{work.total_hours || 0}h</p></div>
+                            <div><p className="text-[#a8a8a8] text-xs">Entrada</p><p className="text-white">{work.entry_time || '-'}</p></div>
+                            <div><p className="text-[#a8a8a8] text-xs">Saída</p><p className="text-white">{work.exit_time || '-'}</p></div>
+                            <div><p className="text-[#a8a8a8] text-xs">Horas</p><p className="bp-text-primary font-medium">{work.total_hours || 0}h</p></div>
                           </div>
-                          {work.notes && <p className="text-sm text-slate-400 mt-2 italic break-words">{work.notes}</p>}
+                          {work.notes && <p className="text-sm text-[#a8a8a8] mt-2 italic break-words">{work.notes}</p>}
                         </div>
                       );
                     })}
@@ -1500,9 +1500,9 @@ export default function EventDetailModal({
                     <h4 className="text-sm font-semibold text-white flex items-center gap-2">
                       <Receipt className="w-4 h-4 text-amber-400" />
                       Despesas
-                      {eventExpenses.length > 0 && <span className="text-xs font-normal text-slate-400">({eventExpenses.length})</span>}
+                      {eventExpenses.length > 0 && <span className="text-xs font-normal text-[#a8a8a8]">({eventExpenses.length})</span>}
                     </h4>
-                    <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-4 h-4 text-[#888888]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showExpenses ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'} />
                     </svg>
                   </button>
@@ -1517,27 +1517,27 @@ export default function EventDetailModal({
                 </div>
                 {expenseTotals.total > 0 && (
                   <div className="flex items-center gap-3 mb-3 text-sm">
-                    <span className="text-slate-400">Total: <span className="text-red-300 font-bold">{isVisible ? formatCurrency(expenseTotals.total) : '••••'}</span></span>
+                    <span className="text-[#a8a8a8]">Total: <span className="text-red-300 font-bold">{isVisible ? formatCurrency(expenseTotals.total) : '••••'}</span></span>
                     {expenseTotals.reimbursable > 0 && (
-                      <span className="text-slate-400">A reembolsar: <span className="text-amber-300 font-bold">{isVisible ? formatCurrency(expenseTotals.reimbursable) : '••••'}</span></span>
+                      <span className="text-[#a8a8a8]">A reembolsar: <span className="text-amber-300 font-bold">{isVisible ? formatCurrency(expenseTotals.reimbursable) : '••••'}</span></span>
                     )}
                   </div>
                 )}
                 {showExpenses && (
                   eventExpenses.length === 0 ? (
-                    <p className="text-sm text-slate-500 text-center py-4 border border-dashed border-slate-700 rounded-lg">
+                    <p className="text-sm text-[#888888] text-center py-4 border border-dashed border-[#262626] rounded-lg">
                       Nenhuma despesa registrada.
                     </p>
                   ) : (
                     <div className="space-y-2">
                       {eventExpenses.map((exp) => (
-                        <div key={exp.id} className="flex items-center justify-between gap-2 p-2.5 rounded-lg bg-slate-900/50 border border-slate-700/50">
+                        <div key={exp.id} className="flex items-center justify-between gap-2 p-2.5 rounded-lg bg-[#161616] border border-[#262626]">
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-white truncate">{exp.title || exp.category}</p>
                             <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="text-[10px] text-slate-500">{EXPENSE_CATEGORY_LABELS[exp.category] || exp.category}</span>
+                              <span className="text-[10px] text-[#888888]">{EXPENSE_CATEGORY_LABELS[exp.category] || exp.category}</span>
                               {exp.date && (
-                                <span className="text-[10px] text-slate-600">
+                                <span className="text-[10px] text-[#666666]">
                                   · {format(new Date(exp.date + 'T12:00:00'), 'dd/MM', { locale: ptBR })}
                                 </span>
                               )}
@@ -1578,7 +1578,7 @@ export default function EventDetailModal({
                 <NFeAttachment event={event} client={client} />
               </div>
 
-              <Separator className="bg-slate-800" />
+              <Separator className="bg-[#1a1a1a]" />
 
               {/* PIX */}
               <div className="space-y-3">
@@ -1591,7 +1591,7 @@ export default function EventDetailModal({
                     <button
                       type="button"
                       onClick={() => setEditingPixInline((v) => !v)}
-                      className="text-xs text-slate-400 hover:text-white underline underline-offset-2"
+                      className="text-xs text-[#a8a8a8] hover:text-white underline underline-offset-2"
                     >
                       {editingPixInline ? 'Fechar edição' : 'Alterar chave'}
                     </button>
@@ -1600,7 +1600,7 @@ export default function EventDetailModal({
 
                 {userSettings?.pix_key && !editingPixInline ? (
                   <div className="space-y-2">
-                    <p className="text-xs text-slate-300 bg-slate-800/70 border border-slate-700/70 rounded-lg px-3 py-2 font-mono">
+                    <p className="text-xs text-[#e0e0e0] bg-[#161616] border border-[#262626] rounded-lg px-3 py-2 font-mono">
                       {userSettings.pix_key_type || 'Chave PIX'}: <span className="text-emerald-300 font-bold">{userSettings.pix_key}</span>
                     </p>
                     <div className="flex gap-2 flex-wrap">
@@ -1624,14 +1624,14 @@ export default function EventDetailModal({
                   </div>
                 ) : (
                   <div className="rounded-lg border border-dashed border-emerald-800/50 bg-emerald-950/10 p-3 space-y-2.5">
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-[#a8a8a8]">
                       Cadastre sua chave PIX para que ela e o código Copia e Cola saiam automaticamente no PDF de Fechamento.
                     </p>
                     <div className="flex flex-wrap gap-2">
                       <select
                         value={quickPixType}
                         onChange={(e) => setQuickPixType(e.target.value)}
-                        className="h-9 rounded-md bg-slate-800 border border-slate-700 px-2.5 text-xs text-white"
+                        className="h-9 rounded-md bg-[#1a1a1a] border border-[#262626] px-2.5 text-xs text-white"
                       >
                         {['CPF', 'CNPJ', 'E-mail', 'Telefone', 'Chave aleatória'].map((t) => (
                           <option key={t} value={t}>{t}</option>
@@ -1642,7 +1642,7 @@ export default function EventDetailModal({
                         value={quickPixKey}
                         onChange={(e) => setQuickPixKey(e.target.value)}
                         placeholder="Sua chave PIX..."
-                        className="h-9 flex-1 min-w-[150px] rounded-md bg-slate-800 border border-slate-700 px-3 text-xs text-white placeholder:text-slate-500"
+                        className="h-9 flex-1 min-w-[150px] rounded-md bg-[#1a1a1a] border border-[#262626] px-3 text-xs text-white placeholder:text-[#888888]"
                       />
                       <Button
                         type="button"
@@ -1658,12 +1658,12 @@ export default function EventDetailModal({
                 )}
               </div>
 
-              <Separator className="bg-slate-800" />
+              <Separator className="bg-[#1a1a1a]" />
 
               {/* Documentos PDF */}
               <div>
                 <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-slate-400" />
+                  <FileText className="w-4 h-4 text-[#a8a8a8]" />
                   Documentos e Fechamento
                 </h4>
                 <div className="flex flex-col gap-2">
@@ -1671,7 +1671,7 @@ export default function EventDetailModal({
                     onClick={handleDownloadPDF}
                     disabled={generatingPDF}
                     variant="outline"
-                    className="w-full justify-start border-blue-600/50 hover:bg-blue-900/20 text-blue-300"
+                    className="w-full justify-start border-[#ffd400]/40 hover:bg-[#ffd400]/10 text-[#ffd400]"
                   >
                     {generatingPDF ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
                     Baixar Relatório de Fechamento (PDF completo)
@@ -1720,7 +1720,7 @@ export default function EventDetailModal({
                     type="button"
                     variant="outline"
                     onClick={() => window.open('https://www.nfse.gov.br/EmissorNacional/Login', '_blank', 'noopener,noreferrer')}
-                    className="w-full justify-start border-slate-700 text-slate-400 hover:bg-slate-800"
+                    className="w-full justify-start border-[#262626] text-[#a8a8a8] hover:bg-[#1a1a1a]"
                   >
                     <ExternalLink className="w-4 h-4 mr-2" />Portal NFS-e Nacional
                   </Button>
@@ -1732,7 +1732,7 @@ export default function EventDetailModal({
         </Tabs>
 
         {/* Footer simplificado: 1 CTA primário + timer + ··· */}
-        <DialogFooter className="px-6 py-4 border-t border-slate-800 flex-row gap-2 flex-shrink-0">
+        <DialogFooter className="px-6 py-4 border-t border-[#222222] flex-row gap-2 flex-shrink-0">
           {primaryCTA}
 
           {['confirmed', 'scheduled', 'pending'].includes(status) && (
@@ -1757,44 +1757,44 @@ export default function EventDetailModal({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="flex-shrink-0 border-slate-700 hover:bg-slate-800">
+              <Button variant="outline" size="icon" className="flex-shrink-0 border-[#262626] hover:bg-[#1a1a1a]">
                 <MoreHorizontal className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" side="top" className="bg-slate-900 border-slate-700 text-slate-200 min-w-[180px]">
-              <DropdownMenuItem onClick={() => onEdit?.(event)} className="gap-2 cursor-pointer hover:bg-slate-800 focus:bg-slate-800">
+            <DropdownMenuContent align="end" side="top" className="bg-[#161616] border-[#262626] text-white min-w-[180px]">
+              <DropdownMenuItem onClick={() => onEdit?.(event)} className="gap-2 cursor-pointer hover:bg-[#1a1a1a] focus:bg-[#1a1a1a]">
                 <Edit className="w-4 h-4" /> Editar evento
               </DropdownMenuItem>
               {onDuplicate && (
-                <DropdownMenuItem onClick={() => onDuplicate(event)} className="gap-2 cursor-pointer hover:bg-slate-800 focus:bg-slate-800">
+                <DropdownMenuItem onClick={() => onDuplicate(event)} className="gap-2 cursor-pointer hover:bg-[#1a1a1a] focus:bg-[#1a1a1a]">
                   <Copy className="w-4 h-4" /> Duplicar
                 </DropdownMenuItem>
               )}
               {client?.id && (
                 <DropdownMenuItem
                   onClick={() => { onClose(); hardNavigate(`/client-detail?id=${client.id}`); }}
-                  className="gap-2 cursor-pointer hover:bg-slate-800 focus:bg-slate-800"
+                  className="gap-2 cursor-pointer hover:bg-[#1a1a1a] focus:bg-[#1a1a1a]"
                 >
                   <ExternalLink className="w-4 h-4" /> Ver cliente
                 </DropdownMenuItem>
               )}
-              <DropdownMenuSeparator className="bg-slate-800" />
+              <DropdownMenuSeparator className="bg-[#1a1a1a]" />
               {['pending', 'scheduled', 'confirmed'].includes(status) && (
-                <DropdownMenuItem onClick={handleSendProposal} className="gap-2 cursor-pointer hover:bg-slate-800 focus:bg-slate-800">
+                <DropdownMenuItem onClick={handleSendProposal} className="gap-2 cursor-pointer hover:bg-[#1a1a1a] focus:bg-[#1a1a1a]">
                   <Send className="w-4 h-4" /> Enviar proposta
                 </DropdownMenuItem>
               )}
               {client?.phone && (
                 <>
-                  <DropdownMenuItem onClick={handleChargeWhatsApp} className="gap-2 cursor-pointer hover:bg-slate-800 focus:bg-slate-800">
+                  <DropdownMenuItem onClick={handleChargeWhatsApp} className="gap-2 cursor-pointer hover:bg-[#1a1a1a] focus:bg-[#1a1a1a]">
                     <MessageCircle className="w-4 h-4" /> Cobrar via WhatsApp
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleSendReport} className="gap-2 cursor-pointer hover:bg-slate-800 focus:bg-slate-800">
+                  <DropdownMenuItem onClick={handleSendReport} className="gap-2 cursor-pointer hover:bg-[#1a1a1a] focus:bg-[#1a1a1a]">
                     <Receipt className="w-4 h-4" /> Enviar relatório
                   </DropdownMenuItem>
                 </>
               )}
-              <DropdownMenuSeparator className="bg-slate-800" />
+              <DropdownMenuSeparator className="bg-[#1a1a1a]" />
               <DropdownMenuItem
                 onClick={() => onDelete?.(event?.id)}
                 className="gap-2 cursor-pointer text-red-400 focus:text-red-400 focus:bg-red-900/20 hover:bg-red-900/20"

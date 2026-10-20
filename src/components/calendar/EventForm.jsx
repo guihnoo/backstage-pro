@@ -399,8 +399,8 @@ export default function EventForm({
       onSelectTemplate={handleSelectTemplate}
     />
     <Dialog open={isOpen} onOpenChange={onClose} modal={!clientQuickCreateOpen && !showTemplateModal}>
-      <DialogContent className="sm:max-w-2xl bg-slate-900 border-slate-700 text-white p-0 flex flex-col overflow-hidden h-[95dvh] max-h-[95dvh] bp-focus-scope">
-        <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 sm:pt-5 border-b border-slate-700 flex-shrink-0">
+      <DialogContent className="sm:max-w-2xl bg-[#161616] border-[#262626] text-white p-0 flex flex-col overflow-hidden h-[95dvh] max-h-[95dvh] bp-focus-scope">
+        <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 sm:pt-5 border-b border-[#262626] flex-shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-white">{event?.id ? 'Editar Evento' : 'Novo Evento'}</DialogTitle>
             {!event?.id && (
@@ -435,13 +435,13 @@ export default function EventForm({
               />
             )}
             {clientHistory && (
-              <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-slate-800/60 border border-slate-700/50 text-xs">
-                <div className="flex items-center gap-1 text-slate-400">
+              <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[#161616] border border-[#262626]/50 text-xs">
+                <div className="flex items-center gap-1 text-[#a8a8a8]">
                   <CalendarDays className="w-3.5 h-3.5 shrink-0" />
                   <span><span className="font-semibold text-white">{clientHistory.totalShows}</span> show{clientHistory.totalShows !== 1 ? 's' : ''}</span>
                 </div>
                 <span className="text-slate-700">·</span>
-                <div className="flex items-center gap-1 text-slate-400">
+                <div className="flex items-center gap-1 text-[#a8a8a8]">
                   <TrendingUp className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
                   <span>Média <span className="font-semibold text-white">{isVisible ? formatCurrency(clientHistory.avgCache) : '•••••'}</span></span>
                 </div>
@@ -470,18 +470,18 @@ export default function EventForm({
               value={formData.title}
               onChange={(e) => setField('title', e.target.value)}
               placeholder={selectedClient?.name ? `Padrão: ${selectedClient.name}` : 'Usa o nome do cliente se vazio'}
-              className="bg-slate-800 border-slate-700"
+              className="bg-[#161616] border-[#262626]"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="ef-start-date">Data inicial</Label>
-              <Input id="ef-start-date" type="date" value={formData.start_date} onChange={(e) => setField('start_date', e.target.value)} className="bg-slate-800 border-slate-700" />
+              <Input id="ef-start-date" type="date" value={formData.start_date} onChange={(e) => setField('start_date', e.target.value)} className="bg-[#161616] border-[#262626]" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="ef-end-date">Data final</Label>
-              <Input id="ef-end-date" type="date" value={formData.end_date} onChange={(e) => setField('end_date', e.target.value)} className="bg-slate-800 border-slate-700" />
+              <Input id="ef-end-date" type="date" value={formData.end_date} onChange={(e) => setField('end_date', e.target.value)} className="bg-[#161616] border-[#262626]" />
             </div>
           </div>
 
@@ -514,16 +514,16 @@ export default function EventForm({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="ef-start-time">Horário inicial</Label>
-                <Input id="ef-start-time" type="time" value={formData.start_time} onChange={(e) => setField('start_time', e.target.value)} className="bg-slate-800 border-slate-700" />
+                <Input id="ef-start-time" type="time" value={formData.start_time} onChange={(e) => setField('start_time', e.target.value)} className="bg-[#161616] border-[#262626]" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="ef-end-time">Horário final</Label>
-                <Input id="ef-end-time" type="time" value={formData.end_time} onChange={(e) => setField('end_time', e.target.value)} className="bg-slate-800 border-slate-700" />
+                <Input id="ef-end-time" type="time" value={formData.end_time} onChange={(e) => setField('end_time', e.target.value)} className="bg-[#161616] border-[#262626]" />
               </div>
             </div>
           )}
           {!event?.id && (
-            <p className="text-xs text-slate-500 rounded-lg border border-slate-700/50 bg-slate-800/40 px-3 py-2">
+            <p className="text-xs text-[#888888] rounded-lg border border-[#262626]/50 bg-[#161616]/40 px-3 py-2">
               Horários são registrados no dia do evento (toque longo na barra da agenda ou aba Horas).
             </p>
           )}
@@ -540,17 +540,17 @@ export default function EventForm({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="ef-cache">Cachê por Dia (R$)</Label>
-              <Input id="ef-cache" type="text" inputMode="decimal" placeholder="0,00" value={formData.daily_cache_value} onChange={(e) => setField('daily_cache_value', e.target.value)} className="bg-slate-800 border-slate-700" />
+              <Input id="ef-cache" type="text" inputMode="decimal" placeholder="0,00" value={formData.daily_cache_value} onChange={(e) => setField('daily_cache_value', e.target.value)} className="bg-[#161616] border-[#262626]" />
               {clientCacheHint && (
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-[11px] text-[#888888]">
                     Histórico: {isVisible ? `R$ ${clientCacheHint.lastValue.toLocaleString('pt-BR')}` : '•••'} último
                     {clientCacheHint.count > 1 && ` · ${isVisible ? `R$ ${clientCacheHint.avg.toLocaleString('pt-BR')}` : '•••'} média`}
                   </p>
                   <button
                     type="button"
                     onClick={() => setField('daily_cache_value', String(clientCacheHint.lastValue))}
-                    className="text-[11px] font-semibold text-slate-400 hover:text-white transition-colors underline underline-offset-2 flex-shrink-0"
+                    className="text-[11px] font-semibold text-[#a8a8a8] hover:text-white transition-colors underline underline-offset-2 flex-shrink-0"
                   >
                     Usar
                   </button>
@@ -560,10 +560,10 @@ export default function EventForm({
             <div className="space-y-2">
               <Label>Modelo de pagamento</Label>
               <Select value={formData.payment_model} onValueChange={(value) => setField('payment_model', value)}>
-                <SelectTrigger className="bg-slate-800 border-slate-700">
+                <SelectTrigger className="bg-[#161616] border-[#262626]">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
+                <SelectContent className="bg-[#161616] border-[#262626]">
                   {PAYMENT_MODELS.map((model) => (
                     <SelectItem key={model.value} value={model.value}>
                       {model.label}
@@ -578,10 +578,10 @@ export default function EventForm({
           <div className="space-y-2">
             <Label>Alimentação neste evento</Label>
             <Select value={formData.meal_policy || '__cliente__'} onValueChange={(v) => setField('meal_policy', v === '__cliente__' ? null : v)}>
-              <SelectTrigger className="bg-slate-800 border-slate-700">
+              <SelectTrigger className="bg-[#161616] border-[#262626]">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700">
+              <SelectContent className="bg-[#161616] border-[#262626]">
                 <SelectItem value="__cliente__">
                   Igual ao cliente{selectedClient?.meal_policy ? ` (${MEAL_POLICY_LABELS[selectedClient.meal_policy] || ''})` : ''}
                 </SelectItem>
@@ -599,7 +599,7 @@ export default function EventForm({
               type="date"
               value={formData.payment_due_date}
               onChange={(e) => setField('payment_due_date', e.target.value)}
-              className="bg-slate-800 border-slate-700"
+              className="bg-[#161616] border-[#262626]"
             />
           </div>
 
@@ -608,7 +608,7 @@ export default function EventForm({
               className="flex items-center justify-between px-4 py-3 rounded-xl border text-sm"
               style={theme.activeSurfaceStyle}
             >
-              <span className="text-slate-400">
+              <span className="text-[#a8a8a8]">
                 {eventSummary.days} {eventSummary.days === 1 ? 'dia' : 'dias'} × R$ {moneyNum(formData.daily_cache_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </span>
               <span className="font-bold" style={theme.accentStyle}>
@@ -625,7 +625,7 @@ export default function EventForm({
                 placeholder="Ex: 000123"
                 value={formData.nf_number}
                 onChange={(e) => setField('nf_number', e.target.value)}
-                className="bg-slate-800 border-slate-700"
+                className="bg-[#161616] border-[#262626]"
               />
             </div>
             <div className="space-y-2">
@@ -635,43 +635,43 @@ export default function EventForm({
                 type="date"
                 value={formData.nf_issued_at}
                 onChange={(e) => setField('nf_issued_at', e.target.value)}
-                className="bg-slate-800 border-slate-700"
+                className="bg-[#161616] border-[#262626]"
               />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="ef-notes">Observações</Label>
-            <Textarea id="ef-notes" value={formData.observacoes_md} onChange={(e) => setField('observacoes_md', e.target.value)} className="bg-slate-800 border-slate-700" />
+            <Textarea id="ef-notes" value={formData.observacoes_md} onChange={(e) => setField('observacoes_md', e.target.value)} className="bg-[#161616] border-[#262626]" />
           </div>
 
           {!event?.id && (
-            <div className="rounded-xl border border-slate-700/60 bg-slate-800/30 p-4 space-y-3">
+            <div className="rounded-xl border border-[#262626] bg-[#161616]/30 p-4 space-y-3">
               <button
                 type="button"
                 onClick={() => setRepeatEnabled(v => !v)}
                 className="flex items-center gap-2 w-full text-left"
               >
-                <Repeat2 className={`w-4 h-4 flex-shrink-0 transition-colors ${repeatEnabled ? 'text-amber-400' : 'text-slate-500'}`} />
-                <span className={`text-sm font-medium transition-colors ${repeatEnabled ? 'text-white' : 'text-slate-400'}`}>
+                <Repeat2 className={`w-4 h-4 flex-shrink-0 transition-colors ${repeatEnabled ? 'text-amber-400' : 'text-[#888888]'}`} />
+                <span className={`text-sm font-medium transition-colors ${repeatEnabled ? 'text-white' : 'text-[#a8a8a8]'}`}>
                   Repetir este evento
                 </span>
-                <div className={`ml-auto w-8 h-4 rounded-full transition-colors flex-shrink-0 ${repeatEnabled ? 'bg-amber-500' : 'bg-slate-700'}`}>
+                <div className={`ml-auto w-8 h-4 rounded-full transition-colors flex-shrink-0 ${repeatEnabled ? 'bg-amber-500' : 'bg-[#222222]'}`}>
                   <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${repeatEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
                 </div>
               </button>
               {repeatEnabled && (
                 <div className="flex items-center gap-2 pl-6">
-                  <span className="text-xs text-slate-400 whitespace-nowrap">Repetir</span>
+                  <span className="text-xs text-[#a8a8a8] whitespace-nowrap">Repetir</span>
                   <input
                     type="number"
                     min={1}
                     max={24}
                     value={repeatTimes}
                     onChange={e => setRepeatTimes(Math.max(1, Math.min(24, Number(e.target.value))))}
-                    className="w-14 text-center bg-slate-800 border border-slate-600 rounded-lg text-white text-sm h-8 font-mono"
+                    className="w-14 text-center bg-[#161616] border border-[#333333] rounded-lg text-white text-sm h-8 font-mono"
                   />
-                  <span className="text-xs text-slate-400 whitespace-nowrap">vezes a cada</span>
+                  <span className="text-xs text-[#a8a8a8] whitespace-nowrap">vezes a cada</span>
                   <div className="flex gap-1">
                     {[{ v: 'weeks', l: 'Semana' }, { v: 'months', l: 'Mês' }].map(opt => (
                       <button
@@ -681,7 +681,7 @@ export default function EventForm({
                         className={`px-3 h-8 rounded-lg text-xs font-semibold transition-colors ${
                           repeatUnit === opt.v
                             ? 'bg-amber-500/20 border border-amber-500/50 text-amber-300'
-                            : 'bg-slate-800 border border-slate-700 text-slate-400 hover:border-slate-600'
+                            : 'bg-[#161616] border border-[#262626] text-[#a8a8a8] hover:border-[#333333]'
                         }`}
                       >
                         {opt.l}
@@ -691,7 +691,7 @@ export default function EventForm({
                 </div>
               )}
               {repeatEnabled && (
-                <p className="text-[10px] text-slate-500 pl-6">
+                <p className="text-[10px] text-[#888888] pl-6">
                   Criará {repeatTimes + 1} shows no total · mesmo cliente, horário e cachê
                 </p>
               )}
@@ -700,13 +700,13 @@ export default function EventForm({
           </div>
           </ScrollArea>
 
-          <div className="flex flex-col sm:flex-row gap-2 px-4 py-3 sm:px-6 border-t border-slate-700 flex-shrink-0 pb-safe">
+          <div className="flex flex-col sm:flex-row gap-2 px-4 py-3 sm:px-6 border-t border-[#262626] flex-shrink-0 pb-safe">
             <Button
               type="button"
               variant="outline"
               onClick={handleSaveTemplate}
               disabled={savingTemplate || loading}
-              className="sm:mr-auto border-slate-600 text-slate-400 hover:text-slate-200 gap-1.5 h-11"
+              className="sm:mr-auto border-[#333333] text-[#a8a8a8] hover:text-white gap-1.5 h-11"
             >
               {savingTemplate ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BookmarkPlus className="w-3.5 h-3.5" />}
               Salvar como template

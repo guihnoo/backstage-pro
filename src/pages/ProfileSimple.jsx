@@ -54,7 +54,7 @@ function ProfileSkeleton() {
       </div>
       {/* Form sections */}
       {[0,1,2].map(i => (
-        <div key={i} className="rounded-2xl border border-slate-800/50 bg-slate-900/30 p-4 space-y-3">
+        <div key={i} className="rounded-2xl border border-[#222222]/50 bg-[#161616]/30 p-4 space-y-3">
           <Skeleton className="h-3 w-28 rounded" />
           <Skeleton className="h-11 w-full rounded-xl" />
           <Skeleton className="h-11 w-full rounded-xl" />
@@ -228,7 +228,7 @@ export default function ProfileSimple() {
         <div className="max-w-2xl xl:max-w-6xl mx-auto mb-4 pr-28">
           <LiveClockBar primaryHex={config.primaryHex} />
           <div className="text-left mt-1">
-            <p className="text-xs text-slate-500 uppercase tracking-wider">Seu perfil</p>
+            <p className="text-xs text-[#888888] uppercase tracking-wider">Seu perfil</p>
             <h1 className="text-xl font-black text-white">Configurações</h1>
           </div>
         </div>
@@ -299,7 +299,7 @@ export default function ProfileSimple() {
         <p className="text-sm mt-1" style={{ color: config.primaryHex }}>
           {config.label}
         </p>
-        <p className="text-xs text-slate-500 mt-0.5 break-all px-4">{user?.email}</p>
+        <p className="text-xs text-[#888888] mt-0.5 break-all px-4">{user?.email}</p>
         </div>
       </motion.div>
 
@@ -308,7 +308,7 @@ export default function ProfileSimple() {
         {/* Dados pessoais */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
         <NeonGlass primary={config.primaryHex} glow className="p-5 space-y-4">
-          <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider font-mono">Dados Pessoais</h2>
+          <h2 className="text-sm font-bold text-[#e0e0e0] uppercase tracking-wider font-mono">Dados Pessoais</h2>
 
           {[
             { key: 'name', label: 'Nome completo', icon: User, placeholder: 'Seu nome' },
@@ -318,16 +318,16 @@ export default function ProfileSimple() {
             { key: 'years_experience', label: 'Anos de experiência', icon: Calendar, placeholder: '5', type: 'number' },
           ].map(({ key, label, icon: Icon, placeholder, type = 'text' }) => (
             <div key={key}>
-              <label htmlFor={`profile-${key}`} className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">{label}</label>
+              <label htmlFor={`profile-${key}`} className="block text-xs text-[#888888] mb-1.5 uppercase tracking-wide">{label}</label>
               <div className="relative">
-                <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
+                <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#666666]" />
                 <input
                   id={`profile-${key}`}
                   type={type}
                   value={form[key]}
                   onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
                   placeholder={placeholder}
-                  className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl pl-10 pr-4 py-3 text-base md:text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-600 transition-colors"
+                  className="w-full bg-[#161616] border border-[#262626]/50 rounded-xl pl-10 pr-4 py-3 text-base md:text-sm text-white placeholder:text-[#666666] focus:outline-none focus:border-[#333333] transition-colors"
                 />
               </div>
             </div>
@@ -335,14 +335,14 @@ export default function ProfileSimple() {
 
           {/* Email (readonly) */}
           <div>
-            <label htmlFor="profile-email" className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Email (conta)</label>
+            <label htmlFor="profile-email" className="block text-xs text-[#888888] mb-1.5 uppercase tracking-wide">Email (conta)</label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#666666]" />
               <input
                 id="profile-email"
                 value={user?.email || ''}
                 disabled
-                className="w-full bg-slate-800/30 border border-slate-800/50 rounded-xl pl-10 pr-4 py-3 text-base md:text-sm text-slate-500 cursor-not-allowed"
+                className="w-full bg-[#161616]/30 border border-[#222222]/50 rounded-xl pl-10 pr-4 py-3 text-base md:text-sm text-[#888888] cursor-not-allowed"
               />
             </div>
           </div>
@@ -353,7 +353,7 @@ export default function ProfileSimple() {
         {/* Categoria */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
         <NeonGlass primary={config.primaryHex} className="p-5">
-          <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-4 font-mono">Área de Atuação</h2>
+          <h2 className="text-sm font-bold text-[#e0e0e0] uppercase tracking-wider mb-4 font-mono">Área de Atuação</h2>
           <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-2">
             {Object.values(CATEGORIES).map(cat => (
               <button
@@ -383,7 +383,7 @@ export default function ProfileSimple() {
         {profile?.specialties?.length > 0 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
           <NeonGlass primary={config.primaryHex} className="p-5">
-            <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-3 font-mono">Especialidades</h2>
+            <h2 className="text-sm font-bold text-[#e0e0e0] uppercase tracking-wider mb-3 font-mono">Especialidades</h2>
             <div className="flex flex-wrap gap-2">
               {profile.specialties.map(spec => (
                 <span
@@ -406,7 +406,7 @@ export default function ProfileSimple() {
         {/* Metas e diária */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
         <NeonGlass primary={config.primaryHex} glow className="p-5 space-y-4">
-          <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider font-mono">Metas & Precificação</h2>
+          <h2 className="text-sm font-bold text-[#e0e0e0] uppercase tracking-wider font-mono">Metas & Precificação</h2>
 
           {[
             { key: 'daily_rate', label: 'Valor da diária (R$)', icon: DollarSign, placeholder: '800', type: 'number' },
@@ -414,10 +414,10 @@ export default function ProfileSimple() {
             { key: 'monthly_goal_events', label: 'Meta de diárias por mês', icon: Calendar, placeholder: '12', type: 'number', hint: 'Dias únicos trabalhados no mês (independente de quantas empresas no mesmo dia)' },
           ].map(({ key, label, icon: Icon, placeholder, type, hint }) => (
             <div key={key}>
-              <label htmlFor={`goals-${key}`} className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">{label}</label>
-              {hint && <p className="text-[10px] text-slate-600 mb-1.5">{hint}</p>}
+              <label htmlFor={`goals-${key}`} className="block text-xs text-[#888888] mb-1.5 uppercase tracking-wide">{label}</label>
+              {hint && <p className="text-[10px] text-[#666666] mb-1.5">{hint}</p>}
               <div className="relative">
-                <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
+                <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#666666]" />
                 <input
                   id={`goals-${key}`}
                   type={type}
@@ -425,7 +425,7 @@ export default function ProfileSimple() {
                   value={form[key]}
                   onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
                   placeholder={placeholder}
-                  className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl pl-10 pr-4 py-3 text-base md:text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-600 transition-colors"
+                  className="w-full bg-[#161616] border border-[#262626]/50 rounded-xl pl-10 pr-4 py-3 text-base md:text-sm text-white placeholder:text-[#666666] focus:outline-none focus:border-[#333333] transition-colors"
                 />
               </div>
             </div>
@@ -438,57 +438,57 @@ export default function ProfileSimple() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.315 }}>
           <NeonGlass primary={config.primaryHex} className="p-5 space-y-4">
             <div>
-              <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider font-mono">Dados de Pagamento (PIX) &amp; Relatório PDF</h2>
-              <p className="text-xs text-slate-500 mt-1">Usados para gerar cobrança via WhatsApp, código PIX Copia e Cola e cabeçalho do Relatório PDF de Fechamento.</p>
+              <h2 className="text-sm font-bold text-[#e0e0e0] uppercase tracking-wider font-mono">Dados de Pagamento (PIX) &amp; Relatório PDF</h2>
+              <p className="text-xs text-[#888888] mt-1">Usados para gerar cobrança via WhatsApp, código PIX Copia e Cola e cabeçalho do Relatório PDF de Fechamento.</p>
             </div>
             <div>
-              <label htmlFor="pix-key-type" className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Tipo de chave PIX</label>
+              <label htmlFor="pix-key-type" className="block text-xs text-[#888888] mb-1.5 uppercase tracking-wide">Tipo de chave PIX</label>
               <select
                 id="pix-key-type"
                 value={pixForm.pix_key_type}
                 onChange={e => setPixForm(f => ({ ...f, pix_key_type: e.target.value }))}
-                className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-slate-600 transition-colors"
+                className="w-full bg-[#161616] border border-[#262626]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#333333] transition-colors"
               >
                 {PIX_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
             <div>
-              <label htmlFor="pix-key" className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Chave PIX</label>
+              <label htmlFor="pix-key" className="block text-xs text-[#888888] mb-1.5 uppercase tracking-wide">Chave PIX</label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#666666]" />
                 <input
                   id="pix-key"
                   type="text"
                   value={pixForm.pix_key}
                   onChange={e => setPixForm(f => ({ ...f, pix_key: e.target.value }))}
                   placeholder="sua@chave.pix"
-                  className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-600 transition-colors"
+                  className="w-full bg-[#161616] border border-[#262626]/50 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-[#666666] focus:outline-none focus:border-[#333333] transition-colors"
                 />
               </div>
             </div>
             <div>
-              <label htmlFor="profile-cpf-cnpj" className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">CPF ou CNPJ (MEI/Empresa para o PDF)</label>
+              <label htmlFor="profile-cpf-cnpj" className="block text-xs text-[#888888] mb-1.5 uppercase tracking-wide">CPF ou CNPJ (MEI/Empresa para o PDF)</label>
               <div className="relative">
-                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
+                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#666666]" />
                 <input
                   id="profile-cpf-cnpj"
                   type="text"
                   value={pixForm.cpf_cnpj}
                   onChange={e => setPixForm(f => ({ ...f, cpf_cnpj: e.target.value }))}
                   placeholder="00.000.000/0001-00 ou 000.000.000-00"
-                  className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-600 transition-colors"
+                  className="w-full bg-[#161616] border border-[#262626]/50 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-[#666666] focus:outline-none focus:border-[#333333] transition-colors"
                 />
               </div>
             </div>
             <div>
-              <label htmlFor="profile-report-subtitle" className="block text-xs text-slate-500 mb-1.5 uppercase tracking-wide">Subtítulo / Nome Fantasia no Relatório PDF (opcional)</label>
+              <label htmlFor="profile-report-subtitle" className="block text-xs text-[#888888] mb-1.5 uppercase tracking-wide">Subtítulo / Nome Fantasia no Relatório PDF (opcional)</label>
               <input
                 id="profile-report-subtitle"
                 type="text"
                 value={pixForm.report_subtitle}
                 onChange={e => setPixForm(f => ({ ...f, report_subtitle: e.target.value }))}
                 placeholder="Ex: Engenharia de Áudio & RF · MEI"
-                className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-600 transition-colors"
+                className="w-full bg-[#161616] border border-[#262626]/50 rounded-xl px-4 py-3 text-sm text-white placeholder:text-[#666666] focus:outline-none focus:border-[#333333] transition-colors"
               />
             </div>
           </NeonGlass>
@@ -532,20 +532,20 @@ export default function ProfileSimple() {
         {/* Ajuda do app */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.322 }}>
         <NeonGlass primary={config.primaryHex} className="p-5 space-y-3">
-          <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider font-mono">Ajuda do app</h2>
-          <p className="text-xs text-slate-500">
+          <h2 className="text-sm font-bold text-[#e0e0e0] uppercase tracking-wider font-mono">Ajuda do app</h2>
+          <p className="text-xs text-[#888888]">
             Manual completo, tour guiado e atalhos do dia a dia.
           </p>
           <Link
             to="/help"
-            className="w-full flex items-center justify-between gap-3 py-3 px-4 rounded-xl border transition-colors hover:bg-slate-800/40 min-w-0"
+            className="w-full flex items-center justify-between gap-3 py-3 px-4 rounded-xl border transition-colors hover:bg-[#161616]/40 min-w-0"
             style={{ borderColor: `${config.primaryHex}35` }}
           >
             <div className="flex items-center gap-3 min-w-0">
               <BookOpen className="w-5 h-5 shrink-0" style={{ color: config.primaryHex }} />
               <span className="text-sm font-semibold text-white">Abrir manual do app</span>
             </div>
-            <ChevronRight className="w-4 h-4 text-slate-600 shrink-0" />
+            <ChevronRight className="w-4 h-4 text-[#666666] shrink-0" />
           </Link>
           <button
             type="button"
@@ -553,13 +553,13 @@ export default function ProfileSimple() {
               hardNavigate('/');
               window.setTimeout(() => requestAppTour(), 400);
             }}
-            className="w-full flex items-center justify-between gap-3 py-3 px-4 rounded-xl border border-slate-700/50 transition-colors hover:bg-slate-800/40 min-w-0"
+            className="w-full flex items-center justify-between gap-3 py-3 px-4 rounded-xl border border-[#262626]/50 transition-colors hover:bg-[#161616]/40 min-w-0"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <Compass className="w-5 h-5 shrink-0 text-slate-400" />
+              <Compass className="w-5 h-5 shrink-0 text-[#a8a8a8]" />
               <span className="text-sm font-semibold text-white">Rever tour do app</span>
             </div>
-            <ChevronRight className="w-4 h-4 text-slate-600 shrink-0" />
+            <ChevronRight className="w-4 h-4 text-[#666666] shrink-0" />
           </button>
         </NeonGlass>
         </motion.div>
@@ -567,26 +567,26 @@ export default function ProfileSimple() {
         {/* Suporte & feedback */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.325 }}>
         <NeonGlass primary={config.primaryHex} className="p-5 space-y-3">
-          <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider font-mono">Suporte & Feedback</h2>
-          <p className="text-xs text-slate-500">
+          <h2 className="text-sm font-bold text-[#e0e0e0] uppercase tracking-wider font-mono">Suporte & Feedback</h2>
+          <p className="text-xs text-[#888888]">
             Encontrou um bug, tem uma ideia ou precisa de ajuda? Sua mensagem vai direto para a equipe.
           </p>
           <button
             type="button"
             onClick={() => setFeedbackOpen(true)}
-            className="w-full flex items-center justify-between gap-3 py-3 px-4 rounded-xl border transition-colors hover:bg-slate-800/40 min-w-0"
+            className="w-full flex items-center justify-between gap-3 py-3 px-4 rounded-xl border transition-colors hover:bg-[#161616]/40 min-w-0"
             style={{ borderColor: `${config.primaryHex}35` }}
           >
             <div className="flex items-center gap-3 min-w-0">
               <MessageCircle className="w-5 h-5 shrink-0" style={{ color: config.primaryHex }} />
               <span className="text-sm font-semibold text-white">Enviar feedback</span>
             </div>
-            <ChevronRight className="w-4 h-4 text-slate-600 shrink-0" />
+            <ChevronRight className="w-4 h-4 text-[#666666] shrink-0" />
           </button>
           {owner && (
             <Link
               to="/admin/feedbacks"
-              className="w-full flex items-center justify-between gap-3 py-3 px-4 rounded-xl border border-slate-700/50 hover:bg-slate-800/40 transition-colors min-w-0"
+              className="w-full flex items-center justify-between gap-3 py-3 px-4 rounded-xl border border-[#262626]/50 hover:bg-[#161616]/40 transition-colors min-w-0"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <Inbox className="w-5 h-5 shrink-0" style={{ color: config.primaryHex }} />
@@ -601,20 +601,20 @@ export default function ProfileSimple() {
                     {ownerNewFeedbacks} novo{ownerNewFeedbacks !== 1 ? 's' : ''}
                   </span>
                 )}
-                <ChevronRight className="w-4 h-4 text-slate-600" />
+                <ChevronRight className="w-4 h-4 text-[#666666]" />
               </div>
             </Link>
           )}
           {owner && (
             <Link
               to="/admin/empresas"
-              className="w-full flex items-center justify-between gap-3 py-3 px-4 rounded-xl border border-slate-700/50 hover:bg-slate-800/40 transition-colors min-w-0"
+              className="w-full flex items-center justify-between gap-3 py-3 px-4 rounded-xl border border-[#262626]/50 hover:bg-[#161616]/40 transition-colors min-w-0"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <Building2 className="w-5 h-5 shrink-0" style={{ color: config.primaryHex }} />
                 <span className="text-sm font-semibold text-white">Catálogo de empresas</span>
               </div>
-              <ChevronRight className="w-4 h-4 text-slate-600 shrink-0" />
+              <ChevronRight className="w-4 h-4 text-[#666666] shrink-0" />
             </Link>
           )}
         </NeonGlass>
@@ -623,20 +623,20 @@ export default function ProfileSimple() {
         {/* Configurações */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.33 }}>
         <NeonGlass primary={config.primaryHex} className="p-5">
-          <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-4 font-mono">Configurações</h2>
+          <h2 className="text-sm font-bold text-[#e0e0e0] uppercase tracking-wider mb-4 font-mono">Configurações</h2>
           <button
             type="button"
             onClick={toggleVisibility}
-            className="w-full flex items-center justify-between gap-3 py-3 px-1 rounded-xl transition-all hover:bg-slate-800/30 min-w-0"
+            className="w-full flex items-center justify-between gap-3 py-3 px-1 rounded-xl transition-all hover:bg-[#161616]/30 min-w-0"
           >
             <div className="flex items-center gap-3 min-w-0 flex-1">
               {isVisible
                 ? <Eye className="w-4 h-4 shrink-0" style={{ color: config.primaryHex }} />
-                : <EyeOff className="w-4 h-4 text-slate-500 shrink-0" />
+                : <EyeOff className="w-4 h-4 text-[#888888] shrink-0" />
               }
               <div className="text-left min-w-0">
                 <p className="text-sm font-semibold text-white">Visibilidade Financeira</p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-[#888888]">
                   {isVisible ? 'Valores visíveis em todo o app' : 'Valores ocultos — modo privado'}
                 </p>
               </div>
@@ -662,7 +662,7 @@ export default function ProfileSimple() {
           type="button"
           onClick={handleExportData}
           disabled={exporting}
-          className="w-full flex items-center justify-center gap-2 py-2 text-slate-500 hover:text-slate-300 text-xs font-mono transition-all disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-2 py-2 text-[#888888] hover:text-[#e0e0e0] text-xs font-mono transition-all disabled:opacity-50"
         >
           {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
           {exporting ? 'Exportando...' : 'Exportar meus dados'}
@@ -673,12 +673,12 @@ export default function ProfileSimple() {
         <NeonGlass primary={config.primaryHex} className="p-4">
           {showLogoutConfirm ? (
             <div className="text-center space-y-3">
-              <p className="text-sm text-slate-300">Tem certeza que quer sair?</p>
+              <p className="text-sm text-[#e0e0e0]">Tem certeza que quer sair?</p>
               <div className="flex gap-3">
                 <button
                   type="button"
                   onClick={() => setShowLogoutConfirm(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-slate-800 text-slate-400 text-sm font-semibold hover:bg-slate-700 transition-all"
+                  className="flex-1 py-2.5 rounded-xl bg-[#161616] text-[#a8a8a8] text-sm font-semibold hover:bg-[#222222] transition-all"
                 >
                   Cancelar
                 </button>

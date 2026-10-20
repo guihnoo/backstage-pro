@@ -96,11 +96,12 @@ export default function AllAccessCalendar({
           ))}
         </div>
 
-        {/* 7-column month grid matching All Access Board C */}
-        <div role="grid" className="grid grid-cols-7 gap-y-1 gap-x-1">
+        {/* 7-column month grid matching All Access Board C with continuous multi-day bars */}
+        <div role="grid" className="grid grid-cols-7 gap-y-1.5 gap-x-0">
           {calendarDays.map((day) => {
             const iso = format(day, 'yyyy-MM-dd');
             const dayNum = day.getDate();
+            const col = day.getDay(); // 0 = Dom, 6 = Sab
             const inMonth = isSameMonth(day, currentDate);
             const isSel = isSameDay(day, activeSelected);
             const isToday = isTodayDate(day);
@@ -109,10 +110,41 @@ export default function AllAccessCalendar({
             const topEvent = dayEvents[0];
 
             let barColor = '#ffd400';
+            let barTextColor = '#0a0a0a';
+            let barLeft = '4px';
+            let barRight = '4px';
+            let barBorderRadius = '4px';
+            let barLabel = '';
+
             if (topEvent) {
-              if (topEvent.payment_status === 'paid') barColor = '#5a5a5a';
-              else if (topEvent.status === 'confirmed') barColor = '#ffd400';
-              else barColor = '#ff2e88';
+              const fromIso = topEvent.start_date ? topEvent.start_date.slice(0, 10) : iso;
+              const toIso = topEvent.end_date ? topEvent.end_date.slice(0, 10) : fromIso;
+              const isEventStart = iso === fromIso;
+              const isEventEnd = iso === toIso;
+              const isRowStart = col === 0;
+              const isRowEnd = col === 6;
+
+              if (topEvent.payment_status === 'paid') {
+                barColor = '#5a5a5a';
+                barTextColor = '#ffffff';
+              } else if (topEvent.status === 'confirmed') {
+                barColor = '#ffd400';
+                barTextColor = '#0a0a0a';
+              } else {
+                barColor = '#ff2e88';
+                barTextColor = '#ffffff';
+              }
+
+              // Multi-day continuous bar geometry
+              barLeft = isEventStart ? '4px' : (isRowStart ? '2px' : '-2px');
+              barRight = isEventEnd ? '4px' : (isRowEnd ? '2px' : '-2px');
+              barBorderRadius = `${isEventStart ? '4px' : '0'} ${isEventEnd ? '4px' : '0'} ${isEventEnd ? '4px' : '0'} ${isEventStart ? '4px' : '0'}`;
+
+              // Display client/company name on start of event or start of row (week continuity)
+              if (isEventStart || isRowStart) {
+                const clientObj = topEvent.client_id ? clientMap.get(topEvent.client_id) : null;
+                barLabel = clientObj?.name || topEvent.title || 'Evento';
+              }
             }
 
             return (
@@ -120,7 +152,7 @@ export default function AllAccessCalendar({
                 <button
                   type="button"
                   onClick={() => onDateSelect?.(day)}
-                  className={`absolute inset-0 rounded-[10px] p-0 flex flex-col items-center justify-start pt-1.5 transition-all duration-150 ${
+                  className={`absolute inset-y-0 inset-x-[2px] rounded-[10px] p-0 flex flex-col items-center justify-start pt-1.5 transition-all duration-150 ${
                     isSel
                       ? 'bg-[#222222] ring-1 ring-[#ffd400]'
                       : inMonth
@@ -143,16 +175,26 @@ export default function AllAccessCalendar({
                   </span>
                 </button>
 
-                {/* Event bar under date number */}
+                {/* Continuous event bar under date number */}
                 {hasEvents && (
                   <div
                     onClick={() => onDateSelect?.(day)}
-                    style={{ background: barColor }}
-                    className="absolute bottom-1 left-1 right-1 h-3.5 rounded-[4px] px-1 flex items-center overflow-hidden pointer-events-auto cursor-pointer"
+                    style={{
+                      background: barColor,
+                      left: barLeft,
+                      right: barRight,
+                      borderRadius: barBorderRadius,
+                    }}
+                    className="absolute bottom-1 h-4 flex items-center px-1 overflow-hidden pointer-events-auto cursor-pointer z-10 shadow-sm"
                   >
-                    <span className="font-sans text-[8px] font-extrabold text-[#0a0a0a] truncate leading-none">
-                      {topEvent.title}
-                    </span>
+                    {barLabel && (
+                      <span
+                        style={{ color: barTextColor }}
+                        className="font-sans text-[8.5px] font-black uppercase tracking-tight truncate leading-none"
+                      >
+                        {barLabel}
+                      </span>
+                    )}
                   </div>
                 )}
               </div>

@@ -351,8 +351,8 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
 
   return (
     <Dialog open={true} onOpenChange={onCancel}>
-      <DialogContent hideDefaultClose className="sm:max-w-2xl h-[95dvh] max-h-[95dvh] bg-slate-900/95 backdrop-blur-lg border-slate-700 text-white p-0 flex flex-col overflow-hidden bp-focus-scope">
-        <DialogHeader className="p-4 sm:p-6 border-b border-slate-800 flex-shrink-0">
+      <DialogContent hideDefaultClose className="sm:max-w-2xl h-[95dvh] max-h-[95dvh] bg-[#161616]/95 backdrop-blur-lg border-[#262626] text-white p-0 flex flex-col overflow-hidden bp-focus-scope">
+        <DialogHeader className="p-4 sm:p-6 border-b border-[#222222] flex-shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
               {formData.client_type === 'pessoa'
@@ -365,7 +365,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
               <X className="w-5 h-5" />
             </Button>
           </div>
-          <DialogDescription className="text-slate-400 text-sm mt-2">
+          <DialogDescription className="text-[#a8a8a8] text-sm mt-2">
             {client ? 'Atualize as informações do cliente.' : 'Adicione um novo cliente ao seu portfólio.'}
           </DialogDescription>
         </DialogHeader>
@@ -374,14 +374,14 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
           <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6 pb-safe">
 
             {/* Toggle Empresa / Pessoa */}
-            <div className="flex rounded-xl overflow-hidden border border-slate-700">
+            <div className="flex rounded-xl overflow-hidden border border-[#262626]">
               <button
                 type="button"
                 onClick={() => handleChange('client_type', 'empresa')}
                 className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors bp-focus-ring ${
                   formData.client_type === 'empresa'
                     ? 'text-white'
-                    : 'bg-slate-800/60 text-slate-400 hover:text-slate-200'
+                    : 'bg-[#161616] text-[#a8a8a8] hover:text-white'
                 }`}
                 style={formData.client_type === 'empresa' ? theme.primaryStyle : undefined}
               >
@@ -394,7 +394,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                 className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors bp-focus-ring ${
                   formData.client_type === 'pessoa'
                     ? 'bp-person-btn-active'
-                    : 'bg-slate-800/60 text-slate-400 hover:text-slate-200'
+                    : 'bg-[#161616] text-[#a8a8a8] hover:text-white'
                 }`}
               >
                 <User className="w-4 h-4" />
@@ -404,12 +404,12 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
 
             {/* Busca inteligente de empresa (só para empresas) */}
             {!client && formData.client_type === 'empresa' && (
-              <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/60 space-y-2">
+              <div className="p-4 rounded-xl bg-[#161616] border border-[#262626] space-y-2">
                 <CompanySearchInput
                   onSelect={handleCompanySelect}
                   disabled={loading}
                 />
-                <p className="text-[10px] text-slate-600 font-mono leading-relaxed">
+                <p className="text-[10px] text-[#666666] font-mono leading-relaxed">
                   Busca no banco do Backstage Pro e na Receita Federal.
                   Encontrou? Clique para preencher tudo automaticamente.
                   Ou preencha manualmente abaixo.
@@ -428,7 +428,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
               </h3>
 
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-slate-300 text-sm font-medium">
+                <Label htmlFor="name" className="text-[#e0e0e0] text-sm font-medium">
                   {formData.client_type === 'pessoa' ? 'Nome completo *' : 'Nome do Cliente / Nome Fantasia *'}
                 </Label>
                 <Input
@@ -436,7 +436,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                   value={formData.name}
                   onChange={(e) => handleChange('name', e.target.value)}
                   onBlur={() => handleBlur('name')}
-                  className={`bg-slate-800 border-slate-700 text-white h-12 text-base touch-manipulation ${
+                  className={`bg-[#161616] border-[#262626] text-white h-12 text-base touch-manipulation ${
                     errors.name && touched.name ? 'border-red-500' : ''
                   }`}
                   placeholder={formData.client_type === 'pessoa' ? 'Ex: João Silva' : 'Ex: Amarrok Produções'}
@@ -460,15 +460,15 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
 
               {formData.client_type === 'empresa' && (
                 <div className="space-y-2">
-                  <Label htmlFor="razao_social" className="text-slate-300 text-sm font-medium">
+                  <Label htmlFor="razao_social" className="text-[#e0e0e0] text-sm font-medium">
                     Razão Social
-                    <span className="ml-1.5 text-[10px] text-slate-600 font-normal normal-case">Nome jurídico na NF</span>
+                    <span className="ml-1.5 text-[10px] text-[#666666] font-normal normal-case">Nome jurídico na NF</span>
                   </Label>
                   <Input
                     id="razao_social"
                     value={formData.razao_social}
                     onChange={(e) => handleChange('razao_social', e.target.value)}
-                    className="bg-slate-800 border-slate-700 text-white h-12 text-base touch-manipulation"
+                    className="bg-[#161616] border-[#262626] text-white h-12 text-base touch-manipulation"
                     placeholder="Ex: AMARROK PRODUCOES E SERVICOS LTDA"
                     maxLength={150}
                   />
@@ -481,32 +481,32 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
               />
 
               <div className="space-y-2">
-                <Label htmlFor="contact_person" className="text-slate-300 text-sm font-medium">
+                <Label htmlFor="contact_person" className="text-[#e0e0e0] text-sm font-medium">
                   {formData.client_type === 'pessoa' ? 'Empresa / Produtora' : 'Pessoa de Contato'}
                 </Label>
                 <Input
                   id="contact_person"
                   value={formData.contact_person}
                   onChange={(e) => handleChange('contact_person', e.target.value)}
-                  className="bg-slate-800 border-slate-700 text-white h-12 text-base touch-manipulation"
+                  className="bg-[#161616] border-[#262626] text-white h-12 text-base touch-manipulation"
                   placeholder={formData.client_type === 'pessoa' ? 'Ex: Amarrok Produções' : 'Ex: João Silva'}
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-slate-300 text-sm font-medium">
+                  <Label htmlFor="email" className="text-[#e0e0e0] text-sm font-medium">
                     E-mail
                   </Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a8a8a8]" />
                     <Input
                       id="email"
                       type="email"
                       value={formData.email}
                       onChange={(e) => handleChange('email', e.target.value)}
                       onBlur={() => handleBlur('email')}
-                      className={`bg-slate-800 border-slate-700 text-white h-12 text-base touch-manipulation pl-10 ${
+                      className={`bg-[#161616] border-[#262626] text-white h-12 text-base touch-manipulation pl-10 ${
                         errors.email && touched.email ? 'border-red-500' : ''
                       }`}
                       placeholder="contato@empresa.com"
@@ -528,17 +528,17 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-slate-300 text-sm font-medium">
+                  <Label htmlFor="phone" className="text-[#e0e0e0] text-sm font-medium">
                     Telefone
                   </Label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a8a8a8]" />
                     <Input
                       id="phone"
                       value={formData.phone}
                       onChange={(e) => handleChange('phone', e.target.value)}
                       onBlur={() => handleBlur('phone')}
-                      className={`bg-slate-800 border-slate-700 text-white h-12 text-base touch-manipulation pl-10 ${
+                      className={`bg-[#161616] border-[#262626] text-white h-12 text-base touch-manipulation pl-10 ${
                         errors.phone && touched.phone ? 'border-red-500' : ''
                       }`}
                       placeholder="(11) 99999-9999"
@@ -549,17 +549,17 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
             </div>
 
             {/* Políticas de Pagamento */}
-            <div className="space-y-4 p-4 bg-slate-800/30 rounded-lg border border-slate-700">
+            <div className="space-y-4 p-4 bg-[#161616]/30 rounded-lg border border-[#262626]">
               <h3 className="text-base sm:text-lg font-medium text-white flex items-center gap-2">
                 <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 flex-shrink-0" />
                 Políticas de Pagamento
               </h3>
 
               <div className="space-y-3">
-                <Label className="text-slate-300 text-sm font-medium">
+                <Label className="text-[#e0e0e0] text-sm font-medium">
                   Modelo de Pagamento Padrão
                 </Label>
-                <p className="text-xs text-slate-500 mb-2">
+                <p className="text-xs text-[#888888] mb-2">
                   Modelo que será usado por padrão ao criar novos eventos para este cliente.
                 </p>
                 <div className="grid grid-cols-1 gap-2">
@@ -567,11 +567,11 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                     type="button"
                     variant={!formData.policy_default_payment_model ? 'default' : 'outline'}
                     onClick={() => handleChange('policy_default_payment_model', null)}
-                    className="h-auto p-3 sm:p-4 justify-start bg-slate-700/50 border-slate-600 hover:bg-slate-600/50 w-full text-left min-h-[44px]"
+                    className="h-auto p-3 sm:p-4 justify-start bg-[#222222] border-[#333333] hover:bg-slate-600/50 w-full text-left min-h-[44px]"
                   >
                     <div className="w-full">
                       <div className="font-medium text-sm text-white">Padrão do Sistema</div>
-                      <div className="text-xs opacity-80 text-slate-400">Horas Extras (12h base)</div>
+                      <div className="text-xs opacity-80 text-[#a8a8a8]">Horas Extras (12h base)</div>
                     </div>
                   </Button>
 
@@ -579,11 +579,11 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                     type="button"
                     variant={formData.policy_default_payment_model === 'HORAS_EXTRAS' ? 'default' : 'outline'}
                     onClick={() => handleChange('policy_default_payment_model', 'HORAS_EXTRAS')}
-                    className="h-auto p-3 sm:p-4 justify-start bg-slate-700/50 border-slate-600 hover:bg-slate-600/50 w-full text-left min-h-[44px]"
+                    className="h-auto p-3 sm:p-4 justify-start bg-[#222222] border-[#333333] hover:bg-slate-600/50 w-full text-left min-h-[44px]"
                   >
                     <div className="w-full">
                       <div className="font-medium text-sm text-white">Horas Extras</div>
-                      <div className="text-xs opacity-80 text-slate-400">Cachê base + horas extras</div>
+                      <div className="text-xs opacity-80 text-[#a8a8a8]">Cachê base + horas extras</div>
                     </div>
                   </Button>
 
@@ -591,21 +591,21 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                     type="button"
                     variant={formData.policy_default_payment_model === 'MEIO_CACHE_E_DOBRA' ? 'default' : 'outline'}
                     onClick={() => handleChange('policy_default_payment_model', 'MEIO_CACHE_E_DOBRA')}
-                    className="h-auto p-3 sm:p-4 justify-start bg-slate-700/50 border-slate-600 hover:bg-slate-600/50 w-full text-left min-h-[44px]"
+                    className="h-auto p-3 sm:p-4 justify-start bg-[#222222] border-[#333333] hover:bg-slate-600/50 w-full text-left min-h-[44px]"
                   >
                     <div className="w-full">
                       <div className="font-medium text-sm text-white">Meio Cachê & Dobra</div>
-                      <div className="text-xs opacity-80 text-slate-400">Valores fixos por faixa de horas</div>
+                      <div className="text-xs opacity-80 text-[#a8a8a8]">Valores fixos por faixa de horas</div>
                     </div>
                   </Button>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="default_daily_cache" className="text-slate-300 text-sm font-medium">
+                <Label htmlFor="default_daily_cache" className="text-[#e0e0e0] text-sm font-medium">
                   Cachê diário padrão (R$)
                 </Label>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-[#888888]">
                   Preenchido automaticamente ao criar eventos para este cliente.
                 </p>
                 <Input
@@ -614,15 +614,15 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                   inputMode="decimal"
                   value={formData.default_daily_cache}
                   onChange={(e) => handleChange('default_daily_cache', e.target.value)}
-                  className="bg-slate-800 border-slate-700 text-white h-12 text-base touch-manipulation"
+                  className="bg-[#161616] border-[#262626] text-white h-12 text-base touch-manipulation"
                   placeholder="Ex: 800"
                 />
               </div>
 
               {/* Alimentacao: cada cliente faz de um jeito (regra do dono) */}
               <div className="space-y-2">
-                <Label className="text-slate-300 text-sm font-medium">Alimentação</Label>
-                <p className="text-xs text-slate-500">Só &quot;Cliente reembolsa&quot; soma no a receber e no fechamento.</p>
+                <Label className="text-[#e0e0e0] text-sm font-medium">Alimentação</Label>
+                <p className="text-xs text-[#888888]">Só &quot;Cliente reembolsa&quot; soma no a receber e no fechamento.</p>
                 <div className="grid grid-cols-2 gap-2">
                   {[[null, 'Não definido'], ...Object.entries(MEAL_POLICY_LABELS)].map(([key, label]) => (
                     <Button
@@ -630,7 +630,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                       type="button"
                       variant={(formData.meal_policy || null) === key ? 'default' : 'outline'}
                       onClick={() => handleChange('meal_policy', key)}
-                      className="h-auto min-h-[44px] p-3 text-sm bg-slate-700/50 border-slate-600 hover:bg-slate-600/50"
+                      className="h-auto min-h-[44px] p-3 text-sm bg-[#222222] border-[#333333] hover:bg-slate-600/50"
                     >
                       {label}
                     </Button>
@@ -643,7 +643,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                     inputMode="decimal"
                     value={formData.meal_daily_value}
                     onChange={(e) => handleChange('meal_daily_value', e.target.value)}
-                    className="bg-slate-800 border-slate-700 text-white h-12 text-base"
+                    className="bg-[#161616] border-[#262626] text-white h-12 text-base"
                     placeholder="Valor por dia (opcional), ex: 45,00"
                   />
                 )}
@@ -668,7 +668,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                     <Label htmlFor="allows_meio_e_dobra_juntos" className="bp-text-primary font-medium cursor-pointer text-sm">
                       Permitir Meio Cachê + Dobra no mesmo dia
                     </Label>
-                    <p className="text-xs text-slate-400 mt-1">
+                    <p className="text-xs text-[#a8a8a8] mt-1">
                       Permite aplicar &ldquo;Meio Cachê&rdquo; e &ldquo;Dobra&rdquo; simultaneamente em um único evento.
                     </p>
                   </div>
@@ -680,7 +680,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
             <div className="space-y-4">
               <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-slate-300 text-sm font-medium">
+                  <Label className="text-[#e0e0e0] text-sm font-medium">
                     Logo do Cliente
                   </Label>
                   <input
@@ -692,21 +692,21 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                   />
                   <div className="flex items-center gap-3">
                     {formData.logo_url ? (
-                      <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-700 flex-shrink-0 bg-slate-800">
+                      <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-[#262626] flex-shrink-0 bg-[#161616]">
                         <img src={formData.logo_url} alt="Logo" className="w-full h-full object-contain p-1" />
                         <button
                           type="button"
                           onClick={() => handleChange('logo_url', '')}
-                          className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-slate-900/80 flex items-center justify-center hover:bg-red-900/80 transition-colors"
+                          className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-[#0a0a0a] flex items-center justify-center hover:bg-red-900/80 transition-colors"
                         >
                           <X className="w-3 h-3 text-white" />
                         </button>
                       </div>
                     ) : (
                       <div
-                        className="w-16 h-16 rounded-xl border-2 border-dashed border-slate-700 flex items-center justify-center flex-shrink-0 bg-slate-800/50"
+                        className="w-16 h-16 rounded-xl border-2 border-dashed border-[#262626] flex items-center justify-center flex-shrink-0 bg-[#161616]"
                       >
-                        <ImagePlus className="w-6 h-6 text-slate-600" />
+                        <ImagePlus className="w-6 h-6 text-[#666666]" />
                       </div>
                     )}
                     <div className="flex-1 space-y-2">
@@ -715,7 +715,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                         variant="outline"
                         onClick={() => logoInputRef.current?.click()}
                         disabled={uploadingLogo}
-                        className="w-full h-10 bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-300 text-sm"
+                        className="w-full h-10 bg-[#161616] border-[#262626] hover:bg-[#222222] text-[#e0e0e0] text-sm"
                       >
                         {uploadingLogo ? (
                           <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Enviando...</>
@@ -723,24 +723,24 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                           <><Camera className="w-4 h-4 mr-2" /> {formData.logo_url ? 'Trocar logo' : 'Enviar logo'}</>
                         )}
                       </Button>
-                      <p className="text-xs text-slate-500">PNG, JPG ou SVG • máx. 5MB</p>
+                      <p className="text-xs text-[#888888]">PNG, JPG ou SVG • máx. 5MB</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="invoice_portal_url" className="text-slate-300 text-sm font-medium">
+                  <Label htmlFor="invoice_portal_url" className="text-[#e0e0e0] text-sm font-medium">
                     Portal de NF-e
                   </Label>
                   <div className="relative">
-                    <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a8a8a8]" />
                     <Input
                       id="invoice_portal_url"
                       type="url"
                       value={formData.invoice_portal_url}
                       onChange={(e) => handleChange('invoice_portal_url', e.target.value)}
                       onBlur={() => handleBlur('invoice_portal_url')}
-                      className={`bg-slate-800 border-slate-700 text-white h-12 text-base touch-manipulation pl-10 ${
+                      className={`bg-[#161616] border-[#262626] text-white h-12 text-base touch-manipulation pl-10 ${
                         errors.invoice_portal_url && touched.invoice_portal_url ? 'border-red-500' : ''
                       }`}
                       placeholder="https://portal-nfe.exemplo.com"
@@ -765,14 +765,14 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
 
             {/* Observações */}
             <div className="space-y-2">
-              <Label htmlFor="notes" className="text-slate-300 text-sm font-medium">
+              <Label htmlFor="notes" className="text-[#e0e0e0] text-sm font-medium">
                 Observações
               </Label>
               <Textarea
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => handleChange('notes', e.target.value)}
-                className="bg-slate-800 border-slate-700 text-white min-h-[100px] text-base resize-none touch-manipulation"
+                className="bg-[#161616] border-[#262626] text-white min-h-[100px] text-base resize-none touch-manipulation"
                 placeholder="Observações importantes sobre o cliente, preferências, acordos especiais..."
               />
             </div>
@@ -780,14 +780,14 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
           </form>
         </ScrollArea>
 
-        <DialogFooter className="p-4 sm:p-6 border-t border-slate-800 flex-shrink-0 bg-slate-900/50 pb-safe">
+        <DialogFooter className="p-4 sm:p-6 border-t border-[#222222] flex-shrink-0 bg-[#161616] pb-safe">
           <div className="flex flex-col sm:flex-row gap-2 w-full">
             <Button
               type="button"
               variant="outline"
               onClick={onCancel}
               disabled={loading}
-              className="w-full sm:w-auto bg-transparent border-slate-700 hover:bg-slate-800 h-12 min-h-[44px] order-2 sm:order-1"
+              className="w-full sm:w-auto bg-transparent border-[#262626] hover:bg-[#161616] h-12 min-h-[44px] order-2 sm:order-1"
             >
               Cancelar
             </Button>
