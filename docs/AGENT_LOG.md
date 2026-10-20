@@ -2814,3 +2814,27 @@ Registro cronológico de tarefas executadas por agentes.
   - `database-engineer`: Engenheiro DBA Supabase (PostgreSQL, migrations, RLS security).
 - **Documentação**: Criado `docs/EMPRESA_AUTONOMA_SOP.md` com arquitetura completa de esteira WhatsApp (Hostinger n8n) $\leftrightarrow$ GitHub $\leftrightarrow$ Antigravity.
 - **Skills ativas**: `playwright-pro`, `react-best-practices`, `shadcn-dev`, `supabase-official`, `supabase-workflow`, `agent-reach`.
+
+---
+
+## 2026-10-20
+
+### SQUAD-EXPANSION — Time Completo (8 Colaboradores) + Workflow n8n WhatsApp ✅
+- **Agente**: Antigravity-Engine
+- **Objetivo**: Concluir a contratação do time completo da empresa autônoma, gerar o workflow JSON do n8n para WhatsApp e validar 100% dos sistemas com script de diagnóstico
+- **Workflow n8n Gerado**: `automations/n8n/whatsapp_to_github_agent_pipeline.json` (pronto para importar no n8n da Hostinger)
+- **Novas Skills Criadas**:
+  - `.agents/skills/browser-use/SKILL.md` (Auditoria de UX real com navegador)
+  - `.agents/skills/security-audit/SKILL.md` (Varredura de vulnerabilidades e CVEs)
+  - `.agents/skills/performance-lighthouse/SKILL.md` (PWA e Core Web Vitals)
+- **Time Completo de 8 Subagentes Ativos**:
+  1. `tech-lead` (Arquitetura e PRD)
+  2. `frontend-dev` (React, Vite, All Access #ffd400)
+  3. `qa-security-hacker` (Playwright, Console Clean e Pentest)
+  4. `database-engineer` (PostgreSQL, Migrations e RLS)
+  5. `browser-ux-agent` (Navegação Real com Chrome e Screenshots)
+  6. `security-auditor` (Varredura de CVEs e Chaves)
+  7. `performance-sre` (Core Web Vitals e Build Chunks)
+  8. `copywriter-marketing` (Changelogs e Notas de Lançamento)
+- **Diagnóstico**: `node scripts/test-agency-squad.mjs` aprovado com código 0.
+- **Build & E2E**: ✅ `npm run build` e `npx playwright test e2e/regression/console-clean.spec.js` 100% verdes.

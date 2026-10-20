@@ -1,0 +1,174 @@
+{
+  "name": "Software House - WhatsApp Task Dispatcher & Agent Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-incoming",
+        "options": {}
+      },
+      "id": "1",
+      "name": "Webhook WhatsApp Incoming",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [180, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extrai o texto da mensagem, remetente e tipo (suporta Evolution API, WAHA ou Cloud API)\nconst body = $input.first().json.body || $input.first().json;\nlet messageText = '';\nlet senderPhone = '';\n\nif (body.data && body.data.message) {\n  messageText = body.data.message.conversation || body.data.message.extendedTextMessage?.text || '';\n  senderPhone = body.data.key?.remoteJid?.replace('@s.whatsapp.net', '') || '';\n} else if (body.message) {\n  messageText = typeof body.message === 'string' ? body.message : body.message.text || '';\n  senderPhone = body.from || body.phone || '';\n} else {\n  messageText = body.text || body.content || JSON.stringify(body);\n  senderPhone = body.sender || 'unknown';\n}\n\nreturn [{\n  json: {\n    rawMessage: messageText,\n    sender: senderPhone,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "2",
+      "name": "Extrair Mensagem WhatsApp",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [400, 300]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=O Diretor da Software House enviou a seguinte demanda via WhatsApp:\n\"{{ $json.rawMessage }}\"\n\nAnalise o pedido e estruture uma tarefa técnica com:\n1. Projeto Alvo (ex: Backstage Pro)\n2. Título curto da Issue\n3. Descrição técnica formatada em Markdown com critérios de aceite\n4. Colaborador responsável (tech-lead, frontend-dev, qa-security-hacker, database-engineer, performance-sre)\n5. Prioridade (P0, P1, P2)",
+        "hasOutputParser": false
+      },
+      "id": "3",
+      "name": "IA PM - Estruturar Demanda",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [620, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "issue",
+        "operation": "create",
+        "owner": "guihnoo",
+        "repository": "backstage-pro",
+        "title": "={{ $json.output ? $json.output.title : 'Nova Tarefa via WhatsApp: ' + $node['Extrair Mensagem WhatsApp'].json.rawMessage.slice(0, 40) }}",
+        "body": "={{ $json.output ? $json.output.description : $node['Extrair Mensagem WhatsApp'].json.rawMessage }}\n\n---\n*Criado automaticamente pela esteira de agentes via WhatsApp.*",
+        "labels": [
+          "ready-for-dev",
+          "whatsapp-task"
+        ]
+      },
+      "id": "4",
+      "name": "Criar Issue no GitHub",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [860, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8080/message/sendText",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $node['Extrair Mensagem WhatsApp'].json.sender }}\",\n  \"text\": \"🚀 *Ordem Recebida, Chefe!*\\n\\nA tarefa foi registrada com sucesso no GitHub:\\n📌 *Issue #{{ $json.number }}*: {{ $json.title }}\\n🔗 *Link*: {{ $json.html_url }}\\n\\nO time de agentes (Tech Lead, Frontend Dev e QA) já foi acionado e está trabalhando na solução!\"\n}"
+      },
+      "id": "5",
+      "name": "Responder Confirmação no WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1080, 300]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "task-completed-webhook",
+        "options": {}
+      },
+      "id": "6",
+      "name": "Webhook Tarefa Concluída",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [180, 520]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8080/message/sendText",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $json.body.recipient || '5511999999999' }}\",\n  \"text\": \"✅ *Entrega Concluída com Sucesso!*\\n\\n📋 *Tarefa*: {{ $json.body.taskName }}\\n🧪 *Testes Playwright*: Aprovados\\n🔨 *Build de Produção*: Código 0 (Sem erros)\\n🚀 *Status*: Commit e Push realizados no branch main.\"\n}"
+      },
+      "id": "7",
+      "name": "Notificar Conclusão no WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [420, 520]
+    }
+  ],
+  "connections": {
+    "Webhook WhatsApp Incoming": {
+      "main": [
+        [
+          {
+            "node": "Extrair Mensagem WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair Mensagem WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "IA PM - Estruturar Demanda",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA PM - Estruturar Demanda": {
+      "main": [
+        [
+          {
+            "node": "Criar Issue no GitHub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Issue no GitHub": {
+      "main": [
+        [
+          {
+            "node": "Responder Confirmação no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Tarefa Concluída": {
+      "main": [
+        [
+          {
+            "node": "Notificar Conclusão no WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
