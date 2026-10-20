@@ -2891,3 +2891,13 @@ Registro cronológico de tarefas executadas por agentes.
     - Barra de busca e seletor de eventos em dark mode refinado (#161616 / borda #262626).
 - **Build**: ✅ `npm run build` aprovado com código 0.
 - **QA & Testes**: ✅ `npx playwright test e2e/regression/console-clean.spec.js` 100% verde.
+
+---
+
+## 2026-10-20
+
+### DEPLOY — Publicação de Produção na Vercel (All Access v2.0) 🚀
+- **Agente**: Antigravity-Engine
+- **Objetivo**: Publicar em produção todas as 6 entregas visuais do novo sistema All Access (Início, Agenda, Modal de Detalhe, Dinheiro, Clientes e Despesas)
+- **Status do Build**: `vite build` 100% aprovado, 0 erros.
+- **Testes de Regressão**: Playwright `console-clean.spec.js` e `bottom-nav-navigation.spec.js` 100% aprovados.
