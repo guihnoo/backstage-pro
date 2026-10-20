@@ -12,9 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
-import { NeonPageShell } from '@/components/design/NeonPageShell';
+// NeonPageShell removido na Entrega 6 All Access
 import LiveClockBar from '@/components/home/LiveClockBar';
-import { NeonGlass } from '@/components/design/NeonGlass';
+// NeonGlass removido na Entrega 6 All Access
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useConnectivity } from '@/lib/offline/useConnectivity';
 import EmptyState from '@/components/layout/EmptyState';
@@ -122,10 +122,10 @@ const ExpensesSkeleton = () => (
 
 const StatCard = ({ title, value, onClick, active, primaryHex, accentHex }) => (
     <motion.div whileTap={{ scale: 0.98 }} onClick={onClick} className="cursor-pointer min-w-0">
-        <NeonGlass primary={primaryHex} accent={accentHex} glow={active} className={`p-4 transition-transform duration-300 min-w-0 overflow-hidden ${active ? 'scale-[1.02]' : ''}`}>
-            <p className="text-[10px] font-mono uppercase tracking-wider text-[#7c8494] mb-2 truncate">{title}</p>
-            <p className="text-xl font-bold font-mono text-white truncate" title={typeof value === 'string' ? value : undefined} style={active ? { color: accentHex, textShadow: `0 0 16px ${primaryHex}55` } : undefined}>{value}</p>
-        </NeonGlass>
+        <div className={`p-4 rounded-xl border transition-all duration-200 min-w-0 overflow-hidden ${active ? 'border-[#ffd400] bg-[#ffd400]/10 shadow-sm' : 'border-[#222222] bg-[#121212] hover:border-[#333333]'}`}>
+            <p className="text-[10px] font-mono uppercase tracking-wider text-[#888888] mb-1.5 truncate">{title}</p>
+            <p className={`text-xl font-bold font-mono truncate ${active ? 'text-[#ffd400]' : 'text-white'}`} title={typeof value === 'string' ? value : undefined}>{value}</p>
+        </div>
     </motion.div>
 );
 
@@ -277,9 +277,9 @@ export default function ExpensesPage() {
 
     if (expensesLoading && !allExpenses.length) {
         return (
-            <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-full">
+            <div className="min-h-full bg-[#0a0a0a] text-white">
                 <ExpensesSkeleton />
-            </NeonPageShell>
+            </div>
         );
     }
 
@@ -288,7 +288,7 @@ export default function ExpensesPage() {
 
     if (showBlockingError) {
         return (
-            <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-full flex items-center justify-center p-4">
+            <div className="min-h-full bg-[#0a0a0a] text-white flex items-center justify-center p-4">
                 <EmptyState
                     icon={AlertCircle}
                     title="Erro ao carregar despesas"
@@ -296,40 +296,39 @@ export default function ExpensesPage() {
                     action={refetchExpenses}
                     actionLabel="Tentar Novamente"
                 />
-            </NeonPageShell>
+            </div>
         );
     }
 
     return (
         <>
-            <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-full pb-24">
+            <div className="relative min-h-full overflow-x-clip bg-[#0a0a0a] text-white pb-24">
                 <PullToRefreshIndicator
                     pullDistance={pullDistance}
                     isRefreshing={isRefreshing}
                     threshold={threshold}
-                    primaryHex={config.primaryHex}
+                    primaryHex="#ffd400"
                 />
                 <div className="p-4 md:p-6 space-y-6 max-w-2xl xl:max-w-6xl mx-auto w-full min-w-0">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                         <div className="flex items-start justify-between sm:block gap-2">
                             <div>
-                                <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Despesas</h1>
-                                <p className="text-[#8a91a1] text-sm font-mono mt-1">Controle gastos e reembolsos do backstage.</p>
+                                <h1 className="text-2xl sm:text-3xl font-bold text-white font-display tracking-wide uppercase truncate">Despesas</h1>
+                                <p className="text-xs text-[#a8a8a8] font-mono tracking-tight truncate">Controle de gastos, recibos e reembolsos de turnê.</p>
                             </div>
                             <LiveClockBar primaryHex={config.primaryHex} className="sm:hidden flex-shrink-0" />
                         </div>
                         <div className="flex items-center gap-3">
                             <LiveClockBar primaryHex={config.primaryHex} className="hidden sm:flex flex-shrink-0" />
-                            <Button variant="outline" className="bg-[#161923]/80 border-[#23262f] hover:bg-[#1a1d27] text-[#cfd4de]" onClick={handleScan}>
+                            <Button variant="outline" className="bg-[#141414] border-[#2a2a2a] hover:bg-[#1f1f1f] text-white h-10 px-3 active:scale-95" onClick={handleScan}>
                                 <Camera className="w-4 h-4 mr-2" />
                                 Digitalizar Recibo
                             </Button>
                             <Button
-                                className="border-0 text-[#06070a] font-bold"
-                                style={{ background: `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})`, boxShadow: `0 0 20px ${config.primaryHex}44` }}
+                                className="bg-[#ffd400] text-[#0a0a0a] hover:bg-[#ffe033] font-bold h-10 px-4 active:scale-95 shadow-sm border-0 transition-transform"
                                 onClick={() => { setEditingExpense(null); setPrefillFromScan(null); setShowForm(true); }}
                             >
-                                <Plus className="w-4 h-4 mr-2" />
+                                <Plus className="w-4 h-4 mr-1.5 stroke-[2.5]" />
                                 Nova Despesa
                             </Button>
                         </div>
@@ -351,7 +350,7 @@ export default function ExpensesPage() {
                         <StatCard primaryHex={config.primaryHex} accentHex={config.accentHex} title="Reembolsado" value={isVisible ? formatCurrency(expenseStats.reimbursed) : '•••••'} onClick={() => setStatusFilter('reimbursed')} active={statusFilter === 'reimbursed'} />
                     </div>
 
-                    <NeonGlass primary={config.primaryHex} className="p-4 space-y-3">
+                    <div className="bg-[#121212] border border-[#222222] rounded-xl p-4 space-y-3">
                       {/* Busca */}
                       <div className="relative">
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -359,7 +358,7 @@ export default function ExpensesPage() {
                               placeholder="Buscar por título, descrição ou notas..."
                               value={searchTerm}
                               onChange={(e) => setSearchTerm(e.target.value)}
-                              className="bg-[#080a10]/80 border-[#23262f] pl-10 font-mono text-sm"
+                              className="bg-[#161616] border-[#262626] text-white pl-10 font-mono text-sm rounded-xl placeholder-[#666666] focus:border-[#ffd400]/60"
                               aria-label="Buscar despesas"
                           />
                       </div>
@@ -369,7 +368,7 @@ export default function ExpensesPage() {
                           <div className="flex items-center gap-2">
                               <Calendar className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
                               <Select value={eventFilter} onValueChange={setEventFilter}>
-                                  <SelectTrigger className="h-8 text-xs bg-[#080a10]/80 border-[#23262f] text-slate-300 flex-1 min-w-0 truncate">
+                                  <SelectTrigger className="h-9 text-xs bg-[#161616] border-[#262626] text-white flex-1 min-w-0 truncate rounded-xl">
                                       <SelectValue placeholder="Filtrar por evento…" />
                                   </SelectTrigger>
                                   <SelectContent className="bg-slate-900 border-slate-700 text-white max-w-[min(100vw-2rem,24rem)]">
@@ -395,7 +394,7 @@ export default function ExpensesPage() {
                               <button
                                   type="button"
                                   onClick={() => setCategoryFilter('all')}
-                                  className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${categoryFilter === 'all' ? 'bp-chip-active' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
+                                  className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${categoryFilter === 'all' ? 'border-[#ffd400]/60 bg-[#ffd400]/12 text-[#ffd400]' : 'border-[#222222] bg-[#141414] text-[#888888] hover:text-white hover:border-[#333333]'}`}
                               >
                                   Todas
                               </button>
@@ -404,7 +403,7 @@ export default function ExpensesPage() {
                                       key={cat}
                                       type="button"
                                       onClick={() => setCategoryFilter(cat === categoryFilter ? 'all' : cat)}
-                                      className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${categoryFilter === cat ? 'bp-chip-active' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
+                                      className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${categoryFilter === cat ? 'border-[#ffd400]/60 bg-[#ffd400]/12 text-[#ffd400]' : 'border-[#222222] bg-[#141414] text-[#888888] hover:text-white hover:border-[#333333]'}`}
                                   >
                                       {CATEGORY_LABELS[cat] || cat}
                                       {categoryTotals[cat] > 0 && (
@@ -416,7 +415,7 @@ export default function ExpensesPage() {
                               ))}
                           </div>
                       )}
-                    </NeonGlass>
+                    </div>
 
                     {/* Resumo do filtro */}
                     {filteredExpenses.length > 0 && (

@@ -2873,3 +2873,21 @@ Registro cronológico de tarefas executadas por agentes.
     - Cards de clientes no padrão dark credencial (#121212 / borda #222222) com subtotais de Shows e A Receber destacados com tipografia de impacto.
 - **Build**: ✅ `npm run build` aprovado com código 0.
 - **QA & Testes**: ✅ `npx playwright test e2e/regression/console-clean.spec.js` 100% verde.
+
+---
+
+## 2026-10-20
+
+### VISUAL — Entrega 6 do All Access: Despesas (/expenses) ✅
+- **Agente**: Antigravity-Engine (com Frontend Dev e QA Hacker)
+- **Objetivo**: Concluir a migração da tela Despesas (/expenses) para o design system All Access
+- **Arquivos alterados**:
+  - `src/pages/Expenses.jsx`:
+    - Container migrado de `NeonPageShell` e `NeonGlass` para `bg-[#0a0a0a] text-white` com `PullToRefreshIndicator` amarelo (#ffd400).
+    - Título "DESPESAS" em Anton maiúsculo com subtítulo técnico em Space Mono.
+    - Botão "Nova Despesa" atualizado para amarelo All Access (`#ffd400`) com texto preto em negrito (`#0a0a0a font-bold`).
+    - Botão "Digitalizar Recibo" em credencial escura (`#141414` com borda `#2a2a2a`).
+    - `StatCard` em cartões credencial escura (#121212 / borda #222222) com destaque em amarelo #ffd400 quando ativo.
+    - Barra de busca e seletor de eventos em dark mode refinado (#161616 / borda #262626).
+- **Build**: ✅ `npm run build` aprovado com código 0.
+- **QA & Testes**: ✅ `npx playwright test e2e/regression/console-clean.spec.js` 100% verde.
