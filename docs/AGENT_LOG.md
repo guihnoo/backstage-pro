@@ -2838,3 +2838,21 @@ Registro cronológico de tarefas executadas por agentes.
   8. `copywriter-marketing` (Changelogs e Notas de Lançamento)
 - **Diagnóstico**: `node scripts/test-agency-squad.mjs` aprovado com código 0.
 - **Build & E2E**: ✅ `npm run build` e `npx playwright test e2e/regression/console-clean.spec.js` 100% verdes.
+
+---
+
+## 2026-10-20
+
+### VISUAL — Entrega 4 do All Access: Dinheiro (/reports) ✅
+- **Agente**: Antigravity-Engine (com Frontend Dev e QA Hacker)
+- **Objetivo**: Concluir a migração da tela Dinheiro (/reports) para o padrão All Access
+- **Arquivos alterados**:
+  - `src/pages/Reports.jsx`:
+    - Container migrado de `NeonPageShell` para `bg-[#0a0a0a] text-white` com `PullToRefreshIndicator` amarelo (#ffd400).
+    - Título da página unificado para "DINHEIRO" em Anton maiúsculo, com subtítulo em Space Mono.
+    - `StatCard` com estilo credencial dark (#121212 / borda #222222), tags All Access nos rótulos e valores em Anton de alto impacto.
+    - Filtros de período e cliente em pílulas All Access com realce amarelo (#ffd400).
+    - Seletor de visualizações (Geral, Despesas, Trabalho, Fiscal) modernizado em pílulas com aba ativa amarela e texto escuro em negrito.
+    - Preservada a âncora `#mapa-visitado` para acesso direto via gaveta "Mais > Mapa".
+- **Build**: ✅ `npm run build` aprovado com código 0.
+- **QA & Testes**: ✅ `npx playwright test e2e/regression/console-clean.spec.js` e `e2e/smoke/bottom-nav-navigation.spec.js` 100% aprovados.

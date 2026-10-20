@@ -56,7 +56,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
-import { NeonPageShell } from '@/components/design/NeonPageShell';
+// NeonPageShell removido na Entrega 4 All Access
 import LiveClockBar from '@/components/home/LiveClockBar';
 import StatValuePulse from '@/components/home/StatValuePulse';
 import { usePullToRefresh } from '@/lib/usePullToRefresh';
@@ -140,13 +140,13 @@ function ExpandableSection({ id, label, defaultOpen = false, children }) {
   };
 
   return (
-    <div className="border border-slate-800/60 rounded-xl overflow-hidden">
+    <div className="border border-[#222222] rounded-xl overflow-hidden bg-[#121212]">
       <button
         type="button"
         onClick={toggle}
-        className="w-full flex items-center justify-between px-4 py-3 bg-slate-900/40 hover:bg-slate-800/40 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 bg-[#141414] hover:bg-[#1a1a1a] transition-colors border-b border-[#222222]"
       >
-        <span className="text-sm font-semibold text-slate-300">{label}</span>
+        <span className="text-xs font-bold font-tag tracking-[0.14em] text-white uppercase">{label}</span>
         <ChevronDown
           className="w-4 h-4 text-slate-500 transition-transform duration-200"
           style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
@@ -190,7 +190,7 @@ const StatCard = ({ title, value, pulseValue, pulseColor, subtitle, icon: Icon, 
 
   return (
     <Card
-      className={`bg-slate-900/50 border-slate-800 transition-all min-w-0 overflow-hidden ${
+      className={`bg-[#121212] border-[#222222] transition-all min-w-0 overflow-hidden ${
         isClickable && onClick
           ? 'cursor-pointer hover:border-[color-mix(in_srgb,var(--bp-primary)_45%,transparent)] hover:shadow-[0_12px_40px_-12px_color-mix(in_srgb,var(--bp-primary)_35%,transparent)]'
           : ''
@@ -200,9 +200,9 @@ const StatCard = ({ title, value, pulseValue, pulseColor, subtitle, icon: Icon, 
       <CardContent className="p-4 relative">
         <Icon className={`w-10 h-10 absolute right-3 top-3 ${color} opacity-10`} />
         <div className="space-y-1 min-w-0 mb-3">
-          <p className="text-sm font-medium text-slate-400 truncate">{title}</p>
+          <p className="font-tag text-[10px] sm:text-[11px] font-bold tracking-[0.16em] text-[#888888] truncate">{title}</p>
           <StatValuePulse value={pulseValue ?? value} glowColor={pulseColor}>
-            <p className={`text-lg font-bold font-mono truncate ${color}`} title={typeof value === 'string' ? value : undefined}>{value}</p>
+            <p className={`text-2xl sm:text-3xl font-bold font-display tracking-wide truncate ${color}`} title={typeof value === 'string' ? value : undefined}>{value}</p>
           </StatValuePulse>
         </div>
         <div className="flex items-center justify-between gap-2 min-w-0">
@@ -215,7 +215,7 @@ const StatCard = ({ title, value, pulseValue, pulseColor, subtitle, icon: Icon, 
           )}
         </div>
         {isClickable && onClick && (
-          <div className="mt-2 text-xs bp-text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="mt-2 text-[11px] font-mono text-[#ffd400] opacity-0 group-hover:opacity-100 transition-opacity">
             Clique para ver detalhes →
           </div>
         )}
@@ -783,12 +783,12 @@ export default function ReportsPage() {
   }
 
   return (
-    <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="pb-24">
+    <div className="relative min-h-full overflow-x-clip bg-[#0a0a0a] text-white pb-24">
       <PullToRefreshIndicator
         pullDistance={pullDistance}
         isRefreshing={isRefreshing}
         threshold={threshold}
-        primaryHex={config.primaryHex}
+        primaryHex="#ffd400"
       />
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -799,8 +799,8 @@ export default function ReportsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <h1 className="text-3xl font-bold text-white font-display">Relatórios</h1>
-            <p className="text-slate-400">Análise completa do seu desempenho financeiro e operacional.</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white font-display tracking-wide uppercase truncate">Dinheiro</h1>
+            <p className="text-xs text-[#a8a8a8] font-mono tracking-tight truncate">Análise completa de faturamento, cachê e despesas.</p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -839,7 +839,7 @@ export default function ReportsPage() {
               key={opt.value}
               type="button"
               onClick={() => setSelectedPeriod(opt.value)}
-              className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${selectedPeriod === opt.value ? 'bp-chip-active' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
+              className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${selectedPeriod === opt.value ? 'border-[#ffd400]/60 bg-[#ffd400]/12 text-[#ffd400]' : 'border-[#222222] bg-[#141414] text-[#888888] hover:text-white hover:border-[#333333]'}`}
             >
               {opt.label}
             </button>
@@ -852,7 +852,7 @@ export default function ReportsPage() {
             <button
               type="button"
               onClick={() => setSelectedClientFilter(null)}
-              className={`flex-shrink-0 text-[11px] font-medium px-3 py-1 rounded-full border transition-all ${!selectedClientFilter ? 'bp-chip-active' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
+              className={`flex-shrink-0 text-[11px] font-medium px-3 py-1 rounded-full border transition-all ${!selectedClientFilter ? 'border-[#ffd400]/60 bg-[#ffd400]/12 text-[#ffd400]' : 'border-[#222222] bg-[#141414] text-[#888888] hover:text-white hover:border-[#333333]'}`}
             >
               Todos
             </button>
@@ -861,7 +861,7 @@ export default function ReportsPage() {
                 key={client.id}
                 type="button"
                 onClick={() => setSelectedClientFilter(client.id === selectedClientFilter ? null : client.id)}
-                className={`flex-shrink-0 text-[11px] font-medium px-3 py-1 rounded-full border transition-all max-w-[140px] truncate ${selectedClientFilter === client.id ? 'bp-chip-active' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
+                className={`flex-shrink-0 text-[11px] font-medium px-3 py-1 rounded-full border transition-all max-w-[140px] truncate ${selectedClientFilter === client.id ? 'border-[#ffd400]/60 bg-[#ffd400]/12 text-[#ffd400]' : 'border-[#222222] bg-[#141414] text-[#888888] hover:text-white hover:border-[#333333]'}`}
               >
                 {getClientDisplayName(client) || client.name}
               </button>
@@ -976,13 +976,13 @@ export default function ReportsPage() {
                     ? 'text-white border-b-2'
                     : 'text-slate-400 hover:text-white border-b-2 border-transparent'
                 }`}
-                style={selectedView === view.id ? { borderBottomColor: config.primaryHex, color: config.primaryHex } : undefined}
+                
               >
                 <view.icon className="w-4 h-4 shrink-0" />
                 <span className="hidden min-[440px]:inline">{view.label}</span>
                 <span className="min-[440px]:hidden">{view.short}</span>
                 {view.count != null && view.count > 0 && (
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${selectedView === view.id ? 'bp-chip-badge-active' : 'bg-slate-700/50 text-slate-500'}`}>
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${selectedView === view.id ? 'bg-[#0a0a0a]/20 text-[#0a0a0a]' : 'bg-[#1f1f1f] text-[#666666]'}`}>
                     {view.count}
                   </span>
                 )}
@@ -1305,7 +1305,7 @@ export default function ReportsPage() {
           </div>
         </DialogContent>
       </Dialog>
-    </NeonPageShell>
+    </div>
   );
 }
 

@@ -4,6 +4,10 @@
       "type": "http",
       "url": "https://mcp.supabase.com/mcp"
     },
+    "desktop-commander": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@wonderwhy-er/desktop-commander@latest"]
+    },
     "playwright": {
       "command": "cmd",
       "args": ["/c", "npx", "-y", "@playwright/mcp@latest"]
