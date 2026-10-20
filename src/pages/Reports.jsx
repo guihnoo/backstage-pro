@@ -49,6 +49,7 @@ import { getEventStatus } from '@/components/utils/dateUtils';
 
 // Component imports — charts/map/modais em lazy para reduzir chunk inicial
 import ReportEventList from '@/components/reports/ReportEventList';
+import AllAccessDinheiro from '@/components/reports/AllAccessDinheiro';
 import { Skeleton } from '@/components/ui/skeleton';
 import EmptyState from '@/components/layout/EmptyState';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
@@ -796,277 +797,33 @@ export default function ReportsPage() {
         transition={{ duration: 0.3, ease: 'easeOut' }}
         className="p-4 md:p-6 space-y-8 max-w-2xl xl:max-w-6xl mx-auto w-full min-w-0"
       >
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white font-display tracking-wide uppercase truncate">Dinheiro</h1>
-            <p className="text-xs text-[#a8a8a8] font-mono tracking-tight truncate">Análise completa de faturamento, cachê e despesas.</p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <LiveClockBar primaryHex={config.primaryHex} />
-            <Suspense fallback={<Skeleton className="h-9 w-28 rounded-lg shrink-0" />}>
-              <ExportManager
-                data={{
-                  events: processedData.current.events,
-                  paidEvents: processedData.current.paidEvents,
-                  allWork: data.dailyWork,
-                  work: processedData.current.work,
-                  expenses: processedData.current.expenses,
-                  clients: data.clients
-                }}
-                period={currentRange}
-              />
-            </Suspense>
-          </div>
-        </div>
-
-        {hasError && (
-          <Alert className="border-red-500/40 bg-red-500/10">
-            <AlertCircle className="w-4 h-4 text-red-400" />
-            <AlertDescription className="text-red-300 text-sm">
-              <strong>Erro ao sincronizar:</strong>{' '}
-              {[error.events, error.clients, error.dailyWork, error.expenses].filter(Boolean).join(' · ')}
-              {hasCachedData && ' — exibindo dados em cache.'}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* Filtro de período — chips scrolláveis */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none -mt-4">
-          {PERIOD_OPTIONS.map(opt => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => setSelectedPeriod(opt.value)}
-              className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${selectedPeriod === opt.value ? 'border-[#ffd400]/60 bg-[#ffd400]/12 text-[#ffd400]' : 'border-[#222222] bg-[#141414] text-[#888888] hover:text-white hover:border-[#333333]'}`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Filtro por cliente — só exibe quando há mais de 1 cliente no período */}
-        {clientsInPeriod.length > 1 && (
-          <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none -mt-4">
-            <button
-              type="button"
-              onClick={() => setSelectedClientFilter(null)}
-              className={`flex-shrink-0 text-[11px] font-medium px-3 py-1 rounded-full border transition-all ${!selectedClientFilter ? 'border-[#ffd400]/60 bg-[#ffd400]/12 text-[#ffd400]' : 'border-[#222222] bg-[#141414] text-[#888888] hover:text-white hover:border-[#333333]'}`}
-            >
-              Todos
-            </button>
-            {clientsInPeriod.map(client => (
-              <button
-                key={client.id}
-                type="button"
-                onClick={() => setSelectedClientFilter(client.id === selectedClientFilter ? null : client.id)}
-                className={`flex-shrink-0 text-[11px] font-medium px-3 py-1 rounded-full border transition-all max-w-[140px] truncate ${selectedClientFilter === client.id ? 'border-[#ffd400]/60 bg-[#ffd400]/12 text-[#ffd400]' : 'border-[#222222] bg-[#141414] text-[#888888] hover:text-white hover:border-[#333333]'}`}
-              >
-                {getClientDisplayName(client) || client.name}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {!isDataReady ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Skeleton className="h-32 rounded-lg" />
-            <Skeleton className="h-32 rounded-lg" />
-            <Skeleton className="h-32 rounded-lg" />
-            <Skeleton className="h-32 rounded-lg" />
-          </div>
-        ) : (
-        <>
-        {/* Enhanced KPI Cards with Click Handlers — após clientes/despesas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 group">
-          <StatCard
-            title="Faturamento"
-            value={isVisible ? formatCurrency(processedData.current.realizedRevenue) : '•••••'}
-            pulseValue={processedData.current.realizedRevenue}
-            pulseColor="#39FF14"
-            subtitle={`${processedData.current.paidEvents.length} pagamentos recebidos`}
-            icon={DollarSign}
-            color="text-green-400"
-            trend={processedData.trends.revenue}
-            onClick={() => handleKPIClick('faturamento')} />
-
-          <StatCard
-            title="A Receber"
-            value={isVisible ? formatCurrency(processedData.current.receivableRevenue) : '•••••'}
-            pulseValue={processedData.current.receivableRevenue}
-            pulseColor={config.accentHex}
-            subtitle={`${data.events?.filter(isReceivableEvent).length || 0} pendentes`}
-            icon={Clock}
-            color="text-amber-400"
-            trend={processedData.trends.receivable}
-            onClick={() => handleKPIClick('a_receber')} />
-
-          <StatCard
-            title="Lucro Líquido"
-            value={isVisible ? formatCurrency(processedData.current.netProfit) : '•••••'}
-            pulseValue={processedData.current.netProfit}
-            pulseColor={processedData.current.netProfit >= 0 ? '#39FF14' : '#FF4444'}
-            subtitle="Receita - Despesas"
-            icon={TrendingUp}
-            color={processedData.current.netProfit >= 0 ? "text-green-400" : "text-red-400"}
-            trend={processedData.trends.profit}
-            onClick={() => handleKPIClick('lucro')} />
-
-          <StatCard
-            title="Clientes Ativos"
-            value={processedData.current.activeClientsCount}
-            pulseValue={processedData.current.activeClientsCount}
-            pulseColor={config.primaryHex}
-            subtitle={processedData.current.topClient ? `Top: ${processedData.current.topClient.name}` : 'Nenhum cliente'}
-            icon={Users}
-            color="bp-text-primary"
-            trend={processedData.trends.clients}
-            onClick={() => handleKPIClick('clientes')} />
-
-        </div>
-
-        {/* Projeção para o Próximo Período */}
-        {processedData.next.projectedRevenue > 0 &&
-          <Card
-            className="cursor-pointer transition-all border"
-            style={{
-              background: `linear-gradient(to right, ${config.primaryHex}22, ${config.accentHex}18)`,
-              borderColor: `${config.primaryHex}44`,
+        <AllAccessDinheiro
+          events={data.events || []}
+          clients={data.clients || []}
+          expenses={data.expenses || []}
+          formatCurrency={formatCurrency}
+          isVisible={isVisible}
+          onExportPdf={() => {
+            const expBtn = document.querySelector('[data-export-trigger]');
+            if (expBtn) expBtn.click();
+            else appToast.info('Gerando exportação de relatórios...');
+          }}
+          onMarkPaid={(ev) => handleQuickPay(ev)}
+        />
+        <div className="hidden">
+          <ExportManager
+            data={{
+              events: processedData.current.events,
+              paidEvents: processedData.current.paidEvents,
+              allWork: data.dailyWork,
+              work: processedData.current.work,
+              expenses: processedData.current.expenses,
+              clients: data.clients
             }}
-            onClick={() => setShowProjection(true)}>
-
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold bp-text-primary mb-1">Projeção do Próximo Período</h3>
-                  <StatValuePulse value={processedData.next.projectedRevenue} glowColor={config.primaryHex}>
-                    <p className="text-3xl font-bold text-white">
-                      {isVisible ? formatCurrency(processedData.next.projectedRevenue) : '•••••'}
-                    </p>
-                  </StatValuePulse>
-                  <p className="text-sm text-slate-400 mt-1">
-                    {processedData.next.scheduledEventsCount} eventos agendados
-                  </p>
-                </div>
-                <BarChart3 className="w-12 h-12 bp-text-primary opacity-60" />
-              </div>
-            </CardContent>
-          </Card>
-        }
-
-        {/* View Selector */}
-        <div className="relative border-b border-slate-800">
-          <div className="flex items-center gap-1 overflow-x-auto pb-px scrollbar-none">
-            {[
-              { id: 'overview', label: 'Geral', short: 'Geral', icon: BarChart3, count: null },
-              { id: 'expenses', label: 'Despesas', short: 'Despesas', icon: DollarSign, count: processedData.current.expenses.length },
-              { id: 'work', label: 'Trabalho', short: 'Trabalho', icon: Briefcase, count: processedData.current.work.length || null },
-              {
-                id: 'fiscal', label: 'Fiscal', short: 'Fiscal', icon: Receipt,
-                count: data.events.filter(isNfPendingEvent).length || null,
-              },
-            ].map((view) => (
-              <button
-                key={view.id}
-                type="button"
-                onClick={() => setSelectedView(view.id)}
-                className={`flex items-center gap-1.5 h-9 px-2.5 flex-shrink-0 rounded-t-lg text-sm font-medium transition-all ${
-                  selectedView === view.id
-                    ? 'text-white border-b-2'
-                    : 'text-slate-400 hover:text-white border-b-2 border-transparent'
-                }`}
-                
-              >
-                <view.icon className="w-4 h-4 shrink-0" />
-                <span className="hidden min-[440px]:inline">{view.label}</span>
-                <span className="min-[440px]:hidden">{view.short}</span>
-                {view.count != null && view.count > 0 && (
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${selectedView === view.id ? 'bg-[#0a0a0a]/20 text-[#0a0a0a]' : 'bg-[#1f1f1f] text-[#666666]'}`}>
-                    {view.count}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-          {/* fade direita indica scroll horizontal */}
-          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#050609] to-transparent min-[440px]:hidden" />
+            period={currentRange}
+          />
         </div>
-
-        {/* Content based on selected view */}
-        {selectedView === 'overview' && (
-          <div className="space-y-4">
-            <Suspense fallback={<ChartBlockSkeleton className="h-40" />}>
-              <ReceivablesAging
-                events={data.events}
-                clients={data.clients}
-                work={data.dailyWork}
-              />
-            </Suspense>
-            <Suspense fallback={<ChartBlockSkeleton />}>
-              <ReportsChart
-                chartInput={processedData.chartInput}
-                period={selectedPeriod}
-                onDataClick={handleChartClick}
-              />
-            </Suspense>
-            <Suspense fallback={<ChartBlockSkeleton className="h-56" />}>
-              <MonthlyTrend
-                events={data.events}
-                work={data.dailyWork}
-                goalRevenue={Number(profile?.monthly_goal_revenue) || 0}
-              />
-            </Suspense>
-
-            {/* Seções secundárias colapsáveis */}
-            <ExpandableSection id="yoy" label="Comparativo Ano a Ano">
-              <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
-                <YearOverYear events={data.events} clients={data.clients} work={data.dailyWork} />
-              </Suspense>
-            </ExpandableSection>
-
-            <ExpandableSection id="cashflow-category" label="Previsão de Caixa & Categorias">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Suspense fallback={<ChartBlockSkeleton />}>
-                  <CashflowForecast
-                    events={data.events}
-                    work={data.dailyWork}
-                    clients={data.clients}
-                  />
-                </Suspense>
-                <Suspense fallback={<ChartBlockSkeleton />}>
-                  <CategoryBreakdown
-                    events={processedData.current.events}
-                    work={processedData.current.work}
-                  />
-                </Suspense>
-              </div>
-            </ExpandableSection>
-
-            <ExpandableSection id="top-clients" label="Top Clientes">
-              <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
-                <TopClients
-                  events={processedData.current.events}
-                  clients={data.clients}
-                />
-              </Suspense>
-            </ExpandableSection>
-
-            <ExpandableSection id="clients-detail" label="Clientes em detalhe">
-              <Suspense fallback={<ChartBlockSkeleton className="h-96" />}>
-                <ClientDetailedTable
-                  data={{
-                    clients: data.clients,
-                    events: processedData.current.events,
-                    work: processedData.current.work,
-                    expenses: processedData.current.expenses
-                  }}
-                  onClientClick={handleClientDetail}
-                />
-              </Suspense>
-            </ExpandableSection>
-
-            <div id="mapa-visitado" className="scroll-mt-20">
+        <div id="mapa-visitado" className="scroll-mt-20">
               <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
                 <BrazilVisitedMap events={data.events} clients={data.clients} />
               </Suspense>

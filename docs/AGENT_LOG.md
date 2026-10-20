@@ -2901,3 +2901,37 @@ Registro cronológico de tarefas executadas por agentes.
 - **Objetivo**: Publicar em produção todas as 6 entregas visuais do novo sistema All Access (Início, Agenda, Modal de Detalhe, Dinheiro, Clientes e Despesas)
 - **Status do Build**: `vite build` 100% aprovado, 0 erros.
 - **Testes de Regressão**: Playwright `console-clean.spec.js` e `bottom-nav-navigation.spec.js` 100% aprovados.
+
+---
+
+## 2026-10-20
+
+### VISUAL — Alinhamento Completo de Telas com Protótipo Board C (All Access) 🎯
+- **Agente**: Antigravity-Engine (com Frontend Dev e QA Hacker)
+- **Feedback do Usuário**: Apenas a Home estava com o visual novo do protótipo; as outras páginas ainda exibiam a estrutura antiga de tabelas e cartões slate.
+- **Telas Reestruturadas com Base no Protótipo Extraído (`Backstage Pro — Direção Visual.html`)**:
+  1. **Agenda (`src/pages/Calendar.jsx` & `src/components/calendar/AllAccessCalendar.jsx`)**:
+     - Cabeçalho `< OUTUBRO >` com Anton 36px, tag Space Mono e seletor pílula `[Mês | Lista]`.
+     - 3 KPIs superiores em cartões compactos (`DIÁRIAS`, `NO MÊS`, `A RECEBER`).
+     - Grade móvel compacta de 7 colunas (58px altura), marcadores Anton circulares de 26px e barras coloridas por status (#ffd400 confirmado, #ff2e88 a receber, #5a5a5a pago).
+     - Cartão do dia selecionado no estilo credencial All Access com barra lateral de 10px, status pill, cachê em Anton e 3 botões de ação (`Horas`, `Despesa`, `Abrir`), além do banner de `DIA LIVRE` pontilhado.
+  2. **Dinheiro (`src/pages/Reports.jsx` & `src/components/reports/AllAccessDinheiro.jsx`)**:
+     - Cabeçalho com navegador de mês, título Anton 40px e botão `Exportar PDF`.
+     - 4 abas integradas: `Mês`, `A receber`, `Fiscal`, `Análise`.
+     - Cartão Hero amarelo VIP **SOBROU NO BOLSO** (#ffd400 com texto escuro e Anton 46px).
+     - Gráfico vertical semanal comparativo dual-bar (`SEMANA A SEMANA`).
+     - Ranking `QUEM MAIS TE PAGOU` com barras horizontais e valores monetários.
+     - Aba `A receber` com cartões de cobrança rápida via WhatsApp e baixa em 1 toque (`Recebi`).
+     - Aba `Fiscal` com velocímetro anual do limite MEI (R$ 81k) e guias DAS/NFS-e.
+  3. **Clientes (`src/pages/Clients.jsx`)**:
+     - Cabeçalho `QUEM TE CONTRATA` com título Anton 40px e botão VIP `+ Novo`.
+     - Busca arredondada em pílula full-width (#161616 borda #333333).
+     - Filtros em pílulas com realce amarelo VIP (#ffd400).
+     - Lista de cartões credencial All Access (#161616 com borda #222222) com avatar/iniciais em Anton 18px sobre fundo amarelo, total faturado em Anton 18px e indicador de status (PAGA EM DIA / PENDENTE).
+  4. **Despesas (`src/pages/Expenses.jsx` & `src/components/expenses/AllAccessDespesas.jsx`)**:
+     - Cabeçalho com mês, total faturado e 2 botões grandes de ação (`Fotografar recibo` em #ffd400 e `Digitar`).
+     - Painel `PRA ONDE FOI` com barra de distribuição segmentada colorida e grade de categorias com valores em Space Mono.
+     - Lista `POR EVENTO` com total por trabalho, valor a reembolsar e despesas itemizadas com ícones de categoria e status reembolsável.
+- **Build**: ✅ `npm run build` aprovado com código 0.
+- **Lint**: ✅ `npm run lint` 0 erros.
+- **Testes**: ✅ `npx playwright test e2e/regression/console-clean.spec.js e2e/smoke/bottom-nav-navigation.spec.js` 100% verdes.

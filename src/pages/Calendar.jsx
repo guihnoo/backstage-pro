@@ -46,6 +46,7 @@ import { exportCalendarIcs } from '@/lib/exportReport';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, parseISO, isValid, addWeeks, subWeeks, startOfWeek, endOfWeek, eachDayOfInterval, differenceInCalendarDays, isBefore } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import BackstageCalendarGrid from '@/components/calendar/BackstageCalendarGrid';
+import AllAccessCalendar from '@/components/calendar/AllAccessCalendar';
 import EventForm from '@/components/calendar/EventForm';
 import DailyWorkModal from '@/components/calendar/DailyWorkModal';
 import EventDetailModal from '@/components/calendar/EventDetailModal';
@@ -1131,21 +1132,19 @@ export default function CalendarPage() {
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3 sm:space-y-4 md:space-y-6 p-3 sm:p-4 md:p-6">
         <CalendarPageHeader
           currentDate={currentDate}
-          primaryHex={config.primaryHex}
-          isLive={isLiveShiftToday}
           unsyncedCount={unsyncedCount}
           onPreviousMonth={goToPreviousMonth}
           onNextMonth={goToNextMonth}
-          onGoToToday={goToToday}
-          onNewEvent={() => handleNewEvent()}
-          onRegisterWork={() => handleQuickWorkEntry()}
           onSyncNow={() => hardNavigate('/profile?tab=google')}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
           monthStats={{
             showCount: monthStats.totalEvents,
             received: monthStats.received,
             pending: monthStats.pending,
           }}
           formatCurrency={formatCurrency}
+          isVisible={isVisible}
         />
 
         {!clientsLoading && clients.length === 0 && (
@@ -1219,7 +1218,7 @@ export default function CalendarPage() {
               }`}
             >
               {label}
-              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${statusFilter === key ? 'bp-chip-badge-active' : 'bg-slate-700 text-slate-500'}`}>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${statusFilter === key ? 'bg-[#0a0a0a] text-[#ffd400]' : 'bg-[#222222] text-[#888888]'}`}>
                 {count}
               </span>
             </button>
@@ -1308,26 +1307,23 @@ export default function CalendarPage() {
 
         {/* Grade, Semana ou Lista */}
         {viewMode === 'grid' ? (
-          <Card
-            className="bg-slate-900/50 border-slate-800 overflow-hidden"
-            onTouchStart={handleGridTouchStart}
-            onTouchEnd={handleGridTouchEnd}
-          >
-            <CardContent className="p-0">
-              <BackstageCalendarGrid
-                currentDate={currentDate}
-                events={filteredEvents}
-                clients={clients}
-                dailyWork={dailyWork}
-                selectedDate={selectedDate}
-                onDateSelect={handleDayClick}
-                onQuickAction={handleGridQuickAction}
-                onEventClick={handleEventClick}
-                onEventQuickLog={handleQuickLogForEvent}
-                loading={false}
-              />
-            </CardContent>
-          </Card>
+          <AllAccessCalendar
+            currentDate={currentDate}
+            events={filteredEvents}
+            clients={clients}
+            selectedDate={selectedDate}
+            onDateSelect={(day) => setSelectedDate(day)}
+            onEventClick={handleEventClick}
+            onNewEvent={(date) => handleNewEvent(date)}
+            onRegisterWork={(ev) => handleQuickWorkEntry(ev)}
+            onAddExpense={(ev) => {
+              setEditingExpense(null);
+              setPrefillExpense({ event_id: ev.id });
+              setShowExpenseForm(true);
+            }}
+            formatCurrency={formatCurrency}
+            isVisible={isVisible}
+          />
         ) : viewMode === 'week' ? (
           <div
             className="space-y-3"
@@ -1661,7 +1657,7 @@ export default function CalendarPage() {
                     return (
                       <div
                         key={ev.id}
-                        className="w-full bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 rounded-lg px-4 py-3 flex items-center gap-3 transition-colors"
+                        className="w-full bg-[#161616] hover:bg-[#1c1c1c] border border-[#222222] hover:border-[#333333] rounded-xl px-4 py-3.5 flex items-center gap-3 transition-colors shadow-sm"
                       >
                         <div
                           className="w-1 self-stretch rounded-full flex-shrink-0"

@@ -319,17 +319,20 @@ export default function ClientsPage() {
         animate={{ opacity: 1 }}
         className="space-y-6 p-4 md:p-6 max-w-2xl xl:max-w-6xl mx-auto w-full min-w-0"
       >
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex justify-between items-end">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white font-display tracking-wide uppercase truncate">Clientes</h1>
-            <p className="text-xs text-[#a8a8a8] font-mono tracking-tight truncate">Base de clientes e relacionamento comercial.</p>
+            <div className="font-mono text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">
+              QUEM TE CONTRATA
+            </div>
+            <h1 className="font-display text-[38px] sm:text-[40px] text-white leading-none tracking-wide uppercase mt-0.5">
+              CLIENTES
+            </h1>
           </div>
           <Button
             onClick={handleNewClient}
-            className="bg-[#ffd400] text-[#0a0a0a] hover:bg-[#ffe033] font-bold h-10 px-4 active:scale-95 shadow-sm border-0 transition-transform"
+            className="h-10 px-4 rounded-full border-0 bg-[#ffd400] text-[#0a0a0a] font-sans text-[13px] font-extrabold hover:bg-[#ffe033] transition-transform active:scale-95 shadow-sm"
           >
-            <Plus className="w-4 h-4 mr-1.5 stroke-[2.5]" />
-            Novo Cliente
+            + Novo
           </Button>
         </div>
 
@@ -342,91 +345,39 @@ export default function ClientsPage() {
           </Alert>
         )}
 
-        <div className="bg-[#121212] border border-[#222222] rounded-xl p-4 space-y-3">
-            <div className="flex flex-col lg:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-                <Input
-                  placeholder="Buscar clientes..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-[#161616] border-[#262626] text-white rounded-xl placeholder-[#666666] focus:border-[#ffd400]/60"
-                  aria-label="Buscar clientes"
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={filterActive === 'all' ? 'secondary' : 'outline'}
-                  size="sm"
-                  onClick={() => setFilterActive('all')}
-                  className="bg-slate-800 border-slate-700 data-[state=active]:bg-slate-700 h-9"
-                >
-                  Todos
-                </Button>
-                <Button
-                  variant={filterActive === 'active' ? 'secondary' : 'outline'}
-                  size="sm"
-                  onClick={() => setFilterActive('active')}
-                  className="bg-slate-800 border-slate-700 data-[state=active]:bg-slate-700 h-9"
-                >
-                  Ativos
-                </Button>
-                <Button
-                  variant={filterActive === 'inactive' ? 'secondary' : 'outline'}
-                  size="sm"
-                  onClick={() => setFilterActive('inactive')}
-                  className="bg-slate-800 border-slate-700 data-[state=active]:bg-slate-700 h-9"
-                >
-                  Inativos
-                </Button>
-                <Button
-                  variant={filterActive === 'draft' ? 'secondary' : 'outline'}
-                  size="sm"
-                  onClick={() => setFilterActive('draft')}
-                  className="bg-slate-800 border-slate-700 data-[state=active]:bg-amber-900/40 data-[state=active]:border-amber-500/40 h-9"
-                >
-                  Rascunhos
-                </Button>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={filterActive === 'empresa' ? 'secondary' : 'outline'}
-                  size="sm"
-                  onClick={() => setFilterActive(filterActive === 'empresa' ? 'all' : 'empresa')}
-                  className="bg-slate-800 border-slate-700 h-9 gap-1.5"
-                >
-                  <Building2 className="w-3.5 h-3.5" />
-                  Empresas
-                </Button>
-                <Button
-                  variant={filterActive === 'pessoa' ? 'secondary' : 'outline'}
-                  size="sm"
-                  onClick={() => setFilterActive(filterActive === 'pessoa' ? 'all' : 'pessoa')}
-                  className="bg-slate-800 border-slate-700 h-9 gap-1.5"
-                >
-                  <User className="w-3.5 h-3.5" />
-                  Pessoas
-                </Button>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600 flex-shrink-0">Ordenar:</span>
-              {[
-                { key: 'nome', label: 'A–Z' },
-                { key: 'pendencia', label: 'Maior pendência' },
-                { key: 'eventos', label: 'Mais shows' },
-                { key: 'recente', label: 'Mais recente' },
-              ].map(opt => (
-                <button
-                  key={opt.key}
-                  type="button"
-                  onClick={() => setSortBy(opt.key)}
-                  className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${sortBy === opt.key ? 'bp-chip-active' : 'border-slate-700/50 bg-slate-800/40 text-slate-500 hover:text-slate-300'}`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
+        <div className="space-y-2.5">
+          <div className="h-11 rounded-full bg-[#161616] border border-[#333333] flex items-center px-4 gap-2.5 shadow-sm">
+            <Search className="w-4 h-4 text-[#8a8a8a] flex-shrink-0" />
+            <input
+              placeholder="Buscar cliente ou contato..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="bg-transparent border-0 text-white text-sm placeholder-[#8a8a8a] focus:outline-none flex-1 min-w-0"
+            />
+          </div>
+          <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+            {[
+              { id: 'all', label: 'Todos' },
+              { id: 'active', label: 'Ativos' },
+              { id: 'inactive', label: 'Inativos' },
+              { id: 'draft', label: 'Rascunhos' },
+              { id: 'empresa', label: 'Empresas' },
+              { id: 'pessoa', label: 'Pessoas' },
+            ].map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setFilterActive(filterActive === f.id && f.id !== 'all' ? 'all' : f.id)}
+                className={`h-8 px-3.5 rounded-full font-sans text-xs font-extrabold transition-all border ${
+                  filterActive === f.id
+                    ? 'bg-[#ffd400] text-[#0a0a0a] border-[#ffd400] shadow-sm'
+                    : 'bg-[#161616] border-[#2a2a2a] text-[#888888] hover:text-white'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {filterActive === 'all' && (
@@ -436,195 +387,46 @@ export default function ClientsPage() {
         )}
 
         {filteredAndSortedClients.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredAndSortedClients.map((client, idx) => (
-              <motion.div
-                key={client.id}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: Math.min(idx, 8) * 0.05, duration: 0.28, ease: 'easeOut' }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Card
-                  className="bg-[#121212] border-[#222222] hover:border-[#383838] cursor-pointer transition-all duration-200 flex flex-col h-full border-l-4 min-w-0 overflow-hidden rounded-xl"
-                  style={{
-                    ['--hover-border']: config.primaryHex,
-                    borderLeftColor: client.brand_color || AUTH_HERO_PRIMARY,
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${config.primaryHex}66`; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = ''; }}
+          <div className="flex flex-col gap-2">
+            {filteredAndSortedClients.map((client) => {
+              const pending = client.stats?.pendingRevenue || 0;
+              const revenue = client.stats?.totalRevenue || 0;
+              return (
+                <div
+                  key={client.id}
                   onClick={() => handleClientClick(client)}
+                  className="rounded-2xl bg-[#161616] border border-[#222222] hover:border-[#383838] p-3 sm:p-3.5 flex items-center gap-3 sm:gap-3.5 transition-all cursor-pointer shadow-sm active:scale-[0.99]"
                 >
-                  <CardHeader className="flex flex-row items-center gap-4">
-                    <div className="relative flex-shrink-0">
-                      <Avatar className="h-12 w-12 border-2 border-slate-700">
-                        <AvatarImage src={client.logo_url} alt={client.name} />
-                        <AvatarFallback
-                          className={`font-bold ${
-                            client.client_type === 'pessoa'
-                              ? 'bp-person-avatar'
-                              : 'bg-slate-800 text-slate-200'
-                          }`}
-                        >
-                          {client.client_type === 'pessoa'
-                            ? <User className="w-5 h-5" />
-                            : getInitials(client.name)
-                          }
-                        </AvatarFallback>
-                      </Avatar>
-                      {client.client_type === 'pessoa' && (
-                        <span
-                          className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bp-person-pin flex items-center justify-center"
-                          title="Pessoa física"
-                        >
-                          <User className="w-2.5 h-2.5 text-white" />
-                        </span>
-                      )}
+                  {client.logo_url ? (
+                    <div className="w-11 h-11 rounded-xl bg-white overflow-hidden flex items-center justify-center flex-shrink-0 p-1">
+                      <img src={client.logo_url} alt={client.name} className="w-full h-full object-contain" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <h3 className="font-bold text-white truncate min-w-0" title={client.name}>{client.name}</h3>
-                      </div>
-                      {client.contact_person && (
-                        <p className="text-sm text-slate-400 truncate min-w-0" title={client.contact_person}>
-                          {client.client_type === 'pessoa' ? '🏢 ' : ''}{client.contact_person}
-                        </p>
-                      )}
+                  ) : (
+                    <div className="w-11 h-11 rounded-xl bg-[#ffd400] text-[#0a0a0a] font-display text-[18px] flex items-center justify-center flex-shrink-0 font-bold">
+                      {getInitials(client.name)}
                     </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-full h-10 w-10 flex-shrink-0"
-                          onClick={(e) => e.stopPropagation()}
-                          aria-label="Ações do cliente"
-                        >
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenuItem onSelect={() => handleEditClient(client)}>Editar</DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-400" onSelect={() => handleDeleteClient(client.id)}>Excluir</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </CardHeader>
-                  <CardContent className="pt-0 flex-grow flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center gap-2 mb-4">
-                          {client.profile_complete === false ? (
-                            <ClientDraftBadge className="normal-case tracking-normal text-xs" />
-                          ) : (
-                            <Badge
-                              variant={client.stats.isActive ? 'default' : 'secondary'}
-                              className={client.stats.isActive ? 'bg-green-600/80 text-white' : 'bg-slate-700 text-slate-300'}
-                            >
-                              {client.stats.isActive ? 'Ativo' : 'Inativo'}
-                            </Badge>
-                          )}
-                          {client.policy_default_payment_model && (
-                            <Badge variant="outline" className="text-xs border-slate-700 text-slate-400">
-                              {client.policy_default_payment_model === 'HORAS_EXTRAS' ? 'H.E.' : 'M&D'}
-                            </Badge>
-                          )}
-                        </div>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div className="rounded-lg p-2.5 bg-[#161616] border border-[#242424] text-center">
-                          <p className="text-[10px] font-tag font-bold text-[#777777] uppercase tracking-wider mb-0.5">Shows</p>
-                          <p className="font-bold font-display text-lg text-white leading-tight">{client.stats.totalEvents}</p>
-                        </div>
-                        <div className={`rounded-lg p-2.5 border text-center ${client.stats.pendingRevenue > 0 ? 'bg-amber-500/8 border-amber-500/25' : 'bg-slate-800/60 border-slate-700/40'}`}>
-                          <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">A Receber</p>
-                          <p className={`font-black text-lg leading-tight font-mono ${client.stats.pendingRevenue > 0 ? 'text-amber-400' : 'text-slate-500'}`}>
-                            {isVisible ? formatCurrency(client.stats.pendingRevenue) : '••••'}
-                          </p>
-                        </div>
-                      </div>
-                      {client.stats.nextEventDate && (() => {
-                        const diffDays = Math.round((new Date(client.stats.nextEventDate + 'T00:00:00') - new Date(todayLocalISO() + 'T00:00:00')) / 86400000);
-                        return (
-                          <div className="mt-3 flex items-center gap-2">
-                            <Calendar className="w-3.5 h-3.5 flex-shrink-0 text-slate-500" />
-                            <span className="text-[11px] text-slate-400">
-                              Próx. show{' '}
-                              <span className={`font-semibold ${diffDays === 0 ? 'text-amber-400' : diffDays <= 7 ? 'text-emerald-400' : 'text-slate-300'}`}>
-                                {diffDays === 0 ? 'hoje' : diffDays === 1 ? 'amanhã' : `em ${diffDays}d`}
-                              </span>
-                            </span>
-                          </div>
-                        );
-                      })()}
-                      {client.stats.paymentScore && (
-                        <div className="mt-3 flex items-center justify-between">
-                          <p className="text-[11px] text-slate-500">Confiabilidade</p>
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-16 h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                              <motion.div
-                                className="h-full rounded-full"
-                                initial={{ width: 0 }}
-                                animate={{ width: `${client.stats.paymentScore.pct}%` }}
-                                transition={{ duration: 0.7, ease: 'easeOut', delay: 0.1 }}
-                                style={{
-                                  backgroundColor: client.stats.paymentScore.pct >= 90 ? '#34d399'
-                                    : client.stats.paymentScore.pct >= 70 ? '#60a5fa'
-                                    : client.stats.paymentScore.pct >= 40 ? '#fbbf24' : '#f87171'
-                                }}
-                              />
-                            </div>
-                            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full border ${client.stats.paymentScore.colorClass}`}>
-                              {client.stats.paymentScore.label}
-                            </span>
-                          </div>
-                        </div>
-                      )}
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[15px] font-extrabold text-white truncate">{client.name}</div>
+                    <div className="text-xs text-[#a8a8a8] truncate mt-0.5">
+                      {client.contact_person || 'Sem contato'} · {client.stats?.totalEvents || 0} shows
                     </div>
-                    
-                    {(client.email || client.phone) && (
-                      <div className="flex items-center gap-1 mt-4 pt-4 border-t border-slate-800">
-                        {client.email && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => { e.stopPropagation(); window.open(`mailto:${client.email}`, '_blank'); }}
-                            className="text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 h-9 px-2 group"
-                            aria-label="Enviar email"
-                          >
-                            <Mail className="w-4 h-4 transition-colors group-hover:opacity-100 opacity-70" style={{ color: config.primaryHex }} />
-                          </Button>
-                        )}
-                        {client.phone && (
-                          <>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => { e.stopPropagation(); window.open(`tel:${client.phone}`, '_blank'); }}
-                            className="text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 h-9 px-2 group"
-                            aria-label="Ligar"
-                          >
-                            <Phone className="w-4 h-4 transition-colors group-hover:opacity-100 opacity-70" style={{ color: config.primaryHex }} />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => { e.stopPropagation(); handleContact(client, 'whatsapp'); }}
-                            className={`h-9 px-2 relative group transition-colors ${client.stats.pendingRevenue > 0 ? 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'}`}
-                            aria-label={client.stats.pendingRevenue > 0 ? 'Cobrar via WhatsApp' : 'WhatsApp'}
-                            title={client.stats.pendingRevenue > 0 ? `Cobrar ${isVisible ? formatCurrency(client.stats.pendingRevenue) : '••••'} via WhatsApp` : 'Abrir WhatsApp'}
-                          >
-                            <MessageCircle className="w-4 h-4 transition-colors group-hover:text-green-400" />
-                            {client.stats.pendingRevenue > 0 && (
-                              <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-amber-400" />
-                            )}
-                          </Button>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className="font-display text-[18px] text-white">
+                      {isVisible ? formatCurrency(revenue) : '•••••'}
+                    </div>
+                    <div
+                      className={`font-mono text-[10px] font-bold uppercase ${
+                        pending > 0 ? 'text-[#ff2e88]' : 'text-[#ffd400]'
+                      }`}
+                    >
+                      {pending > 0 ? `${formatCurrency(pending)} pendente` : 'Paga em dia'}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         ) : (
           <EmptyState

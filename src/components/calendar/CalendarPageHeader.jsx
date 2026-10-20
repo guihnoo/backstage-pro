@@ -1,113 +1,125 @@
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Plus, Clock, RefreshCw } from 'lucide-react';
+import React from 'react';
+import { ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import LiveClockBar from '@/components/home/LiveClockBar';
 
 export default function CalendarPageHeader({
   currentDate,
-  primaryHex = '#ffd400',
-  isLive = false,
   unsyncedCount = 0,
   onPreviousMonth,
   onNextMonth,
-  onGoToToday,
-  onNewEvent,
-  onRegisterWork,
   onSyncNow,
+  viewMode = 'grid',
+  onViewModeChange,
+  monthStats = { showCount: 0, received: 0, pending: 0 },
+  formatCurrency,
+  isVisible = true,
 }) {
+  const monthName = format(currentDate, 'MMMM', { locale: ptBR }).toUpperCase();
+
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white font-display tracking-wide uppercase truncate">
-            Agenda
-          </h1>
-          <p className="text-xs text-[#a8a8a8] font-mono tracking-tight truncate">
-            Gerencie shows, horas e cachê do mês.
-          </p>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {unsyncedCount > 0 && (
+    <div className="flex flex-col gap-2.5">
+      {/* Top row: Agenda title + Month navigator on left, View Switcher on right */}
+      <div className="flex justify-between items-end">
+        <div>
+          <div className="font-mono text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">
+            AGENDA
+          </div>
+          <div className="flex items-center gap-1.5 mt-0.5">
             <button
               type="button"
-              onClick={onSyncNow}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border border-[#ff2e88]/40 bg-[#ff2e88]/10 text-[#ff2e88] hover:bg-[#ff2e88]/20 transition-colors"
-              title={`${unsyncedCount} evento${unsyncedCount === 1 ? '' : 's'} sem sincronizar com Google Calendar`}
+              onClick={onPreviousMonth}
+              aria-label="Mês anterior"
+              className="w-8 h-10 border-0 bg-transparent text-[#a8a8a8] hover:text-white p-0 flex items-center justify-center transition-colors active:scale-95"
             >
-              <RefreshCw className="w-3 h-3" />
-              {unsyncedCount} fora de sinc
+              <ChevronLeft className="w-5 h-5 stroke-[2.4]" />
             </button>
-          )}
-          <LiveClockBar primaryHex={primaryHex} isLive={isLive} />
+            <h1 className="font-display text-[32px] sm:text-[36px] text-white leading-none tracking-wide">
+              {monthName}
+            </h1>
+            <button
+              type="button"
+              onClick={onNextMonth}
+              aria-label="Próximo mês"
+              className="w-8 h-10 border-0 bg-transparent text-[#a8a8a8] hover:text-white p-0 flex items-center justify-center transition-colors active:scale-95"
+            >
+              <ChevronRight className="w-5 h-5 stroke-[2.4]" />
+            </button>
+          </div>
+        </div>
+
+        {/* View toggle (Mês / Lista) pill container */}
+        <div
+          role="group"
+          aria-label="Visualização"
+          className="flex bg-[#161616] border border-[#262626] rounded-2xl p-0.5 mb-1 shadow-sm"
+        >
+          <button
+            type="button"
+            aria-pressed={viewMode === 'grid'}
+            onClick={() => onViewModeChange?.('grid')}
+            className={`h-7 sm:h-8 px-3 rounded-xl border-0 font-sans text-xs font-extrabold transition-all ${
+              viewMode === 'grid'
+                ? 'bg-[#ffd400] text-[#0a0a0a] shadow-sm'
+                : 'bg-transparent text-[#a8a8a8] hover:text-white'
+            }`}
+          >
+            Mês
+          </button>
+          <button
+            type="button"
+            aria-pressed={viewMode === 'list'}
+            onClick={() => onViewModeChange?.('list')}
+            className={`h-7 sm:h-8 px-3 rounded-xl border-0 font-sans text-xs font-extrabold transition-all ${
+              viewMode === 'list'
+                ? 'bg-[#ffd400] text-[#0a0a0a] shadow-sm'
+                : 'bg-transparent text-[#a8a8a8] hover:text-white'
+            }`}
+          >
+            Lista
+          </button>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="flex items-center justify-between sm:justify-start gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onPreviousMonth}
-            className="text-white hover:bg-[#1a1a1a] flex-shrink-0 h-10 w-10 active:scale-95 border border-[#262626]"
-            aria-label="Mês anterior"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
+      {/* Sync badge if unsynced */}
+      {unsyncedCount > 0 && (
+        <button
+          type="button"
+          onClick={onSyncNow}
+          className="self-start flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border border-[#ff2e88]/40 bg-[#ff2e88]/10 text-[#ff2e88] hover:bg-[#ff2e88]/20 transition-colors"
+        >
+          <RefreshCw className="w-3 h-3" />
+          {unsyncedCount} fora de sinc com Google Calendar
+        </button>
+      )}
 
-          <div className="flex flex-col items-center min-w-[140px] sm:min-w-[180px]">
-            <motion.h2
-              key={currentDate.getMonth()}
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-lg sm:text-xl md:text-2xl font-bold text-white font-display tracking-wide capitalize"
-            >
-              {format(currentDate, 'MMMM yyyy', { locale: ptBR })}
-            </motion.h2>
+      {/* 3 Top KPIs Strip matching Board C */}
+      <div className="grid grid-cols-3 gap-1.5">
+        <div className="rounded-[10px] bg-[#161616] border border-[#222222] p-2 flex flex-col justify-center">
+          <div className="font-display text-[20px] text-[#ffd400] leading-none">
+            {monthStats.showCount || 0}
           </div>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onNextMonth}
-            className="text-white hover:bg-[#1a1a1a] flex-shrink-0 h-10 w-10 active:scale-95 border border-[#262626]"
-            aria-label="Próximo mês"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onGoToToday}
-            className="bg-[#141414] text-[#ffd400] font-mono text-xs ml-2 border-[#2a2a2a] hover:bg-[#1f1f1f] hover:text-[#ffd400] h-10 px-3 active:scale-95"
-          >
-            Hoje
-          </Button>
+          <div className="font-mono text-[10px] text-[#a8a8a8] uppercase mt-0.5 truncate">
+            DIÁRIAS
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={onRegisterWork}
-            variant="outline"
-            size="sm"
-            className="bg-[#141414] border-[#2a2a2a] hover:bg-[#1f1f1f] text-white flex-1 sm:flex-none h-10 text-sm active:scale-95"
-          >
-            <Clock className="w-4 h-4 mr-2 text-[#ffd400]" />
-            <span className="hidden xs:inline">Registrar Horas</span>
-            <span className="xs:hidden">Horas</span>
-          </Button>
+        <div className="rounded-[10px] bg-[#161616] border border-[#222222] p-2 flex flex-col justify-center">
+          <div className="font-display text-[20px] text-white leading-none truncate">
+            {isVisible ? (monthStats.received > 0 ? formatCurrency(monthStats.received) : 'R$ 0') : '•••••'}
+          </div>
+          <div className="font-mono text-[10px] text-[#a8a8a8] uppercase mt-0.5 truncate">
+            NO MÊS
+          </div>
+        </div>
 
-          <Button
-            onClick={onNewEvent}
-            size="sm"
-            className="flex-1 sm:flex-none h-10 text-sm font-bold active:scale-95 bg-[#ffd400] text-[#0a0a0a] hover:bg-[#ffe033] border-0 transition-transform"
-          >
-            <Plus className="w-4 h-4 mr-1.5 stroke-[2.5]" />
-            <span className="hidden xs:inline">Novo Evento</span>
-            <span className="xs:hidden">Evento</span>
-          </Button>
+        <div className="rounded-[10px] bg-[#161616] border border-[#222222] p-2 flex flex-col justify-center">
+          <div className="font-display text-[20px] text-[#ff2e88] leading-none truncate">
+            {isVisible ? (monthStats.pending > 0 ? formatCurrency(monthStats.pending) : 'R$ 0') : '•••••'}
+          </div>
+          <div className="font-mono text-[10px] text-[#a8a8a8] uppercase mt-0.5 truncate">
+            A RECEBER
+          </div>
         </div>
       </div>
     </div>

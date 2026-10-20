@@ -24,6 +24,7 @@ import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
 import { Ellipsis } from '@/components/ui/overflowText';
 import ExpenseListItem from '@/components/expenses/ExpenseListItem';
+import AllAccessDespesas from '@/components/expenses/AllAccessDespesas';
 
 const ExpenseForm = lazy(() => import('@/components/expenses/ExpenseForm'));
 const ReceiptAnalyzer = lazy(() => import('@/components/expenses/ReceiptAnalyzer'));
@@ -310,151 +311,21 @@ export default function ExpensesPage() {
                     primaryHex="#ffd400"
                 />
                 <div className="p-4 md:p-6 space-y-6 max-w-2xl xl:max-w-6xl mx-auto w-full min-w-0">
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                        <div className="flex items-start justify-between sm:block gap-2">
-                            <div>
-                                <h1 className="text-2xl sm:text-3xl font-bold text-white font-display tracking-wide uppercase truncate">Despesas</h1>
-                                <p className="text-xs text-[#a8a8a8] font-mono tracking-tight truncate">Controle de gastos, recibos e reembolsos de turnê.</p>
-                            </div>
-                            <LiveClockBar primaryHex={config.primaryHex} className="sm:hidden flex-shrink-0" />
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <LiveClockBar primaryHex={config.primaryHex} className="hidden sm:flex flex-shrink-0" />
-                            <Button variant="outline" className="bg-[#141414] border-[#2a2a2a] hover:bg-[#1f1f1f] text-white h-10 px-3 active:scale-95" onClick={handleScan}>
-                                <Camera className="w-4 h-4 mr-2" />
-                                Digitalizar Recibo
-                            </Button>
-                            <Button
-                                className="bg-[#ffd400] text-[#0a0a0a] hover:bg-[#ffe033] font-bold h-10 px-4 active:scale-95 shadow-sm border-0 transition-transform"
-                                onClick={() => { setEditingExpense(null); setPrefillFromScan(null); setShowForm(true); }}
-                            >
-                                <Plus className="w-4 h-4 mr-1.5 stroke-[2.5]" />
-                                Nova Despesa
-                            </Button>
-                        </div>
-                    </div>
-
-                    {expensesError && hasCachedExpenses && (
-                        <Alert className="border-red-500/40 bg-red-500/10">
-                            <AlertCircle className="w-4 h-4 text-red-400" />
-                            <AlertDescription className="text-red-300 text-sm">
-                                <strong>Erro ao sincronizar:</strong> {expensesError} — exibindo despesas em cache.
-                            </AlertDescription>
-                        </Alert>
-                    )}
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <StatCard primaryHex={config.primaryHex} accentHex={config.accentHex} title="Gasto Total" value={isVisible ? formatCurrency(expenseStats.total) : '•••••'} onClick={() => setStatusFilter('all')} active={statusFilter === 'all'} />
-                        <StatCard primaryHex={config.primaryHex} accentHex={config.accentHex} title="Este Mês" value={isVisible ? formatCurrency(expenseStats.thisMonth) : '•••••'} onClick={() => setStatusFilter('this_month')} active={statusFilter === 'this_month'} />
-                        <StatCard primaryHex={config.primaryHex} accentHex={config.accentHex} title="A Reembolsar" value={isVisible ? formatCurrency(expenseStats.reimbursable) : '•••••'} onClick={() => setStatusFilter('reimbursable')} active={statusFilter === 'reimbursable'} />
-                        <StatCard primaryHex={config.primaryHex} accentHex={config.accentHex} title="Reembolsado" value={isVisible ? formatCurrency(expenseStats.reimbursed) : '•••••'} onClick={() => setStatusFilter('reimbursed')} active={statusFilter === 'reimbursed'} />
-                    </div>
-
-                    <div className="bg-[#121212] border border-[#222222] rounded-xl p-4 space-y-3">
-                      {/* Busca */}
-                      <div className="relative">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                          <Input
-                              placeholder="Buscar por título, descrição ou notas..."
-                              value={searchTerm}
-                              onChange={(e) => setSearchTerm(e.target.value)}
-                              className="bg-[#161616] border-[#262626] text-white pl-10 font-mono text-sm rounded-xl placeholder-[#666666] focus:border-[#ffd400]/60"
-                              aria-label="Buscar despesas"
-                          />
-                      </div>
-
-                      {/* Filtro por evento */}
-                      {eventsWithExpenses.length > 0 && (
-                          <div className="flex items-center gap-2">
-                              <Calendar className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
-                              <Select value={eventFilter} onValueChange={setEventFilter}>
-                                  <SelectTrigger className="h-9 text-xs bg-[#161616] border-[#262626] text-white flex-1 min-w-0 truncate rounded-xl">
-                                      <SelectValue placeholder="Filtrar por evento…" />
-                                  </SelectTrigger>
-                                  <SelectContent className="bg-slate-900 border-slate-700 text-white max-w-[min(100vw-2rem,24rem)]">
-                                      <SelectItem value="all">Todos os eventos</SelectItem>
-                                      <SelectItem value="no-event">Sem evento vinculado</SelectItem>
-                                      {eventsWithExpenses.map(ev => {
-                                          const label = `${ev.title}${ev.start_date ? ` · ${format(parseISO(ev.start_date), 'dd/MM/yy', { locale: ptBR })}` : ''}`;
-                                          return (
-                                          <SelectItem key={ev.id} value={ev.id} title={label}>
-                                              <Ellipsis as="span">{label}</Ellipsis>
-                                          </SelectItem>
-                                          );
-                                      })}
-                                  </SelectContent>
-                              </Select>
-                          </div>
-                      )}
-
-                      {/* Filtro por categoria */}
-                      {expenseCategories.length > 0 && (
-                          <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none">
-                              <Tag className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
-                              <button
-                                  type="button"
-                                  onClick={() => setCategoryFilter('all')}
-                                  className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${categoryFilter === 'all' ? 'border-[#ffd400]/60 bg-[#ffd400]/12 text-[#ffd400]' : 'border-[#222222] bg-[#141414] text-[#888888] hover:text-white hover:border-[#333333]'}`}
-                              >
-                                  Todas
-                              </button>
-                              {expenseCategories.map(cat => (
-                                  <button
-                                      key={cat}
-                                      type="button"
-                                      onClick={() => setCategoryFilter(cat === categoryFilter ? 'all' : cat)}
-                                      className={`flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${categoryFilter === cat ? 'border-[#ffd400]/60 bg-[#ffd400]/12 text-[#ffd400]' : 'border-[#222222] bg-[#141414] text-[#888888] hover:text-white hover:border-[#333333]'}`}
-                                  >
-                                      {CATEGORY_LABELS[cat] || cat}
-                                      {categoryTotals[cat] > 0 && (
-                                          <span className="ml-1 opacity-70 font-mono font-normal">
-                                              {isVisible ? formatCurrency(categoryTotals[cat]) : '•••'}
-                                          </span>
-                                      )}
-                                  </button>
-                              ))}
-                          </div>
-                      )}
-                    </div>
-
-                    {/* Resumo do filtro */}
-                    {filteredExpenses.length > 0 && (
-                        <div className="flex items-center justify-between px-1 py-0.5">
-                            <span className="text-[11px] font-mono text-slate-500">
-                                {filteredExpenses.length} despesa{filteredExpenses.length !== 1 ? 's' : ''}
-                                {categoryFilter !== 'all' && <span className="text-slate-600"> · {CATEGORY_LABELS[categoryFilter] || categoryFilter}</span>}
-                            </span>
-                            <span className="text-[11px] font-mono font-bold" style={{ color: config.accentHex }}>
-                                {isVisible ? formatCurrency(filteredExpenses.reduce((s, e) => s + (e.amount || 0), 0)) : '•••••'}
-                            </span>
-                        </div>
-                    )}
-
-                    <div className="space-y-5">
-                        {groupedByMonth.length > 0 ? (
-                            groupedByMonth.map(([monthKey, monthExpenses]) => (
-                                <MonthGroup
-                                    key={monthKey}
-                                    monthKey={monthKey}
-                                    expenses={monthExpenses}
-                                    events={events}
-                                    clients={clients}
-                                    onEdit={handleEdit}
-                                    onDelete={handleDelete}
-                                    onMarkReimbursed={handleMarkReimbursed}
-                                    formatCurrency={formatCurrency}
-                                    primaryHex={config.primaryHex}
-                                    defaultOpen={monthKey === currentMonthKey}
-                                />
-                            ))
-                        ) : (
-                            <EmptyState
-                                icon={Search}
-                                title="Nenhuma despesa encontrada"
-                                description="Tente ajustar seus filtros ou adicione uma nova despesa."
-                            />
-                        )}
-                    </div>
+                    <AllAccessDespesas
+                        expenses={allExpenses}
+                        events={events}
+                        clients={clients}
+                        formatCurrency={formatCurrency}
+                        isVisible={isVisible}
+                        onScanReceipt={handleScan}
+                        onNewExpense={() => {
+                            setEditingExpense(null);
+                            setPrefillFromScan(null);
+                            setShowForm(true);
+                        }}
+                        onEditExpense={(exp) => handleEdit(exp)}
+                        onDeleteExpense={(id) => handleDelete(id)}
+                    />
                 </div>
             </div>
 
