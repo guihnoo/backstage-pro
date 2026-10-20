@@ -456,7 +456,7 @@ export default function ExpensesPage() {
                         )}
                     </div>
                 </div>
-            </NeonPageShell>
+            </div>
 
             {showForm && (
                 <Suspense fallback={null}>
