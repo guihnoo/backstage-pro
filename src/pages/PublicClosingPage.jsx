@@ -1,22 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import {
-  Check,
-  Copy,
-  Download,
-  ExternalLink,
-  FileCheck2,
-  MapPin,
-  Calendar,
-  QrCode,
-  ShieldCheck,
-  Sparkles,
-  UserCheck,
-  Building2,
-} from 'lucide-react';
-import { fetchClosingShare } from '@/lib/closingShareLink';
+import { Check, Copy, Download, ExternalLink } from 'lucide-react';
+import { fetchClosingShare, notifyClosingPaid } from '@/lib/closingShareLink';
 import { generatePixQrDataUrl, generatePixPayload } from '@/lib/pixPayload';
-import { getCategoryConfig } from '@/lib/categoryConfig';
 import appToast from '@/lib/appToast';
 
 const fmtBRL = (v) =>
@@ -78,8 +64,8 @@ export default function PublicClosingPage() {
   const [copiedPayload, setCopiedPayload] = useState(false);
   const [copiedKey, setCopiedKey] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
-
-  const categoryConfig = getCategoryConfig(data?.provider?.categoryId || 'lighting');
+  const [noticeSent, setNoticeSent] = useState(false);
+  const [sendingNotice, setSendingNotice] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -101,19 +87,19 @@ export default function PublicClosingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#030712] text-slate-400 flex items-center justify-center p-6">
-        Carregando fechamento...
+      <div className="min-h-screen bg-[#f4f1ea] text-[#6a6a6a] font-tag text-xs flex items-center justify-center p-6">
+        CARREGANDO FECHAMENTO...
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-[#030712] text-slate-100 flex items-center justify-center p-6">
-        <div className="max-w-md w-full rounded-2xl border border-slate-800 bg-slate-900/80 p-6 text-center space-y-3">
-          <p className="text-lg font-bold text-white">Demonstrativo de Fechamento</p>
-          <p className="text-sm text-slate-400">
-            Este link de fechamento é inválido ou está incompleto. Solicite um novo link ou o PDF diretamente ao profissional.
+      <div className="min-h-screen bg-[#f4f1ea] text-[#111111] font-sans flex items-center justify-center p-6">
+        <div className="max-w-md w-full rounded-[14px] bg-white border border-[#e3ddd0] p-6 text-center space-y-3">
+          <p className="font-poster text-[26px] leading-none">FECHAMENTO DE SERVIÇO</p>
+          <p className="text-sm text-[#4a4a4a]">
+            Este link de fechamento é inválido, venceu ou foi cancelado. Peça um novo link ou o PDF diretamente ao profissional.
           </p>
         </div>
       </div>
@@ -142,6 +128,18 @@ export default function PublicClosingPage() {
     setCopiedKey(true);
     appToast.success('Chave PIX copiada!');
     setTimeout(() => setCopiedKey(false), 2500);
+  };
+
+  const handleMarkPaid = async () => {
+    if (sendingNotice || noticeSent) return;
+    setSendingNotice(true);
+    const ok = await notifyClosingPaid(token);
+    setSendingNotice(false);
+    if (ok) {
+      setNoticeSent(true);
+    } else {
+      appToast.error('Não foi possível enviar o aviso', { description: 'O link pode ter vencido. Fale direto com o profissional.' });
+    }
   };
 
   const handleDownloadPdf = async () => {
@@ -237,274 +235,191 @@ export default function PublicClosingPage() {
     }
   };
 
+  const initial = (provider.name || 'P').trim().charAt(0).toUpperCase();
+  const clientInitials = (client.name || 'C').trim().slice(0, 4).toUpperCase();
+  const alreadyNotified = noticeSent || Boolean(data.clientNoticeAt);
+  const expiresLabel = data.expiresAt ? fmtDate(String(data.expiresAt).slice(0, 10)) : '';
+  const rows = Array.isArray(closing.rows) ? closing.rows : [];
+  const reembolsos = Array.isArray(closing.reembolsos) ? closing.reembolsos : [];
+
   return (
-    <div className="min-h-screen bg-[#030712] text-slate-100 py-6 px-4 sm:py-10">
-      <div className="max-w-2xl mx-auto space-y-5">
-        {/* Cabeçalho do Prestador */}
+    <div className="min-h-screen bg-[#f4f1ea] text-[#111111] font-sans">
+      <div className="max-w-xl mx-auto bg-[#f4f1ea] min-h-screen flex flex-col">
+        {/* Cabeçalho do prestador */}
+        <div className="bg-[#0a0a0a] text-white px-[18px] pt-4 pb-3.5">
+          <div className="flex items-center justify-between">
+            <span className="font-tag text-[10px] tracking-[2px] text-[#ffd400]">FECHAMENTO DE SERVIÇO</span>
+            {event.isPaid && <span className="font-tag text-[10px] text-[#a8a8a8]">PAGO</span>}
+          </div>
+          <div className="flex items-center gap-3 mt-2.5">
+            <div className="w-[52px] h-[52px] rounded-xl bg-[#ffd400] text-[#0a0a0a] flex items-center justify-center font-poster text-2xl shrink-0">
+              {initial}
+            </div>
+            <div className="min-w-0">
+              <div className="font-poster text-[26px] leading-none uppercase break-words">{provider.name}</div>
+              <div className="text-xs text-[#c8c8c8]">{provider.subtitle || provider.role}</div>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-[#a8a8a8] mt-2.5">
+            {provider.doc && <span>CPF/CNPJ: {provider.doc}</span>}
+            {provider.phone && <span>{provider.phone}</span>}
+            {provider.email && <span>{provider.email}</span>}
+            {provider.city && <span>{provider.city}</span>}
+          </div>
+        </div>
         <div
-          className="rounded-2xl border p-5 sm:p-6 relative overflow-hidden"
-          style={{
-            borderColor: `${categoryConfig.primaryHex}45`,
-            background:
-              'linear-gradient(155deg, rgba(15,23,42,0.95) 0%, rgba(7,10,19,0.98) 100%)',
-            boxShadow: `0 16px 40px -18px ${categoryConfig.primaryHex}35`,
-          }}
-        >
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="space-y-1">
-              <span
-                className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full border"
-                style={{
-                  color: categoryConfig.primaryHex,
-                  borderColor: `${categoryConfig.primaryHex}50`,
-                  background: `${categoryConfig.primaryHex}15`,
-                }}
-              >
-                <Sparkles className="w-3 h-3" /> Demonstrativo Oficial de Fechamento
-              </span>
-              <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight pt-1">
-                {provider.name}
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-300 font-medium">
-                {provider.subtitle || provider.role}
-              </p>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400 pt-1">
-                {provider.doc && <span>CPF/CNPJ: {provider.doc}</span>}
-                {provider.phone && <span>Tel/WhatsApp: {provider.phone}</span>}
-                {provider.email && <span>{provider.email}</span>}
-                {provider.city && <span>{provider.city}</span>}
-              </div>
+          className="h-1.5"
+          style={{ background: 'repeating-linear-gradient(90deg, #ffd400 0 18px, #0a0a0a 18px 24px)' }}
+        />
+
+        <div className="flex-1 px-[18px] py-3.5 flex flex-col gap-2.5">
+          {/* Contratante */}
+          <div className="flex gap-2.5 items-center">
+            <div className="w-10 h-10 rounded-[10px] bg-white border border-[#ddd8cc] flex items-center justify-center font-tag text-[9px] font-bold shrink-0">
+              {clientInitials}
+            </div>
+            <div className="min-w-0">
+              <div className="font-tag text-[10px] text-[#6a6a6a]">PARA</div>
+              <div className="text-base font-extrabold break-words">{client.name}</div>
+              {client.doc && <div className="text-[11px] text-[#6a6a6a]">CNPJ/CPF: {client.doc}</div>}
+            </div>
+          </div>
+
+          {/* Evento e valores */}
+          <div className="rounded-[14px] bg-white border border-[#e3ddd0] p-3">
+            <div className="text-[15px] font-extrabold">{event.title}</div>
+            <div className="text-xs text-[#6a6a6a] mb-1.5">
+              {[event.location, periodLabel].filter(Boolean).join(' · ')}
             </div>
 
+            {rows.map((r, i) => (
+              <div key={r.d || i} className="flex justify-between gap-3 py-1.5 border-t border-[#efeae0] text-[13px]">
+                <span className="min-w-0">
+                  <span className="font-tag font-bold">{fmtShort(r.d)}</span>{' '}
+                  <span className="text-[#8a8a8a] text-[11px]">
+                    {r.st === 'sem_horas'
+                      ? 'diária'
+                      : r.in && r.out
+                      ? `${r.in} às ${r.out} (${r.h}h${r.he > 0 ? ` · +${r.he}h extra` : ''})`
+                      : 'deslocamento'}
+                  </span>
+                </span>
+                <span className="font-tag font-bold shrink-0">{fmtBRL(r.sub)}</span>
+              </div>
+            ))}
+
+            {reembolsos.map((e, i) => (
+              <div key={`r${i}`} className="flex justify-between gap-3 py-1.5 border-t border-[#efeae0] text-[13px]">
+                <span className="min-w-0 truncate">
+                  Reembolso <span className="text-[#8a8a8a] text-[11px]">{fmtShort(e.d)} · {e.t}</span>
+                </span>
+                <span className="font-tag font-bold shrink-0">{fmtBRL(e.v)}</span>
+              </div>
+            ))}
+
+            <div className="flex justify-between items-baseline pt-2 border-t-2 border-[#111111] mt-1">
+              <span className="font-tag text-[11px] font-bold">TOTAL</span>
+              <span className="font-poster text-[34px] leading-none">{fmtBRL(closing.total)}</span>
+            </div>
+            {event.dueDate && !event.isPaid && (
+              <div className="text-[11px] text-[#6a6a6a] mt-1.5">Vencimento combinado: <b>{fmtDate(event.dueDate)}</b></div>
+            )}
+          </div>
+
+          {/* Pagamento */}
+          {event.isPaid ? (
+            <div className="rounded-[14px] border-2 border-[#111111] p-3.5 text-center">
+              <div className="font-poster text-[26px] leading-none">PAGO ✓</div>
+              <div className="text-[13px] text-[#4a4a4a] mt-1">
+                {event.paidAt ? `Recebido em ${fmtDate(event.paidAt)}.` : 'Pagamento confirmado.'}
+              </div>
+            </div>
+          ) : (
+            pix?.key && (
+              <div className="rounded-[14px] bg-[#0a0a0a] text-white p-3 flex flex-col gap-2">
+                <div className="font-tag text-[10px] tracking-[1px] text-[#ffd400]">PAGAR COM PIX</div>
+                <div className="flex gap-2.5 items-center">
+                  {qrDataUrl && (
+                    <img src={qrDataUrl} alt="QR Code PIX" className="w-[84px] h-[84px] rounded-lg bg-white p-1.5 shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs text-[#c8c8c8]">Chave ({pix.type || 'PIX'})</div>
+                    <div className="text-[13px] font-extrabold break-all">{pix.key}</div>
+                    <button
+                      type="button"
+                      onClick={handleCopyKey}
+                      className="mt-1 inline-flex items-center gap-1 text-[11px] font-bold text-[#ffd400]"
+                    >
+                      {copiedKey ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copiedKey ? 'Chave copiada' : 'Copiar chave'}
+                    </button>
+                  </div>
+                </div>
+                {pixPayload && (
+                  <button
+                    type="button"
+                    onClick={handleCopyPayload}
+                    className="h-[46px] rounded-full bg-[#ffd400] text-[#0a0a0a] text-sm font-extrabold active:scale-[0.98] transition-transform"
+                  >
+                    {copiedPayload ? 'Copiado ✓' : 'Copiar código PIX (valor já preenchido)'}
+                  </button>
+                )}
+                {alreadyNotified ? (
+                  <div className="rounded-[14px] border border-[#444444] p-2.5 text-center">
+                    <div className="font-poster text-xl leading-none">AVISO ENVIADO ✓</div>
+                    <div className="text-xs text-[#c8c8c8] mt-1">
+                      {provider.name} recebe o aviso e confirma quando o dinheiro cair.
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleMarkPaid}
+                    disabled={sendingNotice}
+                    className="h-10 rounded-full border border-[#444444] bg-transparent text-white text-[13px] font-bold disabled:opacity-60"
+                  >
+                    {sendingNotice ? 'Enviando...' : `Já paguei · avisar ${String(provider.name || '').split(' ')[0] || 'o profissional'}`}
+                  </button>
+                )}
+              </div>
+            )
+          )}
+
+          {/* Nota fiscal e PDF */}
+          <div className="flex justify-between items-center gap-3 text-xs">
+            <span className="text-[#4a4a4a] min-w-0">
+              {nfe?.number || nfe?.fileUrl || nfe?.fileName ? (
+                <>
+                  Nota fiscal: <b>{nfe.number ? `Nº ${nfe.number}` : 'anexada'}</b>
+                  {nfe.issuedAt ? ` · ${fmtDate(nfe.issuedAt)}` : ''}
+                  {nfe.fileUrl && (
+                    <>
+                      {' '}
+                      <a href={nfe.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 font-extrabold underline">
+                        abrir <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </>
+                  )}
+                </>
+              ) : (
+                'Nota fiscal: não anexada'
+              )}
+            </span>
             <button
               type="button"
               onClick={handleDownloadPdf}
               disabled={downloadingPdf}
-              className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-950 transition-transform active:scale-95 shadow-lg"
-              style={{ backgroundColor: categoryConfig.primaryHex }}
+              className="inline-flex items-center gap-1 font-extrabold underline shrink-0 disabled:opacity-60"
             >
-              <Download className="w-4 h-4" />
-              {downloadingPdf ? 'Gerando PDF...' : 'Baixar PDF Completo'}
+              <Download className="w-3.5 h-3.5" />
+              {downloadingPdf ? 'Gerando PDF...' : 'Baixar PDF'}
             </button>
           </div>
-        </div>
 
-        {/* Dados do Evento & Contratante */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/75 p-5 space-y-4">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold flex items-center gap-1.5">
-                <Building2 className="w-3.5 h-3.5 text-slate-500" /> Contratante · {client.name}
-              </p>
-              <h2 className="text-lg font-bold text-white mt-0.5">{event.title}</h2>
-              {client.doc && <p className="text-xs text-slate-400">CNPJ/CPF: {client.doc}</p>}
-            </div>
-
-            {event.isPaid ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/40 px-3 py-1 text-xs font-bold text-emerald-300">
-                <ShieldCheck className="w-4 h-4" /> PAGO EM CONTA
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 border border-amber-500/40 px-3 py-1 text-xs font-bold text-amber-300">
-                AGUARDANDO PAGAMENTO INTEGRAL
-              </span>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-300 pt-1 border-t border-slate-800/80">
-            {periodLabel && (
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-slate-400 shrink-0" />
-                <span>Período: <strong className="text-white">{periodLabel}</strong></span>
-              </div>
-            )}
-            {event.location && (
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
-                <span className="truncate">Local: <strong className="text-white">{event.location}</strong></span>
-              </div>
-            )}
-            {event.dueDate && !event.isPaid && (
-              <div className="flex items-center gap-2 text-amber-300">
-                <UserCheck className="w-4 h-4 shrink-0" />
-                <span>Vencimento combinado: <strong>{fmtDate(event.dueDate)}</strong></span>
-              </div>
-            )}
+          <div className="mt-auto pt-3 text-center font-tag text-[9px] text-[#8a8a8a]">
+            gerado com BACKSTAGE PRO{expiresLabel ? ` · link válido até ${expiresLabel}` : ''}
           </div>
         </div>
-
-        {/* Documento Fiscal Vinculado (NF-e / NFS-e) */}
-        {(nfe?.number || nfe?.fileUrl || nfe?.fileName) && (
-          <div className="rounded-2xl border border-amber-500/35 bg-amber-500/10 p-4 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-300 shrink-0">
-                <FileCheck2 className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-amber-300">
-                  Nota Fiscal Vinculada (NF-e / NFS-e)
-                </p>
-                <p className="text-sm font-semibold text-white">
-                  {nfe.number ? `Nota Nº ${nfe.number}` : (nfe.fileName || 'Documento Fiscal Anexado')}
-                  {nfe.issuedAt ? ` · Emitida em ${fmtDate(nfe.issuedAt)}` : ''}
-                </p>
-              </div>
-            </div>
-            {nfe.fileUrl && (
-              <a
-                href={nfe.fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 px-3.5 py-2 text-xs font-bold text-amber-200 transition-colors"
-              >
-                <ExternalLink className="w-3.5 h-3.5" /> Abrir / Baixar NF-e
-              </a>
-            )}
-          </div>
-        )}
-
-        {/* Detalhamento de Diárias, Horas Extras e Reembolsos */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/75 p-5 space-y-4">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Resumo Financeiro do Evento
-          </h3>
-
-          {Array.isArray(closing.rows) && closing.rows.length > 0 && (
-            <div className="space-y-1.5">
-              <p className="text-xs font-semibold text-slate-300">Diárias e Horas Trabalhadas</p>
-              <div className="divide-y divide-slate-800/80 rounded-xl border border-slate-800 bg-slate-950/50">
-                {closing.rows.map((r, i) => (
-                  <div key={r.d || i} className="flex items-center justify-between px-3.5 py-2.5 text-xs">
-                    <div className="min-w-0">
-                      <span className="font-mono font-bold text-white">{fmtShort(r.d)}</span>
-                      <span className="text-slate-400 ml-2">
-                        {r.st === 'sem_horas'
-                          ? 'Diária padrão'
-                          : r.in && r.out
-                          ? `${r.in} às ${r.out} (${r.h}h${r.he > 0 ? ` · +${r.he}h extra` : ''})`
-                          : 'Deslocamento / Viagem'}
-                      </span>
-                    </div>
-                    <span className="font-mono font-semibold text-slate-200 shrink-0">
-                      {fmtBRL(r.sub)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {Array.isArray(closing.reembolsos) && closing.reembolsos.length > 0 && (
-            <div className="space-y-1.5">
-              <p className="text-xs font-semibold text-amber-300">Despesas Reembolsáveis</p>
-              <div className="divide-y divide-slate-800/80 rounded-xl border border-slate-800 bg-slate-950/50">
-                {closing.reembolsos.map((e, i) => (
-                  <div key={i} className="flex items-center justify-between px-3.5 py-2 text-xs">
-                    <span className="text-slate-300 truncate">
-                      <strong className="font-mono text-slate-400">{fmtShort(e.d)}</strong> · {e.t}
-                    </span>
-                    <span className="font-mono font-semibold text-amber-300 shrink-0">
-                      {fmtBRL(e.v)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="space-y-1.5 pt-2 border-t border-slate-800 text-xs">
-            <div className="flex justify-between text-slate-400">
-              <span>Subtotal Diárias / Cachê Base</span>
-              <span className="font-mono text-slate-200">
-                {fmtBRL((closing.totalDiarias || 0) + (closing.totalAlimentacao || 0))}
-              </span>
-            </div>
-            {closing.totalHorasExtras > 0 && (
-              <div className="flex justify-between text-slate-400">
-                <span>Horas Extras ({closing.totalHorasExtrasQtd}h)</span>
-                <span className="font-mono text-slate-200">{fmtBRL(closing.totalHorasExtras)}</span>
-              </div>
-            )}
-            {closing.totalReembolsos > 0 && (
-              <div className="flex justify-between text-amber-300/90">
-                <span>Total de Reembolsos</span>
-                <span className="font-mono">{fmtBRL(closing.totalReembolsos)}</span>
-              </div>
-            )}
-            <div className="flex items-center justify-between pt-3 mt-2 border-t border-slate-800 text-base font-extrabold text-white">
-              <span>VALOR INTEGRAL A RECEBER</span>
-              <span className="font-mono text-lg text-emerald-400">{fmtBRL(closing.total)}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Bloco PIX Interativo (QR Code + Copia e Cola) */}
-        {pix?.key && (
-          <div className="rounded-2xl border border-emerald-500/40 bg-emerald-950/20 p-5 space-y-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="space-y-1.5 flex-1 min-w-0">
-                <p className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-                  <QrCode className="w-4 h-4" /> Pagamento Instantâneo via PIX
-                </p>
-                <p className="text-xs text-slate-300">
-                  Favorecido: <strong className="text-white">{provider.name}</strong>
-                  {provider.doc ? ` (${provider.doc})` : ''}
-                </p>
-                <div className="flex items-center gap-2 pt-1">
-                  <span className="text-xs text-slate-400">{pix.type || 'Chave PIX'}:</span>
-                  <code className="text-sm font-mono font-bold text-white bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-800 truncate">
-                    {pix.key}
-                  </code>
-                  <button
-                    type="button"
-                    onClick={handleCopyKey}
-                    className="inline-flex items-center gap-1 rounded-lg bg-slate-800 hover:bg-slate-700 px-2.5 py-1 text-xs font-semibold text-slate-200 transition-colors shrink-0"
-                  >
-                    {copiedKey ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                    {copiedKey ? 'Copiada' : 'Copiar Chave'}
-                  </button>
-                </div>
-              </div>
-
-              {qrDataUrl && (
-                <div className="flex flex-col items-center bg-white p-2.5 rounded-xl shadow-md shrink-0 self-center">
-                  <img src={qrDataUrl} alt="QR Code PIX" className="w-28 h-28" />
-                  <span className="text-[10px] font-bold text-emerald-900 mt-1">ESCANEIE NO BANCO</span>
-                </div>
-              )}
-            </div>
-
-            {pixPayload && (
-              <div className="space-y-2 pt-2 border-t border-emerald-500/20">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-semibold text-emerald-300">
-                    PIX Copia e Cola (Valor já preenchido: {fmtBRL(closing.total)})
-                  </span>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <input
-                    type="text"
-                    readOnly
-                    value={pixPayload}
-                    className="flex-1 rounded-xl bg-slate-950/90 border border-slate-800 px-3 py-2.5 text-[11px] font-mono text-slate-300 select-all"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleCopyPayload}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-4 py-2.5 transition-colors shrink-0"
-                  >
-                    {copiedPayload ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                    {copiedPayload ? 'Código PIX Copiado!' : 'Copiar PIX Copia e Cola'}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        <p className="text-center text-[11px] text-slate-500 pt-2">
-          Gerado via <strong className="text-slate-400">Backstage Pro</strong> · Gestão Financeira para Profissionais de Eventos
-        </p>
       </div>
     </div>
   );

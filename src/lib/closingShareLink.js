@@ -138,3 +138,11 @@ export async function fetchClosingShare(token, { client: sb } = {}) {
   if (error) return null;
   return data && typeof data === 'object' && data.closing ? data : null;
 }
+
+/** O cliente avisa que pagou (migration 042). Nao baixa o pagamento; so avisa o dono. */
+export async function notifyClosingPaid(token, { client: sb } = {}) {
+  if (!token || String(token).length < 48) return false;
+  const supa = sb || (await import('@/lib/supabase')).supabase;
+  const { data, error } = await supa.rpc('avisar_pagamento_fechamento', { p_token: token });
+  return !error && data === true;
+}
