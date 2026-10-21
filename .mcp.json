@@ -1,32 +1,24 @@
 {
   "mcpServers": {
-    "supabase": {
-      "type": "http",
-      "url": "https://mcp.supabase.com/mcp"
-    },
-    "desktop-commander": {
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "@wonderwhy-er/desktop-commander@latest"]
-    },
     "playwright": {
       "command": "cmd",
-      "args": ["/c", "npx", "-y", "@playwright/mcp@latest"]
+      "args": ["/c", "npx", "-y", "@playwright/mcp@0.0.83"]
     },
     "context7": {
       "command": "cmd",
-      "args": ["/c", "npx", "-y", "@upstash/context7-mcp@latest"]
+      "args": ["/c", "npx", "-y", "@upstash/context7-mcp@4.4.4"]
     },
     "memory": {
       "command": "cmd",
-      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-memory"]
+      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-memory@2.0.0"]
     },
     "shadcn": {
       "command": "cmd",
-      "args": ["/c", "npx", "-y", "shadcn@latest", "registry:mcp"]
+      "args": ["/c", "npx", "-y", "shadcn@4.22.1", "registry:mcp"]
     },
     "sequential-thinking": {
       "command": "cmd",
-      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-sequential-thinking"]
+      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-sequential-thinking@2.0.0"]
     }
   }
 }
