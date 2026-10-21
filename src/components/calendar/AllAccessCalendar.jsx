@@ -152,6 +152,7 @@ export default function AllAccessCalendar({
                 <button
                   type="button"
                   onClick={() => onDateSelect?.(day)}
+                  aria-label={barLabel ? `Dia ${dayNum}: ${barLabel}` : `Dia ${dayNum}`}
                   className={`absolute inset-y-0 inset-x-[2px] rounded-[10px] p-0 flex flex-col items-center justify-start pt-1.5 transition-all duration-150 ${
                     isSel
                       ? 'bg-[#222222] ring-1 ring-[#ffd400]'

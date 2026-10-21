@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { abrirEventoDemo } from '../helpers/abrirEvento.js';
 import { seedAuthWithData } from '../helpers/dataMocks.js';
 import { auditOverlayOverflow, scrollModalBody } from '../helpers/scrollAudit.js';
 
@@ -51,7 +52,7 @@ test.describe('overflow em modais (desktop)', () => {
 
   test('event detail dialog sem overflow horizontal', async ({ page }) => {
     await gotoAuthed(page, '/calendar');
-    await page.getByRole('button', { name: /E2E Cliente Demo E2E Show Demo/i }).first().click();
+    await abrirEventoDemo(page);
     await expect(page.getByRole('dialog')).toBeVisible({ timeout: 10_000 });
 
     const audit = await auditOverlayOverflow(page);

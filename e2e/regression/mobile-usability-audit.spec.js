@@ -4,6 +4,7 @@
 //  2) depois de fechar uma janela a tela fica sem toque / sem rolagem (precisava atualizar);
 //  3) algum campo de digitar tem letra < 16px (o iPhone da zoom sozinho e nao volta).
 import { test, expect } from '@playwright/test';
+import { abrirEventoDemo } from '../helpers/abrirEvento.js';
 import { seedAuthWithData } from '../helpers/dataMocks.js';
 import { APP_ROUTES } from '../helpers/scrollAudit.js';
 
@@ -50,9 +51,7 @@ async function auditReach(page, rootSelector) {
 }
 
 async function openDemoEvent(page) {
-  const desk = page.getByRole('button', { name: /E2E Cliente Demo E2E Show Demo/i }).first();
-  if (await desk.isVisible().catch(() => false)) await desk.click();
-  else await page.locator('[data-app-scroll]').getByText(/E2E Cliente Demo|E2E Show Demo/).first().click();
+  await abrirEventoDemo(page);
   // No celular o toque abre primeiro a gaveta de acoes; dela vai para o detalhe (qualquer caminho).
   const ver = page.getByRole('button', { name: /ver detalhes do evento/i }).last();
   if (await ver.waitFor({ state: 'visible', timeout: 6_000 }).then(() => true).catch(() => false)) {

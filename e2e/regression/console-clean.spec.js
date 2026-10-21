@@ -2,6 +2,7 @@
 // reclamar de algo que costuma esconder bug: chave duplicada em lista, janela sem titulo,
 // NaN na tela, troca de componente controlado/nao controlado.
 import { test, expect } from '@playwright/test';
+import { abrirEventoDemo } from '../helpers/abrirEvento.js';
 import { seedAuthWithData } from '../helpers/dataMocks.js';
 import { APP_ROUTES } from '../helpers/scrollAudit.js';
 
@@ -50,8 +51,7 @@ test.describe('console limpo (sem avisos do React)', () => {
     await page.setViewportSize({ width: 1280, height: 900 });
     const achados = coletar(page);
     await abrir(page, '/calendar');
-    const btn = page.getByRole('button', { name: /E2E Cliente Demo E2E Show Demo/i }).first();
-    await btn.click();
+    await abrirEventoDemo(page);
     await expect(page.getByRole('dialog')).toBeVisible({ timeout: 10_000 });
     await page.waitForTimeout(1_000);
     expect(achados, achados.join('\n---\n')).toEqual([]);

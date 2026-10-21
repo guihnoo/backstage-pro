@@ -1,6 +1,7 @@
 // Rede de seguranca para juntar as duas janelas de detalhe do evento (missao 5d404).
 // Tem que continuar passando antes e depois da troca.
 import { test, expect } from '@playwright/test';
+import { abrirEventoDemo } from '../helpers/abrirEvento.js';
 import { seedAuthWithData } from '../helpers/dataMocks.js';
 
 async function abrirEventoNaAgenda(page) {
@@ -14,7 +15,7 @@ async function abrirEventoNaAgenda(page) {
   await seedAuthWithData(page);
   await page.goto('/calendar', { waitUntil: 'domcontentloaded' });
   await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 15_000 });
-  await page.getByRole('button', { name: /E2E Cliente Demo E2E Show Demo/i }).first().click();
+  await abrirEventoDemo(page);
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible({ timeout: 10_000 });
   return { dialog, escritas };
