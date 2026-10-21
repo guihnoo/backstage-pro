@@ -1317,7 +1317,7 @@ export default function CalendarPage() {
             onDateSelect={(day) => setSelectedDate(day)}
             onEventClick={handleEventClick}
             onNewEvent={(date) => handleNewEvent(date)}
-            onRegisterWork={(ev) => handleQuickWorkEntry(ev)}
+            onRegisterWork={(ev) => handleQuickLogForEvent(ev, selectedDate || new Date())}
             onAddExpense={(ev) => {
               setEditingExpense(null);
               setPrefilledEventIdForExpense(ev.id);
