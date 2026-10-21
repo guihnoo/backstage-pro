@@ -1,18 +1,16 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import { differenceInDays, parseISO, format, isValid, addWeeks, addMonths } from 'date-fns';
+import { useEffect, useMemo, useState, useCallback } from 'react';
+import { differenceInDays, parseISO, format, isValid, addWeeks, addMonths, addDays, startOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Sparkles, BookmarkPlus, TrendingUp, Star, CalendarDays, Repeat2 } from 'lucide-react';
+import { Loader2, Sparkles, BookmarkPlus, TrendingUp, Star, CalendarDays, Repeat2, ChevronLeft, ChevronRight, ChevronDown, X } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import appToast from '@/lib/appToast';
-import { hardNavigate } from '@/lib/hardNavigate';
-import { normalizeDateString } from '@/components/utils/dateUtils';
+import { normalizeDateString, todayLocalISO } from '@/components/utils/dateUtils';
 import { useEvents } from '@/lib/useEvents';
 import { getEventCacheAmount, isCancelledEvent } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
@@ -83,6 +81,11 @@ export default function EventForm({
   const [repeatEnabled, setRepeatEnabled] = useState(false);
   const [repeatTimes, setRepeatTimes] = useState(3);
   const [repeatUnit, setRepeatUnit] = useState('weeks');
+  // Visual "Novo trabalho" (prototipo All Access): faixa de dias para tocar + detalhes recolhidos.
+  const [pickingEnd, setPickingEnd] = useState(false);
+  const [stripOffset, setStripOffset] = useState(0);
+  const [showDateInputs, setShowDateInputs] = useState(false);
+  const [showMore, setShowMore] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -119,6 +122,11 @@ export default function EventForm({
     setRepeatEnabled(false);
     setRepeatTimes(3);
     setRepeatUnit('weeks');
+    setPickingEnd(false);
+    setStripOffset(0);
+    setShowDateInputs(false);
+    // Editando com algo preenchido nos detalhes: abre "Mais detalhes" para nao esconder o que existe.
+    setShowMore(Boolean(isEditing && (seed.payment_due_date || seed.nf_number || seed.nfe_numero || seed.observacoes_md)));
     if (!isOpen) setExtraClients([]);
   }, [isOpen, event, prefillData, initialData, profile?.daily_rate, clients, theme.primaryHex]);
 
@@ -234,6 +242,57 @@ export default function EventForm({
     const avg = Math.round(prev3.reduce((s, e) => s + Number(e.daily_cache_value), 0) / prev3.length);
     return { lastValue: Number(last.daily_cache_value), avg, count: prev3.length };
   }, [allEvents, formData.client_id, event?.id]);
+
+  // Pilulas de cliente: os 4 com show mais recente (o resto fica na busca logo abaixo).
+  const quickClients = useMemo(() => {
+    const lastByClient = new Map();
+    for (const e of allEvents || []) {
+      if (!e?.client_id || isCancelledEvent(e)) continue;
+      const d = e.start_date || '';
+      if (!lastByClient.has(e.client_id) || d > lastByClient.get(e.client_id)) lastByClient.set(e.client_id, d);
+    }
+    const ranked = allClients
+      .filter((c) => lastByClient.has(c.id))
+      .sort((a, b) => (lastByClient.get(b.id) > lastByClient.get(a.id) ? 1 : -1));
+    const list = (ranked.length ? ranked : allClients).slice(0, 4);
+    if (selectedClient && !list.some((c) => c.id === selectedClient.id)) list.unshift(selectedClient);
+    return list.slice(0, 5);
+  }, [allEvents, allClients, selectedClient]);
+
+  // Faixa de 14 dias (2 semanas, comecando na segunda) em volta da data escolhida ou de hoje.
+  const stripDays = useMemo(() => {
+    const anchor = parseISO(formData.start_date || todayLocalISO());
+    const base = addDays(startOfWeek(isValid(anchor) ? anchor : new Date(), { weekStartsOn: 1 }), stripOffset * 14);
+    return Array.from({ length: 14 }, (_, i) => format(addDays(base, i), 'yyyy-MM-dd'));
+  }, [formData.start_date, stripOffset]);
+
+  const busyDays = useMemo(() => {
+    const set = new Set();
+    for (const e of allEvents || []) {
+      if (isCancelledEvent(e) || (event && e.id === event.id) || !e.start_date) continue;
+      const start = e.start_date.slice(0, 10);
+      const end = (e.end_date || e.start_date).slice(0, 10);
+      for (const d of stripDays) if (d >= start && d <= end) set.add(d);
+    }
+    return set;
+  }, [allEvents, stripDays, event]);
+
+  // 1o toque = primeiro dia; 2o toque (no mesmo dia ou depois) = ultimo dia. Tocar antes recomeca.
+  const handleDayTap = (iso) => {
+    const closesRange = pickingEnd && formData.start_date && iso >= formData.start_date;
+    setFormData((prev) => (closesRange ? { ...prev, end_date: iso } : { ...prev, start_date: iso, end_date: iso }));
+    setPickingEnd(!closesRange);
+  };
+
+  const rangeLabel = (() => {
+    if (!formData.start_date) return 'nenhum dia';
+    const first = parseISO(formData.start_date);
+    const last = parseISO(formData.end_date || formData.start_date);
+    if (!isValid(first) || !isValid(last)) return 'nenhum dia';
+    const days = Math.max(1, differenceInDays(last, first) + 1);
+    const fmt = (d) => format(d, 'dd MMM', { locale: ptBR }).toUpperCase();
+    return days === 1 ? `${fmt(first)} · 1 dia` : `${fmt(first)} → ${fmt(last)} · ${days} dias`;
+  })();
 
   const handleClientChange = (clientId) => {
     const client = allClients.find((c) => c.id === clientId);
@@ -391,6 +450,8 @@ export default function EventForm({
     }
   };
 
+  const tagCls = 'font-tag text-[10px] tracking-[1px] uppercase text-[#a8a8a8]';
+
   return (
     <>
     <EventTemplateModal
@@ -399,32 +460,56 @@ export default function EventForm({
       onSelectTemplate={handleSelectTemplate}
     />
     <Dialog open={isOpen} onOpenChange={onClose} modal={!clientQuickCreateOpen && !showTemplateModal}>
-      <DialogContent className="sm:max-w-2xl p-0 flex flex-col overflow-hidden h-[95dvh] max-h-[95dvh]">
-        <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 sm:pt-5 border-b border-[#262626] flex-shrink-0 pr-14">
-          <div className="flex items-center justify-between">
-            <DialogTitle>{event?.id ? 'Editar Evento' : 'Novo Evento'}</DialogTitle>
-            {!event?.id && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowTemplateModal(true)}
-                className="bp-hover-primary hover:bg-[color-mix(in_srgb,var(--bp-primary)_10%,transparent)] gap-1.5 text-xs"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                Usar template
-              </Button>
-            )}
-          </div>
+      <DialogContent
+        className="sm:max-w-xl p-0 gap-0 flex flex-col overflow-hidden h-[95dvh] max-h-[95dvh]"
+        // Sem foco automatico no 1o botao: no celular nao abre o teclado nem marca "Usar modelo".
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <DialogHeader className="px-[18px] pt-4 pb-2 flex-shrink-0 pr-14 space-y-0">
+          <div className={tagCls}>AGENDA</div>
+          <DialogTitle className="text-[30px] mt-0.5">{event?.id ? 'Editar trabalho' : 'Novo trabalho'}</DialogTitle>
         </DialogHeader>
 
         <form className="flex flex-col flex-1 min-h-0" onSubmit={handleSubmit}>
           <ScrollArea fill>
-          <div className="space-y-4 p-4 sm:p-6 pb-2">
+          <div className="space-y-4 px-[18px] pt-2 pb-4">
+          {!event?.id && (
+            <button
+              type="button"
+              onClick={() => setShowTemplateModal(true)}
+              className="w-full h-11 rounded-[12px] border border-dashed border-[#ff2e88] text-[#ff2e88] text-[13px] font-extrabold flex items-center justify-center gap-2 active:scale-[0.99]"
+            >
+              <Sparkles className="w-4 h-4" />
+              Usar um modelo salvo
+            </button>
+          )}
+
+          {/* Cliente: pilulas dos mais recentes + busca/criar */}
           <div className="space-y-2">
-            <Label>Cliente</Label>
+            <Label>Cliente / contratante</Label>
+            {quickClients.length > 0 && (
+              <div className="flex gap-1.5 overflow-x-auto -mx-[18px] px-[18px] pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {quickClients.map((c) => {
+                  const active = c.id === formData.client_id;
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => handleClientChange(c.id)}
+                      className={`shrink-0 h-10 pl-2 pr-3.5 rounded-full border flex items-center gap-2 text-[13px] font-extrabold transition-colors ${
+                        active ? 'bg-white border-white text-[#0a0a0a]' : 'bg-[#161616] border-[#333333] text-white'
+                      }`}
+                    >
+                      <span className="w-5 h-5 rounded-full shrink-0" style={{ background: resolveEventColor({ client_id: c.id }, c) }} />
+                      <span className="max-w-[140px] truncate">{c.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             {clientsLoading && allClients.length === 0 ? (
-              <Skeleton className="h-11 w-full rounded-md" />
+              <Skeleton className="h-12 w-full rounded-[12px]" />
             ) : (
               <ClientCombobox
                 clients={allClients}
@@ -435,96 +520,140 @@ export default function EventForm({
               />
             )}
             {clientHistory && (
-              <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[#161616] border border-[#262626]/50 text-xs">
+              <div className="flex items-center gap-3 px-3 py-2 rounded-[12px] bg-[#0a0a0a] border border-[#222222] text-xs">
                 <div className="flex items-center gap-1 text-[#a8a8a8]">
                   <CalendarDays className="w-3.5 h-3.5 shrink-0" />
                   <span><span className="font-semibold text-white">{clientHistory.totalShows}</span> show{clientHistory.totalShows !== 1 ? 's' : ''}</span>
                 </div>
                 <span className="text-[#555555]">·</span>
                 <div className="flex items-center gap-1 text-[#a8a8a8]">
-                  <TrendingUp className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
+                  <TrendingUp className="w-3.5 h-3.5 shrink-0 text-[#ffd400]" />
                   <span>Média <span className="font-semibold text-white">{isVisible ? formatCurrency(clientHistory.avgCache) : '•••••'}</span></span>
                 </div>
                 {clientHistory.score !== null && (
                   <>
                     <span className="text-[#555555]">·</span>
                     <div className="flex items-center gap-1">
-                      <Star className={`w-3.5 h-3.5 shrink-0 ${clientHistory.score >= 80 ? 'text-emerald-400' : clientHistory.score >= 50 ? 'text-[#ffd400]' : 'text-[#ff2e88]'}`} />
-                      <span className={`font-semibold ${clientHistory.score >= 80 ? 'text-emerald-400' : clientHistory.score >= 50 ? 'text-[#ffd400]' : 'text-[#ff2e88]'}`}>{clientHistory.score}%</span>
+                      <Star className={`w-3.5 h-3.5 shrink-0 ${clientHistory.score >= 50 ? 'text-[#ffd400]' : 'text-[#ff2e88]'}`} />
+                      <span className={`font-semibold ${clientHistory.score >= 50 ? 'text-[#ffd400]' : 'text-[#ff2e88]'}`}>{clientHistory.score}%</span>
                     </div>
                   </>
                 )}
                 {clientHistory.lastShowDate && (
-                  <>
-                    <span className="text-[#555555] ml-auto">último {format(parseISO(clientHistory.lastShowDate), "dd/MM/yy")}</span>
-                  </>
+                  <span className="text-[#666666] ml-auto">último {format(parseISO(clientHistory.lastShowDate), 'dd/MM/yy')}</span>
                 )}
               </div>
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="ef-title">Nome do evento (opcional)</Label>
+          <div>
+            <Label htmlFor="ef-title" className="sr-only">Nome do evento</Label>
             <Input
               id="ef-title"
               value={formData.title}
               onChange={(e) => setField('title', e.target.value)}
-              placeholder={selectedClient?.name ? `Padrão: ${selectedClient.name}` : 'Usa o nome do cliente se vazio'}
+              placeholder={selectedClient?.name ? `Nome do evento (padrão: ${selectedClient.name})` : 'Nome do evento (ex.: Feira Agro)'}
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="ef-start-date">Data inicial</Label>
-              <Input id="ef-start-date" type="date" value={formData.start_date} onChange={(e) => setField('start_date', e.target.value)} />
+          {/* Dias: toque no primeiro e no ultimo */}
+          <div className="space-y-2">
+            <div className="flex items-end justify-between gap-2">
+              <div className={tagCls}>
+                Dias · <span className="text-[#ffd400]">{rangeLabel}</span>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <button type="button" aria-label="Duas semanas antes" onClick={() => setStripOffset((o) => o - 1)} className="h-8 w-8 rounded-full bg-[#1a1a1a] text-white flex items-center justify-center">
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button type="button" aria-label="Duas semanas depois" onClick={() => setStripOffset((o) => o + 1)} className="h-8 w-8 rounded-full bg-[#1a1a1a] text-white flex items-center justify-center">
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="ef-end-date">Data final</Label>
-              <Input id="ef-end-date" type="date" value={formData.end_date} onChange={(e) => setField('end_date', e.target.value)} />
+            <div className="grid grid-cols-7 gap-1.5" role="group" aria-label="Escolher dias do trabalho">
+              {stripDays.map((iso) => {
+                const d = parseISO(iso);
+                const inRange = Boolean(formData.start_date) && iso >= formData.start_date && iso <= (formData.end_date || formData.start_date);
+                const isToday = iso === todayLocalISO();
+                const weekend = d.getDay() === 0 || d.getDay() === 6;
+                return (
+                  <button
+                    key={iso}
+                    type="button"
+                    aria-pressed={inRange}
+                    aria-label={format(d, "EEEE, d 'de' MMMM", { locale: ptBR })}
+                    onClick={() => handleDayTap(iso)}
+                    className={`relative h-[52px] rounded-[10px] border flex flex-col items-center justify-center transition-colors ${
+                      inRange
+                        ? 'bg-[#ffd400] border-[#ffd400] text-[#0a0a0a]'
+                        : `bg-[#0a0a0a] ${isToday ? 'border-[#ffd400]' : 'border-[#2a2a2a]'} ${weekend ? 'text-[#a8a8a8]' : 'text-white'}`
+                    }`}
+                  >
+                    <span className="font-tag text-[9px] font-bold uppercase leading-none">{format(d, 'EEE', { locale: ptBR }).slice(0, 3)}</span>
+                    <span className="font-poster text-[18px] leading-none mt-1">{format(d, 'd')}</span>
+                    {busyDays.has(iso) && (
+                      <span className={`absolute bottom-1 w-1.5 h-1.5 rounded-full ${inRange ? 'bg-[#0a0a0a]' : 'bg-[#ff2e88]'}`} />
+                    )}
+                  </button>
+                );
+              })}
             </div>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[11px] text-[#888888]">
+                {pickingEnd ? 'Agora toque no último dia (ou salve se for um dia só).' : 'Toque no primeiro dia. Ponto rosa = já tem show.'}
+              </p>
+              <button type="button" onClick={() => setShowDateInputs((v) => !v)} className="text-[11px] font-bold text-[#ffd400] underline underline-offset-2 shrink-0">
+                {showDateInputs ? 'esconder datas' : 'digitar datas'}
+              </button>
+            </div>
+            {showDateInputs && (
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="ef-start-date">Data inicial</Label>
+                  <Input id="ef-start-date" type="date" value={formData.start_date} onChange={(e) => setField('start_date', e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="ef-end-date">Data final</Label>
+                  <Input id="ef-end-date" type="date" value={formData.end_date} onChange={(e) => setField('end_date', e.target.value)} />
+                </div>
+              </div>
+            )}
           </div>
 
           {conflictingEvents.length > 0 && (
-            <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg bg-[#ffd400]/10 border border-[#ffd400]/40 text-xs">
-              <span className="text-[#ffd400] text-base leading-none mt-0.5">⚠</span>
-              <div className="space-y-1 min-w-0">
-                <p className="font-semibold text-[#ffd400]">
-                  {conflictingEvents.length === 1 ? 'Conflito de agenda' : `${conflictingEvents.length} conflitos de agenda`}
-                </p>
-                <div className="space-y-0.5">
-                  {conflictingEvents.slice(0, 3).map((e) => {
-                    const client = allClients.find((c) => c.id === e.client_id);
-                    return (
-                      <p key={e.id} className="text-[#ffd400]/70 truncate">
-                        {e.title || client?.name || 'Evento sem nome'} — {e.start_date ? format(parseISO(e.start_date), 'dd/MM', { locale: ptBR }) : '?'}
-                        {e.end_date && e.end_date !== e.start_date ? ` a ${format(parseISO(e.end_date), 'dd/MM', { locale: ptBR })}` : ''}
-                      </p>
-                    );
-                  })}
-                  {conflictingEvents.length > 3 && (
-                    <p className="text-[#ffd400]/50">+{conflictingEvents.length - 3} mais…</p>
-                  )}
-                </div>
+            <div className="rounded-[12px] bg-[#1a1a1a] px-3 py-2.5 text-xs" style={{ borderLeft: '4px solid #ff2e88' }}>
+              <p className="font-extrabold text-white text-sm">
+                {conflictingEvents.length === 1 ? 'Já tem show nesse dia' : `${conflictingEvents.length} shows nesses dias`}
+              </p>
+              <div className="space-y-0.5 mt-1">
+                {conflictingEvents.slice(0, 3).map((e) => {
+                  const client = allClients.find((c) => c.id === e.client_id);
+                  return (
+                    <p key={e.id} className="text-[#c8c8c8] truncate">
+                      {e.title || client?.name || 'Evento sem nome'} — {e.start_date ? format(parseISO(e.start_date), 'dd/MM', { locale: ptBR }) : '?'}
+                      {e.end_date && e.end_date !== e.start_date ? ` a ${format(parseISO(e.end_date), 'dd/MM', { locale: ptBR })}` : ''}
+                    </p>
+                  );
+                })}
+                {conflictingEvents.length > 3 && (
+                  <p className="text-[#888888]">+{conflictingEvents.length - 3} mais…</p>
+                )}
               </div>
             </div>
           )}
 
           {event?.id && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="ef-start-time">Horário inicial</Label>
                 <Input id="ef-start-time" type="time" value={formData.start_time} onChange={(e) => setField('start_time', e.target.value)} />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="ef-end-time">Horário final</Label>
                 <Input id="ef-end-time" type="time" value={formData.end_time} onChange={(e) => setField('end_time', e.target.value)} />
               </div>
             </div>
-          )}
-          {!event?.id && (
-            <p className="text-xs text-[#888888] rounded-lg border border-[#262626]/50 bg-[#161616]/40 px-3 py-2">
-              Horários são registrados no dia do evento (toque longo na barra da agenda ou aba Horas).
-            </p>
           )}
 
           <EventLocationSection
@@ -536,188 +665,194 @@ export default function EventForm({
             onChange={(patch) => setFormData((prev) => ({ ...prev, ...patch }))}
           />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="ef-cache">Cachê por Dia (R$)</Label>
-              <Input id="ef-cache" type="text" inputMode="decimal" placeholder="0,00" value={formData.daily_cache_value} onChange={(e) => setField('daily_cache_value', e.target.value)} />
-              {clientCacheHint && (
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-[11px] text-[#888888]">
-                    Histórico: {isVisible ? `R$ ${clientCacheHint.lastValue.toLocaleString('pt-BR')}` : '•••'} último
-                    {clientCacheHint.count > 1 && ` · ${isVisible ? `R$ ${clientCacheHint.avg.toLocaleString('pt-BR')}` : '•••'} média`}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setField('daily_cache_value', String(clientCacheHint.lastValue))}
-                    className="text-[11px] font-semibold text-[#a8a8a8] hover:text-white transition-colors underline underline-offset-2 flex-shrink-0"
-                  >
-                    Usar
-                  </button>
-                </div>
+          {/* Cache e alimentacao em blocos (como no prototipo) */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-[12px] bg-[#0a0a0a] border border-[#333333] px-3 py-2 focus-within:border-[#ffd400]">
+              <label htmlFor="ef-cache" className="font-tag text-[9px] uppercase text-[#a8a8a8] block">Cachê por diária</label>
+              <div className="flex items-baseline gap-1">
+                <span className="font-poster text-[20px] text-white">R$</span>
+                <input
+                  id="ef-cache"
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="0,00"
+                  value={formData.daily_cache_value}
+                  onChange={(e) => setField('daily_cache_value', e.target.value)}
+                  className="w-full min-w-0 bg-transparent font-poster text-[24px] leading-tight text-white placeholder:text-[#555555] outline-none"
+                />
+              </div>
+              {clientCacheHint ? (
+                <button
+                  type="button"
+                  onClick={() => setField('daily_cache_value', String(clientCacheHint.lastValue))}
+                  className="text-[10px] text-[#ffd400] font-bold text-left"
+                >
+                  último {isVisible ? `R$ ${clientCacheHint.lastValue.toLocaleString('pt-BR')}` : '•••'} · usar
+                </button>
+              ) : (
+                <p className="text-[10px] text-[#ffd400]">{Number(profile?.daily_rate) > 0 ? 'seu cachê padrão' : 'valor de cada dia'}</p>
               )}
             </div>
-            <div className="space-y-2">
-              <Label>Modelo de pagamento</Label>
-              <Select value={formData.payment_model} onValueChange={(value) => setField('payment_model', value)}>
-                <SelectTrigger>
+            <div className="rounded-[12px] bg-[#0a0a0a] border border-[#333333] px-3 py-2">
+              <div className="font-tag text-[9px] uppercase text-[#a8a8a8]">Alimentação</div>
+              <Select value={formData.meal_policy || '__cliente__'} onValueChange={(v) => setField('meal_policy', v === '__cliente__' ? null : v)}>
+                <SelectTrigger aria-label="Alimentação neste evento" className="h-9 px-0 border-0 bg-transparent font-normal">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {PAYMENT_MODELS.map((model) => (
-                    <SelectItem key={model.value} value={model.value}>
-                      {model.label}
-                    </SelectItem>
+                  <SelectItem value="__cliente__">
+                    Igual ao cliente{selectedClient?.meal_policy ? ` (${MEAL_POLICY_LABELS[selectedClient.meal_policy] || ''})` : ''}
+                  </SelectItem>
+                  {Object.entries(MEAL_POLICY_LABELS).map(([key, label]) => (
+                    <SelectItem key={key} value={key}>{label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              <p className="text-[10px] text-[#888888]">{formData.meal_policy ? 'só neste trabalho' : 'padrão do cliente'}</p>
             </div>
           </div>
 
-          {/* Alimentacao so deste evento (padrao vem do cliente) */}
-          <div className="space-y-2">
-            <Label>Alimentação neste evento</Label>
-            <Select value={formData.meal_policy || '__cliente__'} onValueChange={(v) => setField('meal_policy', v === '__cliente__' ? null : v)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__cliente__">
-                  Igual ao cliente{selectedClient?.meal_policy ? ` (${MEAL_POLICY_LABELS[selectedClient.meal_policy] || ''})` : ''}
-                </SelectItem>
-                {Object.entries(MEAL_POLICY_LABELS).map(([key, label]) => (
-                  <SelectItem key={key} value={key}>{label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="ef-payment-due">Vencimento do pagamento</Label>
-            <Input
-              id="ef-payment-due"
-              type="date"
-              value={formData.payment_due_date}
-              onChange={(e) => setField('payment_due_date', e.target.value)}
-            />
-          </div>
-
-          {eventSummary && (
-            <div
-              className="flex items-center justify-between px-4 py-3 rounded-xl border text-sm"
-              style={theme.activeSurfaceStyle}
+          {/* Mais detalhes: cobranca, NF, observacoes, repetir */}
+          <div className="rounded-[14px] border border-[#2a2a2a]">
+            <button
+              type="button"
+              aria-expanded={showMore}
+              onClick={() => setShowMore((v) => !v)}
+              className="w-full h-12 px-3.5 flex items-center justify-between text-left"
             >
-              <span className="text-[#a8a8a8]">
-                {eventSummary.days} {eventSummary.days === 1 ? 'dia' : 'dias'} × R$ {moneyNum(formData.daily_cache_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              <span className="text-[13px] font-extrabold text-white">Mais detalhes</span>
+              <span className="flex items-center gap-2 text-[11px] text-[#888888]">
+                {PAYMENT_MODELS.find((m) => m.value === formData.payment_model)?.label}
+                <ChevronDown className={`w-4 h-4 transition-transform ${showMore ? 'rotate-180' : ''}`} />
               </span>
-              <span className="font-bold" style={theme.accentStyle}>
-                = R$ {eventSummary.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-              </span>
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="ef-nf-number">Nº Nota Fiscal</Label>
-              <Input
-                id="ef-nf-number"
-                placeholder="Ex: 000123"
-                value={formData.nf_number}
-                onChange={(e) => setField('nf_number', e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="ef-nf-date">Data de emissão NF</Label>
-              <Input
-                id="ef-nf-date"
-                type="date"
-                value={formData.nf_issued_at}
-                onChange={(e) => setField('nf_issued_at', e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="ef-notes">Observações</Label>
-            <Textarea id="ef-notes" value={formData.observacoes_md} onChange={(e) => setField('observacoes_md', e.target.value)} />
-          </div>
-
-          {!event?.id && (
-            <div className="rounded-xl border border-[#262626] bg-[#161616]/30 p-4 space-y-3">
-              <button
-                type="button"
-                onClick={() => setRepeatEnabled(v => !v)}
-                className="flex items-center gap-2 w-full text-left"
-              >
-                <Repeat2 className={`w-4 h-4 flex-shrink-0 transition-colors ${repeatEnabled ? 'text-[#ffd400]' : 'text-[#888888]'}`} />
-                <span className={`text-sm font-medium transition-colors ${repeatEnabled ? 'text-white' : 'text-[#a8a8a8]'}`}>
-                  Repetir este evento
-                </span>
-                <div className={`ml-auto w-8 h-4 rounded-full transition-colors flex-shrink-0 ${repeatEnabled ? 'bg-[#ffd400]' : 'bg-[#222222]'}`}>
-                  <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${repeatEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
-                </div>
-              </button>
-              {repeatEnabled && (
-                <div className="flex items-center gap-2 pl-6">
-                  <span className="text-xs text-[#a8a8a8] whitespace-nowrap">Repetir</span>
-                  <input
-                    type="number"
-                    min={1}
-                    max={24}
-                    value={repeatTimes}
-                    onChange={e => setRepeatTimes(Math.max(1, Math.min(24, Number(e.target.value))))}
-                    className="w-14 text-center bg-[#161616] border border-[#333333] rounded-lg text-white text-sm h-8 font-mono"
-                  />
-                  <span className="text-xs text-[#a8a8a8] whitespace-nowrap">vezes a cada</span>
-                  <div className="flex gap-1">
-                    {[{ v: 'weeks', l: 'Semana' }, { v: 'months', l: 'Mês' }].map(opt => (
+            </button>
+            {showMore && (
+              <div className="space-y-4 px-3.5 pb-4">
+                <div className="space-y-1.5">
+                  <Label>Modelo de pagamento</Label>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {PAYMENT_MODELS.map((model) => (
                       <button
-                        key={opt.v}
+                        key={model.value}
                         type="button"
-                        onClick={() => setRepeatUnit(opt.v)}
-                        className={`px-3 h-8 rounded-lg text-xs font-semibold transition-colors ${
-                          repeatUnit === opt.v
-                            ? 'bg-[#ffd400]/20 border border-[#ffd400]/50 text-[#ffd400]'
-                            : 'bg-[#161616] border border-[#262626] text-[#a8a8a8] hover:border-[#333333]'
+                        aria-pressed={formData.payment_model === model.value}
+                        onClick={() => setField('payment_model', model.value)}
+                        className={`h-[38px] rounded-full border text-xs font-extrabold transition-colors ${
+                          formData.payment_model === model.value ? 'bg-white border-white text-[#0a0a0a]' : 'bg-transparent border-[#333333] text-[#c8c8c8]'
                         }`}
                       >
-                        {opt.l}
+                        {model.label}
                       </button>
                     ))}
                   </div>
                 </div>
-              )}
-              {repeatEnabled && (
-                <p className="text-[10px] text-[#888888] pl-6">
-                  Criará {repeatTimes + 1} shows no total · mesmo cliente, horário e cachê
-                </p>
-              )}
-            </div>
-          )}
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="ef-payment-due">Vencimento do pagamento</Label>
+                  <Input id="ef-payment-due" type="date" value={formData.payment_due_date} onChange={(e) => setField('payment_due_date', e.target.value)} />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="ef-nf-number">Nº nota fiscal</Label>
+                    <Input id="ef-nf-number" placeholder="Ex: 000123" value={formData.nf_number} onChange={(e) => setField('nf_number', e.target.value)} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="ef-nf-date">Emissão da NF</Label>
+                    <Input id="ef-nf-date" type="date" value={formData.nf_issued_at} onChange={(e) => setField('nf_issued_at', e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="ef-notes">Observações</Label>
+                  <Textarea id="ef-notes" value={formData.observacoes_md} onChange={(e) => setField('observacoes_md', e.target.value)} />
+                </div>
+
+                {!event?.id && (
+                  <div className="space-y-2.5">
+                    <button type="button" onClick={() => setRepeatEnabled((v) => !v)} className="flex items-center gap-2 w-full text-left">
+                      <Repeat2 className={`w-4 h-4 flex-shrink-0 ${repeatEnabled ? 'text-[#ffd400]' : 'text-[#888888]'}`} />
+                      <span className={`text-sm font-bold ${repeatEnabled ? 'text-white' : 'text-[#a8a8a8]'}`}>Repetir este evento</span>
+                      <span className={`ml-auto w-10 h-6 rounded-full p-0.5 flex-shrink-0 transition-colors ${repeatEnabled ? 'bg-[#ffd400]' : 'bg-[#333333]'}`}>
+                        <span className={`block w-5 h-5 rounded-full bg-[#0a0a0a] transition-transform ${repeatEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
+                      </span>
+                    </button>
+                    {repeatEnabled && (
+                      <>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs text-[#a8a8a8]">Mais</span>
+                          <input
+                            type="number"
+                            min={1}
+                            max={24}
+                            value={repeatTimes}
+                            onChange={(e) => setRepeatTimes(Math.max(1, Math.min(24, Number(e.target.value))))}
+                            className="w-16 h-10 text-center bg-[#0a0a0a] border border-[#333333] rounded-[10px] text-white text-base font-tag"
+                          />
+                          <span className="text-xs text-[#a8a8a8]">vezes, a cada</span>
+                          {[{ v: 'weeks', l: 'Semana' }, { v: 'months', l: 'Mês' }].map((opt) => (
+                            <button
+                              key={opt.v}
+                              type="button"
+                              onClick={() => setRepeatUnit(opt.v)}
+                              className={`px-3.5 h-[38px] rounded-full text-xs font-extrabold border ${
+                                repeatUnit === opt.v ? 'bg-white border-white text-[#0a0a0a]' : 'border-[#333333] text-[#c8c8c8]'
+                              }`}
+                            >
+                              {opt.l}
+                            </button>
+                          ))}
+                        </div>
+                        <p className="text-[11px] text-[#888888]">Cria {repeatTimes + 1} shows no total · mesmo cliente e cachê</p>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleSaveTemplate}
+                  disabled={savingTemplate || loading}
+                  className="h-10 px-4 rounded-full border border-[#444444] text-white text-xs font-extrabold inline-flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {savingTemplate ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BookmarkPlus className="w-3.5 h-3.5" />}
+                  Salvar como modelo
+                </button>
+              </div>
+            )}
+          </div>
           </div>
           </ScrollArea>
 
-          <div className="flex flex-col sm:flex-row gap-2 px-4 py-3 sm:px-6 border-t border-[#262626] flex-shrink-0 pb-safe">
-            <Button
+          {/* Rodape: quanto vai render + salvar */}
+          <div className="flex items-center gap-3 px-[18px] pt-2.5 pb-4 border-t border-[#222222] flex-shrink-0 pb-safe">
+            <div className="min-w-0 flex-1">
+              <div className="font-tag text-[10px] text-[#a8a8a8]">VAI RENDER</div>
+              <div className="font-poster text-[26px] leading-none text-white truncate">
+                {isVisible ? formatCurrency(eventSummary?.total || 0) : '•••••'}
+              </div>
+              {eventSummary && (
+                <div className="font-tag text-[9px] text-[#888888] mt-0.5 truncate">
+                  {eventSummary.days} {eventSummary.days === 1 ? 'dia' : 'dias'} × {isVisible ? formatCurrency(moneyNum(formData.daily_cache_value)) : '•••'}
+                </div>
+              )}
+            </div>
+            <button
               type="button"
-              variant="outline"
-              onClick={handleSaveTemplate}
-              disabled={savingTemplate || loading}
-              className="sm:mr-auto border-[#333333] text-[#a8a8a8] hover:text-white gap-1.5 h-11"
+              onClick={() => onClose?.(false)}
+              disabled={loading}
+              aria-label="Cancelar"
+              className="h-14 w-14 rounded-full bg-[#222222] text-white flex items-center justify-center shrink-0 disabled:opacity-50"
             >
-              {savingTemplate ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BookmarkPlus className="w-3.5 h-3.5" />}
-              Salvar como template
-            </Button>
-            <Button type="button" variant="outline" onClick={() => onClose?.(false)} disabled={loading} className="h-11">
-              Cancelar
-            </Button>
-            <Button
+              <X className="w-5 h-5" />
+            </button>
+            <button
               type="submit"
               disabled={loading}
-              className="text-white h-11 border-0 hover:brightness-110 active:brightness-95 transition-[filter]"
-              style={theme.primaryStyle}
+              className="h-14 px-7 rounded-full bg-[#ffd400] text-[#0a0a0a] font-poster text-[20px] tracking-[2px] shrink-0 active:scale-[0.98] disabled:opacity-60 flex items-center gap-2"
             >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : event?.id ? 'Atualizar' : 'Criar'}
-            </Button>
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'SALVAR'}
+            </button>
           </div>
         </form>
       </DialogContent>

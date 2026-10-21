@@ -80,7 +80,7 @@ test.describe('EventForm — combobox de cliente', () => {
     await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 15_000 });
 
     await page.getByRole('button', { name: /novo trabalho/i }).click();
-    await expect(page.getByRole('dialog').getByText('Novo Evento')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('dialog').getByText(/novo trabalho/i)).toBeVisible({ timeout: 10_000 });
 
     const clientCombobox = page.getByRole('combobox').filter({ hasText: 'Buscar cliente ou criar novo' });
     await clientCombobox.click();
@@ -95,7 +95,7 @@ test.describe('EventForm — combobox de cliente', () => {
     await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 15_000 });
 
     await page.getByRole('button', { name: /novo trabalho/i }).click();
-    await expect(page.getByRole('dialog').getByText('Novo Evento')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('dialog').getByText(/novo trabalho/i)).toBeVisible({ timeout: 10_000 });
 
     const clientCombobox = page.getByRole('combobox').filter({ hasText: 'Buscar cliente ou criar novo' });
     await clientCombobox.click();
