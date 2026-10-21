@@ -144,6 +144,7 @@
 | 102 | Hint "show em Xd" na seção A Receber da Home | 2026-06-15 | ✅ `AReceber.jsx`: badge slate discreto para shows futuros ainda não realizados; "Xd atraso" para vencidos |
 | 103 | Repetição de Evento no formulário de criação | 2026-06-15 | ✅ `EventForm.jsx`: toggle "Repetir este evento" + seletor vezes (1–24) + unidade (Semana/Mês); cria série com mesmo cliente/horário/cachê |
 | 104 | Atalho para emitir NF-e ao finalizar evento | 2026-06-17 | ✅ Redirect para `nfse.gov.br/EmissorNacional/Login`; card com dados do evento (serviço/tomador/CNPJ/valor) após marcar "Realizado"; botão permanente para eventos já concluídos; step no "Próximos Passos" do calendário |
+| 105 | Terminar o visual **All Access** em todo o app (protótipo "Direção Visual", 19 telas) | 2026-10-21 | 🔄 Entregas 9 (acertos + funções do Dinheiro de volta) e 10 (janelas/formulários) feitas em `feat/visual-completo`; faltam 11 Novo trabalho, 12 Perfil, 13 Metas, 14 Mentor, 15 Mapa e telas de apoio |
 
 ---
 
