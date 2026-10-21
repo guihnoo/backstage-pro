@@ -3,13 +3,13 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-10-21 (visual All Access completo: entregas 9 a 15 + 2 bugs que estavam no ar; Claude Code — branch `feat/visual-completo`, sem deploy)  
-**Pendente de deploy:** tudo de 2026-10-09 (nada publicado na Vercel) · migration `034_events_payment_method.sql` **não aplicada** em produção  
+**Última atualização:** 2026-10-21 (visual All Access completo + auditoria; **publicado**; Claude Code)  
+**Pendente de deploy:** nada. Migrations 034–042 aplicadas em produção (042 em 2026-10-21 pelo Claude Code)  
 **Pasta local:** `C:\dev\backstage-pro` (desde 2026-10-09; a cópia antiga em `OneDrive\Documentos\backstage-pro` não é mais a pasta de trabalho)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último deploy:** 2026-06-25 — S179+S180 skeletons shimmer + PWA offline Fase 1 (`4709123`)  
+**Último deploy:** 2026-10-21 — visual All Access em todo o app + auditoria (`89132f5`, push de `feat/visual-completo` para `main`)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` v29 (auto-disconnect token inválido) + `analyze-nfe` v5 (Files API + maxOutputTokens 8192 + thinkingBudget 0 — **testado e funcionando em produção** ✅) deployadas no Supabase ✅  
-**E2E:** 66/66 passando em 2026-10-09 (`npm run test:e2e`, smoke + regression) · unit 112/112  
+**E2E:** smoke + regression 96 passando, 1 pulado (2026-10-21) · unit 261/261  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
 ---

@@ -3002,3 +3002,8 @@ Registro cronológico de tarefas executadas por agentes.
 - **Raiz**: NeonGlass/NeonPageShell no padrao novo; NeonAtmosphere apagado; `.bp-chip-active`/`.bp-view-active` amarelo cheio; paleta antiga trocada em ~70 arquivos; font-mono -> font-tag; hex azul-marinho -> neutros.
 - **Pontuais**: janela do evento, selos da lista da Agenda (antes mostrava `in_progress`), conquistas e MEI, formulario de cliente, Ajuda, aviso sem internet (amarelo sobre amarelo), toasts.
 - **Doc**: `docs/AUDITORIA_VISUAL_ALLACCESS.md`.
+
+### DEPLOY — Visual All Access + auditoria (Claude Code, 2026-10-21, pedido explicito do Guih)
+- **Banco (Supabase prod `cwtallnetgodoacuoaow`)**: migracao `042_fechamento_ja_paguei` aplicada (coluna `closing_shares.client_notice_at`, funcao `avisar_pagamento_fechamento`, `ver_link_fechamento` devolve `clientNoticeAt`). `closing_shares` tinha 0 linhas. Antes: copia da funcao antiga + SQL para desfazer guardados fora do repo.
+- **Codigo**: `git push origin feat/visual-completo:main` (`7f99092..89132f5`, avanco direto) — Vercel publica a partir do `main`.
+- **Achado**: `origin/main` ja estava em `7f99092` (entrega 9) desde 21/10 03:45, por um push feito deste PC por outro processo (o gancho de backup respeita a pausa; pode ter sido outra IA aberta). Investigar.

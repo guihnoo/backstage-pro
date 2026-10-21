@@ -144,7 +144,7 @@
 | 102 | Hint "show em Xd" na seção A Receber da Home | 2026-06-15 | ✅ `AReceber.jsx`: badge slate discreto para shows futuros ainda não realizados; "Xd atraso" para vencidos |
 | 103 | Repetição de Evento no formulário de criação | 2026-06-15 | ✅ `EventForm.jsx`: toggle "Repetir este evento" + seletor vezes (1–24) + unidade (Semana/Mês); cria série com mesmo cliente/horário/cachê |
 | 104 | Atalho para emitir NF-e ao finalizar evento | 2026-06-17 | ✅ Redirect para `nfse.gov.br/EmissorNacional/Login`; card com dados do evento (serviço/tomador/CNPJ/valor) após marcar "Realizado"; botão permanente para eventos já concluídos; step no "Próximos Passos" do calendário |
-| 105 | Terminar o visual **All Access** em todo o app (protótipo "Direção Visual", 19 telas) | 2026-10-21 | 🟡 Entregas 9–15 feitas em `feat/visual-completo` (sem deploy). Falta: publicar (com migração 042) e testar no celular |
+| 105 | Terminar o visual **All Access** em todo o app (protótipo "Direção Visual", 19 telas) | 2026-10-21 | ✅ Entregas 9–15 + auditoria visual publicadas em 21/10 (`89132f5`, migração 042 aplicada) |
 | 106 | Novo trabalho: **colar mensagem do WhatsApp** e o app preencher o evento | 2026-10-21 | ⬜ Visto no protótipo; é função nova |
 | 107 | Modo **"entrada e saída"** (só bater o ponto) além da ficha completa | 2026-10-21 | ⬜ Visto no protótipo (Perfil e Novo trabalho); é função nova |
 | 108 | **Credencial do evento com foto** (ler a credencial e preencher o evento) | 2026-10-21 | ⬜ Visto no protótipo; é função nova |
