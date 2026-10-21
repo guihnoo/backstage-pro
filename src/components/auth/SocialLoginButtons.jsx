@@ -41,14 +41,14 @@ export default function SocialLoginButtons({ mode = 'login' }) {
     }
   };
 
-  const verb = mode === 'signup' ? 'Cadastrar' : 'Continuar';
+  const verb = mode === 'signup' ? 'Cadastrar' : 'Entrar';
 
   return (
     <div className="space-y-3">
       {backendIssue && (
-        <div className="flex gap-2 items-start rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2.5">
-          <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-          <p className="text-[11px] text-amber-100/90 leading-relaxed">{backendIssue}</p>
+        <div className="flex gap-2 items-start rounded-xl border-2 border-[#ffd400] bg-[#161616] px-3 py-2.5">
+          <AlertTriangle className="w-4 h-4 text-[#ffd400] shrink-0 mt-0.5" />
+          <p className="text-xs text-[#e0e0e0] leading-relaxed">{backendIssue}</p>
         </div>
       )}
 
@@ -58,7 +58,7 @@ export default function SocialLoginButtons({ mode = 'login' }) {
         animate={{ opacity: 1, y: 0 }}
         onClick={handleGoogleLogin}
         disabled={loading}
-        className="relative w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border font-medium text-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed bg-white text-gray-900 border-white/90 hover:bg-gray-100 shadow-sm shadow-white/10 bp-focus-ring"
+        className="relative w-full h-[52px] flex items-center justify-center gap-3 px-4 rounded-[26px] border-0 font-extrabold text-[15px] transition-all disabled:opacity-60 disabled:cursor-not-allowed bg-white text-[#0a0a0a] bp-focus-ring"
       >
         {loading ? (
           <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
@@ -73,11 +73,11 @@ export default function SocialLoginButtons({ mode = 'login' }) {
       </motion.button>
 
       {error && (
-        <p className="text-xs text-amber-300/90 text-center px-2 leading-relaxed">{error}</p>
+        <p className="text-xs text-[#ffd400] text-center px-2 leading-relaxed">{error}</p>
       )}
 
-      <div className="flex items-center justify-center gap-1.5 pt-1 text-[11px] text-slate-500">
-        <ShieldCheck className="w-3.5 h-3.5 text-emerald-500/80" />
+      <div className="flex items-center justify-center gap-1.5 pt-1 text-[11px] text-[#a8a8a8]">
+        <ShieldCheck className="w-3.5 h-3.5 text-[#ffd400]" />
         <span>Autenticação segura · OAuth 2.0 · Supabase</span>
       </div>
     </div>

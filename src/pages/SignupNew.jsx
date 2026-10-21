@@ -1,31 +1,30 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { hardNavigate } from '@/lib/hardNavigate';
-import { motion } from 'framer-motion';
-import { Eye, EyeOff, AlertCircle, Mail, CheckCircle2 } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
 import { supabase } from '@/lib/supabase';
-import { getCategoryConfig } from '@/lib/categoryConfig';
-import { AUTH_HERO_CATEGORY, AUTH_HERO_CSS_VARS } from '@/lib/categoryGear';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import StageBackdrop from '@/components/auth/StageBackdrop';
-import { SpotlightRays } from '@/components/auth/SpotlightRays';
-import { FloatingEquipment } from '@/components/auth/FloatingEquipment';
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
-import { NeonAtmosphere } from '@/components/design/NeonAtmosphere';
-import { NeonGlass } from '@/components/design/NeonGlass';
-import { LightingBeams } from '@/components/design/LightingBeams';
+import {
+  AuthScreen,
+  AuthLabel,
+  AuthPrimaryButton,
+  AuthNotice,
+  AA_INPUT_CLASS,
+} from '@/components/auth/AllAccessAuth';
 import appToast from '@/lib/appToast';
-import BackstageLogo from '@/components/brand/BackstageLogo';
-import { LOOP, loopAnim } from '@/lib/liteMotion';
 
-const hero = getCategoryConfig(AUTH_HERO_CATEGORY);
+/** Nome provisório da credencial, tirado do começo do e-mail enquanto a pessoa digita. */
+function credentialName(email) {
+  const local = (email || '').split('@')[0].replace(/[._-]+/g, ' ').trim();
+  return local ? local.toUpperCase() : 'SEU NOME AQUI';
+}
 
 export default function SignupNew() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -38,12 +37,11 @@ export default function SignupNew() {
 
   if (authLoading || isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#050609] flex items-center justify-center">
-        <motion.div
-          animate={loopAnim({ rotate: 360 })}
-          transition={{ repeat: LOOP, duration: 1 }}
-          className="w-8 h-8 border-2 border-t-transparent rounded-full"
-          style={{ borderColor: hero.primaryHex, borderTopColor: 'transparent' }}
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div
+          role="status"
+          aria-label="Carregando"
+          className="w-8 h-8 border-2 border-[#ffd400] border-t-transparent rounded-full animate-spin"
         />
       </div>
     );
@@ -51,7 +49,7 @@ export default function SignupNew() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || password.length < 6) return;
+    if (!email || password.length < 6 || !acceptedTerms) return;
     try {
       setLoading(true);
       setError(null);
@@ -89,119 +87,127 @@ export default function SignupNew() {
     }
   };
 
+  const initial = (email.trim()[0] || '?').toUpperCase();
+
   return (
-    <div className="min-h-screen bg-[#050609] text-white overflow-x-hidden relative" style={AUTH_HERO_CSS_VARS}>
-      <NeonAtmosphere primary={hero.primaryHex} accent={hero.accentHex} />
-      <StageBackdrop />
-      <SpotlightRays primary={hero.primaryHex} accent={hero.accentHex} />
-      <LightingBeams primary={hero.primaryHex} accent={hero.accentHex} />
-      <FloatingEquipment categoryId={AUTH_HERO_CATEGORY} primary={hero.primaryHex} />
+    <AuthScreen>
+      <div className="flex-1 px-[22px] pt-12 pb-6 flex flex-col gap-3">
+        <p className="font-tag text-[11px] tracking-[3px] text-[#ff2e88]">NOVA CREDENCIAL</p>
+        <h1 className="font-poster text-[44px] leading-none">CRIAR CONTA</h1>
 
-      <div className="relative z-10 min-h-screen flex items-center justify-center px-5 py-10">
-        <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
-          <div className="text-center mb-6">
-            <BackstageLogo size={56} showWordmark subtitle="Crie sua conta" className="justify-center mb-5" />
-            <h1 className="text-3xl font-black">Entre no backstage.</h1>
-            <p className="text-sm text-[#8a91a1] mt-2 font-mono">Crie sua conta de freelancer.</p>
+        <div className="rounded-2xl bg-[#ffd400] text-[#0a0a0a] px-3.5 py-3 flex gap-3 items-center" aria-hidden="true">
+          <div className="w-14 h-14 rounded-[10px] bg-[#0a0a0a] text-[#ffd400] flex items-center justify-center font-poster text-2xl">
+            {initial}
           </div>
+          <div className="min-w-0">
+            <p className="font-tag text-[10px] font-bold">CREW · 2026</p>
+            <p className="font-poster text-2xl leading-none truncate">{credentialName(email)}</p>
+            <p className="text-xs font-bold">sua credencial vai sendo montada</p>
+          </div>
+        </div>
 
-          <NeonGlass primary={hero.primaryHex} glow className="p-5 space-y-5">
+        {success ? (
+          <div role="status" className="rounded-2xl border-2 border-[#ffd400] p-3.5 flex flex-col gap-2">
+            <p className="font-poster text-2xl text-[#ffd400]">CONFIRME SEU E-MAIL ✓</p>
+            <p className="text-sm text-[#e0e0e0] leading-snug">
+              Enviamos um link para <span className="font-bold text-white">{email}</span>. Clique nele para ativar a conta. Não chegou? Olhe no spam.
+            </p>
+            <div className="flex gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={resendLoading}
+                className="h-10 px-3.5 rounded-[20px] border border-[#333333] bg-transparent text-white text-[13px] font-extrabold disabled:opacity-50"
+              >
+                {resendLoading ? 'Reenviando...' : 'Reenviar e-mail'}
+              </button>
+              <Link
+                to="/login"
+                className="h-10 px-3.5 rounded-[20px] bg-[#ffd400] text-[#0a0a0a] text-[13px] font-extrabold inline-flex items-center"
+              >
+                Já confirmei · Entrar
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <>
             <SocialLoginButtons mode="signup" />
 
-            {success ? (
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-4 text-center"
-              >
-                <div className="flex flex-col items-center gap-3 py-2">
-                  <div className="w-14 h-14 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
-                    <Mail className="w-7 h-7 text-emerald-400" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-white">Confirme seu email</p>
-                    <p className="text-sm text-slate-400 mt-1">
-                      Enviamos um link para <span className="text-white font-mono">{email}</span>.<br />
-                      Clique no link para ativar sua conta.
-                    </p>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleResend}
-                    disabled={resendLoading}
-                    className="w-full border-slate-700 text-slate-300 hover:bg-slate-800 bg-transparent text-xs bp-focus-ring focus-visible:ring-0"
-                  >
-                    {resendLoading ? 'Reenviando...' : 'Reenviar email'}
-                  </Button>
-                  <Button asChild variant="outline" className="w-full border-[#23262f] bg-transparent bp-focus-ring focus-visible:ring-0">
-                    <Link to="/login" className="bp-focus-ring">
-                      <CheckCircle2 className="w-4 h-4 mr-2 text-emerald-400" />
-                      Já confirmei — Ir para login
-                    </Link>
-                  </Button>
-                </div>
-              </motion.div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {error && (
-                  <div className="bg-red-500/15 border border-red-500/40 rounded-xl p-3 flex gap-2">
-                    <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
-                    <p className="text-sm text-red-300">{error}</p>
-                  </div>
-                )}
-                <div>
-                  <label className="block text-[10px] font-mono tracking-widest text-[#6b7283] mb-2 uppercase">E-mail</label>
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="bg-[#080a10]/80 border-0 text-white h-12 font-mono bp-focus-input focus-visible:ring-0"
-                    style={{ boxShadow: `inset 0 0 0 1px ${hero.primaryHex}33` }}
-                    autoComplete="email"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-mono tracking-widest text-[#6b7283] mb-2 uppercase">Senha</label>
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? 'text' : 'password'}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Mínimo 6 caracteres"
-                      className="bg-[#080a10]/80 border-0 text-white pr-10 h-12 font-mono bp-focus-input focus-visible:ring-0"
-                      style={{ boxShadow: `inset 0 0 0 1px ${hero.primaryHex}33` }}
-                      autoComplete="new-password"
-                    />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b7283] bp-focus-ring rounded-sm p-0.5">
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                  {password.length > 0 && password.length < 6 && (
-                    <p className="text-[11px] text-red-400 mt-1.5 font-mono">Mínimo 6 caracteres</p>
-                  )}
-                </div>
-                <Button
-                  type="submit"
-                  disabled={loading || !email || password.length < 6}
-                  className="w-full h-12 border-0 font-bold uppercase text-[#06070a] bp-focus-ring focus-visible:ring-0"
-                  style={{ background: `linear-gradient(135deg, ${hero.primaryHex}, ${hero.accentHex})` }}
-                >
-                  {loading ? 'Criando conta...' : 'Criar conta'}
-                </Button>
-              </form>
-            )}
+            <div className="flex items-center gap-2.5 text-[#6a6a6a] font-tag text-[10px]">
+              <span className="flex-1 h-px bg-[#222222]" />
+              OU COM E-MAIL
+              <span className="flex-1 h-px bg-[#222222]" />
+            </div>
 
-            <p className="text-center text-sm text-[#8a91a1] font-mono">
-              Já tem conta?{' '}
-              <Link to="/login" style={{ color: hero.primaryHex }} className="bp-focus-ring rounded-sm">Entrar</Link>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
+              {error && <AuthNotice>{error}</AuthNotice>}
+
+              <div>
+                <AuthLabel htmlFor="signup-email" className="sr-only">E-mail</AuthLabel>
+                <input
+                  id="signup-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="seu@email.com"
+                  className={AA_INPUT_CLASS}
+                  autoComplete="email"
+                />
+              </div>
+
+              <div>
+                <div className="relative">
+                  <AuthLabel htmlFor="signup-password" className="sr-only">Senha</AuthLabel>
+                  <input
+                    id="signup-password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="crie uma senha (mínimo 6 letras)"
+                    className={`${AA_INPUT_CLASS} pr-12`}
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Esconder senha' : 'Mostrar senha'}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#a8a8a8] p-1 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffd400]"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+                {password.length > 0 && password.length < 6 && (
+                  <p className="text-xs text-[#ff2e88] mt-1.5 font-tag">Mínimo 6 caracteres</p>
+                )}
+              </div>
+
+              <label className="flex gap-2.5 items-start text-[13px] text-[#c8c8c8] leading-snug cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="mt-0.5 w-[22px] h-[22px] shrink-0 accent-[#ffd400]"
+                />
+                <span>
+                  Li e aceito os{' '}
+                  <Link to="/termos" className="underline text-white">Termos de uso</Link> e a{' '}
+                  <Link to="/privacidade" className="underline text-white">Política de privacidade</Link>.
+                  Meus dados são meus e posso apagar a conta quando quiser.
+                </span>
+              </label>
+
+              <AuthPrimaryButton disabled={loading || !email || password.length < 6 || !acceptedTerms}>
+                {loading ? 'Criando conta...' : 'Criar minha conta'}
+              </AuthPrimaryButton>
+            </form>
+
+            <p className="text-center text-sm text-[#c8c8c8]">
+              Já tenho conta ·{' '}
+              <Link to="/login" className="text-[#ffd400] font-extrabold rounded-sm">Entrar</Link>
             </p>
-          </NeonGlass>
-        </motion.div>
+          </>
+        )}
       </div>
-    </div>
+    </AuthScreen>
   );
 }

@@ -1,18 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { hardNavigate } from '@/lib/hardNavigate';
-import { motion } from 'framer-motion';
-import { Zap, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { ensureUserProfile } from '@/lib/ensureUserProfile';
 import { useAuth } from '@/lib/authContext';
 import { withTimeout } from '@/lib/withTimeout';
-import { Button } from '@/components/ui/button';
-import { NeonAtmosphere } from '@/components/design/NeonAtmosphere';
-import { AUTH_HERO_CATEGORY } from '@/lib/categoryGear';
-import { getCategoryConfig } from '@/lib/categoryConfig';
 
-const hero = getCategoryConfig(AUTH_HERO_CATEGORY);
 const EXCHANGE_TIMEOUT_MS = 8_000;
 const PROFILE_TIMEOUT_MS = 6_000;
 const OVERALL_TIMEOUT_MS = 12_000;
@@ -150,53 +143,36 @@ export default function AuthCallback() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#050609] text-white flex items-center justify-center p-6 relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <NeonAtmosphere primary={hero.primaryHex} accent={hero.accentHex} />
-        </div>
-        <div className="relative z-10 max-w-md w-full bg-[#0a0c12]/80 border border-red-500/30 rounded-2xl p-8 text-center space-y-4 backdrop-blur-xl">
-          <AlertCircle className="w-12 h-12 text-red-400 mx-auto" />
-          <h1 className="text-xl font-bold">Não foi possível entrar</h1>
-          <p className="text-sm text-slate-400 leading-relaxed">{error}</p>
-          <Button
-            asChild
-            className="w-full text-white"
-            style={{ backgroundColor: hero.primaryHex }}
+      <div className="min-h-screen bg-[#0a0a0a] text-white font-sans flex items-center justify-center p-6">
+        <div role="alert" className="max-w-md w-full rounded-2xl bg-[#161616] border-2 border-[#ff2e88] p-6 space-y-3">
+          <p className="font-poster text-[32px] leading-none text-[#ff2e88]">NÃO FOI POSSÍVEL ENTRAR</p>
+          <p className="text-sm text-[#e0e0e0] leading-relaxed">{error}</p>
+          <Link
+            to="/login"
+            className="flex items-center justify-center h-12 rounded-3xl bg-[#ffd400] text-[#0a0a0a] font-poster text-xl tracking-[2px]"
           >
-            <Link to="/login">Voltar ao login</Link>
-          </Button>
+            VOLTAR AO LOGIN
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#050609] text-white flex flex-col items-center justify-center gap-4 relative overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none">
-        <NeonAtmosphere primary={hero.primaryHex} accent={hero.accentHex} />
-      </div>
-      <motion.div
-        animate={{ rotate: 360 }}
-        transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-        className="relative z-10 w-12 h-12 rounded-full flex items-center justify-center"
-        style={{ background: `linear-gradient(135deg, ${hero.primaryHex}, ${hero.accentHex})` }}
-      >
-        <Zap className="w-6 h-6 text-white" />
-      </motion.div>
-      <p className="relative z-10 text-slate-400 text-sm font-mono tracking-wide">Conectando sua conta…</p>
+    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans flex flex-col items-center justify-center gap-4">
+      <div
+        role="status"
+        aria-label="Conectando sua conta"
+        className="w-12 h-12 rounded-full border-4 border-[#ffd400] border-t-transparent animate-spin"
+      />
+      <p className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8]">CONECTANDO SUA CONTA...</p>
       {showEscape && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative z-10 mt-2"
+        <Link
+          to="/login"
+          className="text-xs text-[#c8c8c8] underline underline-offset-2 mt-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffd400] rounded-sm"
         >
-          <Link
-            to="/login"
-            className="text-xs text-slate-500 underline underline-offset-2 hover:text-slate-300 transition-colors"
-          >
-            Demorou demais? Voltar ao login
-          </Link>
-        </motion.div>
+          Demorou demais? Voltar ao login
+        </Link>
       )}
     </div>
   );

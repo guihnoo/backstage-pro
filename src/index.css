@@ -399,3 +399,12 @@ body:has([role="alertdialog"][data-state="open"]) [data-app-scroll] {
     font-size: 16px !important;
   }
 }
+
+/* ── Entrada All Access: feixe de luz e faixa em movimento (só telas grandes) ── */
+@keyframes aa-sweep { 0%, 100% { transform: rotate(-18deg); } 50% { transform: rotate(18deg); } }
+@keyframes aa-marq { from { transform: translateX(0); } to { transform: translateX(-33.333%); } }
+.aa-beam-sweep { animation: aa-sweep 5s ease-in-out infinite; }
+.aa-marquee { display: inline-block; animation: aa-marq 24s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .aa-beam-sweep, .aa-marquee { animation: none; }
+}

@@ -1,19 +1,14 @@
 import { useState, useEffect } from 'react';
 import { hardNavigate } from '@/lib/hardNavigate';
-import { motion } from 'framer-motion';
-import { Eye, EyeOff, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { getCategoryConfig } from '@/lib/categoryConfig';
-import { AUTH_HERO_CATEGORY, AUTH_HERO_CSS_VARS } from '@/lib/categoryGear';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { NeonAtmosphere } from '@/components/design/NeonAtmosphere';
-import { NeonGlass } from '@/components/design/NeonGlass';
-import { LightingBeams } from '@/components/design/LightingBeams';
-import StageBackdrop from '@/components/auth/StageBackdrop';
-import { SpotlightRays } from '@/components/auth/SpotlightRays';
-
-const hero = getCategoryConfig(AUTH_HERO_CATEGORY);
+import {
+  AuthScreen,
+  AuthLabel,
+  AuthPrimaryButton,
+  AuthNotice,
+  AA_INPUT_CLASS,
+} from '@/components/auth/AllAccessAuth';
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('');
@@ -50,90 +45,73 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050609] text-white overflow-x-hidden relative" style={AUTH_HERO_CSS_VARS}>
-      <NeonAtmosphere primary={hero.primaryHex} accent={hero.accentHex} />
-      <StageBackdrop />
-      <SpotlightRays primary={hero.primaryHex} accent={hero.accentHex} />
-      <LightingBeams primary={hero.primaryHex} accent={hero.accentHex} />
+    <AuthScreen>
+      <div className="flex-1 px-[22px] pt-16 pb-6 flex flex-col gap-3">
+        <p className="font-tag text-[11px] tracking-[3px] text-[#ffd400]">NOVA CREDENCIAL</p>
+        <h1 className="font-poster text-[44px] leading-none">NOVA SENHA</h1>
+        <p className="text-[15px] text-[#c8c8c8] leading-snug">Escolha uma nova senha para sua conta.</p>
 
-      <div className="relative z-10 min-h-screen flex flex-col justify-end px-5 pb-10 pt-16 max-w-lg mx-auto">
-        <h1 className="text-2xl font-extrabold">Nova senha</h1>
-        <p className="font-mono text-xs text-[#8a91a1] mt-2 mb-6">Escolha uma nova senha para sua conta.</p>
+        {done ? (
+          <div role="status" className="rounded-2xl border-2 border-[#ffd400] p-3.5 flex flex-col gap-2">
+            <p className="font-poster text-2xl text-[#ffd400]">SENHA REDEFINIDA ✓</p>
+            <p className="text-sm text-[#e0e0e0]">Sua nova senha foi salva com sucesso.</p>
+            <button
+              type="button"
+              onClick={() => hardNavigate('/', { replace: true })}
+              className="h-12 rounded-3xl bg-[#ffd400] text-[#0a0a0a] font-poster text-xl tracking-[2px] border-0"
+            >
+              IR PARA O APP
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
+            {error && <AuthNotice>{error}</AuthNotice>}
 
-        <NeonGlass primary={hero.primaryHex} glow className="p-5 space-y-4">
-          {done ? (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4 text-center py-2">
-              <div className="w-14 h-14 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-7 h-7 text-emerald-400" />
-              </div>
-              <p className="font-semibold text-white">Senha redefinida!</p>
-              <p className="text-sm text-slate-400">Sua nova senha foi salva com sucesso.</p>
-              <Button
-                onClick={() => hardNavigate('/', { replace: true })}
-                className="w-full h-12 border-0 font-bold text-[#06070a] bp-focus-ring focus-visible:ring-0"
-                style={{ background: `linear-gradient(135deg, ${hero.primaryHex}, ${hero.accentHex})` }}
-              >
-                Ir para o app
-              </Button>
-            </motion.div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="bg-red-500/15 border border-red-500/40 rounded-xl p-3 flex gap-2">
-                  <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
-                  <p className="text-sm text-red-300">{error}</p>
-                </div>
-              )}
-
-              <div>
-                <label className="block text-[10px] font-mono tracking-widest text-[#6b7283] mb-2 uppercase">Nova senha</label>
-                <div className="relative">
-                  <Input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Mínimo 6 caracteres"
-                    className="bg-[#080a10]/80 border-0 text-white pr-10 h-12 font-mono bp-focus-input focus-visible:ring-0"
-                    style={{ boxShadow: `inset 0 0 0 1px ${hero.primaryHex}33` }}
-                    autoComplete="new-password"
-                  />
-                  <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b7283] bp-focus-ring rounded-sm p-0.5">
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-mono tracking-widest text-[#6b7283] mb-2 uppercase">Confirmar senha</label>
-                <Input
+            <div>
+              <AuthLabel htmlFor="reset-password">Nova senha</AuthLabel>
+              <div className="relative">
+                <input
+                  id="reset-password"
                   type={showPassword ? 'text' : 'password'}
-                  value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
-                  placeholder="Repita a senha"
-                  className="bg-[#080a10]/80 border-0 text-white h-12 font-mono bp-focus-input focus-visible:ring-0"
-                  style={{ boxShadow: `inset 0 0 0 1px ${hero.primaryHex}33` }}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Mínimo 6 caracteres"
+                  className={`${AA_INPUT_CLASS} pr-12`}
                   autoComplete="new-password"
                 />
-                {confirm.length > 0 && confirm !== password && (
-                  <p className="text-[11px] text-red-400 mt-1.5 font-mono">Senhas não coincidem</p>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? 'Esconder senha' : 'Mostrar senha'}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#a8a8a8] p-1 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffd400]"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
               </div>
+            </div>
 
-              <Button
-                type="submit"
-                disabled={loading || password.length < 6 || password !== confirm}
-                className="w-full h-12 border-0 font-bold uppercase text-[#06070a] bp-focus-ring focus-visible:ring-0"
-                style={{
-                  background: `linear-gradient(135deg, ${hero.primaryHex}, ${hero.accentHex})`,
-                  boxShadow: `0 0 26px ${hero.primaryHex}55`,
-                }}
-              >
-                {loading ? 'Salvando...' : 'Salvar nova senha'}
-              </Button>
-            </form>
-          )}
-        </NeonGlass>
+            <div>
+              <AuthLabel htmlFor="reset-confirm">Confirmar senha</AuthLabel>
+              <input
+                id="reset-confirm"
+                type={showPassword ? 'text' : 'password'}
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                placeholder="Repita a senha"
+                className={AA_INPUT_CLASS}
+                autoComplete="new-password"
+              />
+              {confirm.length > 0 && confirm !== password && (
+                <p className="text-xs text-[#ff2e88] mt-1.5 font-tag">Senhas não coincidem</p>
+              )}
+            </div>
+
+            <AuthPrimaryButton disabled={loading || password.length < 6 || password !== confirm}>
+              {loading ? 'Salvando...' : 'Salvar nova senha'}
+            </AuthPrimaryButton>
+          </form>
+        )}
       </div>
-    </div>
+    </AuthScreen>
   );
 }

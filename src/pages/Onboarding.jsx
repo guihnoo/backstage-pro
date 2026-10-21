@@ -9,11 +9,14 @@ import { CATEGORIES } from '@/lib/eventCategories';
 import StepIndicator from '@/components/auth/StepIndicator';
 import CategoryPicker from '@/components/auth/CategoryPicker';
 import SpecialtyPicker from '@/components/auth/SpecialtyPicker';
-import StageBackdrop from '@/components/auth/StageBackdrop';
-import SpotlightRays from '@/components/auth/SpotlightRays';
-import FloatingEquipment from '@/components/auth/FloatingEquipment';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { LOOP, loopAnim } from '@/lib/liteMotion';
+
+const CTA_CLASS =
+  'w-full h-14 rounded-[28px] border-0 bg-[#ffd400] hover:bg-[#ffd400] text-[#0a0a0a] font-poster text-[22px] tracking-[2px] uppercase disabled:opacity-50';
+const LABEL_CLASS = 'block font-tag text-[11px] tracking-[1px] uppercase text-[#a8a8a8] mb-1.5';
+const INPUT_CLASS =
+  'h-[52px] rounded-[14px] border border-[#333333] bg-[#161616] text-white placeholder:text-[#6a6a6a] focus-visible:border-[#ffd400]';
 
 /** Converte texto do formulário em número ("1.200,50", "1200.5"); inválido → fallback. */
 function toNumber(value, fallback) {
@@ -68,22 +71,7 @@ export default function Onboarding() {
     [onboardingTheme]
   );
 
-  const ctaGradientStyle = useMemo(
-    () => ({
-      background: `linear-gradient(to right, ${onboardingTheme.primaryHex}, ${onboardingTheme.accentHex})`,
-    }),
-    [onboardingTheme]
-  );
 
-  const titleGradientStyle = useMemo(
-    () => ({
-      backgroundImage: `linear-gradient(to right, ${onboardingTheme.primaryHex}, ${onboardingTheme.accentHex})`,
-      WebkitBackgroundClip: 'text',
-      backgroundClip: 'text',
-      color: 'transparent',
-    }),
-    [onboardingTheme]
-  );
 
   const handleNextStep = () => {
     if (step === 1 && !name) {
@@ -137,25 +125,7 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050609] text-white overflow-x-hidden relative" style={onboardingCssVars}>
-      <StageBackdrop />
-      <SpotlightRays primary={onboardingTheme.primaryHex} accent={onboardingTheme.accentHex} />
-      <FloatingEquipment categoryId={selectedCategory || 'lighting'} primary={onboardingTheme.primaryHex} />
-
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          animate={loopAnim({ opacity: [0.1, 0.3, 0.1] })}
-          transition={{ duration: 4, repeat: LOOP }}
-          className="absolute top-0 left-1/4 w-96 h-96 bg-amber-500 rounded-full blur-3xl opacity-20"
-        />
-        <motion.div
-          animate={{ opacity: [0.1, 0.2, 0.1] }}
-          transition={{ duration: 4, delay: 1 }}
-          className="absolute top-0 right-1/4 w-96 h-96 rounded-full blur-3xl opacity-15"
-          style={{ backgroundColor: onboardingTheme.primaryHex }}
-        />
-      </div>
-
+    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans overflow-x-hidden relative" style={onboardingCssVars}>
       <div className="relative z-10 min-h-screen flex items-start sm:items-center justify-center px-4 py-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -163,20 +133,20 @@ export default function Onboarding() {
           transition={{ duration: 0.8 }}
           className="w-full max-w-2xl"
         >
-          <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-5 sm:p-8 shadow-2xl bp-focus-scope">
+          <div className="bg-[#0a0a0a] p-5 sm:p-8 sm:rounded-2xl sm:border sm:border-[#222222] bp-focus-scope">
             <div className="flex items-center justify-between mb-6 sm:mb-8">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-black bg-clip-text text-transparent" style={titleGradientStyle}>
+                <h1 className="font-poster text-[38px] leading-none text-white uppercase">
                   Complete seu perfil
                 </h1>
-                <p className="text-slate-400 text-sm mt-1">Vamos conhecer você melhor</p>
+                <p className="text-[#a8a8a8] text-sm mt-1">Vamos conhecer você melhor</p>
               </div>
               {step > 1 && (
                 <Button
                   onClick={() => setStep(step - 1)}
                   variant="ghost"
                   size="icon"
-                  className="rounded-full hover:bg-slate-800"
+                  className="rounded-full hover:bg-[#161616]"
                   aria-label="Voltar"
                 >
                   <ArrowLeft className="w-5 h-5" />
@@ -187,13 +157,12 @@ export default function Onboarding() {
             <StepIndicator
               currentStep={step}
               totalSteps={5}
-              primaryHex={getCategoryConfig(selectedCategory || 'lighting').primaryHex}
             />
 
             {error && (
-              <div className="mb-6 bg-red-500/20 border border-red-500/50 rounded-lg p-3 flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-                <p className="text-sm text-red-300">{error}</p>
+              <div className="mb-6 bg-[#161616] border-2 border-[#ff2e88] rounded-2xl p-3 flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-[#ff2e88] flex-shrink-0" />
+                <p className="text-sm text-[#e0e0e0]">{error}</p>
               </div>
             )}
 
@@ -208,51 +177,51 @@ export default function Onboarding() {
                   className="space-y-5"
                 >
                   <div>
-                    <label htmlFor="ob-name" className="block text-sm font-medium text-slate-300 mb-2">Nome completo</label>
+                    <label htmlFor="ob-name" className={LABEL_CLASS}>Nome completo</label>
                     <Input
                       id="ob-name"
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Seu nome"
-                      className="bg-slate-800/50 border-slate-700"
+                      className={INPUT_CLASS}
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="ob-phone" className="block text-sm font-medium text-slate-300 mb-2">Telefone / WhatsApp</label>
+                    <label htmlFor="ob-phone" className={LABEL_CLASS}>Telefone / WhatsApp</label>
                     <Input
                       id="ob-phone"
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="(11) 99999-9999"
-                      className="bg-slate-800/50 border-slate-700"
+                      className={INPUT_CLASS}
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="ob-city" className="block text-sm font-medium text-slate-300 mb-2">Cidade</label>
+                      <label htmlFor="ob-city" className={LABEL_CLASS}>Cidade</label>
                       <Input
                         id="ob-city"
                         type="text"
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
                         placeholder="São Paulo"
-                        className="bg-slate-800/50 border-slate-700"
+                        className={INPUT_CLASS}
                       />
                     </div>
 
                     <div>
-                      <label htmlFor="ob-state" className="block text-sm font-medium text-slate-300 mb-2">Estado</label>
+                      <label htmlFor="ob-state" className={LABEL_CLASS}>Estado</label>
                       <Input
                         id="ob-state"
                         type="text"
                         value={state}
                         onChange={(e) => setState(e.target.value)}
                         placeholder="SP"
-                        className="bg-slate-800/50 border-slate-700"
+                        className={INPUT_CLASS}
                       />
                     </div>
                   </div>
@@ -260,8 +229,7 @@ export default function Onboarding() {
                   <Button
                     onClick={handleNextStep}
                     disabled={!name}
-                    className="w-full text-white disabled:opacity-50"
-                    style={ctaGradientStyle}
+                    className={CTA_CLASS}
                   >
                     Continuar
                   </Button>
@@ -292,8 +260,7 @@ export default function Onboarding() {
                   <Button
                     onClick={handleNextStep}
                     disabled={!selectedCategory}
-                    className="w-full text-white disabled:opacity-50"
-                    style={ctaGradientStyle}
+                    className={CTA_CLASS}
                   >
                     Continuar
                   </Button>
@@ -321,8 +288,7 @@ export default function Onboarding() {
                   <Button
                     onClick={handleNextStep}
                     disabled={selectedSpecialties.length === 0}
-                    className="w-full text-white disabled:opacity-50"
-                    style={ctaGradientStyle}
+                    className={CTA_CLASS}
                   >
                     Continuar
                   </Button>
@@ -339,7 +305,7 @@ export default function Onboarding() {
                   className="space-y-5"
                 >
                   <div>
-                    <label htmlFor="ob-years-exp" className="block text-sm font-medium text-slate-300 mb-2">Anos de experiência</label>
+                    <label htmlFor="ob-years-exp" className={LABEL_CLASS}>Anos de experiência</label>
                     <Input
                       id="ob-years-exp"
                       type="number"
@@ -347,13 +313,13 @@ export default function Onboarding() {
                       value={yearsExperience}
                       onChange={(e) => setYearsExperience(e.target.value)}
                       placeholder="5"
-                      className="bg-slate-800/50 border-slate-700"
+                      className={INPUT_CLASS}
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="ob-daily-rate" className="block text-sm font-medium text-slate-300 mb-2">Valor por diária (R$)</label>
-                    <p className="text-xs text-slate-500 mb-2">
+                    <label htmlFor="ob-daily-rate" className={LABEL_CLASS}>Valor por diária (R$)</label>
+                    <p className="text-xs text-[#a8a8a8] mb-2">
                       Usado como padrão ao criar eventos quando o cliente não tiver cachê próprio.
                     </p>
                     <Input
@@ -364,13 +330,13 @@ export default function Onboarding() {
                       value={dailyRate}
                       onChange={(e) => setDailyRate(e.target.value)}
                       placeholder="500"
-                      className="bg-slate-800/50 border-slate-700"
+                      className={INPUT_CLASS}
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="ob-goal-events" className="block text-sm font-medium text-slate-300 mb-2">Meta de diárias/mês</label>
-                    <p className="text-xs text-slate-500 mb-2">Dias únicos trabalhados no mês — várias empresas no mesmo dia contam como 1 diária.</p>
+                    <label htmlFor="ob-goal-events" className={LABEL_CLASS}>Meta de diárias/mês</label>
+                    <p className="text-xs text-[#a8a8a8] mb-2">Dias únicos trabalhados no mês — várias empresas no mesmo dia contam como 1 diária.</p>
                     <Input
                       id="ob-goal-events"
                       type="number"
@@ -378,12 +344,12 @@ export default function Onboarding() {
                       value={monthlyGoalEvents}
                       onChange={(e) => setMonthlyGoalEvents(e.target.value)}
                       placeholder="12"
-                      className="bg-slate-800/50 border-slate-700"
+                      className={INPUT_CLASS}
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="ob-goal-revenue" className="block text-sm font-medium text-slate-300 mb-2">Meta de faturamento/mês (R$)</label>
+                    <label htmlFor="ob-goal-revenue" className={LABEL_CLASS}>Meta de faturamento/mês (R$)</label>
                     <Input
                       id="ob-goal-revenue"
                       type="number"
@@ -392,15 +358,14 @@ export default function Onboarding() {
                       value={monthlyGoalRevenue}
                       onChange={(e) => setMonthlyGoalRevenue(e.target.value)}
                       placeholder="5000"
-                      className="bg-slate-800/50 border-slate-700"
+                      className={INPUT_CLASS}
                     />
                   </div>
 
                   <Button
                     onClick={handleNextStep}
                     disabled={!dailyRate || !monthlyGoalRevenue}
-                    className="w-full text-white disabled:opacity-50"
-                    style={ctaGradientStyle}
+                    className={CTA_CLASS}
                   >
                     Continuar
                   </Button>
@@ -423,31 +388,27 @@ export default function Onboarding() {
                     }}
                     transition={{ duration: 0.6 }}
                   >
-                    <CheckCircle2 className="w-16 h-16 mx-auto mb-4" style={{ color: onboardingTheme.primaryHex }} />
+                    <CheckCircle2 className="w-16 h-16 mx-auto mb-4" style={{ color: '#ffd400' }} />
                   </motion.div>
 
                   <div>
-                    <h3 className="text-2xl font-black text-white mb-2">Tudo pronto, {name}! 🎉</h3>
-                    <p className="text-slate-400">Confira seus dados e toque em Entrar para salvar</p>
+                    <h3 className="font-poster text-[30px] uppercase text-white mb-2">Tudo pronto, {name}! 🎉</h3>
+                    <p className="text-[#a8a8a8]">Confira seus dados e toque em Entrar para salvar</p>
                   </div>
 
-                  <div className="bg-slate-800/50 rounded-lg p-6 text-left space-y-3 border border-slate-700">
+                  <div className="bg-[#161616] rounded-2xl p-6 text-left space-y-3">
                     <div>
-                      <p className="text-slate-400 text-sm">Profissão</p>
+                      <p className="text-[#a8a8a8] text-sm">Profissão</p>
                       <p className="text-white font-semibold">{CATEGORIES.find(c => c.id === selectedCategory)?.label}</p>
                     </div>
                     <div>
-                      <p className="text-slate-400 text-sm">Especialidades</p>
+                      <p className="text-[#a8a8a8] text-sm">Especialidades</p>
                       <div className="flex flex-wrap gap-2 mt-2">
                         {selectedSpecialties.map((spec) => (
                           <span
                             key={spec}
                             className="px-3 py-1 rounded-full text-sm border"
-                            style={{
-                              background: `${onboardingTheme.primaryHex}33`,
-                              borderColor: `${onboardingTheme.primaryHex}80`,
-                              color: onboardingTheme.primaryHex,
-                            }}
+                            style={{ background: '#ffd400', borderColor: '#ffd400', color: '#0a0a0a' }}
                           >
                             {spec}
                           </span>
@@ -455,7 +416,7 @@ export default function Onboarding() {
                       </div>
                     </div>
                     <div>
-                      <p className="text-slate-400 text-sm">Valor por diária</p>
+                      <p className="text-[#a8a8a8] text-sm">Valor por diária</p>
                       <p className="text-white font-semibold">R$ {toNumber(dailyRate, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                     </div>
                   </div>
@@ -464,17 +425,13 @@ export default function Onboarding() {
                     animate={loopAnim({ y: [0, -10, 0] })}
                     transition={{ duration: 2, repeat: LOOP }}
                   >
-                    <Sparkles className="w-8 h-8 text-amber-400 mx-auto opacity-50" />
+                    <Sparkles className="w-8 h-8 text-[#ffd400] mx-auto opacity-50" />
                   </motion.div>
 
                   <Button
                     onClick={handleSubmit}
                     disabled={loading}
-                    className="w-full h-11 text-white font-bold"
-                    style={{
-                      ...ctaGradientStyle,
-                      boxShadow: `0 10px 25px -5px ${onboardingTheme.primaryHex}4d`,
-                    }}
+                    className={CTA_CLASS}
                   >
                     {loading ? 'Criando perfil...' : 'Entrar no Backstage'}
                   </Button>

@@ -1,21 +1,21 @@
-import { motion } from 'framer-motion';
-import { getCategoryConfig } from '@/lib/categoryConfig';
-import { AUTH_HERO_CATEGORY } from '@/lib/categoryGear';
+const DEFAULT_PRIMARY = '#ffd400';
 
-const DEFAULT_PRIMARY = getCategoryConfig(AUTH_HERO_CATEGORY).primaryHex;
-
+/** Barrinhas de progresso dos passos (All Access). Passos já feitos e o atual ficam amarelos. */
 export default function StepIndicator({ currentStep, totalSteps, primaryHex = DEFAULT_PRIMARY }) {
   return (
-    <div className="flex items-center justify-center gap-2 mb-8">
+    <div
+      className="flex gap-1 mb-6"
+      role="progressbar"
+      aria-valuemin={1}
+      aria-valuemax={totalSteps}
+      aria-valuenow={currentStep}
+      aria-label={`Passo ${currentStep} de ${totalSteps}`}
+    >
       {Array.from({ length: totalSteps }).map((_, i) => (
-        <motion.div
+        <span
           key={i}
-          animate={{
-            width: i < currentStep ? 32 : i === currentStep ? 32 : 8,
-            backgroundColor: i <= currentStep ? primaryHex : '#374151'
-          }}
-          transition={{ duration: 0.3 }}
-          className="h-2 rounded-full"
+          className="flex-1 h-1 rounded-sm transition-colors duration-300"
+          style={{ backgroundColor: i < currentStep ? primaryHex : '#2a2a2a' }}
         />
       ))}
     </div>

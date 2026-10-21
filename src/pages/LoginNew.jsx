@@ -1,25 +1,20 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { hardNavigate } from '@/lib/hardNavigate';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, AlertCircle, Mail, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
-import { getCategoryConfig } from '@/lib/categoryConfig';
-import { AUTH_HERO_CATEGORY, AUTH_HERO_CSS_VARS } from '@/lib/categoryGear';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import StageBackdrop from '@/components/auth/StageBackdrop';
-import { SpotlightRays } from '@/components/auth/SpotlightRays';
-import { FloatingEquipment } from '@/components/auth/FloatingEquipment';
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
-import { NeonAtmosphere } from '@/components/design/NeonAtmosphere';
-import { NeonGlass } from '@/components/design/NeonGlass';
-import { LightingBeams } from '@/components/design/LightingBeams';
+import {
+  AuthScreen,
+  BeamHero,
+  MarqueeBand,
+  AuthLabel,
+  AuthPrimaryButton,
+  AuthLinkButton,
+  AuthNotice,
+  AA_INPUT_CLASS,
+} from '@/components/auth/AllAccessAuth';
 import appToast from '@/lib/appToast';
-import BackstageLogo from '@/components/brand/BackstageLogo';
-import { LOOP, loopAnim } from '@/lib/liteMotion';
-
-const hero = getCategoryConfig(AUTH_HERO_CATEGORY);
 
 function humanizeLoginError(message) {
   if (!message) return 'Erro ao entrar. Tente novamente.';
@@ -72,12 +67,11 @@ export default function LoginNew() {
 
   if ((authLoading && !authBootTimedOut) || isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#050609] flex items-center justify-center">
-        <motion.div
-          animate={loopAnim({ rotate: 360 })}
-          transition={{ repeat: LOOP, duration: 1, ease: 'linear' }}
-          className="w-8 h-8 border-2 border-t-transparent rounded-full"
-          style={{ borderColor: hero.primaryHex, borderTopColor: 'transparent' }}
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div
+          role="status"
+          aria-label="Carregando"
+          className="w-8 h-8 border-2 border-[#ffd400] border-t-transparent rounded-full animate-spin"
         />
       </div>
     );
@@ -121,238 +115,153 @@ export default function LoginNew() {
     }
   };
 
-  // ── Forgot password panel ──────────────────────────────────────────────────
+  // ── Recuperar senha ────────────────────────────────────────────────────────
   if (forgotMode) {
+    const backToLogin = () => { setForgotMode(false); setForgotSent(false); setForgotEmail(''); };
     return (
-      <div className="min-h-screen bg-[#050609] text-white overflow-x-hidden relative" style={AUTH_HERO_CSS_VARS}>
-        <NeonAtmosphere primary={hero.primaryHex} accent={hero.accentHex} />
-        <StageBackdrop />
-        <SpotlightRays primary={hero.primaryHex} accent={hero.accentHex} />
-        <LightingBeams primary={hero.primaryHex} accent={hero.accentHex} />
-
-        <div className="relative z-10 min-h-screen flex flex-col justify-end px-5 pb-10 pt-16 max-w-lg mx-auto">
+      <AuthScreen>
+        <div className="flex-1 px-[22px] pt-12 pb-6 flex flex-col gap-3">
           <button
             type="button"
-            onClick={() => { setForgotMode(false); setForgotSent(false); setForgotEmail(''); }}
-            className="flex items-center gap-1.5 text-sm mb-6 font-mono bp-focus-ring rounded-sm"
-            style={{ color: hero.primaryHex }}
+            onClick={backToLogin}
+            className="self-start h-9 pl-2 pr-3 rounded-[18px] bg-[#161616] text-white text-[13px] font-bold border-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffd400]"
           >
-            <ArrowLeft className="w-4 h-4" /> Voltar ao login
+            ‹ Voltar
           </button>
 
-          <h1 className="text-2xl font-extrabold">Redefinir senha</h1>
-          <p className="text-[#8a91a1] font-mono text-xs mt-2 mb-6">
-            Enviaremos um link para você criar uma nova senha.
+          <h1 className="font-poster text-[44px] leading-none">PERDEU A<br />CREDENCIAL?</h1>
+          <p className="text-[15px] text-[#c8c8c8] leading-snug">
+            Calma, acontece até no melhor festival. Digite seu e-mail que mandamos um link para criar uma senha nova.
           </p>
 
-          <NeonGlass primary={hero.primaryHex} glow className="p-5 space-y-4">
-            {forgotSent ? (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4 text-center py-2">
-                <div className="w-14 h-14 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mx-auto">
-                  <Mail className="w-7 h-7 text-emerald-400" />
-                </div>
-                <p className="font-semibold text-white">Email enviado!</p>
-                <p className="text-sm text-slate-400">
-                  Verifique <span className="text-white font-mono">{forgotEmail || email}</span> e clique no link para definir sua nova senha.
-                </p>
-                <Button
-                  type="button"
-                  onClick={() => { setForgotMode(false); setForgotSent(false); }}
-                  className="w-full border-0 font-bold text-[#06070a] bp-focus-ring focus-visible:ring-0"
-                  style={{ background: `linear-gradient(135deg, ${hero.primaryHex}, ${hero.accentHex})` }}
-                >
-                  Voltar ao login
-                </Button>
-              </motion.div>
-            ) : (
-              <form onSubmit={handleForgotPassword} className="space-y-4">
-                <div>
-                  <label htmlFor="forgot-email" className="block text-[10px] font-mono tracking-widest text-[#6b7283] mb-2 uppercase">E-mail</label>
-                  <Input
-                    id="forgot-email"
-                    type="email"
-                    value={forgotEmail || email}
-                    onChange={(e) => setForgotEmail(e.target.value)}
-                    placeholder="você@empresa.com"
-                    className="bg-[#080a10]/80 border-0 text-white h-12 font-mono bp-focus-input focus-visible:ring-0"
-                    style={{ boxShadow: `inset 0 0 0 1px ${hero.primaryHex}33` }}
-                    autoComplete="email"
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  disabled={forgotLoading || !(forgotEmail || email)}
-                  className="w-full h-12 border-0 font-bold uppercase text-[#06070a] bp-focus-ring focus-visible:ring-0"
-                  style={{
-                    background: `linear-gradient(135deg, ${hero.primaryHex}, ${hero.accentHex})`,
-                    boxShadow: `0 0 26px ${hero.primaryHex}55`,
-                  }}
-                >
-                  {forgotLoading ? 'Enviando...' : 'Enviar link de redefinição'}
-                </Button>
-              </form>
-            )}
-          </NeonGlass>
+          {forgotSent ? (
+            <div role="status" className="rounded-2xl border-2 border-[#ffd400] p-3.5 flex flex-col gap-1.5">
+              <p className="font-poster text-2xl text-[#ffd400]">LINK ENVIADO ✓</p>
+              <p className="text-sm text-[#e0e0e0] leading-snug">
+                Abra <span className="font-bold text-white">{forgotEmail || email}</span> no celular e toque no link. Não chegou em 2 minutos? Olhe no spam ou mande de novo.
+              </p>
+              <button
+                type="button"
+                onClick={() => setForgotSent(false)}
+                className="self-start h-10 px-3.5 rounded-[20px] border border-[#333333] bg-transparent text-white text-[13px] font-extrabold"
+              >
+                Mandar de novo
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleForgotPassword} className="flex flex-col gap-2.5">
+              <div>
+                <AuthLabel htmlFor="forgot-email">E-mail</AuthLabel>
+                <input
+                  id="forgot-email"
+                  type="email"
+                  value={forgotEmail || email}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  placeholder="seu@email.com"
+                  className={AA_INPUT_CLASS}
+                  autoComplete="email"
+                />
+              </div>
+              <AuthPrimaryButton disabled={forgotLoading || !(forgotEmail || email)}>
+                {forgotLoading ? 'Enviando...' : 'Mandar link'}
+              </AuthPrimaryButton>
+            </form>
+          )}
         </div>
-      </div>
+      </AuthScreen>
     );
   }
 
   // ── Login principal ────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#050609] text-white overflow-x-hidden relative" style={AUTH_HERO_CSS_VARS}>
-      <NeonAtmosphere primary={hero.primaryHex} accent={hero.accentHex} />
-      <StageBackdrop />
-      <SpotlightRays primary={hero.primaryHex} accent={hero.accentHex} />
-      <LightingBeams primary={hero.primaryHex} accent={hero.accentHex} />
-      <FloatingEquipment categoryId={AUTH_HERO_CATEGORY} primary={hero.primaryHex} />
+    <AuthScreen>
+      <BeamHero height={300}>
+        <p className="font-tag text-[11px] tracking-[3px] text-[#ffd400]">ALL ACCESS · ÁREA RESTRITA</p>
+        <h1 className="font-poster text-[64px] leading-[.92]">
+          BACKSTAGE<br /><span className="text-[#ffd400]">PRO</span>
+        </h1>
+        <p className="text-[15px] text-[#c8c8c8] mt-1.5">Agenda, horas e cachê de quem vive na estrada.</p>
+      </BeamHero>
+      <MarqueeBand />
 
-      <div className="relative z-10 min-h-screen flex flex-col justify-end px-5 pb-10 pt-16 max-w-lg mx-auto">
-        <BackstageLogo size={62} showWordmark subtitle="Gestão de eventos" className="mb-4" />
-
-        <h1 className="text-3xl font-extrabold leading-tight mt-2">Bem-vindo<br />de volta.</h1>
-        <p className="font-mono text-xs text-[#8a91a1] mt-2.5">O palco está esperando por você.</p>
-
-        <NeonGlass primary={hero.primaryHex} glow className="mt-6 p-5 space-y-4">
-          {/* Erro: credenciais inválidas */}
-          <AnimatePresence>
-            {errorType === 'invalid_credentials' && (
-              <motion.div
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="bg-red-500/15 border border-red-500/40 rounded-xl p-4 space-y-2"
-              >
-                <div className="flex gap-2">
-                  <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
-                  <div>
-                    <p className="text-sm font-semibold text-red-300">Email ou senha incorretos</p>
-                    <p className="text-xs text-red-200/70 mt-0.5">
-                      Se você entrou com Google antes, use o botão abaixo.
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setForgotMode(true)}
-                  className="text-xs underline underline-offset-2 font-mono bp-focus-ring rounded-sm"
-                  style={{ color: hero.primaryHex }}
-                >
-                  Esqueceu ou nunca definiu sua senha?
-                </button>
-              </motion.div>
-            )}
-
-            {/* Erro: email não confirmado */}
-            {errorType === 'email_not_confirmed' && (
-              <motion.div
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="bg-amber-500/15 border border-amber-500/40 rounded-xl p-4"
-              >
-                <div className="flex gap-2">
-                  <Mail className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-amber-300">Email não confirmado</p>
-                    <p className="text-xs text-amber-200/80 mt-0.5">
-                      Verifique sua caixa de entrada e clique no link de ativação.
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Erro genérico */}
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="bg-red-500/15 border border-red-500/40 rounded-xl p-3 flex gap-2"
-              >
-                <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
-                <p className="text-sm text-red-300">{error}</p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="login-email" className="block text-[10px] font-mono tracking-widest text-[#6b7283] mb-2 uppercase">E-mail</label>
-              <Input
-                id="login-email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="você@empresa.com"
-                className="bg-[#080a10]/80 border-0 text-white h-12 font-mono bp-focus-input focus-visible:ring-0"
-                style={{ boxShadow: `inset 0 0 0 1px ${hero.primaryHex}33` }}
-                autoComplete="email"
-              />
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label htmlFor="login-password" className="block text-[10px] font-mono tracking-widest text-[#6b7283] uppercase">Senha</label>
-                <button
-                  type="button"
-                  onClick={() => setForgotMode(true)}
-                  className="text-[10px] font-mono underline underline-offset-2 text-[#6b7283] hover:text-slate-300 transition-colors bp-focus-ring rounded-sm"
-                >
-                  Esqueceu a senha?
-                </button>
-              </div>
-              <div className="relative">
-                <Input
-                  id="login-password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="bg-[#080a10]/80 border-0 text-white pr-10 h-12 font-mono bp-focus-input focus-visible:ring-0"
-                  style={{ boxShadow: `inset 0 0 0 1px ${hero.primaryHex}33` }}
-                  autoComplete="current-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b7283] bp-focus-ring rounded-sm p-0.5"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              disabled={loading || !email || !password}
-              className="w-full h-12 border-0 font-bold uppercase text-[#06070a] bp-focus-ring focus-visible:ring-0"
-              style={{
-                background: `linear-gradient(135deg, ${hero.primaryHex}, ${hero.accentHex})`,
-                boxShadow: `0 0 26px ${hero.primaryHex}55`,
-              }}
+      <div className="flex-1 px-[22px] py-5 flex flex-col gap-2.5">
+        {errorType === 'invalid_credentials' && (
+          <AuthNotice title="E-MAIL OU SENHA INCORRETOS">
+            <p>Se você entrou com Google antes, use o botão de Google.</p>
+            <button
+              type="button"
+              onClick={() => setForgotMode(true)}
+              className="mt-1 underline underline-offset-2 text-[#ffd400] text-[13px] font-bold"
             >
-              {loading ? 'Entrando...' : 'Entrar no Backstage'}
-            </Button>
-          </form>
+              Esqueceu ou nunca definiu sua senha?
+            </button>
+          </AuthNotice>
+        )}
+        {errorType === 'email_not_confirmed' && (
+          <AuthNotice tone="warn" title="E-MAIL NÃO CONFIRMADO">
+            Verifique sua caixa de entrada e clique no link de ativação.
+          </AuthNotice>
+        )}
+        {error && <AuthNotice>{error}</AuthNotice>}
 
-          <div className="relative flex items-center gap-3">
-            <div className="flex-1 h-px bg-[#23262f]" />
-            <span className="text-[11px] text-[#6b7283] font-mono">ou</span>
-            <div className="flex-1 h-px bg-[#23262f]" />
+        <SocialLoginButtons />
+
+        <div className="flex items-center gap-2.5 text-[#6a6a6a] font-tag text-[10px]">
+          <span className="flex-1 h-px bg-[#222222]" />
+          OU COM E-MAIL
+          <span className="flex-1 h-px bg-[#222222]" />
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
+          <div>
+            <AuthLabel htmlFor="login-email" className="sr-only">E-mail</AuthLabel>
+            <input
+              id="login-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="seu@email.com"
+              className={AA_INPUT_CLASS}
+              autoComplete="email"
+            />
           </div>
 
-          <SocialLoginButtons />
+          <div className="relative">
+            <AuthLabel htmlFor="login-password" className="sr-only">Senha</AuthLabel>
+            <input
+              id="login-password"
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="senha"
+              className={`${AA_INPUT_CLASS} pr-12`}
+              autoComplete="current-password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? 'Esconder senha' : 'Mostrar senha'}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#a8a8a8] p-1 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffd400]"
+            >
+              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
+          </div>
 
-          <p className="text-center text-sm text-[#8a91a1] font-mono">
-            Novo por aqui?{' '}
-            <Link to="/signup" style={{ color: hero.primaryHex }} className="font-semibold bp-focus-ring rounded-sm">
-              Criar conta
-            </Link>
-          </p>
-        </NeonGlass>
+          <AuthPrimaryButton disabled={loading || !email || !password}>
+            {loading ? 'Entrando...' : 'Entrar'}
+          </AuthPrimaryButton>
+        </form>
+
+        <div className="flex justify-between text-sm">
+          <AuthLinkButton onClick={() => setForgotMode(true)}>Esqueci a senha</AuthLinkButton>
+          <Link
+            to="/signup"
+            className="text-[#ffd400] font-extrabold py-2 text-sm rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffd400]"
+          >
+            Criar conta grátis
+          </Link>
+        </div>
       </div>
-    </div>
+    </AuthScreen>
   );
 }

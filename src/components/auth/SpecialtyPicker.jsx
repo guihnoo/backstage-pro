@@ -1,54 +1,47 @@
-import { motion } from 'framer-motion';
 import { CATEGORIES } from '@/lib/eventCategories';
 import { Check } from 'lucide-react';
-import { getCategoryConfig } from '@/lib/categoryConfig';
 
+const MAX_SPECIALTIES = 5;
+
+/** Escolha das especialidades (até 5). Visual All Access: selecionada = amarelo de credencial. */
 export default function SpecialtyPicker({ categoryId, selected, onSelect }) {
-  const category = CATEGORIES.find(c => c.id === categoryId);
+  const category = CATEGORIES.find((c) => c.id === categoryId);
   if (!category) return null;
-
-  const { primaryHex } = getCategoryConfig(categoryId);
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-slate-400 mb-4">Selecione até 5 especialidades:</p>
+      <p className="text-sm text-[#c8c8c8] mb-3">Selecione até {MAX_SPECIALTIES} especialidades:</p>
       <div className="space-y-2">
-        {category.specialties.map((specialty, idx) => (
-          <motion.button
-            key={specialty}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: idx * 0.05 }}
-            onClick={() => {
-              if (selected.includes(specialty)) {
-                onSelect(selected.filter(s => s !== specialty));
-              } else if (selected.length < 5) {
-                onSelect([...selected, specialty]);
-              }
-            }}
-            disabled={selected.length >= 5 && !selected.includes(specialty)}
-            className={`w-full p-4 rounded-lg border-2 transition-all flex items-center justify-between ${
-              selected.includes(specialty)
-                ? 'shadow-lg'
-                : 'bg-slate-800/30 border-slate-700 hover:border-slate-600 disabled:opacity-50 disabled:cursor-not-allowed'
-            }`}
-            style={selected.includes(specialty) ? {
-              backgroundColor: `${primaryHex}33`,
-              borderColor: primaryHex,
-              boxShadow: `0 10px 15px -3px ${primaryHex}33`,
-            } : undefined}
-          >
-            <span className={selected.includes(specialty) ? 'text-white font-medium' : 'text-slate-300'}>
-              {specialty}
-            </span>
-            {selected.includes(specialty) && (
-              <Check className="w-5 h-5" style={{ color: primaryHex }} />
-            )}
-          </motion.button>
-        ))}
+        {category.specialties.map((specialty) => {
+          const isSelected = selected.includes(specialty);
+          const blocked = selected.length >= MAX_SPECIALTIES && !isSelected;
+          return (
+            <button
+              key={specialty}
+              type="button"
+              aria-pressed={isSelected}
+              onClick={() => {
+                if (isSelected) {
+                  onSelect(selected.filter((s) => s !== specialty));
+                } else if (selected.length < MAX_SPECIALTIES) {
+                  onSelect([...selected, specialty]);
+                }
+              }}
+              disabled={blocked}
+              className={`w-full min-h-[52px] px-4 rounded-[14px] border-2 transition-colors flex items-center justify-between bp-focus-ring ${
+                isSelected
+                  ? 'bg-[#ffd400] border-[#ffd400] text-[#0a0a0a]'
+                  : 'bg-[#161616] border-[#2a2a2a] text-white hover:border-[#555555] disabled:opacity-40 disabled:cursor-not-allowed'
+              }`}
+            >
+              <span className={isSelected ? 'font-extrabold' : 'font-semibold'}>{specialty}</span>
+              {isSelected && <Check className="w-5 h-5" aria-hidden="true" />}
+            </button>
+          );
+        })}
       </div>
-      <p className="text-xs text-slate-500 text-center mt-4">
-        {selected.length}/5 selecionadas
+      <p className="font-tag text-[11px] text-[#a8a8a8] text-center mt-3">
+        {selected.length}/{MAX_SPECIALTIES} SELECIONADAS
       </p>
     </div>
   );
