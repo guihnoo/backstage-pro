@@ -351,10 +351,10 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
 
   return (
     <Dialog open={true} onOpenChange={onCancel}>
-      <DialogContent hideDefaultClose className="sm:max-w-2xl h-[95dvh] max-h-[95dvh] bg-[#161616]/95 backdrop-blur-lg border-[#262626] text-white p-0 flex flex-col overflow-hidden bp-focus-scope">
+      <DialogContent hideDefaultClose className="sm:max-w-2xl h-[95dvh] max-h-[95dvh] backdrop-blur-lg p-0 flex flex-col overflow-hidden">
         <DialogHeader className="p-4 sm:p-6 border-b border-[#222222] flex-shrink-0">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2">
               {formData.client_type === 'pessoa'
                 ? <User className="w-5 h-5 bp-person-icon flex-shrink-0" />
                 : <Building2 className="w-5 h-5 flex-shrink-0" style={{ color: theme.primaryHex }} />
@@ -365,7 +365,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
               <X className="w-5 h-5" />
             </Button>
           </div>
-          <DialogDescription className="text-[#a8a8a8] text-sm mt-2">
+          <DialogDescription className="text-sm mt-2">
             {client ? 'Atualize as informações do cliente.' : 'Adicione um novo cliente ao seu portfólio.'}
           </DialogDescription>
         </DialogHeader>
@@ -428,7 +428,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
               </h3>
 
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-[#e0e0e0] text-sm font-medium">
+                <Label htmlFor="name">
                   {formData.client_type === 'pessoa' ? 'Nome completo *' : 'Nome do Cliente / Nome Fantasia *'}
                 </Label>
                 <Input
@@ -437,7 +437,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                   onChange={(e) => handleChange('name', e.target.value)}
                   onBlur={() => handleBlur('name')}
                   className={`bg-[#161616] border-[#262626] text-white h-12 text-base touch-manipulation ${
-                    errors.name && touched.name ? 'border-red-500' : ''
+                    errors.name && touched.name ? 'border-[#ff2e88]' : ''
                   }`}
                   placeholder={formData.client_type === 'pessoa' ? 'Ex: João Silva' : 'Ex: Amarrok Produções'}
                   maxLength={100}
@@ -449,7 +449,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
-                      className="text-red-400 text-sm flex items-center gap-1"
+                      className="text-[#ff2e88] text-sm flex items-center gap-1"
                     >
                       <AlertCircle className="w-3 h-3" />
                       {errors.name}
@@ -460,7 +460,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
 
               {formData.client_type === 'empresa' && (
                 <div className="space-y-2">
-                  <Label htmlFor="razao_social" className="text-[#e0e0e0] text-sm font-medium">
+                  <Label htmlFor="razao_social">
                     Razão Social
                     <span className="ml-1.5 text-[10px] text-[#666666] font-normal normal-case">Nome jurídico na NF</span>
                   </Label>
@@ -468,7 +468,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                     id="razao_social"
                     value={formData.razao_social}
                     onChange={(e) => handleChange('razao_social', e.target.value)}
-                    className="bg-[#161616] border-[#262626] text-white h-12 text-base touch-manipulation"
+                    className="h-12 touch-manipulation"
                     placeholder="Ex: AMARROK PRODUCOES E SERVICOS LTDA"
                     maxLength={150}
                   />
@@ -481,21 +481,21 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
               />
 
               <div className="space-y-2">
-                <Label htmlFor="contact_person" className="text-[#e0e0e0] text-sm font-medium">
+                <Label htmlFor="contact_person">
                   {formData.client_type === 'pessoa' ? 'Empresa / Produtora' : 'Pessoa de Contato'}
                 </Label>
                 <Input
                   id="contact_person"
                   value={formData.contact_person}
                   onChange={(e) => handleChange('contact_person', e.target.value)}
-                  className="bg-[#161616] border-[#262626] text-white h-12 text-base touch-manipulation"
+                  className="h-12 touch-manipulation"
                   placeholder={formData.client_type === 'pessoa' ? 'Ex: Amarrok Produções' : 'Ex: João Silva'}
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-[#e0e0e0] text-sm font-medium">
+                  <Label htmlFor="email">
                     E-mail
                   </Label>
                   <div className="relative">
@@ -507,7 +507,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                       onChange={(e) => handleChange('email', e.target.value)}
                       onBlur={() => handleBlur('email')}
                       className={`bg-[#161616] border-[#262626] text-white h-12 text-base touch-manipulation pl-10 ${
-                        errors.email && touched.email ? 'border-red-500' : ''
+                        errors.email && touched.email ? 'border-[#ff2e88]' : ''
                       }`}
                       placeholder="contato@empresa.com"
                     />
@@ -518,7 +518,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
-                        className="text-red-400 text-sm flex items-center gap-1"
+                        className="text-[#ff2e88] text-sm flex items-center gap-1"
                       >
                         <AlertCircle className="w-3 h-3" />
                         {errors.email}
@@ -528,7 +528,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-[#e0e0e0] text-sm font-medium">
+                  <Label htmlFor="phone">
                     Telefone
                   </Label>
                   <div className="relative">
@@ -539,7 +539,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                       onChange={(e) => handleChange('phone', e.target.value)}
                       onBlur={() => handleBlur('phone')}
                       className={`bg-[#161616] border-[#262626] text-white h-12 text-base touch-manipulation pl-10 ${
-                        errors.phone && touched.phone ? 'border-red-500' : ''
+                        errors.phone && touched.phone ? 'border-[#ff2e88]' : ''
                       }`}
                       placeholder="(11) 99999-9999"
                     />
@@ -556,7 +556,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
               </h3>
 
               <div className="space-y-3">
-                <Label className="text-[#e0e0e0] text-sm font-medium">
+                <Label>
                   Modelo de Pagamento Padrão
                 </Label>
                 <p className="text-xs text-[#888888] mb-2">
@@ -567,7 +567,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                     type="button"
                     variant={!formData.policy_default_payment_model ? 'default' : 'outline'}
                     onClick={() => handleChange('policy_default_payment_model', null)}
-                    className="h-auto p-3 sm:p-4 justify-start bg-[#222222] border-[#333333] hover:bg-slate-600/50 w-full text-left min-h-[44px]"
+                    className="h-auto p-3 sm:p-4 justify-start bg-[#222222] border-[#333333] hover:bg-[#333333] w-full text-left min-h-[44px]"
                   >
                     <div className="w-full">
                       <div className="font-medium text-sm text-white">Padrão do Sistema</div>
@@ -579,7 +579,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                     type="button"
                     variant={formData.policy_default_payment_model === 'HORAS_EXTRAS' ? 'default' : 'outline'}
                     onClick={() => handleChange('policy_default_payment_model', 'HORAS_EXTRAS')}
-                    className="h-auto p-3 sm:p-4 justify-start bg-[#222222] border-[#333333] hover:bg-slate-600/50 w-full text-left min-h-[44px]"
+                    className="h-auto p-3 sm:p-4 justify-start bg-[#222222] border-[#333333] hover:bg-[#333333] w-full text-left min-h-[44px]"
                   >
                     <div className="w-full">
                       <div className="font-medium text-sm text-white">Horas Extras</div>
@@ -591,7 +591,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                     type="button"
                     variant={formData.policy_default_payment_model === 'MEIO_CACHE_E_DOBRA' ? 'default' : 'outline'}
                     onClick={() => handleChange('policy_default_payment_model', 'MEIO_CACHE_E_DOBRA')}
-                    className="h-auto p-3 sm:p-4 justify-start bg-[#222222] border-[#333333] hover:bg-slate-600/50 w-full text-left min-h-[44px]"
+                    className="h-auto p-3 sm:p-4 justify-start bg-[#222222] border-[#333333] hover:bg-[#333333] w-full text-left min-h-[44px]"
                   >
                     <div className="w-full">
                       <div className="font-medium text-sm text-white">Meio Cachê & Dobra</div>
@@ -602,7 +602,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="default_daily_cache" className="text-[#e0e0e0] text-sm font-medium">
+                <Label htmlFor="default_daily_cache">
                   Cachê diário padrão (R$)
                 </Label>
                 <p className="text-xs text-[#888888]">
@@ -614,14 +614,14 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                   inputMode="decimal"
                   value={formData.default_daily_cache}
                   onChange={(e) => handleChange('default_daily_cache', e.target.value)}
-                  className="bg-[#161616] border-[#262626] text-white h-12 text-base touch-manipulation"
+                  className="h-12 touch-manipulation"
                   placeholder="Ex: 800"
                 />
               </div>
 
               {/* Alimentacao: cada cliente faz de um jeito (regra do dono) */}
               <div className="space-y-2">
-                <Label className="text-[#e0e0e0] text-sm font-medium">Alimentação</Label>
+                <Label>Alimentação</Label>
                 <p className="text-xs text-[#888888]">Só &quot;Cliente reembolsa&quot; soma no a receber e no fechamento.</p>
                 <div className="grid grid-cols-2 gap-2">
                   {[[null, 'Não definido'], ...Object.entries(MEAL_POLICY_LABELS)].map(([key, label]) => (
@@ -630,7 +630,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                       type="button"
                       variant={(formData.meal_policy || null) === key ? 'default' : 'outline'}
                       onClick={() => handleChange('meal_policy', key)}
-                      className="h-auto min-h-[44px] p-3 text-sm bg-[#222222] border-[#333333] hover:bg-slate-600/50"
+                      className="h-auto min-h-[44px] p-3 text-sm bg-[#222222] border-[#333333] hover:bg-[#333333]"
                     >
                       {label}
                     </Button>
@@ -643,7 +643,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                     inputMode="decimal"
                     value={formData.meal_daily_value}
                     onChange={(e) => handleChange('meal_daily_value', e.target.value)}
-                    className="bg-[#161616] border-[#262626] text-white h-12 text-base"
+                    className="h-12"
                     placeholder="Valor por dia (opcional), ex: 45,00"
                   />
                 )}
@@ -665,7 +665,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                     style={{ accentColor: theme.primaryHex }}
                   />
                   <div>
-                    <Label htmlFor="allows_meio_e_dobra_juntos" className="bp-text-primary font-medium cursor-pointer text-sm">
+                    <Label htmlFor="allows_meio_e_dobra_juntos" className="cursor-pointer">
                       Permitir Meio Cachê + Dobra no mesmo dia
                     </Label>
                     <p className="text-xs text-[#a8a8a8] mt-1">
@@ -680,7 +680,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
             <div className="space-y-4">
               <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-[#e0e0e0] text-sm font-medium">
+                  <Label>
                     Logo do Cliente
                   </Label>
                   <input
@@ -697,7 +697,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                         <button
                           type="button"
                           onClick={() => handleChange('logo_url', '')}
-                          className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-[#0a0a0a] flex items-center justify-center hover:bg-red-900/80 transition-colors"
+                          className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-[#0a0a0a] flex items-center justify-center hover:bg-[#ff2e88]/80 transition-colors"
                         >
                           <X className="w-3 h-3 text-white" />
                         </button>
@@ -729,7 +729,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="invoice_portal_url" className="text-[#e0e0e0] text-sm font-medium">
+                  <Label htmlFor="invoice_portal_url">
                     Portal de NF-e
                   </Label>
                   <div className="relative">
@@ -741,7 +741,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                       onChange={(e) => handleChange('invoice_portal_url', e.target.value)}
                       onBlur={() => handleBlur('invoice_portal_url')}
                       className={`bg-[#161616] border-[#262626] text-white h-12 text-base touch-manipulation pl-10 ${
-                        errors.invoice_portal_url && touched.invoice_portal_url ? 'border-red-500' : ''
+                        errors.invoice_portal_url && touched.invoice_portal_url ? 'border-[#ff2e88]' : ''
                       }`}
                       placeholder="https://portal-nfe.exemplo.com"
                     />
@@ -752,7 +752,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
-                        className="text-red-400 text-sm flex items-center gap-1"
+                        className="text-[#ff2e88] text-sm flex items-center gap-1"
                       >
                         <AlertCircle className="w-3 h-3" />
                         {errors.invoice_portal_url}
@@ -765,14 +765,14 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
 
             {/* Observações */}
             <div className="space-y-2">
-              <Label htmlFor="notes" className="text-[#e0e0e0] text-sm font-medium">
+              <Label htmlFor="notes">
                 Observações
               </Label>
               <Textarea
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => handleChange('notes', e.target.value)}
-                className="bg-[#161616] border-[#262626] text-white min-h-[100px] text-base resize-none touch-manipulation"
+                className="min-h-[100px] resize-none touch-manipulation"
                 placeholder="Observações importantes sobre o cliente, preferências, acordos especiais..."
               />
             </div>

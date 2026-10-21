@@ -70,20 +70,20 @@ export default function EventTemplatesManager({ primaryHex }) {
         onConfirm={() => handleDelete(confirmDelete?.id)}
       />
 
-      <div className="rounded-xl border border-slate-800 bg-slate-900/40 overflow-hidden">
+      <div className="rounded-xl border border-[#2a2a2a] bg-[#161616] overflow-hidden">
         {/* Header toggle */}
         <button
           type="button"
           onClick={() => setOpen(v => !v)}
-          className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-800/30 transition-colors"
+          className="w-full flex items-center justify-between px-4 py-3 hover:bg-[#1f1f1f] transition-colors"
         >
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-slate-800">
+            <div className="p-1.5 rounded-lg bg-[#1f1f1f]">
               <Sparkles className="w-4 h-4" style={{ color: accentColor }} />
             </div>
             <div className="text-left">
               <p className="text-sm font-semibold text-white">Templates de Evento</p>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-[11px] text-[#888888]">
                 {open && !loading
                   ? templates.length === 0
                     ? 'Nenhum salvo ainda'
@@ -93,9 +93,9 @@ export default function EventTemplatesManager({ primaryHex }) {
             </div>
           </div>
           {open ? (
-            <ChevronUp className="w-4 h-4 text-slate-500" />
+            <ChevronUp className="w-4 h-4 text-[#888888]" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-slate-500" />
+            <ChevronDown className="w-4 h-4 text-[#888888]" />
           )}
         </button>
 
@@ -106,20 +106,20 @@ export default function EventTemplatesManager({ primaryHex }) {
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="overflow-hidden border-t border-slate-800"
+              className="overflow-hidden border-t border-[#2a2a2a]"
             >
               <div className="p-4 space-y-2">
                 {loading ? (
                   <div className="flex justify-center py-6">
-                    <Loader2 className="w-5 h-5 animate-spin text-slate-500" />
+                    <Loader2 className="w-5 h-5 animate-spin text-[#888888]" />
                   </div>
                 ) : templates.length === 0 ? (
                   <div className="text-center py-6 space-y-2">
-                    <BookmarkPlus className="w-8 h-8 text-slate-700 mx-auto" />
-                    <p className="text-sm text-slate-500">Nenhum template salvo</p>
-                    <p className="text-xs text-slate-600 max-w-xs mx-auto">
+                    <BookmarkPlus className="w-8 h-8 text-[#555555] mx-auto" />
+                    <p className="text-sm text-[#888888]">Nenhum template salvo</p>
+                    <p className="text-xs text-[#666666] max-w-xs mx-auto">
                       Ao criar um evento na Agenda, clique em{' '}
-                      <span className="text-slate-400 font-medium">&quot;Salvar como template&quot;</span>{' '}
+                      <span className="text-[#a8a8a8] font-medium">&quot;Salvar como template&quot;</span>{' '}
                       para reutilizá-lo rapidamente no futuro.
                     </p>
                   </div>
@@ -132,11 +132,11 @@ export default function EventTemplatesManager({ primaryHex }) {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, x: -20 }}
                         transition={{ delay: i * 0.04 }}
-                        className="flex items-center gap-3 p-3 rounded-lg bg-slate-800/50 border border-slate-700/60 group"
+                        className="flex items-center gap-3 p-3 rounded-lg bg-[#1f1f1f] border border-[#2a2a2a] group"
                       >
                         {/* Color dot */}
                         <div
-                          className="w-3 h-3 rounded-full flex-shrink-0 ring-2 ring-slate-700"
+                          className="w-3 h-3 rounded-full flex-shrink-0 ring-2 ring-[#2a2a2a]"
                           style={{ backgroundColor: tpl.color || accentColor }}
                         />
 
@@ -145,7 +145,7 @@ export default function EventTemplatesManager({ primaryHex }) {
                           <p className="text-sm font-semibold text-white truncate">{tpl.name}</p>
                           <div className="flex items-center gap-2 flex-wrap">
                             {tpl.title && (
-                              <span className="text-xs text-slate-400 truncate">{tpl.title}</span>
+                              <span className="text-xs text-[#a8a8a8] truncate">{tpl.title}</span>
                             )}
                             {tpl.daily_cache_value > 0 && (
                               <span className="text-xs font-mono text-emerald-400">
@@ -153,7 +153,7 @@ export default function EventTemplatesManager({ primaryHex }) {
                               </span>
                             )}
                             {tpl.payment_model && (
-                              <span className="text-[10px] text-slate-500">
+                              <span className="text-[10px] text-[#888888]">
                                 {PAYMENT_MODEL_LABELS[tpl.payment_model] || tpl.payment_model}
                               </span>
                             )}
@@ -165,7 +165,7 @@ export default function EventTemplatesManager({ primaryHex }) {
                           type="button"
                           onClick={() => setConfirmDelete(tpl)}
                           disabled={deletingId === tpl.id}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 disabled:opacity-50"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg text-[#888888] hover:text-[#ff2e88] hover:bg-[#ff2e88]/10 disabled:opacity-50"
                           aria-label="Remover template"
                         >
                           {deletingId === tpl.id ? (
@@ -181,7 +181,7 @@ export default function EventTemplatesManager({ primaryHex }) {
 
                 {/* Hint */}
                 {templates.length > 0 && (
-                  <p className="text-[10px] text-slate-600 text-center pt-1 flex items-center justify-center gap-1">
+                  <p className="text-[10px] text-[#666666] text-center pt-1 flex items-center justify-center gap-1">
                     <AlertCircle className="w-3 h-3" />
                     Para criar novos templates, use &quot;Salvar como template&quot; na Agenda
                   </p>

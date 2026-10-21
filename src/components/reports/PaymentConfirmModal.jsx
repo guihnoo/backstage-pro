@@ -88,29 +88,29 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md max-h-[90dvh] bg-slate-900 border-slate-700 text-white flex flex-col overflow-hidden p-0 bp-focus-scope">
-        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <CheckCircle className="w-5 h-5 text-green-400" />
+      <DialogContent className="sm:max-w-md max-h-[90dvh] flex flex-col overflow-hidden p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0 pr-14">
+          <DialogTitle className="flex items-center gap-2">
+            <CheckCircle className="w-5 h-5 text-[#ffd400]" />
             Confirmar Recebimento
           </DialogTitle>
         </DialogHeader>
 
         <div className="bp-modal-scroll px-6 space-y-4">
           <div className="space-y-2 min-w-0">
-            <p className="text-sm text-slate-400">Evento:</p>
+            <p className="text-sm text-[#a8a8a8]">Evento:</p>
             <EventHeading event={event} client={client} size="sm" />
           </div>
 
           {hoursMessage && (
             <div className={`p-3 rounded-lg border text-sm space-y-2 ${
               shouldBlockPayment(hoursStatus)
-                ? 'border-amber-500/40 bg-amber-500/10 text-amber-200'
-                : 'border-slate-600 bg-slate-800/60 text-slate-300'
+                ? 'border-[#ffd400]/40 bg-[#ffd400]/10 text-[#ffd400]'
+                : 'border-[#2a2a2a] bg-[#1f1f1f] text-[#c8c8c8]'
             }`}>
               <p>{hoursMessage}</p>
               {shouldBlockPayment(hoursStatus) && (
-                <label className="flex items-center gap-2 text-amber-100">
+                <label className="flex items-center gap-2 text-[#ffd400]">
                   <input
                     type="checkbox"
                     checked={ackMissingHours}
@@ -124,14 +124,14 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="paid_amount" className="text-slate-300">
+            <Label htmlFor="paid_amount">
               Valor Real Recebido em Conta (R$)
             </Label>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#a8a8a8]">
               Preenchido com o valor total do evento. Se o valor depositado pelo cliente foi diferente, ajuste aqui.
             </p>
             <div className="relative">
-              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a8a8a8]" />
               <Input
                 id="paid_amount"
                 type="text"
@@ -139,7 +139,7 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
                 autoComplete="off"
                 value={paidAmount}
                 onChange={(e) => setPaidAmount(e.target.value)}
-                className="pl-10 bg-slate-800 border-slate-700 text-white"
+                className="pl-10"
                 placeholder="0,00"
               />
             </div>
@@ -147,17 +147,17 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
 
           {canStoreMethod && (
           <div className="space-y-2">
-            <Label className="text-slate-300">Forma de recebimento</Label>
+            <Label>Forma de recebimento</Label>
             <div className="flex flex-wrap gap-1.5">
               {PAYMENT_METHODS.map(m => (
                 <button
                   key={m.value}
                   type="button"
                   onClick={() => setPaymentMethod(m.value)}
-                  className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
+                  className={`h-9 text-xs font-extrabold px-3.5 rounded-full border transition-colors ${
                     paymentMethod === m.value
-                      ? 'border-green-500/60 bg-green-500/15 text-green-300'
-                      : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600'
+                      ? 'border-[#ffd400] bg-[#ffd400] text-[#0a0a0a]'
+                      : 'border-[#333333] bg-transparent text-[#c8c8c8] hover:text-white'
                   }`}
                 >
                   {m.label}
@@ -168,18 +168,18 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
           )}
 
           <div className="space-y-2">
-            <Label className="text-slate-300">Data do Recebimento</Label>
+            <Label>Data do Recebimento</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className="w-full justify-start text-left font-normal bg-slate-800 border-slate-700 text-white hover:bg-slate-700"
+                  className="w-full justify-start text-left font-normal bg-[#1f1f1f] border-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {paidDate ? format(paidDate, 'PPP', { locale: ptBR }) : 'Selecione a data'}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-slate-800 border-slate-700">
+              <PopoverContent className="w-auto p-0 bg-[#1f1f1f] border-[#2a2a2a]">
                 <Calendar
                   mode="single"
                   selected={paidDate}
@@ -192,19 +192,18 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
           </div>
         </div>
 
-        <DialogFooter className="gap-2 px-6 py-4 border-t border-slate-700 flex-shrink-0">
+        <DialogFooter className="gap-2 px-6 py-4 border-t border-[#2a2a2a] flex-shrink-0">
           <Button
             variant="outline"
             onClick={onClose}
             disabled={loading}
-            className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700"
+            className="bg-[#1f1f1f] border-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
           >
             Cancelar
           </Button>
           <Button
             onClick={handleConfirm}
             disabled={loading || blockedByHours}
-            className="bg-green-600 hover:bg-green-700 text-white"
           >
             {loading ? 'Confirmando...' : 'Confirmar Pagamento'}
           </Button>

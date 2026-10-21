@@ -920,7 +920,7 @@ export default function EventDetailModal({
     );
   } else if ((status === 'completed' || status === 'archived') && event.payment_status !== 'paid') {
     primaryCTA = (
-      <Button onClick={requestMarkPaid} className="flex-1 bg-emerald-700 hover:bg-emerald-600">
+      <Button onClick={requestMarkPaid} className="flex-1">
         <CheckCircle2 className="w-4 h-4 mr-2" />Confirmar Recebimento
       </Button>
     );
@@ -1033,7 +1033,7 @@ export default function EventDetailModal({
             </div>
             {!pagamentoDone && (
               <div className="flex gap-1.5 flex-shrink-0 flex-wrap justify-end">
-                <Button size="sm" onClick={requestMarkPaid} className="h-7 px-2 text-xs bg-emerald-700 hover:bg-emerald-600">
+                <Button size="sm" onClick={requestMarkPaid} className="h-7 px-2 text-xs">
                   <CheckCircle2 className="w-3 h-3 mr-1" />Pago
                 </Button>
               </div>

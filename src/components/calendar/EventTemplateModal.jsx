@@ -34,9 +34,9 @@ const EventTemplateModal = ({ isOpen, onClose, onSelectTemplate }) => {
     <AnimatePresence>
       {isOpen && (
         <Dialog open onOpenChange={onClose}>
-          <DialogContent className="sm:max-w-md max-h-[90dvh] bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200 flex flex-col overflow-hidden p-0 bp-focus-scope">
-            <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
-              <DialogTitle className="flex items-center gap-2 bp-text-primary">
+          <DialogContent className="sm:max-w-md max-h-[90dvh] backdrop-blur-lg flex flex-col overflow-hidden p-0">
+            <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0 pr-14">
+              <DialogTitle className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5" />
                 Usar Template de Evento
               </DialogTitle>
@@ -55,21 +55,21 @@ const EventTemplateModal = ({ isOpen, onClose, onSelectTemplate }) => {
                     key={template.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 cursor-pointer transition-colors hover:border-[color-mix(in_srgb,var(--bp-primary)_50%,transparent)]"
+                    className="bg-[#1f1f1f] border border-[#2a2a2a] rounded-lg p-4 cursor-pointer transition-colors hover:border-[color-mix(in_srgb,var(--bp-primary)_50%,transparent)]"
                     onClick={() => onSelectTemplate(template)}
                   >
                     <div className="flex items-center justify-between">
                       <p className="font-bold text-white">{template.name}</p>
                       <div className="w-4 h-4 rounded-full" style={{ backgroundColor: template.color }}></div>
                     </div>
-                    <p className="text-sm text-slate-400">{template.title}</p>
+                    <p className="text-sm text-[#a8a8a8]">{template.title}</p>
                     <p className="text-sm text-green-400 font-mono mt-1">R$ {template.daily_cache_value.toFixed(2)}</p>
                   </motion.div>
                 ))
               ) : (
                 <div className="text-center py-10">
-                  <p className="text-slate-400">Nenhum template encontrado.</p>
-                  <p className="text-xs text-slate-500 mt-1">Você pode criar templates no futuro.</p>
+                  <p className="text-[#a8a8a8]">Nenhum template encontrado.</p>
+                  <p className="text-xs text-[#888888] mt-1">Você pode criar templates no futuro.</p>
                 </div>
               )}
             </div>

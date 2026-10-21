@@ -88,9 +88,9 @@ export default function AvailabilityShareModal({ open, onClose, events = [], cli
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-slate-900 border-slate-700 text-white p-0 flex flex-col overflow-hidden max-h-[90dvh] bp-focus-scope">
-        <DialogHeader className="px-4 pt-4 pb-3 border-b border-slate-800 flex-shrink-0">
-          <DialogTitle className="text-base flex items-center gap-2">
+      <DialogContent className="sm:max-w-md p-0 flex flex-col overflow-hidden max-h-[90dvh]">
+        <DialogHeader className="px-4 pt-4 pb-3 border-b border-[#2a2a2a] flex-shrink-0 pr-14">
+          <DialogTitle className="flex items-center gap-2">
             <MessageCircle className="w-4 h-4 text-green-400" />
             Compartilhar Disponibilidade
           </DialogTitle>
@@ -102,7 +102,7 @@ export default function AvailabilityShareModal({ open, onClose, events = [], cli
             <button
               type="button"
               onClick={() => setViewDate(d => subMonths(d, 1))}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-1.5 rounded-lg text-[#a8a8a8] hover:text-white hover:bg-[#1f1f1f] transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -110,7 +110,7 @@ export default function AvailabilityShareModal({ open, onClose, events = [], cli
             <button
               type="button"
               onClick={() => setViewDate(d => addMonths(d, 1))}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-1.5 rounded-lg text-[#a8a8a8] hover:text-white hover:bg-[#1f1f1f] transition-colors"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -121,26 +121,26 @@ export default function AvailabilityShareModal({ open, onClose, events = [], cli
             <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/25 text-emerald-400">
               {freeDays.length} livre{freeDays.length !== 1 ? 's' : ''}
             </span>
-            <span className="text-xs px-2.5 py-1 rounded-full bg-red-500/15 border border-red-500/25 text-red-400">
+            <span className="text-xs px-2.5 py-1 rounded-full bg-[#ff2e88]/15 border border-[#ff2e88]/25 text-[#ff2e88]">
               {bookedShows.length} agendado{bookedShows.length !== 1 ? 's' : ''}
             </span>
           </div>
 
           {/* Preview */}
-          <div className="rounded-xl bg-slate-800/60 border border-slate-700/60 p-4">
-            <p className="text-[10px] text-slate-500 uppercase tracking-wide mb-2">Prévia da mensagem</p>
-            <pre className="text-xs text-slate-300 whitespace-pre-wrap font-sans leading-relaxed">
+          <div className="rounded-xl bg-[#1f1f1f] border border-[#2a2a2a] p-4">
+            <p className="text-[10px] text-[#888888] uppercase tracking-wide mb-2">Prévia da mensagem</p>
+            <pre className="text-xs text-[#c8c8c8] whitespace-pre-wrap font-sans leading-relaxed">
               {message}
             </pre>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-4 pb-4 pt-3 border-t border-slate-800 flex gap-2 flex-shrink-0">
+        <div className="px-4 pb-4 pt-3 border-t border-[#2a2a2a] flex gap-2 flex-shrink-0">
           <Button
             onClick={handleCopy}
             variant="outline"
-            className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800 gap-2"
+            className="flex-1 border-[#2a2a2a] text-[#c8c8c8] hover:bg-[#1f1f1f] gap-2"
           >
             {copied ? (
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />

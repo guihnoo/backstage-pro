@@ -300,15 +300,15 @@ export default function EventHoursSheet({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 bg-slate-900 rounded-t-2xl shadow-2xl z-[95] max-h-[90dvh] flex flex-col overflow-hidden bp-focus-scope"
+            className="fixed bottom-0 left-0 right-0 bg-[#161616] rounded-t-2xl shadow-2xl z-[95] max-h-[90dvh] flex flex-col overflow-hidden bp-focus-scope"
           >
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-2">
-              <div className="w-12 h-1 bg-slate-700 rounded-full" />
+              <div className="w-12 h-1 bg-[#2a2a2a] rounded-full" />
             </div>
 
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#2a2a2a]">
               <div>
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
                   <Clock className="w-5 h-5 bp-text-primary" />
@@ -324,7 +324,7 @@ export default function EventHoursSheet({
                 variant="ghost"
                 size="icon"
                 onClick={onClose}
-                className="text-slate-400 hover:text-white"
+                className="text-[#a8a8a8] hover:text-white"
                 aria-label="Fechar"
               >
                 <X className="w-5 h-5" />
@@ -336,7 +336,7 @@ export default function EventHoursSheet({
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Data */}
                 <div className="space-y-2">
-                  <Label htmlFor="mobile_work_date" className="text-slate-300 text-sm font-medium flex items-center gap-2">
+                  <Label htmlFor="mobile_work_date" className="flex items-center gap-2">
                     <CalendarIcon className="w-4 h-4" />
                     Data do Trabalho *
                   </Label>
@@ -346,17 +346,17 @@ export default function EventHoursSheet({
                     value={formData.date}
                     onChange={(e) => handleChange('date', e.target.value)}
                     onBlur={() => handleBlur('date')}
-                    className={`bg-slate-800 border-slate-700 text-white h-12 text-base ${
-                      errors.date && touched.date ? 'border-red-500' : ''
+                    className={`bg-[#1f1f1f] border-[#2a2a2a] text-white h-12 text-base ${
+                      errors.date && touched.date ? 'border-[#ff2e88]' : ''
                     }`}
                     required
                   />
                   {/* CORREÇÃO CRÍTICA: Usar formData.date */}
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-[#a8a8a8]">
                     {formData.date ? `Trabalho realizado em ${formatDisplayDate(formData.date)}` : 'Selecione a data'}
                   </p>
                   {errors.date && touched.date && (
-                    <p className="text-red-400 text-sm flex items-center gap-1">
+                    <p className="text-[#ff2e88] text-sm flex items-center gap-1">
                       <AlertCircle className="w-3 h-3" />
                       {errors.date}
                     </p>
@@ -366,16 +366,16 @@ export default function EventHoursSheet({
                 {/* Horários */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label className="text-slate-300 text-sm font-medium">Entrada / Saída *</Label>
+                    <Label>Entrada / Saída *</Label>
                     {formData.entry_time && (
                       <div className="flex items-center gap-1">
-                        <Zap className="w-3 h-3 text-slate-600" />
+                        <Zap className="w-3 h-3 text-[#666666]" />
                         {[8, 10, 12].map(h => (
                           <button
                             key={h}
                             type="button"
                             onClick={() => handleChange('exit_time', addMinutesToClock(formData.entry_time, h * 60))}
-                            className="text-[10px] font-semibold px-1.5 py-0.5 rounded border border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200 transition-colors"
+                            className="text-[10px] font-semibold px-1.5 py-0.5 rounded border border-[#2a2a2a] text-[#a8a8a8] hover:border-[#2a2a2a] hover:text-[#e0e0e0] transition-colors"
                           >
                             {h}h
                           </button>
@@ -385,7 +385,7 @@ export default function EventHoursSheet({
                   </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <Label htmlFor="mobile_entry_time" className="text-slate-300 text-xs font-medium">
+                    <Label htmlFor="mobile_entry_time">
                       Entrada
                     </Label>
                     <Input
@@ -394,13 +394,13 @@ export default function EventHoursSheet({
                       value={formData.entry_time}
                       onChange={(e) => handleChange('entry_time', e.target.value)}
                       onBlur={() => handleBlur('entry_time')}
-                      className={`bg-slate-800 border-slate-700 text-white h-12 text-base ${
-                        errors.entry_time && touched.entry_time ? 'border-red-500' : ''
+                      className={`bg-[#1f1f1f] border-[#2a2a2a] text-white h-12 text-base ${
+                        errors.entry_time && touched.entry_time ? 'border-[#ff2e88]' : ''
                       }`}
                       required
                     />
                     {errors.entry_time && touched.entry_time && (
-                      <p className="text-red-400 text-xs flex items-center gap-1">
+                      <p className="text-[#ff2e88] text-xs flex items-center gap-1">
                         <AlertCircle className="w-3 h-3" />
                         {errors.entry_time}
                       </p>
@@ -408,7 +408,7 @@ export default function EventHoursSheet({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="mobile_exit_time" className="text-slate-300 text-xs font-medium">
+                    <Label htmlFor="mobile_exit_time">
                       Saída
                     </Label>
                     <Input
@@ -417,13 +417,13 @@ export default function EventHoursSheet({
                       value={formData.exit_time}
                       onChange={(e) => handleChange('exit_time', e.target.value)}
                       onBlur={() => handleBlur('exit_time')}
-                      className={`bg-slate-800 border-slate-700 text-white h-12 text-base ${
-                        errors.exit_time && touched.exit_time ? 'border-red-500' : ''
+                      className={`bg-[#1f1f1f] border-[#2a2a2a] text-white h-12 text-base ${
+                        errors.exit_time && touched.exit_time ? 'border-[#ff2e88]' : ''
                       }`}
                       required
                     />
                     {errors.exit_time && touched.exit_time && (
-                      <p className="text-red-400 text-xs flex items-center gap-1">
+                      <p className="text-[#ff2e88] text-xs flex items-center gap-1">
                         <AlertCircle className="w-3 h-3" />
                         {errors.exit_time}
                       </p>
@@ -445,7 +445,7 @@ export default function EventHoursSheet({
                 )}
 
                 {sameEntryExit && (
-                  <label className="flex items-center gap-2 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-200 text-sm">
+                  <label className="flex items-center gap-2 p-3 rounded-lg border border-[#ffd400]/30 bg-[#ffd400]/10 text-[#ffd400] text-sm">
                     <input
                       type="checkbox"
                       checked={formData.next_day}
@@ -459,16 +459,16 @@ export default function EventHoursSheet({
                 {/* Cálculos — 3 cards visuais */}
                 {hours.total > 0 && (
                   <div className="grid grid-cols-3 gap-2">
-                    <div className="rounded-lg p-3 text-center border border-slate-700/60 bg-slate-800/40">
-                      <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Horas</p>
+                    <div className="rounded-lg p-3 text-center border border-[#2a2a2a] bg-[#1f1f1f]">
+                      <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Horas</p>
                       <p className="text-lg font-black font-mono leading-tight" style={{ color: primaryHex }}>{hours.total.toFixed(1)}h</p>
                     </div>
-                    <div className="rounded-lg p-3 text-center border border-pink-500/25 bg-pink-500/5">
-                      <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Extras</p>
-                      <p className="text-lg font-black text-pink-400 font-mono leading-tight">{hours.overtime.toFixed(1)}h</p>
+                    <div className="rounded-lg p-3 text-center border border-[#ff2e88]/25 bg-[#ff2e88]/5">
+                      <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Extras</p>
+                      <p className="text-lg font-black text-[#ff2e88] font-mono leading-tight">{hours.overtime.toFixed(1)}h</p>
                     </div>
                     <div className="rounded-lg p-3 text-center border border-emerald-500/25 bg-emerald-500/5">
-                      <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Cachê</p>
+                      <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Cachê</p>
                       <p className="text-sm font-black text-emerald-400 font-mono leading-tight">
                         {isVisible ? formatCurrency(estimatedCache) : '••••'}
                       </p>
@@ -476,28 +476,28 @@ export default function EventHoursSheet({
                   </div>
                 )}
                 {event?.payment_model && (
-                  <p className="text-[11px] text-slate-600 -mt-1">
+                  <p className="text-[11px] text-[#666666] -mt-1">
                     Modelo: {event.payment_model === 'MEIO_CACHE_E_DOBRA' ? 'Meio Cache e Dobra' : 'Cachê + Horas Extras'}
                   </p>
                 )}
 
                 {/* Observações */}
                 <div className="space-y-2">
-                  <Label htmlFor="mobile_notes" className="text-slate-300 text-sm font-medium">
+                  <Label htmlFor="mobile_notes">
                     Observações
                   </Label>
                   <Textarea
                     id="mobile_notes"
                     value={formData.notes}
                     onChange={(e) => handleChange('notes', e.target.value)}
-                    className="bg-slate-800 border-slate-700 text-white min-h-[80px] text-base resize-none"
+                    className="min-h-[80px] resize-none"
                     placeholder="Anotações..."
                   />
                 </div>
 
                 {/* Foto */}
                 <div className="space-y-2">
-                  <Label className="text-slate-300 text-sm font-medium">Foto do Dia</Label>
+                  <Label>Foto do Dia</Label>
                   <div className="flex items-center gap-2">
                     <input
                       type="file"
@@ -512,7 +512,7 @@ export default function EventHoursSheet({
                       variant="outline"
                       onClick={() => photoInputRef.current?.click()}
                       disabled={uploading}
-                      className="bg-slate-800 border-slate-700 hover:bg-slate-700 h-12 flex-1"
+                      className="bg-[#1f1f1f] border-[#2a2a2a] hover:bg-[#2a2a2a] h-12 flex-1"
                     >
                       {uploading ? (
                         <>
@@ -532,7 +532,7 @@ export default function EventHoursSheet({
                         variant="ghost"
                         size="icon"
                         onClick={() => setFormData(prev => ({ ...prev, photo_url: '' }))}
-                        className="text-red-400 h-12 w-12"
+                        className="text-[#ff2e88] h-12 w-12"
                         aria-label="Remover foto"
                       >
                         <X className="w-5 h-5" />
@@ -543,7 +543,7 @@ export default function EventHoursSheet({
                     <img 
                       src={formData.photo_url} 
                       alt="Preview" 
-                      className="w-full h-32 object-cover rounded-lg border border-slate-700"
+                      className="w-full h-32 object-cover rounded-lg border border-[#2a2a2a]"
                     />
                   )}
                 </div>
@@ -551,7 +551,7 @@ export default function EventHoursSheet({
             </div>
 
             {/* Footer */}
-            <div className="p-6 pt-4 border-t border-slate-800 bg-slate-900/80 pb-safe">
+            <div className="p-6 pt-4 border-t border-[#2a2a2a] bg-[#161616] pb-safe">
               <div className="flex gap-3">
                 {existingWork?.id && (
                   <Button
@@ -559,7 +559,7 @@ export default function EventHoursSheet({
                     variant="outline"
                     onClick={() => setConfirmDelete(true)}
                     disabled={loading}
-                    className="h-12 px-3 border-red-500/40 text-red-400 hover:bg-red-500/10"
+                    className="h-12 px-3 border-[#ff2e88]/40 text-[#ff2e88] hover:bg-[#ff2e88]/10"
                     aria-label="Excluir registro"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -570,7 +570,7 @@ export default function EventHoursSheet({
                   variant="outline"
                   onClick={onClose}
                   disabled={loading}
-                  className="flex-1 bg-transparent border-slate-700 hover:bg-slate-800 h-12"
+                  className="flex-1 bg-transparent border-[#2a2a2a] hover:bg-[#1f1f1f] h-12"
                 >
                   Cancelar
                 </Button>

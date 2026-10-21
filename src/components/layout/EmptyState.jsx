@@ -48,7 +48,7 @@ export default function EmptyState({
       </h3>
 
       {description && (
-        <p className="text-sm text-slate-400 max-w-xs mb-7 leading-relaxed">
+        <p className="text-sm text-[#a8a8a8] max-w-xs mb-7 leading-relaxed">
           {description}
         </p>
       )}
@@ -69,7 +69,7 @@ export default function EmptyState({
             <Button
               variant="outline"
               onClick={secondaryAction}
-              className="bg-slate-800/60 border-slate-700 hover:bg-slate-700 text-slate-300 h-11 px-6 w-full"
+              className="bg-[#1f1f1f] border-[#2a2a2a] hover:bg-[#2a2a2a] text-[#c8c8c8] h-11 px-6 w-full"
             >
               {secondaryActionLabel || 'Voltar'}
             </Button>

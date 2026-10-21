@@ -88,29 +88,29 @@ export default function NotesSheet({
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="relative w-full sm:w-auto sm:min-w-[420px] sm:max-w-[500px] bg-slate-900 rounded-t-3xl sm:rounded-2xl border-t sm:border border-slate-800 shadow-2xl max-h-[90dvh] flex flex-col overflow-hidden bp-focus-scope"
+            className="relative w-full sm:w-auto sm:min-w-[420px] sm:max-w-[500px] bg-[#161616] rounded-t-3xl sm:rounded-2xl border-t sm:border border-[#2a2a2a] shadow-2xl max-h-[90dvh] flex flex-col overflow-hidden bp-focus-scope"
           >
             {/* Handle (mobile) */}
             <div className="flex justify-center pt-3 pb-2 sm:hidden flex-shrink-0">
-              <div className="w-12 h-1.5 bg-slate-600 rounded-full" />
+              <div className="w-12 h-1.5 bg-[#333333] rounded-full" />
             </div>
 
             {/* Header - Fixed */}
-            <div className="flex items-center justify-between px-4 py-3 sm:p-6 border-b border-slate-800 flex-shrink-0 bg-slate-900">
+            <div className="flex items-center justify-between px-4 py-3 sm:p-6 border-b border-[#2a2a2a] flex-shrink-0 bg-[#161616]">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <FileText className="w-5 h-5 bp-text-primary flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <h3 className="text-lg font-bold text-white truncate">
                     Observações
                   </h3>
-                  <p className="text-sm text-slate-400 truncate">{event?.title}</p>
+                  <p className="text-sm text-[#a8a8a8] truncate">{event?.title}</p>
                 </div>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={onClose}
-                className="text-slate-400 hover:text-white flex-shrink-0 h-9 w-9"
+                className="text-[#a8a8a8] hover:text-white flex-shrink-0 h-9 w-9"
                 aria-label="Fechar"
               >
                 <X className="w-5 h-5" />
@@ -121,14 +121,14 @@ export default function NotesSheet({
             <ScrollArea fill>
               <div className="p-4 sm:p-6 space-y-5 pb-safe">
                 {/* Informações do Evento */}
-                <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700">
+                <div className="p-4 bg-[#1f1f1f] rounded-lg border border-[#2a2a2a]">
                   <h4 className="font-medium text-white mb-1 truncate text-sm">{event?.title}</h4>
-                  <p className="text-xs text-slate-400 truncate">{client?.name}</p>
+                  <p className="text-xs text-[#a8a8a8] truncate">{client?.name}</p>
                 </div>
 
                 {/* Campo de Observações */}
                 <div className="space-y-2">
-                  <Label htmlFor="notes-content" className="text-slate-300 text-sm">
+                  <Label htmlFor="notes-content">
                     Anotações do Evento (Suporta Markdown)
                   </Label>
                   <Textarea
@@ -136,16 +136,16 @@ export default function NotesSheet({
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Digite suas observações sobre o evento aqui...&#10;&#10;Você pode usar Markdown:&#10;- **negrito**&#10;- *itálico*&#10;- # Títulos&#10;- Links, listas, etc."
-                    className="bg-slate-800/60 border-slate-700 text-white placeholder:text-slate-500 min-h-[280px] resize-none text-base"
+                    className="min-h-[280px] resize-none"
                   />
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[#888888]">
                     {notes.length} caracteres
                   </p>
                 </div>
 
                 {/* Dica de Markdown */}
-                <div className="p-3 bg-blue-900/20 border border-blue-700/50 rounded-lg">
-                  <p className="text-xs text-blue-300">
+                <div className="p-3 bg-[#ffd400]/20 border border-[#ffd400]/50 rounded-lg">
+                  <p className="text-xs text-[#ffd400]">
                     💡 <strong>Dica:</strong> Use Markdown para formatar suas anotações. Isso será renderizado quando você visualizar os detalhes do evento.
                   </p>
                 </div>
@@ -153,11 +153,11 @@ export default function NotesSheet({
             </ScrollArea>
 
             {/* Footer - Fixed */}
-            <div className="flex gap-3 p-4 sm:p-6 border-t border-slate-800 flex-shrink-0 bg-slate-900 pb-safe">
+            <div className="flex gap-3 p-4 sm:p-6 border-t border-[#2a2a2a] flex-shrink-0 bg-[#161616] pb-safe">
               <Button
                 variant="outline"
                 onClick={onClose}
-                className="flex-1 bg-slate-800 border-slate-700 h-12 text-base"
+                className="flex-1 bg-[#1f1f1f] border-[#2a2a2a] h-12 text-base"
               >
                 Cancelar
               </Button>

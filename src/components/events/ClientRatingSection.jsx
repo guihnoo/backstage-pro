@@ -38,10 +38,10 @@ export default function ClientRatingSection({ event, updateEvent }) {
   return (
     <div className="space-y-2">
       <h3 className="font-semibold text-white text-sm sm:text-base flex items-center gap-2">
-        <Star className="w-4 h-4 text-amber-400" />
+        <Star className="w-4 h-4 text-[#ffd400]" />
         Avaliação do cliente
       </h3>
-      <div className="bg-slate-800/40 border border-slate-700/60 rounded-lg px-4 py-3 space-y-3">
+      <div className="bg-[#1f1f1f] border border-[#2a2a2a] rounded-lg px-4 py-3 space-y-3">
         <div className="flex items-center gap-1">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
@@ -61,8 +61,8 @@ export default function ClientRatingSection({ event, updateEvent }) {
               />
             </button>
           ))}
-          {draft ? <span className="ml-2 text-xs text-amber-400 font-medium">{LABELS[draft]}</span> : null}
-          {saving && <Loader2 className="w-4 h-4 text-slate-500 animate-spin ml-2" />}
+          {draft ? <span className="ml-2 text-xs text-[#ffd400] font-medium">{LABELS[draft]}</span> : null}
+          {saving && <Loader2 className="w-4 h-4 text-[#888888] animate-spin ml-2" />}
         </div>
         {draft ? (
           <textarea
@@ -71,7 +71,7 @@ export default function ClientRatingSection({ event, updateEvent }) {
             onBlur={() => draft && save(draft, notes)}
             placeholder="Observação sobre o cliente (opcional)."
             rows={2}
-            className="w-full bg-slate-700/50 border border-slate-600/60 rounded-md px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 resize-none focus:outline-none focus:ring-1 focus:ring-amber-500/50"
+            className="w-full bg-[#2a2a2a] border border-[#2a2a2a] rounded-md px-3 py-2 text-sm text-[#e0e0e0] placeholder:text-[#888888] resize-none focus:outline-none focus:ring-1 focus:ring-[#ffd400]/50"
           />
         ) : null}
       </div>

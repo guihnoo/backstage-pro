@@ -15,7 +15,7 @@ export default function ConfirmDialog({ open, onOpenChange, title, description, 
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="bg-slate-900 border-slate-700 text-white max-w-sm mx-4 bp-focus-scope">
+      <AlertDialogContent className="bg-[#161616] border-[#2a2a2a] text-white max-w-sm mx-4 bp-focus-scope">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-white">{title}</AlertDialogTitle>
           {description && (
@@ -27,7 +27,7 @@ export default function ConfirmDialog({ open, onOpenChange, title, description, 
         <AlertDialogFooter>
           <AlertDialogCancel
             onClick={onCancel}
-            className="bg-transparent border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+            className="bg-transparent border-[#2a2a2a] text-[#c8c8c8] hover:bg-[#1f1f1f] hover:text-white"
           >
             {cancelLabel}
           </AlertDialogCancel>
@@ -35,7 +35,7 @@ export default function ConfirmDialog({ open, onOpenChange, title, description, 
             onClick={onConfirm}
             className={
               destructive
-                ? 'bg-red-600 hover:bg-red-700 text-white border-0'
+                ? 'bg-[#ff2e88] hover:bg-[#ff4d9c] text-[#0a0a0a] border-0'
                 : 'text-white border-0 hover:brightness-110 active:brightness-95 transition-[filter]'
             }
             style={destructive ? undefined : theme.primaryStyle}

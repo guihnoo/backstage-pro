@@ -53,7 +53,6 @@ import { enrichEventsWithClients, getClientDisplayName } from '@/lib/eventDispla
 import { Ellipsis } from '@/components/ui/overflowText';
 import { useConnectivity } from '@/lib/offline/useConnectivity';
 
-const ExpenseAnalysis = lazy(() => import('@/components/reports/ExpenseAnalysis'));
 const ExportManager = lazy(() => import('@/components/reports/ExportManager'));
 const EventDetailModal = lazy(() => import('@/components/calendar/EventDetailModal'));
 const PaymentConfirmModal = lazy(() => import('@/components/reports/PaymentConfirmModal'));
@@ -123,7 +122,7 @@ function ExpandableSection({ id, label, defaultOpen = false, children }) {
       >
         <span className="text-xs font-bold font-tag tracking-[0.14em] text-white uppercase">{label}</span>
         <ChevronDown
-          className="w-4 h-4 text-slate-500 transition-transform duration-200"
+          className="w-4 h-4 text-[#888888] transition-transform duration-200"
           style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
         />
       </button>
@@ -152,15 +151,15 @@ const StatCard = ({ title, value, pulseValue, pulseColor, subtitle, icon: Icon, 
   const getTrendIcon = () => {
     if (!trend) return null;
     if (trend.change > 0) return <ArrowUp className="w-3 h-3 text-green-400" />;
-    if (trend.change < 0) return <ArrowDown className="w-3 h-3 text-red-400" />;
-    return <Minus className="w-3 h-3 text-slate-400" />;
+    if (trend.change < 0) return <ArrowDown className="w-3 h-3 text-[#ff2e88]" />;
+    return <Minus className="w-3 h-3 text-[#a8a8a8]" />;
   };
 
   const getTrendColor = () => {
-    if (!trend) return 'text-slate-400';
+    if (!trend) return 'text-[#a8a8a8]';
     if (trend.change > 0) return 'text-green-400';
-    if (trend.change < 0) return 'text-red-400';
-    return 'text-slate-400';
+    if (trend.change < 0) return 'text-[#ff2e88]';
+    return 'text-[#a8a8a8]';
   };
 
   return (
@@ -181,7 +180,7 @@ const StatCard = ({ title, value, pulseValue, pulseColor, subtitle, icon: Icon, 
           </StatValuePulse>
         </div>
         <div className="flex items-center justify-between gap-2 min-w-0">
-          {subtitle && <p className="text-xs text-slate-500 truncate flex-1 min-w-0" title={subtitle}>{subtitle}</p>}
+          {subtitle && <p className="text-xs text-[#888888] truncate flex-1 min-w-0" title={subtitle}>{subtitle}</p>}
           {trend && (
             <div className={`flex items-center gap-1 text-xs ${getTrendColor()}`}>
               {getTrendIcon()}
@@ -205,7 +204,7 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type, onItemClick
 
   const getModalContent = () => {
     if (!data || data.length === 0) {
-      return <p className="text-slate-400">Nenhum registro encontrado para este período.</p>;
+      return <p className="text-[#a8a8a8]">Nenhum registro encontrado para este período.</p>;
     }
 
     return (
@@ -228,27 +227,27 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type, onItemClick
                   else if (item.client_id) { onClose?.(); hardNavigate(`/client-detail?id=${item.client_id}`); }
                 }
               } : undefined}
-              className={`flex items-center justify-between p-3 bg-slate-800/50 rounded-lg transition-colors gap-3 min-w-0 ${isClickable ? 'cursor-pointer hover:bg-slate-700/60' : ''}`}
+              className={`flex items-center justify-between p-3 bg-[#1f1f1f] rounded-lg transition-colors gap-3 min-w-0 ${isClickable ? 'cursor-pointer hover:bg-[#2a2a2a]' : ''}`}
             >
               <div className="min-w-0 flex-1">
                 {item.event_ref ? (
                   <>
                     <EventHeading event={item.event_ref} client={item.client} size="sm" />
                     {item.subtitle && (
-                      <p className="text-sm text-slate-400 truncate mt-0.5" title={item.subtitle}>{item.subtitle}</p>
+                      <p className="text-sm text-[#a8a8a8] truncate mt-0.5" title={item.subtitle}>{item.subtitle}</p>
                     )}
                   </>
                 ) : (
                   <>
                     <p className="font-medium text-white truncate" title={item.title}>{item.title}</p>
-                    <p className="text-sm text-slate-400 truncate" title={item.subtitle}>{item.subtitle}</p>
+                    <p className="text-sm text-[#a8a8a8] truncate" title={item.subtitle}>{item.subtitle}</p>
                   </>
                 )}
               </div>
               <div className="text-right flex-shrink-0">
-                <p className={`font-bold ${item.value < 0 ? 'text-red-400' : 'text-green-400'}`}>{isVisible ? formatCurrency(item.value) : '••••'}</p>
-                {item.date && <p className="text-xs text-slate-500">{item.date}</p>}
-                {item.event_ref && <p className="text-[10px] text-slate-600 mt-0.5">Toque para detalhes</p>}
+                <p className={`font-bold ${item.value < 0 ? 'text-[#ff2e88]' : 'text-green-400'}`}>{isVisible ? formatCurrency(item.value) : '••••'}</p>
+                {item.date && <p className="text-xs text-[#888888]">{item.date}</p>}
+                {item.event_ref && <p className="text-[10px] text-[#666666] mt-0.5">Toque para detalhes</p>}
                 {item.client_id && (
                   <p className="text-[10px] mt-0.5 flex items-center gap-0.5 justify-end bp-text-primary">
                     <ExternalLink className="w-2.5 h-2.5" /> Ver cliente
@@ -264,12 +263,12 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type, onItemClick
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-2xl max-h-[90dvh] flex flex-col overflow-hidden p-0 bp-focus-scope">
-        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0 min-w-0">
-          <DialogTitle className="text-xl font-bold bp-text-primary min-w-0">
+      <DialogContent className="max-w-2xl max-h-[90dvh] flex flex-col overflow-hidden p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0 min-w-0 pr-14">
+          <DialogTitle className="min-w-0">
             <Ellipsis>{title}</Ellipsis>
           </DialogTitle>
-          <DialogDescription className="text-slate-400">
+          <DialogDescription>
             Detalhamento dos registros que compõem esta métrica
           </DialogDescription>
         </DialogHeader>
@@ -892,12 +891,12 @@ export default function ReportsPage() {
 
       {/* Modal de Projeção do Próximo Período */}
       <Dialog open={showProjection} onOpenChange={setShowProjection}>
-        <DialogContent className="bg-slate-900 border-slate-800 text-white w-full max-w-lg h-[100dvh] max-h-[100dvh] sm:h-auto sm:max-h-[85dvh] flex flex-col overflow-hidden p-0 bp-focus-scope sm:rounded-lg">
-          <DialogHeader className="px-6 pt-6 pb-3 flex-shrink-0">
-            <DialogTitle className="text-lg font-bold bp-text-primary">
+        <DialogContent className="w-full max-w-lg h-[100dvh] max-h-[100dvh] sm:h-auto sm:max-h-[85dvh] flex flex-col overflow-hidden p-0">
+          <DialogHeader className="px-6 pt-6 pb-3 flex-shrink-0 pr-14">
+            <DialogTitle>
               Projeção — Próximo Período
             </DialogTitle>
-            <DialogDescription className="text-slate-400 text-sm">
+            <DialogDescription className="text-sm">
               Eventos confirmados ainda não realizados
             </DialogDescription>
           </DialogHeader>
@@ -911,9 +910,9 @@ export default function ReportsPage() {
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-xs text-slate-500">{processedData.next.scheduledEventsCount} evento{processedData.next.scheduledEventsCount !== 1 ? 's' : ''}</p>
+                <p className="text-xs text-[#888888]">{processedData.next.scheduledEventsCount} evento{processedData.next.scheduledEventsCount !== 1 ? 's' : ''}</p>
                 {processedData.current.realizedRevenue > 0 && (
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-[#888888] mt-0.5">
                     vs {isVisible ? formatCurrency(processedData.current.realizedRevenue) : '•••'} atual
                   </p>
                 )}
@@ -935,16 +934,16 @@ export default function ReportsPage() {
                     key={event.id}
                     role="button"
                     tabIndex={0}
-                    className="flex items-center gap-3 py-3 border-b border-slate-800/60 last:border-0 cursor-pointer hover:bg-slate-800/30 rounded-lg px-2 -mx-2 transition-colors"
+                    className="flex items-center gap-3 py-3 border-b border-[#2a2a2a] last:border-0 cursor-pointer hover:bg-[#1f1f1f] rounded-lg px-2 -mx-2 transition-colors"
                     onClick={() => { setShowProjection(false); setSelectedEvent(event); }}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowProjection(false); setSelectedEvent(event); } }}
                   >
-                    <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center flex-shrink-0 text-sm font-bold text-slate-400">
+                    <div className="w-10 h-10 rounded-xl bg-[#1f1f1f] flex items-center justify-center flex-shrink-0 text-sm font-bold text-[#a8a8a8]">
                       {dateStr.split(' ')[0]}
                     </div>
                     <div className="flex-1 min-w-0">
                       <EventHeading event={event} client={client} size="sm" />
-                      <p className="text-xs text-slate-500 truncate mt-0.5">{dateStr}</p>
+                      <p className="text-xs text-[#888888] truncate mt-0.5">{dateStr}</p>
                     </div>
                     <p className="text-sm font-bold flex-shrink-0" style={{ color: config.primaryHex }}>
                       {isVisible ? formatCurrency(value) : '•••'}
@@ -954,7 +953,7 @@ export default function ReportsPage() {
               })
             }
             {processedData.next.scheduledEventsCount === 0 && (
-              <p className="text-center text-slate-500 text-sm py-6">Nenhum evento agendado para o próximo período.</p>
+              <p className="text-center text-[#888888] text-sm py-6">Nenhum evento agendado para o próximo período.</p>
             )}
           </div>
         </DialogContent>

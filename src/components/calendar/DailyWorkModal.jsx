@@ -183,11 +183,10 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-xl bg-slate-900 border-slate-700 text-white p-0 flex flex-col overflow-hidden max-h-[90dvh] bp-focus-scope">
-        <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 border-b border-slate-700 flex-shrink-0">
-          <DialogTitle className="flex items-center gap-2 text-white">
-            <Clock className="w-5 h-5 bp-text-primary" />
-            {existingWork?.id ? 'Editar Registro de Trabalho' : 'Novo Registro de Trabalho'}
+      <DialogContent className="sm:max-w-xl p-0 flex flex-col overflow-hidden max-h-[90dvh]">
+        <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 border-b border-[#2a2a2a] flex-shrink-0 pr-14">
+          <DialogTitle>
+            {existingWork?.id ? 'Editar horas' : 'Registrar horas'}
           </DialogTitle>
         </DialogHeader>
 
@@ -203,7 +202,7 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                   min={event?.start_date || undefined}
                   max={normalizeDateString(new Date())}
                   onChange={(e) => setField('date', e.target.value)}
-                  className="bg-slate-800 border-slate-700 h-12 text-base"
+                  className="h-12"
                 />
                 {event?.end_date && event.end_date !== event.start_date && (
                   <p className="text-xs bp-text-primary">
@@ -211,14 +210,14 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                   </p>
                 )}
                 {formData.date && (
-                  <p className="text-xs text-slate-400">Registrando para {formatDisplayDate(formData.date)}</p>
+                  <p className="text-xs text-[#a8a8a8]">Registrando para {formatDisplayDate(formData.date)}</p>
                 )}
               </div>
 
               {/* Banner de timer ativo */}
               {timerForThisEvent && (
-                <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
-                  <div className="flex items-center gap-2 text-amber-400 text-sm">
+                <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-[#ffd400]/10 border border-[#ffd400]/30">
+                  <div className="flex items-center gap-2 text-[#ffd400] text-sm">
                     <Timer className="w-4 h-4 flex-shrink-0 animate-pulse" />
                     <span>Timer ativo: <span className="font-mono font-bold">{formatElapsed(timerElapsed)}</span></span>
                   </div>
@@ -226,7 +225,7 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                     type="button"
                     size="sm"
                     variant="outline"
-                    className="text-xs border-amber-500/40 text-amber-300 hover:bg-amber-500/20 flex-shrink-0"
+                    className="text-xs border-[#ffd400]/40 text-[#ffd400] hover:bg-[#ffd400]/20 flex-shrink-0"
                     onClick={() => {
                       // Duração real do cronômetro, em minutos, sem cortar em 24 h (auditoria 1A).
                       const minutes = elapsedMsToMinutes(timerElapsed);
@@ -252,13 +251,13 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                   {/* Atalhos rápidos de duração */}
                   {formData.entry_time && (
                     <div className="flex items-center gap-1">
-                      <Zap className="w-3 h-3 text-slate-600" />
+                      <Zap className="w-3 h-3 text-[#666666]" />
                       {[8, 10, 12].map(h => (
                         <button
                           key={h}
                           type="button"
                           onClick={() => setField('exit_time', addMinutesToClock(formData.entry_time, h * 60))}
-                          className="text-[10px] font-semibold px-1.5 py-0.5 rounded border border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200 transition-colors"
+                          className="text-[10px] font-semibold px-1.5 py-0.5 rounded border border-[#2a2a2a] text-[#a8a8a8] hover:border-[#2a2a2a] hover:text-[#e0e0e0] transition-colors"
                         >
                           {h}h
                         </button>
@@ -267,8 +266,8 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                   )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <Input type="time" value={formData.entry_time} onChange={(e) => setField('entry_time', e.target.value)} className="bg-slate-800 border-slate-700 h-12 text-base" aria-label="Horário de entrada" />
-                  <Input type="time" value={formData.exit_time} onChange={(e) => setField('exit_time', e.target.value)} className="bg-slate-800 border-slate-700 h-12 text-base" aria-label="Horário de saída" />
+                  <Input type="time" value={formData.entry_time} onChange={(e) => setField('entry_time', e.target.value)} className="h-12" aria-label="Horário de entrada" />
+                  <Input type="time" value={formData.exit_time} onChange={(e) => setField('exit_time', e.target.value)} className="h-12" aria-label="Horário de saída" />
                 </div>
               </div>
 
@@ -281,7 +280,7 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                 />
               )}
               {sameEntryExit && (
-                <label className="flex items-center gap-2 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-200 text-sm">
+                <label className="flex items-center gap-2 p-3 rounded-lg border border-[#ffd400]/30 bg-[#ffd400]/10 text-[#ffd400] text-sm">
                   <input
                     type="checkbox"
                     checked={formData.next_day}
@@ -292,21 +291,21 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                 </label>
               )}
               {formData.duration_min != null && (
-                <p className="text-xs text-amber-300 -mt-1">Usando a duração do cronômetro: {summary.total.toFixed(1)} h.</p>
+                <p className="text-xs text-[#ffd400] -mt-1">Usando a duração do cronômetro: {summary.total.toFixed(1)} h.</p>
               )}
 
               {summary.total > 0 && (
                 <div className="grid grid-cols-3 gap-2">
-                  <div className="rounded-lg p-3 text-center border border-slate-700/60 bg-slate-800/40">
-                    <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Horas</p>
+                  <div className="rounded-lg p-3 text-center border border-[#2a2a2a] bg-[#1f1f1f]">
+                    <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Horas</p>
                     <p className="text-lg font-black" style={{ color: primaryHex }}>{summary.total.toFixed(1)}h</p>
                   </div>
-                  <div className="rounded-lg p-3 text-center border border-pink-500/25 bg-pink-500/5">
-                    <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Extras</p>
-                    <p className="text-lg font-black text-pink-400">{summary.overtime.toFixed(1)}h</p>
+                  <div className="rounded-lg p-3 text-center border border-[#ff2e88]/25 bg-[#ff2e88]/5">
+                    <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Extras</p>
+                    <p className="text-lg font-black text-[#ff2e88]">{summary.overtime.toFixed(1)}h</p>
                   </div>
                   <div className="rounded-lg p-3 text-center border border-emerald-500/25 bg-emerald-500/5">
-                    <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Cachê</p>
+                    <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Cachê</p>
                     <p className="text-base font-black text-emerald-400 leading-tight">
                       {isVisible ? formatCurrency(summary.cache) : '••••'}
                     </p>
@@ -314,7 +313,7 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                 </div>
               )}
               {event?.payment_model && (
-                <p className="text-[11px] text-slate-600 -mt-1">
+                <p className="text-[11px] text-[#666666] -mt-1">
                   Modelo: {event.payment_model === 'MEIO_CACHE_E_DOBRA' ? 'Meio Cache e Dobra' : 'Cachê + Horas Extras'}
                 </p>
               )}
@@ -328,7 +327,6 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                     inputMode="decimal"
                     value={formData.meal}
                     onChange={(e) => setField('meal', e.target.value)}
-                    className="bg-slate-800 border-slate-700"
                     placeholder={Number(mealClient?.meal_daily_value) > 0 ? `Padrão do cliente: ${toBRLInput(mealClient.meal_daily_value)}` : 'Ex: 45,00'}
                   />
                 </div>
@@ -336,12 +334,12 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
 
               <div className="space-y-2">
                 <Label htmlFor="dw-notes">Observações</Label>
-                <Textarea id="dw-notes" value={formData.notes} onChange={(e) => setField('notes', e.target.value)} className="bg-slate-800 border-slate-700" placeholder="Detalhes do turno..." rows={3} />
+                <Textarea id="dw-notes" value={formData.notes} onChange={(e) => setField('notes', e.target.value)} placeholder="Detalhes do turno..." rows={3} />
               </div>
             </div>
           </ScrollArea>
 
-          <div className="flex gap-3 px-4 py-3 sm:px-6 border-t border-slate-700 flex-shrink-0 pb-safe">
+          <div className="flex gap-3 px-4 py-3 sm:px-6 border-t border-[#2a2a2a] flex-shrink-0 pb-safe">
             <Button type="button" variant="outline" onClick={() => onClose?.(false)} disabled={loading} className="flex-1 h-11">
               Cancelar
             </Button>

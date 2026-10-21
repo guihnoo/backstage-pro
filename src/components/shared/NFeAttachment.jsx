@@ -35,57 +35,57 @@ function AnaliseCard({ analise, clienteNome }) {
     <div className={`rounded-lg border p-3 space-y-2 text-xs ${
       ok
         ? 'bg-emerald-950/20 border-emerald-700/30'
-        : 'bg-amber-950/20 border-amber-700/30'
+        : 'bg-[#ffd400]/20 border-[#ffd400]/30'
     }`}>
       {/* Status geral */}
       <div className="flex items-center gap-2">
         {ok
           ? <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-          : <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+          : <AlertTriangle className="w-4 h-4 text-[#ffd400] flex-shrink-0" />
         }
-        <span className={`font-semibold ${ok ? 'text-emerald-300' : 'text-amber-300'}`}>
+        <span className={`font-semibold ${ok ? 'text-emerald-300' : 'text-[#ffd400]'}`}>
           {ok ? 'NF-e verificada pela IA' : 'Atenção — divergências encontradas'}
         </span>
       </div>
 
       {/* Dados extraídos */}
-      <div className="grid grid-cols-2 gap-x-4 gap-y-1 bg-slate-900/40 rounded px-2.5 py-2">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-1 bg-[#161616] rounded px-2.5 py-2">
         {analise.nfe_numero && (
           <>
-            <span className="text-slate-400">Número</span>
+            <span className="text-[#a8a8a8]">Número</span>
             <span className="text-white font-mono font-medium">{analise.nfe_numero}</span>
           </>
         )}
         {analise.nfe_tomador_nome && (
           <>
-            <span className="text-slate-400">Tomador</span>
+            <span className="text-[#a8a8a8]">Tomador</span>
             <span className="text-white truncate" title={analise.nfe_tomador_nome}>{analise.nfe_tomador_nome}</span>
           </>
         )}
         {analise.nfe_tomador_cnpj && (
           <>
-            <span className="text-slate-400">CNPJ tomador</span>
+            <span className="text-[#a8a8a8]">CNPJ tomador</span>
             <span className="text-white font-mono">{analise.nfe_tomador_cnpj}</span>
           </>
         )}
         {analise.nfe_valor > 0 && (
           <>
-            <span className="text-slate-400">Valor na NF</span>
-            <span className={`font-semibold ${analise.valor_confere ? 'text-emerald-300' : 'text-amber-300'}`}>
+            <span className="text-[#a8a8a8]">Valor na NF</span>
+            <span className={`font-semibold ${analise.valor_confere ? 'text-emerald-300' : 'text-[#ffd400]'}`}>
               R$ {analise.nfe_valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </span>
           </>
         )}
         {analise.nfe_competencia && (
           <>
-            <span className="text-slate-400">Competência</span>
+            <span className="text-[#a8a8a8]">Competência</span>
             <span className="text-white">{analise.nfe_competencia}</span>
           </>
         )}
         {analise.nfe_descricao && (
           <>
-            <span className="text-slate-400 self-start">Serviço</span>
-            <span className="text-slate-300 line-clamp-2">{analise.nfe_descricao}</span>
+            <span className="text-[#a8a8a8] self-start">Serviço</span>
+            <span className="text-[#c8c8c8] line-clamp-2">{analise.nfe_descricao}</span>
           </>
         )}
       </div>
@@ -94,9 +94,9 @@ function AnaliseCard({ analise, clienteNome }) {
       <div className="flex items-center gap-1.5">
         {analise.cliente_reconhecido
           ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-          : <XCircle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+          : <XCircle className="w-3.5 h-3.5 text-[#ff2e88] flex-shrink-0" />
         }
-        <span className={analise.cliente_reconhecido ? 'text-emerald-300' : 'text-red-300'}>
+        <span className={analise.cliente_reconhecido ? 'text-emerald-300' : 'text-[#ff2e88]'}>
           {analise.cliente_reconhecido
             ? `Tomador reconhecido: ${clienteNome ?? 'cliente do evento'}`
             : `Tomador não corresponde ao cliente do evento`
@@ -108,7 +108,7 @@ function AnaliseCard({ analise, clienteNome }) {
       {divergencias.length > 0 && (
         <ul className="space-y-0.5">
           {divergencias.map((d, i) => (
-            <li key={i} className="flex items-start gap-1.5 text-amber-200">
+            <li key={i} className="flex items-start gap-1.5 text-[#ffd400]">
               <span className="mt-0.5">⚠</span>
               <span>{d}</span>
             </li>
@@ -299,10 +299,10 @@ export default function NFeAttachment({ event, client }) {
   if (hasNFe) {
     return (
       <div className="space-y-2.5">
-        <div className="bg-blue-950/20 border border-blue-700/30 rounded-lg p-3 space-y-2.5">
+        <div className="bg-[#ffd400]/20 border border-[#ffd400]/30 rounded-lg p-3 space-y-2.5">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
-              <FileText className="w-4 h-4 text-blue-400 flex-shrink-0" />
+              <FileText className="w-4 h-4 text-[#ffd400] flex-shrink-0" />
               <div className="min-w-0">
                 {currentSavedNumero && (
                   <p className="text-xs font-semibold text-white">
@@ -311,10 +311,10 @@ export default function NFeAttachment({ event, client }) {
                   </p>
                 )}
                 {event.nfe_arquivo_nome && (
-                  <p className="text-xs text-slate-400 truncate">{event.nfe_arquivo_nome}</p>
+                  <p className="text-xs text-[#a8a8a8] truncate">{event.nfe_arquivo_nome}</p>
                 )}
                 {!event.nfe_arquivo_nome && !currentSavedNumero && (
-                  <p className="text-xs text-slate-400">Arquivo anexado</p>
+                  <p className="text-xs text-[#a8a8a8]">Arquivo anexado</p>
                 )}
                 <p className="text-[11px] text-emerald-400/90 mt-0.5">
                   ✓ Vinculada ao Relatório PDF de Fechamento
@@ -324,7 +324,7 @@ export default function NFeAttachment({ event, client }) {
 
             <div className="flex items-center gap-1 flex-shrink-0">
               {isLoading && (
-                <span className="text-xs text-blue-300 flex items-center gap-1 mr-1">
+                <span className="text-xs text-[#ffd400] flex items-center gap-1 mr-1">
                   <Loader2 className="w-3 h-3 animate-spin" />
                   {analyzing ? 'Analisando...' : 'Enviando...'}
                 </span>
@@ -333,14 +333,14 @@ export default function NFeAttachment({ event, client }) {
                 <>
                   <a href={event.nfe_arquivo_url} target="_blank" rel="noopener noreferrer" title="Baixar PDF da NF-e">
                     <Button type="button" size="sm" variant="outline"
-                      className="h-7 w-7 p-0 border-slate-600 text-slate-300 hover:bg-slate-700">
+                      className="h-7 w-7 p-0 border-[#2a2a2a] text-[#c8c8c8] hover:bg-[#2a2a2a]">
                       <Download className="w-3.5 h-3.5" />
                     </Button>
                   </a>
                   <Button type="button" size="sm" variant="outline"
                     onClick={() => runAnalise(event.nfe_arquivo_url)}
                     title="Re-analisar com IA"
-                    className="h-7 w-7 p-0 border-slate-600 text-slate-300 hover:bg-slate-700">
+                    className="h-7 w-7 p-0 border-[#2a2a2a] text-[#c8c8c8] hover:bg-[#2a2a2a]">
                     <Sparkles className="w-3.5 h-3.5" />
                   </Button>
                 </>
@@ -350,14 +350,14 @@ export default function NFeAttachment({ event, client }) {
                   <Button type="button" size="sm" variant="outline"
                     onClick={() => fileInputRef.current?.click()}
                     title={hasArquivo ? 'Substituir PDF da NF-e' : 'Anexar PDF da NF-e'}
-                    className="h-7 px-2 text-xs border-slate-600 text-slate-300 hover:bg-slate-700">
+                    className="h-7 px-2 text-xs border-[#2a2a2a] text-[#c8c8c8] hover:bg-[#2a2a2a]">
                     <Upload className="w-3.5 h-3.5 mr-1" />
                     {hasArquivo ? 'Trocar PDF' : 'Anexar PDF'}
                   </Button>
                   <Button type="button" size="sm" variant="outline"
                     onClick={handleDelete}
                     title="Remover NF-e"
-                    className="h-7 w-7 p-0 border-red-800/50 text-red-400 hover:bg-red-900/20">
+                    className="h-7 w-7 p-0 border-[#ff2e88]/50 text-[#ff2e88] hover:bg-[#ff2e88]/20">
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </>
@@ -366,25 +366,25 @@ export default function NFeAttachment({ event, client }) {
           </div>
 
           {/* Edição rápida do número ou data da NF-e */}
-          <div className="flex flex-wrap gap-2 pt-1 border-t border-blue-900/30">
+          <div className="flex flex-wrap gap-2 pt-1 border-t border-[#ffd400]/30">
             <Input
               type="text"
               placeholder="Nº da NF-e (ex: 2026/042)"
               value={numero}
               onChange={(e) => setNumero(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSaveNumero()}
-              className="h-8 text-xs bg-slate-900/70 border-slate-700 flex-1 min-w-[130px]"
+              className="flex-1 min-w-[130px]"
             />
             <Input
               type="date"
               value={issuedAt}
               onChange={(e) => setIssuedAt(e.target.value)}
-              className="h-8 text-xs bg-slate-900/70 border-slate-700 w-[135px]"
+              className="w-[135px]"
               title="Data de emissão da NF-e"
             />
             {(numero.trim() !== currentSavedNumero || issuedAt !== (event?.nf_issued_at || '')) && numero.trim() && (
               <Button type="button" size="sm" disabled={savingNumero} onClick={handleSaveNumero}
-                className="h-8 px-3 text-xs bg-blue-700 hover:bg-blue-600 text-white flex-shrink-0">
+                className="h-8 px-3 text-xs bg-[#ffd400] hover:bg-[#ffe033] text-[#0a0a0a] flex-shrink-0">
                 {savingNumero ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Atualizar'}
               </Button>
             )}
@@ -393,7 +393,7 @@ export default function NFeAttachment({ event, client }) {
 
         {/* Resultado da análise IA */}
         {analyzing && (
-          <div className="flex items-center gap-2 text-xs text-blue-300 px-1">
+          <div className="flex items-center gap-2 text-xs text-[#ffd400] px-1">
             <Sparkles className="w-3.5 h-3.5 animate-pulse" />
             IA lendo a NF-e e cruzando com os dados do evento...
           </div>
@@ -407,12 +407,12 @@ export default function NFeAttachment({ event, client }) {
 
   // ── Sem NF-e — formulário para registrar ─────────────────────────────────
   return (
-    <div className="border border-dashed border-blue-800/40 rounded-lg p-3 space-y-2.5 bg-blue-950/10">
+    <div className="border border-dashed border-[#ffd400]/40 rounded-lg p-3 space-y-2.5 bg-[#ffd400]/10">
       <div className="flex items-center gap-1.5">
-        <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-        <p className="text-xs text-slate-300 font-medium">Inserir NF-e / NFS-e no evento</p>
+        <Sparkles className="w-3.5 h-3.5 text-[#ffd400]" />
+        <p className="text-xs text-[#c8c8c8] font-medium">Inserir NF-e / NFS-e no evento</p>
       </div>
-      <p className="text-xs text-slate-400">
+      <p className="text-xs text-[#a8a8a8]">
         Digite o número ou anexe o PDF da NF-e — os dados entram automaticamente no Relatório PDF de Fechamento.
       </p>
 
@@ -423,18 +423,18 @@ export default function NFeAttachment({ event, client }) {
           value={numero}
           onChange={(e) => setNumero(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSaveNumero()}
-          className="h-8 text-sm bg-slate-800/80 border-slate-700 flex-1 min-w-[140px]"
+          className="flex-1 min-w-[140px]"
         />
         <Input
           type="date"
           value={issuedAt}
           onChange={(e) => setIssuedAt(e.target.value)}
-          className="h-8 text-xs bg-slate-800/80 border-slate-700 w-[135px]"
+          className="w-[135px]"
           title="Data de emissão"
         />
         {numero.trim() && (
           <Button type="button" size="sm" disabled={savingNumero} onClick={handleSaveNumero}
-            className="h-8 px-3 text-xs bg-blue-700 hover:bg-blue-600 text-white flex-shrink-0">
+            className="h-8 px-3 text-xs bg-[#ffd400] hover:bg-[#ffe033] text-[#0a0a0a] flex-shrink-0">
             {savingNumero ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Salvar Nº'}
           </Button>
         )}
@@ -443,7 +443,7 @@ export default function NFeAttachment({ event, client }) {
       <div className="flex gap-2">
         <Button type="button" size="sm" variant="outline" disabled={isLoading}
           onClick={() => fileInputRef.current?.click()}
-          className="flex-1 h-9 text-xs border-blue-700/40 text-blue-300 hover:bg-blue-900/20">
+          className="flex-1 h-9 text-xs border-[#ffd400]/40 text-[#ffd400] hover:bg-[#ffd400]/20">
           {isLoading
             ? <><Loader2 className="w-3 h-3 animate-spin mr-1.5" />
                 {analyzing ? 'Analisando com IA...' : 'Enviando...'}
@@ -453,7 +453,7 @@ export default function NFeAttachment({ event, client }) {
         </Button>
         <a href="https://www.nfse.gov.br/EmissorNacional/Login" target="_blank" rel="noopener noreferrer">
           <Button type="button" size="sm" variant="outline"
-            className="h-9 px-2.5 text-xs border-slate-600 text-slate-400 hover:bg-slate-700"
+            className="h-9 px-2.5 text-xs border-[#2a2a2a] text-[#a8a8a8] hover:bg-[#2a2a2a]"
             title="Abrir portal NFS-e Nacional">
             <ExternalLink className="w-3 h-3" />
           </Button>

@@ -318,7 +318,7 @@ export default function ClientDetailModal({
       <Dialog open={true} onOpenChange={onClose}>
         <DialogContent hideDefaultClose className="sm:max-w-4xl h-[95dvh] bg-slate-900/95 backdrop-blur-lg border-slate-800 text-slate-200 flex flex-col p-0 overflow-hidden bp-focus-scope">
           <motion.div variants={modalAnimation} initial="hidden" animate="visible" exit="hidden" className="flex flex-col h-full min-h-0">
-            <DialogHeader className="pt-4 px-6 border-b border-slate-800 pb-4 flex-shrink-0">
+            <DialogHeader className="pt-4 px-6 border-b border-slate-800 pb-4 flex-shrink-0 pr-14">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-4 min-w-0">
                   <div className="relative flex-shrink-0">

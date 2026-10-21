@@ -9,7 +9,7 @@ const NOME_CURTO = { meia: 'meia', cheia: 'cheio', dobra: 'dobra' };
 export default function DayChoicePicker({ regime, horaExtra, onChange, accentColor = '#22d3ee' }) {
   return (
     <div className="space-y-2">
-      <p className="text-sm font-medium text-slate-300">Cachê deste dia</p>
+      <p className="text-sm font-medium text-[#c8c8c8]">Cachê deste dia</p>
       <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Cachê deste dia">
         {REGIMES.map((r) => {
           const active = regime === r.value;
@@ -22,7 +22,7 @@ export default function DayChoicePicker({ regime, horaExtra, onChange, accentCol
               title={r.descricao}
               onClick={() => onChange({ regime: r.value, horaExtra })}
               className={`h-12 rounded-lg border text-base font-black transition-colors ${
-                active ? 'text-white' : 'border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-500'
+                active ? 'text-white' : 'border-[#2a2a2a] bg-[#1f1f1f] text-[#c8c8c8] hover:border-[#2a2a2a]'
               }`}
               style={active ? { backgroundColor: accentColor, borderColor: accentColor } : undefined}
             >
@@ -32,10 +32,10 @@ export default function DayChoicePicker({ regime, horaExtra, onChange, accentCol
           );
         })}
       </div>
-      <label className="flex items-center justify-between gap-3 p-3 rounded-lg border border-slate-700 bg-slate-800/60 text-sm text-slate-200">
+      <label className="flex items-center justify-between gap-3 p-3 rounded-lg border border-[#2a2a2a] bg-[#1f1f1f] text-sm text-[#e0e0e0]">
         <span>
           Contar hora extra
-          <span className="block text-[11px] text-slate-500">Acima de 12 h, cada hora vale cachê ÷ 12</span>
+          <span className="block text-[11px] text-[#888888]">Acima de 12 h, cada hora vale cachê ÷ 12</span>
         </span>
         <input
           type="checkbox"

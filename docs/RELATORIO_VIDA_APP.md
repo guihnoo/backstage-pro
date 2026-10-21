@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-10-21 (visual All Access: entrega 9 + 2 bugs que estavam no ar; Claude Code — branch `feat/visual-completo`)  
+**Última atualização:** 2026-10-21 (visual All Access: entregas 9 e 10 + 2 bugs que estavam no ar; Claude Code — branch `feat/visual-completo`)  
 **Pendente de deploy:** tudo de 2026-10-09 (nada publicado na Vercel) · migration `034_events_payment_method.sql` **não aplicada** em produção  
 **Pasta local:** `C:\dev\backstage-pro` (desde 2026-10-09; a cópia antiga em `OneDrive\Documentos\backstage-pro` não é mais a pasta de trabalho)  
 **Produção:** https://backstage-pro-beta.vercel.app  
@@ -178,6 +178,19 @@ Use este roteiro para fechar o item **#8** em `IDEIAS_PENDENTES.md`.
 ---
 
 ## Changelog
+
+### 2026-10-21 — Visual All Access, entrega 10: janelas e formulários (Claude Code)
+
+Padrão do protótipo ("Modal · Novo trabalho") aplicado **nos componentes base**, então todas as janelas do app seguem juntas:
+- `ui/dialog.jsx`, `ui/alert-dialog.jsx`, `ui/sheet.jsx`: fundo `#121212`, borda amarela no topo, cantos de 24px, título em Anton caixa alta, botão fechar redondo `#222`; cabeçalho alinhado à esquerda.
+- `ui/label.jsx`: etiqueta Space Mono 10px, caixa alta, cinza.
+- `ui/input.jsx`, `ui/textarea.jsx`, `ui/select.jsx`: 48px, fundo preto, borda `#333`, cantos 12px, 16px de letra (sem zoom no iPhone), foco amarelo.
+- `ui/button.jsx`: pílulas; padrão amarelo com texto preto; apagar em rosa; contorno `#444`.
+- Formulários (despesa, horas, recebimento, cliente, evento, calculadora, disponibilidade, modelos, recibo, NF-e, notas, feedback…): saíram as cores antigas que brigavam com o padrão (scripts de troca de paleta + limpeza de classes nos campos). Botões verdes de "Confirmar pagamento" viraram o amarelo padrão; formas de recebimento em pílulas.
+- Busca global: barra preta com borda amarela e campo em pílula.
+- Janela de horas: título "Registrar horas" / "Editar horas" (o antigo não cabia ao lado do fechar).
+
+**Sem deploy.**
 
 ### 2026-10-21 — Visual All Access, entrega 9: acertos nas telas já feitas (Claude Code)
 

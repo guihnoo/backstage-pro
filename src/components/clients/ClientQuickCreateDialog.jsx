@@ -104,7 +104,7 @@ export default function ClientQuickCreateDialog({ open, onOpenChange, initialNam
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md bg-slate-900/95 backdrop-blur-lg border-slate-700 text-white z-[106] bp-focus-scope">
+      <DialogContent className="sm:max-w-md backdrop-blur-lg z-[106]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {clientType === 'pessoa'
@@ -116,12 +116,12 @@ export default function ClientQuickCreateDialog({ open, onOpenChange, initialNam
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-1">
           {/* Toggle Empresa / Pessoa */}
-          <div className="flex rounded-xl overflow-hidden border border-slate-700">
+          <div className="flex rounded-xl overflow-hidden border border-[#2a2a2a]">
             <button
               type="button"
               onClick={() => { setClientType('empresa'); setSelectedCompany(null); }}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold transition-colors bp-focus-ring ${
-                clientType === 'empresa' ? 'text-white' : 'bg-slate-800/60 text-slate-400 hover:text-slate-200'
+                clientType === 'empresa' ? 'text-white' : 'bg-[#1f1f1f] text-[#a8a8a8] hover:text-[#e0e0e0]'
               }`}
               style={clientType === 'empresa' ? { backgroundColor: primaryHex } : undefined}
             >
@@ -132,7 +132,7 @@ export default function ClientQuickCreateDialog({ open, onOpenChange, initialNam
               type="button"
               onClick={() => { setClientType('pessoa'); setSelectedCompany(null); }}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold transition-colors bp-focus-ring ${
-                clientType === 'pessoa' ? 'bp-person-btn-active' : 'bg-slate-800/60 text-slate-400 hover:text-slate-200'
+                clientType === 'pessoa' ? 'bp-person-btn-active' : 'bg-[#1f1f1f] text-[#a8a8a8] hover:text-[#e0e0e0]'
               }`}
             >
               <User className="w-4 h-4" />
@@ -142,9 +142,9 @@ export default function ClientQuickCreateDialog({ open, onOpenChange, initialNam
 
           {/* Busca inteligente (só para empresa) */}
           {clientType === 'empresa' && (
-            <div className="p-3 rounded-xl bg-slate-800/50 border border-slate-700/60 space-y-2">
+            <div className="p-3 rounded-xl bg-[#1f1f1f] border border-[#2a2a2a] space-y-2">
               <CompanySearchInput onSelect={handleCompanySelect} />
-              <p className="text-[10px] text-slate-600 font-mono leading-relaxed">
+              <p className="text-[10px] text-[#666666] font-mono leading-relaxed">
                 Busca na Receita Federal pelo nome ou CNPJ.
                 Encontrou? Clique para preencher automaticamente.
               </p>
@@ -162,20 +162,20 @@ export default function ClientQuickCreateDialog({ open, onOpenChange, initialNam
                 Dados encontrados
               </div>
               {selectedCompany.razao_social && selectedCompany.razao_social !== name && (
-                <p className="text-[11px] text-slate-300">Razão Social: <span className="text-white">{selectedCompany.razao_social}</span></p>
+                <p className="text-[11px] text-[#c8c8c8]">Razão Social: <span className="text-white">{selectedCompany.razao_social}</span></p>
               )}
               {selectedCompany.email && (
-                <p className="text-[11px] text-slate-300">Email: <span className="text-white">{selectedCompany.email}</span></p>
+                <p className="text-[11px] text-[#c8c8c8]">Email: <span className="text-white">{selectedCompany.email}</span></p>
               )}
               {selectedCompany.city && (
-                <p className="text-[11px] text-slate-300">Cidade: <span className="text-white">{selectedCompany.city}{selectedCompany.state ? ` / ${selectedCompany.state}` : ''}</span></p>
+                <p className="text-[11px] text-[#c8c8c8]">Cidade: <span className="text-white">{selectedCompany.city}{selectedCompany.state ? ` / ${selectedCompany.state}` : ''}</span></p>
               )}
             </div>
           )}
 
           {/* Nome */}
           <div className="space-y-1.5">
-            <Label htmlFor="qc-name" className="text-slate-300 text-sm">
+            <Label htmlFor="qc-name">
               {clientType === 'pessoa' ? 'Nome completo' : 'Nome Fantasia'}
             </Label>
             <Input
@@ -183,7 +183,6 @@ export default function ClientQuickCreateDialog({ open, onOpenChange, initialNam
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder={clientType === 'pessoa' ? 'Ex: João Silva' : 'Ex: Amarrok Comunicação'}
-              className="bg-slate-800 border-slate-700 text-white h-11"
               autoComplete="off"
               autoFocus
             />
@@ -192,16 +191,15 @@ export default function ClientQuickCreateDialog({ open, onOpenChange, initialNam
           {/* Empresa de origem (só para pessoa) */}
           {clientType === 'pessoa' && (
             <div className="space-y-1.5">
-              <Label htmlFor="qc-company" className="text-slate-300 text-sm">
+              <Label htmlFor="qc-company">
                 Empresa / Produtora
-                <span className="ml-1.5 text-[10px] text-slate-500 font-normal">opcional</span>
+                <span className="ml-1.5 text-[10px] text-[#888888] font-normal">opcional</span>
               </Label>
               <Input
                 id="qc-company"
                 value={companyRef}
                 onChange={e => setCompanyRef(e.target.value)}
                 placeholder="Ex: Amarrok Produções"
-                className="bg-slate-800 border-slate-700 text-white h-11"
                 autoComplete="off"
               />
             </div>
@@ -211,7 +209,7 @@ export default function ClientQuickCreateDialog({ open, onOpenChange, initialNam
             <Button
               type="button"
               variant="outline"
-              className="flex-1 border-slate-700"
+              className="flex-1 border-[#2a2a2a]"
               onClick={() => handleOpenChange(false)}
               disabled={creating}
             >

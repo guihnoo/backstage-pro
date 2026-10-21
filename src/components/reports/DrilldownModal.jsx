@@ -35,25 +35,25 @@ export default function DrilldownModal({ open, onOpenChange, title, items = [], 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl bg-slate-900/95 border-slate-800 text-slate-100 max-h-[90dvh] flex flex-col overflow-hidden bp-focus-scope">
+      <DialogContent className="sm:max-w-2xl max-h-[90dvh] flex flex-col overflow-hidden">
         <DialogHeader className="flex flex-row items-center justify-between gap-3 flex-shrink-0">
-          <DialogTitle className="text-white min-w-0 flex-1 truncate">{title}</DialogTitle>
+          <DialogTitle className="min-w-0 flex-1 truncate">{title}</DialogTitle>
           {items?.length > 0 && (
-            <Button variant="outline" size="sm" onClick={exportCsv} className="bg-slate-800 border-slate-700 hover:bg-slate-700 flex-shrink-0">
+            <Button variant="outline" size="sm" onClick={exportCsv} className="bg-[#1f1f1f] border-[#2a2a2a] hover:bg-[#2a2a2a] flex-shrink-0">
               <Download className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Exportar </span>CSV
             </Button>
           )}
         </DialogHeader>
         <ScrollArea fill className="mt-2">
-          <div className="divide-y divide-slate-800">
+          <div className="divide-y divide-[#2a2a2a]">
             {(!items || items.length === 0) ? (
-              <p className="text-slate-400 p-4">Sem registros no período selecionado.</p>
+              <p className="text-[#a8a8a8] p-4">Sem registros no período selecionado.</p>
             ) : (
               items.map((row, idx) => (
                 <div
                   key={idx}
-                  className={`flex items-center justify-between p-3 hover:bg-slate-800/40 ${onItemClick ? "cursor-pointer" : ""}`}
+                  className={`flex items-center justify-between p-3 hover:bg-[#1f1f1f] ${onItemClick ? "cursor-pointer" : ""}`}
                   onClick={onItemClick ? () => onItemClick(row) : undefined}
                   onKeyDown={(e) => handleKeyDown(e, row)}
                   role={onItemClick ? "button" : "listitem"}
@@ -62,10 +62,10 @@ export default function DrilldownModal({ open, onOpenChange, title, items = [], 
                 >
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-white truncate">{row.title}</p>
-                    {row.subtitle && <p className="text-xs text-slate-400 truncate">{row.subtitle}</p>}
+                    {row.subtitle && <p className="text-xs text-[#a8a8a8] truncate">{row.subtitle}</p>}
                   </div>
                   {row.amount != null && (
-                    <div className={`text-sm font-bold ${row.amount >= 0 ? "text-emerald-300" : "text-rose-300"}`}>
+                    <div className={`text-sm font-bold ${row.amount >= 0 ? "text-emerald-300" : "text-[#ff2e88]"}`}>
                       {row.amountFormatted || row.amount}
                     </div>
                   )}

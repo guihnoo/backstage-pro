@@ -2978,3 +2978,10 @@ Registro cronológico de tarefas executadas por agentes.
 - **Achado**: telas feitas pelo Antigravity usam `font-display`, que nao existe no Tailwind (titulos sem a fonte Anton). As do Claude usam `font-poster`/`font-tag`.
 - **Testes**: unit 261/261 (lab, mesmo codigo); E2E smoke+regression 93 passaram, 2 oscilaram; Agenda 8/8 depois da correcao.
 - **Deploy**: nenhum. **Commit**: nenhum (correcao no disco, aguardando inicio das entregas).
+
+### VISUAL — Entregas 9 e 10 do All Access (Claude Code, branch `feat/visual-completo`)
+- **Entrega 9** (`7f99092`): fonte certa (Anton/Space Mono) nas telas do Antigravity; Agenda (busca + "⋯", filtros em pilula, lembretes e numeros do mes no visual novo); Dinheiro com NF pendentes, IR, conferencia de horas e previsao 30/60/90 de volta; mapa "Minha turne"; esqueleto cinza. Bug no ar corrigido: "Cobrar" em Dinheiro > A receber nao abria o WhatsApp.
+- **Entrega 10**: padrao do prototipo nos componentes base (`ui/dialog`, `alert-dialog`, `sheet`, `label`, `input`, `textarea`, `select`, `button`) + limpeza das cores antigas em ~25 janelas/formularios; busca global; "Registrar horas"; botoes verdes de pagamento viraram amarelo padrao.
+- **Testes**: unit 261/261; build ok; E2E smoke+regression 96 (1 pulado) — `reports-map.spec.js` atualizado para o titulo novo "Minha turne".
+- **Scripts usados** (fora do repo, na pasta temporaria da sessao): troca de paleta slate→All Access e limpeza de classes que brigam com os componentes base.
+- **Deploy**: nenhum.

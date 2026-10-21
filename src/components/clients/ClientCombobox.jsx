@@ -162,7 +162,7 @@ export default function ClientCombobox({
             role="combobox"
             aria-expanded={open}
             disabled={disabled || linking}
-            className="w-full justify-between bg-slate-800 border-slate-700 text-left font-normal h-11"
+            className="w-full justify-between bg-[#1f1f1f] border-[#2a2a2a] text-left font-normal h-11"
           >
             {selected ? (
               <span className="flex items-center gap-2 truncate">
@@ -176,11 +176,11 @@ export default function ClientCombobox({
                   : null}
                 <span className="truncate">{selected.name}</span>
                 {selected.profile_complete === false && (
-                  <span className="text-[10px] text-amber-400 border border-amber-500/40 rounded px-1">rascunho</span>
+                  <span className="text-[10px] text-[#ffd400] border border-[#ffd400]/40 rounded px-1">rascunho</span>
                 )}
               </span>
             ) : (
-              <span className="text-slate-400">{linking ? 'Vinculando empresa…' : placeholder}</span>
+              <span className="text-[#a8a8a8]">{linking ? 'Vinculando empresa…' : placeholder}</span>
             )}
             {linking ? (
               <Loader2 className="ml-2 h-4 w-4 shrink-0 animate-spin opacity-70" />
@@ -191,7 +191,7 @@ export default function ClientCombobox({
         </PopoverTrigger>
         <PopoverContent
           container={portalContainer}
-          className="w-[var(--radix-popover-trigger-width)] p-0 bg-slate-900 border-slate-700"
+          className="w-[var(--radix-popover-trigger-width)] p-0 bg-[#161616] border-[#2a2a2a]"
           align="start"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
@@ -206,7 +206,7 @@ export default function ClientCombobox({
               {listEmpty && <CommandEmpty>Nenhuma empresa encontrada.</CommandEmpty>}
 
               {!trimmedQuery && filteredClients.length === 0 && (
-                <div className="py-5 text-center text-xs text-slate-500 px-4">
+                <div className="py-5 text-center text-xs text-[#888888] px-4">
                   <p>Digite o nome para buscar clientes ou criar novo</p>
                 </div>
               )}
@@ -223,7 +223,7 @@ export default function ClientCombobox({
                         setOpen(false);
                         setQuery('');
                       }}
-                      className="text-slate-200 cursor-pointer"
+                      className="text-[#e0e0e0] cursor-pointer"
                     >
                       <CompanyAvatar name={client.name} logoUrl={client.logo_url} size="sm" />
                       <span
@@ -232,10 +232,10 @@ export default function ClientCombobox({
                       />
                       {client.client_type === 'pessoa'
                         ? <User className="w-3.5 h-3.5 bp-text-primary mx-1 flex-shrink-0" />
-                        : <Building2 className="w-3.5 h-3.5 text-slate-500 mx-1 flex-shrink-0" />}
+                        : <Building2 className="w-3.5 h-3.5 text-[#888888] mx-1 flex-shrink-0" />}
                       <span className="flex-1 truncate">{client.name}</span>
                       {client.profile_complete === false && (
-                        <span className="text-[10px] text-amber-400 ml-1">rascunho</span>
+                        <span className="text-[10px] text-[#ffd400] ml-1">rascunho</span>
                       )}
                       <Check className={cn('ml-auto h-4 w-4', value === client.id ? 'opacity-100' : 'opacity-0')} />
                     </CommandItem>
@@ -244,7 +244,7 @@ export default function ClientCombobox({
               )}
 
               {(companyLoading || linking) && trimmedQuery.length >= 2 && (
-                <div className="flex items-center gap-2 px-3 py-2 text-xs text-slate-500">
+                <div className="flex items-center gap-2 px-3 py-2 text-xs text-[#888888]">
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   Buscando empresas no Backstage Pro…
                 </div>
@@ -267,17 +267,17 @@ export default function ClientCombobox({
                         value={company.id}
                         onMouseDown={(e) => e.preventDefault()}
                         onSelect={() => handleSelectCompany(company)}
-                        className="text-slate-200 cursor-pointer items-start py-2"
+                        className="text-[#e0e0e0] cursor-pointer items-start py-2"
                       >
                         <CompanyAvatar company={company} name={label} size="sm" />
                         <div className="flex-1 min-w-0 ml-2">
                           <p className="text-sm truncate">{label}</p>
                           {location && (
-                            <p className="text-[10px] text-slate-500 truncate">{location}</p>
+                            <p className="text-[10px] text-[#888888] truncate">{location}</p>
                           )}
-                          <p className="text-[10px] text-slate-600">Usar cadastro compartilhado · ajuste seus dados depois</p>
+                          <p className="text-[10px] text-[#666666]">Usar cadastro compartilhado · ajuste seus dados depois</p>
                         </div>
-                        <Plus className="w-3.5 h-3.5 text-slate-500 flex-shrink-0 mt-1" />
+                        <Plus className="w-3.5 h-3.5 text-[#888888] flex-shrink-0 mt-1" />
                       </CommandItem>
                     );
                   })}
@@ -286,7 +286,7 @@ export default function ClientCombobox({
 
               {showCreate && onCreateClient && (
                 <>
-                  <CommandSeparator className="bg-slate-700" />
+                  <CommandSeparator className="bg-[#2a2a2a]" />
                   <CommandGroup>
                     <CommandItem
                       value={`criar-${trimmedQuery}`}
@@ -297,7 +297,7 @@ export default function ClientCombobox({
                     >
                       <Plus className="w-4 h-4 mr-2 flex-shrink-0" />
                       {`Criar "${trimmedQuery}"`}
-                      <span className="ml-1.5 text-[10px] text-slate-500">empresa ou pessoa</span>
+                      <span className="ml-1.5 text-[10px] text-[#888888]">empresa ou pessoa</span>
                     </CommandItem>
                   </CommandGroup>
                 </>

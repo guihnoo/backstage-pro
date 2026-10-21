@@ -78,8 +78,8 @@ export default function CacheCalculator({ open, onClose, onCreateEvent }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-slate-900 border-slate-700 text-white p-0 overflow-hidden bp-focus-scope">
-        <DialogHeader className="px-5 pt-5 pb-4 border-b border-slate-800">
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden">
+        <DialogHeader className="px-5 pt-5 pb-4 border-b border-[#2a2a2a] pr-14">
           <DialogTitle className="flex items-center gap-2">
             <Calculator className="w-4 h-4" style={{ color: primaryHex }} />
             Calculadora de Cachê
@@ -89,7 +89,7 @@ export default function CacheCalculator({ open, onClose, onCreateEvent }) {
         <div className="p-5 space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="calc-base" className="text-xs text-slate-400">Cachê base (R$/dia)</Label>
+              <Label htmlFor="calc-base">Cachê base (R$/dia)</Label>
               <Input
                 id="calc-base"
                 type="number"
@@ -97,24 +97,22 @@ export default function CacheCalculator({ open, onClose, onCreateEvent }) {
                 placeholder="1500"
                 value={base}
                 onChange={e => setBase(e.target.value)}
-                className="bg-slate-800 border-slate-700 text-white h-9"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="calc-days" className="text-xs text-slate-400">Dias de trabalho</Label>
+              <Label htmlFor="calc-days">Dias de trabalho</Label>
               <Input
                 id="calc-days"
                 type="number"
                 min="1"
                 value={days}
                 onChange={e => setDays(e.target.value)}
-                className="bg-slate-800 border-slate-700 text-white h-9"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-400">Modelo de pagamento</Label>
+            <Label>Modelo de pagamento</Label>
             <div className="grid grid-cols-2 gap-1.5">
               {MODELS.map(m => (
                 <button
@@ -124,7 +122,7 @@ export default function CacheCalculator({ open, onClose, onCreateEvent }) {
                   className={`text-xs px-2.5 py-2 rounded-lg border transition-colors text-left ${
                     model === m.value
                       ? 'border-opacity-80 text-white'
-                      : 'border-slate-700 text-slate-400 hover:border-slate-600'
+                      : 'border-[#2a2a2a] text-[#a8a8a8] hover:border-[#2a2a2a]'
                   }`}
                   style={model === m.value ? { borderColor: primaryHex, backgroundColor: `${primaryHex}18` } : {}}
                 >
@@ -136,20 +134,19 @@ export default function CacheCalculator({ open, onClose, onCreateEvent }) {
 
           {model === 'HORAS_EXTRAS' && (
             <div className="space-y-1.5">
-              <Label htmlFor="calc-extra-hours" className="text-xs text-slate-400">Horas extras por dia</Label>
+              <Label htmlFor="calc-extra-hours">Horas extras por dia</Label>
               <Input
                 id="calc-extra-hours"
                 type="number"
                 min="0"
                 value={extraHours}
                 onChange={e => setExtraHours(e.target.value)}
-                className="bg-slate-800 border-slate-700 text-white h-9"
               />
             </div>
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="calc-extras" className="text-xs text-slate-400">Extras (hospedagem, alimentação…)</Label>
+            <Label htmlFor="calc-extras">Extras (hospedagem, alimentação…)</Label>
             <Input
               id="calc-extras"
               type="number"
@@ -157,18 +154,17 @@ export default function CacheCalculator({ open, onClose, onCreateEvent }) {
               placeholder="0"
               value={extras}
               onChange={e => setExtras(e.target.value)}
-              className="bg-slate-800 border-slate-700 text-white h-9"
             />
           </div>
 
           {/* Result */}
-          <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-4 text-center space-y-1">
-            <p className="text-xs text-slate-400">Total estimado</p>
+          <div className="rounded-xl border border-[#2a2a2a] bg-[#1f1f1f] p-4 text-center space-y-1">
+            <p className="text-xs text-[#a8a8a8]">Total estimado</p>
             <p className="text-3xl font-black tabular-nums" style={{ color: primaryHex }}>
               {fmt(total)}
             </p>
             {perDay && (
-              <p className="text-xs text-slate-500">{fmt(perDay)} / dia × {days} dias</p>
+              <p className="text-xs text-[#888888]">{fmt(perDay)} / dia × {days} dias</p>
             )}
           </div>
 
@@ -176,7 +172,7 @@ export default function CacheCalculator({ open, onClose, onCreateEvent }) {
             <Button
               variant="outline"
               onClick={handleCopy}
-              className="flex-1 border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 gap-2"
+              className="flex-1 border-[#2a2a2a] bg-[#1f1f1f] hover:bg-[#2a2a2a] text-[#c8c8c8] gap-2"
             >
               {copied
                 ? <><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Copiado!</>

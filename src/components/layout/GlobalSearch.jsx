@@ -12,12 +12,12 @@ import EventHeading from '@/components/events/EventHeading';
 import { DEFAULT_EVENT_COLOR } from '@/lib/brandColors';
 
 const STATUS_LABEL = {
-  scheduled:   { label: 'Agendado',     cls: 'bg-blue-500/20 text-blue-300' },
+  scheduled:   { label: 'Agendado',     cls: 'bg-[#ffd400]/20 text-[#ffd400]' },
   confirmed:   { label: 'Confirmado',   themePrimary: true },
-  in_progress: { label: 'Em andamento', cls: 'bg-yellow-500/20 text-yellow-300' },
+  in_progress: { label: 'Em andamento', cls: 'bg-[#ffd400]/20 text-[#ffd400]' },
   completed:   { label: 'Concluído',    cls: 'bg-green-500/20 text-green-300' },
-  cancelled:   { label: 'Cancelado',    cls: 'bg-red-500/20 text-red-400 line-through' },
-  archived:    { label: 'Arquivado',    cls: 'bg-slate-500/20 text-slate-400' },
+  cancelled:   { label: 'Cancelado',    cls: 'bg-[#ff2e88]/20 text-[#ff2e88] line-through' },
+  archived:    { label: 'Arquivado',    cls: 'bg-slate-500/20 text-[#a8a8a8]' },
 };
 
 function normalize(s) {
@@ -93,7 +93,7 @@ export default function GlobalSearch({ isOpen, onClose }) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-[110] bg-black/70 backdrop-blur-sm flex flex-col"
+          className="fixed inset-0 z-[110] bg-[#0a0a0a]/95 backdrop-blur-sm flex flex-col"
           role="dialog"
           aria-modal="true"
           aria-label="Busca global"
@@ -104,19 +104,19 @@ export default function GlobalSearch({ isOpen, onClose }) {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -20, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            className="bg-[#0d0f18] border-b border-slate-800 px-4 pt-safe pb-3"
+            className="bg-[#0a0a0a] border-b-2 border-[#ffd400] px-4 pt-safe pb-3"
             style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
             onClick={e => e.stopPropagation()}
           >
-            <div className="max-w-2xl mx-auto flex items-center gap-3">
-              <Search className="w-5 h-5 text-slate-400 flex-shrink-0" />
+            <div className="max-w-2xl mx-auto flex items-center gap-3 h-12 mt-2 px-4 rounded-full bg-[#161616] border border-[#333333] focus-within:border-[#ffd400]">
+              <Search className="w-5 h-5 text-[#a8a8a8] flex-shrink-0" />
               <input
                 ref={inputRef}
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 placeholder="Buscar eventos, clientes, locais…"
                 aria-label="Termo de busca"
-                className="flex-1 bg-transparent text-white placeholder:text-slate-500 text-base outline-none bp-focus-ring rounded-sm"
+                className="flex-1 min-w-0 bg-transparent text-white font-semibold placeholder:font-normal placeholder:text-[#666666] text-base outline-none"
                 style={{ caretColor: theme.primaryHex }}
                 autoComplete="off"
                 autoCorrect="off"
@@ -126,7 +126,7 @@ export default function GlobalSearch({ isOpen, onClose }) {
                 <button
                   type="button"
                   onClick={() => setQuery('')}
-                  className="p-1 text-slate-500 hover:text-white transition-colors"
+                  className="p-1 text-[#888888] hover:text-white transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -134,7 +134,7 @@ export default function GlobalSearch({ isOpen, onClose }) {
               <button
                 type="button"
                 onClick={onClose}
-                className="text-xs text-slate-500 hover:text-white transition-colors ml-1 flex-shrink-0"
+                className="text-xs font-extrabold text-[#ffd400] transition-colors ml-1 flex-shrink-0"
               >
                 Fechar
               </button>
@@ -153,22 +153,22 @@ export default function GlobalSearch({ isOpen, onClose }) {
 
               {/* Empty / hint */}
               {!hasQuery && (
-                <div className="text-center py-10 text-slate-600">
+                <div className="text-center py-10 text-[#666666]">
                   <Search className="w-10 h-10 mx-auto mb-3 opacity-30" />
                   <p className="text-sm">Digite ao menos 2 caracteres</p>
                 </div>
               )}
 
               {hasQuery && !hasResults && (
-                <div className="text-center py-10 text-slate-600">
-                  <p className="text-sm">Nenhum resultado para <span className="text-slate-400">&quot;{query}&quot;</span></p>
+                <div className="text-center py-10 text-[#666666]">
+                  <p className="text-sm">Nenhum resultado para <span className="text-[#a8a8a8]">&quot;{query}&quot;</span></p>
                 </div>
               )}
 
               {/* Events */}
               {matchedEvents.length > 0 && (
                 <section>
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                  <p className="font-tag text-[11px] text-[#a8a8a8] uppercase tracking-[2px] mb-2 flex items-center gap-1.5">
                     <Calendar className="w-3 h-3" /> Shows ({matchedEvents.length})
                   </p>
                   <div className="space-y-1.5">
@@ -186,7 +186,7 @@ export default function GlobalSearch({ isOpen, onClose }) {
                             onClose();
                             setTimeout(() => hardNavigate(`/calendar?event=${ev.id}`), 220);
                           }}
-                          className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800/60 hover:border-slate-700 hover:bg-slate-800/50 transition-colors text-left bp-focus-ring"
+                          className="w-full flex items-center gap-3 p-3 rounded-xl bg-[#161616] border border-[#2a2a2a] hover:border-[#2a2a2a] hover:bg-[#1f1f1f] transition-colors text-left bp-focus-ring"
                         >
                           <div
                             className="w-1.5 self-stretch rounded-full flex-shrink-0"
@@ -196,10 +196,10 @@ export default function GlobalSearch({ isOpen, onClose }) {
                             <EventHeading event={ev} client={client} size="sm" />
                             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                               {dateLabel && (
-                                <span className="text-[11px] text-slate-500">{dateLabel}</span>
+                                <span className="text-[11px] text-[#888888]">{dateLabel}</span>
                               )}
                               {(ev.location_city || ev.location) && (
-                                <span className="text-[11px] text-slate-600 flex items-center gap-0.5">
+                                <span className="text-[11px] text-[#666666] flex items-center gap-0.5">
                                   <MapPin className="w-2.5 h-2.5" />
                                   {ev.location_city || ev.location}
                                 </span>
@@ -215,7 +215,7 @@ export default function GlobalSearch({ isOpen, onClose }) {
                               </span>
                             </div>
                           </div>
-                          <ChevronRight className="w-4 h-4 text-slate-600 flex-shrink-0" />
+                          <ChevronRight className="w-4 h-4 text-[#666666] flex-shrink-0" />
                         </button>
                       );
                     })}
@@ -226,7 +226,7 @@ export default function GlobalSearch({ isOpen, onClose }) {
               {/* Clients */}
               {matchedClients.length > 0 && (
                 <section>
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                  <p className="font-tag text-[11px] text-[#a8a8a8] uppercase tracking-[2px] mb-2 flex items-center gap-1.5">
                     <Users className="w-3 h-3" /> Clientes ({matchedClients.length})
                   </p>
                   <div className="space-y-1.5">
@@ -238,9 +238,9 @@ export default function GlobalSearch({ isOpen, onClose }) {
                           onClose();
                           setTimeout(() => hardNavigate(`/client-detail?id=${c.id}`), 220);
                         }}
-                        className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800/60 hover:border-slate-700 hover:bg-slate-800/50 transition-colors text-left bp-focus-ring"
+                        className="w-full flex items-center gap-3 p-3 rounded-xl bg-[#161616] border border-[#2a2a2a] hover:border-[#2a2a2a] hover:bg-[#1f1f1f] transition-colors text-left bp-focus-ring"
                       >
-                        <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sm font-bold text-slate-300 flex-shrink-0 overflow-hidden">
+                        <div className="w-8 h-8 rounded-full bg-[#2a2a2a] flex items-center justify-center text-sm font-bold text-[#c8c8c8] flex-shrink-0 overflow-hidden">
                           {c.logo_url
                             ? <img src={c.logo_url} alt="" className="w-full h-full object-cover" />
                             : c.name?.charAt(0)?.toUpperCase()
@@ -249,10 +249,10 @@ export default function GlobalSearch({ isOpen, onClose }) {
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-white truncate">{c.name}</p>
                           {c.contact_person && c.contact_person !== c.name && (
-                            <p className="text-[11px] text-slate-500 truncate">{c.contact_person}</p>
+                            <p className="text-[11px] text-[#888888] truncate">{c.contact_person}</p>
                           )}
                         </div>
-                        <ChevronRight className="w-4 h-4 text-slate-600 flex-shrink-0" />
+                        <ChevronRight className="w-4 h-4 text-[#666666] flex-shrink-0" />
                       </button>
                     ))}
                   </div>

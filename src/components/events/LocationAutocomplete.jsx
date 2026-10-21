@@ -69,13 +69,13 @@ export default function LocationAutocomplete({
   return (
     <div ref={wrapRef} className={`relative ${className}`}>
       <div className="relative">
-        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#888888]" />
         <Input
           value={input}
           onChange={(e) => handleInput(e.target.value)}
           onFocus={() => suggestions.length > 0 && setOpen(true)}
           placeholder={placeholder}
-          className="bg-slate-800 border-slate-700 pl-9 pr-9"
+          className="bg-[#1f1f1f] border-[#2a2a2a] pl-9 pr-9"
           aria-label={ariaLabel}
           aria-autocomplete="list"
           aria-expanded={open}
@@ -88,17 +88,17 @@ export default function LocationAutocomplete({
         )}
       </div>
       {open && suggestions.length > 0 && (
-        <ul role="listbox" aria-label="Sugestões de local" className="absolute z-[110] mt-1 w-full max-h-48 overflow-y-auto overscroll-contain rounded-lg border border-slate-700 bg-slate-900 shadow-xl">
+        <ul role="listbox" aria-label="Sugestões de local" className="absolute z-[110] mt-1 w-full max-h-48 overflow-y-auto overscroll-contain rounded-lg border border-[#2a2a2a] bg-[#161616] shadow-xl">
           {suggestions.map((item) => (
             <li key={item.id} role="option" aria-selected="false">
               <button
                 type="button"
-                className="w-full text-left px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-800 border-b border-slate-800 last:border-0"
+                className="w-full text-left px-3 py-2.5 text-sm text-[#e0e0e0] hover:bg-[#1f1f1f] border-b border-[#2a2a2a] last:border-0"
                 onClick={() => pick(item)}
               >
                 <span className="line-clamp-2">{item.label}</span>
                 {(item.city || item.state) && (
-                  <span className="text-xs text-slate-500 block mt-0.5">
+                  <span className="text-xs text-[#888888] block mt-0.5">
                     {[item.city, item.state].filter(Boolean).join(' — ')}
                   </span>
                 )}

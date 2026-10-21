@@ -204,8 +204,8 @@ export default function ExpenseForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl bg-slate-900 border-slate-700 text-white p-0 flex flex-col overflow-hidden max-h-[90dvh] bp-focus-scope">
-        <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 sm:pt-5 border-b border-slate-700 flex-shrink-0">
+      <DialogContent className="sm:max-w-2xl p-0 flex flex-col overflow-hidden max-h-[90dvh]">
+        <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 sm:pt-5 border-b border-[#2a2a2a] flex-shrink-0 pr-14">
           <DialogTitle>{expense?.id ? 'Editar Despesa' : 'Nova Despesa'}</DialogTitle>
         </DialogHeader>
 
@@ -214,17 +214,17 @@ export default function ExpenseForm({
             <div className="space-y-4 p-4 sm:p-6 pb-2">
               <div className="space-y-2">
                 <Label>Título</Label>
-                <Input value={formData.title} onChange={(e) => setField('title', e.target.value)} className="bg-slate-800 border-slate-700 h-12 text-base" />
+                <Input value={formData.title} onChange={(e) => setField('title', e.target.value)} className="h-12" />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Valor</Label>
-                  <Input type="text" inputMode="decimal" placeholder="0,00" value={formData.amount} onChange={(e) => setField('amount', e.target.value)} className="bg-slate-800 border-slate-700 h-12 text-base" />
+                  <Input type="text" inputMode="decimal" placeholder="0,00" value={formData.amount} onChange={(e) => setField('amount', e.target.value)} className="h-12" />
                 </div>
                 <div className="space-y-2">
                   <Label>Data</Label>
-                  <Input type="date" value={formData.date} onChange={(e) => setField('date', e.target.value)} className="bg-slate-800 border-slate-700 h-12 text-base" />
+                  <Input type="date" value={formData.date} onChange={(e) => setField('date', e.target.value)} className="h-12" />
                 </div>
               </div>
 
@@ -232,10 +232,10 @@ export default function ExpenseForm({
                 <div className="space-y-2">
                   <Label>Categoria</Label>
                   <Select value={formData.category} onValueChange={(value) => setField('category', value)}>
-                    <SelectTrigger className="bg-slate-800 border-slate-700">
+                    <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectContent>
                       {CATEGORIES.map((category) => (
                         <SelectItem key={category.value} value={category.value}>
                           {category.label}
@@ -248,10 +248,10 @@ export default function ExpenseForm({
                 <div className="space-y-2">
                   <Label>Forma de pagamento</Label>
                   <Select value={formData.payment_method} onValueChange={(value) => setField('payment_method', value)}>
-                    <SelectTrigger className="bg-slate-800 border-slate-700">
+                    <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectContent>
                       {PAYMENT_METHODS.map((method) => (
                         <SelectItem key={method.value} value={method.value}>
                           {method.label}
@@ -265,10 +265,10 @@ export default function ExpenseForm({
               <div className="space-y-2">
                 <Label>Evento (opcional)</Label>
                 <Select value={formData.event_id || ''} onValueChange={(value) => setField('event_id', value)}>
-                  <SelectTrigger className="bg-slate-800 border-slate-700 min-w-0 truncate">
+                  <SelectTrigger className="min-w-0 truncate">
                     <SelectValue placeholder="Sem vínculo" />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700 max-w-[min(100vw-2rem,24rem)]">
+                  <SelectContent className="max-w-[min(100vw-2rem,24rem)]">
                     {events.map((evt) => (
                       <SelectItem key={evt.id} value={evt.id} title={evt.title}>
                         <span className="truncate block">{evt.title}</span>
@@ -283,30 +283,30 @@ export default function ExpenseForm({
                 onClick={() => setField('is_reimbursable', !formData.is_reimbursable)}
                 className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
                   formData.is_reimbursable
-                    ? 'bg-amber-500/15 border-amber-500/40 text-amber-300'
-                    : 'bg-slate-800/60 border-slate-700 text-slate-400 hover:border-slate-600'
+                    ? 'bg-[#ffd400]/15 border-[#ffd400]/40 text-[#ffd400]'
+                    : 'bg-[#1f1f1f] border-[#2a2a2a] text-[#a8a8a8] hover:border-[#2a2a2a]'
                 }`}
               >
-                <div className={`w-9 h-5 rounded-full flex-shrink-0 relative transition-colors ${formData.is_reimbursable ? 'bg-amber-500' : 'bg-slate-600'}`}>
+                <div className={`w-9 h-5 rounded-full flex-shrink-0 relative transition-colors ${formData.is_reimbursable ? 'bg-[#ffd400]' : 'bg-[#333333]'}`}>
                   <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${formData.is_reimbursable ? 'left-4' : 'left-0.5'}`} />
                 </div>
                 <div>
                   <p className="text-sm font-medium">Reembolsável pelo contratante</p>
                   <p className="text-xs opacity-70">Será incluído no PDF de Fechamento e na cobrança via WhatsApp</p>
                 </div>
-                <RefreshCw className={`w-4 h-4 ml-auto flex-shrink-0 ${formData.is_reimbursable ? 'text-amber-400' : 'text-slate-600'}`} />
+                <RefreshCw className={`w-4 h-4 ml-auto flex-shrink-0 ${formData.is_reimbursable ? 'text-[#ffd400]' : 'text-[#666666]'}`} />
               </button>
 
-              <div className="space-y-2 rounded-xl border border-slate-700/80 bg-slate-800/40 p-3">
+              <div className="space-y-2 rounded-xl border border-[#2a2a2a] bg-[#1f1f1f] p-3">
                 <div className="flex items-center justify-between gap-2">
                   <div>
-                    <p className="text-xs font-semibold text-slate-200">Comprovante / Recibo (opcional)</p>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-xs font-semibold text-[#e0e0e0]">Comprovante / Recibo (opcional)</p>
+                    <p className="text-[11px] text-[#a8a8a8]">
                       Anexe foto do Uber, alimentação ou pedágio para sair no PDF de Fechamento
                     </p>
                   </div>
                   {analyzingReceipt && (
-                    <span className="inline-flex items-center gap-1 text-[11px] text-amber-400 font-medium">
+                    <span className="inline-flex items-center gap-1 text-[11px] text-[#ffd400] font-medium">
                       <Sparkles className="w-3.5 h-3.5 animate-pulse" /> Lendo IA...
                     </span>
                   )}
@@ -318,11 +318,11 @@ export default function ExpenseForm({
                       <img
                         src={formData.receipt_url}
                         alt="Comprovante"
-                        className="w-11 h-11 rounded-md object-cover border border-slate-700 shrink-0"
+                        className="w-11 h-11 rounded-md object-cover border border-[#2a2a2a] shrink-0"
                       />
                       <div className="min-w-0">
                         <p className="text-xs font-semibold text-emerald-300 truncate">Comprovante anexado</p>
-                        <p className="text-[11px] text-slate-400 truncate">Incluído automaticamente no Fechamento</p>
+                        <p className="text-[11px] text-[#a8a8a8] truncate">Incluído automaticamente no Fechamento</p>
                       </div>
                     </div>
                     <Button
@@ -330,7 +330,7 @@ export default function ExpenseForm({
                       variant="ghost"
                       size="sm"
                       onClick={() => setField('receipt_url', '')}
-                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-8 px-2"
+                      className="text-[#ff2e88] hover:text-[#ff2e88] hover:bg-[#ff2e88]/10 h-8 px-2"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -346,8 +346,8 @@ export default function ExpenseForm({
                         disabled={uploadingReceipt || analyzingReceipt}
                         onChange={handleReceiptSelect}
                       />
-                      <span className="w-full h-10 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700/80 text-xs font-medium text-slate-200 flex items-center justify-center gap-1.5 transition-colors">
-                        {uploadingReceipt ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5 text-amber-400" />}
+                      <span className="w-full h-10 rounded-lg border border-[#2a2a2a] bg-[#1f1f1f] hover:bg-[#2a2a2a] text-xs font-medium text-[#e0e0e0] flex items-center justify-center gap-1.5 transition-colors">
+                        {uploadingReceipt ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5 text-[#ffd400]" />}
                         Tirar Foto
                       </span>
                     </label>
@@ -359,8 +359,8 @@ export default function ExpenseForm({
                         disabled={uploadingReceipt || analyzingReceipt}
                         onChange={handleReceiptSelect}
                       />
-                      <span className="w-full h-10 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700/80 text-xs font-medium text-slate-200 flex items-center justify-center gap-1.5 transition-colors">
-                        {uploadingReceipt ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImagePlus className="w-3.5 h-3.5 text-sky-400" />}
+                      <span className="w-full h-10 rounded-lg border border-[#2a2a2a] bg-[#1f1f1f] hover:bg-[#2a2a2a] text-xs font-medium text-[#e0e0e0] flex items-center justify-center gap-1.5 transition-colors">
+                        {uploadingReceipt ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImagePlus className="w-3.5 h-3.5 text-[#ffd400]" />}
                         Galeria / Arquivo
                       </span>
                     </label>
@@ -370,21 +370,21 @@ export default function ExpenseForm({
 
               <div className="space-y-2">
                 <Label>Descrição</Label>
-                <Textarea value={formData.description} onChange={(e) => setField('description', e.target.value)} className="bg-slate-800 border-slate-700" />
+                <Textarea value={formData.description} onChange={(e) => setField('description', e.target.value)} />
               </div>
 
               <div className="space-y-2">
                 <Label>Notas</Label>
-                <Textarea value={formData.notes} onChange={(e) => setField('notes', e.target.value)} className="bg-slate-800 border-slate-700" />
+                <Textarea value={formData.notes} onChange={(e) => setField('notes', e.target.value)} />
               </div>
             </div>
           </ScrollArea>
 
-          <div className="flex gap-3 px-4 py-3 sm:px-6 border-t border-slate-700 flex-shrink-0 pb-safe">
+          <div className="flex gap-3 px-4 py-3 sm:px-6 border-t border-[#2a2a2a] flex-shrink-0 pb-safe">
             <Button type="button" variant="outline" onClick={() => onOpenChange?.(false)} disabled={loading} className="flex-1 h-11">
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading} className="flex-1 bg-amber-600 hover:bg-amber-700 text-white h-11">
+            <Button type="submit" disabled={loading} className="flex-1 bg-[#ffd400] hover:bg-[#ffe033] text-[#0a0a0a] h-11">
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Salvar'}
             </Button>
           </div>

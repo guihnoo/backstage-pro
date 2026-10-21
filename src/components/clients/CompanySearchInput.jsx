@@ -90,21 +90,21 @@ function CompanyCard({ company, onSelect, sourceBadge }) {
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="group relative rounded-xl border border-slate-700/60 bg-slate-800/60 hover:bg-slate-800 transition-all cursor-pointer overflow-hidden hover:border-[color-mix(in_srgb,var(--bp-primary)_40%,transparent)]"
+      className="group relative rounded-xl border border-[#2a2a2a] bg-[#1f1f1f] hover:bg-[#1f1f1f] transition-all cursor-pointer overflow-hidden hover:border-[color-mix(in_srgb,var(--bp-primary)_40%,transparent)]"
       onClick={() => onSelect(company)}
     >
       <div className="absolute left-0 top-0 bottom-0 w-0.5 opacity-0 group-hover:opacity-60 transition-opacity bg-[var(--bp-primary)]" />
 
       <div className="flex items-start gap-3 p-3.5">
-        <CompanyAvatar company={company} name={displayName} size="md" className="rounded-xl border-slate-700" />
+        <CompanyAvatar company={company} name={displayName} size="md" className="rounded-xl border-[#2a2a2a]" />
 
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <p className="text-sm font-semibold text-white truncate leading-tight">{displayName}</p>
               {razao && (
-                <p className="text-[11px] text-slate-500 truncate mt-0.5">
-                  <span className="text-slate-600">Razão Social: </span>{razao}
+                <p className="text-[11px] text-[#888888] truncate mt-0.5">
+                  <span className="text-[#666666]">Razão Social: </span>{razao}
                 </p>
               )}
             </div>
@@ -118,7 +118,7 @@ function CompanyCard({ company, onSelect, sourceBadge }) {
                 </span>
               )}
               {isInactive && (
-                <Badge className="text-[9px] h-4 px-1.5 bg-red-500/20 text-red-300 border-red-500/30">
+                <Badge className="text-[9px] h-4 px-1.5 bg-[#ff2e88]/20 text-[#ff2e88] border-[#ff2e88]/30">
                   {company.status}
                 </Badge>
               )}
@@ -127,22 +127,22 @@ function CompanyCard({ company, onSelect, sourceBadge }) {
 
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
             {location && (
-              <span className="flex items-center gap-1 text-[11px] text-slate-400">
-                <MapPin className="w-3 h-3 text-slate-500 flex-shrink-0" />{location}
+              <span className="flex items-center gap-1 text-[11px] text-[#a8a8a8]">
+                <MapPin className="w-3 h-3 text-[#888888] flex-shrink-0" />{location}
               </span>
             )}
             {cnpjFmt && (
-              <span className="text-[11px] text-slate-500 font-mono">{cnpjFmt}</span>
+              <span className="text-[11px] text-[#888888] font-mono">{cnpjFmt}</span>
             )}
             {company.cnae && (
-              <span className="text-[11px] text-slate-500 truncate max-w-[180px]">{company.cnae}</span>
+              <span className="text-[11px] text-[#888888] truncate max-w-[180px]">{company.cnae}</span>
             )}
           </div>
 
           {(company.phone || company.email || company.website) && (
             <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1.5">
-              {company.phone && <span className="text-[11px] text-slate-400">{company.phone}</span>}
-              {company.email && <span className="text-[11px] text-slate-400 truncate max-w-[160px]">{company.email}</span>}
+              {company.phone && <span className="text-[11px] text-[#a8a8a8]">{company.phone}</span>}
+              {company.email && <span className="text-[11px] text-[#a8a8a8] truncate max-w-[160px]">{company.email}</span>}
               {company.website && (
                 <span className="flex items-center gap-0.5 text-[11px] bp-text-primary">
                   <Globe className="w-3 h-3" />{company.domain}
@@ -152,7 +152,7 @@ function CompanyCard({ company, onSelect, sourceBadge }) {
           )}
         </div>
 
-        <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-[var(--bp-primary)] transition-colors flex-shrink-0 mt-1" />
+        <ChevronRight className="w-4 h-4 text-[#666666] group-hover:text-[var(--bp-primary)] transition-colors flex-shrink-0 mt-1" />
       </div>
     </motion.div>
   );
@@ -172,17 +172,17 @@ function SelectedCompany({ company, onClear }) {
       className="rounded-xl bp-today-surface-soft border overflow-hidden"
     >
       <div className="flex items-center gap-3 p-3">
-        <CompanyAvatar company={company} name={displayName} size="md" className="rounded-xl border-slate-700" />
+        <CompanyAvatar company={company} name={displayName} size="md" className="rounded-xl border-[#2a2a2a]" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-white truncate">{displayName}</p>
           {razao && (
-            <p className="text-[11px] text-slate-400 truncate">
-              <span className="text-slate-500">Razão: </span>{razao}
+            <p className="text-[11px] text-[#a8a8a8] truncate">
+              <span className="text-[#888888]">Razão: </span>{razao}
             </p>
           )}
           <div className="flex items-center gap-2 mt-0.5">
-            {location && <span className="text-[11px] text-slate-500">{location}</span>}
-            {company.cnpj && <span className="text-[11px] text-slate-600 font-mono">{formatCNPJ(company.cnpj)}</span>}
+            {location && <span className="text-[11px] text-[#888888]">{location}</span>}
+            {company.cnpj && <span className="text-[11px] text-[#666666] font-mono">{formatCNPJ(company.cnpj)}</span>}
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -190,10 +190,10 @@ function SelectedCompany({ company, onClear }) {
           <button
             type="button"
             onClick={onClear}
-            className="w-7 h-7 rounded-full hover:bg-slate-700 flex items-center justify-center transition-colors"
+            className="w-7 h-7 rounded-full hover:bg-[#2a2a2a] flex items-center justify-center transition-colors"
             title="Remover seleção"
           >
-            <X className="w-3.5 h-3.5 text-slate-400" />
+            <X className="w-3.5 h-3.5 text-[#a8a8a8]" />
           </button>
         </div>
       </div>
@@ -202,20 +202,20 @@ function SelectedCompany({ company, onClear }) {
       {(razao || company.cnpj) && (
         <div className="border-t border-[color-mix(in_srgb,var(--bp-primary)_15%,transparent)] px-3 py-2 flex flex-wrap gap-x-4 gap-y-1">
           {company.trading_name && (
-            <span className="text-[10px] text-slate-500">
-              <span className="text-slate-600">Nome Fantasia: </span>
+            <span className="text-[10px] text-[#888888]">
+              <span className="text-[#666666]">Nome Fantasia: </span>
               <span className="bp-text-primary font-semibold">{company.trading_name}</span>
             </span>
           )}
           {razao && (
-            <span className="text-[10px] text-slate-500">
-              <span className="text-slate-600">Razão Social: </span>
-              <span className="text-slate-300">{razao}</span>
+            <span className="text-[10px] text-[#888888]">
+              <span className="text-[#666666]">Razão Social: </span>
+              <span className="text-[#c8c8c8]">{razao}</span>
             </span>
           )}
           {company.cnpj && (
-            <span className="text-[10px] text-slate-500 font-mono">
-              <span className="text-slate-600">CNPJ: </span>{formatCNPJ(company.cnpj)}
+            <span className="text-[10px] text-[#888888] font-mono">
+              <span className="text-[#666666]">CNPJ: </span>{formatCNPJ(company.cnpj)}
             </span>
           )}
         </div>
@@ -421,7 +421,7 @@ export default function CompanySearchInput({ onSelect, disabled }) {
   return (
     <div className="space-y-3">
       {/* Abas */}
-      <div className="flex gap-0.5 bg-slate-900/60 p-0.5 rounded-lg border border-slate-800">
+      <div className="flex gap-0.5 bg-[#161616] p-0.5 rounded-lg border border-[#2a2a2a]">
         {TABS.map(t => {
           const Icon = t.icon;
           return (
@@ -432,8 +432,8 @@ export default function CompanySearchInput({ onSelect, disabled }) {
               disabled={disabled}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-md text-xs font-semibold transition-all ${
                 tab === t.id
-                  ? 'bg-slate-700 text-white'
-                  : 'text-slate-500 hover:text-slate-300'
+                  ? 'bg-[#2a2a2a] text-white'
+                  : 'text-[#888888] hover:text-[#c8c8c8]'
               }`}
             >
               <Icon className="w-3.5 h-3.5 flex-shrink-0" />
@@ -456,25 +456,25 @@ export default function CompanySearchInput({ onSelect, disabled }) {
           >
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a8a8a8] pointer-events-none" />
                 <Input
                   value={query}
                   onChange={e => { setQuery(e.target.value); setSearched(false); }}
                   onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), runSearch())}
                   disabled={disabled || loading}
                   placeholder="Nome da empresa…"
-                  className="pl-10 bg-slate-800/80 border-slate-600 text-white h-11 text-sm bp-focus-input"
+                  className="pl-10"
                 />
               </div>
               <div className="relative w-32">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#a8a8a8] pointer-events-none" />
                 <Input
                   value={city}
                   onChange={e => setCity(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), runSearch())}
                   disabled={disabled || loading}
                   placeholder="Cidade"
-                  className="pl-8 bg-slate-800/80 border-slate-600 text-white h-11 text-sm bp-focus-input"
+                  className="pl-8"
                 />
               </div>
               <Button
@@ -488,12 +488,12 @@ export default function CompanySearchInput({ onSelect, disabled }) {
               </Button>
             </div>
 
-            <p className="text-[10px] text-slate-600">
-              Dica: se não encontrar pelo nome, use a aba <strong className="text-slate-500">CNPJ</strong> com o número do cartão CNPJ ou NF.
+            <p className="text-[10px] text-[#666666]">
+              Dica: se não encontrar pelo nome, use a aba <strong className="text-[#888888]">CNPJ</strong> com o número do cartão CNPJ ou NF.
             </p>
 
             {error && (
-              <div className="flex items-center gap-2 text-xs text-amber-400">
+              <div className="flex items-center gap-2 text-xs text-[#ffd400]">
                 <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
                 {error}
               </div>
@@ -531,16 +531,16 @@ export default function CompanySearchInput({ onSelect, disabled }) {
 
               {searched && results.length === 0 && !loading && !error && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-2 py-5 text-center">
-                  <Building2 className="w-9 h-9 text-slate-700" />
-                  <p className="text-sm text-slate-400">Empresa não encontrada</p>
-                  <p className="text-xs text-slate-600">Tente pela aba CNPJ ou importe uma NF-e</p>
+                  <Building2 className="w-9 h-9 text-[#555555]" />
+                  <p className="text-sm text-[#a8a8a8]">Empresa não encontrada</p>
+                  <p className="text-xs text-[#666666]">Tente pela aba CNPJ ou importe uma NF-e</p>
                   <div className="flex gap-2 mt-1">
                     <button type="button" onClick={() => setTab('cnpj')}
-                      className="text-xs px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors flex items-center gap-1">
+                      className="text-xs px-3 py-1.5 rounded-lg bg-[#1f1f1f] text-[#c8c8c8] hover:bg-[#2a2a2a] transition-colors flex items-center gap-1">
                       <Hash className="w-3 h-3" /> Buscar por CNPJ
                     </button>
                     <button type="button" onClick={() => setTab('nfe')}
-                      className="text-xs px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors flex items-center gap-1">
+                      className="text-xs px-3 py-1.5 rounded-lg bg-[#1f1f1f] text-[#c8c8c8] hover:bg-[#2a2a2a] transition-colors flex items-center gap-1">
                       <FileText className="w-3 h-3" /> Importar NF-e
                     </button>
                   </div>
@@ -559,19 +559,19 @@ export default function CompanySearchInput({ onSelect, disabled }) {
             exit={{ opacity: 0, y: -4 }}
             className="space-y-3"
           >
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-[#888888]">
               Digite o CNPJ para consultar os dados completos da empresa na Receita Federal.
             </p>
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a8a8a8] pointer-events-none" />
                 <Input
                   value={cnpjInput}
                   onChange={e => handleCNPJInput(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), runCNPJSearch())}
                   disabled={disabled || cnpjLoading}
                   placeholder="00.000.000/0001-00"
-                  className="pl-10 bg-slate-800/80 border-slate-600 text-white h-11 text-sm bp-focus-input font-mono tracking-wider"
+                  className="pl-10 font-mono tracking-wider"
                   maxLength={18}
                 />
               </div>
@@ -587,7 +587,7 @@ export default function CompanySearchInput({ onSelect, disabled }) {
             </div>
 
             {cnpjError && (
-              <div className="flex items-center gap-2 text-xs text-red-400">
+              <div className="flex items-center gap-2 text-xs text-[#ff2e88]">
                 <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
                 {cnpjError}
               </div>
@@ -615,7 +615,7 @@ export default function CompanySearchInput({ onSelect, disabled }) {
             exit={{ opacity: 0, y: -4 }}
             className="space-y-3"
           >
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-[#888888]">
               Importe o XML de uma NF-e para preencher os dados automaticamente.
               O arquivo fica somente no seu dispositivo — nada é enviado ao servidor.
             </p>
@@ -625,20 +625,20 @@ export default function CompanySearchInput({ onSelect, disabled }) {
                 role="button"
                 tabIndex={0}
                 aria-label="Selecionar arquivo NF-e XML"
-                className="flex flex-col items-center justify-center gap-3 p-6 rounded-xl border-2 border-dashed border-slate-700 hover:border-[color-mix(in_srgb,var(--bp-primary)_50%,transparent)] transition-colors cursor-pointer"
+                className="flex flex-col items-center justify-center gap-3 p-6 rounded-xl border-2 border-dashed border-[#2a2a2a] hover:border-[color-mix(in_srgb,var(--bp-primary)_50%,transparent)] transition-colors cursor-pointer"
                 onClick={() => fileRef.current?.click()}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileRef.current?.click(); } }}
               >
                 {nfeParsing ? (
-                  <Loader2 className="w-8 h-8 text-slate-500 animate-spin" />
+                  <Loader2 className="w-8 h-8 text-[#888888] animate-spin" />
                 ) : (
-                  <FileUp className="w-8 h-8 text-slate-600" />
+                  <FileUp className="w-8 h-8 text-[#666666]" />
                 )}
                 <div className="text-center">
-                  <p className="text-sm text-slate-400 font-medium">
+                  <p className="text-sm text-[#a8a8a8] font-medium">
                     {nfeParsing ? 'Lendo arquivo…' : 'Clique para selecionar o XML'}
                   </p>
-                  <p className="text-[11px] text-slate-600 mt-0.5">Aceita arquivos .xml de NF-e</p>
+                  <p className="text-[11px] text-[#666666] mt-0.5">Aceita arquivos .xml de NF-e</p>
                 </div>
                 <input
                   ref={fileRef}
@@ -652,11 +652,11 @@ export default function CompanySearchInput({ onSelect, disabled }) {
             ) : (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Dados extraídos da NF-e</p>
+                  <p className="text-xs font-semibold text-[#a8a8a8] uppercase tracking-wider">Dados extraídos da NF-e</p>
                   <button
                     type="button"
                     onClick={() => { setNfeData(null); setNfeError(''); }}
-                    className="text-[11px] text-slate-500 hover:text-slate-300 flex items-center gap-1"
+                    className="text-[11px] text-[#888888] hover:text-[#c8c8c8] flex items-center gap-1"
                   >
                     <RefreshCw className="w-3 h-3" /> Outro arquivo
                   </button>
@@ -676,7 +676,7 @@ export default function CompanySearchInput({ onSelect, disabled }) {
                 )}
                 {nfeData.emit && (
                   <div>
-                    <p className="text-[10px] font-mono uppercase tracking-wider text-amber-400 mb-1.5 flex items-center gap-1">
+                    <p className="text-[10px] font-mono uppercase tracking-wider text-[#ffd400] mb-1.5 flex items-center gap-1">
                       <User className="w-3 h-3" /> Emitente
                     </p>
                     <CompanyCard
@@ -686,14 +686,14 @@ export default function CompanySearchInput({ onSelect, disabled }) {
                     />
                   </div>
                 )}
-                <p className="text-[10px] text-slate-600">
+                <p className="text-[10px] text-[#666666]">
                   Dados extraídos localmente — confirme com a Receita Federal via aba CNPJ para dados completos.
                 </p>
               </motion.div>
             )}
 
             {nfeError && (
-              <div className="flex items-center gap-2 text-xs text-red-400">
+              <div className="flex items-center gap-2 text-xs text-[#ff2e88]">
                 <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
                 {nfeError}
               </div>

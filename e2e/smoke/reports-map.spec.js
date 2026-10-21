@@ -11,7 +11,7 @@ test('mapa interativo aparece em Relatórios com eventos localizados', async ({ 
 
   const map = page.getByTestId('brazil-visited-map');
   await expect(map).toBeVisible({ timeout: 15_000 });
-  await expect(map.getByText(/mapa interativo/i)).toBeVisible();
+  await expect(map.getByText(/minha turn[eê]/i)).toBeVisible();
   await expect(map.getByText(/suas cidades/i)).toBeVisible();
   await expect(map.getByRole('button', { name: /São Paulo/i })).toBeVisible();
   await expect(map.getByRole('button', { name: /Rio de Janeiro/i })).toBeVisible();

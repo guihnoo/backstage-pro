@@ -19,7 +19,7 @@ test.describe('cartao do dia na Agenda', () => {
     page.on('pageerror', (e) => erros.push(e.message));
     await tocarNoDiaDoEvento(page);
     await page.getByRole('button', { name: /^Horas$/ }).first().click();
-    await expect(page.getByRole('dialog').getByText(/registro de trabalho/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('dialog').getByRole('heading', { name: /registrar horas/i })).toBeVisible({ timeout: 10_000 });
     await expect(page.getByText(/algo deu errado/i)).toHaveCount(0);
     expect(erros).toEqual([]);
   });

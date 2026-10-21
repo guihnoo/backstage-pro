@@ -92,8 +92,8 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg bg-slate-900/95 border-slate-800 text-slate-100 p-0 flex flex-col overflow-hidden max-h-[90dvh] bp-focus-scope">
-        <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 border-b border-slate-800 flex-shrink-0">
+      <DialogContent className="sm:max-w-lg p-0 flex flex-col overflow-hidden max-h-[90dvh]">
+        <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 border-b border-[#2a2a2a] flex-shrink-0 pr-14">
           <DialogTitle>Digitalizar Recibo</DialogTitle>
           <DialogDescription>
             Tire uma foto ou envie o recibo — a IA extrai os dados automaticamente.
@@ -115,13 +115,13 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full bg-slate-800 border-slate-700 pointer-events-none h-12"
+                  className="w-full bg-[#1f1f1f] border-[#2a2a2a] pointer-events-none h-12"
                   disabled={uploading || analyzing}
                 >
                   {uploading ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   ) : analyzing ? (
-                    <Sparkles className="w-4 h-4 mr-2 animate-pulse text-amber-400" />
+                    <Sparkles className="w-4 h-4 mr-2 animate-pulse text-[#ffd400]" />
                   ) : (
                     <Camera className="w-4 h-4 mr-2" />
                   )}
@@ -137,49 +137,49 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
             </div>
 
             {previewUrl && (
-              <img src={previewUrl} alt="Pré-visualização do recibo" className="w-full h-40 object-cover rounded border border-slate-700" />
+              <img src={previewUrl} alt="Pré-visualização do recibo" className="w-full h-40 object-cover rounded border border-[#2a2a2a]" />
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <Label htmlFor="ra-title" className="text-slate-300 text-sm">Título</Label>
+                <Label htmlFor="ra-title">Título</Label>
                 <Input
                   id="ra-title"
                   value={data.title}
                   onChange={(e) => setData({ ...data, title: e.target.value })}
-                  className="bg-slate-800 border-slate-700 h-12 text-base"
+                  className="h-12"
                   placeholder="Ex: Almoço, Uber..."
                 />
               </div>
               <div>
-                <Label htmlFor="ra-amount" className="text-slate-300 text-sm">Valor</Label>
+                <Label htmlFor="ra-amount">Valor</Label>
                 <Input
                   id="ra-amount"
                   type="number"
                   step="0.01"
                   value={data.amount}
                   onChange={(e) => setData({ ...data, amount: e.target.value })}
-                  className="bg-slate-800 border-slate-700 h-12 text-base"
+                  className="h-12"
                   placeholder="0,00"
                 />
               </div>
               <div>
-                <Label htmlFor="ra-date" className="text-slate-300 text-sm">Data</Label>
+                <Label htmlFor="ra-date">Data</Label>
                 <Input
                   id="ra-date"
                   type="date"
                   value={data.date}
                   onChange={(e) => setData({ ...data, date: e.target.value })}
-                  className="bg-slate-800 border-slate-700 h-12 text-base"
+                  className="h-12"
                 />
               </div>
               <div>
-                <Label className="text-slate-300 text-sm">Categoria</Label>
+                <Label>Categoria</Label>
                 <Select value={data.category} onValueChange={(v) => setData({ ...data, category: v })}>
-                  <SelectTrigger className="bg-slate-800 border-slate-700">
+                  <SelectTrigger>
                     <SelectValue placeholder="Escolha" />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
+                  <SelectContent>
                     {CATEGORY_OPTIONS.map(opt => (
                       <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                     ))}
@@ -189,20 +189,20 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
             </div>
 
             <div>
-              <Label htmlFor="ra-notes" className="text-slate-300 text-sm">Observações</Label>
+              <Label htmlFor="ra-notes">Observações</Label>
               <Textarea
                 id="ra-notes"
                 value={data.notes}
                 onChange={(e) => setData({ ...data, notes: e.target.value })}
-                className="bg-slate-800 border-slate-700 min-h-[80px]"
+                className="min-h-[80px]"
                 placeholder="Opcional"
               />
             </div>
           </div>
         </ScrollArea>
 
-        <div className="flex gap-2 px-4 py-3 sm:px-6 border-t border-slate-800 flex-shrink-0 pb-safe">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 bg-slate-800 border-slate-700 h-11">
+        <div className="flex gap-2 px-4 py-3 sm:px-6 border-t border-[#2a2a2a] flex-shrink-0 pb-safe">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 bg-[#1f1f1f] border-[#2a2a2a] h-11">
             Cancelar
           </Button>
           <Button onClick={confirm} disabled={!data.title || !data.amount || !data.date || analyzing} className="flex-1 h-11">

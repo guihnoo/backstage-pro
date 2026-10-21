@@ -62,7 +62,7 @@ export default function EventLocationSection({
         <Label className="flex items-center gap-1.5">
           <MapPin className="w-3.5 h-3.5 bp-text-primary" />
           Local do evento
-          <span className="text-slate-500 font-normal text-xs">(opcional)</span>
+          <span className="text-[#888888] font-normal text-xs">(opcional)</span>
         </Label>
       )}
 
@@ -113,10 +113,10 @@ export default function EventLocationSection({
         )}
       </div>
 
-      <p className="text-[11px] text-slate-500 leading-relaxed">
+      <p className="text-[11px] text-[#888888] leading-relaxed">
         Você pode informar o endereço agora ou registrar a posição exata quando estiver no local do evento.
         {location_lat != null && location_lng != null && (
-          <span className="block text-slate-600 mt-0.5 font-mono">
+          <span className="block text-[#666666] mt-0.5 font-mono">
             {Number(location_lat).toFixed(5)}, {Number(location_lng).toFixed(5)}
             {location_state ? ` · ${location_state}` : ''}
           </span>
