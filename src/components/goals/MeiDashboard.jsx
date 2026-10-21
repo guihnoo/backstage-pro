@@ -8,9 +8,9 @@ import { useFinancialVisibility } from '@/components/context/FinancialVisibility
 import { hardNavigate } from '@/lib/hardNavigate';
 
 const THRESHOLDS = [
-  { pct: 95, color: '#ef4444', label: 'Crítico',  bg: 'from-red-900/30 to-red-900/10',    border: 'border-red-500/40' },
-  { pct: 85, color: '#f97316', label: 'Atenção',  bg: 'from-orange-900/30 to-orange-900/10', border: 'border-orange-500/40' },
-  { pct: 70, color: '#eab308', label: 'Alerta',   bg: 'from-yellow-900/20 to-yellow-900/5',  border: 'border-yellow-500/30' },
+  { pct: 95, color: '#ef4444', label: 'Crítico',  bg: 'from-[#ff2e88]/30 to-[#ff2e88]/10',    border: 'border-[#ff2e88]/40' },
+  { pct: 85, color: '#f97316', label: 'Atenção',  bg: 'from-[#ffd400]/30 to-[#ffd400]/10', border: 'border-[#ffd400]/40' },
+  { pct: 70, color: '#eab308', label: 'Alerta',   bg: 'from-[#ffd400]/20 to-[#ffd400]/5',  border: 'border-[#ffd400]/30' },
 ];
 
 function getThreshold(pct, accentColor) {
@@ -37,11 +37,11 @@ function DasCard({ dasType, color }) {
   const daysUntilDue = Math.ceil((dueMonth - today) / (1000 * 60 * 60 * 24));
 
   return (
-    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+    <div className="bg-[#1f1f1f] border border-[#2a2a2a] rounded-xl p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-slate-400" />
-          <p className="text-xs font-bold text-slate-300 uppercase tracking-wide">DAS Mensal</p>
+          <Calendar className="w-4 h-4 text-[#a8a8a8]" />
+          <p className="text-xs font-bold text-[#c8c8c8] uppercase tracking-wide">DAS Mensal</p>
         </div>
         <span
           className="text-xs font-mono font-bold px-2 py-0.5 rounded-full"
@@ -52,20 +52,20 @@ function DasCard({ dasType, color }) {
       </div>
       <p className="text-2xl font-black text-white">
         R$ {das.monthly.toFixed(2).replace('.', ',')}
-        <span className="text-sm font-normal text-slate-400">/mês</span>
+        <span className="text-sm font-normal text-[#a8a8a8]">/mês</span>
       </p>
-      <p className="text-xs text-slate-400 mt-1">{das.label}</p>
-      <div className="mt-3 pt-3 border-t border-slate-700/50 space-y-2">
+      <p className="text-xs text-[#a8a8a8] mt-1">{das.label}</p>
+      <div className="mt-3 pt-3 border-t border-[#2a2a2a] space-y-2">
         {daysUntilDue <= 0 ? (
-          <p className="text-xs text-red-400 font-semibold flex items-center gap-1">
+          <p className="text-xs text-[#ff2e88] font-semibold flex items-center gap-1">
             <AlertTriangle className="w-3 h-3" /> DAS do mês venceu — regularize agora
           </p>
         ) : daysUntilDue <= 5 ? (
-          <p className="text-xs text-orange-400 font-semibold flex items-center gap-1">
+          <p className="text-xs text-[#ffd400] font-semibold flex items-center gap-1">
             <AlertTriangle className="w-3 h-3" /> Vence em {daysUntilDue} dia{daysUntilDue !== 1 ? 's' : ''}
           </p>
         ) : (
-          <p className="text-xs text-slate-500">Próximo vencimento em {daysUntilDue} dias</p>
+          <p className="text-xs text-[#888888]">Próximo vencimento em {daysUntilDue} dias</p>
         )}
         {daysUntilDue <= 7 && (
           <a
@@ -146,8 +146,8 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
       >
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-xs uppercase tracking-wider text-slate-400 mb-0.5">Faturamento Anual {now.getFullYear()}</p>
-            <p className="text-xs text-slate-500">Limite MEI: {formatBRL(MEI_LIMIT)}/ano</p>
+            <p className="text-xs uppercase tracking-wider text-[#a8a8a8] mb-0.5">Faturamento Anual {now.getFullYear()}</p>
+            <p className="text-xs text-[#888888]">Limite MEI: {formatBRL(MEI_LIMIT)}/ano</p>
           </div>
           <span
             className="text-xs font-bold px-2.5 py-1 rounded-full"
@@ -181,7 +181,7 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
               ) : (
                 <>
                   <span className="text-2xl font-black text-white">{Math.round(pct)}%</span>
-                  <span className="text-[9px] text-slate-500 font-mono">do limite</span>
+                  <span className="text-[9px] text-[#888888] font-mono">do limite</span>
                 </>
               )}
             </div>
@@ -190,13 +190,13 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
           {/* Stats column */}
           <div className="flex-1 min-w-0 space-y-3">
             <div className="min-w-0">
-              <p className="text-xs text-slate-400 mb-0.5">Faturado</p>
+              <p className="text-xs text-[#a8a8a8] mb-0.5">Faturado</p>
               <p className="text-xl font-black text-white truncate">
                 {loading ? '—' : (isVisible ? formatCurrency(annualRevenue) : '••••')}
               </p>
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-slate-400 mb-0.5">Margem restante</p>
+              <p className="text-xs text-[#a8a8a8] mb-0.5">Margem restante</p>
               <p className="text-lg font-bold truncate" style={{ color: threshold.color }}>
                 {loading ? '—' : (isVisible ? formatCurrency(remaining) : '••••')}
               </p>
@@ -205,7 +205,7 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
         </div>
 
         {/* Progress bar */}
-        <div className="mt-4 h-2 rounded-full bg-slate-800/80 overflow-hidden">
+        <div className="mt-4 h-2 rounded-full bg-[#1f1f1f] overflow-hidden">
           <motion.div
             className="h-full rounded-full"
             style={{ background: `linear-gradient(90deg, ${threshold.color}cc, ${threshold.color})` }}
@@ -214,7 +214,7 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
             transition={{ duration: 1, ease: 'easeOut' }}
           />
         </div>
-        <div className="flex justify-between text-[10px] text-slate-600 mt-1 font-mono">
+        <div className="flex justify-between text-[10px] text-[#666666] mt-1 font-mono">
           <span>R$ 0</span>
           <span>70% ({formatBRL(MEI_LIMIT * 0.7)})</span>
           <span>{formatBRL(MEI_LIMIT)}</span>
@@ -222,31 +222,31 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
       </div>
 
       {/* Projeção */}
-      <div className="bg-slate-900/40 border border-slate-800/50 rounded-xl p-4">
+      <div className="bg-[#161616] border border-[#2a2a2a] rounded-xl p-4">
         <div className="flex items-center gap-2 mb-3">
           <TrendingUp className="w-4 h-4" style={{ color: accentColor }} />
-          <p className="text-xs font-bold text-slate-300 uppercase tracking-wide">Projeção para Dezembro</p>
+          <p className="text-xs font-bold text-[#c8c8c8] uppercase tracking-wide">Projeção para Dezembro</p>
         </div>
         <div className="grid grid-cols-3 gap-3 text-center">
           <div>
-            <p className="text-xs text-slate-500 mb-1">Média/mês</p>
+            <p className="text-xs text-[#888888] mb-1">Média/mês</p>
             <p className="text-sm font-bold text-white">{loading ? '—' : (isVisible ? formatCurrency(monthlyAvg) : '••••')}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-500 mb-1">Projeção ano</p>
+            <p className="text-xs text-[#888888] mb-1">Projeção ano</p>
             <p className="text-sm font-bold" style={{ color: projectedPct >= 85 ? '#f97316' : accentColor }}>
               {loading ? '—' : (isVisible ? formatCurrency(projectedYear) : '••••')}
             </p>
           </div>
           <div>
-            <p className="text-xs text-slate-500 mb-1">% projetada</p>
+            <p className="text-xs text-[#888888] mb-1">% projetada</p>
             <p className="text-sm font-bold" style={{ color: projectedPct >= 85 ? '#f97316' : accentColor }}>
               {loading ? '—' : `${Math.round(projectedPct)}%`}
             </p>
           </div>
         </div>
         {monthsRemaining > 0 && !loading && (
-          <p className="text-xs text-slate-500 mt-3 text-center">
+          <p className="text-xs text-[#888888] mt-3 text-center">
             Você ainda pode faturar {isVisible ? formatCurrency(remaining) : '••••'} até {formatBRL(MEI_LIMIT)} nos próximos {monthsRemaining} {monthsRemaining === 1 ? 'mês' : 'meses'}
           </p>
         )}
@@ -259,13 +259,13 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
       <button
         type="button"
         onClick={() => hardNavigate('/reports')}
-        className="w-full py-3 rounded-xl border border-slate-700/50 bg-slate-800/30 text-xs text-slate-400 transition-all flex items-center justify-center gap-2 bp-hover-primary"
+        className="w-full py-3 rounded-xl border border-[#2a2a2a] bg-[#1f1f1f] text-xs text-[#a8a8a8] transition-all flex items-center justify-center gap-2 bp-hover-primary"
       >
         <CheckCircle2 className="w-3.5 h-3.5" />
         Ver todos os pagamentos recebidos
       </button>
 
-      <p className="text-[10px] text-slate-600 text-center font-mono leading-relaxed">
+      <p className="text-[10px] text-[#666666] text-center font-mono leading-relaxed">
         Valores baseados no limite MEI 2025 (R$ 81.000/ano). Consulte um contador para decisões fiscais.
       </p>
     </motion.div>

@@ -6,7 +6,6 @@ import { useProfile } from '@/lib/profileOfflineContext';
 import { useStats, useEvents, useMeiStats, usePaidEvents } from '@/lib/useBackstageData';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
-import { NeonPageShell } from '@/components/design/NeonPageShell';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { Trophy, Zap, Star, Award, Flame, Calendar, X, Pencil, Check, CheckCircle2, BadgeCheck, Clock as ClockIcon, ChevronRight, Plus, Share2 } from 'lucide-react';
@@ -14,7 +13,6 @@ import { getEventCacheAmount } from '@/lib/eventFinance';
 import { Input } from '@/components/ui/input';
 import appToast from '@/lib/appToast';
 
-import LiveClockBar from '@/components/home/LiveClockBar';
 import StatValuePulse from '@/components/home/StatValuePulse';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
 
@@ -119,7 +117,7 @@ function BadgeCelebration({ badge, onClose }) {
         <p className="text-xs uppercase tracking-widest font-mono mb-2" style={{ color: badge.color }}>
           Conquista desbloqueada!
         </p>
-        <h2 className="text-2xl font-black text-white mb-1">{badge.title}</h2>
+        <h2 className="font-poster text-[30px] leading-none uppercase text-white mb-2">{badge.title}</h2>
         <p className="text-sm text-[#a8a8a8]">{badge.description}</p>
 
         <button
@@ -161,12 +159,12 @@ function CircularProgress({ value, max, size = 120, color, label, sublabel }) {
         </svg>
         {/* Valor central */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-black text-white">{Math.round(pct)}%</span>
+          <span className="font-poster text-[28px] leading-none text-white">{Math.round(pct)}%</span>
         </div>
       </div>
       <div className="text-center min-w-0 max-w-[7rem]">
-        <Ellipsis as="p" className="text-sm font-bold text-white">{label}</Ellipsis>
-        <Ellipsis as="p" className="text-xs text-[#888888]">{sublabel}</Ellipsis>
+        <Ellipsis as="p" className="font-tag text-[10px] uppercase tracking-[1px] text-[#a8a8a8]">{label}</Ellipsis>
+        <Ellipsis as="p" className="font-poster text-[16px] leading-tight text-white">{sublabel}</Ellipsis>
       </div>
     </div>
   );
@@ -229,12 +227,20 @@ function BadgeCard({ icon: Icon, title, description, unlocked, color, progress, 
 }
 
 // ─── Nível do profissional ───────────────────────────────────
+// Tiers do visual All Access (mesmas faixas de shows de antes, nomes de credencial).
+const TIERS = [
+  { title: 'Staff', min: 0, next: 5 },
+  { title: 'Backstage', min: 5, next: 20 },
+  { title: 'All Access', min: 20, next: 50 },
+  { title: 'Headliner', min: 50, next: 100 },
+  { title: 'Lenda', min: 100, next: null },
+];
+
 function getLevelInfo(eventsCount) {
-  if (eventsCount >= 100) return { title: 'Lenda do Palco', emoji: '👑', color: '#FFD700', next: null };
-  if (eventsCount >= 50) return { title: 'Astro do Backstage', emoji: '⭐', color: AUTH_HERO_PRIMARY, next: 100 };
-  if (eventsCount >= 20) return { title: 'Pro do Palco', emoji: '🔥', color: '#60a5fa', next: 50 };
-  if (eventsCount >= 5) return { title: 'Veterano do Bastidão', emoji: '🎭', color: '#39FF14', next: 20 };
-  return { title: 'Freelancer em Ascensão', emoji: '🚀', color: AUTH_HERO_ACCENT, next: 5 };
+  let index = 0;
+  TIERS.forEach((t, i) => { if (eventsCount >= t.min) index = i; });
+  const tier = TIERS[index];
+  return { ...tier, index, color: '#ffd400', nextTitle: TIERS[index + 1]?.title || null };
 }
 
 export default function Goals() {
@@ -243,7 +249,8 @@ export default function Goals() {
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const userId = user?.id;
   const categoryId = profile?.category || 'lighting';
-  const config = getCategoryConfig(categoryId);
+  // Visual All Access: amarelo e rosa no lugar das cores da categoria (o nome da funcao continua).
+  const config = { ...getCategoryConfig(categoryId), primaryHex: '#ffd400', accentHex: '#ff2e88' };
   const [activeTab, setActiveTab] = useState('metas');
   const [celebrationBadge, setCelebrationBadge] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -480,90 +487,83 @@ export default function Goals() {
         />
       )}
     </AnimatePresence>
-    <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-full pb-24">
+    <div className="relative min-h-full overflow-x-clip bg-[#0a0a0a] text-white pb-24">
       <PullToRefreshIndicator
         pullDistance={pullDistance}
         isRefreshing={isRefreshing}
         threshold={threshold}
-        primaryHex={config.primaryHex}
+        primaryHex="#ffd400"
       />
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden px-4 pt-6 pb-4"
-        style={{
-          background: `linear-gradient(135deg, ${config.primaryHex}15, transparent)`
-        }}
-      >
-        <motion.div
-          className="absolute top-0 left-0 right-0 h-0.5"
-          style={{ background: `linear-gradient(90deg, transparent, ${config.primaryHex}, transparent)` }}
-          animate={loopAnim({ opacity: [0.4, 0.8, 0.4] })}
-          transition={{ duration: 3, repeat: LOOP }}
-        />
-        <div className="max-w-2xl xl:max-w-6xl mx-auto flex items-start justify-between">
-          <div>
-            <p className="text-xs text-[#888888] uppercase tracking-wider mb-1">Sua Evolução</p>
-            <h1 className="text-2xl font-black text-white">Metas & Conquistas</h1>
-            <p className="text-sm text-[#a8a8a8] mt-1">{config.emoji} {config.label}</p>
-          </div>
-          <LiveClockBar primaryHex={config.primaryHex} />
-        </div>
-      </motion.div>
+      {/* Header (All Access) */}
+      <div className="px-4 pt-4 pb-2 max-w-2xl xl:max-w-6xl mx-auto">
+        <p className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">Sua carreira na estrada</p>
+        <h1 className="font-poster text-[40px] leading-none uppercase tracking-wide mt-0.5">Metas</h1>
+        <p className="text-[13px] font-bold text-[#ffd400] mt-1">{config.label}</p>
+      </div>
 
       <div className="px-4 max-w-2xl xl:max-w-6xl mx-auto w-full min-w-0">
-        {/* Nível preview (sempre visível) */}
+        {/* Tier atual: credencial amarela (sempre visivel) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="mt-4 mb-5 p-5 rounded-2xl border border-[#222222]/50 bg-[#161616]/40"
-          style={{ boxShadow: `0 0 40px ${levelInfo.color}10` }}
+          className="relative mt-2 mb-4 p-4 pt-6 rounded-[18px] bg-[#ffd400] text-[#0a0a0a] overflow-hidden"
         >
-          <div className="flex items-center justify-between mb-3 gap-3 min-w-0">
+          <span className="absolute top-2 left-1/2 -translate-x-1/2 w-14 h-1.5 rounded-full bg-[#0a0a0a]" aria-hidden />
+          <div className="flex items-end justify-between gap-3 min-w-0">
             <div className="min-w-0 flex-1">
-              <p className="text-xs text-[#888888] uppercase tracking-wide mb-0.5">Nível atual</p>
-              <h2 className="text-lg font-black truncate" style={{ color: levelInfo.color }}>
-                {levelInfo.emoji} {levelInfo.title}
-              </h2>
-              <p className="text-xs text-[#a8a8a8] mt-0.5">{totalEvents} evento{totalEvents !== 1 ? 's' : ''} concluído{totalEvents !== 1 ? 's' : ''} no total</p>
+              <p className="font-tag text-[10px] font-bold tracking-[1px]">TIER {levelInfo.index + 1} DE {TIERS.length}</p>
+              <h2 className="font-poster text-[38px] leading-none uppercase truncate">{levelInfo.title}</h2>
+              <p className="text-xs font-bold mt-1">{totalEvents} show{totalEvents !== 1 ? 's' : ''} concluído{totalEvents !== 1 ? 's' : ''} no total</p>
             </div>
             {levelInfo.next && (
-              <div className="text-right">
-                <p className="text-xs text-[#888888]">Próximo nível</p>
-                <p className="text-sm font-bold text-white">{levelInfo.next - totalEvents} eventos</p>
+              <div className="text-right shrink-0">
+                <p className="font-poster text-[30px] leading-none">{Math.min(Math.round(levelProgress), 100)}%</p>
+                <p className="font-tag text-[9px] font-bold">FALTAM {levelInfo.next - totalEvents}</p>
               </div>
             )}
           </div>
-          {/* Barra de nível */}
+          {/* Barra de nivel */}
           {levelInfo.next && (
-            <div className="bg-[#161616]/70 rounded-full h-2 overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.min(levelProgress, 100)}%` }}
-                transition={{ duration: 1, ease: 'easeOut' }}
-                className="h-full rounded-full"
-                style={{
-                  background: `linear-gradient(90deg, ${levelInfo.color}, ${levelInfo.color}99)`,
-                  boxShadow: `0 0 10px ${levelInfo.color}60`
-                }}
-              />
-            </div>
+            <>
+              <div className="bg-[#0a0a0a]/15 rounded-full h-2.5 overflow-hidden mt-3">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min(levelProgress, 100)}%` }}
+                  transition={{ duration: 1, ease: 'easeOut' }}
+                  className="h-full rounded-full bg-[#0a0a0a]"
+                />
+              </div>
+              <p className="font-tag text-[10px] font-bold mt-1.5">PRÓXIMO: {levelInfo.nextTitle?.toUpperCase()}</p>
+            </>
           )}
+          <div className="grid grid-cols-5 gap-1 mt-3" aria-label="Tiers">
+            {TIERS.map((t, i) => (
+              <div
+                key={t.title}
+                className={`h-7 rounded-[8px] flex items-center justify-center font-tag text-[8px] font-bold uppercase leading-none text-center px-0.5 ${
+                  i === levelInfo.index ? 'bg-[#0a0a0a] text-[#ffd400]' : i < levelInfo.index ? 'bg-[#0a0a0a]/25' : 'bg-[#0a0a0a]/10 opacity-60'
+                }`}
+              >
+                {t.title}
+              </div>
+            ))}
+          </div>
         </motion.div>
 
-        {/* Tabs */}
-        <div className="flex gap-1 bg-[#161616] p-1 rounded-xl mb-5 border border-[#222222]/50">
+        {/* Tabs (pilulas All Access) */}
+        <div className="flex gap-1 bg-[#161616] p-1 rounded-2xl mb-4 border border-[#262626]" role="tablist">
           {tabs.map(tab => (
             <button
               type="button"
+              role="tab"
+              aria-selected={activeTab === tab.id}
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-2 px-1 min-h-[36px] rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
+              className={`flex-1 h-9 px-1 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap ${
                 activeTab === tab.id
-                  ? 'bg-[#161616] text-white'
-                  : 'text-[#888888] hover:text-[#a8a8a8]'
+                  ? 'bg-[#ffd400] text-[#0a0a0a]'
+                  : 'text-[#a8a8a8] hover:text-white'
               }`}
             >
               {tab.label}
@@ -583,10 +583,10 @@ export default function Goals() {
               className="space-y-5"
             >
               {/* Circulos de progresso */}
-              <div className="bg-[#161616]/40 border border-[#222222]/50 rounded-2xl p-6">
+              <div className="bg-[#161616] border border-[#222222] rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className="text-sm font-bold text-[#e0e0e0] uppercase tracking-wider">Progresso do Mês</h3>
+                    <h3 className="font-tag text-[11px] font-normal tracking-[2px] text-[#a8a8a8] uppercase">Progresso do Mês</h3>
                     <p className="text-xs text-[#888888] mt-0.5 capitalize">
                       {format(new Date(), "MMMM 'de' yyyy", { locale: ptBR })}
                     </p>
@@ -623,7 +623,6 @@ export default function Goals() {
                             min="1"
                             value={goalForm.events}
                             onChange={e => setGoalForm(f => ({ ...f, events: e.target.value }))}
-                            className="bg-[#161616] border-[#262626] text-white h-9 text-sm"
                           />
                         </div>
                         <div>
@@ -635,7 +634,6 @@ export default function Goals() {
                             step="100"
                             value={goalForm.revenue}
                             onChange={e => setGoalForm(f => ({ ...f, revenue: e.target.value }))}
-                            className="bg-[#161616] border-[#262626] text-white h-9 text-sm"
                           />
                         </div>
                         <div className="col-span-2 flex gap-2 mt-1">
@@ -701,7 +699,7 @@ export default function Goals() {
                 animate={{ opacity: 1, y: 0 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => hardNavigate('/clients')}
-                className="w-full flex items-center gap-4 bg-[#161616]/40 border border-[#222222]/40 rounded-xl p-4 text-left hover:border-[#262626] transition-colors cursor-pointer"
+                className="w-full flex items-center gap-4 bg-[#161616] border border-[#222222] rounded-xl p-4 text-left hover:border-[#262626] transition-colors cursor-pointer"
               >
                 <span className="text-2xl">👥</span>
                 <div className="min-w-0 flex-1">
@@ -752,7 +750,7 @@ export default function Goals() {
                                 {needed} diária{needed !== 1 ? 's' : ''} para bater a meta do mês
                               </p>
                               {daysLeft > 0 && needed > 0 && (
-                                <p className={`text-xs mt-0.5 ${onTrack ? 'text-emerald-400/70' : 'text-amber-400/80'}`}>
+                                <p className={`text-xs mt-0.5 ${onTrack ? 'text-emerald-400/70' : 'text-[#ffd400]/80'}`}>
                                   {onTrack ? '✓ No ritmo' : '⚠ Abaixo do ritmo'} · {daysLeft} dias restantes · 1 show a cada {(daysLeft / needed).toFixed(1)} dias
                                 </p>
                               )}
@@ -816,9 +814,9 @@ export default function Goals() {
               )}
 
               {/* Próximos shows */}
-              <div className="bg-[#161616]/40 border border-[#222222]/50 rounded-2xl p-5">
+              <div className="bg-[#161616] border border-[#222222] rounded-2xl p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-bold text-[#e0e0e0] uppercase tracking-wider">Próximos Shows</h3>
+                  <h3 className="font-tag text-[11px] font-normal tracking-[2px] text-[#a8a8a8] uppercase">Próximos Shows</h3>
                   <button
                     type="button"
                     onClick={() => hardNavigate('/calendar')}
@@ -938,7 +936,7 @@ export default function Goals() {
                       </p>
                       <div className="grid grid-cols-7 text-center mb-1">
                         {['D','S','T','Q','Q','S','S'].map((d, i) => (
-                          <span key={i} className="text-[9px] font-bold text-slate-700">{d}</span>
+                          <span key={i} className="text-[9px] font-bold text-[#555555]">{d}</span>
                         ))}
                       </div>
                       <div className="grid grid-cols-7 gap-y-0.5">
@@ -952,7 +950,7 @@ export default function Goals() {
                             <div key={dateStr} className="flex flex-col items-center py-0.5 gap-0.5">
                               <span
                                 className={`text-[10px] w-5 h-5 flex items-center justify-center rounded-full leading-none font-medium
-                                  ${isToday ? 'font-bold text-slate-900' : isPast ? 'text-slate-700' : 'text-[#a8a8a8]'}
+                                  ${isToday ? 'font-bold text-slate-900' : isPast ? 'text-[#555555]' : 'text-[#a8a8a8]'}
                                 `}
                                 style={isToday ? { background: config.primaryHex } : undefined}
                               >
@@ -977,10 +975,10 @@ export default function Goals() {
               {(goalStreak > 0 || eventsNeededForGoal) && (
                 <div className="grid grid-cols-2 gap-3">
                   {goalStreak > 0 && (
-                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 text-center">
+                    <div className="bg-[#ffd400]/10 border border-[#ffd400]/30 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 text-center">
                       <span className="text-2xl">🔥</span>
-                      <p className="text-xl font-black text-amber-400">{goalStreak}</p>
-                      <p className="text-[11px] text-amber-400/80 leading-tight">
+                      <p className="text-xl font-black text-[#ffd400]">{goalStreak}</p>
+                      <p className="text-[11px] text-[#ffd400]/80 leading-tight">
                         {goalStreak === 1 ? 'mês seguido' : 'meses seguidos'} batendo a meta
                       </p>
                     </div>
@@ -1001,8 +999,8 @@ export default function Goals() {
 
               {/* Histórico mensal */}
               {monthlyHistory.some(m => m.revenue > 0) && (
-                <div className="bg-[#161616]/40 border border-[#222222]/50 rounded-2xl p-5">
-                  <h3 className="text-sm font-bold text-[#e0e0e0] uppercase tracking-wider mb-4">Histórico Recente</h3>
+                <div className="bg-[#161616] border border-[#222222] rounded-2xl p-5">
+                  <h3 className="font-tag text-[11px] font-normal tracking-[2px] text-[#a8a8a8] uppercase mb-4">Histórico Recente</h3>
                   <div className="grid grid-cols-2 gap-3">
                     {monthlyHistory.map(({ label, revenue, pct, hit, isCurrent }) => (
                       <div
@@ -1036,9 +1034,9 @@ export default function Goals() {
 
               {/* Painel Anual */}
               {yearlyPanel.totalYear > 0 && (
-                <div className="bg-[#161616]/40 border border-[#222222]/50 rounded-2xl p-5">
+                <div className="bg-[#161616] border border-[#222222] rounded-2xl p-5">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-bold text-[#e0e0e0] uppercase tracking-wider">
+                    <h3 className="font-tag text-[11px] font-normal tracking-[2px] text-[#a8a8a8] uppercase">
                       {new Date().getFullYear()} em Resumo
                     </h3>
                     {yearlyPanel.monthsHit > 0 && (
@@ -1106,57 +1104,42 @@ export default function Goals() {
               exit={{ opacity: 0, x: -20 }}
               className="space-y-4"
             >
-              {/* Pirâmide de níveis */}
-              {[
-                { title: 'Freelancer em Ascensão', emoji: '🚀', req: 1, color: AUTH_HERO_ACCENT },
-                { title: 'Veterano do Bastidão', emoji: '🎭', req: 5, color: '#39FF14' },
-                { title: 'Pro do Palco', emoji: '🔥', req: 20, color: '#60a5fa' },
-                { title: 'Astro do Backstage', emoji: '⭐', req: 50, color: AUTH_HERO_PRIMARY },
-                { title: 'Lenda do Palco', emoji: '👑', req: 100, color: '#FFD700' },
-              ].map((level, i) => {
-                const reached = totalEvents >= level.req;
-                const isCurrent = getLevelInfo(totalEvents).title === level.title;
+              {/* Escada de tiers (credenciais) */}
+              {TIERS.map((level, i) => {
+                const reached = totalEvents >= level.min;
+                const isCurrent = levelInfo.index === i;
                 return (
                   <motion.div
-                    key={i}
+                    key={level.title}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.06 }}
-                    className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${
+                    className={`flex items-center gap-3 p-3.5 rounded-[14px] border transition-all ${
                       isCurrent
-                        ? 'border-opacity-60 bg-[#161616]'
+                        ? 'bg-[#ffd400] border-[#ffd400] text-[#0a0a0a]'
                         : reached
-                        ? 'border-[#262626]/30 bg-[#161616]/30'
-                        : 'border-[#222222]/20 bg-[#161616]/10 opacity-40'
+                        ? 'bg-[#161616] border-[#222222] text-white'
+                        : 'bg-[#161616] border-[#222222] text-white opacity-40'
                     }`}
-                    style={isCurrent ? {
-                      borderColor: `${level.color}50`,
-                      boxShadow: `0 0 20px ${level.color}15`
-                    } : {}}
                   >
                     <div
-                      className="w-12 h-12 rounded-full flex items-center justify-center text-xl flex-shrink-0"
-                      style={{
-                        background: reached ? `${level.color}20` : 'transparent',
-                        border: `2px solid ${reached ? level.color + '50' : '#374151'}`
-                      }}
+                      className={`w-11 h-11 rounded-[10px] flex items-center justify-center font-poster text-[18px] flex-shrink-0 ${
+                        isCurrent ? 'bg-[#0a0a0a] text-[#ffd400]' : reached ? 'bg-[#ffd400] text-[#0a0a0a]' : 'bg-[#0a0a0a] text-[#555555]'
+                      }`}
                     >
-                      {reached ? level.emoji : '🔒'}
+                      {reached ? i + 1 : '🔒'}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <Ellipsis as="p" className="font-bold text-white text-sm">{level.title}</Ellipsis>
-                      <p className="text-xs text-[#888888]">{level.req}+ eventos concluídos</p>
+                      <Ellipsis as="p" className="font-poster text-[20px] leading-none uppercase">{level.title}</Ellipsis>
+                      <p className={`font-tag text-[10px] mt-1 ${isCurrent ? 'text-[#0a0a0a]' : 'text-[#a8a8a8]'}`}>
+                        {level.min === 0 ? 'começo da estrada' : `${level.min}+ shows concluídos`}
+                      </p>
                     </div>
                     {isCurrent && (
-                      <span
-                        className="text-xs font-bold px-2 py-1 rounded-full flex-shrink-0"
-                        style={{ background: `${level.color}20`, color: level.color }}
-                      >
-                        Atual
-                      </span>
+                      <span className="font-tag text-[10px] font-bold px-2 py-1 rounded-full bg-[#0a0a0a] text-[#ffd400] flex-shrink-0">VOCÊ</span>
                     )}
                     {reached && !isCurrent && (
-                      <CheckCircle2 className="w-4 h-4 text-[#888888] flex-shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-[#ffd400] flex-shrink-0" />
                     )}
                   </motion.div>
                 );
@@ -1202,7 +1185,7 @@ export default function Goals() {
           )}
         </AnimatePresence>
       </div>
-    </NeonPageShell>
+    </div>
 
     {/* Badge detail sheet */}
     <AnimatePresence>

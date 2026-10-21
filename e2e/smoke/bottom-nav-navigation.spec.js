@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { seedAuthWithData } from '../helpers/dataMocks.js';
 import { seedAuth } from '../helpers/fakeAuth.js';
 
 async function clickNavAndWait(page, label, urlPattern) {
@@ -50,7 +51,9 @@ test('bottom nav troca pagina sem precisar de refresh', async ({ page }) => {
 });
 
 test('apos FAB novo evento, nav continua funcionando sem refresh', async ({ page }) => {
-  await seedAuth(page);
+  // Com dados falsos: sem eles a Agenda pedia ao Supabase de verdade (token falso -> 401)
+  // e as vezes mostrava "Erro ao carregar agenda" no lugar da janela (teste oscilava).
+  await seedAuthWithData(page);
   await page.goto('/', { waitUntil: 'load' });
   await expect(page).not.toHaveURL(/\/onboarding/, { timeout: 15_000 });
   await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 20_000 });
