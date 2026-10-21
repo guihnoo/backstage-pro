@@ -14,8 +14,6 @@ import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { getEventCacheAmount } from '@/lib/eventFinance';
-import { NeonPageShell } from '@/components/design/NeonPageShell';
-import LiveClockBar from '@/components/home/LiveClockBar';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { todayLocalISO } from '@/components/utils/dateUtils';
 
@@ -45,7 +43,7 @@ function TypingDots({ color }) {
       >
         <Sparkles className="w-3.5 h-3.5" style={{ color }} />
       </div>
-      <div className="flex items-center gap-1.5 bg-slate-800/80 border border-slate-700/50 rounded-2xl rounded-tl-sm px-4 py-3">
+      <div className="flex items-center gap-1.5 bg-[#1f1f1f] border border-[#2a2a2a] rounded-2xl rounded-tl-sm px-4 py-3">
         {[0, 1, 2].map((i) => (
           <motion.span
             key={i}
@@ -88,7 +86,7 @@ function ConversationItem({ conv, isActive, onSelect, onDelete, primaryHex }) {
       className={`group w-full text-left p-3 rounded-xl transition-all flex items-start gap-2 cursor-pointer border ${
         isActive
           ? ''
-          : 'bg-slate-800/50 border-transparent hover:border-slate-700'
+          : 'bg-[#1f1f1f] border-transparent hover:border-[#2a2a2a]'
       }`}
       style={isActive ? { background: `${primaryHex}22`, borderColor: `${primaryHex}55` } : undefined}
       onClick={() => onSelect(conv)}
@@ -99,14 +97,14 @@ function ConversationItem({ conv, isActive, onSelect, onDelete, primaryHex }) {
       />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-white truncate">{conv.name}</p>
-        <p className="text-xs text-slate-500 truncate mt-0.5">{preview}</p>
+        <p className="text-xs text-[#888888] truncate mt-0.5">{preview}</p>
       </div>
       <div className="flex items-center gap-1 flex-shrink-0">
-        <span className="text-xs text-slate-600">{date}</span>
+        <span className="text-xs text-[#666666]">{date}</span>
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onDelete(conv.id); }}
-          className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-1 min-w-[28px] min-h-[28px] text-slate-500 hover:text-red-400 transition-all"
+          className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-1 min-w-[28px] min-h-[28px] text-[#888888] hover:text-[#ff2e88] transition-all"
           title="Excluir conversa"
         >
           <Trash2 className="w-3 h-3" />
@@ -122,7 +120,8 @@ export default function AIMentorPage() {
   const { clients } = useClients();
   const today = todayLocalISO();
   const { events } = useEvents(user?.id, { from: today, limit: 10, ascending: true });
-  const config = getCategoryConfig(profile?.category || 'lighting');
+  // Visual All Access: amarelo no lugar da cor da categoria.
+  const config = { ...getCategoryConfig(profile?.category || 'lighting'), primaryHex: '#ffd400', accentHex: '#ff2e88' };
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const metaDiarias = Number(profile?.monthly_goal_events) || 0;
   const metaReceita = Number(profile?.monthly_goal_revenue) || 0;
@@ -289,44 +288,42 @@ export default function AIMentorPage() {
 
   const firstName = profile?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'Profissional';
   const diariasMes = stats?.diarias_count ?? 0;
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
 
   return (
-    <NeonPageShell primary={config.primaryHex} accent={config.accentHex}>
+    <div className="relative min-h-full bg-[#0a0a0a] text-white">
       <div className="flex flex-col h-[calc(100dvh-10rem)]">
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="px-4 pt-4 pb-3 border-b border-[#23262f] flex-shrink-0"
-          style={{ background: `linear-gradient(135deg, ${config.primaryHex}10, transparent)` }}
+          className="px-4 pt-4 pb-3 border-b border-[#222222] flex-shrink-0"
         >
-          <div className="flex items-start justify-between max-w-2xl xl:max-w-6xl mx-auto w-full">
-            <div>
-              <p className="text-xs text-slate-500 uppercase tracking-wider">Mentor financeiro</p>
-              <h1 className="text-lg font-black text-white flex items-center gap-2">
-                <Sparkles className="w-5 h-5" style={{ color: config.primaryHex }} />
-                AI Mentor
-              </h1>
+          <div className="flex items-center gap-3 max-w-2xl xl:max-w-6xl mx-auto w-full">
+            <div className="w-12 h-12 rounded-[12px] bg-[#ffd400] text-[#0a0a0a] flex items-center justify-center font-poster text-[26px] shrink-0">M</div>
+            <div className="min-w-0">
+              <h1 className="font-poster text-[34px] leading-none uppercase tracking-wide">Mentor</h1>
+              <p className="font-tag text-[10px] text-[#a8a8a8] truncate">seu parceiro de estrada · olha seus números todo dia</p>
             </div>
-            <LiveClockBar primaryHex={config.primaryHex} />
           </div>
+          <p className="font-tag text-[11px] tracking-[1px] text-[#ffd400] uppercase mt-3 max-w-2xl xl:max-w-6xl mx-auto w-full">
+            {greeting}, {firstName} · {format(new Date(), "EEEE, d MMM", { locale: ptBR })}
+          </p>
           {stats && (
-            <div className="flex flex-wrap gap-2 mt-3 max-w-2xl xl:max-w-6xl mx-auto w-full">
+            <div className="flex flex-wrap gap-1.5 mt-2 max-w-2xl xl:max-w-6xl mx-auto w-full">
               {metaDiarias > 0 && (
-                <span
-                  className="text-[10px] font-mono px-2.5 py-1 rounded-full border"
-                  style={{ borderColor: `${config.accentHex}35`, color: config.accentHex, background: `${config.accentHex}10` }}
-                >
-                  📅 {diariasMes}/{metaDiarias} diárias
+                <span className="font-tag text-[10px] h-7 px-2.5 rounded-full border border-[#333333] bg-[#161616] text-white flex items-center">
+                  {diariasMes}/{metaDiarias} diárias
                 </span>
               )}
               {metaReceita > 0 && (
-                <span className="text-[10px] font-mono px-2.5 py-1 rounded-full border border-emerald-500/25 text-emerald-400 bg-emerald-500/10">
-                  💰 {isVisible ? `${formatCurrency(stats.faturamento_pago)} / ${formatCurrency(metaReceita)}` : '•••• / ••••'}
+                <span className="font-tag text-[10px] h-7 px-2.5 rounded-full border border-[#333333] bg-[#161616] text-white flex items-center">
+                  {isVisible ? `${formatCurrency(stats.faturamento_pago)} de ${formatCurrency(metaReceita)}` : '•••• de ••••'}
                 </span>
               )}
               {(stats.a_receber ?? 0) > 0 && (
-                <span className="text-[10px] font-mono px-2.5 py-1 rounded-full border border-amber-500/25 text-amber-400 bg-amber-500/10">
-                  ⏳ {isVisible ? `${formatCurrency(stats.a_receber)} a receber` : '•••• a receber'}
+                <span className="font-tag text-[10px] h-7 px-2.5 rounded-full border border-[#ff2e88]/40 bg-[#ff2e88]/10 text-[#ff2e88] flex items-center">
+                  {isVisible ? `${formatCurrency(stats.a_receber)} a receber` : '•••• a receber'}
                 </span>
               )}
             </div>
@@ -334,17 +331,16 @@ export default function AIMentorPage() {
         </motion.div>
 
         {/* Toolbar */}
-        <div className="flex items-center justify-between px-4 py-2 border-b border-[#23262f] flex-shrink-0">
-          <p className="text-xs text-[#5a6070] font-mono truncate max-w-[180px]">
-            {currentConv ? currentConv.name : 'Nenhuma conversa ativa'}
+        <div className="flex items-center justify-between px-4 py-2 border-b border-[#222222] flex-shrink-0">
+          <p className="font-tag text-[10px] text-[#888888] truncate max-w-[180px]">
+            {currentConv ? currentConv.name : 'Conversa nova'}
           </p>
           <div className="flex items-center gap-1.5">
             <Button
               variant="ghost"
               size="icon"
               onClick={toggleAudio}
-              className={`w-8 h-8 ${isAudioEnabled ? '' : 'text-[#5a6070]'}`}
-              style={isAudioEnabled ? { color: config.primaryHex } : undefined}
+              className={`w-9 h-9 ${isAudioEnabled ? 'text-[#ffd400]' : 'text-[#888888]'}`}
               title={isAudioEnabled ? 'Desativar áudio' : 'Ativar leitura em voz alta'}
               aria-label={isAudioEnabled ? 'Desativar áudio' : 'Ativar leitura em voz alta'}
             >
@@ -354,24 +350,18 @@ export default function AIMentorPage() {
               variant="ghost"
               size="icon"
               onClick={() => setHistoryOpen(true)}
-              className="w-8 h-8 text-[#5a6070] hover:text-white relative"
+              className="w-9 h-9 text-[#888888] hover:text-white relative"
               title="Histórico"
               aria-label="Histórico de conversas"
             >
               <History className="w-4 h-4" />
               {conversations.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full text-[8px] font-bold flex items-center justify-center"
-                  style={{ background: config.primaryHex, color: '#050609' }}>
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[9px] font-extrabold flex items-center justify-center bg-[#ffd400] text-[#0a0a0a]">
                   {Math.min(conversations.length, 9)}
                 </span>
               )}
             </Button>
-            <Button
-              onClick={handleNewConv}
-              size="sm"
-              className="h-8 px-3 gap-1.5 text-xs"
-              style={{ background: config.primaryHex, color: '#050609' }}
-            >
+            <Button onClick={handleNewConv} size="sm" className="h-9 px-3.5 gap-1.5 text-xs">
               <Plus className="w-3.5 h-3.5" />
               Nova
             </Button>
@@ -384,21 +374,15 @@ export default function AIMentorPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center justify-center min-h-[50vh] text-center"
+              className="max-w-2xl xl:max-w-6xl mx-auto w-full space-y-3"
             >
-              <div className="relative mb-5">
-                <motion.div
-                  animate={{ scale: [1, 1.08, 1] }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                >
-                  <Sparkles className="w-12 h-12" style={{ color: config.primaryHex }} />
-                </motion.div>
-                <div className="absolute inset-0 rounded-full blur-xl opacity-30" style={{ background: config.primaryHex }} />
+              <div className="rounded-[14px] bg-[#161616] border border-[#222222] p-4">
+                <p className="text-[15px] font-bold text-white leading-snug">Olá, {firstName}!</p>
+                <p className="text-[13px] text-[#c8c8c8] mt-1 leading-snug">
+                  {CATEGORY_HINTS[profile?.category] ?? DEFAULT_HINT}
+                </p>
               </div>
-              <h2 className="text-xl font-bold text-white mb-1">Olá, {firstName}!</h2>
-              <p className="text-[#7c8494] text-sm mb-6 max-w-xs">
-                {CATEGORY_HINTS[profile?.category] ?? DEFAULT_HINT}
-              </p>
+              <p className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">Pergunte ao mentor</p>
               <SmartSuggestions userData={financialContext} onSuggestionClick={(s) => handleSend(s)} />
             </motion.div>
           ) : (
@@ -422,7 +406,7 @@ export default function AIMentorPage() {
         </div>
 
         {/* Input */}
-        <div className="border-t border-[#23262f] px-4 py-3 flex-shrink-0 pb-safe">
+        <div className="border-t border-[#222222] px-4 py-3 flex-shrink-0 pb-safe">
           <div className="flex items-end gap-2 max-w-2xl xl:max-w-6xl mx-auto w-full">
             <textarea
               ref={textareaRef}
@@ -433,22 +417,21 @@ export default function AIMentorPage() {
                 e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Pergunte sobre seus dados financeiros…"
+              placeholder="Pergunte qualquer coisa…"
               disabled={loading}
               rows={1}
-              className="flex-1 bg-[#0e1018] border border-[#23262f] rounded-xl px-4 py-3 text-white text-base md:text-sm placeholder:text-[#4a5060] focus:outline-none resize-none min-h-[48px] max-h-[120px] overflow-y-auto transition-colors"
-              style={{ borderColor: input ? `${config.primaryHex}40` : undefined }}
+              className="flex-1 bg-[#161616] border border-[#333333] rounded-[24px] px-4 py-3 text-white text-base placeholder:text-[#666666] focus:outline-none focus:border-[#ffd400] resize-none min-h-[48px] max-h-[120px] overflow-y-auto transition-colors"
             />
             <Button
               onClick={() => handleSend()}
               disabled={loading || !input.trim()}
-              className="h-12 w-12 flex-shrink-0 rounded-xl p-0"
-              style={{ background: config.primaryHex, color: '#050609' }}
+              aria-label="Enviar pergunta"
+              className="h-12 w-12 flex-shrink-0 p-0"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
             </Button>
           </div>
-          <p className="text-[9px] text-[#3a4050] font-mono text-center mt-1.5">
+          <p className="text-[9px] text-[#555555] font-tag text-center mt-1.5">
             Enter para enviar · Shift+Enter para nova linha · contexto financeiro incluído automaticamente
           </p>
         </div>
@@ -456,25 +439,24 @@ export default function AIMentorPage() {
 
       {/* Sheet histórico */}
       <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
-        <SheetContent side="left" className="bg-[#0a0c14] border-[#23262f] w-72 flex flex-col p-0 bp-focus-scope">
-          <SheetHeader className="p-4 border-b border-[#23262f] flex-shrink-0">
-            <SheetTitle className="text-white flex items-center gap-2 text-sm">
-              <History className="w-4 h-4" style={{ color: config.primaryHex }} />
+        <SheetContent side="left" className="bg-[#121212] border-[#2a2a2a] w-72 flex flex-col p-0 bp-focus-scope">
+          <SheetHeader className="p-4 border-b border-[#2a2a2a] flex-shrink-0">
+            <SheetTitle className="flex items-center gap-2 text-[22px]">
+              <History className="w-5 h-5 text-[#ffd400]" />
               Histórico de conversas
             </SheetTitle>
           </SheetHeader>
           <div className="p-3 flex-shrink-0">
             <Button
               onClick={handleNewConv}
-              className="w-full gap-2 h-9 text-sm"
-              style={{ background: config.primaryHex, color: '#050609' }}
+              className="w-full gap-2 h-10 text-sm"
             >
               <Plus className="w-4 h-4" /> Nova Conversa
             </Button>
           </div>
           <div className="flex-1 overflow-y-auto px-3 pb-4 space-y-1.5">
             {conversations.length === 0 ? (
-              <div className="text-center py-10 text-[#4a5060] text-sm">
+              <div className="text-center py-10 text-[#888888] text-sm">
                 <MessageSquare className="w-7 h-7 mx-auto mb-2 opacity-30" />
                 Nenhuma conversa ainda
               </div>
@@ -493,6 +475,6 @@ export default function AIMentorPage() {
           </div>
         </SheetContent>
       </Sheet>
-    </NeonPageShell>
+    </div>
   );
 }

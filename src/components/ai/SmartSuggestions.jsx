@@ -1,14 +1,12 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, DollarSign, Calendar, Users, AlertCircle, Zap, Target } from 'lucide-react';
-import { useCategoryTheme } from '@/lib/useCategoryTheme';
 
 function formatBRLSimple(value) {
   return `R$ ${Number(value || 0).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}`;
 }
 
 export default function SmartSuggestions({ userData, onSuggestionClick }) {
-  const { primaryHex } = useCategoryTheme();
 
   const suggestions = useMemo(() => {
     const base = [
@@ -116,9 +114,11 @@ export default function SmartSuggestions({ userData, onSuggestionClick }) {
   }, [userData]);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-2xl">
       {suggestions.map((suggestion, index) => {
         const Icon = suggestion.icon;
+        // Visual All Access: mesmo cartao dos Avisos; rosa = alerta, amarelo = o resto.
+        const accent = suggestion.color === 'text-red-400' ? '#ff2e88' : '#ffd400';
         return (
           <motion.button
             key={index}
@@ -127,19 +127,13 @@ export default function SmartSuggestions({ userData, onSuggestionClick }) {
             transition={{ delay: index * 0.08 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => onSuggestionClick(suggestion.text)}
-            className={`flex items-center gap-3 p-4 rounded-lg border hover:brightness-110 transition-all text-left group ${
-              suggestion.themePrimary ? '' : `${suggestion.borderColor} ${suggestion.bgColor}`
-            }`}
-            style={suggestion.themePrimary ? {
-              borderColor: `${primaryHex}4d`,
-              backgroundColor: `${primaryHex}1a`,
-            } : undefined}
+            className="flex items-center gap-2.5 px-3 py-2.5 rounded-[14px] bg-[#1a1a1a] text-left"
+            style={{ borderLeft: `4px solid ${accent}` }}
           >
-            <Icon
-              className={`w-5 h-5 flex-shrink-0 ${suggestion.themePrimary ? '' : suggestion.color}`}
-              style={suggestion.themePrimary ? { color: primaryHex } : undefined}
-            />
-            <span className="text-sm text-slate-300 group-hover:text-white transition-colors leading-snug">
+            <span className="w-[34px] h-[34px] rounded-[10px] text-[#0a0a0a] flex items-center justify-center shrink-0" style={{ background: accent }}>
+              <Icon className="w-4 h-4" />
+            </span>
+            <span className="text-[13px] font-bold text-white leading-snug">
               {suggestion.text}
             </span>
           </motion.button>

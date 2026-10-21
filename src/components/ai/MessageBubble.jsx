@@ -29,16 +29,16 @@ const FunctionDisplay = ({ toolCall }) => {
     
     // Status configuration
     const statusConfig = {
-        pending: { icon: Clock, color: 'text-slate-400', text: 'Pendente' },
-        running: { icon: Loader2, color: 'text-slate-500', text: 'Executando...', spin: true },
-        in_progress: { icon: Loader2, color: 'text-slate-500', text: 'Executando...', spin: true },
+        pending: { icon: Clock, color: 'text-[#a8a8a8]', text: 'Pendente' },
+        running: { icon: Loader2, color: 'text-[#888888]', text: 'Executando...', spin: true },
+        in_progress: { icon: Loader2, color: 'text-[#888888]', text: 'Executando...', spin: true },
         completed: isError ? 
-            { icon: AlertCircle, color: 'text-red-500', text: 'Falhou' } : 
+            { icon: AlertCircle, color: 'text-[#ff2e88]', text: 'Falhou' } : 
             { icon: CheckCircle2, color: 'text-green-600', text: 'Sucesso' },
         success: { icon: CheckCircle2, color: 'text-green-600', text: 'Sucesso' },
-        failed: { icon: AlertCircle, color: 'text-red-500', text: 'Falhou' },
-        error: { icon: AlertCircle, color: 'text-red-500', text: 'Falhou' }
-    }[status] || { icon: Zap, color: 'text-slate-500', text: '' };
+        failed: { icon: AlertCircle, color: 'text-[#ff2e88]', text: 'Falhou' },
+        error: { icon: AlertCircle, color: 'text-[#ff2e88]', text: 'Falhou' }
+    }[status] || { icon: Zap, color: 'text-[#888888]', text: '' };
     
     const Icon = statusConfig.icon;
     
@@ -49,24 +49,24 @@ const FunctionDisplay = ({ toolCall }) => {
                 onClick={() => setExpanded(!expanded)}
                 className={cn(
                     "flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all",
-                    "hover:bg-slate-800",
-                    expanded ? "bg-slate-800 border-slate-700" : "bg-slate-900/50 border-slate-800"
+                    "hover:bg-[#1f1f1f]",
+                    expanded ? "bg-[#1f1f1f] border-[#2a2a2a]" : "bg-[#161616] border-[#2a2a2a]"
                 )}
             >
                 <Icon className={cn("h-3 w-3", statusConfig.color, statusConfig.spin && "animate-spin")} />
-                <span className="text-slate-300">{statusConfig.text}</span>
+                <span className="text-[#c8c8c8]">{statusConfig.text}</span>
                 {!statusConfig.spin && (toolCall.arguments_string || results) && (
-                    <ChevronRight className={cn("h-3 w-3 text-slate-400 transition-transform ml-auto", 
+                    <ChevronRight className={cn("h-3 w-3 text-[#a8a8a8] transition-transform ml-auto", 
                         expanded && "rotate-90")} />
                 )}
             </button>
             
             {expanded && !statusConfig.spin && (
-                <div className="mt-1.5 ml-3 pl-3 border-l-2 border-slate-700 space-y-2">
+                <div className="mt-1.5 ml-3 pl-3 border-l-2 border-[#2a2a2a] space-y-2">
                     {toolCall.arguments_string && (
                         <div>
-                            <div className="text-xs text-slate-500 mb-1">Parâmetros:</div>
-                            <pre className="bg-slate-800/50 rounded-md p-2 text-xs text-slate-400 whitespace-pre-wrap">
+                            <div className="text-xs text-[#888888] mb-1">Parâmetros:</div>
+                            <pre className="bg-[#1f1f1f] rounded-md p-2 text-xs text-[#a8a8a8] whitespace-pre-wrap">
                                 {(() => {
                                     try {
                                         return JSON.stringify(JSON.parse(toolCall.arguments_string), null, 2);
@@ -79,8 +79,8 @@ const FunctionDisplay = ({ toolCall }) => {
                     )}
                     {parsedResults && (
                         <div>
-                            <div className="text-xs text-slate-500 mb-1">Resultado:</div>
-                            <pre className="bg-slate-800/50 rounded-md p-2 text-xs text-slate-400 whitespace-pre-wrap max-h-48 overflow-auto">
+                            <div className="text-xs text-[#888888] mb-1">Resultado:</div>
+                            <pre className="bg-[#1f1f1f] rounded-md p-2 text-xs text-[#a8a8a8] whitespace-pre-wrap max-h-48 overflow-auto">
                                 {typeof parsedResults === 'object' ? 
                                     JSON.stringify(parsedResults, null, 2) : parsedResults}
                             </pre>
@@ -112,7 +112,7 @@ export default function MessageBubble({ message }) {
                 {message.content && (
                     <div className={cn(
                         "rounded-2xl px-4 py-2.5",
-                        isUser ? "bg-slate-200 text-slate-800" : "bg-slate-800 text-slate-200 border border-slate-700"
+                        isUser ? "bg-slate-200 text-slate-800" : "bg-[#1f1f1f] text-[#e0e0e0] border border-[#2a2a2a]"
                     )}>
                         {isUser ? (
                             <p className="text-sm leading-relaxed">{message.content}</p>
@@ -124,24 +124,24 @@ export default function MessageBubble({ message }) {
                                         const match = /language-(\w+)/.exec(className || '');
                                         return !inline && match ? (
                                             <div className="relative group/code">
-                                                <pre className="bg-slate-900 text-slate-100 rounded-lg p-3 overflow-x-auto my-2">
+                                                <pre className="bg-[#161616] text-[#f0f0f0] rounded-lg p-3 overflow-x-auto my-2">
                                                     <code className={className} {...props}>{children}</code>
                                                 </pre>
                                                 <Button
                                                     size="icon"
                                                     variant="ghost"
-                                                    className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover/code:opacity-100 bg-slate-800 hover:bg-slate-700"
+                                                    className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover/code:opacity-100 bg-[#1f1f1f] hover:bg-[#2a2a2a]"
                                                     onClick={() => {
                                                         navigator.clipboard.writeText(String(children).replace(/\n$/, ''));
                                                         appToast.success('Código copiado');
                                                     }}
                                                     aria-label="Copiar código"
                                                 >
-                                                    <Copy className="h-3 w-3 text-slate-400" />
+                                                    <Copy className="h-3 w-3 text-[#a8a8a8]" />
                                                 </Button>
                                             </div>
                                         ) : (
-                                            <code className="px-1 py-0.5 rounded bg-slate-700 text-slate-300 text-xs">
+                                            <code className="px-1 py-0.5 rounded bg-[#2a2a2a] text-[#c8c8c8] text-xs">
                                                 {children}
                                             </code>
                                         );
@@ -157,7 +157,7 @@ export default function MessageBubble({ message }) {
                                     h2: ({ children }) => <h2 className="text-base font-semibold my-2">{children}</h2>,
                                     h3: ({ children }) => <h3 className="text-sm font-semibold my-2">{children}</h3>,
                                     blockquote: ({ children }) => (
-                                        <blockquote className="border-l-2 border-slate-600 pl-3 my-2 text-slate-400">
+                                        <blockquote className="border-l-2 border-[#2a2a2a] pl-3 my-2 text-[#a8a8a8]">
                                             {children}
                                         </blockquote>
                                     ),
@@ -179,7 +179,7 @@ export default function MessageBubble({ message }) {
             </div>
              {isUser && (
                 <div className="h-8 w-8 rounded-lg bg-slate-300 flex items-center justify-center flex-shrink-0 mt-0.5 ml-3">
-                    <User className="h-4 w-4 text-slate-600" />
+                    <User className="h-4 w-4 text-[#666666]" />
                 </div>
             )}
         </div>
