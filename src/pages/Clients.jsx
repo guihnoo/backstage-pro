@@ -330,6 +330,7 @@ export default function ClientsPage() {
           </div>
           <Button
             onClick={handleNewClient}
+            aria-label="Novo cliente"
             className="h-10 px-4 rounded-full border-0 bg-[#ffd400] text-[#0a0a0a] font-sans text-[13px] font-extrabold hover:bg-[#ffe033] transition-transform active:scale-95 shadow-sm"
           >
             + Novo
@@ -424,6 +425,31 @@ export default function ClientsPage() {
                       {pending > 0 ? `${formatCurrency(pending)} pendente` : 'Paga em dia'}
                     </div>
                   </div>
+                  {/* Menu ⋯: Editar e Excluir direto da lista (voltou; tinha sumido na reescrita) */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={(e) => e.stopPropagation()}
+                        aria-label={`Ações do cliente ${client.name}`}
+                        className="w-9 h-9 shrink-0 rounded-full flex items-center justify-center text-[#a8a8a8] hover:text-white hover:bg-[#222222]"
+                      >
+                        <MoreHorizontal className="w-5 h-5" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
+                      onClick={(e) => e.stopPropagation()}
+                      className="rounded-[14px] border border-[#2a2a2a] bg-[#161616] text-white"
+                    >
+                      <DropdownMenuItem onSelect={() => handleEditClient(client)} className="font-extrabold">
+                        Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => handleDeleteClient(client.id)} className="font-extrabold text-[#ff2e88]">
+                        Excluir
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               );
             })}

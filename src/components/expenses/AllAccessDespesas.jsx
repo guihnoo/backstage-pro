@@ -165,6 +165,7 @@ export default function AllAccessDespesas({
         <button
           type="button"
           onClick={onNewExpense}
+          aria-label="Nova despesa (digitar)"
           className="h-16 rounded-2xl border border-[#333333] bg-transparent text-white font-sans text-sm font-extrabold flex items-center justify-center gap-2 hover:bg-[#161616] transition-transform active:scale-95"
         >
           <Plus className="w-5 h-5 stroke-[2.2]" />
