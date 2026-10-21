@@ -87,7 +87,7 @@ export default function PublicClosingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f4f1ea] text-[#6a6a6a] font-tag text-xs flex items-center justify-center p-6">
+      <div className="min-h-screen bg-[#0a0a0a] text-[#a8a8a8] font-tag text-xs flex items-center justify-center p-6">
         CARREGANDO FECHAMENTO...
       </div>
     );
@@ -95,10 +95,10 @@ export default function PublicClosingPage() {
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-[#f4f1ea] text-[#111111] font-sans flex items-center justify-center p-6">
-        <div className="max-w-md w-full rounded-[14px] bg-white border border-[#e3ddd0] p-6 text-center space-y-3">
+      <div className="min-h-screen bg-[#0a0a0a] text-white font-sans flex items-center justify-center p-6">
+        <div className="max-w-md w-full rounded-[14px] bg-[#161616] border border-[#2a2a2a] p-6 text-center space-y-3">
           <p className="font-poster text-[26px] leading-none">FECHAMENTO DE SERVIÇO</p>
-          <p className="text-sm text-[#4a4a4a]">
+          <p className="text-sm text-[#c8c8c8]">
             Este link de fechamento é inválido, venceu ou foi cancelado. Peça um novo link ou o PDF diretamente ao profissional.
           </p>
         </div>
@@ -243,8 +243,8 @@ export default function PublicClosingPage() {
   const reembolsos = Array.isArray(closing.reembolsos) ? closing.reembolsos : [];
 
   return (
-    <div className="min-h-screen bg-[#f4f1ea] text-[#111111] font-sans">
-      <div className="max-w-xl mx-auto bg-[#f4f1ea] min-h-screen flex flex-col">
+    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans">
+      <div className="max-w-xl mx-auto bg-[#0a0a0a] min-h-screen flex flex-col">
         {/* Cabeçalho do prestador */}
         <div className="bg-[#0a0a0a] text-white px-[18px] pt-4 pb-3.5">
           <div className="flex items-center justify-between">
@@ -275,28 +275,28 @@ export default function PublicClosingPage() {
         <div className="flex-1 px-[18px] py-3.5 flex flex-col gap-2.5">
           {/* Contratante */}
           <div className="flex gap-2.5 items-center">
-            <div className="w-10 h-10 rounded-[10px] bg-white border border-[#ddd8cc] flex items-center justify-center font-tag text-[9px] font-bold shrink-0">
+            <div className="w-10 h-10 rounded-[10px] bg-[#161616] border border-[#2a2a2a] flex items-center justify-center font-tag text-[9px] font-bold shrink-0">
               {clientInitials}
             </div>
             <div className="min-w-0">
-              <div className="font-tag text-[10px] text-[#6a6a6a]">PARA</div>
+              <div className="font-tag text-[10px] text-[#a8a8a8]">PARA</div>
               <div className="text-base font-extrabold break-words">{client.name}</div>
-              {client.doc && <div className="text-[11px] text-[#6a6a6a]">CNPJ/CPF: {client.doc}</div>}
+              {client.doc && <div className="text-[11px] text-[#a8a8a8]">CNPJ/CPF: {client.doc}</div>}
             </div>
           </div>
 
           {/* Evento e valores */}
-          <div className="rounded-[14px] bg-white border border-[#e3ddd0] p-3">
+          <div className="rounded-[14px] bg-[#161616] border border-[#2a2a2a] p-3">
             <div className="text-[15px] font-extrabold">{event.title}</div>
-            <div className="text-xs text-[#6a6a6a] mb-1.5">
+            <div className="text-xs text-[#a8a8a8] mb-1.5">
               {[event.location, periodLabel].filter(Boolean).join(' · ')}
             </div>
 
             {rows.map((r, i) => (
-              <div key={r.d || i} className="flex justify-between gap-3 py-1.5 border-t border-[#efeae0] text-[13px]">
+              <div key={r.d || i} className="flex justify-between gap-3 py-1.5 border-t border-[#2a2a2a] text-[13px]">
                 <span className="min-w-0">
                   <span className="font-tag font-bold">{fmtShort(r.d)}</span>{' '}
-                  <span className="text-[#8a8a8a] text-[11px]">
+                  <span className="text-[#777777] text-[11px]">
                     {r.st === 'sem_horas'
                       ? 'diária'
                       : r.in && r.out
@@ -309,34 +309,34 @@ export default function PublicClosingPage() {
             ))}
 
             {reembolsos.map((e, i) => (
-              <div key={`r${i}`} className="flex justify-between gap-3 py-1.5 border-t border-[#efeae0] text-[13px]">
+              <div key={`r${i}`} className="flex justify-between gap-3 py-1.5 border-t border-[#2a2a2a] text-[13px]">
                 <span className="min-w-0 truncate">
-                  Reembolso <span className="text-[#8a8a8a] text-[11px]">{fmtShort(e.d)} · {e.t}</span>
+                  Reembolso <span className="text-[#777777] text-[11px]">{fmtShort(e.d)} · {e.t}</span>
                 </span>
                 <span className="font-tag font-bold shrink-0">{fmtBRL(e.v)}</span>
               </div>
             ))}
 
-            <div className="flex justify-between items-baseline pt-2 border-t-2 border-[#111111] mt-1">
+            <div className="flex justify-between items-baseline pt-2 border-t-2 border-[#ffd400] mt-1">
               <span className="font-tag text-[11px] font-bold">TOTAL</span>
               <span className="font-poster text-[34px] leading-none">{fmtBRL(closing.total)}</span>
             </div>
             {event.dueDate && !event.isPaid && (
-              <div className="text-[11px] text-[#6a6a6a] mt-1.5">Vencimento combinado: <b>{fmtDate(event.dueDate)}</b></div>
+              <div className="text-[11px] text-[#a8a8a8] mt-1.5">Vencimento combinado: <b>{fmtDate(event.dueDate)}</b></div>
             )}
           </div>
 
           {/* Pagamento */}
           {event.isPaid ? (
-            <div className="rounded-[14px] border-2 border-[#111111] p-3.5 text-center">
+            <div className="rounded-[14px] border-2 border-[#ffd400] p-3.5 text-center">
               <div className="font-poster text-[26px] leading-none">PAGO ✓</div>
-              <div className="text-[13px] text-[#4a4a4a] mt-1">
+              <div className="text-[13px] text-[#c8c8c8] mt-1">
                 {event.paidAt ? `Recebido em ${fmtDate(event.paidAt)}.` : 'Pagamento confirmado.'}
               </div>
             </div>
           ) : (
             pix?.key && (
-              <div className="rounded-[14px] bg-[#0a0a0a] text-white p-3 flex flex-col gap-2">
+              <div className="rounded-[14px] bg-[#161616] border border-[#ffd400]/60 text-white p-3 flex flex-col gap-2">
                 <div className="font-tag text-[10px] tracking-[1px] text-[#ffd400]">PAGAR COM PIX</div>
                 <div className="flex gap-2.5 items-center">
                   {qrDataUrl && (
@@ -376,7 +376,7 @@ export default function PublicClosingPage() {
                     type="button"
                     onClick={handleMarkPaid}
                     disabled={sendingNotice}
-                    className="h-10 rounded-full border border-[#444444] bg-transparent text-white text-[13px] font-bold disabled:opacity-60"
+                    className="h-10 rounded-full border border-[#555555] bg-transparent text-white text-[13px] font-bold disabled:opacity-60"
                   >
                     {sendingNotice ? 'Enviando...' : `Já paguei · avisar ${String(provider.name || '').split(' ')[0] || 'o profissional'}`}
                   </button>
@@ -387,7 +387,7 @@ export default function PublicClosingPage() {
 
           {/* Nota fiscal e PDF */}
           <div className="flex justify-between items-center gap-3 text-xs">
-            <span className="text-[#4a4a4a] min-w-0">
+            <span className="text-[#c8c8c8] min-w-0">
               {nfe?.number || nfe?.fileUrl || nfe?.fileName ? (
                 <>
                   Nota fiscal: <b>{nfe.number ? `Nº ${nfe.number}` : 'anexada'}</b>
@@ -416,7 +416,7 @@ export default function PublicClosingPage() {
             </button>
           </div>
 
-          <div className="mt-auto pt-3 text-center font-tag text-[9px] text-[#8a8a8a]">
+          <div className="mt-auto pt-3 text-center font-tag text-[9px] text-[#777777]">
             gerado com BACKSTAGE PRO{expiresLabel ? ` · link válido até ${expiresLabel}` : ''}
           </div>
         </div>
