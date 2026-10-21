@@ -8,8 +8,10 @@ test('perfil carrega com secoes editaveis', async ({ page }) => {
   await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 15_000 });
   await expect(page).toHaveURL(/\/profile/, { timeout: 10_000 });
 
-  await expect(page.getByText('Dados Pessoais')).toBeVisible({ timeout: 10_000 });
-  await expect(page.getByText('Área de Atuação')).toBeVisible();
-  await expect(page.getByText('Metas & Precificação')).toBeVisible();
-  await expect(page.getByText('Meta de diárias por mês')).toBeVisible();
+  // Visual All Access (21/10): crew pass + secoes renomeadas.
+  await expect(page.getByText(/crew pass/i)).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText('Minha função e cachê padrão')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Meus dados' })).toBeVisible();
+  await expect(page.getByText('Minha meta do mês')).toBeVisible();
+  await expect(page.getByLabel('Diárias')).toBeVisible();
 });

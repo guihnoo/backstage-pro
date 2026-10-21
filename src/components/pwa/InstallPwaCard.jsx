@@ -46,7 +46,7 @@ export default function InstallPwaCard({ primaryHex = AUTH_HERO_PRIMARY }) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-white leading-tight">Instalar como app</p>
-            <p className="text-xs text-slate-400 mt-0.5 leading-tight">Acesso direto na tela inicial, sem precisar do navegador</p>
+            <p className="text-xs text-[#a8a8a8] mt-0.5 leading-tight">Acesso direto na tela inicial, sem precisar do navegador</p>
           </div>
           <div className="flex items-center gap-1 flex-shrink-0">
             <motion.button
@@ -61,7 +61,7 @@ export default function InstallPwaCard({ primaryHex = AUTH_HERO_PRIMARY }) {
             <motion.button
               whileTap={{ scale: 0.92 }}
               onClick={handleDismiss}
-              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-300 transition-colors"
+              className="p-1.5 rounded-lg text-[#888888] hover:text-[#c8c8c8] transition-colors"
               aria-label="Fechar"
             >
               <X className="w-4 h-4" />

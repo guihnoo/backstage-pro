@@ -1,11 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth } from '@/lib/authContext';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { getCategoryConfig, CATEGORIES, resolveCategoryId } from '@/lib/categoryConfig';
-import { NeonPageShell } from '@/components/design/NeonPageShell';
-import { NeonGlass } from '@/components/design/NeonGlass';
 import {
   User, Phone, MapPin, Mail, LogOut, Save, Loader2, CheckCircle, Eye, EyeOff, Download,
   DollarSign, Target, Calendar, Camera, MessageCircle, Inbox, Building2, ChevronRight, Compass, BookOpen,
@@ -19,7 +16,6 @@ import { uploadUserFile } from '@/lib/uploadFile';
 import appToast from '@/lib/appToast';
 import GoogleCalendarSync from '@/components/calendar/GoogleCalendarSync';
 import PushNotificationSettings from '@/components/notifications/PushNotificationSettings';
-import LiveClockBar from '@/components/home/LiveClockBar';
 import { useStats } from '@/lib/useBackstageData';
 import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
@@ -28,6 +24,8 @@ import EventTemplatesManager from '@/components/calendar/EventTemplatesManager';
 import { requestAppTour } from '@/lib/appTourBus';
 import { useUserSettings } from '@/lib/useUserSettings';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useEvents } from '@/lib/useEvents';
+import { isCancelledEvent } from '@/lib/eventFinance';
 
 const PIX_TYPES = ['CPF', 'CNPJ', 'E-mail', 'Telefone', 'Chave aleatória'];
 
@@ -71,6 +69,12 @@ export default function ProfileSimple() {
   const { refetch: refetchStats } = useStats(user?.id);
   const { pullDistance, isRefreshing, threshold } = usePullToRefresh(refetchStats);
   const { isVisible, toggleVisibility } = useFinancialVisibility();
+  const { events: allEvents } = useEvents();
+  const crewStats = useMemo(() => {
+    const valid = (allEvents || []).filter((e) => !isCancelledEvent(e));
+    const cities = new Set(valid.map((e) => (e.location_city || '').trim().toLowerCase()).filter(Boolean));
+    return { shows: valid.length, cities: cities.size };
+  }, [allEvents]);
   const categoryId = profile?.category || 'lighting';
 
   const [form, setForm] = useState({
@@ -208,343 +212,299 @@ export default function ProfileSimple() {
 
   if (!profile) return <ProfileSkeleton />;
 
+  const displayName = profile?.name || user?.email?.split('@')[0] || '';
+  const sinceYear = (profile?.created_at || user?.created_at || '').slice(0, 4);
+  const place = [form.city, form.state].filter(Boolean).join(', ');
+  const fieldCls = 'w-full h-12 bg-[#0a0a0a] border border-[#333333] rounded-[12px] pl-10 pr-4 text-base font-semibold text-white placeholder:font-normal placeholder:text-[#666666] focus:outline-none focus:border-[#ffd400] transition-colors';
+  const labelCls = 'block font-tag text-[10px] tracking-[1px] uppercase text-[#a8a8a8] mb-1.5';
+  const rowCls = 'w-full flex items-center justify-between gap-3 h-14 px-4 rounded-[12px] bg-[#0a0a0a] border border-[#222222] transition-colors hover:border-[#444444] min-w-0';
+
   return (
-    <NeonPageShell primary={config.primaryHex} accent={config.accentHex} className="min-h-full pb-28">
-      <PullToRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={threshold} primaryHex={config.primaryHex} />
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden px-4 pt-2 pb-8"
-        style={{ background: `linear-gradient(160deg, ${config.primaryHex}15, transparent)` }}
-      >
-        <motion.div
-          className="absolute top-0 left-0 right-0 h-px"
-          style={{ background: `linear-gradient(90deg, transparent, ${config.primaryHex}, transparent)` }}
-          animate={{ opacity: [0.4, 0.9, 0.4] }}
-          transition={{ duration: 3, repeat: Infinity }}
-        />
+    <div className="relative min-h-full overflow-x-clip bg-[#0a0a0a] text-white pb-28">
+      <PullToRefreshIndicator pullDistance={pullDistance} isRefreshing={isRefreshing} threshold={threshold} primaryHex="#ffd400" />
 
-        <div className="max-w-2xl xl:max-w-6xl mx-auto mb-4 pr-28">
-          <LiveClockBar primaryHex={config.primaryHex} />
-          <div className="text-left mt-1">
-            <p className="text-xs text-[#888888] uppercase tracking-wider">Seu perfil</p>
-            <h1 className="text-xl font-black text-white">Configurações</h1>
-          </div>
+      <div className="px-4 pt-3 max-w-2xl xl:max-w-6xl mx-auto space-y-3 w-full min-w-0">
+        {/* Cabecalho */}
+        <div className="flex items-center justify-between">
+          <h1 className="font-poster text-[40px] leading-none uppercase tracking-wide">Perfil</h1>
+          <Link
+            to="/help"
+            aria-label="Ajuda do app"
+            className="h-10 w-10 rounded-full bg-[#1a1a1a] border border-[#333333] flex items-center justify-center font-poster text-[18px]"
+          >
+            ?
+          </Link>
         </div>
 
-        <div className="text-center">
-        {/* Avatar com upload */}
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          className="relative inline-block mb-4 max-w-full"
-        >
-          <input
-            ref={photoInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handlePhotoUpload}
-          />
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => photoInputRef.current?.click()}
-            disabled={uploadingPhoto}
-            className="relative w-20 h-20 rounded-full mx-auto block overflow-hidden focus:outline-none"
-            style={{
-              border: `2px solid ${config.primaryHex}40`,
-              boxShadow: `0 0 30px ${config.primaryHex}20`
-            }}
-          >
-            {profile?.avatar_url ? (
-              <img
-                src={profile.avatar_url}
-                alt="Foto de perfil"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div
-                className="w-full h-full flex items-center justify-center text-3xl font-black"
-                style={{ background: `linear-gradient(135deg, ${config.primaryHex}30, ${config.accentHex}20)` }}
-              >
-                {profile?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}
-              </div>
-            )}
-            <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity">
-              {uploadingPhoto
-                ? <Loader2 className="w-6 h-6 text-white animate-spin" />
-                : <Camera className="w-6 h-6 text-white" />
-              }
+        {/* Crew pass (credencial amarela) */}
+        <section className="relative rounded-[18px] bg-[#ffd400] text-[#0a0a0a] p-4 pt-6 overflow-hidden">
+          <span className="absolute top-2 left-1/2 -translate-x-1/2 w-14 h-1.5 rounded-full bg-[#0a0a0a]" aria-hidden />
+          <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => photoInputRef.current?.click()}
+              disabled={uploadingPhoto}
+              aria-label="Trocar foto de perfil"
+              className="relative w-16 h-16 rounded-[14px] bg-[#0a0a0a] text-[#ffd400] overflow-hidden flex items-center justify-center shrink-0 font-poster text-[32px]"
+            >
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="Foto de perfil" className="w-full h-full object-cover" />
+              ) : (
+                displayName.charAt(0).toUpperCase() || '?'
+              )}
+              <span className="absolute bottom-0 right-0 w-5 h-5 rounded-tl-[8px] bg-[#ffd400] flex items-center justify-center">
+                {uploadingPhoto ? <Loader2 className="w-3 h-3 animate-spin" /> : <Camera className="w-3 h-3" />}
+              </span>
+            </button>
+            <div className="min-w-0">
+              <div className="font-tag text-[10px] tracking-[1px] font-bold">CREW PASS{sinceYear ? ` · DESDE ${sinceYear}` : ''}</div>
+              <div className="font-poster text-[30px] leading-none uppercase truncate" title={displayName}>{displayName}</div>
+              <div className="text-[13px] font-bold truncate">{config.label}{place ? ` · ${place}` : ''}</div>
             </div>
-            {uploadingPhoto && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/60">
-                <Loader2 className="w-6 h-6 text-white animate-spin" />
-              </div>
-            )}
-          </motion.button>
-          <span className="absolute -bottom-1 -right-1 text-base">{config.emoji}</span>
-          <div
-            className="absolute bottom-0 right-6 w-6 h-6 rounded-full flex items-center justify-center"
-            style={{ background: config.primaryHex }}
-          >
-            <Camera className="w-3 h-3 text-white" />
           </div>
-        </motion.div>
+          <div className="grid grid-cols-3 gap-1.5 mt-3">
+            {[
+              { value: crewStats.shows, label: 'SHOWS' },
+              { value: crewStats.cities, label: 'CIDADES' },
+              { value: form.years_experience || '—', label: 'ANOS NA ESTRADA' },
+            ].map(({ value, label }) => (
+              <div key={label} className="rounded-[10px] bg-[#0a0a0a]/10 px-2.5 py-2">
+                <div className="font-poster text-[22px] leading-none">{value}</div>
+                <div className="font-tag text-[9px] font-bold mt-1 leading-tight">{label}</div>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => document.getElementById('perfil-dados')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            className="w-full h-11 mt-3 rounded-full bg-[#0a0a0a] text-white text-sm font-extrabold active:scale-[0.98]"
+          >
+            Editar perfil e foto
+          </button>
+          <p className="font-tag text-[10px] mt-2 truncate opacity-70">{user?.email}</p>
+        </section>
 
-        <h1 className="text-xl font-black text-white truncate max-w-full px-2" title={profile?.name || user?.email?.split('@')[0]}>
-          {profile?.name || user?.email?.split('@')[0]}
-        </h1>
-        <p className="text-sm mt-1" style={{ color: config.primaryHex }}>
-          {config.label}
-        </p>
-        <p className="text-xs text-[#888888] mt-0.5 break-all px-4">{user?.email}</p>
-        </div>
-      </motion.div>
-
-      <div className="px-4 max-w-2xl xl:max-w-6xl mx-auto space-y-4 w-full min-w-0">
+        {/* Funcao e cache padrao */}
+        <section className="rounded-2xl bg-[#161616] border border-[#222222] p-4 space-y-3">
+          <h2 className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">Minha função e cachê padrão</h2>
+          <div className="grid grid-cols-2 gap-1.5">
+            {Object.values(CATEGORIES).map((cat) => {
+              const active = form.category === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setForm((f) => ({ ...f, category: cat.id }))}
+                  className={`h-11 flex items-center gap-2 px-3 rounded-[12px] border text-[13px] font-extrabold transition-colors min-w-0 ${
+                    active ? 'bg-white border-white text-[#0a0a0a]' : 'bg-[#0a0a0a] border-[#2a2a2a] text-[#c8c8c8]'
+                  }`}
+                >
+                  <span className="w-1.5 h-5 rounded-full shrink-0" style={{ background: cat.primaryHex }} />
+                  <span className="truncate">{cat.label}</span>
+                </button>
+              );
+            })}
+          </div>
+          <div>
+            <label htmlFor="goals-daily_rate" className={labelCls}>Cachê padrão por diária (R$)</label>
+            <div className="relative">
+              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#666666]" />
+              <input
+                id="goals-daily_rate"
+                type="number"
+                min="0"
+                value={form.daily_rate}
+                onChange={(e) => setForm((f) => ({ ...f, daily_rate: e.target.value }))}
+                placeholder="800"
+                className={fieldCls}
+              />
+            </div>
+            <p className="text-[11px] text-[#888888] mt-1">Já vem preenchido quando você cria um trabalho novo.</p>
+          </div>
+          {profile?.specialties?.length > 0 && (
+            <div>
+              <div className={labelCls}>Também faço</div>
+              <div className="flex flex-wrap gap-1.5">
+                {profile.specialties.map((spec) => (
+                  <span key={spec} className="h-8 px-3 rounded-full bg-[#0a0a0a] border border-[#333333] text-xs font-bold text-white flex items-center">
+                    {spec}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
 
         {/* Dados pessoais */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-        <NeonGlass primary={config.primaryHex} glow className="p-5 space-y-4">
-          <h2 className="text-sm font-bold text-[#e0e0e0] uppercase tracking-wider font-mono">Dados Pessoais</h2>
-
+        <section id="perfil-dados" className="rounded-2xl bg-[#161616] border border-[#222222] p-4 space-y-3 scroll-mt-20">
+          <h2 className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">Meus dados</h2>
           {[
             { key: 'name', label: 'Nome completo', icon: User, placeholder: 'Seu nome' },
             { key: 'phone', label: 'Telefone / WhatsApp', icon: Phone, placeholder: '(11) 99999-9999', type: 'tel' },
             { key: 'city', label: 'Cidade', icon: MapPin, placeholder: 'São Paulo' },
             { key: 'state', label: 'Estado', icon: MapPin, placeholder: 'SP' },
-            { key: 'years_experience', label: 'Anos de experiência', icon: Calendar, placeholder: '5', type: 'number' },
+            { key: 'years_experience', label: 'Anos na estrada', icon: Calendar, placeholder: '5', type: 'number' },
           ].map(({ key, label, icon: Icon, placeholder, type = 'text' }) => (
             <div key={key}>
-              <label htmlFor={`profile-${key}`} className="block text-xs text-[#888888] mb-1.5 uppercase tracking-wide">{label}</label>
+              <label htmlFor={`profile-${key}`} className={labelCls}>{label}</label>
               <div className="relative">
                 <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#666666]" />
                 <input
                   id={`profile-${key}`}
                   type={type}
                   value={form[key]}
-                  onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+                  onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
                   placeholder={placeholder}
-                  className="w-full bg-[#161616] border border-[#262626]/50 rounded-xl pl-10 pr-4 py-3 text-base md:text-sm text-white placeholder:text-[#666666] focus:outline-none focus:border-[#333333] transition-colors"
+                  className={fieldCls}
                 />
               </div>
             </div>
           ))}
-
-          {/* Email (readonly) */}
           <div>
-            <label htmlFor="profile-email" className="block text-xs text-[#888888] mb-1.5 uppercase tracking-wide">Email (conta)</label>
+            <label htmlFor="profile-email" className={labelCls}>Email (conta)</label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#666666]" />
-              <input
-                id="profile-email"
-                value={user?.email || ''}
-                disabled
-                className="w-full bg-[#161616]/30 border border-[#222222]/50 rounded-xl pl-10 pr-4 py-3 text-base md:text-sm text-[#888888] cursor-not-allowed"
-              />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#555555]" />
+              <input id="profile-email" value={user?.email || ''} disabled className={`${fieldCls} text-[#888888] cursor-not-allowed`} />
             </div>
           </div>
+        </section>
 
-        </NeonGlass>
-        </motion.div>
-
-        {/* Categoria */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-        <NeonGlass primary={config.primaryHex} className="p-5">
-          <h2 className="text-sm font-bold text-[#e0e0e0] uppercase tracking-wider mb-4 font-mono">Área de Atuação</h2>
-          <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-2">
-            {Object.values(CATEGORIES).map(cat => (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setForm(f => ({ ...f, category: cat.id }))}
-                className="flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all min-w-0"
-                style={form.category === cat.id ? {
-                  background: `${cat.primaryHex}20`,
-                  borderColor: `${cat.primaryHex}60`,
-                  color: cat.primaryHex,
-                } : {
-                  background: 'rgba(255,255,255,0.03)',
-                  borderColor: 'rgba(255,255,255,0.06)',
-                  color: '#6b7280',
-                }}
-              >
-                <span>{cat.emoji}</span>
-                <span className="truncate text-xs">{cat.label}</span>
-              </button>
-            ))}
+        {/* Recebimento e fechamento (PIX + PDF) */}
+        <section className="rounded-2xl bg-[#161616] border border-[#222222] p-4 space-y-3">
+          <div>
+            <h2 className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">Recebimento e fechamento</h2>
+            <p className="text-xs text-[#888888] mt-1">Vai na cobrança pelo WhatsApp, no PIX copia e cola e no PDF de fechamento.</p>
           </div>
-        </NeonGlass>
-        </motion.div>
-
-        {/* Especialidades */}
-        {profile?.specialties?.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <NeonGlass primary={config.primaryHex} className="p-5">
-            <h2 className="text-sm font-bold text-[#e0e0e0] uppercase tracking-wider mb-3 font-mono">Especialidades</h2>
-            <div className="flex flex-wrap gap-2">
-              {profile.specialties.map(spec => (
-                <span
-                  key={spec}
-                  className="px-3 py-1.5 rounded-full text-xs font-semibold"
-                  style={{
-                    background: `${config.primaryHex}15`,
-                    border: `1px solid ${config.primaryHex}30`,
-                    color: config.primaryHex
-                  }}
+          <div>
+            <label htmlFor="pix-key-type" className={labelCls}>Tipo de chave PIX</label>
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label="Tipo de chave PIX">
+              {PIX_TYPES.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  aria-pressed={pixForm.pix_key_type === t}
+                  onClick={() => setPixForm((f) => ({ ...f, pix_key_type: t }))}
+                  className={`h-9 px-3.5 rounded-full border text-xs font-extrabold ${
+                    pixForm.pix_key_type === t ? 'bg-white border-white text-[#0a0a0a]' : 'border-[#333333] text-[#c8c8c8]'
+                  }`}
                 >
-                  {spec}
-                </span>
+                  {t}
+                </button>
               ))}
             </div>
-          </NeonGlass>
-          </motion.div>
-        )}
-
-        {/* Metas e diária */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-        <NeonGlass primary={config.primaryHex} glow className="p-5 space-y-4">
-          <h2 className="text-sm font-bold text-[#e0e0e0] uppercase tracking-wider font-mono">Metas & Precificação</h2>
-
-          {[
-            { key: 'daily_rate', label: 'Valor da diária (R$)', icon: DollarSign, placeholder: '800', type: 'number' },
-            { key: 'monthly_goal_revenue', label: 'Meta de receita mensal (R$)', icon: Target, placeholder: '5000', type: 'number' },
-            { key: 'monthly_goal_events', label: 'Meta de diárias por mês', icon: Calendar, placeholder: '12', type: 'number', hint: 'Dias únicos trabalhados no mês (independente de quantas empresas no mesmo dia)' },
-          ].map(({ key, label, icon: Icon, placeholder, type, hint }) => (
-            <div key={key}>
-              <label htmlFor={`goals-${key}`} className="block text-xs text-[#888888] mb-1.5 uppercase tracking-wide">{label}</label>
-              {hint && <p className="text-[10px] text-[#666666] mb-1.5">{hint}</p>}
-              <div className="relative">
-                <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#666666]" />
-                <input
-                  id={`goals-${key}`}
-                  type={type}
-                  min="0"
-                  value={form[key]}
-                  onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
-                  placeholder={placeholder}
-                  className="w-full bg-[#161616] border border-[#262626]/50 rounded-xl pl-10 pr-4 py-3 text-base md:text-sm text-white placeholder:text-[#666666] focus:outline-none focus:border-[#333333] transition-colors"
-                />
-              </div>
-            </div>
-          ))}
-
-        </NeonGlass>
-        </motion.div>
-
-        {/* PIX */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.315 }}>
-          <NeonGlass primary={config.primaryHex} className="p-5 space-y-4">
-            <div>
-              <h2 className="text-sm font-bold text-[#e0e0e0] uppercase tracking-wider font-mono">Dados de Pagamento (PIX) &amp; Relatório PDF</h2>
-              <p className="text-xs text-[#888888] mt-1">Usados para gerar cobrança via WhatsApp, código PIX Copia e Cola e cabeçalho do Relatório PDF de Fechamento.</p>
-            </div>
-            <div>
-              <label htmlFor="pix-key-type" className="block text-xs text-[#888888] mb-1.5 uppercase tracking-wide">Tipo de chave PIX</label>
-              <select
-                id="pix-key-type"
-                value={pixForm.pix_key_type}
-                onChange={e => setPixForm(f => ({ ...f, pix_key_type: e.target.value }))}
-                className="w-full bg-[#161616] border border-[#262626]/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#333333] transition-colors"
-              >
-                {PIX_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="pix-key" className="block text-xs text-[#888888] mb-1.5 uppercase tracking-wide">Chave PIX</label>
-              <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#666666]" />
-                <input
-                  id="pix-key"
-                  type="text"
-                  value={pixForm.pix_key}
-                  onChange={e => setPixForm(f => ({ ...f, pix_key: e.target.value }))}
-                  placeholder="sua@chave.pix"
-                  className="w-full bg-[#161616] border border-[#262626]/50 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-[#666666] focus:outline-none focus:border-[#333333] transition-colors"
-                />
-              </div>
-            </div>
-            <div>
-              <label htmlFor="profile-cpf-cnpj" className="block text-xs text-[#888888] mb-1.5 uppercase tracking-wide">CPF ou CNPJ (MEI/Empresa para o PDF)</label>
-              <div className="relative">
-                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#666666]" />
-                <input
-                  id="profile-cpf-cnpj"
-                  type="text"
-                  value={pixForm.cpf_cnpj}
-                  onChange={e => setPixForm(f => ({ ...f, cpf_cnpj: e.target.value }))}
-                  placeholder="00.000.000/0001-00 ou 000.000.000-00"
-                  className="w-full bg-[#161616] border border-[#262626]/50 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-[#666666] focus:outline-none focus:border-[#333333] transition-colors"
-                />
-              </div>
-            </div>
-            <div>
-              <label htmlFor="profile-report-subtitle" className="block text-xs text-[#888888] mb-1.5 uppercase tracking-wide">Subtítulo / Nome Fantasia no Relatório PDF (opcional)</label>
+            <select
+              id="pix-key-type"
+              value={pixForm.pix_key_type}
+              onChange={(e) => setPixForm((f) => ({ ...f, pix_key_type: e.target.value }))}
+              className="sr-only"
+              tabIndex={-1}
+            >
+              {PIX_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="pix-key" className={labelCls}>Chave PIX</label>
+            <div className="relative">
+              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#666666]" />
               <input
-                id="profile-report-subtitle"
+                id="pix-key"
                 type="text"
-                value={pixForm.report_subtitle}
-                onChange={e => setPixForm(f => ({ ...f, report_subtitle: e.target.value }))}
-                placeholder="Ex: Engenharia de Áudio & RF · MEI"
-                className="w-full bg-[#161616] border border-[#262626]/50 rounded-xl px-4 py-3 text-sm text-white placeholder:text-[#666666] focus:outline-none focus:border-[#333333] transition-colors"
+                value={pixForm.pix_key}
+                onChange={(e) => setPixForm((f) => ({ ...f, pix_key: e.target.value }))}
+                placeholder="sua@chave.pix"
+                className={fieldCls}
               />
             </div>
-          </NeonGlass>
-        </motion.div>
+          </div>
+          <div>
+            <label htmlFor="profile-cpf-cnpj" className={labelCls}>CPF ou CNPJ (MEI)</label>
+            <div className="relative">
+              <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#666666]" />
+              <input
+                id="profile-cpf-cnpj"
+                type="text"
+                value={pixForm.cpf_cnpj}
+                onChange={(e) => setPixForm((f) => ({ ...f, cpf_cnpj: e.target.value }))}
+                placeholder="00.000.000/0001-00 ou 000.000.000-00"
+                className={fieldCls}
+              />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="profile-report-subtitle" className={labelCls}>Subtítulo no PDF (opcional)</label>
+            <input
+              id="profile-report-subtitle"
+              type="text"
+              value={pixForm.report_subtitle}
+              onChange={(e) => setPixForm((f) => ({ ...f, report_subtitle: e.target.value }))}
+              placeholder="Ex: Engenharia de Áudio & RF · MEI"
+              className={`${fieldCls} pl-4`}
+            />
+          </div>
+        </section>
 
-        {/* Salvar unico: dados, area, metas e PIX */}
+        {/* Meta do mes */}
+        <section className="rounded-2xl bg-[#161616] border border-[#222222] p-4 space-y-3">
+          <h2 className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">Minha meta do mês</h2>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { key: 'monthly_goal_events', label: 'Diárias', placeholder: '12', icon: Calendar },
+              { key: 'monthly_goal_revenue', label: 'Faturamento (R$)', placeholder: '5000', icon: Target },
+            ].map(({ key, label, placeholder, icon: Icon }) => (
+              <div key={key}>
+                <label htmlFor={`goals-${key}`} className={labelCls}>{label}</label>
+                <div className="relative">
+                  <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#666666]" />
+                  <input
+                    id={`goals-${key}`}
+                    type="number"
+                    min="0"
+                    value={form[key]}
+                    onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+                    placeholder={placeholder}
+                    className={fieldCls}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-[11px] text-[#888888]">Diária = dia trabalhado (dois clientes no mesmo dia contam um).</p>
+        </section>
+
+        {/* Salvar unico: dados, funcao, metas e PIX */}
         <div className="sticky bottom-24 z-10">
-          <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
+          <button
+            type="button"
             onClick={handleSave}
             disabled={saving}
-            className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg"
-            style={{
-              background: saved
-                ? 'linear-gradient(135deg, #10b981, #059669)'
-                : `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})`,
-              opacity: saving ? 0.7 : 1,
-            }}
+            className={`w-full h-14 rounded-full font-poster text-[20px] tracking-[2px] flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] disabled:opacity-70 ${
+              saved ? 'bg-white text-[#0a0a0a]' : 'bg-[#ffd400] text-[#0a0a0a]'
+            }`}
           >
             {saving ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Salvando...</>
+              <><Loader2 className="w-5 h-5 animate-spin" /> SALVANDO</>
             ) : saved ? (
-              <><CheckCircle className="w-4 h-4" /> Salvo!</>
+              <><CheckCircle className="w-5 h-5" /> SALVO</>
             ) : (
-              <><Save className="w-4 h-4" /> Salvar alterações</>
+              <><Save className="w-5 h-5" /> SALVAR ALTERAÇÕES</>
             )}
-          </motion.button>
+          </button>
         </div>
 
-        {/* Alertas no celular */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.31 }}>
-          <PushNotificationSettings />
-        </motion.div>
+        {/* Avisos e Google Agenda (componentes proprios) */}
+        <PushNotificationSettings />
+        <GoogleCalendarSync />
 
-        {/* Google Calendar */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }}>
-          <GoogleCalendarSync />
-        </motion.div>
-
-        {/* Ajuda do app */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.322 }}>
-        <NeonGlass primary={config.primaryHex} className="p-5 space-y-3">
-          <h2 className="text-sm font-bold text-[#e0e0e0] uppercase tracking-wider font-mono">Ajuda do app</h2>
-          <p className="text-xs text-[#888888]">
-            Manual completo, tour guiado e atalhos do dia a dia.
-          </p>
-          <Link
-            to="/help"
-            className="w-full flex items-center justify-between gap-3 py-3 px-4 rounded-xl border transition-colors hover:bg-[#161616]/40 min-w-0"
-            style={{ borderColor: `${config.primaryHex}35` }}
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <BookOpen className="w-5 h-5 shrink-0" style={{ color: config.primaryHex }} />
-              <span className="text-sm font-semibold text-white">Abrir manual do app</span>
-            </div>
+        {/* Ajuda e suporte */}
+        <section className="rounded-2xl bg-[#161616] border border-[#222222] p-4 space-y-2">
+          <h2 className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase pb-1">Ajuda e suporte</h2>
+          <Link to="/help" className={rowCls}>
+            <span className="flex items-center gap-3 min-w-0">
+              <BookOpen className="w-5 h-5 shrink-0 text-[#ffd400]" />
+              <span className="text-sm font-bold text-white">Abrir manual do app</span>
+            </span>
             <ChevronRight className="w-4 h-4 text-[#666666] shrink-0" />
           </Link>
           <button
@@ -553,165 +513,105 @@ export default function ProfileSimple() {
               hardNavigate('/');
               window.setTimeout(() => requestAppTour(), 400);
             }}
-            className="w-full flex items-center justify-between gap-3 py-3 px-4 rounded-xl border border-[#262626]/50 transition-colors hover:bg-[#161616]/40 min-w-0"
+            className={rowCls}
           >
-            <div className="flex items-center gap-3 min-w-0">
+            <span className="flex items-center gap-3 min-w-0">
               <Compass className="w-5 h-5 shrink-0 text-[#a8a8a8]" />
-              <span className="text-sm font-semibold text-white">Rever tour do app</span>
-            </div>
+              <span className="text-sm font-bold text-white">Rever tour do app</span>
+            </span>
             <ChevronRight className="w-4 h-4 text-[#666666] shrink-0" />
           </button>
-        </NeonGlass>
-        </motion.div>
-
-        {/* Suporte & feedback */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.325 }}>
-        <NeonGlass primary={config.primaryHex} className="p-5 space-y-3">
-          <h2 className="text-sm font-bold text-[#e0e0e0] uppercase tracking-wider font-mono">Suporte & Feedback</h2>
-          <p className="text-xs text-[#888888]">
-            Encontrou um bug, tem uma ideia ou precisa de ajuda? Sua mensagem vai direto para a equipe.
-          </p>
-          <button
-            type="button"
-            onClick={() => setFeedbackOpen(true)}
-            className="w-full flex items-center justify-between gap-3 py-3 px-4 rounded-xl border transition-colors hover:bg-[#161616]/40 min-w-0"
-            style={{ borderColor: `${config.primaryHex}35` }}
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <MessageCircle className="w-5 h-5 shrink-0" style={{ color: config.primaryHex }} />
-              <span className="text-sm font-semibold text-white">Enviar feedback</span>
-            </div>
+          <button type="button" onClick={() => setFeedbackOpen(true)} className={rowCls}>
+            <span className="flex items-center gap-3 min-w-0">
+              <MessageCircle className="w-5 h-5 shrink-0 text-[#ffd400]" />
+              <span className="text-sm font-bold text-white">Enviar feedback</span>
+            </span>
             <ChevronRight className="w-4 h-4 text-[#666666] shrink-0" />
           </button>
           {owner && (
-            <Link
-              to="/admin/feedbacks"
-              className="w-full flex items-center justify-between gap-3 py-3 px-4 rounded-xl border border-[#262626]/50 hover:bg-[#161616]/40 transition-colors min-w-0"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <Inbox className="w-5 h-5 shrink-0" style={{ color: config.primaryHex }} />
-                <span className="text-sm font-semibold text-white">Inbox de feedback</span>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
+            <Link to="/admin/feedbacks" className={rowCls}>
+              <span className="flex items-center gap-3 min-w-0">
+                <Inbox className="w-5 h-5 shrink-0 text-[#ffd400]" />
+                <span className="text-sm font-bold text-white">Inbox de feedback</span>
+              </span>
+              <span className="flex items-center gap-2 shrink-0">
                 {ownerNewFeedbacks > 0 && (
-                  <span
-                    className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                    style={{ background: `${config.primaryHex}33`, color: config.primaryHex }}
-                  >
+                  <span className="font-tag text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#ff2e88] text-[#0a0a0a]">
                     {ownerNewFeedbacks} novo{ownerNewFeedbacks !== 1 ? 's' : ''}
                   </span>
                 )}
                 <ChevronRight className="w-4 h-4 text-[#666666]" />
-              </div>
+              </span>
             </Link>
           )}
           {owner && (
-            <Link
-              to="/admin/empresas"
-              className="w-full flex items-center justify-between gap-3 py-3 px-4 rounded-xl border border-[#262626]/50 hover:bg-[#161616]/40 transition-colors min-w-0"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <Building2 className="w-5 h-5 shrink-0" style={{ color: config.primaryHex }} />
-                <span className="text-sm font-semibold text-white">Catálogo de empresas</span>
-              </div>
+            <Link to="/admin/empresas" className={rowCls}>
+              <span className="flex items-center gap-3 min-w-0">
+                <Building2 className="w-5 h-5 shrink-0 text-[#ffd400]" />
+                <span className="text-sm font-bold text-white">Catálogo de empresas</span>
+              </span>
               <ChevronRight className="w-4 h-4 text-[#666666] shrink-0" />
             </Link>
           )}
-        </NeonGlass>
-        </motion.div>
+        </section>
 
-        {/* Configurações */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.33 }}>
-        <NeonGlass primary={config.primaryHex} className="p-5">
-          <h2 className="text-sm font-bold text-[#e0e0e0] uppercase tracking-wider mb-4 font-mono">Configurações</h2>
-          <button
-            type="button"
-            onClick={toggleVisibility}
-            className="w-full flex items-center justify-between gap-3 py-3 px-1 rounded-xl transition-all hover:bg-[#161616]/30 min-w-0"
-          >
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              {isVisible
-                ? <Eye className="w-4 h-4 shrink-0" style={{ color: config.primaryHex }} />
-                : <EyeOff className="w-4 h-4 text-[#888888] shrink-0" />
-              }
-              <div className="text-left min-w-0">
-                <p className="text-sm font-semibold text-white">Visibilidade Financeira</p>
-                <p className="text-xs text-[#888888]">
-                  {isVisible ? 'Valores visíveis em todo o app' : 'Valores ocultos — modo privado'}
-                </p>
-              </div>
-            </div>
-            <div
-              className="relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0"
-              style={{ background: isVisible ? config.primaryHex : 'rgb(55,65,81)' }}
-            >
-              <div
-                className="absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-200"
-                style={{ left: isVisible ? '24px' : '4px' }}
-              />
-            </div>
+        {/* Conta */}
+        <section className="rounded-2xl bg-[#161616] border border-[#222222] p-4 space-y-2">
+          <h2 className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase pb-1">Conta</h2>
+          <button type="button" onClick={toggleVisibility} className={rowCls} aria-pressed={isVisible}>
+            <span className="flex items-center gap-3 min-w-0 text-left">
+              {isVisible ? <Eye className="w-5 h-5 shrink-0 text-[#ffd400]" /> : <EyeOff className="w-5 h-5 text-[#888888] shrink-0" />}
+              <span className="min-w-0">
+                <span className="block text-sm font-bold text-white">Mostrar valores</span>
+                <span className="block text-[11px] text-[#888888]">{isVisible ? 'Valores visíveis em todo o app' : 'Valores escondidos (modo privado)'}</span>
+              </span>
+            </span>
+            <span className={`w-11 h-6 rounded-full p-0.5 shrink-0 transition-colors ${isVisible ? 'bg-[#ffd400]' : 'bg-[#333333]'}`}>
+              <span className={`block w-5 h-5 rounded-full bg-[#0a0a0a] transition-transform ${isVisible ? 'translate-x-5' : 'translate-x-0'}`} />
+            </span>
           </button>
-        </NeonGlass>
-        </motion.div>
-
-        <EventTemplatesManager primaryHex={config.primaryHex} />
-
-        <InstallPwaCard primaryHex={config.primaryHex} />
-
-        <button
-          type="button"
-          onClick={handleExportData}
-          disabled={exporting}
-          className="w-full flex items-center justify-center gap-2 py-2 text-[#888888] hover:text-[#e0e0e0] text-xs font-mono transition-all disabled:opacity-50"
-        >
-          {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-          {exporting ? 'Exportando...' : 'Exportar meus dados'}
-        </button>
-
-        {/* Logout */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
-        <NeonGlass primary={config.primaryHex} className="p-4">
+          <Link to="/privacidade" className={rowCls}>
+            <span className="text-sm font-bold text-white">Privacidade e termos</span>
+            <ChevronRight className="w-4 h-4 text-[#666666] shrink-0" />
+          </Link>
+          <button type="button" onClick={handleExportData} disabled={exporting} className={`${rowCls} disabled:opacity-50`}>
+            <span className="text-sm font-bold text-white">{exporting ? 'Exportando...' : 'Baixar meus dados'}</span>
+            {exporting ? <Loader2 className="w-4 h-4 animate-spin text-[#a8a8a8]" /> : <Download className="w-4 h-4 text-[#666666] shrink-0" />}
+          </button>
           {showLogoutConfirm ? (
-            <div className="text-center space-y-3">
-              <p className="text-sm text-[#e0e0e0]">Tem certeza que quer sair?</p>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowLogoutConfirm(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-[#161616] text-[#a8a8a8] text-sm font-semibold hover:bg-[#222222] transition-all"
-                >
+            <div className="rounded-[12px] bg-[#0a0a0a] border border-[#ff2e88]/40 p-3 space-y-2.5">
+              <p className="text-sm font-bold text-white text-center">Tem certeza que quer sair?</p>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setShowLogoutConfirm(false)} className="flex-1 h-11 rounded-full border border-[#444444] text-white text-sm font-extrabold">
                   Cancelar
                 </button>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="flex-1 py-2.5 rounded-xl bg-red-900/60 border border-red-800/50 text-red-400 text-sm font-bold hover:bg-red-900/80 transition-all"
-                >
+                <button type="button" onClick={handleLogout} className="flex-1 h-11 rounded-full bg-[#ff2e88] text-[#0a0a0a] text-sm font-extrabold">
                   Sair
                 </button>
               </div>
             </div>
           ) : (
-            <button
-              type="button"
-              onClick={() => setShowLogoutConfirm(true)}
-              className="w-full flex items-center justify-center gap-2 py-2 text-red-500/70 hover:text-red-400 text-sm font-semibold transition-all"
-            >
-              <LogOut className="w-4 h-4" />
-              Sair da conta
+            <button type="button" onClick={() => setShowLogoutConfirm(true)} className={rowCls}>
+              <span className="flex items-center gap-3">
+                <LogOut className="w-5 h-5 text-[#ff2e88]" />
+                <span className="text-sm font-bold text-[#ff2e88]">Sair da conta</span>
+              </span>
             </button>
           )}
-        </NeonGlass>
-        </motion.div>
+        </section>
 
-        <p className="text-center text-slate-700 text-xs pb-2 font-mono">Backstage Pro v1.0</p>
+        <EventTemplatesManager primaryHex="#ffd400" />
+
+        <InstallPwaCard primaryHex="#ffd400" />
+
+        <p className="text-center text-[#555555] text-xs pb-2 font-tag">Backstage Pro v1.0</p>
       </div>
 
       <FeedbackModal
         open={feedbackOpen}
         onClose={() => setFeedbackOpen(false)}
-        primaryHex={config.primaryHex}
+        primaryHex="#ffd400"
       />
-    </NeonPageShell>
+    </div>
   );
 }

@@ -3,8 +3,6 @@ import { Bell, BellOff, Loader2, Smartphone, Send } from 'lucide-react';
 import appToast from '@/lib/appToast';
 import { useAuth } from '@/lib/authContext';
 import { supabase } from '@/lib/supabase';
-import { NeonGlass } from '@/components/design/NeonGlass';
-import { getCategoryConfig } from '@/lib/categoryConfig';
 import {
   isPushSupported,
   getPushPermission,
@@ -21,8 +19,7 @@ const PREF_ITEMS = [
 ];
 
 export default function PushNotificationSettings() {
-  const { user, profile } = useAuth();
-  const config = getCategoryConfig(profile?.category || 'lighting');
+  const { user } = useAuth();
   const [prefs, setPrefs] = useState({
     push_enabled: false,
     push_events: true,
@@ -191,26 +188,21 @@ export default function PushNotificationSettings() {
     !window.matchMedia('(display-mode: standalone)').matches;
 
   return (
-    <NeonGlass primary={config.primaryHex} className="p-5">
+    <section className="rounded-2xl bg-[#161616] border border-[#222222] p-4">
       <div className="flex items-start gap-3 mb-4">
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-          style={{ background: `${config.primaryHex}22` }}
-        >
-          <Smartphone className="w-5 h-5" style={{ color: config.primaryHex }} />
+        <div className="w-10 h-10 rounded-[12px] bg-[#ffd400] text-[#0a0a0a] flex items-center justify-center shrink-0">
+          <Smartphone className="w-5 h-5" />
         </div>
         <div className="min-w-0">
-          <h2 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
-            Alertas no celular
-          </h2>
-          <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+          <h2 className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">Avisos no celular</h2>
+          <p className="text-xs text-[#a8a8a8] mt-1 leading-relaxed">
             Shows de hoje/amanhã e pagamentos atrasados — 8h e 18h (horário de Brasília).
           </p>
         </div>
       </div>
 
       {!supported && (
-        <p className="text-xs text-amber-400/90 bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
+        <p className="text-xs text-[#ffd400]/90 bg-[#ffd400]/10 border border-[#ffd400]/20 rounded-lg p-3">
           Seu navegador não suporta push. Use Chrome no Android ou instale o app na Tela de Início (iOS 16.4+).
         </p>
       )}
@@ -218,40 +210,36 @@ export default function PushNotificationSettings() {
       {iosHint && supported && (
         <p
           className="text-xs rounded-lg p-3 mb-3"
-          style={{
-            color: `${config.primaryHex}cc`,
-            backgroundColor: `${config.primaryHex}1a`,
-            border: `1px solid ${config.primaryHex}33`,
-          }}
+          style={{ color: '#ffd400', backgroundColor: '#ffd4001a', border: '1px solid #ffd40033' }}
         >
           No iPhone: adicione o Backstage à Tela de Início antes de ativar notificações.
         </p>
       )}
 
       {!vapidReady && supported && (
-        <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 mb-3 space-y-1">
-          <p className="text-xs font-semibold text-amber-300">Notificações push pendentes de configuração</p>
-          <p className="text-xs text-amber-400/90">
-            A variável <code className="font-mono bg-slate-800 px-1 rounded">VITE_VAPID_PUBLIC_KEY</code> não está no build de produção.
+        <div className="bg-[#ffd400]/10 border border-[#ffd400]/20 rounded-lg p-3 mb-3 space-y-1">
+          <p className="text-xs font-semibold text-[#ffd400]">Notificações push pendentes de configuração</p>
+          <p className="text-xs text-[#ffd400]/90">
+            A variável <code className="font-mono bg-[#1f1f1f] px-1 rounded">VITE_VAPID_PUBLIC_KEY</code> não está no build de produção.
           </p>
-          <p className="text-xs text-amber-400/80">
+          <p className="text-xs text-[#ffd400]/80">
             Acesse <strong>Vercel → Project → Settings → Environment Variables</strong>, adicione a chave e faça um novo deploy. Depois, reabra o app e toque em &quot;Ativar alertas&quot;.
           </p>
         </div>
       )}
 
       {permission === 'denied' && (
-        <p className="text-xs text-red-300/90 bg-red-500/10 border border-red-500/20 rounded-lg p-3 mb-3">
+        <p className="text-xs text-[#ff2e88]/90 bg-[#ff2e88]/10 border border-[#ff2e88]/20 rounded-lg p-3 mb-3">
           Notificações bloqueadas. Abra Configurações do celular → Backstage → permitir notificações.
         </p>
       )}
 
       <div className="flex items-center justify-between gap-3 mb-4">
-        <div className="flex items-center gap-2 text-sm text-slate-300">
+        <div className="flex items-center gap-2 text-sm text-[#c8c8c8]">
           {enabled ? (
-            <Bell className="w-4 h-4 text-emerald-400" />
+            <Bell className="w-4 h-4 text-[#ffd400]" />
           ) : (
-            <BellOff className="w-4 h-4 text-slate-500" />
+            <BellOff className="w-4 h-4 text-[#888888]" />
           )}
           <span>{loading ? 'Carregando...' : enabled ? 'Ativado' : 'Desativado'}</span>
         </div>
@@ -260,13 +248,9 @@ export default function PushNotificationSettings() {
           type="button"
           disabled={!supported || busy || loading || permission === 'denied'}
           onClick={enabled ? handleDisable : handleEnable}
-          className="px-4 py-2 rounded-xl text-xs font-bold uppercase transition-all disabled:opacity-50"
-          style={{
-            background: enabled
-              ? 'rgb(55 65 81)'
-              : `linear-gradient(135deg, ${config.primaryHex}, ${config.accentHex})`,
-            color: enabled ? '#94a3b8' : '#06070a',
-          }}
+          className={`h-10 px-5 rounded-full text-xs font-extrabold transition-all disabled:opacity-50 ${
+            enabled ? 'border border-[#444444] text-white' : 'bg-[#ffd400] text-[#0a0a0a]'
+          }`}
         >
           {busy ? (
             <Loader2 className="w-4 h-4 animate-spin inline" />
@@ -279,23 +263,23 @@ export default function PushNotificationSettings() {
       </div>
 
       {enabled && (
-        <div className="space-y-3 border-t border-white/5 pt-4">
-          <p className="text-[10px] font-mono uppercase tracking-wider text-slate-500">Tipos de alerta</p>
+        <div className="space-y-3 border-t border-[#2a2a2a] pt-4">
+          <p className="font-tag text-[10px] uppercase tracking-[1px] text-[#a8a8a8]">Tipos de aviso</p>
           {PREF_ITEMS.map(({ key, label, hint }) => (
             <label
               key={key}
               className="flex items-center justify-between gap-3 cursor-pointer"
             >
-              <span className="text-sm text-slate-300">
+              <span className="text-sm text-[#c8c8c8]">
                 {label}
-                <span className="block text-[10px] text-slate-500">{hint}</span>
+                <span className="block text-[10px] text-[#888888]">{hint}</span>
               </span>
               <input
                 type="checkbox"
                 checked={prefs[key]}
                 disabled={busy}
                 onChange={() => handlePrefToggle(key)}
-                className="h-4 w-4 rounded accent-amber-400"
+                className="h-5 w-5 rounded accent-[#ffd400]"
               />
             </label>
           ))}
@@ -304,7 +288,7 @@ export default function PushNotificationSettings() {
             type="button"
             disabled={testing || permission === 'denied'}
             onClick={handleServerTest}
-            className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase border border-white/10 text-slate-300 hover:bg-white/5 disabled:opacity-50"
+            className="w-full mt-2 h-11 flex items-center justify-center gap-2 px-4 rounded-full text-xs font-extrabold border border-[#444444] text-white hover:bg-[#222222] disabled:opacity-50"
           >
             {testing ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -315,6 +299,6 @@ export default function PushNotificationSettings() {
           </button>
         </div>
       )}
-    </NeonGlass>
+    </section>
   );
 }

@@ -225,10 +225,10 @@ export default function GoogleCalendarSync() {
 
   if (isLoading) {
     return (
-      <Card className="bg-slate-800/50 border-slate-700 min-w-0 overflow-hidden">
+      <Card className="rounded-2xl bg-[#161616] border-[#222222] shadow-none min-w-0 overflow-hidden">
         <CardContent className="p-6 text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" style={theme.accentStyle} />
-          <p className="text-slate-400">Carregando configurações...</p>
+          <p className="text-[#a8a8a8]">Carregando configurações...</p>
         </CardContent>
       </Card>
     );
@@ -243,10 +243,10 @@ export default function GoogleCalendarSync() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6 min-w-0"
     >
-      <Card className="bg-slate-800/50 border-slate-700 min-w-0 overflow-hidden">
+      <Card className="rounded-2xl bg-[#161616] border-[#222222] shadow-none min-w-0 overflow-hidden">
         <CardHeader className="min-w-0">
-          <CardTitle className="text-white flex flex-wrap items-center gap-2 text-base sm:text-lg">
-            <Calendar className="w-6 h-6 text-blue-400 shrink-0" />
+          <CardTitle className="font-tag text-[11px] font-normal tracking-[2px] uppercase text-[#a8a8a8] flex flex-wrap items-center gap-2">
+            <Calendar className="w-6 h-6 text-[#ffd400] shrink-0" />
             <span className="min-w-0">Sincronização com Google Calendar</span>
           </CardTitle>
         </CardHeader>
@@ -254,12 +254,12 @@ export default function GoogleCalendarSync() {
           {/* Status da Conexão */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between min-w-0">
             <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1">
-              <div className={`w-3 h-3 rounded-full shrink-0 ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
+              <div className={`w-3 h-3 rounded-full shrink-0 ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-[#ff2e88]'}`} />
               <span className="text-white font-medium">
                 {isConnected ? 'Conectado' : 'Desconectado'}
               </span>
               {isConnected && settings?.google_account_email && (
-                <Badge variant="outline" className="bg-blue-500/20 text-blue-300 border-blue-400/50 max-w-full truncate">
+                <Badge variant="outline" className="bg-[#ffd400]/20 text-[#ffd400] border-[#ffd400]/50 max-w-full truncate">
                   {settings.google_account_email}
                 </Badge>
               )}
@@ -270,7 +270,7 @@ export default function GoogleCalendarSync() {
                 Desconectar
               </Button>
             ) : (
-              <Button onClick={handleConnect} className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto shrink-0">
+              <Button onClick={handleConnect} className="w-full sm:w-auto shrink-0">
                 <ExternalLink className="w-4 h-4 mr-2" />
                 Conectar ao Google
               </Button>
@@ -280,9 +280,9 @@ export default function GoogleCalendarSync() {
           {/* Informações da Conta Conectada */}
           {isConnected && (
             <div className="space-y-4">
-              <div className="bg-slate-900/50 rounded-lg p-4 space-y-3">
+              <div className="bg-[#0a0a0a] border border-[#222222] rounded-[12px] p-4 space-y-3">
                 <div className="flex flex-col gap-1 sm:flex-row sm:justify-between text-sm min-w-0">
-                  <span className="text-slate-400 shrink-0">Última Sincronização:</span>
+                  <span className="text-[#a8a8a8] shrink-0">Última Sincronização:</span>
                   <span className="text-white break-words text-right sm:text-left">
                     {settings.google_last_sync_at ?
                       new Date(settings.google_last_sync_at).toLocaleString('pt-BR') :
@@ -291,7 +291,7 @@ export default function GoogleCalendarSync() {
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-400">Calendários Disponíveis:</span>
+                  <span className="text-[#a8a8a8]">Calendários Disponíveis:</span>
                   <span className="text-white">{calendars.length}</span>
                 </div>
               </div>
@@ -305,9 +305,9 @@ export default function GoogleCalendarSync() {
                   </h4>
                   <div className="space-y-2 max-h-32 overflow-y-auto">
                     {calendars.map((calendar, index) => (
-                      <div key={index} className="flex items-center justify-between gap-2 bg-slate-900/30 rounded p-2 min-w-0">
-                        <span className="text-slate-300 text-sm truncate min-w-0 flex-1">{calendar.summary}</span>
-                        <Badge variant="outline" className={`shrink-0 ${calendar.primary ? 'border-blue-400 text-blue-300' : 'border-slate-600 text-slate-400'}`}>
+                      <div key={index} className="flex items-center justify-between gap-2 bg-[#161616] rounded p-2 min-w-0">
+                        <span className="text-[#c8c8c8] text-sm truncate min-w-0 flex-1">{calendar.summary}</span>
+                        <Badge variant="outline" className={`shrink-0 ${calendar.primary ? 'border-[#ffd400] text-[#ffd400]' : 'border-[#2a2a2a] text-[#a8a8a8]'}`}>
                           {calendar.primary ? 'Principal' : 'Secundário'}
                         </Badge>
                       </div>
@@ -318,9 +318,9 @@ export default function GoogleCalendarSync() {
 
               {/* Indicador de eventos não sincronizados */}
               {unsyncedCount > 0 && (
-                <Alert className="border-amber-500/40 bg-amber-500/10">
-                  <AlertCircle className="w-4 h-4 text-amber-400" />
-                  <AlertDescription className="text-amber-200 text-sm">
+                <Alert className="border-[#ffd400]/40 bg-[#ffd400]/10">
+                  <AlertCircle className="w-4 h-4 text-[#ffd400]" />
+                  <AlertDescription className="text-[#ffd400] text-sm">
                     <strong>{unsyncedCount} evento{unsyncedCount === 1 ? '' : 's'}</strong> do app ainda não enviado{unsyncedCount === 1 ? '' : 's'} ao Google Calendar.
                     {' '}Clique em <strong>Sincronizar Agora</strong> para enviar.
                   </AlertDescription>
@@ -332,7 +332,7 @@ export default function GoogleCalendarSync() {
                 <Button
                   onClick={handleSyncNow}
                   disabled={isSyncing}
-                  className="bg-green-600 hover:bg-green-700 flex-1"
+                  className="flex-1"
                 >
                   {isSyncing ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -346,7 +346,7 @@ export default function GoogleCalendarSync() {
                   onClick={() => setPendingAction('import')}
                   disabled={isSyncing}
                   variant="outline"
-                  className="bg-slate-700 border-slate-600 hover:bg-slate-600 flex-1"
+                  className="flex-1"
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Importar Eventos
@@ -358,20 +358,20 @@ export default function GoogleCalendarSync() {
                 onClick={() => setPendingAction('dedupe')}
                 disabled={isSyncing}
                 variant="outline"
-                className="w-full border-amber-600/40 text-amber-200 hover:bg-amber-500/10"
+                className="w-full border-[#ffd400]/40 text-[#ffd400] hover:bg-[#ffd400]/10"
               >
                 Limpar duplicatas da agenda
               </Button>
 
               {/* Status da Última Sincronização */}
               {lastSyncStatus && (
-                <Alert className={lastSyncStatus.success ? 'border-green-500 bg-green-500/10' : 'border-red-500 bg-red-500/10'}>
+                <Alert className={lastSyncStatus.success ? 'border-green-500 bg-green-500/10' : 'border-[#ff2e88] bg-[#ff2e88]/10'}>
                   {lastSyncStatus.success ? (
                     <CheckCircle className="w-4 h-4 text-green-400" />
                   ) : (
-                    <AlertTriangle className="w-4 h-4 text-red-400" />
+                    <AlertTriangle className="w-4 h-4 text-[#ff2e88]" />
                   )}
-                  <AlertDescription className={lastSyncStatus.success ? 'text-green-300' : 'text-red-300'}>
+                  <AlertDescription className={lastSyncStatus.success ? 'text-green-300' : 'text-[#ff2e88]'}>
                     {lastSyncStatus.message}
                     <br />
                     <span className="text-xs opacity-75">
@@ -385,9 +385,9 @@ export default function GoogleCalendarSync() {
 
           {/* Informações sobre a Sincronização */}
           {!isConnected && (
-            <Alert className="border-blue-500 bg-blue-500/10">
-              <Calendar className="w-4 h-4 text-blue-400" />
-              <AlertDescription className="text-blue-300">
+            <Alert className="border-[#ffd400] bg-[#ffd400]/10">
+              <Calendar className="w-4 h-4 text-[#ffd400]" />
+              <AlertDescription className="text-[#ffd400]">
                 <strong>Benefícios da Sincronização:</strong>
                 <ul className="mt-2 space-y-1 text-sm">
                   <li>• Seus eventos do Backstage Pro aparecem no Google Calendar</li>
@@ -399,7 +399,7 @@ export default function GoogleCalendarSync() {
             </Alert>
           )}
 
-          <p className="text-xs text-slate-500 text-center pt-2">
+          <p className="text-xs text-[#888888] text-center pt-2">
             Ao conectar, você concorda com a{' '}
             <Link to="/privacidade" className="hover:underline" style={theme.accentStyle}>Política de Privacidade</Link>
             {' e os '}
