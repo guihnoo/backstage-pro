@@ -32,13 +32,13 @@ function ManualSection({ section, primary, defaultOpen }) {
         <span className="flex-1 min-w-0">
           <span className="block text-sm font-bold text-white truncate">{section.title}</span>
           {section.route && (
-            <span className="block text-[10px] font-mono text-slate-500 uppercase tracking-wider truncate">
+            <span className="block text-[10px] font-mono text-[#888888] uppercase tracking-wider truncate">
               {section.route}
             </span>
           )}
         </span>
         <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
-          <ChevronDown className="w-5 h-5 text-slate-500 shrink-0" />
+          <ChevronDown className="w-5 h-5 text-[#888888] shrink-0" />
         </motion.span>
       </button>
       <AnimatePresence initial={false}>
@@ -50,13 +50,13 @@ function ManualSection({ section, primary, defaultOpen }) {
             transition={{ duration: 0.22 }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4 pt-0 space-y-4 border-t border-slate-800/80">
+            <div className="px-4 pb-4 pt-0 space-y-4 border-t border-[#2a2a2a]">
               {section.items.map((item) => (
                 <div key={item.heading}>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono mb-1">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#a8a8a8] font-mono mb-1">
                     {item.heading}
                   </h3>
-                  <p className="text-sm text-slate-300 leading-relaxed">{item.body}</p>
+                  <p className="text-sm text-[#c8c8c8] leading-relaxed">{item.body}</p>
                 </div>
               ))}
               {section.route && (
@@ -86,7 +86,7 @@ export default function AppHelp() {
         <div className="flex items-start gap-3">
           <Link
             to="/profile"
-            className="mt-1 flex items-center justify-center w-10 h-10 rounded-full border border-slate-700/60 text-slate-400 hover:text-white hover:bg-slate-800/50 shrink-0"
+            className="mt-1 flex items-center justify-center w-10 h-10 rounded-full border border-[#2a2a2a] text-[#a8a8a8] hover:text-white hover:bg-[#1f1f1f] shrink-0"
             aria-label="Voltar ao perfil"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -96,7 +96,7 @@ export default function AppHelp() {
               <BookOpen className="w-5 h-5 shrink-0" style={{ color: config.primaryHex }} />
               <h1 className="text-xl font-extrabold text-white truncate">Manual do app</h1>
             </div>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-[#888888]">
               Guia por área — Backstage Pro v{APP_VERSION}
             </p>
           </div>
@@ -108,13 +108,13 @@ export default function AppHelp() {
             hardNavigate('/');
             window.setTimeout(() => requestAppTour(), 400);
           }}
-          className="w-full flex items-center gap-3 p-4 rounded-xl border transition-colors hover:bg-slate-800/30 text-left"
+          className="w-full flex items-center gap-3 p-4 rounded-xl border transition-colors hover:bg-[#1f1f1f] text-left"
           style={{ borderColor: `${config.primaryHex}40`, background: `${config.primaryHex}0a` }}
         >
           <Compass className="w-5 h-5 shrink-0" style={{ color: config.primaryHex }} />
           <div className="min-w-0">
             <p className="text-sm font-semibold text-white">Prefere um tour visual?</p>
-            <p className="text-xs text-slate-500">Reinicia o passo a passo na Home</p>
+            <p className="text-xs text-[#888888]">Reinicia o passo a passo na Home</p>
           </div>
         </button>
 
@@ -129,9 +129,9 @@ export default function AppHelp() {
           ))}
         </div>
 
-        <p className="text-center text-xs text-slate-600 pt-2">
+        <p className="text-center text-xs text-[#666666] pt-2">
           Dúvidas ou sugestões?{' '}
-          <Link to="/profile" className="underline hover:text-slate-400">
+          <Link to="/profile" className="underline hover:text-[#a8a8a8]">
             Perfil → Suporte & Feedback
           </Link>
         </p>

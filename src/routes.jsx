@@ -153,6 +153,7 @@ export const router = createBrowserRouter([
           { path: 'reports', lazy: wrapPage(() => import('./pages/Reports.jsx')) },
           { path: 'client-detail', lazy: wrapPage(() => import('./pages/ClientDetail')) },
           { path: 'goals', lazy: wrapPage(() => import('./pages/Goals')) },
+          { path: 'mapa', lazy: wrapPage(() => import('./pages/Mapa')) },
           { path: 'profile', lazy: wrapPage(() => import('./pages/ProfileSimple')) },
           { path: 'help', lazy: wrapPage(() => import('./pages/AppHelp')) },
           { path: 'ai-mentor', lazy: wrapPage(() => import('./pages/AI_Mentor')) },

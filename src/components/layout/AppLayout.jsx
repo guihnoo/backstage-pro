@@ -28,7 +28,7 @@ const rightNavItems = [
 
 // Itens do "Mais"
 const secondaryNavItems = [
-  { to: { pathname: '/reports', hash: '#mapa' }, match: '/reports#mapa', label: 'Mapa', icon: MapPin, prefetch: '/reports' },
+  { to: '/mapa', match: '/mapa', label: 'Mapa', icon: MapPin },
   { to: '/clients', match: '/clients', label: 'Clientes', icon: Users },
   { to: '/expenses', match: '/expenses', label: 'Despesas', icon: Receipt },
   { to: '/goals', match: '/goals', label: 'Metas', icon: Target },
@@ -124,7 +124,7 @@ export default function AppLayout() {
   return (
     <MotionConfig reducedMotion="user" transition={{ duration: 0.22, ease: 'easeOut' }}>
     <div
-      className="h-full bg-[#050609] text-white flex flex-col overflow-hidden"
+      className="h-full bg-[#0a0a0a] text-white flex flex-col overflow-hidden"
       style={themeVars}
     >
       <AppTour />

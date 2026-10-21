@@ -17,22 +17,22 @@ export default function TermsOfServicePage() {
     >
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold flex items-center justify-center gap-3 mb-3">
-            <Scale className="w-9 h-9 text-amber-400" />
+          <h1 className="font-poster text-[40px] leading-none uppercase flex items-center justify-center gap-3 mb-3">
+            <Scale className="w-9 h-9 text-[#ffd400]" />
             Termos de Uso
           </h1>
-          <p className="text-slate-400">Backstage Pro — gestão profissional para técnicos e freelancers</p>
-          <p className="text-slate-500 text-sm mt-2">Última atualização: junho de 2026</p>
+          <p className="text-[#a8a8a8]">Backstage Pro — gestão profissional para técnicos e freelancers</p>
+          <p className="text-[#888888] text-sm mt-2">Última atualização: junho de 2026</p>
         </div>
 
-        <Card className="bg-slate-900/60 border-slate-800">
+        <Card className="bg-[#161616] border-[#2a2a2a]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg" style={{ color: primaryHex }}>
               <FileText className="w-5 h-5" />
               Aceitação
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-slate-300 space-y-3 text-sm leading-relaxed">
+          <CardContent className="text-[#c8c8c8] space-y-3 text-sm leading-relaxed">
             <p>
               Ao criar uma conta ou utilizar o Backstage Pro, você concorda com estes Termos de Uso e com nossa{' '}
               <Link to="/privacidade" className="hover:underline" style={{ color: primaryHex }}>Política de Privacidade</Link>.
@@ -40,14 +40,14 @@ export default function TermsOfServicePage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-900/60 border-slate-800">
+        <Card className="bg-[#161616] border-[#2a2a2a]">
           <CardHeader>
-            <CardTitle className="text-green-300 flex items-center gap-2 text-lg">
+            <CardTitle className="text-[#ffd400] flex items-center gap-2 text-lg">
               <Calendar className="w-5 h-5" />
               Integração Google Calendar
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-slate-300 space-y-3 text-sm leading-relaxed">
+          <CardContent className="text-[#c8c8c8] space-y-3 text-sm leading-relaxed">
             <p>
               A sincronização com o Google Calendar é opcional. Ao conectar, você autoriza o Backstage Pro a ler e
               gravar eventos no calendário selecionado, exclusivamente para manter sua agenda profissional atualizada.
@@ -59,20 +59,20 @@ export default function TermsOfServicePage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-900/60 border-slate-800">
+        <Card className="bg-[#161616] border-[#2a2a2a]">
           <CardHeader>
-            <CardTitle className="text-amber-300 flex items-center gap-2 text-lg">
+            <CardTitle className="text-[#ffd400] flex items-center gap-2 text-lg">
               <Shield className="w-5 h-5" />
               Responsabilidades
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-slate-300 space-y-3 text-sm leading-relaxed">
+          <CardContent className="text-[#c8c8c8] space-y-3 text-sm leading-relaxed">
             <p>Você é responsável pelos dados inseridos (clientes, eventos, valores financeiros) e pelo uso da plataforma em conformidade com a legislação aplicável.</p>
             <p>O serviço é fornecido &quot;como está&quot;, com esforços razoáveis de disponibilidade e segurança.</p>
           </CardContent>
         </Card>
 
-        <p className="text-center text-slate-500 text-sm pt-4">
+        <p className="text-center text-[#888888] text-sm pt-4">
           <Link to="/login" className="hover:underline" style={{ color: primaryHex }}>Voltar ao login</Link>
         </p>
       </div>

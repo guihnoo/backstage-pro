@@ -184,7 +184,8 @@ function rgbaHex(hex, alpha) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-function BrazilVisitedMapInner({ events = [], clients = [] }) {
+// showTitle=false: a tela Minha turne ja tem o titulo grande em cima.
+function BrazilVisitedMapInner({ events = [], clients = [], showTitle = true }) {
   const theme = useCategoryTheme();
   const primary = theme.primaryHex;
   const accent = theme.accentHex;
@@ -388,13 +389,19 @@ function BrazilVisitedMapInner({ events = [], clients = [] }) {
     >
       {/* Header (All Access) */}
       <div className="flex items-end justify-between mb-1 gap-3 flex-wrap">
-        <div>
-          <div className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8]">ONDE VOCÊ JÁ TRABALHOU</div>
-          <h3 className="font-poster text-[26px] leading-none text-white flex items-center gap-2 mt-1">
-            <Map className="w-5 h-5 text-[#ffd400]" />
-            MINHA TURNÊ
-          </h3>
-        </div>
+        {showTitle ? (
+          <div>
+            <div className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8]">ONDE VOCÊ JÁ TRABALHOU</div>
+            <h3 className="font-poster text-[26px] leading-none text-white flex items-center gap-2 mt-1">
+              <Map className="w-5 h-5 text-[#ffd400]" />
+              MINHA TURNÊ
+            </h3>
+          </div>
+        ) : (
+          <div className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] flex items-center gap-1.5">
+            <Map className="w-4 h-4 text-[#ffd400]" /> MAPA
+          </div>
+        )}
         <div className="flex items-center gap-2 text-xs font-tag flex-wrap justify-end">
           <button
             type="button"

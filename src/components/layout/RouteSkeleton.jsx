@@ -109,8 +109,8 @@ function CalendarSkeleton({ primary: _primary }) {
         {[0,1,2,3].map(i => <Skeleton key={i} className="h-20 rounded-xl" />)}
       </div>
       {/* Calendar grid */}
-      <div className="rounded-xl overflow-hidden border border-slate-800/50">
-        <div className="grid grid-cols-7 gap-px bg-slate-800/30 p-3">
+      <div className="rounded-xl overflow-hidden border border-[#2a2a2a]">
+        <div className="grid grid-cols-7 gap-px bg-[#1f1f1f] p-3">
           {['D','S','T','Q','Q','S','S'].map((d,i) => (
             <div key={i} className="text-center pb-2">
               <Skeleton className="h-3 w-4 mx-auto rounded" />
@@ -198,7 +198,7 @@ export default function RouteSkeleton() {
 
   return (
     <div
-      className="min-h-full bg-[#050609] text-white overflow-hidden"
+      className="min-h-full bg-[#0a0a0a] text-white overflow-hidden"
       role="status"
       aria-live="polite"
       aria-label="Carregando página"

@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-10-21 (visual All Access: entregas 9 e 10 + 2 bugs que estavam no ar; Claude Code — branch `feat/visual-completo`)  
+**Última atualização:** 2026-10-21 (visual All Access completo: entregas 9 a 15 + 2 bugs que estavam no ar; Claude Code — branch `feat/visual-completo`, sem deploy)  
 **Pendente de deploy:** tudo de 2026-10-09 (nada publicado na Vercel) · migration `034_events_payment_method.sql` **não aplicada** em produção  
 **Pasta local:** `C:\dev\backstage-pro` (desde 2026-10-09; a cópia antiga em `OneDrive\Documentos\backstage-pro` não é mais a pasta de trabalho)  
 **Produção:** https://backstage-pro-beta.vercel.app  
@@ -178,6 +178,17 @@ Use este roteiro para fechar o item **#8** em `IDEIAS_PENDENTES.md`.
 ---
 
 ## Changelog
+
+### 2026-10-21 — Visual All Access, entregas 11 a 15: app inteiro com a cara nova (Claude Code)
+
+- **11 Novo trabalho** (`EventForm.jsx`): pílulas dos clientes recentes + busca; faixa de 14 dias para tocar (1º toque = primeiro dia, 2º = último; ponto rosa = já tem show); cachê e alimentação em blocos; "Mais detalhes" recolhe pagamento, vencimento, NF, observações, repetir e modelo; rodapé "VAI RENDER" + SALVAR. Gravação igual à de antes. Ficaram de fora (funções novas): colar mensagem do WhatsApp e "entrada e saída".
+- **12 Perfil** (`ProfileSimple.jsx`): crew pass amarelo (foto, nome, função, cidade, shows/cidades/anos), função e cachê padrão, meus dados, recebimento e fechamento (PIX em pílulas), meta do mês, ajuda/suporte, conta. Um SALVAR só, como antes. Avisos no celular e Google Agenda no visual novo.
+- **13 Metas** (`Goals.jsx`): níveis viraram os 5 tiers do protótipo (Staff, Backstage, All Access, Headliner, Lenda) nas mesmas faixas de shows (0/5/20/50/100); credencial amarela com % e próximo tier; abas em pílula.
+- **14 Mentor** (`AI_Mentor.jsx`): "M / MENTOR — seu parceiro de estrada", saudação + data, perguntas prontas no cartão dos Avisos, campo em pílula. Envio para a IA igual.
+- **15 Mapa + apoio**: tela nova **`/mapa` "Minha turnê"** (shows, cidades, estados, mapa e "ganhou aqui" por cidade); "Mais › Mapa" aponta para ela e `/reports#mapa` redireciona; o mapa saiu do rodapé do Dinheiro. Privacidade, termos, ajuda, tela de erro, admin e avisos (toasts) sem as cores antigas; fundo do app `#0a0a0a`.
+- Testes ajustados aos nomes novos (Novo trabalho, Perfil, mapa em `/mapa`); teste do "+ Novo trabalho" ganhou dados falsos (oscilava sem eles desde antes).
+
+**Sem deploy.**
 
 ### 2026-10-21 — Visual All Access, entrega 10: janelas e formulários (Claude Code)
 

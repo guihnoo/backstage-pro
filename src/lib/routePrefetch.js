@@ -3,6 +3,7 @@ const routeLoaders = {
   '/calendar': () => import('@/pages/Calendar.jsx'),
   '/clients': () => import('@/pages/Clients.jsx'),
   '/goals': () => import('@/pages/Goals.jsx'),
+  '/mapa': () => import('@/pages/Mapa.jsx'),
   '/expenses': () => import('@/pages/Expenses.jsx'),
   '/reports': () => import('@/pages/Reports.jsx'),
   '/profile': () => import('@/pages/ProfileSimple.jsx'),

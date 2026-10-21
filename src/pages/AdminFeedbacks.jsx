@@ -60,7 +60,7 @@ function FeedbackCard({ item, onUpdate, primaryHex }) {
     <motion.article
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-slate-800/60 bg-slate-900/50 p-4 space-y-3 min-w-0"
+      className="rounded-2xl border border-[#2a2a2a] bg-[#161616] p-4 space-y-3 min-w-0"
     >
       <div className="flex items-start justify-between gap-3 min-w-0">
         <div className="flex items-start gap-3 min-w-0 flex-1">
@@ -78,15 +78,15 @@ function FeedbackCard({ item, onUpdate, primaryHex }) {
               >
                 {statusMeta.label}
               </span>
-              <span className="text-[10px] text-slate-500">{typeLabel}</span>
+              <span className="text-[10px] text-[#888888]">{typeLabel}</span>
               {item.rating && (
-                <span className="text-[10px] text-amber-400">★ {item.rating}/5</span>
+                <span className="text-[10px] text-[#ffd400]">★ {item.rating}/5</span>
               )}
             </div>
             <Ellipsis as="p" className="text-sm font-semibold text-white">
               {item.user_email || 'Usuário'}
             </Ellipsis>
-            <p className="text-[10px] text-slate-600 font-mono mt-0.5">
+            <p className="text-[10px] text-[#666666] font-mono mt-0.5">
               {item.created_at
                 ? format(parseISO(item.created_at), "d MMM yyyy · HH:mm", { locale: ptBR })
                 : '—'}
@@ -99,18 +99,18 @@ function FeedbackCard({ item, onUpdate, primaryHex }) {
             value={item.status}
             disabled={saving}
             onChange={(e) => saveStatus(e.target.value)}
-            className="appearance-none bg-slate-800 border border-slate-700 rounded-lg pl-2 pr-7 py-1.5 text-xs text-white focus:outline-none"
+            className="appearance-none bg-[#1f1f1f] border border-[#2a2a2a] rounded-lg pl-2 pr-7 py-1.5 text-xs text-white focus:outline-none"
             aria-label="Status do feedback"
           >
             {Object.entries(FEEDBACK_STATUS).map(([key, meta]) => (
               <option key={key} value={key}>{meta.label}</option>
             ))}
           </select>
-          <ChevronDown className="w-3 h-3 text-slate-500 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <ChevronDown className="w-3 h-3 text-[#888888] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
       </div>
 
-      <p className="text-sm text-slate-300 whitespace-pre-wrap break-words">{item.message}</p>
+      <p className="text-sm text-[#c8c8c8] whitespace-pre-wrap break-words">{item.message}</p>
 
       {item.screenshot_url && (
         <a
@@ -126,8 +126,8 @@ function FeedbackCard({ item, onUpdate, primaryHex }) {
         </a>
       )}
 
-      <div className="pt-2 border-t border-slate-800/80">
-        <label htmlFor="admin-notes" className="text-[10px] text-slate-500 uppercase tracking-wide mb-1.5 block">
+      <div className="pt-2 border-t border-[#2a2a2a]">
+        <label htmlFor="admin-notes" className="text-[10px] text-[#888888] uppercase tracking-wide mb-1.5 block">
           Notas internas (só você vê)
         </label>
         <textarea
@@ -136,13 +136,13 @@ function FeedbackCard({ item, onUpdate, primaryHex }) {
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
           placeholder="Ex.: corrigir na próxima release…"
-          className="w-full bg-slate-800/40 border border-slate-700/40 rounded-lg px-3 py-2 text-xs text-white placeholder:text-slate-600 resize-none"
+          className="w-full bg-[#1f1f1f] border border-[#2a2a2a] rounded-lg px-3 py-2 text-xs text-white placeholder:text-[#666666] resize-none"
         />
         <button
           type="button"
           onClick={saveNotes}
           disabled={saving}
-          className="mt-2 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 hover:text-white transition-colors disabled:opacity-50"
+          className="mt-2 text-xs font-semibold px-3 py-1.5 rounded-lg border border-[#2a2a2a] text-[#a8a8a8] hover:text-white transition-colors disabled:opacity-50"
         >
           Salvar notas
         </button>
@@ -168,7 +168,7 @@ export default function AdminFeedbacks() {
   if (authLoading || (user && !profile)) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-slate-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#888888]" />
       </div>
     );
   }
@@ -192,12 +192,12 @@ export default function AdminFeedbacks() {
       <div className="px-4 pt-4 pb-6 max-w-2xl mx-auto space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-xs text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <p className="text-xs text-[#888888] uppercase tracking-wider flex items-center gap-1.5">
               <Inbox className="w-3.5 h-3.5" />
               Área exclusiva
             </p>
             <h1 className="text-2xl font-black text-white">Inbox de Feedback</h1>
-            <p className="text-sm text-slate-500 mt-1">
+            <p className="text-sm text-[#888888] mt-1">
               {newCount > 0 ? `${newCount} novo${newCount !== 1 ? 's' : ''}` : 'Nenhum feedback novo'}
             </p>
           </div>
@@ -205,14 +205,14 @@ export default function AdminFeedbacks() {
             type="button"
             onClick={refetch}
             disabled={loading}
-            className="p-2.5 rounded-xl border border-slate-700 text-slate-400 hover:text-white shrink-0"
+            className="p-2.5 rounded-xl border border-[#2a2a2a] text-[#a8a8a8] hover:text-white shrink-0"
             aria-label="Atualizar"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
 
-        <div className="flex gap-1 bg-slate-900/50 p-1 rounded-xl border border-slate-800/50 overflow-x-auto">
+        <div className="flex gap-1 bg-[#161616] p-1 rounded-xl border border-[#2a2a2a] overflow-x-auto">
           {[
             { id: 'all', label: 'Todos' },
             { id: 'new', label: 'Novos' },
@@ -224,7 +224,7 @@ export default function AdminFeedbacks() {
               type="button"
               onClick={() => setFilter(tab.id)}
               className={`flex-1 min-w-[4.5rem] py-2 px-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
-                filter === tab.id ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-400'
+                filter === tab.id ? 'bg-[#1f1f1f] text-white' : 'text-[#888888] hover:text-[#a8a8a8]'
               }`}
             >
               {tab.label}
@@ -233,7 +233,7 @@ export default function AdminFeedbacks() {
         </div>
 
         {error && (
-          <div className="p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-sm text-red-300">
+          <div className="p-4 rounded-xl border border-[#ff2e88]/30 bg-[#ff2e88]/10 text-sm text-[#ff2e88]">
             {error.message?.includes('permission') || error.message?.includes('policy')
               ? 'Sem permissão. Defina role = owner no seu perfil no Supabase (migration 029).'
               : error.message}
@@ -242,10 +242,10 @@ export default function AdminFeedbacks() {
 
         {loading && items.length === 0 ? (
           <div className="py-16 flex justify-center">
-            <Loader2 className="w-8 h-8 animate-spin text-slate-600" />
+            <Loader2 className="w-8 h-8 animate-spin text-[#666666]" />
           </div>
         ) : filtered.length === 0 ? (
-          <div className="py-16 text-center text-slate-600 text-sm">
+          <div className="py-16 text-center text-[#666666] text-sm">
             <Inbox className="w-10 h-10 mx-auto mb-3 opacity-30" />
             Nenhum feedback neste filtro
           </div>

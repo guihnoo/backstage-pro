@@ -49,7 +49,7 @@ function fmtDate(iso) {
 }
 
 function Value({ field, value }) {
-  if (value == null || value === '') return <span className="text-slate-600">vazio</span>;
+  if (value == null || value === '') return <span className="text-[#666666]">vazio</span>;
   if (field === 'logo_url') {
     return <img src={value} alt="" className="w-10 h-10 rounded bg-white object-contain p-0.5 inline-block" />;
   }
@@ -124,7 +124,7 @@ export default function AdminEmpresas() {
   if (authLoading || (user && !profile)) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-slate-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#888888]" />
       </div>
     );
   }
@@ -138,12 +138,12 @@ export default function AdminEmpresas() {
       <div className="px-4 pt-4 pb-6 max-w-2xl mx-auto space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-xs text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <p className="text-xs text-[#888888] uppercase tracking-wider flex items-center gap-1.5">
               <Building2 className="w-3.5 h-3.5" />
               Área exclusiva
             </p>
             <h1 className="text-2xl font-black text-white">Catálogo de empresas</h1>
-            <p className="text-sm text-slate-500 mt-1">
+            <p className="text-sm text-[#888888] mt-1">
               {suggestions.length > 0
                 ? `${suggestions.length} sugest${suggestions.length !== 1 ? 'ões' : 'ão'} para revisar`
                 : 'Nenhuma sugestão pendente'}
@@ -153,14 +153,14 @@ export default function AdminEmpresas() {
             type="button"
             onClick={load}
             disabled={loading}
-            className="p-2.5 rounded-xl border border-slate-700 text-slate-400 hover:text-white shrink-0"
+            className="p-2.5 rounded-xl border border-[#2a2a2a] text-[#a8a8a8] hover:text-white shrink-0"
             aria-label="Atualizar"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
 
-        <div className="flex gap-1 bg-slate-900/50 p-1 rounded-xl border border-slate-800/50">
+        <div className="flex gap-1 bg-[#161616] p-1 rounded-xl border border-[#2a2a2a]">
           {[
             { id: 'sugestoes', label: 'Sugestões', icon: ListChecks },
             { id: 'historico', label: 'Histórico', icon: History },
@@ -170,7 +170,7 @@ export default function AdminEmpresas() {
               type="button"
               onClick={() => setTab(t.id)}
               className={`flex-1 py-2 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                tab === t.id ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-400'
+                tab === t.id ? 'bg-[#1f1f1f] text-white' : 'text-[#888888] hover:text-[#a8a8a8]'
               }`}
             >
               <t.icon className="w-3.5 h-3.5" />
@@ -180,7 +180,7 @@ export default function AdminEmpresas() {
         </div>
 
         {error && (
-          <p className="text-sm text-amber-400 border border-amber-500/30 rounded-xl p-3">
+          <p className="text-sm text-[#ffd400] border border-[#ffd400]/30 rounded-xl p-3">
             Não foi possível carregar: {error}
           </p>
         )}
@@ -188,23 +188,23 @@ export default function AdminEmpresas() {
         {tab === 'sugestoes' && (
           <div className="space-y-3">
             {!loading && suggestions.length === 0 && (
-              <p className="text-sm text-slate-500 text-center py-8">Tudo revisado.</p>
+              <p className="text-sm text-[#888888] text-center py-8">Tudo revisado.</p>
             )}
             {suggestions.map((s) => (
-              <div key={s.id} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 space-y-3">
-                <div className="text-sm text-slate-300">
+              <div key={s.id} className="rounded-2xl border border-[#2a2a2a] bg-[#161616] p-4 space-y-3">
+                <div className="text-sm text-[#c8c8c8]">
                   <span className="font-semibold text-white">{who(s.suggested_by)}</span> sugere trocar{' '}
                   <span className="font-semibold">{FIELD_LABELS[s.field] || s.field}</span> de{' '}
                   <span className="font-semibold text-white">{s.company?.trading_name || s.company?.name || 'empresa'}</span>
-                  <p className="text-xs text-slate-500 mt-0.5">{fmtDate(s.created_at)}</p>
+                  <p className="text-xs text-[#888888] mt-0.5">{fmtDate(s.created_at)}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <p className="text-[11px] uppercase text-slate-500 mb-1">Atual</p>
+                    <p className="text-[11px] uppercase text-[#888888] mb-1">Atual</p>
                     <Value field={s.field} value={s.current_value} />
                   </div>
                   <div>
-                    <p className="text-[11px] uppercase text-slate-500 mb-1">Sugerido</p>
+                    <p className="text-[11px] uppercase text-[#888888] mb-1">Sugerido</p>
                     <Value field={s.field} value={s.suggested_value} />
                   </div>
                 </div>
@@ -221,7 +221,7 @@ export default function AdminEmpresas() {
                     type="button"
                     disabled={busyId === s.id}
                     onClick={() => review(s.id, false)}
-                    className="flex-1 py-2 rounded-xl border border-slate-700 text-slate-300 text-sm font-semibold flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    className="flex-1 py-2 rounded-xl border border-[#2a2a2a] text-[#c8c8c8] text-sm font-semibold flex items-center justify-center gap-1.5 disabled:opacity-50"
                   >
                     <X className="w-4 h-4" /> Recusar
                   </button>
@@ -234,10 +234,10 @@ export default function AdminEmpresas() {
         {tab === 'historico' && (
           <ul className="space-y-2">
             {!loading && changes.length === 0 && (
-              <p className="text-sm text-slate-500 text-center py-8">Nenhuma mudança registrada ainda.</p>
+              <p className="text-sm text-[#888888] text-center py-8">Nenhuma mudança registrada ainda.</p>
             )}
             {changes.map((h) => (
-              <li key={h.id} className="rounded-xl border border-slate-800 bg-slate-900/50 p-3 text-sm text-slate-300">
+              <li key={h.id} className="rounded-xl border border-[#2a2a2a] bg-[#161616] p-3 text-sm text-[#c8c8c8]">
                 <p>
                   <span className="font-semibold text-white">{who(h.changed_by)}</span>{' '}
                   {ACTION_LABELS[h.action] || h.action}{' '}
@@ -245,11 +245,11 @@ export default function AdminEmpresas() {
                   {h.action !== 'criou' ? 'de ' : ''}
                   <span className="font-semibold text-white">{companyNames[h.company_id] || 'empresa'}</span>
                 </p>
-                <p className="text-xs text-slate-500">{fmtDate(h.changed_at)}</p>
+                <p className="text-xs text-[#888888]">{fmtDate(h.changed_at)}</p>
                 {h.action !== 'criou' && (
                   <div className="flex items-center gap-2 mt-1.5 text-xs">
                     <Value field={h.field} value={h.old_value} />
-                    <span className="text-slate-600">→</span>
+                    <span className="text-[#666666]">→</span>
                     <Value field={h.field} value={h.new_value} />
                   </div>
                 )}

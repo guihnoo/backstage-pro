@@ -21,8 +21,8 @@ const STYLES = {
     glow: 'shadow-emerald-500/15',
   },
   error: {
-    ring: 'ring-red-500/30',
-    icon: 'text-red-400',
+    ring: 'ring-[#ff2e88]/30',
+    icon: 'text-[#ff2e88]',
     glow: 'shadow-red-500/15',
   },
   info: {
@@ -32,13 +32,13 @@ const STYLES = {
     useTheme: true,
   },
   warning: {
-    ring: 'ring-amber-500/30',
-    icon: 'text-amber-400',
+    ring: 'ring-[#ffd400]/30',
+    icon: 'text-[#ffd400]',
     glow: 'shadow-amber-500/15',
   },
   loading: {
-    ring: 'ring-slate-500/30',
-    icon: 'text-slate-300',
+    ring: 'ring-[#2a2a2a]',
+    icon: 'text-[#c8c8c8]',
     glow: 'shadow-black/20',
   },
 };
@@ -72,7 +72,7 @@ function BackstageToastCard({ type, title, description }) {
       <div className="min-w-0 flex-1 text-left">
         <p className="text-sm font-semibold text-white leading-snug">{title}</p>
         {description ? (
-          <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{description}</p>
+          <p className="text-xs text-[#a8a8a8] mt-0.5 leading-relaxed">{description}</p>
         ) : null}
       </div>
     </div>
@@ -119,7 +119,7 @@ function ActionToastCard({ type = 'info', title, description, action, cancel, ic
         <div className="min-w-0 flex-1 text-left">
           <p className="text-sm font-semibold text-white leading-snug">{title}</p>
           {description ? (
-            <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{description}</p>
+            <p className="text-xs text-[#a8a8a8] mt-0.5 leading-relaxed">{description}</p>
           ) : null}
         </div>
       </div>
@@ -132,7 +132,7 @@ function ActionToastCard({ type = 'info', title, description, action, cancel, ic
                 cancel.onClick?.();
                 toast.dismiss();
               }}
-              className="px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors min-h-[36px]"
+              className="px-3 py-1.5 text-xs font-medium text-[#a8a8a8] hover:text-white rounded-lg hover:bg-white/5 transition-colors min-h-[36px]"
             >
               {cancel.label || 'Cancelar'}
             </button>
@@ -144,7 +144,7 @@ function ActionToastCard({ type = 'info', title, description, action, cancel, ic
                 action.onClick?.();
                 toast.dismiss();
               }}
-              className="px-3 py-1.5 text-xs font-semibold text-[#06070a] bg-[#EAB308] hover:bg-amber-400 rounded-lg transition-colors min-h-[36px]"
+              className="px-3 py-1.5 text-xs font-semibold text-[#06070a] bg-[#EAB308] hover:bg-[#ffd400] rounded-lg transition-colors min-h-[36px]"
             >
               {action.label}
             </button>

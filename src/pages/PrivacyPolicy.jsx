@@ -16,28 +16,28 @@ export default function PrivacyPolicyPage() {
       className="min-h-screen bg-[#050609] max-w-4xl mx-auto p-6 space-y-8"
     >
       <div className="text-center mb-8">
-        <h1 className="text-4xl text-white font-poster flex items-center justify-center gap-3 mb-4">
+        <h1 className="text-[40px] leading-none uppercase text-white font-poster flex items-center justify-center gap-3 mb-4">
           <Shield className="w-10 h-10" style={{ color: primaryHex }} />
           Política de Privacidade
         </h1>
-        <p className="text-slate-400 text-lg">
+        <p className="text-[#a8a8a8] text-lg">
           Sua privacidade e segurança são nossa prioridade máxima
         </p>
-        <p className="text-slate-500 text-sm mt-2">
+        <p className="text-[#888888] text-sm mt-2">
           Última atualização: junho de 2026
         </p>
       </div>
 
       <div className="grid gap-6">
         
-        <Card className="bg-slate-900/50 border-slate-800">
+        <Card className="bg-[#161616] border-[#2a2a2a]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2" style={{ color: primaryHex }}>
               <Eye className="w-5 h-5" />
               Transparência Total
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-slate-300 space-y-4">
+          <CardContent className="text-[#c8c8c8] space-y-4">
             <p>
               O Backstage Pro é uma aplicação de gestão profissional que respeita 
               totalmente sua privacidade e mantém seus dados seguros. Este documento 
@@ -46,17 +46,17 @@ export default function PrivacyPolicyPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-900/50 border-slate-800">
+        <Card className="bg-[#161616] border-[#2a2a2a]">
           <CardHeader>
-            <CardTitle className="text-green-300 flex items-center gap-2">
+            <CardTitle className="text-[#ffd400] flex items-center gap-2">
               <Database className="w-5 h-5" />
               Dados que Coletamos
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-slate-300 space-y-4">
+          <CardContent className="text-[#c8c8c8] space-y-4">
             <div>
               <h4 className="font-bold text-white mb-2">Informações de Conta:</h4>
-              <ul className="list-disc list-inside space-y-1 text-slate-400">
+              <ul className="list-disc list-inside space-y-1 text-[#a8a8a8]">
                 <li>Nome completo e endereço de e-mail (via Google OAuth)</li>
                 <li>Foto de perfil (opcional, via Google)</li>
                 <li>Configurações de preferência do aplicativo</li>
@@ -65,7 +65,7 @@ export default function PrivacyPolicyPage() {
             
             <div>
               <h4 className="font-bold text-white mb-2">Dados Profissionais:</h4>
-              <ul className="list-disc list-inside space-y-1 text-slate-400">
+              <ul className="list-disc list-inside space-y-1 text-[#a8a8a8]">
                 <li>Informações de eventos e projetos</li>
                 <li>Registros de trabalho e horas</li>
                 <li>Dados de clientes e contatos</li>
@@ -76,14 +76,14 @@ export default function PrivacyPolicyPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-900/50 border-slate-800">
+        <Card className="bg-[#161616] border-[#2a2a2a]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2" style={{ color: primaryHex }}>
               <Calendar className="w-5 h-5" />
               Google Calendar (opcional)
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-slate-300 space-y-3 text-sm leading-relaxed">
+          <CardContent className="text-[#c8c8c8] space-y-3 text-sm leading-relaxed">
             <p>
               Se você conectar o Google Calendar, armazenamos tokens OAuth de forma segura para sincronizar eventos
               entre o Backstage Pro e o calendário escolhido. Acessamos apenas calendários autorizados por você.
@@ -95,17 +95,17 @@ export default function PrivacyPolicyPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-900/50 border-slate-800">
+        <Card className="bg-[#161616] border-[#2a2a2a]">
           <CardHeader>
-            <CardTitle className="text-blue-300 flex items-center gap-2">
+            <CardTitle className="text-[#ffd400] flex items-center gap-2">
               <Lock className="w-5 h-5" />
               Como Protegemos Seus Dados
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-slate-300 space-y-4">
+          <CardContent className="text-[#c8c8c8] space-y-4">
             <div>
               <h4 className="font-bold text-white mb-2">Segurança Técnica:</h4>
-              <ul className="list-disc list-inside space-y-1 text-slate-400">
+              <ul className="list-disc list-inside space-y-1 text-[#a8a8a8]">
                 <li>Criptografia HTTPS em todas as comunicações</li>
                 <li>Isolamento completo de dados por usuário</li>
                 <li>Autenticação segura via Google OAuth 2.0</li>
@@ -116,7 +116,7 @@ export default function PrivacyPolicyPage() {
             
             <div>
               <h4 className="font-bold text-white mb-2">Privacidade por Design:</h4>
-              <ul className="list-disc list-inside space-y-1 text-slate-400">
+              <ul className="list-disc list-inside space-y-1 text-[#a8a8a8]">
                 <li>Seus dados são visíveis apenas para você</li>
                 <li>Não compartilhamos informações com terceiros</li>
                 <li>Não vendemos ou monetizamos seus dados</li>
@@ -126,16 +126,16 @@ export default function PrivacyPolicyPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-900/50 border-slate-800">
+        <Card className="bg-[#161616] border-[#2a2a2a]">
           <CardHeader>
-            <CardTitle className="text-amber-300 flex items-center gap-2">
+            <CardTitle className="text-[#ffd400] flex items-center gap-2">
               <UserCheck className="w-5 h-5" />
               Seus Direitos
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-slate-300 space-y-4">
+          <CardContent className="text-[#c8c8c8] space-y-4">
             <p>Você tem controle total sobre seus dados:</p>
-            <ul className="list-disc list-inside space-y-2 text-slate-400">
+            <ul className="list-disc list-inside space-y-2 text-[#a8a8a8]">
               <li><strong className="text-white">Acesso:</strong> Visualize todos os seus dados a qualquer momento</li>
               <li><strong className="text-white">Correção:</strong> Edite ou atualize suas informações</li>
               <li><strong className="text-white">Exportação:</strong> Baixe seus dados em formatos padrão</li>
@@ -145,18 +145,18 @@ export default function PrivacyPolicyPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-900/50 border-slate-800">
+        <Card className="bg-[#161616] border-[#2a2a2a]">
           <CardHeader>
             <CardTitle className="bp-text-primary flex items-center gap-2">
               <FileText className="w-5 h-5" />
               Integração com Google Calendar
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-slate-300 space-y-4">
+          <CardContent className="text-[#c8c8c8] space-y-4">
             <p>
               Quando você opta por conectar o Google Calendar:
             </p>
-            <ul className="list-disc list-inside space-y-1 text-slate-400">
+            <ul className="list-disc list-inside space-y-1 text-[#a8a8a8]">
               <li>Acessamos apenas os calendários que você autorizar</li>
               <li>Sincronizamos eventos de forma bidirecional (opcional)</li>
               <li>Tokens de acesso são criptografados e armazenados com segurança</li>
@@ -166,14 +166,14 @@ export default function PrivacyPolicyPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-900/50 border-slate-800">
+        <Card className="bg-[#161616] border-[#2a2a2a]">
           <CardHeader>
-            <CardTitle className="text-red-300 flex items-center gap-2">
+            <CardTitle className="text-[#ff2e88] flex items-center gap-2">
               <Shield className="w-5 h-5" />
               Retenção e Exclusão de Dados
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-slate-300 space-y-4">
+          <CardContent className="text-[#c8c8c8] space-y-4">
             <p>
               <strong className="text-white">Retenção:</strong> Mantemos seus dados enquanto sua conta estiver ativa 
               e você usar o serviço.
@@ -190,27 +190,27 @@ export default function PrivacyPolicyPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-900/50 border-slate-800">
+        <Card className="bg-[#161616] border-[#2a2a2a]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2" style={{ color: primaryHex }}>
               <Shield className="w-5 h-5" />
               Contato e Suporte
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-slate-300 space-y-4">
+          <CardContent className="text-[#c8c8c8] space-y-4">
             <p>
               Para questões sobre privacidade, segurança ou exclusão de dados, 
               entre em contato através do sistema de feedback integrado no aplicativo 
               ou pelo e-mail de suporte.
             </p>
-            <p className="text-slate-400 text-sm">
+            <p className="text-[#a8a8a8] text-sm">
               Respondemos a todas as solicitações relacionadas à privacidade em até 48 horas.
             </p>
           </CardContent>
         </Card>
 
-        <div className="text-center pt-8 border-t border-slate-800 space-y-2">
-          <p className="text-slate-400 text-sm">
+        <div className="text-center pt-8 border-t border-[#2a2a2a] space-y-2">
+          <p className="text-[#a8a8a8] text-sm">
             Esta política pode ser atualizada ocasionalmente. Notificaremos sobre
             mudanças significativas através do aplicativo.
           </p>
@@ -219,7 +219,7 @@ export default function PrivacyPolicyPage() {
             {' · '}
             <Link to="/login" className="hover:underline" style={{ color: primaryHex }}>Voltar ao login</Link>
           </p>
-          <p className="text-slate-500 text-xs mt-2">
+          <p className="text-[#888888] text-xs mt-2">
             Backstage Pro - Gestão Profissional com Privacidade Total
           </p>
         </div>

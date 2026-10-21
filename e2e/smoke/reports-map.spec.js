@@ -2,16 +2,16 @@ import { test, expect } from '@playwright/test';
 import { seedAuth } from '../helpers/fakeAuth.js';
 import { installReportsMocks, fakeReportEventsCancelledOnly } from '../helpers/fakeReports.js';
 
-test('mapa interativo aparece em Relatórios com eventos localizados', async ({ page }) => {
+test('mapa interativo aparece em Minha turnê com eventos localizados', async ({ page }) => {
   await installReportsMocks(page);
   await seedAuth(page);
 
-  await page.goto('/reports', { waitUntil: 'domcontentloaded' });
+  await page.goto('/mapa', { waitUntil: 'domcontentloaded' });
   await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 20_000 });
 
   const map = page.getByTestId('brazil-visited-map');
   await expect(map).toBeVisible({ timeout: 15_000 });
-  await expect(map.getByText(/minha turn[eê]/i)).toBeVisible();
+  await expect(page.getByRole('heading', { name: /minha turn[eê]/i })).toBeVisible();
   await expect(map.getByText(/suas cidades/i)).toBeVisible();
   await expect(map.getByRole('button', { name: /São Paulo/i })).toBeVisible();
   await expect(map.getByRole('button', { name: /Rio de Janeiro/i })).toBeVisible();
@@ -22,7 +22,7 @@ test('botão Como usar abre o tour do mapa', async ({ page }) => {
   await installReportsMocks(page);
   await seedAuth(page);
 
-  await page.goto('/reports', { waitUntil: 'domcontentloaded' });
+  await page.goto('/mapa', { waitUntil: 'domcontentloaded' });
   await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 20_000 });
 
   const map = page.getByTestId('brazil-visited-map');
@@ -37,7 +37,7 @@ test('mapa interativo lista empresa do cliente nos eventos da cidade', async ({ 
   await installReportsMocks(page);
   await seedAuth(page);
 
-  await page.goto('/reports', { waitUntil: 'domcontentloaded' });
+  await page.goto('/mapa', { waitUntil: 'domcontentloaded' });
   await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 20_000 });
 
   const map = page.getByTestId('brazil-visited-map');
@@ -52,7 +52,7 @@ test('mapa vazio quando só há eventos cancelados', async ({ page }) => {
   await installReportsMocks(page, fakeReportEventsCancelledOnly());
   await seedAuth(page);
 
-  await page.goto('/reports', { waitUntil: 'domcontentloaded' });
+  await page.goto('/mapa', { waitUntil: 'domcontentloaded' });
   await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 20_000 });
 
   const map = page.getByTestId('brazil-visited-map');

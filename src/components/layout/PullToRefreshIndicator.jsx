@@ -24,7 +24,7 @@ export default function PullToRefreshIndicator({ pullDistance, isRefreshing, thr
           style={{ top: 'calc(env(safe-area-inset-top, 0px) + 3rem)' }}
         >
           <div
-            className="flex items-center gap-2.5 rounded-full border border-white/10 bg-[#0a0c12]/92 pl-1.5 pr-4 py-1.5 text-[11px] font-mono text-slate-300 backdrop-blur-xl shadow-xl"
+            className="flex items-center gap-2.5 rounded-full border border-white/10 bg-[#0a0c12]/92 pl-1.5 pr-4 py-1.5 text-[11px] font-mono text-[#c8c8c8] backdrop-blur-xl shadow-xl"
             style={{
               boxShadow: ready
                 ? `0 0 0 1px ${primaryHex}40, 0 8px 24px ${primaryHex}20`

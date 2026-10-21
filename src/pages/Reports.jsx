@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { hardNavigate } from '@/lib/hardNavigate';
 import {
@@ -61,7 +61,6 @@ const NfTracker = lazy(() => import('@/components/reports/NfTracker'));
 const HoursReviewList = lazy(() => import('@/components/reports/HoursReviewList'));
 const CashflowForecast = lazy(() => import('@/components/reports/CashflowForecast'));
 const IRSummary = lazy(() => import('@/components/reports/IRSummary'));
-const BrazilVisitedMap = lazy(() => import('@/components/reports/BrazilVisitedMap'));
 
 function ChartBlockSkeleton({ className = 'h-64' }) {
   return <Skeleton className={`w-full rounded-lg ${className}`} />;
@@ -339,24 +338,12 @@ export default function ReportsPage() {
   const [selectedView, setSelectedView] = useState('overview');
   const [showProjection, setShowProjection] = useState(false);
 
-  // "Mais > Mapa" abre esta página com #mapa: mostra a visão geral e rola até o mapa.
+  // O mapa ganhou tela propria (/mapa, "Mais > Mapa"); link antigo /reports#mapa vai para la.
   const routerLocation = useLocation();
+  const navigate = useNavigate();
   useEffect(() => {
-    if (routerLocation.hash !== '#mapa') return undefined;
-    setSelectedView('overview');
-    let tries = 0;
-    const timer = setInterval(() => {
-      tries += 1;
-      const el = document.getElementById('mapa-visitado');
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        clearInterval(timer);
-      } else if (tries > 30) {
-        clearInterval(timer);
-      }
-    }, 150);
-    return () => clearInterval(timer);
-  }, [routerLocation.hash, routerLocation.key]);
+    if (routerLocation.hash === '#mapa') navigate('/mapa', { replace: true });
+  }, [routerLocation.hash, navigate]);
   const [selectedClientFilter, setSelectedClientFilter] = useState(null);
 
   // Modal states
@@ -819,11 +806,6 @@ export default function ReportsPage() {
             }}
             period={currentRange}
           />
-        </div>
-        <div id="mapa-visitado" className="scroll-mt-20">
-          <Suspense fallback={<ChartBlockSkeleton className="h-48" />}>
-            <BrazilVisitedMap events={data.events} clients={data.clients} />
-          </Suspense>
         </div>
       </motion.div>
 

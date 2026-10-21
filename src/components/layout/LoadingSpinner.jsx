@@ -22,7 +22,7 @@ export default function LoadingSpinner({
     <div className="flex flex-col items-center justify-center gap-4 bp-fade-in">
       <Loader2 className={`${sizeClasses[size]} bp-text-primary animate-spin`} />
       {text && (
-        <p className={`${textSizeClasses[size]} text-slate-400 font-medium`}>
+        <p className={`${textSizeClasses[size]} text-[#a8a8a8] font-medium`}>
           {text}
         </p>
       )}
@@ -31,7 +31,7 @@ export default function LoadingSpinner({
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 bg-slate-900 flex items-center justify-center z-[100]">
+      <div className="fixed inset-0 bg-[#161616] flex items-center justify-center z-[100]">
         {content}
       </div>
     );

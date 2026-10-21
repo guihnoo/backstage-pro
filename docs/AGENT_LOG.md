@@ -2985,3 +2985,13 @@ Registro cronológico de tarefas executadas por agentes.
 - **Testes**: unit 261/261; build ok; E2E smoke+regression 96 (1 pulado) — `reports-map.spec.js` atualizado para o titulo novo "Minha turne".
 - **Scripts usados** (fora do repo, na pasta temporaria da sessao): troca de paleta slate→All Access e limpeza de classes que brigam com os componentes base.
 - **Deploy**: nenhum.
+
+### VISUAL — Entregas 11 a 15 do All Access (Claude Code, branch `feat/visual-completo`)
+- **11** `a89e730` Novo trabalho no modelo do prototipo (clientes em pilula, dias para tocar, VAI RENDER + SALVAR).
+- **12** `92d4914` Perfil com crew pass amarelo e secoes novas.
+- **13** `42e80b7` Metas com os 5 tiers (Staff→Lenda) nas faixas de antes.
+- **14** `2ad53e5` Mentor "parceiro de estrada".
+- **15** tela nova `/mapa` (Minha turne) + telas de apoio (privacidade, termos, ajuda, erro, admin, toasts) + fundo #0a0a0a.
+- **Fora (funcoes novas, anotadas em IDEIAS 106-109)**: colar WhatsApp, entrada e saida, credencial com foto, varias funcoes com cache.
+- **Testes**: unit 261/261, build ok, E2E smoke+regression a cada entrega; testes ajustados aos nomes novos; teste do "+" com dados falsos.
+- **Deploy**: nenhum. Para publicar: aplicar migracao 042 antes.

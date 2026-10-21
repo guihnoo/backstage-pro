@@ -1,9 +1,5 @@
 import React from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { getCategoryConfig } from '@/lib/categoryConfig';
-import { AUTH_HERO_CATEGORY } from '@/lib/categoryGear';
-
-const FALLBACK_PRIMARY = getCategoryConfig(AUTH_HERO_CATEGORY).primaryHex;
 
 export class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -38,21 +34,20 @@ export class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6">
-          <AlertTriangle className="w-16 h-16 text-red-500 mb-4" />
-          <h1 className="text-2xl font-bold text-white mb-2">Oops! Algo deu errado</h1>
-          <p className="text-slate-400 text-center mb-6 max-w-md">
+        <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center p-6">
+          <AlertTriangle className="w-16 h-16 text-[#ff2e88] mb-4" />
+          <h1 className="font-poster text-[32px] leading-none uppercase text-white mb-3 text-center">Oops! Algo deu errado</h1>
+          <p className="text-[#a8a8a8] text-center mb-6 max-w-md">
             Desculpe, a aplicação encontrou um erro inesperado. Tente recarregar a página.
           </p>
-          <details className="mb-6 bg-slate-800 p-4 rounded-lg max-w-md w-full text-xs text-slate-300">
+          <details className="mb-6 bg-[#161616] border border-[#222222] p-4 rounded-[12px] max-w-md w-full text-xs text-[#c8c8c8]">
             <summary className="cursor-pointer font-semibold mb-2">Detalhes do erro</summary>
             <pre className="whitespace-pre-wrap">{this.state.error?.toString()}</pre>
           </details>
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:opacity-90"
-            style={{ backgroundColor: FALLBACK_PRIMARY }}
+            className="flex items-center gap-2 h-12 px-6 rounded-full bg-[#ffd400] text-[#0a0a0a] font-extrabold active:scale-[0.98]"
           >
             <RefreshCw className="w-4 h-4" />
             Recarregar Página
