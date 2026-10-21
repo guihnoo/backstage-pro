@@ -1084,6 +1084,12 @@ export default function CalendarPage() {
     if (type === 'work') handleQuickWorkEntry(day instanceof Date ? day : new Date(day));
   }, [handleQuickWorkEntry]);
 
+  // Hooks sempre antes de qualquer return antecipado (regra do React).
+  const handlePullRefresh = useCallback(async () => {
+    await Promise.all([refetchEvents(), refetchDailyWork(), refetchExpenses()]);
+  }, [refetchEvents, refetchDailyWork, refetchExpenses]);
+  const { pullDistance, isRefreshing, threshold } = usePullToRefresh(handlePullRefresh);
+
   if (authLoading && !user) {
     return (
       <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 md:p-6">
@@ -1100,10 +1106,6 @@ export default function CalendarPage() {
     );
   }
 
-    const handlePullRefresh = useCallback(async () => {
-    await Promise.all([refetchEvents(), refetchDailyWork(), refetchExpenses()]);
-  }, [refetchEvents, refetchDailyWork, refetchExpenses]);
-  const { pullDistance, isRefreshing, threshold } = usePullToRefresh(handlePullRefresh);
 
   const hasError = Boolean(eventsError);
   const showBlockingError = hasError && !offline && !(events?.length > 0);
@@ -1318,7 +1320,7 @@ export default function CalendarPage() {
             onRegisterWork={(ev) => handleQuickWorkEntry(ev)}
             onAddExpense={(ev) => {
               setEditingExpense(null);
-              setPrefillExpense({ event_id: ev.id });
+              setPrefilledEventIdForExpense(ev.id);
               setShowExpenseForm(true);
             }}
             formatCurrency={formatCurrency}

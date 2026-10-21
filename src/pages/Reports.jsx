@@ -73,6 +73,7 @@ const ClientDetailedTable = lazy(() => import('@/components/reports/ClientDetail
 const ExpenseAnalysis = lazy(() => import('@/components/reports/ExpenseAnalysis'));
 const ExportManager = lazy(() => import('@/components/reports/ExportManager'));
 const EventDetailModal = lazy(() => import('@/components/calendar/EventDetailModal'));
+const PaymentConfirmModal = lazy(() => import('@/components/reports/PaymentConfirmModal'));
 const EventForm = lazy(() => import('@/components/calendar/EventForm'));
 const ActivityHeatmap = lazy(() => import('@/components/reports/ActivityHeatmap'));
 const SeasonalityChart = lazy(() => import('@/components/reports/SeasonalityChart'));
@@ -395,6 +396,7 @@ export default function ReportsPage() {
 
   // State para o EventDetailModal e formulários de edição
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [payingEvent, setPayingEvent] = useState(null); // "Recebi" direto da lista A receber
   const [editingEvent, setEditingEvent] = useState(null);
   const [confirmDeleteEvent, setConfirmDeleteEvent] = useState(null);
 
@@ -808,7 +810,7 @@ export default function ReportsPage() {
             if (expBtn) expBtn.click();
             else appToast.info('Gerando exportação de relatórios...');
           }}
-          onMarkPaid={(ev) => handleQuickPay(ev)}
+          onMarkPaid={(ev) => setPayingEvent(ev)}
         />
         <div className="hidden">
           <ExportManager
@@ -838,6 +840,20 @@ export default function ReportsPage() {
         data={modalData}
         type={modalType}
         onItemClick={(ev) => { setModalOpen(false); setSelectedEvent(ev); }} />
+
+      {/* "Recebi": mesma janela de pagamento do app (com a regra das horas preenchidas) */}
+      {payingEvent && (
+        <Suspense fallback={null}>
+          <PaymentConfirmModal
+            event={payingEvent}
+            client={data.clients.find((c) => c.id === payingEvent.client_id)}
+            dailyWork={data.dailyWork || []}
+            isOpen={!!payingEvent}
+            onClose={() => setPayingEvent(null)}
+            onSuccess={() => { setPayingEvent(null); refreshData({ silent: true }); }}
+          />
+        </Suspense>
+      )}
 
       {/* Modal de detalhes do evento */}
       {selectedEvent && (
