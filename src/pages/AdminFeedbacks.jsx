@@ -86,7 +86,7 @@ function FeedbackCard({ item, onUpdate, primaryHex }) {
             <Ellipsis as="p" className="text-sm font-semibold text-white">
               {item.user_email || 'Usuário'}
             </Ellipsis>
-            <p className="text-[10px] text-[#666666] font-mono mt-0.5">
+            <p className="text-[10px] text-[#666666] font-tag mt-0.5">
               {item.created_at
                 ? format(parseISO(item.created_at), "d MMM yyyy · HH:mm", { locale: ptBR })
                 : '—'}

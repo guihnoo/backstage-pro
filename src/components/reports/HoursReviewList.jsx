@@ -38,7 +38,7 @@ export default function HoursReviewList({ events = [], dailyWork = [], clients =
       </div>
 
       {issues.length === 0 ? (
-        <p className="flex items-center gap-2 text-sm text-emerald-400 py-4">
+        <p className="flex items-center gap-2 text-sm text-[#ffd400] py-4">
           <CheckCircle2 className="w-4 h-4" /> Nenhum possível erro encontrado.
         </p>
       ) : (

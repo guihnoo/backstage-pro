@@ -149,14 +149,14 @@ const PERIOD_OPTIONS = [
 const StatCard = ({ title, value, pulseValue, pulseColor, subtitle, icon: Icon, color, trend, onClick, isClickable = true }) => {
   const getTrendIcon = () => {
     if (!trend) return null;
-    if (trend.change > 0) return <ArrowUp className="w-3 h-3 text-green-400" />;
+    if (trend.change > 0) return <ArrowUp className="w-3 h-3 text-[#ffd400]" />;
     if (trend.change < 0) return <ArrowDown className="w-3 h-3 text-[#ff2e88]" />;
     return <Minus className="w-3 h-3 text-[#a8a8a8]" />;
   };
 
   const getTrendColor = () => {
     if (!trend) return 'text-[#a8a8a8]';
-    if (trend.change > 0) return 'text-green-400';
+    if (trend.change > 0) return 'text-[#ffd400]';
     if (trend.change < 0) return 'text-[#ff2e88]';
     return 'text-[#a8a8a8]';
   };
@@ -188,7 +188,7 @@ const StatCard = ({ title, value, pulseValue, pulseColor, subtitle, icon: Icon, 
           )}
         </div>
         {isClickable && onClick && (
-          <div className="mt-2 text-[11px] font-mono text-[#ffd400] opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="mt-2 text-[11px] font-tag text-[#ffd400] opacity-0 group-hover:opacity-100 transition-opacity">
             Clique para ver detalhes →
           </div>
         )}
@@ -244,7 +244,7 @@ const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type, onItemClick
                 )}
               </div>
               <div className="text-right flex-shrink-0">
-                <p className={`font-bold ${item.value < 0 ? 'text-[#ff2e88]' : 'text-green-400'}`}>{isVisible ? formatCurrency(item.value) : '••••'}</p>
+                <p className={`font-bold ${item.value < 0 ? 'text-[#ff2e88]' : 'text-[#ffd400]'}`}>{isVisible ? formatCurrency(item.value) : '••••'}</p>
                 {item.date && <p className="text-xs text-[#888888]">{item.date}</p>}
                 {item.event_ref && <p className="text-[10px] text-[#666666] mt-0.5">Toque para detalhes</p>}
                 {item.client_id && (
@@ -886,7 +886,7 @@ export default function ReportsPage() {
             {/* Total projetado */}
             <div className="flex items-center justify-between p-4 rounded-xl border bp-surface-primary">
               <div>
-                <p className="text-xs bp-text-primary uppercase tracking-wider font-mono mb-0.5">Total projetado</p>
+                <p className="text-xs bp-text-primary uppercase tracking-wider font-tag mb-0.5">Total projetado</p>
                 <p className="text-2xl font-black text-white">
                   {isVisible ? formatCurrency(processedData.next.projectedRevenue) : '•••••'}
                 </p>

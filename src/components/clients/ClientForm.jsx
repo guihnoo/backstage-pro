@@ -409,7 +409,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
                   onSelect={handleCompanySelect}
                   disabled={loading}
                 />
-                <p className="text-[10px] text-[#666666] font-mono leading-relaxed">
+                <p className="text-[10px] text-[#666666] font-tag leading-relaxed">
                   Busca no banco do Backstage Pro e na Receita Federal.
                   Encontrou? Clique para preencher tudo automaticamente.
                   Ou preencha manualmente abaixo.
@@ -419,10 +419,10 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
 
             {/* Informações Básicas */}
             <div className="space-y-4">
-              <h3 className="text-base sm:text-lg font-medium text-white flex items-center gap-2">
+              <h3 className="font-tag text-[11px] tracking-[2px] uppercase text-[#a8a8a8] flex items-center gap-2">
                 {formData.client_type === 'pessoa'
-                  ? <User className="w-4 h-4 sm:w-5 sm:h-5 bp-person-icon flex-shrink-0" />
-                  : <Building2 className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" style={theme.accentStyle} />
+                  ? <User className="w-3.5 h-3.5 text-[#ffd400] flex-shrink-0" />
+                  : <Building2 className="w-3.5 h-3.5 text-[#ffd400] flex-shrink-0" />
                 }
                 Informações Básicas
               </h3>
@@ -549,9 +549,9 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
             </div>
 
             {/* Políticas de Pagamento */}
-            <div className="space-y-4 p-4 bg-[#161616]/30 rounded-lg border border-[#262626]">
-              <h3 className="text-base sm:text-lg font-medium text-white flex items-center gap-2">
-                <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 flex-shrink-0" />
+            <div className="space-y-4 p-4 bg-[#0a0a0a] rounded-2xl border border-[#222222]">
+              <h3 className="font-tag text-[11px] tracking-[2px] uppercase text-[#a8a8a8] flex items-center gap-2">
+                <DollarSign className="w-3.5 h-3.5 text-[#ffd400] flex-shrink-0" />
                 Políticas de Pagamento
               </h3>
 

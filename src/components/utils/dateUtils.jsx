@@ -245,24 +245,24 @@ export const getEventStatusConfig = (event) => {
       label: 'Agendado'
     },
     'in_progress': {
-      color: 'text-amber-400', 
-      bgColor: 'bg-amber-500/20',
-      borderColor: 'border-amber-500/30',
-      badgeClass: 'bg-amber-100 text-amber-800',
+      color: 'text-[#ffd400]', 
+      bgColor: 'bg-[#ffd400]/20',
+      borderColor: 'border-[#ffd400]/30',
+      badgeClass: 'bg-[#ffd400] text-[#0a0a0a]',
       label: 'Em Andamento'
     },
     'completed': {
-      color: 'text-green-400',
-      bgColor: 'bg-green-500/20', 
-      borderColor: 'border-green-500/30',
-      badgeClass: 'bg-green-100 text-green-800',
+      color: 'text-[#ffd400]',
+      bgColor: 'bg-[#ffd400]/20', 
+      borderColor: 'border-[#ffd400]/30',
+      badgeClass: 'bg-[#ffd400] text-[#0a0a0a]',
       label: 'Concluído'
     },
     'archived': {
-      color: 'text-slate-400',
-      bgColor: 'bg-slate-500/20',
-      borderColor: 'border-slate-500/30', 
-      badgeClass: 'bg-slate-100 text-slate-800',
+      color: 'text-[#a8a8a8]',
+      bgColor: 'bg-[#555555]/20',
+      borderColor: 'border-[#444444]/30', 
+      badgeClass: 'bg-[#e0e0e0] text-[#333333]',
       label: 'Arquivado'
     }
   };

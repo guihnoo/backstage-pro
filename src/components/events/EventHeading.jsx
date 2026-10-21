@@ -10,7 +10,7 @@ export default function EventHeading({ event, client, size = 'md', className = '
         ? 'text-sm font-bold text-white leading-tight'
         : 'text-base sm:text-lg font-bold text-white leading-tight';
 
-  const subtitleClass = size === 'lg' ? 'text-sm text-slate-400 mt-1' : 'text-xs text-slate-400 mt-0.5';
+  const subtitleClass = size === 'lg' ? 'text-sm text-[#a8a8a8] mt-1' : 'text-xs text-[#a8a8a8] mt-0.5';
 
   return (
     <div className={`min-w-0 ${className}`}>

@@ -219,7 +219,7 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                 <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-[#ffd400]/10 border border-[#ffd400]/30">
                   <div className="flex items-center gap-2 text-[#ffd400] text-sm">
                     <Timer className="w-4 h-4 flex-shrink-0 animate-pulse" />
-                    <span>Timer ativo: <span className="font-mono font-bold">{formatElapsed(timerElapsed)}</span></span>
+                    <span>Timer ativo: <span className="font-tag font-bold">{formatElapsed(timerElapsed)}</span></span>
                   </div>
                   <Button
                     type="button"
@@ -304,9 +304,9 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                     <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Extras</p>
                     <p className="text-lg font-black text-[#ff2e88]">{summary.overtime.toFixed(1)}h</p>
                   </div>
-                  <div className="rounded-lg p-3 text-center border border-emerald-500/25 bg-emerald-500/5">
+                  <div className="rounded-lg p-3 text-center border border-[#ffd400]/25 bg-[#ffd400]/5">
                     <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Cachê</p>
-                    <p className="text-base font-black text-emerald-400 leading-tight">
+                    <p className="text-base font-black text-[#ffd400] leading-tight">
                       {isVisible ? formatCurrency(summary.cache) : '••••'}
                     </p>
                   </div>

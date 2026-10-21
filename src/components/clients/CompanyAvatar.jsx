@@ -21,7 +21,7 @@ export default function CompanyAvatar({
     return (
       <span
         className={cn(
-          `${sz} rounded-lg border border-slate-600 bg-white flex items-center justify-center flex-shrink-0 overflow-hidden`,
+          `${sz} rounded-lg border border-[#2a2a2a] bg-white flex items-center justify-center flex-shrink-0 overflow-hidden`,
           className,
         )}
       >

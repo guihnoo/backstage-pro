@@ -8,7 +8,7 @@ export default function LiveClockBar({ primaryHex = '#EAB308', isLive = false })
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest"
+      className="flex items-center gap-2 font-tag text-[10px] uppercase tracking-widest"
       style={{ color: isLive ? primaryHex : '#6b7283' }}
     >
       {isLive && (

@@ -113,7 +113,7 @@ function CompanyCard({ company, onSelect, sourceBadge }) {
                 <CheckCircle2 className="w-3.5 h-3.5 bp-text-primary" title="Dados verificados (Receita Federal)" />
               )}
               {sourceBadge && (
-                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border" style={sourceBadge.style}>
+                <span className="text-[9px] font-tag px-1.5 py-0.5 rounded border" style={sourceBadge.style}>
                   {sourceBadge.label}
                 </span>
               )}
@@ -132,7 +132,7 @@ function CompanyCard({ company, onSelect, sourceBadge }) {
               </span>
             )}
             {cnpjFmt && (
-              <span className="text-[11px] text-[#888888] font-mono">{cnpjFmt}</span>
+              <span className="text-[11px] text-[#888888] font-tag">{cnpjFmt}</span>
             )}
             {company.cnae && (
               <span className="text-[11px] text-[#888888] truncate max-w-[180px]">{company.cnae}</span>
@@ -182,7 +182,7 @@ function SelectedCompany({ company, onClear }) {
           )}
           <div className="flex items-center gap-2 mt-0.5">
             {location && <span className="text-[11px] text-[#888888]">{location}</span>}
-            {company.cnpj && <span className="text-[11px] text-[#666666] font-mono">{formatCNPJ(company.cnpj)}</span>}
+            {company.cnpj && <span className="text-[11px] text-[#666666] font-tag">{formatCNPJ(company.cnpj)}</span>}
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -214,7 +214,7 @@ function SelectedCompany({ company, onClear }) {
             </span>
           )}
           {company.cnpj && (
-            <span className="text-[10px] text-[#888888] font-mono">
+            <span className="text-[10px] text-[#888888] font-tag">
               <span className="text-[#666666]">CNPJ: </span>{formatCNPJ(company.cnpj)}
             </span>
           )}
@@ -504,7 +504,7 @@ export default function CompanySearchInput({ onSelect, disabled }) {
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-2">
                   {results.filter(r => r._origin === 'local').length > 0 && (
                     <div>
-                      <p className="text-[10px] font-mono uppercase tracking-wider bp-text-primary mb-1.5 flex items-center gap-1">
+                      <p className="text-[10px] font-tag uppercase tracking-wider bp-text-primary mb-1.5 flex items-center gap-1">
                         <Sparkles className="w-3 h-3" /> Já cadastradas no Backstage Pro
                       </p>
                       <div className="space-y-2">
@@ -516,7 +516,7 @@ export default function CompanySearchInput({ onSelect, disabled }) {
                   )}
                   {results.filter(r => r._origin === 'api').length > 0 && (
                     <div>
-                      <p className="text-[10px] font-mono uppercase tracking-wider text-green-400 mb-1.5 flex items-center gap-1">
+                      <p className="text-[10px] font-tag uppercase tracking-wider text-[#ffd400] mb-1.5 flex items-center gap-1">
                         <Globe className="w-3 h-3" /> Receita Federal
                       </p>
                       <div className="space-y-2">
@@ -571,7 +571,7 @@ export default function CompanySearchInput({ onSelect, disabled }) {
                   onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), runCNPJSearch())}
                   disabled={disabled || cnpjLoading}
                   placeholder="00.000.000/0001-00"
-                  className="pl-10 font-mono tracking-wider"
+                  className="pl-10 font-tag tracking-wider"
                   maxLength={18}
                 />
               </div>
@@ -596,7 +596,7 @@ export default function CompanySearchInput({ onSelect, disabled }) {
             <AnimatePresence>
               {cnpjResult && (
                 <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
-                  <p className="text-[10px] font-mono uppercase tracking-wider text-green-400 mb-1.5 flex items-center gap-1">
+                  <p className="text-[10px] font-tag uppercase tracking-wider text-[#ffd400] mb-1.5 flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3" /> Empresa encontrada
                   </p>
                   <CompanyCard company={cnpjResult} onSelect={handleSelect} />
@@ -664,7 +664,7 @@ export default function CompanySearchInput({ onSelect, disabled }) {
 
                 {nfeData.dest && (
                   <div>
-                    <p className="text-[10px] font-mono uppercase tracking-wider bp-text-primary mb-1.5 flex items-center gap-1">
+                    <p className="text-[10px] font-tag uppercase tracking-wider bp-text-primary mb-1.5 flex items-center gap-1">
                       <Building2 className="w-3 h-3" /> Contratante / Destinatário
                     </p>
                     <CompanyCard
@@ -676,7 +676,7 @@ export default function CompanySearchInput({ onSelect, disabled }) {
                 )}
                 {nfeData.emit && (
                   <div>
-                    <p className="text-[10px] font-mono uppercase tracking-wider text-[#ffd400] mb-1.5 flex items-center gap-1">
+                    <p className="text-[10px] font-tag uppercase tracking-wider text-[#ffd400] mb-1.5 flex items-center gap-1">
                       <User className="w-3 h-3" /> Emitente
                     </p>
                     <CompanyCard

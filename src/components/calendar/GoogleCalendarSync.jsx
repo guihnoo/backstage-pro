@@ -254,7 +254,7 @@ export default function GoogleCalendarSync() {
           {/* Status da Conexão */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between min-w-0">
             <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1">
-              <div className={`w-3 h-3 rounded-full shrink-0 ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-[#ff2e88]'}`} />
+              <div className={`w-3 h-3 rounded-full shrink-0 ${isConnected ? 'bg-[#ffd400] animate-pulse' : 'bg-[#ff2e88]'}`} />
               <span className="text-white font-medium">
                 {isConnected ? 'Conectado' : 'Desconectado'}
               </span>
@@ -365,13 +365,13 @@ export default function GoogleCalendarSync() {
 
               {/* Status da Última Sincronização */}
               {lastSyncStatus && (
-                <Alert className={lastSyncStatus.success ? 'border-green-500 bg-green-500/10' : 'border-[#ff2e88] bg-[#ff2e88]/10'}>
+                <Alert className={lastSyncStatus.success ? 'border-[#ffd400] bg-[#ffd400]/10' : 'border-[#ff2e88] bg-[#ff2e88]/10'}>
                   {lastSyncStatus.success ? (
-                    <CheckCircle className="w-4 h-4 text-green-400" />
+                    <CheckCircle className="w-4 h-4 text-[#ffd400]" />
                   ) : (
                     <AlertTriangle className="w-4 h-4 text-[#ff2e88]" />
                   )}
-                  <AlertDescription className={lastSyncStatus.success ? 'text-green-300' : 'text-[#ff2e88]'}>
+                  <AlertDescription className={lastSyncStatus.success ? 'text-[#ffd400]' : 'text-[#ff2e88]'}>
                     {lastSyncStatus.message}
                     <br />
                     <span className="text-xs opacity-75">

@@ -6,6 +6,8 @@
 **Última rodada geral:** 2026-06-22 (S167) — auditoria E2E interativa CDP · 7 páginas validadas em conta real · 1 bug corrigido (ClientDetailModal Editar)  
 **Produção:** https://backstage-pro-beta.vercel.app
 
+**Visual All Access (2026-10-21):** auditoria por código + 31 fotos, app inteiro homogeneizado — ver [`AUDITORIA_VISUAL_ALLACCESS.md`](AUDITORIA_VISUAL_ALLACCESS.md). Falta conferir no celular (servidor de teste) e publicar.
+
 ---
 
 ## Como auditar cada item

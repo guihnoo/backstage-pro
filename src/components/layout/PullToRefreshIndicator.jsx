@@ -24,7 +24,7 @@ export default function PullToRefreshIndicator({ pullDistance, isRefreshing, thr
           style={{ top: 'calc(env(safe-area-inset-top, 0px) + 3rem)' }}
         >
           <div
-            className="flex items-center gap-2.5 rounded-full border border-white/10 bg-[#0a0c12]/92 pl-1.5 pr-4 py-1.5 text-[11px] font-mono text-[#c8c8c8] backdrop-blur-xl shadow-xl"
+            className="flex items-center gap-2.5 rounded-full border border-white/10 bg-[#161616] pl-1.5 pr-4 py-1.5 text-[11px] font-tag text-[#c8c8c8]  shadow-xl"
             style={{
               boxShadow: ready
                 ? `0 0 0 1px ${primaryHex}40, 0 8px 24px ${primaryHex}20`
@@ -71,11 +71,11 @@ export default function PullToRefreshIndicator({ pullDistance, isRefreshing, thr
                     animate={{ rotate: ready ? 180 : progress * 160 }}
                     transition={{ type: 'spring', stiffness: 280, damping: 18 }}
                   >
-                    <RefreshCw className="w-3 h-3" style={{ color: ready ? primaryHex : '#8a91a1' }} />
+                    <RefreshCw className="w-3 h-3" style={{ color: ready ? primaryHex : '#a8a8a8' }} />
                   </motion.div>
                 </div>
                 <motion.span
-                  animate={{ color: ready ? '#ffffff' : '#8a91a1' }}
+                  animate={{ color: ready ? '#ffffff' : '#a8a8a8' }}
                   transition={{ duration: 0.15 }}
                 >
                   {ready ? 'Solte para atualizar' : 'Puxe para atualizar'}

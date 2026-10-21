@@ -19,7 +19,7 @@ function EventRow({ event, client, onOpen }) {
 
   return (
     <div className="flex items-center gap-3 py-2.5 border-b border-[#2a2a2a] last:border-0">
-      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${hasNf ? 'bg-emerald-400' : 'bg-[#ffd400]'}`} />
+      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${hasNf ? 'bg-[#ffd400]' : 'bg-[#ffd400]'}`} />
       <div className="flex-1 min-w-0">
         <EventHeading event={event} client={client} size="sm" />
         <p className="text-[11px] text-[#888888] truncate mt-0.5">{dateLabel}</p>
@@ -28,9 +28,9 @@ function EventRow({ event, client, onOpen }) {
         {hasNf ? (
           <div className="flex items-center justify-end gap-1">
             {nfeOk && (
-              <Sparkles className="w-3 h-3 text-emerald-400" title="Verificada pela IA" />
+              <Sparkles className="w-3 h-3 text-[#ffd400]" title="Verificada pela IA" />
             )}
-            <p className="text-[11px] font-tag text-emerald-400">
+            <p className="text-[11px] font-tag text-[#ffd400]">
               {nfeNumero ? `NF ${nfeNumero}` : 'Arquivo anexado'}
             </p>
           </div>

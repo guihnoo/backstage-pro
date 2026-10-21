@@ -129,7 +129,7 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
                 </Button>
               </label>
               {fileUrl && !analyzing && (
-                <Button variant="outline" className="w-40 border-green-500/50 text-green-400" disabled>
+                <Button variant="outline" className="w-40 border-[#ffd400]/50 text-[#ffd400]" disabled>
                   <Upload className="w-4 h-4 mr-2" />
                   Salvo
                 </Button>

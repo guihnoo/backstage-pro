@@ -11,10 +11,10 @@ const STATIC_COLUMNS = [
   {
     key: 'negotiating',
     label: 'Negociando',
-    color: 'text-slate-300',
-    border: 'border-slate-600/40',
-    header: 'bg-slate-700/40',
-    dot: '#94a3b8',
+    color: 'text-[#c8c8c8]',
+    border: 'border-[#2a2a2a]/40',
+    header: 'bg-[#2a2a2a]/40',
+    dot: '#a8a8a8',
     match: (ev) => ev.status === 'pending' && ev.payment_status !== 'paid',
   },
   {
@@ -28,18 +28,18 @@ const STATIC_COLUMNS = [
   {
     key: 'to_receive',
     label: 'A Receber',
-    color: 'text-amber-300',
-    border: 'border-amber-500/30',
-    header: 'bg-amber-500/10',
+    color: 'text-[#ffd400]',
+    border: 'border-[#ffd400]/30',
+    header: 'bg-[#ffd400]/10',
     dot: '#fbbf24',
     match: (ev) => ev.status === 'completed' && ev.payment_status !== 'paid',
   },
   {
     key: 'paid',
     label: 'Pago',
-    color: 'text-emerald-300',
-    border: 'border-emerald-500/30',
-    header: 'bg-emerald-500/10',
+    color: 'text-[#ffd400]',
+    border: 'border-[#ffd400]/30',
+    header: 'bg-[#ffd400]/10',
     dot: '#34d399',
     match: (ev) => ev.payment_status === 'paid',
   },
@@ -60,13 +60,13 @@ const UrgencyBadge = ({ ev }) => {
 
   let cls, label;
   if (days >= 30) {
-    cls = 'bg-red-500/20 border-red-500/40 text-red-300';
+    cls = 'bg-[#ff2e88]/20 border-[#ff2e88]/40 text-[#ff2e88]';
     label = `${days}d vencido`;
   } else if (days >= 14) {
-    cls = 'bg-amber-500/20 border-amber-500/40 text-amber-300';
+    cls = 'bg-[#ffd400]/20 border-[#ffd400]/40 text-[#ffd400]';
     label = `${days}d atraso`;
   } else {
-    cls = 'bg-slate-700/60 border-slate-600/40 text-slate-400';
+    cls = 'bg-[#2a2a2a]/60 border-[#2a2a2a]/40 text-[#a8a8a8]';
     label = `${days}d atrás`;
   }
 
@@ -91,7 +91,7 @@ const KanbanCard = ({ ev, client, onOpen, formatCurrency, isVisible, showUrgency
     <button
       type="button"
       onClick={() => onOpen(ev)}
-      className="w-full text-left bg-slate-800/70 hover:bg-slate-800 border border-slate-700/50 hover:border-slate-600 rounded-lg p-3 transition-all group"
+      className="w-full text-left bg-[#1f1f1f]/70 hover:bg-[#1f1f1f] border border-[#2a2a2a]/50 hover:border-[#2a2a2a] rounded-lg p-3 transition-all group"
     >
       <div className="flex items-start gap-2">
         <div
@@ -103,7 +103,7 @@ const KanbanCard = ({ ev, client, onOpen, formatCurrency, isVisible, showUrgency
           <div className="flex items-center justify-between gap-2 mt-2">
             <div className="flex items-center gap-1.5 flex-shrink-0">
               {dateStr && (
-                <span className="text-[10px] text-slate-500 capitalize">{dateStr}</span>
+                <span className="text-[10px] text-[#888888] capitalize">{dateStr}</span>
               )}
               {durationDays > 1 && (
                 <span className="text-[9px] font-bold px-1 py-0.5 rounded flex-shrink-0" style={{ background: `${evColor}25`, color: evColor }}>
@@ -121,7 +121,7 @@ const KanbanCard = ({ ev, client, onOpen, formatCurrency, isVisible, showUrgency
               )}
               {showUrgency && <UrgencyBadge ev={ev} />}
               {amount > 0 && (
-                <span className="text-xs font-semibold font-mono" style={{ color: accentColor || '#94a3b8' }}>
+                <span className="text-xs font-semibold font-tag" style={{ color: accentColor || '#a8a8a8' }}>
                   {isVisible ? formatCurrency(amount) : '••••'}
                 </span>
               )}
@@ -220,11 +220,11 @@ const KanbanPipeline = ({ events = [], clients = [], onEventClick }) => {
   if (activeEvents.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-        <div className="w-12 h-12 rounded-full bg-slate-800/60 flex items-center justify-center mb-3">
+        <div className="w-12 h-12 rounded-full bg-[#1f1f1f]/60 flex items-center justify-center mb-3">
           <span className="text-2xl">📋</span>
         </div>
-        <p className="text-sm font-medium text-slate-400">Nenhum evento no pipeline</p>
-        <p className="text-xs text-slate-600 mt-1">Eventos confirmados ou em negociação aparecem aqui</p>
+        <p className="text-sm font-medium text-[#a8a8a8]">Nenhum evento no pipeline</p>
+        <p className="text-xs text-[#666666] mt-1">Eventos confirmados ou em negociação aparecem aqui</p>
       </div>
     );
   }
@@ -241,7 +241,7 @@ const KanbanPipeline = ({ events = [], clients = [], onEventClick }) => {
             className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${
               period === p.key
                 ? 'bp-view-active'
-                : 'bg-slate-800/60 border-slate-700/60 text-slate-400 hover:border-slate-600 hover:text-slate-300'
+                : 'bg-[#1f1f1f]/60 border-[#2a2a2a]/60 text-[#a8a8a8] hover:border-[#2a2a2a] hover:text-[#c8c8c8]'
             }`}
           >
             {p.label}
@@ -251,16 +251,16 @@ const KanbanPipeline = ({ events = [], clients = [], onEventClick }) => {
 
       {/* Pipeline summary bar */}
       <div className="flex flex-wrap gap-3 text-xs">
-        <span className="bg-slate-800/60 border border-slate-700/60 rounded-lg px-3 py-1.5 text-slate-400">
-          <span className="font-bold text-slate-200">{summary.total}</span> shows
+        <span className="bg-[#1f1f1f]/60 border border-[#2a2a2a]/60 rounded-lg px-3 py-1.5 text-[#a8a8a8]">
+          <span className="font-bold text-[#e0e0e0]">{summary.total}</span> shows
         </span>
         {summary.toReceive > 0 && (
-          <span className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-1.5 text-amber-300">
+          <span className="bg-[#ffd400]/10 border border-[#ffd400]/30 rounded-lg px-3 py-1.5 text-[#ffd400]">
             A receber: <span className="font-bold">{isVisible ? formatCurrency(summary.toReceive) : '••••'}</span>
           </span>
         )}
         {summary.paid > 0 && (
-          <span className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-3 py-1.5 text-emerald-300">
+          <span className="bg-[#ffd400]/10 border border-[#ffd400]/30 rounded-lg px-3 py-1.5 text-[#ffd400]">
             Pago: <span className="font-bold">{isVisible ? formatCurrency(summary.paid) : '••••'}</span>
           </span>
         )}
@@ -298,10 +298,10 @@ const KanbanPipeline = ({ events = [], clients = [], onEventClick }) => {
               {/* Total */}
               {col.total > 0 && (
                 <div
-                  className={`px-3 py-1.5 border-b ${col.border} bg-slate-900/30`}
+                  className={`px-3 py-1.5 border-b ${col.border} bg-[#161616]/30`}
                   style={col.borderStyle}
                 >
-                  <p className="text-[10px] text-slate-500">
+                  <p className="text-[10px] text-[#888888]">
                     Total:{' '}
                     <span
                       className={`font-semibold ${col.color}`}
@@ -316,7 +316,7 @@ const KanbanPipeline = ({ events = [], clients = [], onEventClick }) => {
               {/* Cards */}
               <div className="flex-1 p-2 space-y-2 min-h-[120px]">
                 {col.events.length === 0 ? (
-                  <p className="text-[11px] text-slate-600 text-center py-6">vazio</p>
+                  <p className="text-[11px] text-[#666666] text-center py-6">vazio</p>
                 ) : (
                   col.events.map((ev) => (
                     <KanbanCard

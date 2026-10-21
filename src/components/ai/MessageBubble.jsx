@@ -34,8 +34,8 @@ const FunctionDisplay = ({ toolCall }) => {
         in_progress: { icon: Loader2, color: 'text-[#888888]', text: 'Executando...', spin: true },
         completed: isError ? 
             { icon: AlertCircle, color: 'text-[#ff2e88]', text: 'Falhou' } : 
-            { icon: CheckCircle2, color: 'text-green-600', text: 'Sucesso' },
-        success: { icon: CheckCircle2, color: 'text-green-600', text: 'Sucesso' },
+            { icon: CheckCircle2, color: 'text-[#ffd400]', text: 'Sucesso' },
+        success: { icon: CheckCircle2, color: 'text-[#ffd400]', text: 'Sucesso' },
         failed: { icon: AlertCircle, color: 'text-[#ff2e88]', text: 'Falhou' },
         error: { icon: AlertCircle, color: 'text-[#ff2e88]', text: 'Falhou' }
     }[status] || { icon: Zap, color: 'text-[#888888]', text: '' };
@@ -112,7 +112,7 @@ export default function MessageBubble({ message }) {
                 {message.content && (
                     <div className={cn(
                         "rounded-2xl px-4 py-2.5",
-                        isUser ? "bg-slate-200 text-slate-800" : "bg-[#1f1f1f] text-[#e0e0e0] border border-[#2a2a2a]"
+                        isUser ? "bg-[#c8c8c8] text-[#333333]" : "bg-[#1f1f1f] text-[#e0e0e0] border border-[#2a2a2a]"
                     )}>
                         {isUser ? (
                             <p className="text-sm leading-relaxed">{message.content}</p>
@@ -178,7 +178,7 @@ export default function MessageBubble({ message }) {
                 )}
             </div>
              {isUser && (
-                <div className="h-8 w-8 rounded-lg bg-slate-300 flex items-center justify-center flex-shrink-0 mt-0.5 ml-3">
+                <div className="h-8 w-8 rounded-lg bg-[#a8a8a8] flex items-center justify-center flex-shrink-0 mt-0.5 ml-3">
                     <User className="h-4 w-4 text-[#666666]" />
                 </div>
             )}

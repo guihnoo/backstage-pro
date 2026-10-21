@@ -50,30 +50,30 @@ export default function InactiveClientsPanel({ clientsWithStats = [] }) {
   };
 
   return (
-    <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 overflow-hidden">
+    <div className="rounded-xl border border-[#ffd400]/20 bg-[#ffd400]/5 overflow-hidden">
       {/* Header */}
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-amber-500/10 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-[#ffd400]/10 transition-colors"
       >
         <div className="flex items-center gap-2.5">
-          <div className="p-1.5 rounded-lg bg-amber-500/15 border border-amber-500/20">
-            <UserX className="w-4 h-4 text-amber-400" />
+          <div className="p-1.5 rounded-lg bg-[#ffd400]/15 border border-[#ffd400]/20">
+            <UserX className="w-4 h-4 text-[#ffd400]" />
           </div>
           <div className="text-left">
-            <p className="text-sm font-semibold text-amber-300">
+            <p className="text-sm font-semibold text-[#ffd400]">
               {inactive.length} cliente{inactive.length > 1 ? 's' : ''} inativo{inactive.length > 1 ? 's' : ''}
             </p>
-            <p className="text-[11px] text-amber-500/70">
+            <p className="text-[11px] text-[#ffd400]/70">
               Sem shows há mais de {INACTIVE_DAYS} dias — toque para reengajar
             </p>
           </div>
         </div>
         {open ? (
-          <ChevronUp className="w-4 h-4 text-amber-400 flex-shrink-0" />
+          <ChevronUp className="w-4 h-4 text-[#ffd400] flex-shrink-0" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-amber-400 flex-shrink-0" />
+          <ChevronDown className="w-4 h-4 text-[#ffd400] flex-shrink-0" />
         )}
       </button>
 
@@ -84,7 +84,7 @@ export default function InactiveClientsPanel({ clientsWithStats = [] }) {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="overflow-hidden border-t border-amber-500/20"
+            className="overflow-hidden border-t border-[#ffd400]/20"
           >
             <div className="p-4 space-y-2">
               {inactive.map((client, i) => {
@@ -97,22 +97,22 @@ export default function InactiveClientsPanel({ clientsWithStats = [] }) {
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.04 }}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-slate-800/60 border border-slate-700/50"
+                    className="flex items-center gap-3 p-3 rounded-lg bg-[#1f1f1f]/60 border border-[#2a2a2a]/50"
                   >
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="text-sm font-semibold text-white truncate">{client.name}</p>
-                        <span className="text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded px-1.5 py-0.5 flex-shrink-0">
+                        <span className="text-[10px] text-[#ffd400] bg-[#ffd400]/10 border border-[#ffd400]/20 rounded px-1.5 py-0.5 flex-shrink-0">
                           {months}m sem show
                         </span>
                       </div>
                       <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-                        <span className="text-[11px] text-slate-500">
+                        <span className="text-[11px] text-[#888888]">
                           {client.stats.totalEvents} show{client.stats.totalEvents !== 1 ? 's' : ''} no histórico
                         </span>
                         {client.stats.generatedRevenue > 0 && (
-                          <span className="text-[11px] text-slate-400">
+                          <span className="text-[11px] text-[#a8a8a8]">
                             {isVisible ? formatCurrency(client.stats.generatedRevenue) : '••••'} total
                           </span>
                         )}
@@ -124,7 +124,7 @@ export default function InactiveClientsPanel({ clientsWithStats = [] }) {
                       <button
                         type="button"
                         onClick={() => hardNavigate(`/client-detail?id=${client.id}`)}
-                        className="p-1.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-slate-700/50 transition-colors"
+                        className="p-1.5 rounded-lg text-[#888888] hover:text-[#c8c8c8] hover:bg-[#2a2a2a]/50 transition-colors"
                         title="Ver perfil do cliente"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
@@ -133,7 +133,7 @@ export default function InactiveClientsPanel({ clientsWithStats = [] }) {
                         type="button"
                         onClick={() => handleReactivate(client)}
                         disabled={!hasPhone}
-                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-emerald-400 border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-[#ffd400] border border-[#ffd400]/30 bg-[#ffd400]/10 hover:bg-[#ffd400]/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         title={hasPhone ? 'Enviar mensagem de reativação via WhatsApp' : 'Sem telefone cadastrado'}
                       >
                         <MessageCircle className="w-3.5 h-3.5" />

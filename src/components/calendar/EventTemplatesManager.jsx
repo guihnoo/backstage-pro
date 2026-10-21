@@ -148,7 +148,7 @@ export default function EventTemplatesManager({ primaryHex }) {
                               <span className="text-xs text-[#a8a8a8] truncate">{tpl.title}</span>
                             )}
                             {tpl.daily_cache_value > 0 && (
-                              <span className="text-xs font-mono text-emerald-400">
+                              <span className="text-xs font-tag text-[#ffd400]">
                                 {isVisible ? `R$ ${Number(tpl.daily_cache_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '••••'}
                               </span>
                             )}

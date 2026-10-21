@@ -65,7 +65,7 @@ export default function DrilldownModal({ open, onOpenChange, title, items = [], 
                     {row.subtitle && <p className="text-xs text-[#a8a8a8] truncate">{row.subtitle}</p>}
                   </div>
                   {row.amount != null && (
-                    <div className={`text-sm font-bold ${row.amount >= 0 ? "text-emerald-300" : "text-[#ff2e88]"}`}>
+                    <div className={`text-sm font-bold ${row.amount >= 0 ? "text-[#ffd400]" : "text-[#ff2e88]"}`}>
                       {row.amountFormatted || row.amount}
                     </div>
                   )}

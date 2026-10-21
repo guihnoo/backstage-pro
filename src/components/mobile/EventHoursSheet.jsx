@@ -461,15 +461,15 @@ export default function EventHoursSheet({
                   <div className="grid grid-cols-3 gap-2">
                     <div className="rounded-lg p-3 text-center border border-[#2a2a2a] bg-[#1f1f1f]">
                       <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Horas</p>
-                      <p className="text-lg font-black font-mono leading-tight" style={{ color: primaryHex }}>{hours.total.toFixed(1)}h</p>
+                      <p className="text-lg font-black font-tag leading-tight" style={{ color: primaryHex }}>{hours.total.toFixed(1)}h</p>
                     </div>
                     <div className="rounded-lg p-3 text-center border border-[#ff2e88]/25 bg-[#ff2e88]/5">
                       <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Extras</p>
-                      <p className="text-lg font-black text-[#ff2e88] font-mono leading-tight">{hours.overtime.toFixed(1)}h</p>
+                      <p className="text-lg font-black text-[#ff2e88] font-tag leading-tight">{hours.overtime.toFixed(1)}h</p>
                     </div>
-                    <div className="rounded-lg p-3 text-center border border-emerald-500/25 bg-emerald-500/5">
+                    <div className="rounded-lg p-3 text-center border border-[#ffd400]/25 bg-[#ffd400]/5">
                       <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Cachê</p>
-                      <p className="text-sm font-black text-emerald-400 font-mono leading-tight">
+                      <p className="text-sm font-black text-[#ffd400] font-tag leading-tight">
                         {isVisible ? formatCurrency(estimatedCache) : '••••'}
                       </p>
                     </div>

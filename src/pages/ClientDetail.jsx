@@ -216,7 +216,7 @@ export default function ClientDetailPage() {
             <button
               type="button"
               onClick={() => setConfirmDeleteClient(true)}
-              className="h-9 px-3 rounded-xl bg-[#161616] border border-[#333333] hover:border-red-500 text-red-400 text-xs font-bold flex items-center gap-1.5 transition-colors"
+              className="h-9 px-3 rounded-xl bg-[#161616] border border-[#333333] hover:border-[#ff2e88] text-[#ff2e88] text-xs font-bold flex items-center gap-1.5 transition-colors"
             >
               <Trash2 className="w-3.5 h-3.5" />
               Excluir
@@ -453,7 +453,7 @@ export default function ClientDetailPage() {
                 <button
                   type="button"
                   onClick={() => setEditingNotes(false)}
-                  className="text-red-400 hover:text-white transition-colors p-1"
+                  className="text-[#ff2e88] hover:text-white transition-colors p-1"
                 >
                   <X className="w-4 h-4" />
                 </button>

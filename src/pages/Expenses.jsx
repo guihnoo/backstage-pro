@@ -65,15 +65,15 @@ function MonthGroup({ monthKey, expenses, events, clients, onEdit, onDelete, onM
                 className="w-full flex items-center justify-between px-1 py-2 group gap-2 min-w-0"
             >
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                    {open ? <ChevronUp className="w-4 h-4 text-slate-500 flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-slate-500 flex-shrink-0" />}
-                    <span className="text-sm font-bold text-slate-300 truncate" title={label}>{label}</span>
-                    <span className="text-[11px] text-slate-600 font-mono flex-shrink-0">({expenses.length})</span>
+                    {open ? <ChevronUp className="w-4 h-4 text-[#888888] flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-[#888888] flex-shrink-0" />}
+                    <span className="text-sm font-bold text-[#c8c8c8] truncate" title={label}>{label}</span>
+                    <span className="text-[11px] text-[#666666] font-tag flex-shrink-0">({expenses.length})</span>
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
                     {reimbursable > 0 && (
-                        <span className="text-[11px] font-mono text-amber-400 truncate max-w-[8rem] sm:max-w-none" title={isVisible ? `${formatCurrency(reimbursable)} a reembolsar` : '•••• a reembolsar'}>{isVisible ? formatCurrency(reimbursable) : '••••'} a reimb.</span>
+                        <span className="text-[11px] font-tag text-[#ffd400] truncate max-w-[8rem] sm:max-w-none" title={isVisible ? `${formatCurrency(reimbursable)} a reembolsar` : '•••• a reembolsar'}>{isVisible ? formatCurrency(reimbursable) : '••••'} a reimb.</span>
                     )}
-                    <span className="text-sm font-bold text-red-300 truncate max-w-[6rem] sm:max-w-none" title={isVisible ? formatCurrency(total) : '••••'}>{isVisible ? formatCurrency(total) : '••••'}</span>
+                    <span className="text-sm font-bold text-[#ff2e88] truncate max-w-[6rem] sm:max-w-none" title={isVisible ? formatCurrency(total) : '••••'}>{isVisible ? formatCurrency(total) : '••••'}</span>
                 </div>
             </button>
             <AnimatePresence initial={false}>
@@ -124,8 +124,8 @@ const ExpensesSkeleton = () => (
 const StatCard = ({ title, value, onClick, active, primaryHex, accentHex }) => (
     <motion.div whileTap={{ scale: 0.98 }} onClick={onClick} className="cursor-pointer min-w-0">
         <div className={`p-4 rounded-xl border transition-all duration-200 min-w-0 overflow-hidden ${active ? 'border-[#ffd400] bg-[#ffd400]/10 shadow-sm' : 'border-[#222222] bg-[#121212] hover:border-[#333333]'}`}>
-            <p className="text-[10px] font-mono uppercase tracking-wider text-[#888888] mb-1.5 truncate">{title}</p>
-            <p className={`text-xl font-bold font-mono truncate ${active ? 'text-[#ffd400]' : 'text-white'}`} title={typeof value === 'string' ? value : undefined}>{value}</p>
+            <p className="text-[10px] font-tag uppercase tracking-wider text-[#888888] mb-1.5 truncate">{title}</p>
+            <p className={`text-xl font-bold font-tag truncate ${active ? 'text-[#ffd400]' : 'text-white'}`} title={typeof value === 'string' ? value : undefined}>{value}</p>
         </div>
     </motion.div>
 );

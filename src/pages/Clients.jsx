@@ -65,7 +65,7 @@ const ClientsSkeleton = () => (
     </div>
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {Array.from({ length: 6 }).map((_, i) => (
-        <Card key={i} className="bg-slate-900/50 border-slate-800">
+        <Card key={i} className="bg-[#161616]/50 border-[#2a2a2a]">
           <CardHeader className="flex flex-row items-center gap-4">
             <Skeleton className="h-12 w-12 rounded-full" />
             <div className="space-y-2 flex-1">
@@ -133,10 +133,10 @@ export default function ClientsPage() {
       const paymentScore = paymentPct === null ? null : {
         pct: paymentPct,
         label: paymentPct >= 90 ? 'Excelente' : paymentPct >= 70 ? 'Bom' : paymentPct >= 40 ? 'Regular' : 'Atenção',
-        colorClass: paymentPct >= 90 ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10'
-          : paymentPct >= 70 ? 'text-blue-400 border-blue-500/30 bg-blue-500/10'
-          : paymentPct >= 40 ? 'text-amber-400 border-amber-500/30 bg-amber-500/10'
-          : 'text-red-400 border-red-500/30 bg-red-500/10',
+        colorClass: paymentPct >= 90 ? 'text-[#ffd400] border-[#ffd400]/30 bg-[#ffd400]/10'
+          : paymentPct >= 70 ? 'text-[#ffd400] border-[#ffd400]/30 bg-[#ffd400]/10'
+          : paymentPct >= 40 ? 'text-[#ffd400] border-[#ffd400]/30 bg-[#ffd400]/10'
+          : 'text-[#ff2e88] border-[#ff2e88]/30 bg-[#ff2e88]/10',
       };
 
       const activity = getClientActivity(clientEvents);
@@ -338,9 +338,9 @@ export default function ClientsPage() {
         </div>
 
         {clientsError && hasCachedClients && (
-          <Alert className="border-red-500/40 bg-red-500/10">
-            <AlertCircle className="w-4 h-4 text-red-400" />
-            <AlertDescription className="text-red-300 text-sm">
+          <Alert className="border-[#ff2e88]/40 bg-[#ff2e88]/10">
+            <AlertCircle className="w-4 h-4 text-[#ff2e88]" />
+            <AlertDescription className="text-[#ff2e88] text-sm">
               <strong>Erro ao sincronizar:</strong> {clientsError} — exibindo clientes em cache.
             </AlertDescription>
           </Alert>

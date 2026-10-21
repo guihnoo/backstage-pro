@@ -1,12 +1,8 @@
-import { NeonAtmosphere } from '@/components/design/NeonAtmosphere';
-import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
-
-export function NeonPageShell({ primary = AUTH_HERO_PRIMARY, accent = AUTH_HERO_ACCENT, stage = false, className = '', children }) {
+// Visual All Access: fundo preto liso (#0a0a0a), sem o brilho/grade de palco do visual antigo.
+// Mantem a mesma API (primary/accent/stage ignorados) para nao mexer em quem usa.
+export function NeonPageShell({ className = '', children }) {
   return (
     <div className={`relative min-h-full overflow-x-clip bg-[#0a0a0a] text-white ${className}`}>
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <NeonAtmosphere primary={primary} accent={accent} stage={stage} />
-      </div>
       <div className="relative z-10 min-w-0">{children}</div>
     </div>
   );

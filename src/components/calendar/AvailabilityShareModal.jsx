@@ -91,7 +91,7 @@ export default function AvailabilityShareModal({ open, onClose, events = [], cli
       <DialogContent className="sm:max-w-md p-0 flex flex-col overflow-hidden max-h-[90dvh]">
         <DialogHeader className="px-4 pt-4 pb-3 border-b border-[#2a2a2a] flex-shrink-0 pr-14">
           <DialogTitle className="flex items-center gap-2">
-            <MessageCircle className="w-4 h-4 text-green-400" />
+            <MessageCircle className="w-4 h-4 text-[#ffd400]" />
             Compartilhar Disponibilidade
           </DialogTitle>
         </DialogHeader>
@@ -118,7 +118,7 @@ export default function AvailabilityShareModal({ open, onClose, events = [], cli
 
           {/* Summary pills */}
           <div className="flex gap-2">
-            <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/25 text-emerald-400">
+            <span className="text-xs px-2.5 py-1 rounded-full bg-[#ffd400]/15 border border-[#ffd400]/25 text-[#ffd400]">
               {freeDays.length} livre{freeDays.length !== 1 ? 's' : ''}
             </span>
             <span className="text-xs px-2.5 py-1 rounded-full bg-[#ff2e88]/15 border border-[#ff2e88]/25 text-[#ff2e88]">
@@ -143,7 +143,7 @@ export default function AvailabilityShareModal({ open, onClose, events = [], cli
             className="flex-1 border-[#2a2a2a] text-[#c8c8c8] hover:bg-[#1f1f1f] gap-2"
           >
             {copied ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <CheckCircle2 className="w-4 h-4 text-[#ffd400]" />
             ) : (
               <Copy className="w-4 h-4" />
             )}
@@ -151,7 +151,7 @@ export default function AvailabilityShareModal({ open, onClose, events = [], cli
           </Button>
           <Button
             onClick={handleWhatsApp}
-            className="flex-1 bg-green-600 hover:bg-green-700 text-white gap-2"
+            className="flex-1 bg-[#ffd400] hover:bg-[#ffd400] text-[#0a0a0a] gap-2"
           >
             <MessageCircle className="w-4 h-4" />
             WhatsApp

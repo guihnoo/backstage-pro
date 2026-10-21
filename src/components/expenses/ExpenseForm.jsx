@@ -313,7 +313,7 @@ export default function ExpenseForm({
                 </div>
 
                 {formData.receipt_url ? (
-                  <div className="flex items-center justify-between gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-2.5">
+                  <div className="flex items-center justify-between gap-3 rounded-lg border border-[#ffd400]/30 bg-[#ffd400]/10 p-2.5">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <img
                         src={formData.receipt_url}
@@ -321,7 +321,7 @@ export default function ExpenseForm({
                         className="w-11 h-11 rounded-md object-cover border border-[#2a2a2a] shrink-0"
                       />
                       <div className="min-w-0">
-                        <p className="text-xs font-semibold text-emerald-300 truncate">Comprovante anexado</p>
+                        <p className="text-xs font-semibold text-[#ffd400] truncate">Comprovante anexado</p>
                         <p className="text-[11px] text-[#a8a8a8] truncate">Incluído automaticamente no Fechamento</p>
                       </div>
                     </div>

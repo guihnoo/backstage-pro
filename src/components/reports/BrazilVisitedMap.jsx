@@ -615,7 +615,7 @@ function BrazilVisitedMapInner({ events = [], clients = [], showTitle = true }) 
                       {focusCities.slice(0, 8).map((c) => (
                         <span key={c.name} className="text-[11px]">
                           <span className="text-white">{c.name}</span>
-                          <span className="font-mono ml-1" style={{ color: primary }}>{c.count}×</span>
+                          <span className="font-tag ml-1" style={{ color: primary }}>{c.count}×</span>
                         </span>
                       ))}
                       {focusCities.length > 8 && (
@@ -733,7 +733,7 @@ function BrazilVisitedMapInner({ events = [], clients = [], showTitle = true }) 
                         <p className="text-[10px] text-[#888888]">{STATE_NAMES[city.uf] || city.uf}</p>
                       )}
                     </div>
-                    <span className="text-[11px] font-mono flex-shrink-0" style={{ color: primary }}>{city.count}×</span>
+                    <span className="text-[11px] font-tag flex-shrink-0" style={{ color: primary }}>{city.count}×</span>
                   </div>
                   {isLatest && (
                     <span className="text-[10px] mt-1 inline-block" style={{ color: accent }}>Mais recente</span>

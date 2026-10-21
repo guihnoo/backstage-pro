@@ -147,9 +147,9 @@ export default function IRSummary({ events = [], expenses = [], work = [] }) {
       {/* KPI grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5">
         {[
-          { label: 'Receita bruta', value: data.totalRevenue, color: 'text-green-400', Icon: TrendingUp },
+          { label: 'Receita bruta', value: data.totalRevenue, color: 'text-[#ffd400]', Icon: TrendingUp },
           { label: 'Despesas', value: data.totalExpenses, color: 'text-[#ff2e88]', Icon: TrendingDown },
-          { label: 'Lucro líquido', value: data.netProfit, color: data.netProfit >= 0 ? 'text-emerald-400' : 'text-[#ff2e88]', Icon: Minus },
+          { label: 'Lucro líquido', value: data.netProfit, color: data.netProfit >= 0 ? 'text-[#ffd400]' : 'text-[#ff2e88]', Icon: Minus },
           { label: 'Shows pagos', value: data.totalEvents, color: 'text-[#ffd400]', isCount: true, Icon: FileText },
         ].map(({ label, value, color, isCount, Icon }) => (
           <div key={label} className="bg-[#0a0a0a] border border-[#222222] rounded-[10px] p-2.5">
@@ -214,13 +214,13 @@ export default function IRSummary({ events = [], expenses = [], work = [] }) {
                 className={`grid grid-cols-4 gap-0 px-4 py-2 text-xs border-b border-[#2a2a2a] last:border-0 ${!hasData ? 'opacity-30' : ''}`}
               >
                 <span className="text-[#a8a8a8]">{m.label}</span>
-                <span className={`text-right font-medium ${m.rev > 0 ? 'text-green-400' : 'text-[#666666]'}`}>
+                <span className={`text-right font-medium ${m.rev > 0 ? 'text-[#ffd400]' : 'text-[#666666]'}`}>
                   {m.rev > 0 ? (isVisible ? formatCurrency(m.rev) : '••••') : '—'}
                 </span>
                 <span className={`text-right font-medium ${m.exp > 0 ? 'text-[#ff2e88]' : 'text-[#666666]'}`}>
                   {m.exp > 0 ? (isVisible ? formatCurrency(m.exp) : '••••') : '—'}
                 </span>
-                <span className={`text-right font-bold ${m.profit > 0 ? 'text-emerald-400' : m.profit < 0 ? 'text-[#ff2e88]' : 'text-[#666666]'}`}>
+                <span className={`text-right font-bold ${m.profit > 0 ? 'text-[#ffd400]' : m.profit < 0 ? 'text-[#ff2e88]' : 'text-[#666666]'}`}>
                   {hasData ? (isVisible ? formatCurrency(m.profit) : '••••') : '—'}
                 </span>
               </div>
@@ -229,9 +229,9 @@ export default function IRSummary({ events = [], expenses = [], work = [] }) {
           {/* Totals row */}
           <div className="grid grid-cols-4 gap-0 px-4 py-2.5 bg-[#1f1f1f] text-xs font-bold border-t border-[#2a2a2a]">
             <span className="text-[#c8c8c8]">Total</span>
-            <span className="text-right text-green-400">{isVisible ? formatCurrency(data.totalRevenue) : '••••'}</span>
+            <span className="text-right text-[#ffd400]">{isVisible ? formatCurrency(data.totalRevenue) : '••••'}</span>
             <span className="text-right text-[#ff2e88]">{isVisible ? formatCurrency(data.totalExpenses) : '••••'}</span>
-            <span className={`text-right ${data.netProfit >= 0 ? 'text-emerald-400' : 'text-[#ff2e88]'}`}>
+            <span className={`text-right ${data.netProfit >= 0 ? 'text-[#ffd400]' : 'text-[#ff2e88]'}`}>
               {isVisible ? formatCurrency(data.netProfit) : '••••'}
             </span>
           </div>

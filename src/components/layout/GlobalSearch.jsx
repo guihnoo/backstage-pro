@@ -15,9 +15,9 @@ const STATUS_LABEL = {
   scheduled:   { label: 'Agendado',     cls: 'bg-[#ffd400]/20 text-[#ffd400]' },
   confirmed:   { label: 'Confirmado',   themePrimary: true },
   in_progress: { label: 'Em andamento', cls: 'bg-[#ffd400]/20 text-[#ffd400]' },
-  completed:   { label: 'Concluído',    cls: 'bg-green-500/20 text-green-300' },
+  completed:   { label: 'Concluído',    cls: 'bg-[#ffd400]/20 text-[#ffd400]' },
   cancelled:   { label: 'Cancelado',    cls: 'bg-[#ff2e88]/20 text-[#ff2e88] line-through' },
-  archived:    { label: 'Arquivado',    cls: 'bg-slate-500/20 text-[#a8a8a8]' },
+  archived:    { label: 'Arquivado',    cls: 'bg-[#555555]/20 text-[#a8a8a8]' },
 };
 
 function normalize(s) {

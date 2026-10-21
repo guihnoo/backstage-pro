@@ -36,13 +36,13 @@ const CATEGORY_LABELS = {
 };
 
 const categoryColors = {
-  transporte: 'bg-blue-500/20 text-blue-300 border-blue-400/30',
-  alimentacao: 'bg-amber-500/20 text-amber-300 border-amber-400/30',
-  hospedagem: 'bg-purple-500/20 text-purple-300 border-purple-400/30',
-  equipamento: 'bg-green-500/20 text-green-300 border-green-400/30',
-  combustivel: 'bg-orange-500/20 text-orange-300 border-orange-400/30',
-  manutencao: 'bg-pink-500/20 text-pink-300 border-pink-400/30',
-  outros: 'bg-slate-500/20 text-slate-300 border-slate-400/30',
+  transporte: 'bg-[#ffd400]/20 text-[#ffd400] border-[#ffd400]/30',
+  alimentacao: 'bg-[#ffd400]/20 text-[#ffd400] border-[#ffd400]/30',
+  hospedagem: 'bg-[#ffd400]/20 text-[#ffd400] border-[#ffd400]/30',
+  equipamento: 'bg-[#ffd400]/20 text-[#ffd400] border-[#ffd400]/30',
+  combustivel: 'bg-[#ffd400]/20 text-[#ffd400] border-[#ffd400]/30',
+  manutencao: 'bg-[#ff2e88]/20 text-[#ff2e88] border-[#ff2e88]/30',
+  outros: 'bg-[#555555]/20 text-[#c8c8c8] border-[#444444]/30',
 };
 
 export default function ExpenseListItem({ expense, event, client, onEdit, onDelete, onMarkReimbursed, index = 0 }) {
@@ -68,9 +68,9 @@ export default function ExpenseListItem({ expense, event, client, onEdit, onDele
   }
 
   const statusBadge = expense.reimbursed
-    ? <Badge className="bg-green-500/20 text-green-300 border-green-400/30"><CheckCircle className="w-3 h-3 mr-1"/>Reembolsado</Badge>
+    ? <Badge className="bg-[#ffd400]/20 text-[#ffd400] border-[#ffd400]/30"><CheckCircle className="w-3 h-3 mr-1"/>Reembolsado</Badge>
     : expense.is_reimbursable
-      ? <Badge className="bg-amber-500/20 text-amber-300 border-amber-400/30"><AlertTriangle className="w-3 h-3 mr-1"/>A Reembolsar</Badge>
+      ? <Badge className="bg-[#ffd400]/20 text-[#ffd400] border-[#ffd400]/30"><AlertTriangle className="w-3 h-3 mr-1"/>A Reembolsar</Badge>
       : null;
 
   return (
@@ -89,7 +89,7 @@ export default function ExpenseListItem({ expense, event, client, onEdit, onDele
       >
         <button
           type="button"
-          className="flex-1 flex flex-col items-center justify-center gap-1 bg-slate-600 hover:bg-slate-500 transition-colors"
+          className="flex-1 flex flex-col items-center justify-center gap-1 bg-[#333333] hover:bg-[#555555] transition-colors"
           onClick={() => { collapse(); onEdit(expense); }}
         >
           <Edit className="w-5 h-5 text-white" />
@@ -97,7 +97,7 @@ export default function ExpenseListItem({ expense, event, client, onEdit, onDele
         </button>
         <button
           type="button"
-          className="flex-1 flex flex-col items-center justify-center gap-1 bg-red-600 hover:bg-red-500 transition-colors"
+          className="flex-1 flex flex-col items-center justify-center gap-1 bg-[#ff2e88] hover:bg-[#ff2e88] transition-colors"
           onClick={() => { collapse(); onDelete(expense.id); }}
         >
           <Trash2 className="w-5 h-5 text-white" />
@@ -124,7 +124,7 @@ export default function ExpenseListItem({ expense, event, client, onEdit, onDele
                 {statusBadge}
               </div>
             </div>
-            <div className="flex items-center gap-4 text-sm text-slate-400 flex-wrap">
+            <div className="flex items-center gap-4 text-sm text-[#a8a8a8] flex-wrap">
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5" />
                 <span>{(expense.date || expense.expense_date) ? format(parseISO(expense.date || expense.expense_date), "dd/MM/yyyy", { locale: ptBR }) : '—'}</span>
@@ -149,20 +149,20 @@ export default function ExpenseListItem({ expense, event, client, onEdit, onDele
               )}
             </div>
             {(expense.description || expense.notes) && (
-              <ClampedText lines={2} className="text-xs text-slate-500 mt-1.5 italic">
+              <ClampedText lines={2} className="text-xs text-[#888888] mt-1.5 italic">
                 {[expense.description, expense.notes].filter(Boolean).join(' · ')}
               </ClampedText>
             )}
           </div>
 
           <div className="flex items-center justify-between sm:justify-end gap-4 mt-2 sm:mt-0">
-            <p className="text-xl font-bold text-red-300">{isVisible ? formatCurrency(expense.amount) : '•••••'}</p>
+            <p className="text-xl font-bold text-[#ff2e88]">{isVisible ? formatCurrency(expense.amount) : '•••••'}</p>
             <div className="flex gap-2 items-center">
               {expense.is_reimbursable && !expense.reimbursed && onMarkReimbursed && (
                 <Button
                   size="sm"
                   variant="outline"
-                  className="bg-green-900/20 border-green-700/50 hover:bg-green-900/40 text-green-400 text-xs h-8 px-2"
+                  className="bg-[#ffd400]/20 border-[#ffd400]/50 hover:bg-[#ffd400]/40 text-[#ffd400] text-xs h-8 px-2"
                   onClick={() => onMarkReimbursed(expense)}
                   title="Marcar como reembolsado"
                 >
@@ -173,7 +173,7 @@ export default function ExpenseListItem({ expense, event, client, onEdit, onDele
               <Button
                 size="icon"
                 variant="ghost"
-                className="hover:bg-slate-700 h-8 w-8"
+                className="hover:bg-[#2a2a2a] h-8 w-8"
                 onClick={(e) => { e.stopPropagation(); onEdit(expense); }}
                 aria-label="Editar despesa"
               >
@@ -182,7 +182,7 @@ export default function ExpenseListItem({ expense, event, client, onEdit, onDele
               <Button
                 size="icon"
                 variant="ghost"
-                className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-8 w-8"
+                className="text-[#ff2e88] hover:text-[#ff2e88] hover:bg-[#ff2e88]/20 h-8 w-8"
                 onClick={(e) => { e.stopPropagation(); onDelete(expense.id); }}
                 aria-label="Excluir despesa"
               >

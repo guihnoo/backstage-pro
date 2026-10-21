@@ -4,7 +4,7 @@ import { BRAND_COLOR_PALETTE } from '@/lib/brandColors';
 export default function ColorGridPicker({ value, onChange, label = 'Cor da empresa' }) {
   return (
     <div className="space-y-2">
-      {label && <p className="text-sm font-medium text-slate-300">{label}</p>}
+      {label && <p className="font-tag text-[10px] tracking-[1px] uppercase text-[#a8a8a8]">{label}</p>}
       <div className="grid grid-cols-6 sm:grid-cols-12 gap-2">
         {BRAND_COLOR_PALETTE.map((swatch) => {
           const selected = value === swatch.hex;

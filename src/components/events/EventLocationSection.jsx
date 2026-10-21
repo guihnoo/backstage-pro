@@ -116,7 +116,7 @@ export default function EventLocationSection({
       <p className="text-[11px] text-[#888888] leading-relaxed">
         Você pode informar o endereço agora ou registrar a posição exata quando estiver no local do evento.
         {location_lat != null && location_lng != null && (
-          <span className="block text-[#666666] mt-0.5 font-mono">
+          <span className="block text-[#666666] mt-0.5 font-tag">
             {Number(location_lat).toFixed(5)}, {Number(location_lng).toFixed(5)}
             {location_state ? ` · ${location_state}` : ''}
           </span>

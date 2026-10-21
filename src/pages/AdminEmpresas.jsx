@@ -213,7 +213,7 @@ export default function AdminEmpresas() {
                     type="button"
                     disabled={busyId === s.id}
                     onClick={() => review(s.id, true)}
-                    className="flex-1 py-2 rounded-xl bg-emerald-600/90 text-white text-sm font-semibold flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    className="flex-1 py-2 rounded-xl bg-[#ffd400]/90 text-white text-sm font-semibold flex items-center justify-center gap-1.5 disabled:opacity-50"
                   >
                     <Check className="w-4 h-4" /> Aprovar
                   </button>

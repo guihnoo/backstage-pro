@@ -27,8 +27,8 @@ export default function OfflineBanner() {
           className="fixed left-0 right-0 z-50 flex justify-center px-3 pointer-events-none"
           style={{ top: 'calc(env(safe-area-inset-top, 0px) + 3.5rem)' }}
         >
-          <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-950/90 px-3 py-1.5 text-[11px] font-mono text-amber-200 shadow-lg backdrop-blur-md">
-            <WifiOff className="h-3.5 w-3.5 shrink-0 text-amber-400" aria-hidden />
+          <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-[#ffd400] bg-[#ffd400] px-3 py-1.5 text-[11px] font-tag font-bold text-[#0a0a0a] shadow-lg">
+            <WifiOff className="h-3.5 w-3.5 shrink-0 text-[#0a0a0a]" aria-hidden />
             <span>Sem internet — seus dados continuam disponíveis</span>
           </div>
         </motion.div>

@@ -2995,3 +2995,10 @@ Registro cronológico de tarefas executadas por agentes.
 - **Fora (funcoes novas, anotadas em IDEIAS 106-109)**: colar WhatsApp, entrada e saida, credencial com foto, varias funcoes com cache.
 - **Testes**: unit 261/261, build ok, E2E smoke+regression a cada entrega; testes ajustados aos nomes novos; teste do "+" com dados falsos.
 - **Deploy**: nenhum. Para publicar: aplicar migracao 042 antes.
+
+### VISUAL — Auditoria e homogeneizacao do app inteiro (Claude Code, branch `feat/visual-completo`)
+- **Pedido**: Guih testou no iPhone e viu partes no visual antigo.
+- **Auditoria**: por codigo (grafo de imports a partir de `src/main.jsx`: 142 `.jsx`, 80 com marcas antigas) + 31 fotos (todas as telas, vistas, abas e janelas).
+- **Raiz**: NeonGlass/NeonPageShell no padrao novo; NeonAtmosphere apagado; `.bp-chip-active`/`.bp-view-active` amarelo cheio; paleta antiga trocada em ~70 arquivos; font-mono -> font-tag; hex azul-marinho -> neutros.
+- **Pontuais**: janela do evento, selos da lista da Agenda (antes mostrava `in_progress`), conquistas e MEI, formulario de cliente, Ajuda, aviso sem internet (amarelo sobre amarelo), toasts.
+- **Doc**: `docs/AUDITORIA_VISUAL_ALLACCESS.md`.

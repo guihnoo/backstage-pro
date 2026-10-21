@@ -61,7 +61,7 @@ export default function SocialLoginButtons({ mode = 'login' }) {
         className="relative w-full h-[52px] flex items-center justify-center gap-3 px-4 rounded-[26px] border-0 font-extrabold text-[15px] transition-all disabled:opacity-60 disabled:cursor-not-allowed bg-white text-[#0a0a0a] bp-focus-ring"
       >
         {loading ? (
-          <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
+          <Loader2 className="w-5 h-5 animate-spin text-[#888888]" />
         ) : (
           <>
             <span className="absolute left-4 flex items-center justify-center w-6">

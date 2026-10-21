@@ -13,7 +13,7 @@ export default function TermsOfServicePage() {
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="min-h-screen bg-[#050609] text-white p-6"
+      className="min-h-screen bg-[#0a0a0a] text-white p-6"
     >
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="text-center mb-8">

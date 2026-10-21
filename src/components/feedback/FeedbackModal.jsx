@@ -240,7 +240,7 @@ export default function FeedbackModal({ open, onClose, primaryHex: primaryHexPro
                 )}
               </div>
 
-              <p className="text-[10px] text-[#666666] font-mono">
+              <p className="text-[10px] text-[#666666] font-tag">
                 Página: {location.pathname} · enviado com sua conta
               </p>
             </div>
@@ -251,7 +251,7 @@ export default function FeedbackModal({ open, onClose, primaryHex: primaryHexPro
                 onClick={handleSubmit}
                 disabled={sending || !message.trim()}
                 className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
-                style={{ background: primaryHex, color: '#050609' }}
+                style={{ background: primaryHex, color: '#0a0a0a' }}
               >
                 {sending ? (
                   <>

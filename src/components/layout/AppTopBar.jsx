@@ -72,14 +72,14 @@ export default function AppTopBar() {
         >
           <div
             data-tour="top-bar"
-            className="pointer-events-auto flex items-center gap-1 rounded-full bg-[#050609]/80 backdrop-blur-md border border-[#23262f]/80 pl-1 pr-0.5 py-0.5 shadow-lg shadow-black/30"
+            className="pointer-events-auto flex items-center gap-1 rounded-full bg-[#0a0a0a]/80 backdrop-blur-md border border-[#222222]/80 pl-1 pr-0.5 py-0.5 shadow-lg shadow-black/30"
           >
             <button
               type="button"
               aria-label="Busca global (Ctrl+K)"
               title="Buscar (Ctrl+K)"
               onClick={() => setSearchOpen(true)}
-              className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full text-[#8a91a1] hover:text-white hover:bg-[#1a1d26] transition-colors"
+              className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full text-[#a8a8a8] hover:text-white hover:bg-[#1a1d26] transition-colors"
             >
               <motion.span whileTap={{ scale: 0.9 }} className="flex items-center justify-center">
                 <Search className="w-5 h-5" />
@@ -91,14 +91,14 @@ export default function AppTopBar() {
               to="/admin/feedbacks"
               aria-label="Inbox de feedback"
               aria-current={onInbox ? 'page' : undefined}
-              className="relative flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full text-[#8a91a1] hover:text-white hover:bg-[#1a1d26] transition-colors"
+              className="relative flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full text-[#a8a8a8] hover:text-white hover:bg-[#1a1d26] transition-colors"
             >
               <motion.span whileTap={{ scale: 0.9 }} className="flex items-center justify-center">
                 <Inbox className="w-5 h-5" />
               </motion.span>
               {newCount > 0 && (
                 <span
-                  className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 rounded-full text-[#050609] text-[9px] font-black flex items-center justify-center"
+                  className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 rounded-full text-[#0a0a0a] text-[9px] font-black flex items-center justify-center"
                   style={{ backgroundColor: theme.primaryHex }}
                 >
                   {newCount > 9 ? '9+' : newCount}

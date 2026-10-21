@@ -13,9 +13,9 @@ export default function SmartSuggestions({ userData, onSuggestionClick }) {
       {
         icon: DollarSign,
         text: 'Como está meu faturamento este mês?',
-        color: 'text-green-400',
-        bgColor: 'bg-green-500/10',
-        borderColor: 'border-green-500/30'
+        color: 'text-[#ffd400]',
+        bgColor: 'bg-[#ffd400]/10',
+        borderColor: 'border-[#ffd400]/30'
       },
       {
         icon: Calendar,
@@ -30,16 +30,16 @@ export default function SmartSuggestions({ userData, onSuggestionClick }) {
       {
         icon: Users,
         text: 'Quais são meus principais clientes?',
-        color: 'text-amber-400',
-        bgColor: 'bg-amber-500/10',
-        borderColor: 'border-amber-500/30'
+        color: 'text-[#ffd400]',
+        bgColor: 'bg-[#ffd400]/10',
+        borderColor: 'border-[#ffd400]/30'
       },
       {
         icon: AlertCircle,
         text: 'Tenho pagamentos pendentes?',
-        color: 'text-red-400',
-        bgColor: 'bg-red-500/10',
-        borderColor: 'border-red-500/30'
+        color: 'text-[#ff2e88]',
+        bgColor: 'bg-[#ff2e88]/10',
+        borderColor: 'border-[#ff2e88]/30'
       },
       {
         icon: Zap,
@@ -57,9 +57,9 @@ export default function SmartSuggestions({ userData, onSuggestionClick }) {
       contextual.push({
         icon: AlertCircle,
         text: `Tenho ${formatBRLSimple(userData.a_receber)} a receber — como devo agir?`,
-        color: 'text-red-400',
-        bgColor: 'bg-red-500/10',
-        borderColor: 'border-red-500/30'
+        color: 'text-[#ff2e88]',
+        bgColor: 'bg-[#ff2e88]/10',
+        borderColor: 'border-[#ff2e88]/30'
       });
     }
 
@@ -80,9 +80,9 @@ export default function SmartSuggestions({ userData, onSuggestionClick }) {
         contextual.push({
           icon: Target,
           text: `Estou ${pct}% da meta de receita — o que fazer para fechar o mês forte?`,
-          color: 'text-amber-400',
-          bgColor: 'bg-amber-500/10',
-          borderColor: 'border-amber-500/30'
+          color: 'text-[#ffd400]',
+          bgColor: 'bg-[#ffd400]/10',
+          borderColor: 'border-[#ffd400]/30'
         });
       }
     }
@@ -118,7 +118,7 @@ export default function SmartSuggestions({ userData, onSuggestionClick }) {
       {suggestions.map((suggestion, index) => {
         const Icon = suggestion.icon;
         // Visual All Access: mesmo cartao dos Avisos; rosa = alerta, amarelo = o resto.
-        const accent = suggestion.color === 'text-red-400' ? '#ff2e88' : '#ffd400';
+        const accent = suggestion.color === 'text-[#ff2e88]' ? '#ff2e88' : '#ffd400';
         return (
           <motion.button
             key={index}

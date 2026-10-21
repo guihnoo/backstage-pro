@@ -55,7 +55,7 @@ const DayQuickActions = ({
       <PopoverContent
         side="top"
         align="center"
-        className="w-auto bg-slate-900/90 backdrop-blur-sm border-slate-700 p-2 shadow-2xl"
+        className="w-auto bg-[#161616]/90 backdrop-blur-sm border-[#2a2a2a] p-2 shadow-2xl"
         onOpenAutoFocus={(e) => e.preventDefault()} // Evita que o popover "roube" o foco
       >
         <motion.div
@@ -77,7 +77,7 @@ const DayQuickActions = ({
           <Button
             size="sm"
             variant="outline"
-            className="bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-200"
+            className="bg-[#1f1f1f] border-[#2a2a2a] hover:bg-[#2a2a2a] text-[#e0e0e0]"
             onClick={onNewWork}
           >
             <Clock className="w-4 h-4 mr-2" />

@@ -32,7 +32,7 @@ function ManualSection({ section, primary, defaultOpen }) {
         <span className="flex-1 min-w-0">
           <span className="block text-sm font-bold text-white truncate">{section.title}</span>
           {section.route && (
-            <span className="block text-[10px] font-mono text-[#888888] uppercase tracking-wider truncate">
+            <span className="block text-[10px] font-tag text-[#888888] uppercase tracking-wider truncate">
               {section.route}
             </span>
           )}
@@ -53,7 +53,7 @@ function ManualSection({ section, primary, defaultOpen }) {
             <div className="px-4 pb-4 pt-0 space-y-4 border-t border-[#2a2a2a]">
               {section.items.map((item) => (
                 <div key={item.heading}>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#a8a8a8] font-mono mb-1">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#a8a8a8] font-tag mb-1">
                     {item.heading}
                   </h3>
                   <p className="text-sm text-[#c8c8c8] leading-relaxed">{item.body}</p>
@@ -92,13 +92,10 @@ export default function AppHelp() {
             <ChevronLeft className="w-5 h-5" />
           </Link>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <BookOpen className="w-5 h-5 shrink-0" style={{ color: config.primaryHex }} />
-              <h1 className="text-xl font-extrabold text-white truncate">Manual do app</h1>
-            </div>
-            <p className="text-sm text-[#888888]">
-              Guia por área — Backstage Pro v{APP_VERSION}
+            <p className="font-tag text-[11px] tracking-[2px] uppercase text-[#a8a8a8] flex items-center gap-1.5">
+              <BookOpen className="w-3.5 h-3.5 shrink-0 text-[#ffd400]" /> Ajuda · v{APP_VERSION}
             </p>
+            <h1 className="font-poster text-[34px] leading-none uppercase text-white truncate mt-0.5">Manual do app</h1>
           </div>
         </div>
 

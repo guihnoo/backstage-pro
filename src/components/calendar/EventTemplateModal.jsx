@@ -63,7 +63,7 @@ const EventTemplateModal = ({ isOpen, onClose, onSelectTemplate }) => {
                       <div className="w-4 h-4 rounded-full" style={{ backgroundColor: template.color }}></div>
                     </div>
                     <p className="text-sm text-[#a8a8a8]">{template.title}</p>
-                    <p className="text-sm text-green-400 font-mono mt-1">R$ {template.daily_cache_value.toFixed(2)}</p>
+                    <p className="text-sm text-[#ffd400] font-tag mt-1">R$ {template.daily_cache_value.toFixed(2)}</p>
                   </motion.div>
                 ))
               ) : (

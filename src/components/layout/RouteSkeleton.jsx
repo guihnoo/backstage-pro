@@ -12,7 +12,7 @@ function SectionFrame({ primary, label, children }) {
       }}
     >
       <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${primary}44, transparent)` }} />
-      {label && <div className="px-4 pt-3 pb-1"><span className="text-[10px] font-mono uppercase tracking-[0.2em]" style={{ color: `${primary}99` }}>{label}</span></div>}
+      {label && <div className="px-4 pt-3 pb-1"><span className="text-[10px] font-tag uppercase tracking-[0.2em]" style={{ color: `${primary}99` }}>{label}</span></div>}
       <div className="p-4">{children}</div>
     </div>
   );

@@ -93,7 +93,7 @@ function ConversationItem({ conv, isActive, onSelect, onDelete, primaryHex }) {
     >
       <MessageSquare
         className="w-4 h-4 mt-0.5 flex-shrink-0"
-        style={{ color: isActive ? primaryHex : '#64748b' }}
+        style={{ color: isActive ? primaryHex : '#888888' }}
       />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-white truncate">{conv.name}</p>

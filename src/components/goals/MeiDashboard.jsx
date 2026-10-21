@@ -41,10 +41,10 @@ function DasCard({ dasType, color }) {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4 text-[#a8a8a8]" />
-          <p className="text-xs font-bold text-[#c8c8c8] uppercase tracking-wide">DAS Mensal</p>
+          <p className="font-tag text-[11px] tracking-[2px] uppercase text-[#a8a8a8]">DAS mensal</p>
         </div>
         <span
-          className="text-xs font-mono font-bold px-2 py-0.5 rounded-full"
+          className="text-xs font-tag font-bold px-2 py-0.5 rounded-full"
           style={{ background: `${color}22`, color }}
         >
           dia 20
@@ -92,12 +92,8 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
   const pct = useMemo(() => Math.min((annualRevenue / MEI_LIMIT) * 100, 100), [annualRevenue]);
   const remaining = Math.max(MEI_LIMIT - annualRevenue, 0);
   const threshold = getThreshold(pct, accentColor);
-  const accentSurfaceStyle = threshold.isAccent
-    ? {
-        background: `linear-gradient(to bottom right, ${accentColor}33, rgba(15, 23, 42, 0.2))`,
-        borderColor: `${accentColor}4d`,
-      }
-    : undefined;
+  // All Access: alerta do MEI e so a borda rosa (sem degrade).
+  const accentSurfaceStyle = undefined;
 
   const now = new Date();
   const monthsElapsed = now.getMonth() + 1;
@@ -129,7 +125,7 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className={`flex items-start gap-3 p-4 rounded-xl border bg-gradient-to-r ${threshold.isAccent ? '' : threshold.bg} ${threshold.isAccent ? '' : threshold.border}`}
+          className={`flex items-start gap-3 p-4 rounded-2xl border bg-[#161616] ${threshold.isAccent ? 'border-[#ff2e88]/60' : 'border-[#222222]'}`}
           style={accentSurfaceStyle}
         >
           <alertMsg.icon className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: alertMsg.color }} />
@@ -141,12 +137,12 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
 
       {/* Main revenue meter */}
       <div
-        className={`p-5 rounded-2xl border bg-gradient-to-br ${threshold.isAccent ? '' : threshold.bg} ${threshold.isAccent ? '' : threshold.border}`}
+        className={`p-5 rounded-2xl border bg-[#161616] ${threshold.isAccent ? 'border-[#ff2e88]/60' : 'border-[#222222]'}`}
         style={accentSurfaceStyle}
       >
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-xs uppercase tracking-wider text-[#a8a8a8] mb-0.5">Faturamento Anual {now.getFullYear()}</p>
+            <p className="font-tag text-[11px] tracking-[2px] uppercase text-[#a8a8a8] mb-0.5">Faturamento {now.getFullYear()}</p>
             <p className="text-xs text-[#888888]">Limite MEI: {formatBRL(MEI_LIMIT)}/ano</p>
           </div>
           <span
@@ -181,7 +177,7 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
               ) : (
                 <>
                   <span className="text-2xl font-black text-white">{Math.round(pct)}%</span>
-                  <span className="text-[9px] text-[#888888] font-mono">do limite</span>
+                  <span className="text-[9px] text-[#888888] font-tag">do limite</span>
                 </>
               )}
             </div>
@@ -214,7 +210,7 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
             transition={{ duration: 1, ease: 'easeOut' }}
           />
         </div>
-        <div className="flex justify-between text-[10px] text-[#666666] mt-1 font-mono">
+        <div className="flex justify-between text-[10px] text-[#666666] mt-1 font-tag">
           <span>R$ 0</span>
           <span>70% ({formatBRL(MEI_LIMIT * 0.7)})</span>
           <span>{formatBRL(MEI_LIMIT)}</span>
@@ -225,7 +221,7 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
       <div className="bg-[#161616] border border-[#2a2a2a] rounded-xl p-4">
         <div className="flex items-center gap-2 mb-3">
           <TrendingUp className="w-4 h-4" style={{ color: accentColor }} />
-          <p className="text-xs font-bold text-[#c8c8c8] uppercase tracking-wide">Projeção para Dezembro</p>
+          <p className="font-tag text-[11px] tracking-[2px] uppercase text-[#a8a8a8]">Projeção para dezembro</p>
         </div>
         <div className="grid grid-cols-3 gap-3 text-center">
           <div>
@@ -265,7 +261,7 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
         Ver todos os pagamentos recebidos
       </button>
 
-      <p className="text-[10px] text-[#666666] text-center font-mono leading-relaxed">
+      <p className="text-[10px] text-[#666666] text-center font-tag leading-relaxed">
         Valores baseados no limite MEI 2025 (R$ 81.000/ano). Consulte um contador para decisões fiscais.
       </p>
     </motion.div>

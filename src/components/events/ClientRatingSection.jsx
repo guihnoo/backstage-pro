@@ -57,7 +57,7 @@ export default function ClientRatingSection({ event, updateEvent }) {
               <Star
                 className="w-6 h-6 transition-colors"
                 fill={(hover || draft || 0) >= star ? '#fbbf24' : 'none'}
-                stroke={(hover || draft || 0) >= star ? '#fbbf24' : '#64748b'}
+                stroke={(hover || draft || 0) >= star ? '#fbbf24' : '#888888'}
               />
             </button>
           ))}

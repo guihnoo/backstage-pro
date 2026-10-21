@@ -43,13 +43,13 @@ export default function CalendarTodayStrip({
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
         <NeonGlass primary={primaryHex} className="p-4 flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-mono uppercase tracking-wider text-[#7c8494]">Hoje</p>
-            <p className="text-sm text-slate-300 mt-0.5">Nenhum show agendado para hoje.</p>
+            <p className="text-xs font-tag uppercase tracking-wider text-[#a8a8a8]">Hoje</p>
+            <p className="text-sm text-[#c8c8c8] mt-0.5">Nenhum show agendado para hoje.</p>
           </div>
           <button
             type="button"
             onClick={onNewEvent}
-            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-slate-700 transition-colors bp-hover-primary hover:bg-[color-mix(in_srgb,var(--bp-primary)_10%,transparent)]"
+            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg border border-[#2a2a2a] transition-colors bp-hover-primary hover:bg-[color-mix(in_srgb,var(--bp-primary)_10%,transparent)]"
             style={{ color: primaryHex }}
           >
             <Plus className="w-3.5 h-3.5" />
@@ -65,7 +65,7 @@ export default function CalendarTodayStrip({
       <NeonGlass primary={primaryHex} accent={accentHex} glow={Boolean(liveEvent)} className="p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <p className="text-xs font-mono uppercase tracking-wider text-[#7c8494]">Hoje</p>
+            <p className="text-xs font-tag uppercase tracking-wider text-[#a8a8a8]">Hoje</p>
             {liveEvent && (
               <span
                 className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
@@ -79,7 +79,7 @@ export default function CalendarTodayStrip({
           <button
             type="button"
             onClick={onRegisterWork}
-            className="text-[10px] font-mono text-slate-500 transition-colors bp-hover-primary"
+            className="text-[10px] font-tag text-[#888888] transition-colors bp-hover-primary"
           >
             Registrar horas →
           </button>
@@ -97,7 +97,7 @@ export default function CalendarTodayStrip({
             const isConfirmed = event.status === 'confirmed';
             const amount = getEventCacheAmount(event);
             const StatusIcon = isPaid ? CheckCircle2 : isConfirmed ? BadgeCheck : AlertCircle;
-            const statusColor = isPaid ? '#10b981' : isConfirmed ? '#f59e0b' : '#64748b';
+            const statusColor = isPaid ? '#10b981' : isConfirmed ? '#f59e0b' : '#888888';
 
             return (
               <button
@@ -106,13 +106,13 @@ export default function CalendarTodayStrip({
                 onClick={() => onEventClick?.(event)}
                 className={`w-full text-left flex items-center gap-3 p-3 rounded-xl border transition-all ${
                   isLive
-                    ? 'border-red-500/40 bg-red-500/5 hover:bg-red-500/10'
-                    : 'border-slate-700/50 bg-slate-900/40 hover:border-slate-600'
+                    ? 'border-[#ff2e88]/40 bg-[#ff2e88]/5 hover:bg-[#ff2e88]/10'
+                    : 'border-[#2a2a2a]/50 bg-[#161616]/40 hover:border-[#2a2a2a]'
                 }`}
               >
                 <div className="flex-1 min-w-0">
                   <EventHeading event={event} client={client} size="sm" />
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5 text-[11px] text-slate-500">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5 text-[11px] text-[#888888]">
                     {timeLabel && (
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
@@ -126,7 +126,7 @@ export default function CalendarTodayStrip({
                       </span>
                     )}
                     {work?.entry_time && (
-                      <span className="text-emerald-400/90">
+                      <span className="text-[#ffd400]/90">
                         Entrada {work.entry_time}
                         {work.exit_time ? ` · Saída ${work.exit_time}` : ' · em andamento'}
                       </span>
@@ -146,12 +146,12 @@ export default function CalendarTodayStrip({
                     <StatusIcon className="w-4 h-4" style={{ color: statusColor }} />
                   </div>
                   {amount > 0 && (
-                    <span className="text-[11px] font-semibold font-mono" style={{ color: isPaid ? '#10b981' : '#f59e0b' }}>
+                    <span className="text-[11px] font-semibold font-tag" style={{ color: isPaid ? '#10b981' : '#f59e0b' }}>
                       {isVisible ? formatCurrency(amount) : '••••'}
                     </span>
                   )}
                 </div>
-                <ChevronRight className="w-4 h-4 text-slate-600 flex-shrink-0" />
+                <ChevronRight className="w-4 h-4 text-[#666666] flex-shrink-0" />
               </button>
             );
           })}

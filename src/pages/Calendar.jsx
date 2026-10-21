@@ -1109,10 +1109,10 @@ export default function CalendarPage() {
   if (showBlockingError) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] text-center p-4">
-        <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
-        <h2 className="text-xl font-semibold text-red-400">Erro ao carregar agenda</h2>
-        <p className="text-red-300 mt-2 max-w-md">Não foi possível carregar sua agenda. Por favor, tente novamente.</p>
-        <Button onClick={() => { refetchEvents(); refetchDailyWork(); refetchExpenses(); }} className="mt-4 bg-red-600 hover:bg-red-700">
+        <AlertCircle className="w-12 h-12 text-[#ff2e88] mb-4" />
+        <h2 className="text-xl font-semibold text-[#ff2e88]">Erro ao carregar agenda</h2>
+        <p className="text-[#ff2e88] mt-2 max-w-md">Não foi possível carregar sua agenda. Por favor, tente novamente.</p>
+        <Button onClick={() => { refetchEvents(); refetchDailyWork(); refetchExpenses(); }} className="mt-4 bg-[#ff2e88] hover:bg-[#ff2e88]">
           Tentar Novamente
         </Button>
       </div>
@@ -1146,9 +1146,9 @@ export default function CalendarPage() {
         />
 
         {!clientsLoading && clients.length === 0 && (
-          <Alert className="border-amber-500/40 bg-amber-500/10">
-            <AlertCircle className="w-4 h-4 text-amber-400" />
-            <AlertDescription className="text-amber-100 text-sm">
+          <Alert className="border-[#ffd400]/40 bg-[#ffd400]/10">
+            <AlertCircle className="w-4 h-4 text-[#ffd400]" />
+            <AlertDescription className="text-[#ffd400] text-sm">
               <strong>Primeiro passo:</strong> cadastre um cliente em{' '}
               <button
                 type="button"
@@ -1164,9 +1164,9 @@ export default function CalendarPage() {
 
         {/* Alertas */}
         {hasError && (
-          <Alert className="border-red-500 bg-red-500/10">
-            <AlertCircle className="w-4 h-4 text-red-400" />
-            <AlertDescription className="text-red-300 text-sm">
+          <Alert className="border-[#ff2e88] bg-[#ff2e88]/10">
+            <AlertCircle className="w-4 h-4 text-[#ff2e88]" />
+            <AlertDescription className="text-[#ff2e88] text-sm">
               <strong>Erro:</strong> {eventsError}
             </AlertDescription>
           </Alert>
@@ -1205,7 +1205,7 @@ export default function CalendarPage() {
                 className={`h-11 w-11 shrink-0 rounded-full border flex items-center justify-center transition-colors ${
                   ['week', 'list', 'kanban', 'upcoming'].includes(viewMode)
                     ? 'bg-[#ffd400] border-[#ffd400] text-[#0a0a0a]'
-                    : 'bg-[#161616] border-[#333333] text-white hover:border-[#ffd400]'
+                    : 'bg-[#161616] border-[#333333] text-[#0a0a0a] hover:border-[#ffd400]'
                 }`}
               >
                 <MoreHorizontal className="w-5 h-5" />
@@ -1226,7 +1226,7 @@ export default function CalendarPage() {
                     if (mode === 'week') setWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 }));
                   }}
                   className={`flex items-center gap-2.5 h-10 rounded-[10px] cursor-pointer text-sm font-bold ${
-                    viewMode === mode ? 'bg-[#ffd400] text-[#0a0a0a] focus:bg-[#ffd400] focus:text-[#0a0a0a]' : 'text-white focus:bg-[#222222] focus:text-white'
+                    viewMode === mode ? 'bg-[#ffd400] text-[#0a0a0a] focus:bg-[#ffd400] focus:text-[#0a0a0a]' : 'text-[#0a0a0a] focus:bg-[#222222] focus:text-white'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -1340,26 +1340,26 @@ export default function CalendarPage() {
                 <button
                   type="button"
                   onClick={() => setWeekStart(w => subWeeks(w, 1))}
-                  className="p-1.5 rounded-lg bg-slate-800/60 border border-slate-700/60 text-slate-400 hover:text-slate-200 hover:border-slate-600 transition-colors"
+                  className="p-1.5 rounded-lg bg-[#1f1f1f]/60 border border-[#2a2a2a]/60 text-[#a8a8a8] hover:text-[#e0e0e0] hover:border-[#2a2a2a] transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button
                   type="button"
                   onClick={() => setWeekStart(addWeeks(weekStart, 1))}
-                  className="p-1.5 rounded-lg bg-slate-800/60 border border-slate-700/60 text-slate-400 hover:text-slate-200 hover:border-slate-600 transition-colors"
+                  className="p-1.5 rounded-lg bg-[#1f1f1f]/60 border border-[#2a2a2a]/60 text-[#a8a8a8] hover:text-[#e0e0e0] hover:border-[#2a2a2a] transition-colors"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
-              <p className="text-sm font-medium text-slate-300 capitalize">
+              <p className="text-sm font-medium text-[#c8c8c8] capitalize">
                 {format(weekStart, "d 'de' MMM", { locale: ptBR })} –{' '}
                 {format(endOfWeek(weekStart, { weekStartsOn: 0 }), "d 'de' MMM yyyy", { locale: ptBR })}
               </p>
               <button
                 type="button"
                 onClick={() => setWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 }))}
-                className="text-xs px-3 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700/60 text-slate-400 bp-hover-primary transition-colors"
+                className="text-xs px-3 py-1.5 rounded-lg bg-[#1f1f1f]/60 border border-[#2a2a2a]/60 text-[#a8a8a8] bp-hover-primary transition-colors"
               >
                 Hoje
               </button>
@@ -1380,24 +1380,24 @@ export default function CalendarPage() {
                       className={`flex flex-col rounded-xl border transition-colors min-h-[120px] ${
                         isToday
                           ? 'bp-today-surface-soft'
-                          : 'bg-slate-800/40 border-slate-700/50'
+                          : 'bg-[#1f1f1f]/40 border-[#2a2a2a]/50'
                       }`}
                     >
                       {/* Cabeçalho do dia */}
                       <button
                         type="button"
                         onClick={(e) => handleDayClick(day, e.currentTarget)}
-                        className={`px-2 pt-2 pb-1 border-b text-left w-full group ${isToday ? 'bp-today-surface' : 'border-slate-700/40'}`}
+                        className={`px-2 pt-2 pb-1 border-b text-left w-full group ${isToday ? 'bp-today-surface' : 'border-[#2a2a2a]/40'}`}
                         title={`Novo evento em ${format(day, "d 'de' MMM", { locale: ptBR })}`}
                       >
-                        <p className={`text-[10px] font-semibold uppercase tracking-wide ${isToday ? 'bp-text-primary' : 'text-slate-500'}`}>
+                        <p className={`text-[10px] font-semibold uppercase tracking-wide ${isToday ? 'bp-text-primary' : 'text-[#888888]'}`}>
                           {format(day, 'EEE', { locale: ptBR })}
                         </p>
                         <div className="flex items-center justify-between">
-                          <p className={`text-lg font-bold leading-none ${isToday ? 'bp-text-primary' : 'text-slate-300'}`}>
+                          <p className={`text-lg font-bold leading-none ${isToday ? 'bp-text-primary' : 'text-[#c8c8c8]'}`}>
                             {format(day, 'd')}
                           </p>
-                          <span className="opacity-0 group-hover:opacity-60 text-slate-400 text-base leading-none transition-opacity">+</span>
+                          <span className="opacity-0 group-hover:opacity-60 text-[#a8a8a8] text-base leading-none transition-opacity">+</span>
                         </div>
                       </button>
 
@@ -1410,7 +1410,7 @@ export default function CalendarPage() {
                           const isPaid = ev.payment_status === 'paid';
                           const isConfirmed = ev.status === 'confirmed';
                           const amount = getEventCacheAmount(ev);
-                          const statusColor = isPaid ? '#10b981' : isConfirmed ? '#f59e0b' : '#64748b';
+                          const statusColor = isPaid ? '#10b981' : isConfirmed ? '#f59e0b' : '#888888';
                           const StatusIcon = isPaid ? CheckCircle2 : isConfirmed ? BadgeCheck : Clock;
                           const durationDays = ev.start_date && ev.end_date
                             ? Math.round((new Date(ev.end_date) - new Date(ev.start_date)) / 86400000) + 1
@@ -1428,12 +1428,12 @@ export default function CalendarPage() {
                               }}
                             >
                               <div className="flex items-center gap-1 min-w-0">
-                                <span className="truncate flex-1 text-slate-100">{ev.title}</span>
+                                <span className="truncate flex-1 text-[#f0f0f0]">{ev.title}</span>
                                 <StatusIcon className="w-3 h-3 flex-shrink-0 opacity-80" style={{ color: statusColor }} />
                               </div>
-                              <div className="flex items-center gap-1 text-[10px] text-slate-400 min-w-0">
+                              <div className="flex items-center gap-1 text-[10px] text-[#a8a8a8] min-w-0">
                                 {timeLabel && <span className="flex-shrink-0">{timeLabel}</span>}
-                                {durationDays > 1 && <span className="text-slate-500 flex-shrink-0">· {durationDays}d</span>}
+                                {durationDays > 1 && <span className="text-[#888888] flex-shrink-0">· {durationDays}d</span>}
                                 {amount > 0 && (
                                   <span className="ml-auto flex-shrink-0 font-semibold" style={{ color: isPaid ? '#10b981' : '#f59e0b' }}>
                                     {isVisible ? formatCurrency(amount) : '••••'}
@@ -1447,7 +1447,7 @@ export default function CalendarPage() {
                           <button
                             type="button"
                             onClick={(e) => handleDayClick(day, e.currentTarget)}
-                            className="text-[10px] text-slate-500 text-center mt-0.5 w-full py-0.5 rounded hover:text-slate-300 transition-colors"
+                            className="text-[10px] text-[#888888] text-center mt-0.5 w-full py-0.5 rounded hover:text-[#c8c8c8] transition-colors"
                           >
                             +{overflow} mais
                           </button>
@@ -1466,12 +1466,12 @@ export default function CalendarPage() {
               const weekTotal = activeEvents.reduce((s, ev) => s + getEventCacheAmount(ev), 0);
               if (activeEvents.length === 0) return null;
               return (
-                <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-800/40 border border-slate-700/50 text-sm">
-                  <span className="text-slate-400">
-                    <span className="font-semibold text-slate-200">{activeEvents.length}</span> show{activeEvents.length > 1 ? 's' : ''} na semana
+                <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-[#1f1f1f]/40 border border-[#2a2a2a]/50 text-sm">
+                  <span className="text-[#a8a8a8]">
+                    <span className="font-semibold text-[#e0e0e0]">{activeEvents.length}</span> show{activeEvents.length > 1 ? 's' : ''} na semana
                   </span>
                   {weekTotal > 0 && (
-                    <span className="text-emerald-400 font-semibold">{isVisible ? formatCurrency(weekTotal) : '••••'}</span>
+                    <span className="text-[#ffd400] font-semibold">{isVisible ? formatCurrency(weekTotal) : '••••'}</span>
                   )}
                 </div>
               );
@@ -1487,12 +1487,12 @@ export default function CalendarPage() {
               >
                 <div className="relative mb-5">
                   <div className="absolute inset-0 rounded-full blur-2xl opacity-20" style={{ background: config.primaryHex, transform: 'scale(1.6)' }} />
-                  <div className="relative w-20 h-20 rounded-full flex items-center justify-center bg-slate-800/60 border border-slate-700/50">
-                    <CalendarDays className="w-9 h-9 text-slate-500" />
+                  <div className="relative w-20 h-20 rounded-full flex items-center justify-center bg-[#1f1f1f]/60 border border-[#2a2a2a]/50">
+                    <CalendarDays className="w-9 h-9 text-[#888888]" />
                   </div>
                 </div>
                 <p className="text-base font-semibold text-white mb-1">Agenda limpa</p>
-                <p className="text-sm text-slate-500 mb-6 max-w-xs">Nenhum show agendado a partir de hoje. Que tal criar o próximo?</p>
+                <p className="text-sm text-[#888888] mb-6 max-w-xs">Nenhum show agendado a partir de hoje. Que tal criar o próximo?</p>
                 <motion.button
                   whileTap={{ scale: 0.96 }}
                   onClick={() => setShowEventForm(true)}
@@ -1505,7 +1505,7 @@ export default function CalendarPage() {
               </motion.div>
             ) : upcomingGroups.map(({ key, label, events: upEvents }) => (
               <div key={key}>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-1 mb-2">
+                <p className="text-xs font-semibold text-[#888888] uppercase tracking-wider px-1 mb-2">
                   {label}
                 </p>
                 <div className="space-y-1.5">
@@ -1518,9 +1518,9 @@ export default function CalendarPage() {
                     const amount = getEventCacheAmount(ev);
                     const isOverdue = ev.payment_due_date && isBefore(parseISO(ev.payment_due_date), new Date()) && !isPaid;
                     const diffLabel = diff === 0 ? 'Hoje' : diff === 1 ? 'Amanhã' : `em ${diff}d`;
-                    const diffColor = diff === 0 ? '#f59e0b' : diff === 1 ? '#a78bfa' : '#64748b';
+                    const diffColor = diff === 0 ? '#f59e0b' : diff === 1 ? '#a78bfa' : '#888888';
                     const StatusIcon = isPaid ? CheckCircle2 : isOverdue ? AlertCircle : isConfirmed ? BadgeCheck : Clock;
-                    const statusColor = isPaid ? '#10b981' : isOverdue ? '#f87171' : isConfirmed ? '#f59e0b' : '#64748b';
+                    const statusColor = isPaid ? '#10b981' : isOverdue ? '#f87171' : isConfirmed ? '#f59e0b' : '#888888';
                     const durationDays = ev.start_date && ev.end_date
                       ? Math.round((new Date(ev.end_date) - new Date(ev.start_date)) / 86400000) + 1
                       : 1;
@@ -1533,23 +1533,23 @@ export default function CalendarPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.22, delay: Math.min(idx, 10) * 0.04, ease: 'easeOut' }}
                         whileTap={{ scale: 0.985 }}
-                        className="w-full text-left bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 rounded-lg px-3 py-3 flex items-center gap-3 transition-colors"
+                        className="w-full text-left bg-[#1f1f1f]/60 hover:bg-[#1f1f1f] border border-[#2a2a2a]/60 rounded-lg px-3 py-3 flex items-center gap-3 transition-colors"
                         style={isOverdue ? { borderColor: '#f8717130' } : undefined}
                       >
                         <div className="w-1 self-stretch rounded-full flex-shrink-0" style={{ backgroundColor: evColor }} />
                         <div className="w-14 text-center flex-shrink-0">
                           <p className="text-[10px] font-bold uppercase" style={{ color: diffColor }}>{diffLabel}</p>
-                          <p className="text-xs text-slate-500 mt-0.5">
+                          <p className="text-xs text-[#888888] mt-0.5">
                             {format(parseISO(ev.start_date), 'dd/MM', { locale: ptBR })}
                           </p>
                           {durationDays > 1 && (
-                            <p className="text-[9px] text-slate-600 mt-0.5">{durationDays}d</p>
+                            <p className="text-[9px] text-[#666666] mt-0.5">{durationDays}d</p>
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <EventHeading event={ev} client={cl} size="sm" />
                           {timeLabel && (
-                            <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
+                            <p className="text-[11px] text-[#888888] mt-0.5 flex items-center gap-1">
                               <Clock className="w-3 h-3 flex-shrink-0" />
                               {timeLabel}
                             </p>
@@ -1567,7 +1567,7 @@ export default function CalendarPage() {
                             <StatusIcon className="w-4 h-4" style={{ color: statusColor }} />
                           </div>
                           {amount > 0 && (
-                            <span className="text-[11px] font-semibold font-mono" style={{ color: isPaid ? '#10b981' : isOverdue ? '#f87171' : '#f59e0b' }}>
+                            <span className="text-[11px] font-semibold font-tag" style={{ color: isPaid ? '#10b981' : isOverdue ? '#f87171' : '#f59e0b' }}>
                               {isVisible ? formatCurrency(amount) : '••••'}
                             </span>
                           )}
@@ -1596,12 +1596,12 @@ export default function CalendarPage() {
                 className="flex flex-col items-center justify-center py-16 text-center px-6"
               >
                 <div className="relative mb-5">
-                  <div className="relative w-20 h-20 rounded-full flex items-center justify-center bg-slate-800/60 border border-slate-700/50">
-                    <List className="w-9 h-9 text-slate-500" />
+                  <div className="relative w-20 h-20 rounded-full flex items-center justify-center bg-[#1f1f1f]/60 border border-[#2a2a2a]/50">
+                    <List className="w-9 h-9 text-[#888888]" />
                   </div>
                 </div>
                 <p className="text-base font-semibold text-white mb-1">Nenhum evento encontrado</p>
-                <p className="text-sm text-slate-500 mb-6 max-w-xs">Tente ajustar os filtros ou adicione um novo evento à sua agenda.</p>
+                <p className="text-sm text-[#888888] mb-6 max-w-xs">Tente ajustar os filtros ou adicione um novo evento à sua agenda.</p>
                 <motion.button
                   whileTap={{ scale: 0.96 }}
                   onClick={() => setShowEventForm(true)}
@@ -1614,7 +1614,7 @@ export default function CalendarPage() {
               </motion.div>
             ) : listViewGroups.map(({ monthKey, label, events: monthEvents }) => (
               <div key={monthKey}>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-1 mb-2 capitalize">
+                <p className="text-xs font-semibold text-[#888888] uppercase tracking-wider px-1 mb-2 capitalize">
                   {label}
                 </p>
                 <div className="space-y-1.5">
@@ -1623,16 +1623,18 @@ export default function CalendarPage() {
                     const isPaid = ev.payment_status === 'paid';
                     const evStatus = getEventStatus(ev);
                     const canQuickPay = (evStatus === 'completed' || evStatus === 'confirmed') && !isPaid;
+                    // Mesmas cores da legenda da Agenda: amarelo confirmado, rosa a receber, cinza pago.
                     const statusBadge = isPaid
-                      ? { label: 'Pago', cls: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' }
+                      ? { label: 'Pago', cls: 'bg-[#2a2a2a] text-[#c8c8c8] border-[#2a2a2a]' }
                       : ({
-                          pending:   { label: 'Pendente',   cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
-                          scheduled: { label: 'Agendado',   cls: 'bg-blue-500/15 text-blue-400 border-blue-500/30' },
-                          confirmed: { label: 'Confirmado', cls: 'bp-surface-primary bp-text-primary border' },
-                          completed: { label: 'Concluído',  cls: 'bg-green-500/15 text-green-400 border-green-500/30' },
-                          cancelled: { label: 'Cancelado',  cls: 'bg-red-500/15 text-red-400 border-red-500/30' },
-                          archived:  { label: 'Arquivado',  cls: 'bg-slate-700/60 text-slate-400 border-slate-600' },
-                        }[evStatus] || { label: evStatus, cls: 'bg-slate-700 text-slate-400 border-slate-600' });
+                          pending:     { label: 'Pendente',     cls: 'bg-transparent text-[#c8c8c8] border-[#444444]' },
+                          scheduled:   { label: 'Agendado',     cls: 'bg-transparent text-[#c8c8c8] border-[#444444]' },
+                          confirmed:   { label: 'Confirmado',   cls: 'bg-[#ffd400] text-[#0a0a0a] border-[#ffd400]' },
+                          in_progress: { label: 'Em andamento', cls: 'bg-[#ffd400] text-[#0a0a0a] border-[#ffd400]' },
+                          completed:   { label: 'A receber',    cls: 'bg-[#ff2e88] text-[#0a0a0a] border-[#ff2e88]' },
+                          cancelled:   { label: 'Cancelado',    cls: 'bg-transparent text-[#ff2e88] border-[#ff2e88]/60' },
+                          archived:    { label: 'Arquivado',    cls: 'bg-[#2a2a2a] text-[#a8a8a8] border-[#2a2a2a]' },
+                        }[evStatus] || { label: 'Agendado', cls: 'bg-transparent text-[#c8c8c8] border-[#444444]' });
                     const dayLabel = ev.start_date ? format(parseISO(ev.start_date), "EEE d", { locale: ptBR }) : '—';
                     const timeLabel = ev.start_time ? ev.start_time.slice(0, 5) : null;
                     const amount = getEventCacheAmount(ev);
@@ -1650,8 +1652,8 @@ export default function CalendarPage() {
                           onClick={() => handleEventClick(ev)}
                           className="w-10 text-center flex-shrink-0 hover:opacity-70 transition-opacity"
                         >
-                          <p className="text-xs text-slate-500 capitalize">{dayLabel.split(' ')[0]}</p>
-                          <p className="text-base font-bold text-slate-200 leading-none">{dayLabel.split(' ')[1]}</p>
+                          <p className="text-xs text-[#888888] capitalize">{dayLabel.split(' ')[0]}</p>
+                          <p className="text-base font-bold text-[#e0e0e0] leading-none">{dayLabel.split(' ')[1]}</p>
                         </button>
                         <button
                           type="button"
@@ -1660,7 +1662,7 @@ export default function CalendarPage() {
                         >
                           <EventHeading event={ev} client={cl} size="sm" />
                           {timeLabel && (
-                            <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
+                            <p className="text-[11px] text-[#888888] mt-0.5 flex items-center gap-1">
                               <Clock className="w-3 h-3 flex-shrink-0" />
                               {timeLabel}
                             </p>
@@ -1679,17 +1681,17 @@ export default function CalendarPage() {
                               type="button"
                               onClick={() => requestMarkPaid(ev)}
                               title="Marcar como pago"
-                              className="p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+                              className="p-1.5 rounded-lg bg-[#ffd400]/10 border border-[#ffd400]/30 text-[#ffd400] hover:bg-[#ffd400]/20 transition-colors"
                             >
                               <BadgeCheck className="w-4 h-4" />
                             </button>
                           )}
                           <div className="flex flex-col items-end gap-1">
-                            <span className={`text-[10px] px-2 py-0.5 rounded-full border ${statusBadge.cls}`}>
+                            <span className={`font-tag text-[9px] font-bold uppercase px-2 py-0.5 rounded-full border ${statusBadge.cls}`}>
                               {statusBadge.label}
                             </span>
                             {amount > 0 && (
-                              <span className="text-[10px] text-emerald-400 font-medium">
+                              <span className="text-[10px] text-[#ffd400] font-medium">
                                 {isVisible ? formatCurrency(amount) : '••••'}
                               </span>
                             )}
@@ -1707,7 +1709,7 @@ export default function CalendarPage() {
         {/* Resultados de busca — lista cronológica (apenas no modo grid) */}
         {viewMode === 'grid' && searchQuery.trim() && (
           <div className="space-y-2">
-            <p className="text-xs text-slate-500 font-medium px-1">
+            <p className="text-xs text-[#888888] font-medium px-1">
               {filteredEvents.length === 0
                 ? 'Nenhum evento encontrado'
                 : `${filteredEvents.length} evento${filteredEvents.length > 1 ? 's' : ''} encontrado${filteredEvents.length > 1 ? 's' : ''}`}
@@ -1720,13 +1722,13 @@ export default function CalendarPage() {
                 const isConfirmed = ev.status === 'confirmed';
                 const amount = getEventCacheAmount(ev);
                 const StatusIcon = isPaid ? CheckCircle2 : isConfirmed ? BadgeCheck : ev.status === 'cancelled' ? AlertCircle : Clock;
-                const statusColor = isPaid ? '#10b981' : isConfirmed ? '#f59e0b' : ev.status === 'cancelled' ? '#f87171' : '#64748b';
+                const statusColor = isPaid ? '#10b981' : isConfirmed ? '#f59e0b' : ev.status === 'cancelled' ? '#f87171' : '#888888';
                 return (
                   <button
                     key={ev.id}
                     type="button"
                     onClick={() => handleEventClick(ev)}
-                    className="w-full text-left bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 rounded-lg px-4 py-3 flex items-center gap-3 transition-colors"
+                    className="w-full text-left bg-[#1f1f1f]/60 hover:bg-[#1f1f1f] border border-[#2a2a2a]/60 rounded-lg px-4 py-3 flex items-center gap-3 transition-colors"
                   >
                     <div
                       className="w-1 self-stretch rounded-full flex-shrink-0"
@@ -1734,7 +1736,7 @@ export default function CalendarPage() {
                     />
                     <div className="flex-1 min-w-0">
                       <EventHeading event={ev} client={cl} size="sm" />
-                      <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                      <p className="text-[11px] text-[#888888] truncate mt-0.5">
                         {ev.start_date ? format(parseISO(ev.start_date), "d 'de' MMM yyyy", { locale: ptBR }) : '—'}
                       </p>
                     </div>
@@ -1750,7 +1752,7 @@ export default function CalendarPage() {
                         <StatusIcon className="w-4 h-4" style={{ color: statusColor }} />
                       </div>
                       {amount > 0 && (
-                        <span className="text-[11px] font-semibold font-mono" style={{ color: isPaid ? '#10b981' : '#f59e0b' }}>
+                        <span className="text-[11px] font-semibold font-tag" style={{ color: isPaid ? '#10b981' : '#f59e0b' }}>
                           {isVisible ? formatCurrency(amount) : '••••'}
                         </span>
                       )}
@@ -1939,13 +1941,13 @@ export default function CalendarPage() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 max-w-md w-full max-h-[min(90dvh,32rem)] flex flex-col overflow-hidden"
+              className="bg-[#161616] border border-[#2a2a2a] rounded-2xl p-4 sm:p-6 max-w-md w-full max-h-[min(90dvh,32rem)] flex flex-col overflow-hidden"
             >
               <h3 className="text-lg sm:text-xl font-bold text-white mb-2 flex items-center gap-2 shrink-0">
-                <Clock className="w-5 h-5 text-green-400" />
+                <Clock className="w-5 h-5 text-[#ffd400]" />
                 Selecionar Evento
               </h3>
-              <p className="text-sm sm:text-base text-slate-300 mb-4 shrink-0">
+              <p className="text-sm sm:text-base text-[#c8c8c8] mb-4 shrink-0">
                 Encontramos {eventsForSelectedDate.length} eventos para{' '}
                 {selectedDate && format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}. Para qual evento você deseja
                 registrar as horas?
@@ -1959,7 +1961,7 @@ export default function CalendarPage() {
                       type="button"
                       key={event.id}
                       onClick={() => handleSelectEventFromMultiple(event)}
-                      className="w-full text-left p-3 sm:p-4 bg-slate-800/50 hover:bg-slate-700/50 active:bg-slate-700 border border-slate-700 rounded-lg transition-colors"
+                      className="w-full text-left p-3 sm:p-4 bg-[#1f1f1f]/50 hover:bg-[#2a2a2a]/50 active:bg-[#2a2a2a] border border-[#2a2a2a] rounded-lg transition-colors"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: event.color || DEFAULT_EVENT_COLOR }} />
@@ -1977,7 +1979,7 @@ export default function CalendarPage() {
                 <Button
                   variant="outline"
                   onClick={() => closeModals()}
-                  className="flex-1 bg-slate-700 border-slate-600 hover:bg-slate-600 h-12 text-sm sm:text-base"
+                  className="flex-1 bg-[#2a2a2a] border-[#2a2a2a] hover:bg-[#333333] h-12 text-sm sm:text-base"
                 >
                   Cancelar
                 </Button>

@@ -127,10 +127,10 @@ export function EventChecklist({ items = [], onChange, readOnly = false }) {
         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#2a2a2a] transition-colors"
       >
         <ClipboardList className="w-4 h-4 shrink-0" style={{ color: primaryHex }} />
-        <span className="text-sm font-medium text-white flex-1 text-left">Checklist Técnico de Palco</span>
+        <span className="font-tag text-[11px] tracking-[2px] uppercase text-[#a8a8a8] flex-1 text-left">Checklist de palco</span>
         {total > 0 && (
           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-            checked === total ? 'bg-emerald-500/20 text-emerald-400' : 'bg-[#2a2a2a] text-[#c8c8c8]'
+            checked === total ? 'bg-[#ffd400]/20 text-[#ffd400]' : 'bg-[#2a2a2a] text-[#c8c8c8]'
           }`}>
             {checked}/{total}
           </span>
@@ -152,7 +152,7 @@ export function EventChecklist({ items = [], onChange, readOnly = false }) {
               {total > 0 && (
                 <div className="w-full h-1.5 bg-[#2a2a2a] rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-emerald-500 transition-all duration-300"
+                    className="h-full bg-[#ffd400] transition-all duration-300"
                     style={{ width: `${total > 0 ? (checked / total) * 100 : 0}%` }}
                   />
                 </div>
@@ -198,7 +198,7 @@ export function EventChecklist({ items = [], onChange, readOnly = false }) {
                         aria-label={`${item.checked ? 'Desmarcar' : 'Marcar'}: ${item.text}`}
                       >
                         {item.checked
-                          ? <CheckSquare className="w-4 h-4 text-emerald-400" />
+                          ? <CheckSquare className="w-4 h-4 text-[#ffd400]" />
                           : <Square className="w-4 h-4 text-[#888888]" />
                         }
                       </button>

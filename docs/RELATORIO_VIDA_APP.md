@@ -179,6 +179,10 @@ Use este roteiro para fechar o item **#8** em `IDEIAS_PENDENTES.md`.
 
 ## Changelog
 
+### 2026-10-21 — Auditoria visual e homogeneização do app inteiro (Claude Code)
+
+Depois do teste no iPhone o Guih ainda viu partes no modelo antigo. Auditoria por código (142 arquivos alcançáveis, 80 com marcas antigas) + 31 fotos. Raiz corrigida: `NeonGlass`/`NeonPageShell` viraram cartão/fundo do padrão, `.bp-chip-active`/`.bp-view-active` amarelo cheio, paleta antiga trocada em ~70 arquivos (selo claro → texto preto), `font-mono` → Space Mono, hex azul‑marinho → neutros. Janela do evento (títulos, documentos, PIX), lista da Agenda (selos de status), Metas (conquistas, MEI), cliente, Ajuda, aviso sem internet e toasts ajustados. Detalhes em `docs/AUDITORIA_VISUAL_ALLACCESS.md`.
+
 ### 2026-10-21 — Visual All Access, entregas 11 a 15: app inteiro com a cara nova (Claude Code)
 
 - **11 Novo trabalho** (`EventForm.jsx`): pílulas dos clientes recentes + busca; faixa de 14 dias para tocar (1º toque = primeiro dia, 2º = último; ponto rosa = já tem show); cachê e alimentação em blocos; "Mais detalhes" recolhe pagamento, vencimento, NF, observações, repetir e modelo; rodapé "VAI RENDER" + SALVAR. Gravação igual à de antes. Ficaram de fora (funções novas): colar mensagem do WhatsApp e "entrada e saída".

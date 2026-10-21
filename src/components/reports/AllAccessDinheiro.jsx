@@ -451,7 +451,7 @@ export default function AllAccessDinheiro({
                             onClick={() => onMarkPaid(ev)}
                             className="h-8 px-3 rounded-full border border-[#333333] bg-transparent text-white font-sans text-xs font-extrabold hover:bg-[#222222] transition-colors flex items-center gap-1 active:scale-95"
                           >
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#ffd400]" />
                             Recebi
                           </button>
                         )}
@@ -471,7 +471,7 @@ export default function AllAccessDinheiro({
             </div>
           ) : (
             <div className="rounded-xl bg-[#161616] border border-[#222222] p-6 text-center">
-              <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
+              <CheckCircle2 className="w-8 h-8 text-[#ffd400] mx-auto mb-2" />
               <p className="font-bold text-white">Tudo em dia!</p>
               <p className="text-xs text-[#888888] font-tag mt-1">Nenhum show com pagamento pendente.</p>
             </div>
@@ -543,7 +543,7 @@ export default function AllAccessDinheiro({
           </div>
 
           <div className="rounded-xl bg-[#161616] border border-[#222222] p-3.5 flex gap-3 items-center">
-            <div className="font-poster text-[26px] text-emerald-400 min-w-[70px] shrink-0">
+            <div className="font-poster text-[26px] text-[#ffd400] min-w-[70px] shrink-0">
               {totalReceived > 0 ? `${Math.round((totalReceived / (totalReceived + totalPending || 1)) * 100)}%` : '0%'}
             </div>
             <div className="text-[13px] text-[#e0e0e0] leading-snug">

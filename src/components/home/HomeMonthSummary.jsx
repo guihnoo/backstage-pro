@@ -16,10 +16,10 @@ export default function HomeMonthSummary({ missing = [], onOpenEvent }) {
           key={event.id}
           type="button"
           onClick={() => onOpenEvent?.(event)}
-          className="w-full flex items-center gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/15 transition-colors px-4 py-3 text-left min-h-[48px]"
+          className="w-full flex items-center gap-3 rounded-xl border border-[#ffd400]/40 bg-[#ffd400]/10 hover:bg-[#ffd400]/15 transition-colors px-4 py-3 text-left min-h-[48px]"
         >
-          <AlertTriangle className="w-5 h-5 text-amber-300 shrink-0" />
-          <span className="flex-1 min-w-0 text-sm text-amber-100">
+          <AlertTriangle className="w-5 h-5 text-[#ffd400] shrink-0" />
+          <span className="flex-1 min-w-0 text-sm text-[#ffd400]">
             <span className="font-semibold">Horas não lançadas</span>
             {' — '}
             <span className="truncate">{event.title || 'Evento'}</span>
@@ -27,7 +27,7 @@ export default function HomeMonthSummary({ missing = [], onOpenEvent }) {
             {dias.map(fmtDay).join(', ')}
             {')'}
           </span>
-          <ChevronRight className="w-4 h-4 text-amber-300 shrink-0" />
+          <ChevronRight className="w-4 h-4 text-[#ffd400] shrink-0" />
         </button>
       ))}
     </section>

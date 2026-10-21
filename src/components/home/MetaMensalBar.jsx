@@ -63,12 +63,12 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
             <Target className="w-4 h-4" style={{ color: accentColor }} />
             <div>
               <span className="text-sm font-bold text-white block">Defina sua meta do mês</span>
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-[#a8a8a8]">
                 Este mês: {diariasAtual} diária{diariasAtual !== 1 ? 's' : ''} · {horasAtual.toFixed(1)}h trabalhadas
               </span>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors" />
+          <ChevronRight className="w-4 h-4 text-[#666666] group-hover:text-[#a8a8a8] transition-colors" />
         </div>
       </motion.button>
     );
@@ -91,7 +91,7 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           {bothGoalsReached
-            ? <motion.div animate={loopAnim({ rotate: [0, -10, 10, 0] })} transition={{ duration: 0.6, repeat: LOOP, repeatDelay: 3 }}><Trophy className="w-4 h-4 text-amber-400" /></motion.div>
+            ? <motion.div animate={loopAnim({ rotate: [0, -10, 10, 0] })} transition={{ duration: 0.6, repeat: LOOP, repeatDelay: 3 }}><Trophy className="w-4 h-4 text-[#ffd400]" /></motion.div>
             : <Target className="w-4 h-4" style={{ color: accentColor }} />
           }
           <span className="font-tag text-xs font-bold tracking-[0.14em] text-[#a8a8a8]">META DO MÊS</span>
@@ -99,15 +99,15 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
             <motion.span
               initial={{ opacity: 0, scale: 0 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30"
+              className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#ffd400]/20 text-[#ffd400] border border-[#ffd400]/30"
             >
               META BATIDA
             </motion.span>
           )}
         </div>
-        <span className="text-xs font-mono text-slate-400 flex items-center gap-1">
+        <span className="text-xs font-tag text-[#a8a8a8] flex items-center gap-1">
           ⏱️ {horasAtual.toFixed(1)}h no mês
-          <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors" />
+          <ChevronRight className="w-4 h-4 text-[#666666] group-hover:text-[#a8a8a8] transition-colors" />
         </span>
       </div>
 
@@ -128,11 +128,11 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
         <div className="space-y-4">
           {metaReceita > 0 && (
             <div>
-              <div className="flex justify-between text-xs text-gray-400 mb-1.5">
+              <div className="flex justify-between text-xs text-[#a8a8a8] mb-1.5">
                 <span>Faturamento</span>
                 <span>
                   {formatMoney(receitaAtual, !isVisible)} / {formatMoney(metaReceita, !isVisible)}
-                  <span className={`ml-1 ${pctReceita >= 100 ? 'text-amber-400 font-bold' : 'text-gray-500'}`}>({Math.round(pctReceita)}%)</span>
+                  <span className={`ml-1 ${pctReceita >= 100 ? 'text-[#ffd400] font-bold' : 'text-[#888888]'}`}>({Math.round(pctReceita)}%)</span>
                 </span>
               </div>
               <ProgressBar value={receitaAtual} max={metaReceita} color={pctReceita >= 100 ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' : accentColor} />
@@ -140,32 +140,32 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
           )}
           {metaDiarias > 0 ? (
             <div>
-              <div className="flex justify-between text-xs text-gray-400 mb-1.5">
+              <div className="flex justify-between text-xs text-[#a8a8a8] mb-1.5">
                 <span>Diárias</span>
                 <span>
                   {diariasAtual} / {metaDiarias}
-                  <span className={`ml-1 ${pctDiarias >= 100 ? 'text-emerald-400 font-bold' : 'text-gray-500'}`}>({Math.round(pctDiarias)}%)</span>
+                  <span className={`ml-1 ${pctDiarias >= 100 ? 'text-[#ffd400] font-bold' : 'text-[#888888]'}`}>({Math.round(pctDiarias)}%)</span>
                 </span>
               </div>
               <ProgressBar value={diariasAtual} max={metaDiarias} color={pctDiarias >= 100 ? 'linear-gradient(90deg, #10b981, #34d399)' : accentColor} />
             </div>
           ) : (
-            <div className="flex justify-between text-xs text-gray-400">
+            <div className="flex justify-between text-xs text-[#a8a8a8]">
               <span>Diárias no mês</span>
-              <span className="font-mono font-semibold text-white">{diariasAtual} dia{diariasAtual !== 1 ? 's' : ''}</span>
+              <span className="font-tag font-semibold text-white">{diariasAtual} dia{diariasAtual !== 1 ? 's' : ''}</span>
             </div>
           )}
 
           {/* Ritmo do mês */}
           {!bothGoalsReached && (
-            <div className="pt-3 mt-1 border-t border-gray-800/50 flex items-center justify-between">
-              <span className="text-[10px] text-slate-500">
+            <div className="pt-3 mt-1 border-t border-[#2a2a2a]/50 flex items-center justify-between">
+              <span className="text-[10px] text-[#888888]">
                 Dia {dayOfMonth}/{daysInMonth} · {pctMes}% do mês
               </span>
               {metaReceita > 0 && projecaoReceita > 0 && (
-                <span className={`text-[10px] font-mono ${
-                  projecaoReceita >= metaReceita ? 'text-emerald-500' :
-                  projecaoReceita >= metaReceita * 0.75 ? 'text-amber-500' : 'text-red-500/80'
+                <span className={`text-[10px] font-tag ${
+                  projecaoReceita >= metaReceita ? 'text-[#ffd400]' :
+                  projecaoReceita >= metaReceita * 0.75 ? 'text-[#ffd400]' : 'text-[#ff2e88]/80'
                 }`}>
                   projeção {formatMoney(projecaoReceita, !isVisible)}
                 </span>

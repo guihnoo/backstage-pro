@@ -124,7 +124,7 @@ const ExportManager = ({ data, period }) => {
         onClick={() => handleExport('pdf')}
         variant="outline"
         disabled={!!exporting}
-        className="border-red-400/50 text-red-400 hover:bg-red-400/10 flex items-center gap-2 justify-center w-full sm:w-auto"
+        className="border-[#ff2e88]/50 text-[#ff2e88] hover:bg-[#ff2e88]/10 flex items-center gap-2 justify-center w-full sm:w-auto"
       >
         {exporting === 'pdf' ? (
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -137,7 +137,7 @@ const ExportManager = ({ data, period }) => {
         onClick={() => handleExport('xlsx')}
         variant="outline"
         disabled={!!exporting}
-        className="border-green-400/50 text-green-400 hover:bg-green-400/10 flex items-center gap-2 justify-center w-full sm:w-auto"
+        className="border-[#ffd400]/50 text-[#ffd400] hover:bg-[#ffd400]/10 flex items-center gap-2 justify-center w-full sm:w-auto"
       >
         {exporting === 'xlsx' ? (
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -150,7 +150,7 @@ const ExportManager = ({ data, period }) => {
         onClick={() => handleExport('ics')}
         variant="outline"
         disabled={!!exporting}
-        className="border-blue-400/50 text-blue-400 hover:bg-blue-400/10 flex items-center gap-2 justify-center w-full sm:w-auto"
+        className="border-[#ffd400]/50 text-[#ffd400] hover:bg-[#ffd400]/10 flex items-center gap-2 justify-center w-full sm:w-auto"
         title="Exportar eventos como ICS — importável no Google Calendar, Apple Calendar etc."
       >
         {exporting === 'ics' ? (

@@ -16,14 +16,14 @@ const ICONS = {
 
 const STYLES = {
   success: {
-    ring: 'ring-emerald-500/30',
-    icon: 'text-emerald-400',
-    glow: 'shadow-emerald-500/15',
+    ring: 'ring-[#ffd400]/30',
+    icon: 'text-[#ffd400]',
+    glow: 'shadow-[#ffd400]/15',
   },
   error: {
     ring: 'ring-[#ff2e88]/30',
     icon: 'text-[#ff2e88]',
-    glow: 'shadow-red-500/15',
+    glow: 'shadow-[#ff2e88]/15',
   },
   info: {
     ring: '',
@@ -34,7 +34,7 @@ const STYLES = {
   warning: {
     ring: 'ring-[#ffd400]/30',
     icon: 'text-[#ffd400]',
-    glow: 'shadow-amber-500/15',
+    glow: 'shadow-[#ffd400]/15',
   },
   loading: {
     ring: 'ring-[#2a2a2a]',
@@ -62,7 +62,7 @@ function BackstageToastCard({ type, title, description }) {
 
   return (
     <div
-      className={`bp-toast-in flex items-start gap-3 w-full max-w-[min(100vw-2rem,24rem)] rounded-xl border border-[#23262f] bg-[#0c0e14]/95 backdrop-blur-xl px-4 py-3 shadow-xl ${themeInfo.glowClass}`}
+      className={`bp-toast-in flex items-start gap-3 w-full max-w-[min(100vw-2rem,24rem)] rounded-[14px] border border-[#2a2a2a] bg-[#161616] px-4 py-3 shadow-xl ${themeInfo.glowClass}`}
       style={themeInfo.cardStyle}
     >
       <Icon
@@ -111,7 +111,7 @@ function ActionToastCard({ type = 'info', title, description, action, cancel, ic
 
   return (
     <div
-      className={`bp-toast-in w-full max-w-[min(100vw-2rem,24rem)] rounded-xl border border-[#23262f] bg-[#0c0e14]/95 backdrop-blur-xl px-4 py-3 shadow-xl ${themeInfo.glowClass}`}
+      className={`bp-toast-in w-full max-w-[min(100vw-2rem,24rem)] rounded-[14px] border border-[#2a2a2a] bg-[#161616] px-4 py-3 shadow-xl ${themeInfo.glowClass}`}
       style={themeInfo.cardStyle}
     >
       <div className="flex items-start gap-3">

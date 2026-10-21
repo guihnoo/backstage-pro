@@ -69,9 +69,9 @@ export default function AlertsPanel({
         title: 'Lembrete de entrada',
         body: 'Você tem evento hoje. Registrar entrada?',
         icon: Timer,
-        color: 'text-green-400',
-        bgColor: 'bg-green-500/10',
-        borderColor: 'border-green-500/30',
+        color: 'text-[#ffd400]',
+        bgColor: 'bg-[#ffd400]/10',
+        borderColor: 'border-[#ffd400]/30',
         cta: {
           label: 'Registrar agora',
           action: () => onRegisterWork?.(today)
@@ -108,9 +108,9 @@ export default function AlertsPanel({
           title: 'Registrar saída e hora extra',
           body: `Mais de 12h desde a entrada (${hoursSinceEntry.toFixed(1)}h).`,
           icon: Clock,
-          color: 'text-amber-400',
-          bgColor: 'bg-amber-500/10',
-          borderColor: 'border-amber-500/30',
+          color: 'text-[#ffd400]',
+          bgColor: 'bg-[#ffd400]/10',
+          borderColor: 'border-[#ffd400]/30',
           cta: {
             label: 'Encerrar turno',
             action: () => onRegisterWork?.(today)
@@ -280,9 +280,9 @@ export default function AlertsPanel({
           ? `"${first.title || 'Evento'}" com vencimento em ${new Date(first.payment_due_date + 'T12:00:00').toLocaleDateString('pt-BR')}.`
           : `${count} eventos com pagamento vencido aguardam confirmação.`,
         icon: AlertCircle,
-        color: 'text-red-400',
-        bgColor: 'bg-red-500/10',
-        borderColor: 'border-red-500/30',
+        color: 'text-[#ff2e88]',
+        bgColor: 'bg-[#ff2e88]/10',
+        borderColor: 'border-[#ff2e88]/30',
         cta: {
           label: 'Ver evento',
           action: () => onOpenEvent?.(first),
@@ -341,7 +341,7 @@ export default function AlertsPanel({
       <div className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8]">LEMBRETES</div>
       <AnimatePresence>
         {alerts.map((alert) => {
-          const accent = alert.color === 'text-red-400' ? '#ff2e88' : '#ffd400';
+          const accent = alert.color === 'text-[#ff2e88]' ? '#ff2e88' : '#ffd400';
           return (
             <motion.div
               key={alert.id}

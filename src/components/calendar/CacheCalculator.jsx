@@ -175,7 +175,7 @@ export default function CacheCalculator({ open, onClose, onCreateEvent }) {
               className="flex-1 border-[#2a2a2a] bg-[#1f1f1f] hover:bg-[#2a2a2a] text-[#c8c8c8] gap-2"
             >
               {copied
-                ? <><CheckCircle2 className="w-4 h-4 text-emerald-400" /> Copiado!</>
+                ? <><CheckCircle2 className="w-4 h-4 text-[#ffd400]" /> Copiado!</>
                 : <><Copy className="w-4 h-4" /> Copiar</>}
             </Button>
             <Button

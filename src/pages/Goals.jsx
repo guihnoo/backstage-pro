@@ -40,7 +40,7 @@ function CirclesSkeleton() {
         <div key={i} className="flex flex-col items-center gap-2">
           <div className="relative">
             <Skeleton className="w-[110px] h-[110px] rounded-full" />
-            <div className="absolute inset-[10px] rounded-full bg-[#050609]" />
+            <div className="absolute inset-[10px] rounded-full bg-[#0a0a0a]" />
           </div>
           <Skeleton className="h-3 w-14 rounded" />
           <Skeleton className="h-3 w-20 rounded" />
@@ -79,7 +79,7 @@ function BadgeCelebration({ badge, onClose }) {
         transition={{ type: 'spring', stiffness: 260, damping: 18 }}
         className="relative text-center px-10 py-10 rounded-3xl border"
         style={{
-          background: `radial-gradient(circle at 50% 30%, ${badge.color}18, #0a0c14 70%)`,
+          background: `radial-gradient(circle at 50% 30%, ${badge.color}18, #121212 70%)`,
           borderColor: `${badge.color}40`,
           boxShadow: `0 0 60px ${badge.color}40, 0 0 120px ${badge.color}18`,
         }}
@@ -114,7 +114,7 @@ function BadgeCelebration({ badge, onClose }) {
           <Icon className="w-9 h-9" style={{ color: badge.color }} />
         </motion.div>
 
-        <p className="text-xs uppercase tracking-widest font-mono mb-2" style={{ color: badge.color }}>
+        <p className="text-xs uppercase tracking-widest font-tag mb-2" style={{ color: badge.color }}>
           Conquista desbloqueada!
         </p>
         <h2 className="font-poster text-[30px] leading-none uppercase text-white mb-2">{badge.title}</h2>
@@ -171,7 +171,8 @@ function CircularProgress({ value, max, size = 120, color, label, sublabel }) {
 }
 
 // ─── Badge de conquista ──────────────────────────────────────
-function BadgeCard({ icon: Icon, title, description, unlocked, color, progress, onClick }) {
+// Conquista no visual All Access: selo amarelo quando feita, progresso em barra amarela.
+function BadgeCard({ icon: Icon, title, description, unlocked, progress, onClick }) {
   const showProgress = !unlocked && progress != null && progress.max > 0;
   const pct = showProgress ? Math.min((progress.value / progress.max) * 100, 100) : 0;
 
@@ -179,40 +180,32 @@ function BadgeCard({ icon: Icon, title, description, unlocked, color, progress, 
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      whileHover={{ scale: unlocked ? 1.04 : 1.02 }}
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
-      className={`p-4 rounded-xl border transition-all cursor-pointer min-w-0 ${
-        unlocked
-          ? 'bg-[#161616] border-[#262626]/50'
-          : 'bg-[#161616]/30 border-[#222222]/30'
+      className={`p-3.5 rounded-[14px] border transition-all cursor-pointer min-w-0 ${
+        unlocked ? 'bg-[#161616] border-[#ffd400]/60' : 'bg-[#161616] border-[#222222]'
       }`}
-      style={unlocked ? { boxShadow: `0 0 20px ${color}20` } : { opacity: 0.7 }}
     >
       <div
-        className="w-10 h-10 rounded-full flex items-center justify-center mb-3"
-        style={{
-          background: unlocked ? `${color}22` : 'transparent',
-          border: unlocked ? `1px solid ${color}44` : '1px solid #1f2937',
-          filter: unlocked ? 'none' : 'grayscale(1)',
-        }}
+        className={`w-11 h-11 rounded-[10px] flex items-center justify-center mb-2.5 ${
+          unlocked ? 'bg-[#ffd400] text-[#0a0a0a]' : 'bg-[#0a0a0a] text-[#555555]'
+        }`}
       >
-        <Icon className="w-5 h-5" style={{ color: unlocked ? color : '#4b5563' }} />
+        <Icon className="w-5 h-5" />
       </div>
-      <Ellipsis as="p" className="text-sm font-bold text-white leading-tight">{title}</Ellipsis>
-      <Ellipsis as="p" className="text-xs text-[#888888] mt-0.5">{description}</Ellipsis>
+      <Ellipsis as="p" className="font-poster text-[18px] leading-none uppercase text-white">{title}</Ellipsis>
+      <Ellipsis as="p" className="text-xs text-[#a8a8a8] mt-1">{description}</Ellipsis>
       {unlocked ? (
-        <p className="text-xs font-bold mt-2" style={{ color }}>✓ Desbloqueado</p>
+        <p className="font-tag text-[10px] font-bold mt-2 text-[#ffd400]">FEITO</p>
       ) : showProgress ? (
         <div className="mt-2">
-          <div className="flex justify-between text-[9px] font-mono text-[#666666] mb-1">
+          <div className="flex justify-between text-[9px] font-tag text-[#888888] mb-1">
             <span>{progress.value} / {progress.max}</span>
             <span>{Math.round(pct)}%</span>
           </div>
-          <div className="h-1 rounded-full bg-[#161616] overflow-hidden">
+          <div className="h-1.5 rounded-full bg-[#0a0a0a] overflow-hidden">
             <motion.div
-              className="h-full rounded-full"
-              style={{ background: color }}
+              className="h-full rounded-full bg-[#ffd400]"
               initial={{ width: 0 }}
               animate={{ width: `${pct}%` }}
               transition={{ duration: 1, ease: 'easeOut', delay: 0.2 }}
@@ -220,7 +213,7 @@ function BadgeCard({ icon: Icon, title, description, unlocked, color, progress, 
           </div>
         </div>
       ) : (
-        <p className="text-xs text-[#666666] mt-1">🔒 Bloqueado</p>
+        <p className="font-tag text-[10px] text-[#666666] mt-2">BLOQUEADA</p>
       )}
     </motion.div>
   );
@@ -750,7 +743,7 @@ export default function Goals() {
                                 {needed} diária{needed !== 1 ? 's' : ''} para bater a meta do mês
                               </p>
                               {daysLeft > 0 && needed > 0 && (
-                                <p className={`text-xs mt-0.5 ${onTrack ? 'text-emerald-400/70' : 'text-[#ffd400]/80'}`}>
+                                <p className={`text-xs mt-0.5 ${onTrack ? 'text-[#ffd400]/70' : 'text-[#ffd400]/80'}`}>
                                   {onTrack ? '✓ No ritmo' : '⚠ Abaixo do ritmo'} · {daysLeft} dias restantes · 1 show a cada {(daysLeft / needed).toFixed(1)} dias
                                 </p>
                               )}
@@ -855,7 +848,7 @@ export default function Goals() {
                       const isPaid = ev.payment_status === 'paid';
                       const isConfirmed = ev.status === 'confirmed' || ev.status === 'scheduled';
                       const StatusIcon = isPaid ? CheckCircle2 : isConfirmed ? BadgeCheck : ClockIcon;
-                      const statusColor = isPaid ? '#10b981' : isConfirmed ? '#f59e0b' : '#64748b';
+                      const statusColor = isPaid ? '#10b981' : isConfirmed ? '#f59e0b' : '#888888';
                       const amount = getEventCacheAmount(ev);
                       const accentColor = isUrgent ? AUTH_HERO_ACCENT : config.primaryHex;
                       return (
@@ -875,7 +868,7 @@ export default function Goals() {
                           />
                           <div className="flex-1 min-w-0">
                             <EventHeading event={ev} client={ev.clients} size="sm" />
-                            <p className="text-[10px] font-mono text-[#888888] truncate mt-0.5">
+                            <p className="text-[10px] font-tag text-[#888888] truncate mt-0.5">
                               {format(parseISO(ev.start_date), "EEE d/MM", { locale: ptBR })}
                             </p>
                           </div>
@@ -887,7 +880,7 @@ export default function Goals() {
                               </span>
                             </div>
                             {amount > 0 && (
-                              <span className="text-[10px] font-semibold font-mono" style={{ color: isPaid ? '#10b981' : '#f59e0b' }}>
+                              <span className="text-[10px] font-semibold font-tag" style={{ color: isPaid ? '#10b981' : '#f59e0b' }}>
                                 {isVisible ? formatCurrency(amount) : '••••'}
                               </span>
                             )}
@@ -931,7 +924,7 @@ export default function Goals() {
 
                   return (
                     <div className="mt-4 pt-4 border-t border-[#222222]/50">
-                      <p className="text-[10px] font-mono text-[#666666] uppercase tracking-wider mb-2 capitalize">
+                      <p className="text-[10px] font-tag text-[#666666] uppercase tracking-wider mb-2 capitalize">
                         {new Date(year, month, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
                       </p>
                       <div className="grid grid-cols-7 text-center mb-1">
@@ -950,7 +943,7 @@ export default function Goals() {
                             <div key={dateStr} className="flex flex-col items-center py-0.5 gap-0.5">
                               <span
                                 className={`text-[10px] w-5 h-5 flex items-center justify-center rounded-full leading-none font-medium
-                                  ${isToday ? 'font-bold text-slate-900' : isPast ? 'text-[#555555]' : 'text-[#a8a8a8]'}
+                                  ${isToday ? 'font-bold text-[#222222]' : isPast ? 'text-[#555555]' : 'text-[#a8a8a8]'}
                                 `}
                                 style={isToday ? { background: config.primaryHex } : undefined}
                               >
@@ -1040,7 +1033,7 @@ export default function Goals() {
                       {new Date().getFullYear()} em Resumo
                     </h3>
                     {yearlyPanel.monthsHit > 0 && (
-                      <span className="text-[11px] font-bold text-emerald-400">
+                      <span className="text-[11px] font-bold text-[#ffd400]">
                         {yearlyPanel.monthsHit} {yearlyPanel.monthsHit === 1 ? 'mês bateu' : 'meses bateram'} a meta
                       </span>
                     )}
@@ -1056,17 +1049,17 @@ export default function Goals() {
                             style={{
                               height: isFuture ? 3 : `${Math.max(pct, isFuture ? 0 : 4)}%`,
                               background: isFuture
-                                ? '#1e293b'
+                                ? '#222222'
                                 : hit
                                 ? '#10b981'
                                 : pct > 0
                                 ? config.accentHex
-                                : '#1e293b',
+                                : '#222222',
                               opacity: isFuture ? 0.3 : 1,
                             }}
                           />
                         </div>
-                        <span className={`text-[8px] font-mono capitalize ${isCurrent ? 'bp-text-primary font-bold' : 'text-[#666666]'}`}>
+                        <span className={`text-[8px] font-tag capitalize ${isCurrent ? 'bp-text-primary font-bold' : 'text-[#666666]'}`}>
                           {label}
                         </span>
                       </div>
@@ -1084,7 +1077,7 @@ export default function Goals() {
                     {yearlyPanel.projected > yearlyPanel.totalYear && (
                       <div>
                         <p className="text-[10px] text-[#888888] uppercase tracking-wider">Projeção dezembro</p>
-                        <p className="text-base font-black text-emerald-400 mt-0.5">
+                        <p className="text-base font-black text-[#ffd400] mt-0.5">
                           {isVisible ? formatCurrency(yearlyPanel.projected) : '•••'}
                         </p>
                       </div>
@@ -1118,8 +1111,8 @@ export default function Goals() {
                       isCurrent
                         ? 'bg-[#ffd400] border-[#ffd400] text-[#0a0a0a]'
                         : reached
-                        ? 'bg-[#161616] border-[#222222] text-white'
-                        : 'bg-[#161616] border-[#222222] text-white opacity-40'
+                        ? 'bg-[#161616] border-[#222222] text-[#0a0a0a]'
+                        : 'bg-[#161616] border-[#222222] text-[#0a0a0a] opacity-40'
                     }`}
                   >
                     <div
@@ -1220,7 +1213,7 @@ export default function Goals() {
                     className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0"
                     style={{
                       background: selectedBadge.unlocked ? `${selectedBadge.color}22` : 'transparent',
-                      border: `1px solid ${selectedBadge.unlocked ? selectedBadge.color + '44' : '#1f2937'}`,
+                      border: `1px solid ${selectedBadge.unlocked ? selectedBadge.color + '44' : '#1f1f1f'}`,
                       filter: selectedBadge.unlocked ? 'none' : 'grayscale(1)',
                     }}
                   >
@@ -1246,7 +1239,7 @@ export default function Goals() {
                 </div>
               ) : showProgress ? (
                 <div className="space-y-2">
-                  <div className="flex justify-between text-xs text-[#888888] font-mono">
+                  <div className="flex justify-between text-xs text-[#888888] font-tag">
                     <span>Progresso</span>
                     <span>{selectedBadge.progress.value} / {selectedBadge.progress.max} ({Math.round(pct)}%)</span>
                   </div>

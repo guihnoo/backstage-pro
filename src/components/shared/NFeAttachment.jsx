@@ -34,16 +34,16 @@ function AnaliseCard({ analise, clienteNome }) {
   return (
     <div className={`rounded-lg border p-3 space-y-2 text-xs ${
       ok
-        ? 'bg-emerald-950/20 border-emerald-700/30'
+        ? 'bg-[#ffd400]/20 border-[#ffd400]/30'
         : 'bg-[#ffd400]/20 border-[#ffd400]/30'
     }`}>
       {/* Status geral */}
       <div className="flex items-center gap-2">
         {ok
-          ? <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+          ? <CheckCircle2 className="w-4 h-4 text-[#ffd400] flex-shrink-0" />
           : <AlertTriangle className="w-4 h-4 text-[#ffd400] flex-shrink-0" />
         }
-        <span className={`font-semibold ${ok ? 'text-emerald-300' : 'text-[#ffd400]'}`}>
+        <span className={`font-semibold ${ok ? 'text-[#ffd400]' : 'text-[#ffd400]'}`}>
           {ok ? 'NF-e verificada pela IA' : 'Atenção — divergências encontradas'}
         </span>
       </div>
@@ -53,7 +53,7 @@ function AnaliseCard({ analise, clienteNome }) {
         {analise.nfe_numero && (
           <>
             <span className="text-[#a8a8a8]">Número</span>
-            <span className="text-white font-mono font-medium">{analise.nfe_numero}</span>
+            <span className="text-white font-tag font-medium">{analise.nfe_numero}</span>
           </>
         )}
         {analise.nfe_tomador_nome && (
@@ -65,13 +65,13 @@ function AnaliseCard({ analise, clienteNome }) {
         {analise.nfe_tomador_cnpj && (
           <>
             <span className="text-[#a8a8a8]">CNPJ tomador</span>
-            <span className="text-white font-mono">{analise.nfe_tomador_cnpj}</span>
+            <span className="text-white font-tag">{analise.nfe_tomador_cnpj}</span>
           </>
         )}
         {analise.nfe_valor > 0 && (
           <>
             <span className="text-[#a8a8a8]">Valor na NF</span>
-            <span className={`font-semibold ${analise.valor_confere ? 'text-emerald-300' : 'text-[#ffd400]'}`}>
+            <span className={`font-semibold ${analise.valor_confere ? 'text-[#ffd400]' : 'text-[#ffd400]'}`}>
               R$ {analise.nfe_valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </span>
           </>
@@ -93,10 +93,10 @@ function AnaliseCard({ analise, clienteNome }) {
       {/* Validação cliente */}
       <div className="flex items-center gap-1.5">
         {analise.cliente_reconhecido
-          ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+          ? <CheckCircle2 className="w-3.5 h-3.5 text-[#ffd400] flex-shrink-0" />
           : <XCircle className="w-3.5 h-3.5 text-[#ff2e88] flex-shrink-0" />
         }
-        <span className={analise.cliente_reconhecido ? 'text-emerald-300' : 'text-[#ff2e88]'}>
+        <span className={analise.cliente_reconhecido ? 'text-[#ffd400]' : 'text-[#ff2e88]'}>
           {analise.cliente_reconhecido
             ? `Tomador reconhecido: ${clienteNome ?? 'cliente do evento'}`
             : `Tomador não corresponde ao cliente do evento`
@@ -316,7 +316,7 @@ export default function NFeAttachment({ event, client }) {
                 {!event.nfe_arquivo_nome && !currentSavedNumero && (
                   <p className="text-xs text-[#a8a8a8]">Arquivo anexado</p>
                 )}
-                <p className="text-[11px] text-emerald-400/90 mt-0.5">
+                <p className="text-[11px] text-[#ffd400]/90 mt-0.5">
                   ✓ Vinculada ao Relatório PDF de Fechamento
                 </p>
               </div>
@@ -407,7 +407,7 @@ export default function NFeAttachment({ event, client }) {
 
   // ── Sem NF-e — formulário para registrar ─────────────────────────────────
   return (
-    <div className="border border-dashed border-[#ffd400]/40 rounded-lg p-3 space-y-2.5 bg-[#ffd400]/10">
+    <div className="border border-[#222222] rounded-[12px] p-3 space-y-2.5 bg-[#0a0a0a]">
       <div className="flex items-center gap-1.5">
         <Sparkles className="w-3.5 h-3.5 text-[#ffd400]" />
         <p className="text-xs text-[#c8c8c8] font-medium">Inserir NF-e / NFS-e no evento</p>

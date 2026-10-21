@@ -13,7 +13,7 @@ export default function PrivacyPolicyPage() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="min-h-screen bg-[#050609] max-w-4xl mx-auto p-6 space-y-8"
+      className="min-h-screen bg-[#0a0a0a] max-w-4xl mx-auto p-6 space-y-8"
     >
       <div className="text-center mb-8">
         <h1 className="text-[40px] leading-none uppercase text-white font-poster flex items-center justify-center gap-3 mb-4">

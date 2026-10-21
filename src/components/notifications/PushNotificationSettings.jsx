@@ -220,7 +220,7 @@ export default function PushNotificationSettings() {
         <div className="bg-[#ffd400]/10 border border-[#ffd400]/20 rounded-lg p-3 mb-3 space-y-1">
           <p className="text-xs font-semibold text-[#ffd400]">Notificações push pendentes de configuração</p>
           <p className="text-xs text-[#ffd400]/90">
-            A variável <code className="font-mono bg-[#1f1f1f] px-1 rounded">VITE_VAPID_PUBLIC_KEY</code> não está no build de produção.
+            A variável <code className="font-tag bg-[#1f1f1f] px-1 rounded">VITE_VAPID_PUBLIC_KEY</code> não está no build de produção.
           </p>
           <p className="text-xs text-[#ffd400]/80">
             Acesse <strong>Vercel → Project → Settings → Environment Variables</strong>, adicione a chave e faça um novo deploy. Depois, reabra o app e toque em &quot;Ativar alertas&quot;.
@@ -249,7 +249,7 @@ export default function PushNotificationSettings() {
           disabled={!supported || busy || loading || permission === 'denied'}
           onClick={enabled ? handleDisable : handleEnable}
           className={`h-10 px-5 rounded-full text-xs font-extrabold transition-all disabled:opacity-50 ${
-            enabled ? 'border border-[#444444] text-white' : 'bg-[#ffd400] text-[#0a0a0a]'
+            enabled ? 'border border-[#444444] text-[#0a0a0a]' : 'bg-[#ffd400] text-[#0a0a0a]'
           }`}
         >
           {busy ? (

@@ -144,7 +144,7 @@ export default function ClientQuickCreateDialog({ open, onOpenChange, initialNam
           {clientType === 'empresa' && (
             <div className="p-3 rounded-xl bg-[#1f1f1f] border border-[#2a2a2a] space-y-2">
               <CompanySearchInput onSelect={handleCompanySelect} />
-              <p className="text-[10px] text-[#666666] font-mono leading-relaxed">
+              <p className="text-[10px] text-[#666666] font-tag leading-relaxed">
                 Busca na Receita Federal pelo nome ou CNPJ.
                 Encontrou? Clique para preencher automaticamente.
               </p>

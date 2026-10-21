@@ -108,7 +108,7 @@ function LifecycleBar({ event, hasWork }) {
                 className="w-5 h-5 rounded-full flex items-center justify-center border-2 transition-all"
                 style={{
                   backgroundColor: step.done ? step.color : 'transparent',
-                  borderColor: step.done ? step.color : '#475569',
+                  borderColor: step.done ? step.color : '#555555',
                 }}
               >
                 {step.done && (
@@ -124,7 +124,7 @@ function LifecycleBar({ event, hasWork }) {
             {i < steps.length - 1 && (
               <div
                 className="flex-1 h-0.5 mb-4 transition-colors"
-                style={{ backgroundColor: steps[i + 1].done ? step.color : '#334155' }}
+                style={{ backgroundColor: steps[i + 1].done ? step.color : '#333333' }}
               />
             )}
           </span>
@@ -167,8 +167,8 @@ function InlineNotes({ event, updateEvent }) {
   if (editing) {
     return (
       <div className="space-y-2">
-        <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-          <FileText className="w-4 h-4 text-[#a8a8a8]" /> Observações
+        <h4 className="font-tag text-[11px] font-normal tracking-[2px] uppercase text-[#a8a8a8] flex items-center gap-2">
+          <FileText className="w-3.5 h-3.5 text-[#a8a8a8]" /> Observações
         </h4>
         <textarea
           autoFocus
@@ -187,7 +187,7 @@ function InlineNotes({ event, updateEvent }) {
             onClick={handleSave}
             disabled={saving}
             className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
-            style={{ background: primaryHex, color: '#050609' }}
+            style={{ background: primaryHex, color: '#0a0a0a' }}
           >
             {saving ? 'Salvando…' : 'Salvar'}
           </button>
@@ -199,8 +199,8 @@ function InlineNotes({ event, updateEvent }) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between gap-2">
-        <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-          <FileText className="w-4 h-4 text-[#a8a8a8]" /> Observações
+        <h4 className="font-tag text-[11px] font-normal tracking-[2px] uppercase text-[#a8a8a8] flex items-center gap-2">
+          <FileText className="w-3.5 h-3.5 text-[#a8a8a8]" /> Observações
         </h4>
         <button type="button" onClick={startEdit} className="text-[11px] transition-colors" style={{ color: primaryHex }}>
           {localText ? 'Editar' : '+ Adicionar'}
@@ -220,7 +220,7 @@ function InlineNotes({ event, updateEvent }) {
         <button
           type="button"
           onClick={startEdit}
-          className="w-full text-left text-xs text-[#888888] border border-dashed border-[#262626] rounded-lg px-3 py-2.5 hover:border-slate-500 hover:text-[#a8a8a8] transition-colors"
+          className="w-full text-left text-xs text-[#888888] border border-dashed border-[#262626] rounded-lg px-3 py-2.5 hover:border-[#444444] hover:text-[#a8a8a8] transition-colors"
         >
           Clique para adicionar observações…
         </button>
@@ -829,7 +829,7 @@ export default function EventDetailModal({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs uppercase tracking-wider text-[#a8a8a8]">Valor total no Fechamento</p>
-            <p className="text-2xl font-black text-white font-mono">
+            <p className="text-2xl font-black text-white font-tag">
               {isVisible ? formatCurrency(closing.total) : '••••'}
             </p>
             <p className="text-xs text-[#a8a8a8]">
@@ -840,14 +840,14 @@ export default function EventDetailModal({
           <div className="flex flex-col items-end gap-1 shrink-0">
             <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
               userSettings?.pix_key
-                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                : 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+                ? 'bg-[#ffd400]/10 border-[#ffd400]/30 text-[#ffd400]'
+                : 'bg-[#ffd400]/10 border-[#ffd400]/30 text-[#ffd400]'
             }`}>
               {userSettings?.pix_key ? '✓ PIX no PDF' : '⚠ Sem PIX no PDF'}
             </span>
             <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
               hasLinkedNfe
-                ? 'bg-blue-500/10 border-blue-500/30 text-[#ffd400]'
+                ? 'bg-[#ffd400]/10 border-[#ffd400]/30 text-[#ffd400]'
                 : 'bg-[#222222] border-[#333333] text-[#e0e0e0]'
             }`}>
               {hasLinkedNfe ? `✓ NF-e ${savedNfeNum || 'anexada'}` : 'NF-e opcional'}
@@ -856,12 +856,12 @@ export default function EventDetailModal({
         </div>
 
         {closing.semHoras.length > 0 && (
-          <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-200">
+          <div className="rounded-lg border border-[#ffd400]/40 bg-[#ffd400]/10 p-3 text-sm text-[#ffd400]">
             <p className="flex items-center gap-1.5 font-semibold">
               <AlertTriangle className="w-4 h-4 shrink-0" />
               Faltam horas em {closing.semHoras.length} {closing.semHoras.length === 1 ? 'dia' : 'dias'}: {closing.semHoras.map(fmtDayShort).join(', ')}
             </p>
-            <p className="text-xs text-amber-200/80 mt-1">Esses dias entram no relatório com a diária, sem horas extras.</p>
+            <p className="text-xs text-[#ffd400]/80 mt-1">Esses dias entram no relatório com a diária, sem horas extras.</p>
             <button
               type="button"
               onClick={() => { setActiveTab('trabalho'); openWorkModal(closing.semHoras[0], null); }}
@@ -946,15 +946,15 @@ export default function EventDetailModal({
 
   const crmCard = (status === 'completed' || status === 'archived') ? (
     allDone ? (
-      <Card className="bg-gradient-to-r from-emerald-900/20 to-emerald-800/20 border-emerald-700/40">
+      <Card className="rounded-2xl bg-[#161616] border-[#ffd400]/60 shadow-none">
         <CardContent className="p-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-              <PartyPopper className="w-5 h-5 text-emerald-400" />
+            <div className="w-9 h-9 rounded-full bg-[#ffd400]/20 flex items-center justify-center flex-shrink-0">
+              <PartyPopper className="w-5 h-5 text-[#ffd400]" />
             </div>
             <div className="min-w-0">
-              <p className="font-bold text-emerald-300 text-sm">Evento fechado!</p>
-              <p className="text-xs text-emerald-400/70 mt-0.5">
+              <p className="font-bold text-[#ffd400] text-sm">Evento fechado!</p>
+              <p className="text-xs text-[#ffd400]/70 mt-0.5">
                 {totals.totalHours > 0 ? `${totals.totalHours}h registradas` : 'Horas OK'}
                 {' · Pagamento confirmado'}
               </p>
@@ -963,16 +963,16 @@ export default function EventDetailModal({
           <button
             type="button"
             onClick={() => setActiveTab('fiscal')}
-            className="flex-shrink-0 flex items-center gap-1 text-xs text-blue-400 hover:text-[#ffd400] transition-colors"
+            className="flex-shrink-0 flex items-center gap-1 text-xs text-[#ffd400] hover:text-[#ffd400] transition-colors"
           >
             NF-e & PDF <ArrowRight className="w-3 h-3" />
           </button>
         </CardContent>
       </Card>
     ) : (
-      <Card className="bg-[#161616] border-amber-700/40">
+      <Card className="bg-[#161616] border-[#ffd400]/40">
         <CardHeader className="pb-2 pt-4 px-4">
-          <CardTitle className="text-sm flex items-center gap-2 text-amber-300">
+          <CardTitle className="text-sm flex items-center gap-2 text-[#ffd400]">
             <ClipboardCheck className="w-4 h-4" />
             Próximos passos
           </CardTitle>
@@ -981,7 +981,7 @@ export default function EventDetailModal({
           {/* Horas */}
           <div className="flex items-center gap-3">
             {horasDone
-              ? <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+              ? <CheckCircle2 className="w-5 h-5 text-[#ffd400] flex-shrink-0" />
               : <Circle className="w-5 h-5 text-[#888888] flex-shrink-0" />
             }
             <div className="flex-1 min-w-0">
@@ -989,7 +989,7 @@ export default function EventDetailModal({
                 Registrar horas trabalhadas
               </p>
               {horasDone && totals.totalHours > 0 && (
-                <p className="text-xs text-emerald-400">{totals.totalHours}h · {isVisible ? formatCurrency(totals.totalEarned) : '••••'}</p>
+                <p className="text-xs text-[#ffd400]">{totals.totalHours}h · {isVisible ? formatCurrency(totals.totalEarned) : '••••'}</p>
               )}
             </div>
             {!horasDone && (
@@ -1020,7 +1020,7 @@ export default function EventDetailModal({
           {/* Pagamento */}
           <div className="flex items-center gap-3">
             {pagamentoDone
-              ? <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+              ? <CheckCircle2 className="w-5 h-5 text-[#ffd400] flex-shrink-0" />
               : <Circle className="w-5 h-5 text-[#888888] flex-shrink-0" />
             }
             <div className="flex-1 min-w-0">
@@ -1028,7 +1028,7 @@ export default function EventDetailModal({
                 Confirmar recebimento ({isVisible ? formatCurrency(receivableAmount) : '••••'})
               </p>
               {!pagamentoDone && event.payment_due_date && (
-                <p className="text-xs text-amber-400">Vence {formatDisplayDate(event.payment_due_date)}</p>
+                <p className="text-xs text-[#ffd400]">Vence {formatDisplayDate(event.payment_due_date)}</p>
               )}
             </div>
             {!pagamentoDone && (
@@ -1043,8 +1043,8 @@ export default function EventDetailModal({
           {/* Fechamento / NF-e / PDF — aponta para aba Fiscal */}
           <div className="flex items-center gap-3 pt-1 border-t border-[#262626]">
             {(event.nfe_arquivo_url || event.nfe_numero)
-              ? <CheckCircle2 className="w-5 h-5 text-blue-400 flex-shrink-0" />
-              : <Circle className="w-5 h-5 text-blue-500/50 flex-shrink-0" />
+              ? <CheckCircle2 className="w-5 h-5 text-[#ffd400] flex-shrink-0" />
+              : <Circle className="w-5 h-5 text-[#ffd400]/50 flex-shrink-0" />
             }
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-white">Fechamento, NF-e & PDF com PIX</p>
@@ -1055,7 +1055,7 @@ export default function EventDetailModal({
             <button
               type="button"
               onClick={() => setActiveTab('fiscal')}
-              className="flex-shrink-0 flex items-center gap-1 text-xs font-semibold text-blue-400 hover:text-[#ffd400] transition-colors"
+              className="flex-shrink-0 flex items-center gap-1 text-xs font-semibold text-[#ffd400] hover:text-[#ffd400] transition-colors"
             >
               Abrir Dinheiro <ArrowRight className="w-3 h-3" />
             </button>
@@ -1148,10 +1148,10 @@ export default function EventDetailModal({
               {crmCard}
 
               {/* Informações básicas */}
-              <Card className="bg-[#161616] border-[#222222]">
+              <Card className="rounded-2xl bg-[#161616] border-[#222222] shadow-none">
                 <CardHeader className="pb-2 pt-4 px-4">
-                  <CardTitle className="text-sm flex items-center gap-2 text-[#e0e0e0]">
-                    <Calendar className="w-4 h-4 bp-text-primary" />
+                  <CardTitle className="font-tag text-[11px] font-normal tracking-[2px] uppercase text-[#a8a8a8] flex items-center gap-2">
+                    <Calendar className="w-3.5 h-3.5 bp-text-primary" />
                     Informações do Evento
                   </CardTitle>
                 </CardHeader>
@@ -1183,15 +1183,16 @@ export default function EventDetailModal({
               </Card>
 
               {/* Local */}
-              <Card className="bg-[#161616] border-[#222222]">
+              <Card className="rounded-2xl bg-[#161616] border-[#222222] shadow-none">
                 <CardHeader className="pb-2 pt-4 px-4">
-                  <CardTitle className="text-sm flex items-center gap-2 text-[#e0e0e0]">
-                    <MapPin className="w-4 h-4 bp-text-primary" />
+                  <CardTitle className="font-tag text-[11px] font-normal tracking-[2px] uppercase text-[#a8a8a8] flex items-center gap-2">
+                    <MapPin className="w-3.5 h-3.5 bp-text-primary" />
                     Local do evento
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-4 pb-4 space-y-3">
                   <EventLocationSection
+                    showLabel={false}
                     location={locDraft.location}
                     location_city={locDraft.location_city}
                     location_state={locDraft.location_state}
@@ -1231,17 +1232,17 @@ export default function EventDetailModal({
             <TabsContent value="trabalho" className="mt-0 pt-4 space-y-4 pb-6 data-[state=inactive]:hidden">
 
               {/* Financeiro */}
-              <Card className="bg-[#161616] border-[#222222]">
+              <Card className="rounded-2xl bg-[#161616] border-[#222222] shadow-none">
                 <CardHeader className="pb-2 pt-4 px-4">
-                  <CardTitle className="text-sm flex items-center gap-2 text-[#e0e0e0]">
-                    <DollarSign className="w-4 h-4 text-green-400" />
+                  <CardTitle className="font-tag text-[11px] font-normal tracking-[2px] uppercase text-[#a8a8a8] flex items-center gap-2">
+                    <DollarSign className="w-3.5 h-3.5 text-[#ffd400]" />
                     Financeiro
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-4 pb-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <p className="text-sm text-[#a8a8a8]">Cachê contratado</p>
-                    <p className="text-lg font-bold text-green-400">
+                    <p className="text-lg font-bold text-[#ffd400]">
                       {isVisible ? formatCurrency(getEventCacheAmount(event)) : '••••'}
                     </p>
                   </div>
@@ -1255,11 +1256,11 @@ export default function EventDetailModal({
                         </div>
                         <div>
                           <p className="text-[10px] text-[#888888] mb-0.5">Extras</p>
-                          <p className="text-base font-bold text-orange-400">{totals.totalOvertime}h</p>
+                          <p className="text-base font-bold text-[#ffd400]">{totals.totalOvertime}h</p>
                         </div>
                         <div>
                           <p className="text-[10px] text-[#888888] mb-0.5">Total a receber</p>
-                          <p className="text-base font-bold text-green-400">{isVisible ? formatCurrency(receivableAmount) : '••••'}</p>
+                          <p className="text-base font-bold text-[#ffd400]">{isVisible ? formatCurrency(receivableAmount) : '••••'}</p>
                         </div>
                       </div>
                     </>
@@ -1272,7 +1273,7 @@ export default function EventDetailModal({
                           <p className="text-sm text-[#a8a8a8]">Valor estimado</p>
                           <p className="text-[10px] text-[#888888]">Baseado no cachê × duração</p>
                         </div>
-                        <p className="text-lg font-bold text-yellow-400">{isVisible ? formatCurrency(estimatedValue) : '••••'}</p>
+                        <p className="text-lg font-bold text-[#ffd400]">{isVisible ? formatCurrency(estimatedValue) : '••••'}</p>
                       </div>
                     </>
                   )}
@@ -1286,11 +1287,11 @@ export default function EventDetailModal({
                         </div>
                         <div>
                           <p className="text-[10px] text-[#888888] mb-0.5">Despesas</p>
-                          <p className="text-base font-bold text-red-400">{isVisible ? formatCurrency(profitSummary.expenses) : '••••'}</p>
+                          <p className="text-base font-bold text-[#ff2e88]">{isVisible ? formatCurrency(profitSummary.expenses) : '••••'}</p>
                         </div>
                         <div>
                           <p className="text-[10px] text-[#888888] mb-0.5">Lucro</p>
-                          <p className={`text-base font-bold ${profitSummary.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                          <p className={`text-base font-bold ${profitSummary.profit >= 0 ? 'text-[#ffd400]' : 'text-[#ff2e88]'}`}>
                             {isVisible ? formatCurrency(profitSummary.profit) : '••••'}
                           </p>
                         </div>
@@ -1299,7 +1300,7 @@ export default function EventDetailModal({
                         <div>
                           <div className="flex items-center justify-between text-[10px] text-[#888888] mb-1">
                             <span>Margem</span>
-                            <span className={profitSummary.margin >= 0 ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold'}>
+                            <span className={profitSummary.margin >= 0 ? 'text-[#ffd400] font-bold' : 'text-[#ff2e88] font-bold'}>
                               {Math.round(profitSummary.margin)}%
                             </span>
                           </div>
@@ -1322,9 +1323,9 @@ export default function EventDetailModal({
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm text-[#a8a8a8]">Vencimento</p>
-                          <p className="text-base font-bold text-amber-400">{formatDisplayDate(event.payment_due_date)}</p>
+                          <p className="text-base font-bold text-[#ffd400]">{formatDisplayDate(event.payment_due_date)}</p>
                         </div>
-                        <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                        <AlertTriangle className="w-4 h-4 text-[#ffd400] flex-shrink-0" />
                       </div>
                     </>
                   )}
@@ -1335,7 +1336,7 @@ export default function EventDetailModal({
               {['pending', 'scheduled', 'confirmed', 'in_progress'].includes(status) && (
                 <div className="flex items-center justify-between p-3 bg-[#161616] rounded-lg border border-[#262626]">
                   <div>
-                    <p className="text-sm font-medium text-white">Cronômetro</p>
+                    <p className="font-tag text-[11px] tracking-[2px] uppercase text-[#a8a8a8]">Cronômetro</p>
                     <p className="text-xs text-[#a8a8a8]">
                       {activeTimer?.eventId === event.id ? 'Timer ativo' : 'Registre seu tempo em andamento'}
                     </p>
@@ -1346,13 +1347,13 @@ export default function EventDetailModal({
                     size="sm"
                     className={`transition-colors ${
                       activeTimer?.eventId === event.id
-                        ? 'border-red-500/50 bg-red-500/10 text-red-400 hover:bg-red-500/20'
+                        ? 'border-[#ff2e88]/50 bg-[#ff2e88]/10 text-[#ff2e88] hover:bg-[#ff2e88]/20'
                         : ''
                     }`}
                     style={activeTimer?.eventId !== event.id ? { borderColor: `${primaryHex}99`, color: primaryHex } : undefined}
                   >
                     {activeTimer?.eventId === event.id
-                      ? <><Square className="w-4 h-4 fill-red-400 mr-2" />Parar</>
+                      ? <><Square className="w-4 h-4 fill-[#ff2e88] mr-2" />Parar</>
                       : <><Timer className="w-4 h-4 mr-2" />Iniciar</>
                     }
                   </Button>
@@ -1361,10 +1362,10 @@ export default function EventDetailModal({
 
               {/* Timeline de dias (multi-day) */}
               {eventDays.length > 0 && (
-                <Card className="bg-[#161616] border-[#222222]">
+                <Card className="rounded-2xl bg-[#161616] border-[#222222] shadow-none">
                   <CardHeader className="pb-2 pt-4 px-4">
-                    <CardTitle className="text-sm flex items-center gap-2 text-[#e0e0e0]">
-                      <CalendarDays className="w-4 h-4 bp-text-primary" />
+                    <CardTitle className="font-tag text-[11px] font-normal tracking-[2px] uppercase text-[#a8a8a8] flex items-center gap-2">
+                      <CalendarDays className="w-3.5 h-3.5 bp-text-primary" />
                       Dias do evento
                     </CardTitle>
                   </CardHeader>
@@ -1383,10 +1384,10 @@ export default function EventDetailModal({
                               openWorkModal(date, work || null);
                             }}
                             className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg border text-xs font-medium transition-all ${
-                              work && isEstimatedWork(work) ? 'bg-amber-500/10 border-amber-500/40 text-amber-300'
-                              : work ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
+                              work && isEstimatedWork(work) ? 'bg-[#ffd400]/10 border-[#ffd400]/40 text-[#ffd400]'
+                              : work ? 'bg-[#ffd400]/10 border-[#ffd400]/40 text-[#ffd400]'
                               : isToday ? 'border-2 text-white hover:opacity-80'
-                              : isPast ? 'bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20'
+                              : isPast ? 'bg-[#ff2e88]/10 border-[#ff2e88]/30 text-[#ff2e88] hover:bg-[#ff2e88]/20'
                               : 'bg-[#1a1a1a] border-[#262626] text-[#666666] cursor-not-allowed'
                             }`}
                             style={isToday && !work ? { borderColor: primaryHex, background: `${primaryHex}20`, color: primaryHex } : undefined}
@@ -1400,17 +1401,17 @@ export default function EventDetailModal({
                       })}
                     </div>
                     {eventDays.some(d => d.isPast && !d.work) && (
-                      <p className="text-[11px] text-red-400/70 mt-2">
+                      <p className="text-[11px] text-[#ff2e88]/70 mt-2">
                         Toque num dia vermelho para registrar horas em atraso.
                       </p>
                     )}
                     {eventDays.some(d => d.work && isEstimatedWork(d.work)) && (
-                      <p className="text-[11px] text-amber-400/70 mt-2">
+                      <p className="text-[11px] text-[#ffd400]/70 mt-2">
                         Dias em âmbar foram fechados com 12 h automáticas — toque para lançar as horas reais.
                       </p>
                     )}
                     {eventDays.some(d => d.work) && (
-                      <p className="text-[11px] text-emerald-400/70 mt-2">
+                      <p className="text-[11px] text-[#ffd400]/70 mt-2">
                         Dias verdes já registrados — toque para editar as horas.
                       </p>
                     )}
@@ -1421,8 +1422,8 @@ export default function EventDetailModal({
               {/* Registros de Trabalho */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-                    <Clock className="w-4 h-4 bp-text-primary" />
+                  <h4 className="font-tag text-[11px] font-normal tracking-[2px] uppercase text-[#a8a8a8] flex items-center gap-2">
+                    <Clock className="w-3.5 h-3.5 bp-text-primary" />
                     Horas trabalhadas
                     {eventWork.length > 0 && <span className="text-[#888888] font-normal text-xs">({eventWork.length})</span>}
                   </h4>
@@ -1451,8 +1452,8 @@ export default function EventDetailModal({
                             <p className="font-medium text-white text-sm">{formatDisplayDate(work.date)}</p>
                             <div className="flex items-center gap-1 flex-shrink-0">
                               <div className="text-right mr-1">
-                                <p className="text-green-400 font-bold text-sm">{isVisible ? formatCurrency(work.daily_cache || 0) : '••••'}</p>
-                                {dayRate && <p className="text-[10px] text-amber-400/70">{isVisible ? formatCurrency(dayRate) : '••••'}/h</p>}
+                                <p className="text-[#ffd400] font-bold text-sm">{isVisible ? formatCurrency(work.daily_cache || 0) : '••••'}</p>
+                                {dayRate && <p className="text-[10px] text-[#ffd400]/70">{isVisible ? formatCurrency(dayRate) : '••••'}/h</p>}
                               </div>
                               <Button
                                 type="button"
@@ -1468,7 +1469,7 @@ export default function EventDetailModal({
                                 type="button"
                                 size="sm"
                                 variant="ghost"
-                                className="h-7 w-7 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                className="h-7 w-7 p-0 text-[#ff2e88] hover:text-[#ff2e88] hover:bg-[#ff2e88]/10"
                                 aria-label="Excluir registro de horas"
                                 onClick={() => setConfirmDeleteWorkId(work.id)}
                               >
@@ -1497,8 +1498,8 @@ export default function EventDetailModal({
                     onClick={() => setShowExpenses(v => !v)}
                     className="flex items-center gap-2 text-left hover:opacity-80 transition-opacity"
                   >
-                    <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-                      <Receipt className="w-4 h-4 text-amber-400" />
+                    <h4 className="font-tag text-[11px] font-normal tracking-[2px] uppercase text-[#a8a8a8] flex items-center gap-2">
+                      <Receipt className="w-3.5 h-3.5 text-[#ffd400]" />
                       Despesas
                       {eventExpenses.length > 0 && <span className="text-xs font-normal text-[#a8a8a8]">({eventExpenses.length})</span>}
                     </h4>
@@ -1510,16 +1511,16 @@ export default function EventDetailModal({
                     size="sm"
                     variant="outline"
                     onClick={() => setShowExpenseForm(true)}
-                    className="h-7 px-2 text-xs border-amber-600/40 text-amber-300 hover:bg-amber-500/10 flex-shrink-0"
+                    className="h-7 px-2 text-xs border-[#ffd400]/40 text-[#ffd400] hover:bg-[#ffd400]/10 flex-shrink-0"
                   >
                     <Plus className="w-3 h-3 mr-1" />Adicionar
                   </Button>
                 </div>
                 {expenseTotals.total > 0 && (
                   <div className="flex items-center gap-3 mb-3 text-sm">
-                    <span className="text-[#a8a8a8]">Total: <span className="text-red-300 font-bold">{isVisible ? formatCurrency(expenseTotals.total) : '••••'}</span></span>
+                    <span className="text-[#a8a8a8]">Total: <span className="text-[#ff2e88] font-bold">{isVisible ? formatCurrency(expenseTotals.total) : '••••'}</span></span>
                     {expenseTotals.reimbursable > 0 && (
-                      <span className="text-[#a8a8a8]">A reembolsar: <span className="text-amber-300 font-bold">{isVisible ? formatCurrency(expenseTotals.reimbursable) : '••••'}</span></span>
+                      <span className="text-[#a8a8a8]">A reembolsar: <span className="text-[#ffd400] font-bold">{isVisible ? formatCurrency(expenseTotals.reimbursable) : '••••'}</span></span>
                     )}
                   </div>
                 )}
@@ -1542,18 +1543,18 @@ export default function EventDetailModal({
                                 </span>
                               )}
                               {exp.is_reimbursable && !exp.reimbursed && (
-                                <span className="text-[10px] text-amber-400 flex items-center gap-0.5">
+                                <span className="text-[10px] text-[#ffd400] flex items-center gap-0.5">
                                   <AlertTriangle className="w-2.5 h-2.5" />reembolsável
                                 </span>
                               )}
                               {exp.reimbursed && (
-                                <span className="text-[10px] text-green-400 flex items-center gap-0.5">
+                                <span className="text-[10px] text-[#ffd400] flex items-center gap-0.5">
                                   <CheckCircle2 className="w-2.5 h-2.5" />reembolsado
                                 </span>
                               )}
                             </div>
                           </div>
-                          <p className="text-sm font-bold text-red-300 flex-shrink-0">
+                          <p className="text-sm font-bold text-[#ff2e88] flex-shrink-0">
                             {isVisible ? formatCurrency(exp.amount) : '••••'}
                           </p>
                         </div>
@@ -1571,8 +1572,8 @@ export default function EventDetailModal({
 
               {/* NF-e upload + AI */}
               <div>
-                <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-blue-400" />
+                <h4 className="font-tag text-[11px] font-normal tracking-[2px] uppercase text-[#a8a8a8] flex items-center gap-2 mb-3">
+                  <FileText className="w-3.5 h-3.5 text-[#ffd400]" />
                   Nota Fiscal Eletrônica
                 </h4>
                 <NFeAttachment event={event} client={client} />
@@ -1583,8 +1584,8 @@ export default function EventDetailModal({
               {/* PIX */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
-                  <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-                    <Receipt className="w-4 h-4 text-emerald-400" />
+                  <h4 className="font-tag text-[11px] font-normal tracking-[2px] uppercase text-[#a8a8a8] flex items-center gap-2">
+                    <Receipt className="w-3.5 h-3.5 text-[#ffd400]" />
                     Dados de Pagamento (PIX no PDF)
                   </h4>
                   {userSettings?.pix_key && (
@@ -1600,14 +1601,14 @@ export default function EventDetailModal({
 
                 {userSettings?.pix_key && !editingPixInline ? (
                   <div className="space-y-2">
-                    <p className="text-xs text-[#e0e0e0] bg-[#161616] border border-[#262626] rounded-lg px-3 py-2 font-mono">
-                      {userSettings.pix_key_type || 'Chave PIX'}: <span className="text-emerald-300 font-bold">{userSettings.pix_key}</span>
+                    <p className="text-xs text-[#e0e0e0] bg-[#0a0a0a] border border-[#222222] rounded-[12px] px-3 py-2.5 font-tag">
+                      {userSettings.pix_key_type || 'Chave PIX'}: <span className="text-[#ffd400] font-bold">{userSettings.pix_key}</span>
                     </p>
                     <div className="flex gap-2 flex-wrap">
                       <Button
                         variant="outline"
                         onClick={handleCopyPix}
-                        className="flex-1 min-w-[120px] border-emerald-700/50 text-emerald-400 hover:bg-emerald-900/20"
+                        className="flex-1 min-w-[120px]"
                       >
                         <Copy className="w-4 h-4 mr-2" />Copiar PIX Copia e Cola
                       </Button>
@@ -1615,7 +1616,7 @@ export default function EventDetailModal({
                         <Button
                           variant="outline"
                           onClick={handlePixWhatsApp}
-                          className="flex-1 min-w-[120px] border-green-700/50 text-green-400 hover:bg-green-900/20"
+                          className="flex-1 min-w-[120px]"
                         >
                           <MessageCircle className="w-4 h-4 mr-2" />Enviar PIX
                         </Button>
@@ -1623,7 +1624,7 @@ export default function EventDetailModal({
                     </div>
                   </div>
                 ) : (
-                  <div className="rounded-lg border border-dashed border-emerald-800/50 bg-emerald-950/10 p-3 space-y-2.5">
+                  <div className="rounded-[12px] border border-[#222222] bg-[#0a0a0a] p-3 space-y-2.5">
                     <p className="text-xs text-[#a8a8a8]">
                       Cadastre sua chave PIX para que ela e o código Copia e Cola saiam automaticamente no PDF de Fechamento.
                     </p>
@@ -1631,7 +1632,7 @@ export default function EventDetailModal({
                       <select
                         value={quickPixType}
                         onChange={(e) => setQuickPixType(e.target.value)}
-                        className="h-9 rounded-md bg-[#1a1a1a] border border-[#262626] px-2.5 text-xs text-white"
+                        className="h-11 rounded-[12px] bg-[#161616] border border-[#333333] px-3 text-base text-white"
                       >
                         {['CPF', 'CNPJ', 'E-mail', 'Telefone', 'Chave aleatória'].map((t) => (
                           <option key={t} value={t}>{t}</option>
@@ -1642,14 +1643,14 @@ export default function EventDetailModal({
                         value={quickPixKey}
                         onChange={(e) => setQuickPixKey(e.target.value)}
                         placeholder="Sua chave PIX..."
-                        className="h-9 flex-1 min-w-[150px] rounded-md bg-[#1a1a1a] border border-[#262626] px-3 text-xs text-white placeholder:text-[#888888]"
+                        className="h-11 flex-1 min-w-[150px] rounded-[12px] bg-[#161616] border border-[#333333] px-3 text-base text-white placeholder:text-[#666666] focus:outline-none focus:border-[#ffd400]"
                       />
                       <Button
                         type="button"
                         size="sm"
                         disabled={savingQuickPix || !quickPixKey.trim()}
                         onClick={handleSaveQuickPix}
-                        className="h-9 px-3 text-xs bg-emerald-700 hover:bg-emerald-600 text-white"
+                        className="h-11 px-4 text-xs"
                       >
                         {savingQuickPix ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Salvar PIX'}
                       </Button>
@@ -1662,8 +1663,8 @@ export default function EventDetailModal({
 
               {/* Documentos PDF */}
               <div>
-                <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-[#a8a8a8]" />
+                <h4 className="font-tag text-[11px] font-normal tracking-[2px] uppercase text-[#a8a8a8] flex items-center gap-2 mb-3">
+                  <FileText className="w-3.5 h-3.5 text-[#a8a8a8]" />
                   Documentos e Fechamento
                 </h4>
                 <div className="flex flex-col gap-2">
@@ -1671,35 +1672,35 @@ export default function EventDetailModal({
                     onClick={handleDownloadPDF}
                     disabled={generatingPDF}
                     variant="outline"
-                    className="w-full justify-start border-[#ffd400]/40 hover:bg-[#ffd400]/10 text-[#ffd400]"
+                    className="w-full h-auto min-h-[52px] py-2.5 justify-start whitespace-normal text-left rounded-[12px] bg-[#0a0a0a] border border-[#222222] text-white hover:bg-[#161616] font-bold"
                   >
                     {generatingPDF ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
-                    Baixar Relatório de Fechamento (PDF completo)
+                    Baixar fechamento em PDF
                   </Button>
                   <Button
                     onClick={handleSharePDF}
                     disabled={sharingPDF}
                     variant="outline"
-                    className="w-full justify-start border-emerald-600/50 hover:bg-emerald-900/20 text-emerald-300"
+                    className="w-full h-auto min-h-[52px] py-2.5 justify-start whitespace-normal text-left rounded-[12px] bg-[#0a0a0a] border border-[#222222] text-white hover:bg-[#161616] font-bold"
                   >
                     {sharingPDF ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
-                    Enviar PDF de Fechamento + PIX (WhatsApp / Compartilhar)
+                    Enviar PDF + PIX no WhatsApp
                   </Button>
                   <Button
                     type="button"
                     onClick={handleCopyClosingLink}
                     variant="outline"
-                    className="w-full justify-start border-amber-600/50 hover:bg-amber-900/20 text-amber-300"
+                    className="w-full h-auto min-h-[52px] py-2.5 justify-start whitespace-normal text-left rounded-[12px] bg-[#0a0a0a] border border-[#222222] text-white hover:bg-[#161616] font-bold"
                   >
                     <ExternalLink className="w-4 h-4 mr-2" />
-                    Copiar Link Interativo de Fechamento & PIX (Página Web p/ Produtora)
+                    Copiar link do fechamento (para a produtora)
                   </Button>
                   {event.payment_status === 'paid' && (
                     <Button
                       onClick={handleDownloadReceipt}
                       disabled={generatingReceipt}
                       variant="outline"
-                      className="w-full justify-start border-green-600/50 hover:bg-green-900/20 text-green-300"
+                      className="w-full h-auto min-h-[52px] py-2.5 justify-start whitespace-normal text-left rounded-[12px] bg-[#0a0a0a] border border-[#222222] text-white hover:bg-[#161616] font-bold"
                     >
                       {generatingReceipt ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <BadgeCheck className="w-4 h-4 mr-2" />}
                       Recibo de Pagamento
@@ -1710,7 +1711,7 @@ export default function EventDetailModal({
                       onClick={handleDownloadContract}
                       disabled={generatingContract}
                       variant="outline"
-                      className="w-full justify-start border-emerald-600/50 hover:bg-emerald-900/20 text-emerald-300"
+                      className="w-full h-auto min-h-[52px] py-2.5 justify-start whitespace-normal text-left rounded-[12px] bg-[#0a0a0a] border border-[#222222] text-white hover:bg-[#161616] font-bold"
                     >
                       {generatingContract ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ScrollText className="w-4 h-4 mr-2" />}
                       Contrato de Serviços
@@ -1720,7 +1721,7 @@ export default function EventDetailModal({
                     type="button"
                     variant="outline"
                     onClick={() => window.open('https://www.nfse.gov.br/EmissorNacional/Login', '_blank', 'noopener,noreferrer')}
-                    className="w-full justify-start border-[#262626] text-[#a8a8a8] hover:bg-[#1a1a1a]"
+                    className="w-full h-auto min-h-[52px] py-2.5 justify-start whitespace-normal text-left rounded-[12px] bg-[#0a0a0a] border border-[#222222] text-white hover:bg-[#161616] font-bold"
                   >
                     <ExternalLink className="w-4 h-4 mr-2" />Portal NFS-e Nacional
                   </Button>
@@ -1742,14 +1743,14 @@ export default function EventDetailModal({
               size="icon"
               className={`flex-shrink-0 transition-colors ${
                 activeTimer?.eventId === event.id
-                  ? 'border-red-500/50 bg-red-500/10 text-red-400 hover:bg-red-500/20'
+                  ? 'border-[#ff2e88]/50 bg-[#ff2e88]/10 text-[#ff2e88] hover:bg-[#ff2e88]/20'
                   : ''
               }`}
               style={activeTimer?.eventId !== event.id ? { borderColor: `${primaryHex}99`, color: primaryHex } : undefined}
               title={activeTimer?.eventId === event.id ? 'Parar timer' : 'Iniciar timer'}
             >
               {activeTimer?.eventId === event.id
-                ? <Square className="w-4 h-4 fill-red-400" />
+                ? <Square className="w-4 h-4 fill-[#ff2e88]" />
                 : <Timer className="w-4 h-4" />
               }
             </Button>
@@ -1797,7 +1798,7 @@ export default function EventDetailModal({
               <DropdownMenuSeparator className="bg-[#1a1a1a]" />
               <DropdownMenuItem
                 onClick={() => onDelete?.(event?.id)}
-                className="gap-2 cursor-pointer text-red-400 focus:text-red-400 focus:bg-red-900/20 hover:bg-red-900/20"
+                className="gap-2 cursor-pointer text-[#ff2e88] focus:text-[#ff2e88] focus:bg-[#ff2e88]/20 hover:bg-[#ff2e88]/20"
               >
                 <Trash2 className="w-4 h-4" /> Excluir evento
               </DropdownMenuItem>

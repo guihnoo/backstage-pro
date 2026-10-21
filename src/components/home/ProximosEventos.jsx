@@ -24,11 +24,11 @@ function getTimeGroup(daysFromToday) {
 }
 
 const statusConfig = {
-  pending:   { label: 'Pendente',    color: 'bg-amber-600/20 border-amber-500/30 text-amber-300' },
-  scheduled: { label: 'Agendado',    color: 'bg-blue-600/20 border-blue-500/30 text-blue-300' },
-  confirmed: { label: '✓ Confirmado', color: 'bg-green-600/20 border-green-500/30 text-green-300' },
-  completed: { label: 'Concluído',   color: 'bg-slate-600/20 border-slate-500/30 text-slate-300' },
-  cancelled: { label: 'Cancelado',   color: 'bg-red-600/20 border-red-500/30 text-red-300' }
+  pending:   { label: 'Pendente',    color: 'bg-[#ffd400]/20 border-[#ffd400]/30 text-[#ffd400]' },
+  scheduled: { label: 'Agendado',    color: 'bg-[#ffd400]/20 border-[#ffd400]/30 text-[#ffd400]' },
+  confirmed: { label: '✓ Confirmado', color: 'bg-[#ffd400]/20 border-[#ffd400]/30 text-[#ffd400]' },
+  completed: { label: 'Concluído',   color: 'bg-[#333333]/20 border-[#444444]/30 text-[#c8c8c8]' },
+  cancelled: { label: 'Cancelado',   color: 'bg-[#ff2e88]/20 border-[#ff2e88]/30 text-[#ff2e88]' }
 };
 
 export default function ProximosEventos({ events, isLoading, onRefresh, onViewEvent, userCategory }) {
@@ -69,7 +69,7 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
         </div>
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="p-4 rounded-lg border border-slate-700/30 bg-slate-900/50 flex items-start justify-between gap-3">
+            <div key={i} className="p-4 rounded-lg border border-[#2a2a2a]/30 bg-[#161616]/50 flex items-start justify-between gap-3">
               <div className="flex-1 space-y-2">
                 <div className="flex items-center gap-2">
                   <Skeleton className="w-2 h-2 rounded-full flex-shrink-0" />
@@ -104,7 +104,7 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
         }}
       >
         <p className="font-semibold" style={{ color: config.primaryHex }}>📅 Nenhum evento próximo</p>
-        <p className="text-sm text-slate-400 mt-1 mb-4">Crie seu primeiro evento para começar!</p>
+        <p className="text-sm text-[#a8a8a8] mt-1 mb-4">Crie seu primeiro evento para começar!</p>
         <motion.button
           whileTap={{ scale: 0.96 }}
           onClick={() => hardNavigate('/calendar')}
@@ -128,7 +128,7 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
         <button
           type="button"
           onClick={() => hardNavigate('/calendar')}
-          className="text-xs text-slate-500 flex items-center gap-1 transition-colors bp-hover-primary"
+          className="text-xs text-[#888888] flex items-center gap-1 transition-colors bp-hover-primary"
         >
           Ver agenda <ChevronRight className="w-3.5 h-3.5" />
         </button>
@@ -138,10 +138,10 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
           if (item.type === 'header') {
             return (
               <div key={`h-${item.label}`} className={`flex items-center gap-2 ${idx > 0 ? 'mt-4' : 'mt-0'} mb-2`}>
-                <span className={`text-[10px] font-bold uppercase tracking-widest font-mono ${
+                <span className={`text-[10px] font-bold uppercase tracking-widest font-tag ${
                   item.label === 'Hoje' ? 'bp-text-primary' :
-                  item.label === 'Amanhã' ? 'text-amber-400' :
-                  'text-[#5a6070]'
+                  item.label === 'Amanhã' ? 'text-[#ffd400]' :
+                  'text-[#888888]'
                 }`}>
                   {item.label}
                 </span>
@@ -183,7 +183,7 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
               className={`p-4 rounded-lg border transition-all group cursor-pointer ${
                 item.days === 0
                   ? 'bp-today-surface-soft hover:brightness-110'
-                  : 'bg-slate-900/50 border-slate-700/30 hover:border-slate-600/50'
+                  : 'bg-[#161616]/50 border-[#2a2a2a]/30 hover:border-[#2a2a2a]/50'
               }`}
             >
               <div className="flex items-start justify-between gap-3">
@@ -198,20 +198,20 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
                         {display.companyName}
                       </h4>
                       {display.showEventSubtitle && (
-                        <p className="text-xs text-slate-400 truncate">{display.eventName}</p>
+                        <p className="text-xs text-[#a8a8a8] truncate">{display.eventName}</p>
                       )}
                     </div>
                     <span className={`text-xs px-2 py-0.5 rounded border whitespace-nowrap ${status.color}`}>
                       {status.label}
                     </span>
                     {isPaid && (
-                      <span className="text-xs px-2 py-0.5 rounded border whitespace-nowrap bg-emerald-600/20 border-emerald-500/30 text-emerald-300">
+                      <span className="text-xs px-2 py-0.5 rounded border whitespace-nowrap bg-[#ffd400]/20 border-[#ffd400]/30 text-[#ffd400]">
                         ✓ Pago
                       </span>
                     )}
                   </div>
 
-                  <div className="flex flex-wrap gap-3 text-xs text-slate-400">
+                  <div className="flex flex-wrap gap-3 text-xs text-[#a8a8a8]">
                     {formattedTime && (
                       <div className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
@@ -229,7 +229,7 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
 
                 <div className="flex flex-col items-end gap-2 flex-shrink-0">
                   <div className="text-right">
-                    <p className="text-xs text-slate-500 mb-0.5">{formattedDate.toUpperCase()}</p>
+                    <p className="text-xs text-[#888888] mb-0.5">{formattedDate.toUpperCase()}</p>
                     <p className="font-bold tabular-nums" style={{ color: config.primaryHex }}>
                       {isVisible ? formatCurrency(cacheValue) : '•••'}
                     </p>
@@ -240,7 +240,7 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
                       type="button"
                       disabled={isConfirming}
                       onClick={(e) => { e.stopPropagation(); confirmEvent(event, onRefresh); }}
-                      className="flex items-center gap-1 text-[10px] font-semibold px-2 py-1.5 rounded-full border transition-all active:scale-95 bg-blue-800/30 border-blue-500/30 text-blue-300 hover:bg-blue-700/40"
+                      className="flex items-center gap-1 text-[10px] font-semibold px-2 py-1.5 rounded-full border transition-all active:scale-95 bg-[#ffd400]/30 border-[#ffd400]/30 text-[#ffd400] hover:bg-[#ffd400]/40"
                       title="Confirmar evento"
                     >
                       {isConfirming ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
@@ -257,8 +257,8 @@ export default function ProximosEventos({ events, isLoading, onRefresh, onViewEv
                     }}
                     className={`flex items-center gap-1 text-[10px] font-semibold px-2 py-1.5 rounded-full border transition-all active:scale-95 ${
                       isPaid
-                        ? 'bg-emerald-600/15 border-emerald-500/30 text-emerald-400 hover:bg-emerald-600/25'
-                        : 'bg-slate-800/50 border-slate-700/50 text-slate-500 hover:border-emerald-500/40 hover:text-emerald-400'
+                        ? 'bg-[#ffd400]/15 border-[#ffd400]/30 text-[#ffd400] hover:bg-[#ffd400]/25'
+                        : 'bg-[#1f1f1f]/50 border-[#2a2a2a]/50 text-[#888888] hover:border-[#ffd400]/40 hover:text-[#ffd400]'
                     }`}
                     title={isPaid ? 'Desmarcar pagamento' : 'Marcar como pago'}
                   >
