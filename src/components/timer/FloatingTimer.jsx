@@ -1,16 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Square, Clock, X } from 'lucide-react';
 import { getTimer, stopTimer, getElapsedMs, formatElapsed, elapsedToHours } from '@/lib/timerStore';
 import { useDailyWork } from '@/lib/useDailyWork';
 import appToast from '@/lib/appToast';
-import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { format } from 'date-fns';
+import { LITE_MOTION } from '@/lib/liteMotion';
 import { supabase } from '@/lib/supabase';
 import { computeWorkDay, defaultDayChoice, elapsedMsToMinutes, REGIME_POR_DIA_ATIVO } from '@/lib/workDay';
 
 export function FloatingTimer() {
-  const { primaryHex } = useCategoryTheme();
   const [timer, setTimer] = useState(() => getTimer());
   const [elapsed, setElapsed] = useState(() => getElapsedMs(getTimer()));
   const [confirming, setConfirming] = useState(false);
@@ -115,70 +113,47 @@ export function FloatingTimer() {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 80, opacity: 0 }}
         transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-        className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[85] w-[calc(100%-2rem)] max-w-sm"
+        style={{ x: '-50%' }}
+        className="fixed bottom-20 left-1/2 z-[85] w-[calc(100%-2rem)] max-w-sm"
       >
         {!confirming ? (
-          /* Pill ativa */
-          <div
-            className="flex items-center gap-3 bg-slate-900 rounded-2xl px-4 py-3 shadow-xl shadow-black/40"
-            style={{ border: `1px solid ${primaryHex}66` }}
-          >
-            {/* Indicador pulsante */}
-            <span className="relative flex h-2.5 w-2.5 shrink-0">
-              <span
-                className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
-                style={{ backgroundColor: primaryHex }}
-              />
-              <span
-                className="relative inline-flex rounded-full h-2.5 w-2.5"
-                style={{ backgroundColor: primaryHex }}
-              />
-            </span>
-
+          /* Pílula ativa (visual All Access) */
+          <div className="flex items-center gap-2.5 bg-[#0a0a0a] rounded-[26px] pl-3 pr-2 py-2 border-2 border-[#ff2e88] shadow-[0_8px_24px_rgba(0,0,0,0.6)] text-white">
+            <span className={`w-3 h-3 rounded-full bg-[#ff2e88] shrink-0 ${LITE_MOTION ? '' : 'animate-pulse'}`} />
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] text-slate-400 uppercase tracking-wide leading-none mb-0.5">Em andamento</p>
-              <p className="text-sm text-white font-medium truncate">{timer.eventTitle}</p>
+              <div className="font-poster text-[22px] leading-none tabular-nums">{formatElapsed(elapsed)}</div>
+              <div className="font-tag text-[9px] text-[#a8a8a8] truncate uppercase">
+                {timer.eventTitle} · em andamento
+              </div>
             </div>
-
-            {/* Cronômetro */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              <Clock className="w-3.5 h-3.5" style={{ color: primaryHex }} />
-              <span className="text-lg font-mono font-bold tabular-nums" style={{ color: primaryHex }}>
-                {formatElapsed(elapsed)}
-              </span>
-            </div>
-
-            {/* Parar */}
             <button
               type="button"
               onClick={handleStop}
-              className="shrink-0 p-1.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 transition-colors"
+              className="shrink-0 h-10 px-4 rounded-full bg-[#ff2e88] text-[#0a0a0a] text-xs font-extrabold active:scale-95 transition-transform"
               title="Parar timer"
+              aria-label="Parar timer"
             >
-              <Square className="w-4 h-4 text-red-400 fill-red-400" />
+              Bater saída
             </button>
           </div>
         ) : (
           /* Confirmação */
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl px-4 py-4 shadow-xl shadow-black/40 space-y-3">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <p className="text-sm font-semibold text-white">Parar timer?</p>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Tempo registrado: <span className="font-mono font-bold" style={{ color: primaryHex }}>{formatElapsed(elapsed)}</span>
-                  {' '}→ <span className="text-white font-semibold">{elapsedToHours(elapsed)}h</span>
-                </p>
-                <p className="text-xs text-slate-500 mt-0.5 truncate">&quot;{timer.eventTitle}&quot;</p>
-              </div>
-              <button type="button" onClick={handleCancel} className="text-slate-500 hover:text-slate-300 mt-0.5">
-                <X className="w-4 h-4" />
-              </button>
+          <div className="bg-[#161616] border-2 border-[#ff2e88] rounded-[18px] p-3 flex flex-col gap-2 shadow-[0_8px_24px_rgba(0,0,0,0.6)] text-white">
+            <div className="flex justify-between font-tag text-[10px] text-[#a8a8a8]">
+              <span>PARAR TIMER?</span>
+              <button type="button" onClick={handleCancel} className="text-[#a8a8a8]" aria-label="Voltar">✕</button>
             </div>
-            <div className="flex gap-2">
+            <div>
+              <div className="font-poster text-[28px] leading-none tabular-nums">
+                {formatElapsed(elapsed)} <span className="font-sans text-sm font-extrabold text-[#ffd400]">→ {elapsedToHours(elapsed)}h</span>
+              </div>
+              <div className="text-xs text-[#c8c8c8] mt-0.5 truncate">&quot;{timer.eventTitle}&quot;</div>
+            </div>
+            <div className="flex gap-1.5">
               <button
                 type="button"
                 onClick={handleDiscard}
-                className="flex-1 text-xs py-2 rounded-xl border border-slate-600 text-slate-400 hover:text-red-400 hover:border-red-500/30 transition-colors"
+                className="flex-1 h-10 rounded-full border border-[#333333] bg-transparent text-white text-xs font-extrabold"
               >
                 Descartar
               </button>
@@ -186,10 +161,9 @@ export function FloatingTimer() {
                 type="button"
                 onClick={handleConfirm}
                 disabled={saving}
-                className="flex-1 text-xs py-2 rounded-xl text-white font-semibold disabled:opacity-60 transition-colors hover:opacity-90"
-                style={{ backgroundColor: primaryHex }}
+                className="flex-1 h-10 rounded-full bg-[#ff2e88] text-[#0a0a0a] text-xs font-extrabold disabled:opacity-60"
               >
-                {saving ? 'Salvando…' : 'Salvar Horas'}
+                {saving ? 'Salvando…' : 'Salvar horas'}
               </button>
             </div>
           </div>
