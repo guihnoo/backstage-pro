@@ -160,6 +160,14 @@ function main() {
     process.exit(0);
   }
 
+  // Trava de segurança: nunca commita nem empurra direto na produção.
+  // Só o dono leva alterações para main (git push origin HEAD:main).
+  const currentBranch = (git('branch', '--show-current').stdout || '').trim();
+  if (!currentBranch || ['main', 'master'].includes(currentBranch)) {
+    log(`bloqueado: branch "${currentBranch || 'desconhecido'}" é protegido (backup só em branch de trabalho)`);
+    process.exit(0);
+  }
+
   if (!hasChanges()) {
     log('nada para salvar');
     process.exit(0);
