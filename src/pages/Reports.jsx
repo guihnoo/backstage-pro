@@ -811,6 +811,7 @@ export default function ReportsPage() {
             else appToast.info('Gerando exportação de relatórios...');
           }}
           onMarkPaid={(ev) => setPayingEvent(ev)}
+          workByEvent={workByEvent}
         />
         <div className="hidden">
           <ExportManager

@@ -14,6 +14,7 @@ import { ptBR } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, FileDown, CheckCircle2, MessageCircle } from 'lucide-react';
 import { getEventCacheAmount, isPaymentOverdue, daysOverduePayment } from '@/lib/eventFinance';
 import { openWhatsAppCharge } from '@/lib/whatsapp';
+import { paidEventsInPeriod, sumReceived, getEventReceivedAmount, getEventReceivedDate } from '@/lib/financeMetrics';
 
 export default function AllAccessDinheiro({
   events = [],
@@ -23,6 +24,7 @@ export default function AllAccessDinheiro({
   isVisible = true,
   onExportPdf,
   onMarkPaid,
+  workByEvent = {},
 }) {
   const [currentDate, setCurrentDate] = useState(() => new Date());
   const [activeTab, setActiveTab] = useState('mes'); // 'mes', 'receber', 'fiscal', 'analise'
@@ -79,11 +81,11 @@ export default function AllAccessDinheiro({
   }, [expenses, prevMonthDate]);
 
   // Totals
+  // Recebido = pela DATA DO PAGAMENTO (mesma regra de Início, Metas e Relatórios).
   const totalReceived = useMemo(() => {
-    return monthEvents
-      .filter((ev) => ev.payment_status === 'paid')
-      .reduce((sum, ev) => sum + (ev.paid_amount || getEventCacheAmount(ev) || 0), 0);
-  }, [monthEvents]);
+    const range = { start: monthStart, end: monthEnd };
+    return sumReceived(paidEventsInPeriod(events, range), workByEvent);
+  }, [events, workByEvent, monthStart, monthEnd]);
 
   const totalPending = useMemo(() => {
     return monthEvents
@@ -99,12 +101,13 @@ export default function AllAccessDinheiro({
 
   // Previous net for comparison
   const prevNet = useMemo(() => {
-    const r = prevMonthEvents
-      .filter((ev) => ev.payment_status === 'paid')
-      .reduce((sum, ev) => sum + (ev.paid_amount || getEventCacheAmount(ev) || 0), 0);
+    const r = sumReceived(
+      paidEventsInPeriod(events, { start: startOfMonth(prevMonthDate), end: endOfMonth(prevMonthDate) }),
+      workByEvent
+    );
     const exp = prevMonthExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
     return r - exp;
-  }, [prevMonthEvents, prevMonthExpenses]);
+  }, [events, workByEvent, prevMonthDate, prevMonthExpenses]);
 
   const netComparisonText = useMemo(() => {
     if (prevNet <= 0) return 'recebido menos suas despesas do mês';
@@ -124,17 +127,21 @@ export default function AllAccessDinheiro({
       { label: 'Sem 4', got: 0, due: 0 },
       { label: 'Sem 5', got: 0, due: 0 },
     ];
+    const weekOf = (dateStr) => {
+      const d = dateStr ? parseISO(String(dateStr).slice(0, 10)) : null;
+      if (!d) return -1;
+      return Math.min(Math.floor((d.getDate() - 1) / 7), 4);
+    };
+    // Recebido: semana da data do pagamento
+    for (const ev of paidEventsInPeriod(events, { start: monthStart, end: monthEnd })) {
+      const wi = weekOf(getEventReceivedDate(ev));
+      if (wi >= 0) weeks[wi].got += getEventReceivedAmount(ev, workByEvent[ev.id] || []);
+    }
+    // A receber: semana da data do show
     for (const ev of monthEvents) {
-      const d = ev.start_date ? parseISO(ev.start_date) : null;
-      if (!d) continue;
-      const dayOfMonth = d.getDate();
-      const weekIndex = Math.min(Math.floor((dayOfMonth - 1) / 7), 4);
-      const val = getEventCacheAmount(ev) || 0;
-      if (ev.payment_status === 'paid') {
-        weeks[weekIndex].got += val;
-      } else {
-        weeks[weekIndex].due += val;
-      }
+      if (ev.payment_status === 'paid') continue;
+      const wi = weekOf(ev.start_date);
+      if (wi >= 0) weeks[wi].due += getEventCacheAmount(ev) || 0;
     }
     const maxVal = Math.max(1, ...weeks.map((w) => w.got + w.due));
     return weeks.map((w) => ({
@@ -142,7 +149,7 @@ export default function AllAccessDinheiro({
       gotHeight: `${Math.round((w.got / maxVal) * 80)}%`,
       dueHeight: `${Math.round((w.due / maxVal) * 80)}%`,
     }));
-  }, [monthEvents]);
+  }, [events, monthEvents, workByEvent, monthStart, monthEnd]);
 
   // Top clients ranking
   const topClients = useMemo(() => {
