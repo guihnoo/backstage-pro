@@ -138,7 +138,7 @@ export default function ReportsChart({ chartInput, onDataClick }) {
     return (
       <Card className="bg-slate-900/50 border-slate-800">
         <CardHeader className="px-4 sm:px-6">
-          <CardTitle className="font-display flex items-center gap-2 text-base sm:text-lg bp-text-primary">
+          <CardTitle className="font-poster flex items-center gap-2 text-base sm:text-lg bp-text-primary">
             <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5" />
             <span className="truncate">Análise Financeira</span>
           </CardTitle>
@@ -234,7 +234,7 @@ export default function ReportsChart({ chartInput, onDataClick }) {
     <Card className="bg-slate-900/50 border-slate-800">
       <CardHeader className="px-4 sm:px-6 pb-3">
         <div className="flex flex-col gap-3">
-          <CardTitle className="font-display flex items-center gap-2 text-base sm:text-lg bp-text-primary">
+          <CardTitle className="font-poster flex items-center gap-2 text-base sm:text-lg bp-text-primary">
             <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5" />
             <span className="truncate">Análise Financeira</span>
           </CardTitle>

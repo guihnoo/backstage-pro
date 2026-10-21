@@ -2963,3 +2963,18 @@ Registro cronológico de tarefas executadas por agentes.
   - `npm run lint`: 0 erros.
   - `npm run build`: código 0 com todos os chunks gerados.
   - Testes Playwright de navegação e integridade de console: 100% aprovados.
+
+---
+
+## 2026-10-21
+
+### FIX + PLANO — Horas na Agenda derrubava a tela; inventario do visual All Access
+- **Agente**: Claude Code (Opus 5.5)
+- **Branch**: `feat/visual-completo` (criada a partir de `feat/all-access-base`, sem as skills do laboratorio)
+- **Bug (estava no ar)**: no cartao do dia da Agenda, o botao "Horas" mandava o evento inteiro no lugar da data e a tela caia em "Oops! Algo deu errado" (`dateString.split is not a function` em `AllAccessCalendar`).
+  - `src/pages/Calendar.jsx`: `onRegisterWork` agora usa `handleQuickLogForEvent(ev, selectedDate || new Date())` (registra horas daquele evento no dia selecionado).
+  - Teste novo `e2e/regression/calendar-day-actions.spec.js` (falha sem a correcao, passa com ela).
+- **Inventario do visual**: prototipo `Backstage Pro — Direção Visual.html` (19 telas) comparado com fotos do app (dados falsos). Faltam: Perfil, Metas, Mentor, Mapa "Minha turne", janelas (Nova despesa, Registrar horas, Confirmar recebimento, Novo trabalho, Novo cliente, Busca), partes antigas embaixo da Agenda e no fim do Dinheiro, telas de apoio.
+- **Achado**: telas feitas pelo Antigravity usam `font-display`, que nao existe no Tailwind (titulos sem a fonte Anton). As do Claude usam `font-poster`/`font-tag`.
+- **Testes**: unit 261/261 (lab, mesmo codigo); E2E smoke+regression 93 passaram, 2 oscilaram; Agenda 8/8 depois da correcao.
+- **Deploy**: nenhum. **Commit**: nenhum (correcao no disco, aguardando inicio das entregas).

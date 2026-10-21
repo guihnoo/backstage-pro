@@ -1,5 +1,4 @@
-import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useMemo } from 'react';
 import {
   format,
   startOfMonth,
@@ -8,12 +7,12 @@ import {
   addMonths,
   parseISO,
   isSameMonth,
-  differenceInCalendarDays,
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, FileDown, CheckCircle2, MessageCircle } from 'lucide-react';
-import { getEventCacheAmount, isPaymentOverdue, daysOverduePayment } from '@/lib/eventFinance';
-import { openWhatsAppCharge } from '@/lib/whatsapp';
+import { getEventCacheAmount, isPaymentOverdue, daysOverduePayment, isNfPendingEvent } from '@/lib/eventFinance';
+import { openWhatsAppCharge, buildChargeMessage } from '@/lib/whatsapp';
+import { appToast } from '@/lib/appToast';
 import { paidEventsInPeriod, sumReceived, getEventReceivedAmount, getEventReceivedDate } from '@/lib/financeMetrics';
 
 export default function AllAccessDinheiro({
@@ -25,9 +24,26 @@ export default function AllAccessDinheiro({
   onExportPdf,
   onMarkPaid,
   workByEvent = {},
+  // Relatorios completos que voltaram ao visual novo (21/10): cada aba recebe o seu bloco.
+  receberExtra = null,
+  fiscalExtra = null,
+  analiseExtra = null,
 }) {
   const [currentDate, setCurrentDate] = useState(() => new Date());
   const [activeTab, setActiveTab] = useState('mes'); // 'mes', 'receber', 'fiscal', 'analise'
+
+  // "Cobrar": monta a mesma mensagem dos Avisos e abre o WhatsApp do cliente.
+  const chargeOnWhatsApp = (ev, cl) => {
+    const amount = getEventCacheAmount(ev);
+    const msg = buildChargeMessage({
+      clientName: cl?.name,
+      events: [{ title: ev.title, start_date: ev.start_date, amount }],
+      totalAmount: amount,
+    });
+    if (!openWhatsAppCharge(cl?.phone, msg)) {
+      appToast.info('Cadastre o WhatsApp do cliente para cobrar por aqui.');
+    }
+  };
 
   const clientMap = useMemo(() => {
     const map = new Map();
@@ -50,6 +66,9 @@ export default function AllAccessDinheiro({
       return isSameMonth(parsed, currentDate);
     });
   }, [events, currentDate]);
+
+  // Os blocos extras podem ser funcao: recebem o mes que esta na tela.
+  const slot = (extra) => (typeof extra === 'function' ? extra({ currentDate, monthEvents, monthExpenses }) : extra);
 
   // Previous month events for comparison
   const prevMonthDate = subMonths(currentDate, 1);
@@ -201,7 +220,7 @@ export default function AllAccessDinheiro({
       {/* Header */}
       <div className="flex justify-between items-end">
         <div>
-          <div className="flex items-center gap-1.5 font-mono text-[11px] tracking-[2px] text-[#a8a8a8]">
+          <div className="flex items-center gap-1.5 font-tag text-[11px] tracking-[2px] text-[#a8a8a8]">
             <button
               type="button"
               onClick={() => setCurrentDate((d) => subMonths(d, 1))}
@@ -218,7 +237,7 @@ export default function AllAccessDinheiro({
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
-          <h1 className="font-display text-[38px] sm:text-[40px] text-white leading-none tracking-wide uppercase">
+          <h1 className="font-poster text-[38px] sm:text-[40px] text-white leading-none tracking-wide uppercase">
             DINHEIRO
           </h1>
         </div>
@@ -267,10 +286,10 @@ export default function AllAccessDinheiro({
         <section className="flex flex-col gap-2.5">
           {/* Hero Yellow Card: SOBROU NO BOLSO */}
           <div className="rounded-2xl bg-[#ffd400] text-[#0a0a0a] p-4 shadow-md">
-            <div className="font-mono text-[11px] font-bold tracking-wider">
+            <div className="font-tag text-[11px] font-bold tracking-wider">
               SOBROU NO BOLSO
             </div>
-            <div className="font-display text-[44px] sm:text-[48px] leading-tight my-0.5">
+            <div className="font-poster text-[44px] sm:text-[48px] leading-tight my-0.5">
               {isVisible ? formatCurrency(netPocket) : '••••••••'}
             </div>
             <div className="text-[13px] font-bold opacity-90">
@@ -281,28 +300,28 @@ export default function AllAccessDinheiro({
           {/* 3 Metrics Grid */}
           <div className="grid grid-cols-3 gap-1.5">
             <div className="rounded-xl bg-[#161616] border border-[#222222] p-2.5">
-              <div className="font-mono text-[10px] text-[#a8a8a8] uppercase truncate">
+              <div className="font-tag text-[10px] text-[#a8a8a8] uppercase truncate">
                 RECEBIDO
               </div>
-              <div className="font-display text-[20px] text-white leading-none mt-1 truncate">
+              <div className="font-poster text-[20px] text-white leading-none mt-1 truncate">
                 {isVisible ? formatCurrency(totalReceived) : '•••••'}
               </div>
             </div>
 
             <div className="rounded-xl bg-[#161616] border border-[#222222] p-2.5">
-              <div className="font-mono text-[10px] text-[#a8a8a8] uppercase truncate">
+              <div className="font-tag text-[10px] text-[#a8a8a8] uppercase truncate">
                 A RECEBER
               </div>
-              <div className="font-display text-[20px] text-[#ff2e88] leading-none mt-1 truncate">
+              <div className="font-poster text-[20px] text-[#ff2e88] leading-none mt-1 truncate">
                 {isVisible ? formatCurrency(totalPending) : '•••••'}
               </div>
             </div>
 
             <div className="rounded-xl bg-[#161616] border border-[#222222] p-2.5">
-              <div className="font-mono text-[10px] text-[#a8a8a8] uppercase truncate">
+              <div className="font-tag text-[10px] text-[#a8a8a8] uppercase truncate">
                 DESPESAS
               </div>
-              <div className="font-display text-[20px] text-white leading-none mt-1 truncate">
+              <div className="font-poster text-[20px] text-white leading-none mt-1 truncate">
                 {isVisible ? formatCurrency(totalExpense) : '•••••'}
               </div>
             </div>
@@ -310,7 +329,7 @@ export default function AllAccessDinheiro({
 
           {/* Semana a Semana Dual-Bar Chart */}
           <div className="rounded-2xl bg-[#161616] border border-[#222222] p-3.5">
-            <div className="font-mono text-[11px] tracking-wider text-[#a8a8a8] mb-3">
+            <div className="font-tag text-[11px] tracking-wider text-[#a8a8a8] mb-3">
               SEMANA A SEMANA
             </div>
             <div className="h-28 grid grid-cols-5 gap-3 items-end px-1">
@@ -332,11 +351,11 @@ export default function AllAccessDinheiro({
                       />
                     )}
                   </div>
-                  <span className="font-mono text-[10px] text-[#a8a8a8]">{w.label}</span>
+                  <span className="font-tag text-[10px] text-[#a8a8a8]">{w.label}</span>
                 </div>
               ))}
             </div>
-            <div className="flex items-center gap-4 mt-2 pt-2 border-t border-[#222222] font-mono text-[10px] text-[#a8a8a8]">
+            <div className="flex items-center gap-4 mt-2 pt-2 border-t border-[#222222] font-tag text-[10px] text-[#a8a8a8]">
               <span className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-sm bg-[#ffd400]" />
                 recebido
@@ -350,7 +369,7 @@ export default function AllAccessDinheiro({
 
           {/* Quem Mais Te Pagou */}
           <div className="rounded-2xl bg-[#161616] border border-[#222222] p-3.5">
-            <div className="font-mono text-[11px] tracking-wider text-[#a8a8a8] mb-2">
+            <div className="font-tag text-[11px] tracking-wider text-[#a8a8a8] mb-2">
               QUEM MAIS TE PAGOU
             </div>
             {topClients.length > 0 ? (
@@ -363,14 +382,14 @@ export default function AllAccessDinheiro({
                     <div className="w-24 h-1.5 rounded-full bg-[#2a2a2a] overflow-hidden">
                       <div style={{ width: c.pct }} className="h-full bg-[#ffd400]" />
                     </div>
-                    <span className="font-mono text-[12px] text-white w-20 text-right truncate">
+                    <span className="font-tag text-[12px] text-white w-20 text-right truncate">
                       {isVisible ? formatCurrency(c.value) : '•••••'}
                     </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-[#888888] font-mono">Sem recebimentos registrados neste mês.</p>
+              <p className="text-xs text-[#888888] font-tag">Sem recebimentos registrados neste mês.</p>
             )}
           </div>
         </section>
@@ -409,14 +428,14 @@ export default function AllAccessDinheiro({
                           {ev.title} · {dateStr}
                         </div>
                       </div>
-                      <span className="font-display text-[22px] text-[#ff2e88] shrink-0">
+                      <span className="font-poster text-[22px] text-[#ff2e88] shrink-0">
                         {isVisible ? formatCurrency(amount) : '•••••'}
                       </span>
                     </div>
 
                     <div className="flex justify-between items-center gap-2 pt-1 border-t border-[#222222]/60">
                       <span
-                        className={`h-6 px-2.5 rounded-full font-mono text-[10px] font-bold flex items-center ${
+                        className={`h-6 px-2.5 rounded-full font-tag text-[10px] font-bold flex items-center ${
                           isOverdue
                             ? 'bg-[#ff2e88]/15 text-[#ff2e88] border border-[#ff2e88]/30'
                             : 'bg-[#ffd400]/15 text-[#ffd400] border border-[#ffd400]/30'
@@ -438,7 +457,7 @@ export default function AllAccessDinheiro({
                         )}
                         <button
                           type="button"
-                          onClick={() => openWhatsAppCharge(ev, cl)}
+                          onClick={() => chargeOnWhatsApp(ev, cl)}
                           className="h-8 px-3 rounded-full border-none bg-[#ff2e88] text-[#0a0a0a] font-sans text-xs font-extrabold hover:opacity-90 transition-opacity flex items-center gap-1 active:scale-95 shadow-sm"
                         >
                           <MessageCircle className="w-3.5 h-3.5" />
@@ -454,9 +473,10 @@ export default function AllAccessDinheiro({
             <div className="rounded-xl bg-[#161616] border border-[#222222] p-6 text-center">
               <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
               <p className="font-bold text-white">Tudo em dia!</p>
-              <p className="text-xs text-[#888888] font-mono mt-1">Nenhum show com pagamento pendente.</p>
+              <p className="text-xs text-[#888888] font-tag mt-1">Nenhum show com pagamento pendente.</p>
             </div>
           )}
+          {slot(receberExtra)}
         </section>
       )}
 
@@ -464,10 +484,10 @@ export default function AllAccessDinheiro({
       {activeTab === 'fiscal' && (
         <section className="flex flex-col gap-2.5">
           <div className="rounded-2xl bg-[#161616] border border-[#222222] p-4">
-            <div className="font-mono text-[11px] tracking-wider text-[#a8a8a8]">
+            <div className="font-tag text-[11px] tracking-wider text-[#a8a8a8]">
               MEI · FATURADO NO ANO
             </div>
-            <div className="font-display text-[34px] text-white leading-tight mt-1">
+            <div className="font-poster text-[34px] text-white leading-tight mt-1">
               {isVisible ? formatCurrency(annualTotal) : '••••••••'}
             </div>
             <div className="h-2.5 rounded-full bg-[#2a2a2a] overflow-hidden my-2">
@@ -483,39 +503,21 @@ export default function AllAccessDinheiro({
 
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-xl bg-[#161616] border border-[#222222] p-3">
-              <div className="font-mono text-[10px] text-[#a8a8a8] uppercase">DAS MEI</div>
-              <div className="font-display text-[20px] text-white mt-1">Vence dia 20</div>
+              <div className="font-tag text-[10px] text-[#a8a8a8] uppercase">DAS MEI</div>
+              <div className="font-poster text-[20px] text-white mt-1">Vence dia 20</div>
               <div className="text-[11px] text-[#ffd400] mt-0.5">Guia mensal PGMEI</div>
             </div>
 
             <div className="rounded-xl bg-[#161616] border border-[#222222] p-3">
-              <div className="font-mono text-[10px] text-[#a8a8a8] uppercase">NOTAS FISCAIS</div>
-              <div className="font-display text-[20px] text-white mt-1">
-                {events.filter((e) => e.status === 'completed' && !e.nf_number && !e.nfe_numero).length} pendentes
+              <div className="font-tag text-[10px] text-[#a8a8a8] uppercase">NOTAS FISCAIS</div>
+              <div className="font-poster text-[20px] text-white mt-1">
+                {events.filter(isNfPendingEvent).length} pendentes
               </div>
               <div className="text-[11px] text-[#a8a8a8] mt-0.5">Shows concluídos</div>
             </div>
           </div>
 
-          {onExportPdf && (
-            <div className="rounded-2xl bg-[#161616] border border-[#222222] p-4 flex justify-between items-center gap-3">
-              <div>
-                <div className="text-[14px] font-extrabold text-white">
-                  Resumo para o Imposto de Renda
-                </div>
-                <div className="text-xs text-[#a8a8a8] mt-0.5">
-                  O ano todo estruturado para o contador
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={onExportPdf}
-                className="h-10 px-4 rounded-full border-none bg-[#ffd400] text-[#0a0a0a] font-sans text-xs font-extrabold hover:bg-[#ffe033] transition-transform active:scale-95 shrink-0 shadow-sm"
-              >
-                Gerar
-              </button>
-            </div>
-          )}
+          {slot(fiscalExtra)}
         </section>
       )}
 
@@ -523,7 +525,7 @@ export default function AllAccessDinheiro({
       {activeTab === 'analise' && (
         <section className="flex flex-col gap-2.5">
           <div className="rounded-xl bg-[#161616] border border-[#222222] p-3.5 flex gap-3 items-center">
-            <div className="font-display text-[26px] text-[#ffd400] min-w-[70px]">
+            <div className="font-poster text-[26px] text-[#ffd400] min-w-[70px] shrink-0">
               {monthEvents.length}
             </div>
             <div className="text-[13px] text-[#e0e0e0] leading-snug">
@@ -532,7 +534,7 @@ export default function AllAccessDinheiro({
           </div>
 
           <div className="rounded-xl bg-[#161616] border border-[#222222] p-3.5 flex gap-3 items-center">
-            <div className="font-display text-[26px] text-[#ff2e88] min-w-[70px]">
+            <div className="font-poster text-[26px] text-[#ff2e88] min-w-[70px] shrink-0">
               {totalPending > 0 ? formatCurrency(totalPending) : 'R$ 0'}
             </div>
             <div className="text-[13px] text-[#e0e0e0] leading-snug">
@@ -541,13 +543,14 @@ export default function AllAccessDinheiro({
           </div>
 
           <div className="rounded-xl bg-[#161616] border border-[#222222] p-3.5 flex gap-3 items-center">
-            <div className="font-display text-[26px] text-emerald-400 min-w-[70px]">
+            <div className="font-poster text-[26px] text-emerald-400 min-w-[70px] shrink-0">
               {totalReceived > 0 ? `${Math.round((totalReceived / (totalReceived + totalPending || 1)) * 100)}%` : '0%'}
             </div>
             <div className="text-[13px] text-[#e0e0e0] leading-snug">
               Taxa de recebimento sobre o faturamento do mês.
             </div>
           </div>
+          {slot(analiseExtra)}
         </section>
       )}
     </div>

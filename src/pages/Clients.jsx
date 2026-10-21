@@ -321,10 +321,10 @@ export default function ClientsPage() {
       >
         <div className="flex justify-between items-end">
           <div>
-            <div className="font-mono text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">
+            <div className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">
               QUEM TE CONTRATA
             </div>
-            <h1 className="font-display text-[38px] sm:text-[40px] text-white leading-none tracking-wide uppercase mt-0.5">
+            <h1 className="font-poster text-[38px] sm:text-[40px] text-white leading-none tracking-wide uppercase mt-0.5">
               CLIENTES
             </h1>
           </div>
@@ -403,7 +403,7 @@ export default function ClientsPage() {
                       <img src={client.logo_url} alt={client.name} className="w-full h-full object-contain" />
                     </div>
                   ) : (
-                    <div className="w-11 h-11 rounded-xl bg-[#ffd400] text-[#0a0a0a] font-display text-[18px] flex items-center justify-center flex-shrink-0 font-bold">
+                    <div className="w-11 h-11 rounded-xl bg-[#ffd400] text-[#0a0a0a] font-poster text-[18px] flex items-center justify-center flex-shrink-0">
                       {getInitials(client.name)}
                     </div>
                   )}
@@ -414,11 +414,11 @@ export default function ClientsPage() {
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <div className="font-display text-[18px] text-white">
+                    <div className="font-poster text-[18px] text-white">
                       {isVisible ? formatCurrency(revenue) : '•••••'}
                     </div>
                     <div
-                      className={`font-mono text-[10px] font-bold uppercase ${
+                      className={`font-tag text-[10px] font-bold uppercase ${
                         pending > 0 ? 'text-[#ff2e88]' : 'text-[#ffd400]'
                       }`}
                     >

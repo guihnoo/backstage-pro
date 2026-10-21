@@ -1,5 +1,4 @@
-import React, { useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useMemo } from 'react';
 import {
   format,
   startOfMonth,
@@ -13,7 +12,6 @@ import {
   parseISO,
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Plus } from 'lucide-react';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { getEventStatus } from '@/components/utils/dateUtils';
 
@@ -89,7 +87,7 @@ export default function AllAccessCalendar({
             <div
               key={i}
               style={{ color: w.color }}
-              className="text-center font-mono text-[11px] font-bold tracking-wider"
+              className="text-center font-tag text-[11px] font-bold tracking-wider"
             >
               {w.label}
             </div>
@@ -162,7 +160,7 @@ export default function AllAccessCalendar({
                   }`}
                 >
                   <span
-                    className={`w-[26px] h-[26px] rounded-full flex items-center justify-center font-display text-[15px] leading-none ${
+                    className={`w-[26px] h-[26px] rounded-full flex items-center justify-center font-poster text-[15px] leading-none ${
                       isToday
                         ? 'bg-[#ffd400] text-[#0a0a0a] font-bold shadow-sm'
                         : isSel
@@ -204,7 +202,7 @@ export default function AllAccessCalendar({
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-3 mt-2 px-1 font-mono text-[10px] text-[#a8a8a8]">
+        <div className="flex items-center gap-3 mt-2 px-1 font-tag text-[10px] text-[#a8a8a8]">
           <span className="flex items-center gap-1.5">
             <span className="w-3 h-1.5 rounded-sm bg-[#ffd400]" />
             confirmado
@@ -222,7 +220,7 @@ export default function AllAccessCalendar({
 
       {/* Selected day section */}
       <div className="flex flex-col gap-2 pt-2">
-        <div className="font-mono text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">
+        <div className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">
           {isTodayDate(activeSelected) ? 'HOJE · ' : ''}
           {format(activeSelected, "d 'de' MMMM", { locale: ptBR })}
         </div>
@@ -261,7 +259,7 @@ export default function AllAccessCalendar({
                   <div className="flex-1 p-3.5 flex flex-col gap-2 min-w-0">
                     <div className="flex justify-between items-start gap-2">
                       <div className="min-w-0">
-                        <h3 className="font-display text-[22px] leading-tight text-white uppercase truncate">
+                        <h3 className="font-poster text-[22px] leading-tight text-white uppercase truncate">
                           {ev.title}
                         </h3>
                         <p className="text-[13px] text-[#c8c8c8] truncate mt-0.5">
@@ -270,18 +268,18 @@ export default function AllAccessCalendar({
                       </div>
                       <span
                         style={{ background: statusColor }}
-                        className="flex-shrink-0 h-6 px-2.5 rounded-full text-[#0a0a0a] font-mono text-[10px] font-bold flex items-center justify-center uppercase"
+                        className="flex-shrink-0 h-6 px-2.5 rounded-full text-[#0a0a0a] font-tag text-[10px] font-bold flex items-center justify-center uppercase"
                       >
                         {statusLabel}
                       </span>
                     </div>
 
                     <div className="flex justify-between items-baseline">
-                      <span className="font-mono text-[12px] text-[#a8a8a8]">
+                      <span className="font-tag text-[12px] text-[#a8a8a8]">
                         {ev.start_time ? ev.start_time.slice(0, 5) : 'Dia todo'}
                         {ev.location ? ` · ${ev.location}` : ''}
                       </span>
-                      <span className="font-display text-[20px] text-white">
+                      <span className="font-poster text-[20px] text-white">
                         {isVisible && amount > 0 ? formatCurrency(amount) : '•••••'}
                       </span>
                     </div>
@@ -320,7 +318,7 @@ export default function AllAccessCalendar({
           /* Free day dashed banner matching Board C */
           <section className="rounded-2xl border-2 border-dashed border-[#333333] p-4 flex justify-between items-center gap-3 bg-[#111111]/50">
             <div>
-              <div className="font-display text-[20px] text-white">DIA LIVRE</div>
+              <div className="font-poster text-[20px] text-white">DIA LIVRE</div>
               <div className="text-[13px] text-[#a8a8a8] mt-0.5">
                 Fechou um trabalho pra essa data?
               </div>

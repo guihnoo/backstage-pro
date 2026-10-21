@@ -35,7 +35,7 @@ const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const data = payload[0];
     return (
-      <div className="bg-slate-800/80 backdrop-blur-sm border border-slate-700 p-3 rounded-lg shadow-lg text-white">
+      <div className="bg-[#1f1f1f] backdrop-blur-sm border border-[#2a2a2a] p-3 rounded-lg shadow-lg text-white">
         <p className="font-bold">{data.name}</p>
         <p style={{ color: data.payload.fill }}>
           {`${isVisible ? formatCurrency(data.value) : '••••'} (${data.payload.percent.toFixed(0)}%)`}
@@ -74,15 +74,15 @@ export default function ExpenseAnalysis({ expenses = [], onSliceClick }) {
 
   if (!isVisible) {
     return (
-      <Card className="bg-slate-900/50 border-slate-800">
+      <Card className="bg-[#161616] border-[#2a2a2a]">
         <CardHeader>
-          <CardTitle className="text-pink-300 font-display flex items-center gap-2">
+          <CardTitle className="text-[#ff2e88] font-poster flex items-center gap-2">
             <Wallet className="w-5 h-5" />
             Análise de Despesas por Categoria
           </CardTitle>
         </CardHeader>
         <CardContent className="h-[250px] flex items-center justify-center">
-          <p className="text-slate-500 text-sm">Ative a visibilidade financeira para ver a análise de despesas.</p>
+          <p className="text-[#888888] text-sm">Ative a visibilidade financeira para ver a análise de despesas.</p>
         </CardContent>
       </Card>
     );
@@ -90,24 +90,24 @@ export default function ExpenseAnalysis({ expenses = [], onSliceClick }) {
 
   if (expenseData.length === 0) {
       return (
-          <Card className="bg-slate-900/50 border-slate-800">
+          <Card className="bg-[#161616] border-[#2a2a2a]">
               <CardHeader>
-                  <CardTitle className="text-pink-300 font-display flex items-center gap-2">
+                  <CardTitle className="text-[#ff2e88] font-poster flex items-center gap-2">
                       <Wallet className="w-5 h-5" />
                       Análise de Despesas
                   </CardTitle>
               </CardHeader>
               <CardContent className="h-[250px] flex items-center justify-center">
-                  <p className="text-slate-400">Nenhuma despesa no período selecionado.</p>
+                  <p className="text-[#a8a8a8]">Nenhuma despesa no período selecionado.</p>
               </CardContent>
           </Card>
       )
   }
 
   return (
-    <Card className="bg-slate-900/50 border-slate-800">
+    <Card className="bg-[#161616] border-[#2a2a2a]">
       <CardHeader>
-        <CardTitle className="text-pink-300 font-display flex items-center gap-2">
+        <CardTitle className="text-[#ff2e88] font-poster flex items-center gap-2">
           <Wallet className="w-5 h-5" />
           Análise de Despesas por Categoria
         </CardTitle>
@@ -145,18 +145,18 @@ export default function ExpenseAnalysis({ expenses = [], onSliceClick }) {
                 key={entry.name}
                 role={onSliceClick ? 'button' : undefined}
                 tabIndex={onSliceClick ? 0 : undefined}
-                className="flex justify-between items-center hover:bg-slate-800/40 rounded px-2 py-1.5 transition-colors"
+                className="flex justify-between items-center hover:bg-[#1f1f1f] rounded px-2 py-1.5 transition-colors"
                 onClick={() => onSliceClick && onSliceClick(entry.name)}
                 onKeyDown={onSliceClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSliceClick(entry.name); } } : undefined}
                 style={{ cursor: onSliceClick ? 'pointer' : 'default' }}
               >
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
-                  <span className="text-slate-300">{entry.name}</span>
+                  <span className="text-[#c8c8c8]">{entry.name}</span>
                 </div>
                 <div className="font-mono text-white text-right">
                   <span className="font-bold">{isVisible ? formatCurrency(entry.value) : '••••'}</span>
-                  <span className="text-xs text-slate-400 ml-2">({entry.percent.toFixed(1)}%)</span>
+                  <span className="text-xs text-[#a8a8a8] ml-2">({entry.percent.toFixed(1)}%)</span>
                 </div>
               </div>
             ))}

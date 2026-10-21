@@ -161,7 +161,7 @@ export default function ClientDetailedTable({ data, onClientClick }) {
     <Card className="bg-slate-900/50 border-slate-800">
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <CardTitle className="text-blue-300 font-display flex items-center gap-2">
+          <CardTitle className="text-blue-300 font-poster flex items-center gap-2">
             <Users className="w-5 h-5" />
             Análise Detalhada de Clientes ({clientData.length})
           </CardTitle>

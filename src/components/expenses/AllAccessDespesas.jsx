@@ -119,7 +119,7 @@ export default function AllAccessDespesas({
       {/* Header matching Board C */}
       <div className="flex justify-between items-end">
         <div>
-          <div className="flex items-center gap-1.5 font-mono text-[11px] tracking-[2px] text-[#a8a8a8]">
+          <div className="flex items-center gap-1.5 font-tag text-[11px] tracking-[2px] text-[#a8a8a8]">
             <button
               type="button"
               onClick={() => setCurrentDate((d) => subMonths(d, 1))}
@@ -136,16 +136,16 @@ export default function AllAccessDespesas({
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
-          <h1 className="font-display text-[38px] sm:text-[40px] text-white leading-none tracking-wide uppercase mt-0.5">
+          <h1 className="font-poster text-[38px] sm:text-[40px] text-white leading-none tracking-wide uppercase mt-0.5">
             DESPESAS
           </h1>
         </div>
 
         <div className="text-right">
-          <div className="font-display text-[26px] text-white leading-none">
+          <div className="font-poster text-[26px] text-white leading-none">
             {isVisible ? formatCurrency(totalMonth) : '•••••'}
           </div>
-          <div className="font-mono text-[10px] text-[#a8a8a8] uppercase mt-0.5">
+          <div className="font-tag text-[10px] text-[#a8a8a8] uppercase mt-0.5">
             NO MÊS
           </div>
         </div>
@@ -175,7 +175,7 @@ export default function AllAccessDespesas({
 
       {/* PRA ONDE FOI Card */}
       <div className="rounded-2xl bg-[#161616] border border-[#222222] p-3.5">
-        <div className="font-mono text-[11px] tracking-wider text-[#a8a8a8] mb-2">
+        <div className="font-tag text-[11px] tracking-wider text-[#a8a8a8] mb-2">
           PRA ONDE FOI
         </div>
 
@@ -200,7 +200,7 @@ export default function AllAccessDespesas({
                     className="w-2 h-2 rounded-[2px] flex-shrink-0"
                   />
                   <span className="flex-1 text-[#c8c8c8] truncate">{c.label}</span>
-                  <span className="font-mono text-white">
+                  <span className="font-tag text-white">
                     {isVisible ? formatCurrency(c.value) : '•••'}
                   </span>
                 </div>
@@ -208,13 +208,13 @@ export default function AllAccessDespesas({
             </div>
           </>
         ) : (
-          <p className="text-xs text-[#888888] font-mono">Sem gastos registrados neste mês.</p>
+          <p className="text-xs text-[#888888] font-tag">Sem gastos registrados neste mês.</p>
         )}
       </div>
 
       {/* POR EVENTO List */}
       <div className="flex flex-col gap-2 pt-1">
-        <div className="font-mono text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">
+        <div className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">
           POR EVENTO
         </div>
 
@@ -236,11 +236,11 @@ export default function AllAccessDespesas({
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <div className="font-display text-[18px] text-white">
+                    <div className="font-poster text-[18px] text-white">
                       {isVisible ? formatCurrency(grp.total) : '•••••'}
                     </div>
                     {grp.reimbursable > 0 && (
-                      <div className="font-mono text-[9px] text-[#ff2e88] font-bold">
+                      <div className="font-tag text-[9px] text-[#ff2e88] font-bold">
                         {isVisible ? formatCurrency(grp.reimbursable) : '••••'} A REEMBOLSAR
                       </div>
                     )}
@@ -259,7 +259,7 @@ export default function AllAccessDespesas({
                       >
                         <div
                           style={{ background: catColor }}
-                          className="w-7 h-7 rounded-lg text-[#0a0a0a] font-display text-[11px] font-bold flex items-center justify-center flex-shrink-0 uppercase"
+                          className="w-7 h-7 rounded-lg text-[#0a0a0a] font-poster text-[11px] flex items-center justify-center flex-shrink-0 uppercase"
                         >
                           {(exp.category || 'O').slice(0, 2)}
                         </div>
@@ -267,11 +267,11 @@ export default function AllAccessDespesas({
                           {exp.title || exp.description || CATEGORY_LABELS[exp.category] || 'Despesa'}
                         </div>
                         {exp.is_reimbursable && (
-                          <span className="font-mono text-[9px] font-bold text-[#ff2e88] uppercase">
+                          <span className="font-tag text-[9px] font-bold text-[#ff2e88] uppercase">
                             {exp.reimbursed ? 'REEMBOLSADO' : 'REEMBOLSÁVEL'}
                           </span>
                         )}
-                        <span className="font-mono text-[13px] font-bold text-white min-w-[58px] text-right">
+                        <span className="font-tag text-[13px] font-bold text-white min-w-[58px] text-right">
                           {isVisible ? formatCurrency(exp.amount) : '••••'}
                         </span>
                       </div>
@@ -284,7 +284,7 @@ export default function AllAccessDespesas({
         ) : (
           <div className="rounded-xl bg-[#161616] border border-[#222222] p-8 text-center">
             <p className="font-bold text-white">Nenhuma despesa</p>
-            <p className="text-xs text-[#888888] font-mono mt-1">Toque em "Fotografar recibo" ou "Digitar" para lançar um gasto.</p>
+            <p className="text-xs text-[#888888] font-tag mt-1">Toque em “Fotografar recibo” ou “Digitar” para lançar um gasto.</p>
           </div>
         )}
       </div>

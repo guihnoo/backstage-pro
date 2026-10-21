@@ -227,18 +227,18 @@ export default function ClientDetailPage() {
         {/* Client Credential Card (All Access style) */}
         <div className="rounded-2xl bg-[#161616] border border-[#222222] p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-sm">
           {client.logo_url ? (
-            <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-white overflow-hidden flex items-center justify-center flex-shrink-0 p-2 shadow-inner">
+            <div className="w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-2xl bg-white overflow-hidden flex items-center justify-center flex-shrink-0 p-2 shadow-inner">
               <img src={client.logo_url} alt={client.name} className="w-full h-full object-contain" />
             </div>
           ) : (
-            <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-[#ffd400] text-[#0a0a0a] font-display text-[30px] sm:text-[34px] flex items-center justify-center flex-shrink-0 font-bold shadow-md">
+            <div className="w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-2xl bg-[#ffd400] text-[#0a0a0a] font-poster text-[30px] sm:text-[34px] flex items-center justify-center flex-shrink-0 shadow-md">
               {getInitials(client.name)}
             </div>
           )}
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="font-display text-[28px] sm:text-[34px] leading-tight text-white uppercase truncate">
+              <h1 className="font-poster text-[28px] sm:text-[34px] leading-tight text-white uppercase truncate">
                 {client.name}
               </h1>
             </div>
@@ -250,7 +250,7 @@ export default function ClientDetailPage() {
             <div className="mt-2">
               <span
                 style={{ color: stats.paymentColor }}
-                className="font-mono text-[11px] font-bold uppercase tracking-wider bg-[#0a0a0a] px-2.5 py-1 rounded-full border border-[#262626]"
+                className="font-tag text-[11px] font-bold uppercase tracking-wider bg-[#0a0a0a] px-2.5 py-1 rounded-full border border-[#262626]"
               >
                 {stats.unpaidAmount > 0
                   ? `${formatCurrency(stats.unpaidAmount)} PENDENTE`
@@ -318,18 +318,18 @@ export default function ClientDetailPage() {
         {/* 4 Metric Cards (2x2 Grid All Access) */}
         <div className="grid grid-cols-2 gap-2 sm:gap-3">
           <div className="rounded-xl bg-[#161616] border border-[#222222] p-3 sm:p-4">
-            <div className="font-mono text-[10px] uppercase tracking-wider text-[#a8a8a8]">JÁ TE PAGOU</div>
-            <div className="font-display text-[24px] sm:text-[28px] text-white leading-tight mt-0.5">
+            <div className="font-tag text-[10px] uppercase tracking-wider text-[#a8a8a8]">JÁ TE PAGOU</div>
+            <div className="font-poster text-[24px] sm:text-[28px] text-white leading-tight mt-0.5">
               {isVisible ? formatCurrency(stats.paidAmount) : '•••••'}
             </div>
             <div className="text-[11px] text-[#a8a8a8] mt-0.5">{stats.totalEvents} shows realizados</div>
           </div>
 
           <div className="rounded-xl bg-[#161616] border border-[#222222] p-3 sm:p-4">
-            <div className="font-mono text-[10px] uppercase tracking-wider text-[#a8a8a8]">COSTUMA PAGAR EM</div>
+            <div className="font-tag text-[10px] uppercase tracking-wider text-[#a8a8a8]">COSTUMA PAGAR EM</div>
             <div
               style={{ color: stats.paymentColor }}
-              className="font-display text-[24px] sm:text-[28px] leading-tight mt-0.5"
+              className="font-poster text-[24px] sm:text-[28px] leading-tight mt-0.5"
             >
               {stats.paymentScore}
             </div>
@@ -337,8 +337,8 @@ export default function ClientDetailPage() {
           </div>
 
           <div className="rounded-xl bg-[#161616] border border-[#222222] p-3 sm:p-4">
-            <div className="font-mono text-[10px] uppercase tracking-wider text-[#a8a8a8]">CACHÊ COMBINADO</div>
-            <div className="font-display text-[24px] sm:text-[28px] text-white leading-tight mt-0.5">
+            <div className="font-tag text-[10px] uppercase tracking-wider text-[#a8a8a8]">CACHÊ COMBINADO</div>
+            <div className="font-poster text-[24px] sm:text-[28px] text-white leading-tight mt-0.5">
               {isVisible
                 ? client.default_rate
                   ? formatCurrency(client.default_rate)
@@ -349,8 +349,8 @@ export default function ClientDetailPage() {
           </div>
 
           <div className="rounded-xl bg-[#161616] border border-[#222222] p-3 sm:p-4">
-            <div className="font-mono text-[10px] uppercase tracking-wider text-[#a8a8a8]">ALIMENTAÇÃO</div>
-            <div className="font-display text-[24px] sm:text-[28px] text-white leading-tight mt-0.5">
+            <div className="font-tag text-[10px] uppercase tracking-wider text-[#a8a8a8]">ALIMENTAÇÃO</div>
+            <div className="font-poster text-[24px] sm:text-[28px] text-white leading-tight mt-0.5">
               {isVisible
                 ? client.default_meal_allowance
                   ? formatCurrency(client.default_meal_allowance)
@@ -364,11 +364,11 @@ export default function ClientDetailPage() {
         {/* Shows History Card */}
         <div className="rounded-2xl bg-[#161616] border border-[#222222] p-4 sm:p-5">
           <div className="flex items-center justify-between mb-3">
-            <div className="font-mono text-[11px] tracking-widest uppercase text-[#a8a8a8]">
+            <div className="font-tag text-[11px] tracking-widest uppercase text-[#a8a8a8]">
               HISTÓRICO DE SHOWS ({clientEvents.length})
             </div>
             {clientEvents.length > 0 && (
-              <span className="text-[11px] text-[#a8a8a8] font-mono">Toque para abrir</span>
+              <span className="text-[11px] text-[#a8a8a8] font-tag">Toque para abrir</span>
             )}
           </div>
 
@@ -394,7 +394,7 @@ export default function ClientDetailPage() {
                     className="py-3 flex items-center justify-between gap-3 hover:bg-[#1f1f1f] px-2 -mx-2 rounded-lg cursor-pointer transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <span className="font-mono text-[11px] text-[#a8a8a8] w-14 flex-shrink-0">
+                      <span className="font-tag text-[11px] text-[#a8a8a8] w-14 flex-shrink-0">
                         {dateStr}
                       </span>
                       <span className="text-[13px] font-bold text-white truncate min-w-0">
@@ -403,7 +403,7 @@ export default function ClientDetailPage() {
                     </div>
 
                     <div className="flex items-center gap-3 flex-shrink-0">
-                      <span className="font-display text-[16px] text-white">
+                      <span className="font-poster text-[16px] text-white">
                         {isVisible ? formatCurrency(eventAmount) : '•••••'}
                       </span>
                       <span
@@ -426,7 +426,7 @@ export default function ClientDetailPage() {
         {/* Notes Card */}
         <div className="rounded-2xl bg-[#161616] border border-[#222222] p-4 sm:p-5">
           <div className="flex items-center justify-between mb-2">
-            <span className="font-mono text-[11px] tracking-widest uppercase text-[#a8a8a8]">
+            <span className="font-tag text-[11px] tracking-widest uppercase text-[#a8a8a8]">
               ANOTAÇÕES DO CLIENTE
             </span>
             {!editingNotes ? (

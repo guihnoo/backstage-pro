@@ -1,23 +1,23 @@
 import { useMemo } from 'react';
 import { format, addMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO, addDays, isAfter, isBefore, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { TrendingUp, CalendarDays } from 'lucide-react';
 import { calculateEventReceivableAmount } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import EventHeading from '@/components/events/EventHeading';
 import { buildClientMap, resolveClientForEvent } from '@/lib/eventDisplay';
 
+// Mesmas cores da legenda da Agenda (All Access): amarelo confirmado, rosa a receber, cinza o resto.
 const STATUS_CONFIG_BASE = {
-  confirmed: { label: 'Confirmado', color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/20', dot: 'bg-green-400' },
-  scheduled: { label: 'Agendado', color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20', dot: 'bg-blue-400' },
-  pending:   { label: 'Pendente', color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20', dot: 'bg-amber-400' },
+  confirmed: { label: 'Confirmado', color: 'text-[#ffd400]', bg: 'bg-[#ffd400]/10 border-[#ffd400]/20', dot: 'bg-[#ffd400]' },
+  scheduled: { label: 'Agendado', color: 'text-[#a8a8a8]', bg: 'bg-[#222222] border-[#333333]', dot: 'bg-[#a8a8a8]' },
+  pending:   { label: 'Pendente', color: 'text-[#a8a8a8]', bg: 'bg-[#222222] border-[#333333]', dot: 'bg-[#a8a8a8]' },
 };
 
 const STATUS_CONFIG_COMPLETED = {
   label: 'A receber',
-  color: 'bp-text-primary',
-  bg: 'bp-today-surface-soft',
-  dot: 'bg-[var(--bp-primary)]',
+  color: 'text-[#ff2e88]',
+  bg: 'bg-[#ff2e88]/10 border-[#ff2e88]/20',
+  dot: 'bg-[#ff2e88]',
 };
 
 function getStatusKey(ev) {
@@ -35,7 +35,8 @@ function getStatusConfig() {
   };
 }
 
-export default function CashflowForecast({ events = [], work = [], clients = [] }) {
+// compact: so os totais de 30/60/90 dias (a lista de shows ja aparece na aba "A receber").
+export default function CashflowForecast({ events = [], work = [], clients = [], compact = false }) {
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const STATUS_CONFIG = useMemo(() => getStatusConfig(), []);
   const clientMap = useMemo(() => buildClientMap(clients), [clients]);
@@ -111,62 +112,58 @@ export default function CashflowForecast({ events = [], work = [], clients = [] 
 
   if (!hasAnyEvents) {
     return (
-      <div className="bg-slate-800/30 border border-slate-700 rounded-xl p-6 flex flex-col items-center gap-3 text-slate-500">
-        <CalendarDays className="w-10 h-10 opacity-30" />
-        <p className="text-sm">Nenhum evento futuro com valor no horizonte de 90 dias</p>
+      <div className="rounded-2xl bg-[#161616] border border-[#222222] p-4">
+        <div className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8]">PREVISÃO · PRÓXIMOS 90 DIAS</div>
+        <p className="text-sm text-[#c8c8c8] mt-1.5">Nenhum show com valor marcado para os próximos 90 dias.</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center gap-2">
-        <TrendingUp className="w-5 h-5 text-emerald-400" />
-        <h3 className="text-base font-semibold text-white">Previsão de Caixa</h3>
-        <span className="text-xs text-slate-500 ml-1">— próximos 90 dias</span>
-      </div>
+    <div className="space-y-2">
+      {/* Header (All Access) */}
+      <div className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] pt-2">PREVISÃO · PRÓXIMOS 90 DIAS</div>
 
       {/* KPI Pills */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-1.5">
         {[
-          { label: '30 dias', value: kpis.d30, color: 'text-emerald-400' },
-          { label: '60 dias', value: kpis.d60, color: 'bp-text-primary' },
-          { label: '90 dias', value: kpis.d90, color: 'text-blue-400' },
+          { label: 'até 30 dias', value: kpis.d30, color: 'text-[#ffd400]' },
+          { label: 'até 60 dias', value: kpis.d60, color: 'text-white' },
+          { label: 'até 90 dias', value: kpis.d90, color: 'text-white' },
         ].map(({ label, value, color }) => (
-          <div key={label} className="bg-slate-800/50 border border-slate-700 rounded-xl p-3 text-center">
-            <p className="text-[10px] text-slate-400 mb-1">{label}</p>
-            <p className={`text-sm font-bold ${color}`}>
+          <div key={label} className="rounded-[10px] bg-[#161616] border border-[#222222] p-2">
+            <p className={`font-poster text-[18px] leading-none truncate ${color}`}>
               {isVisible ? formatCurrency(value) : '••••'}
             </p>
+            <p className="font-tag text-[10px] uppercase text-[#a8a8a8] mt-1">{label}</p>
           </div>
         ))}
       </div>
 
       {/* Monthly sections */}
-      <div className="space-y-3">
+      {!compact && (<>
+      <div className="space-y-2">
         {months.map(({ label, evs, total, isCurrentMonth }) => {
           if (!evs.length) return null;
           return (
-            <div key={label} className="bg-slate-800/30 border border-slate-700 rounded-xl overflow-hidden">
+            <div key={label} className="rounded-2xl bg-[#161616] border border-[#222222] overflow-hidden">
               {/* Month header */}
-              <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-700/50 bg-slate-800/60">
+              <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#222222]">
                 <div className="flex items-center gap-2">
-                  <CalendarDays className="w-4 h-4 text-slate-400" />
-                  <span className="text-sm font-medium text-white capitalize">{label}</span>
+                  <span className="font-poster text-[18px] leading-none text-white uppercase">{label}</span>
                   {isCurrentMonth && (
-                    <span className="text-[9px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded-full font-medium uppercase tracking-wide">
+                    <span className="font-tag text-[9px] bg-[#ffd400] text-[#0a0a0a] px-1.5 py-0.5 rounded-full font-bold uppercase">
                       Atual
                     </span>
                   )}
                 </div>
-                <span className={`text-sm font-bold ${isVisible ? 'text-emerald-400' : 'text-slate-400'}`}>
+                <span className="font-poster text-[18px] leading-none text-[#ffd400]">
                   {isVisible ? formatCurrency(total) : '••••'}
                 </span>
               </div>
 
               {/* Events */}
-              <div className="divide-y divide-slate-700/30">
+              <div className="divide-y divide-[#2a2a2a]">
                 {evs.map(ev => {
                   const cfg = STATUS_CONFIG[ev._statusKey] || STATUS_CONFIG.scheduled;
                   const dateStr = ev.start_date
@@ -182,10 +179,10 @@ export default function CashflowForecast({ events = [], work = [], clients = [] 
                           size="sm"
                         />
                         <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[10px] text-slate-500">{dateStr}</span>
+                          <span className="text-[10px] text-[#888888]">{dateStr}</span>
                           <span className={`text-[10px] ${cfg.color}`}>{cfg.label}</span>
                           {ev.location_city && (
-                            <span className="text-[10px] text-slate-600 truncate">{ev.location_city}</span>
+                            <span className="text-[10px] text-[#666666] truncate">{ev.location_city}</span>
                           )}
                         </div>
                       </div>
@@ -200,9 +197,9 @@ export default function CashflowForecast({ events = [], work = [], clients = [] 
               {/* Month footer: total bar */}
               {total > 0 && kpis.d90 > 0 && (
                 <div className="px-4 pb-2 pt-1">
-                  <div className="h-1 bg-slate-700 rounded-full overflow-hidden">
+                  <div className="h-1 bg-[#222222] rounded-full overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-emerald-500/60"
+                      className="h-full rounded-full bg-[#ffd400]"
                       style={{ width: `${Math.min((total / kpis.d90) * 100, 100)}%` }}
                     />
                   </div>
@@ -218,10 +215,11 @@ export default function CashflowForecast({ events = [], work = [], clients = [] 
         {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
           <div key={key} className="flex items-center gap-1.5">
             <div className={`w-2 h-2 rounded-full ${cfg.dot}`} />
-            <span className="text-[10px] text-slate-500">{cfg.label}</span>
+            <span className="text-[10px] text-[#888888]">{cfg.label}</span>
           </div>
         ))}
       </div>
+      </>)}
     </div>
   );
 }

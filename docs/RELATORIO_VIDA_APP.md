@@ -3,7 +3,7 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-10-09 (P0 números — modelo de competência implementado + projeto fora do OneDrive; Claude Code)  
+**Última atualização:** 2026-10-21 (visual All Access: entrega 9 + 2 bugs que estavam no ar; Claude Code — branch `feat/visual-completo`)  
 **Pendente de deploy:** tudo de 2026-10-09 (nada publicado na Vercel) · migration `034_events_payment_method.sql` **não aplicada** em produção  
 **Pasta local:** `C:\dev\backstage-pro` (desde 2026-10-09; a cópia antiga em `OneDrive\Documentos\backstage-pro` não é mais a pasta de trabalho)  
 **Produção:** https://backstage-pro-beta.vercel.app  
@@ -178,6 +178,25 @@ Use este roteiro para fechar o item **#8** em `IDEIAS_PENDENTES.md`.
 ---
 
 ## Changelog
+
+### 2026-10-21 — Visual All Access, entrega 9: acertos nas telas já feitas (Claude Code)
+
+**Pedido do usuário:** terminar o visual novo em todo o app antes de seguir. Plano em entregas 9–15 (ver `docs/AGENT_LOG.md` de 21/10). Referência: protótipo `Backstage Pro — Direção Visual.html` (19 telas).
+
+**Bugs que estavam no ar (corrigidos):**
+- Agenda → tocar no dia → **Horas** derrubava a tela ("Oops! Algo deu errado"). `Calendar.jsx` agora usa `handleQuickLogForEvent`. Teste: `e2e/regression/calendar-day-actions.spec.js`.
+- Dinheiro → A receber → **Cobrar** não abria o WhatsApp (passava o evento no lugar do telefone). `AllAccessDinheiro.jsx` monta a mensagem com `buildChargeMessage`.
+
+**Visual:**
+- Fonte: Agenda, Dinheiro, Clientes, Despesas e ficha do cliente usavam `font-display` (não existe no Tailwind) → `font-poster` (Anton); `font-mono` → `font-tag` (Space Mono).
+- Agenda: busca em pílula + botão "⋯" (vistas e ferramentas); filtros em pílulas que rolam para o lado; lembretes no estilo dos Avisos; números do mês no estilo dos números do topo; faixa "Hoje" some na grade (o cartão do dia já mostra hoje).
+- Dinheiro: voltaram, no visual novo, funções que sumiram em 20/10 — **NF pendentes** e **Imposto de Renda** (aba Fiscal), **conferência de horas** (aba Análise), **previsão 30/60/90 dias** (aba A receber). Contagem de NF usa a regra oficial `isNfPendingEvent`. Mapa virou "Minha turnê" no visual novo.
+- Esqueleto de carregamento (`ui/skeleton.jsx`) agora cinza All Access em todo o app.
+- Ficha do cliente: avatar 72px (a classe `w-18` não existia).
+
+**Fora do escopo, anotado:** números da Agenda não usam `financeMetrics` ("DIÁRIAS" mostra nº de eventos; "Receita estimada" ≠ "A receber"); MEI do ano (Fiscal) e Receita bruta do IR são calculados em lugares diferentes.
+
+**Sem deploy.**
 
 ### 2026-10-09 — P0 números: modelo de competência + valor recebido (Claude Code)
 

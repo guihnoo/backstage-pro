@@ -1,7 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import {
   X,
   Timer,
@@ -335,100 +333,70 @@ export default function AlertsPanel({
     return null;
   }
 
+  // Visual All Access (mesmo cartao dos Avisos do sino): rosa = urgente, amarelo = o resto.
+  const pill = 'h-8 px-3 rounded-full text-xs font-extrabold active:scale-95 transition-transform';
+
   return (
-    <div className={`space-y-3 ${className}`}>
+    <div className={`space-y-2 ${className}`}>
+      <div className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8]">LEMBRETES</div>
       <AnimatePresence>
-        {alerts.map((alert) => (
-          <motion.div
-            key={alert.id}
-            initial={{ opacity: 0, height: 0, y: -10 }}
-            animate={{ opacity: 1, height: 'auto', y: 0 }}
-            exit={{ opacity: 0, height: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Card
-              className={
-                alert.accentHex
-                  ? 'backdrop-blur-sm border'
-                  : `${alert.bgColor} border ${alert.borderColor} backdrop-blur-sm`
-              }
-              style={
-                alert.accentHex
-                  ? { background: `${alert.accentHex}1a`, borderColor: `${alert.accentHex}4d` }
-                  : undefined
-              }
+        {alerts.map((alert) => {
+          const accent = alert.color === 'text-red-400' ? '#ff2e88' : '#ffd400';
+          return (
+            <motion.div
+              key={alert.id}
+              initial={{ opacity: 0, height: 0, y: -10 }}
+              animate={{ opacity: 1, height: 'auto', y: 0 }}
+              exit={{ opacity: 0, height: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
             >
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <alert.icon
-                      className={`w-5 h-5 flex-shrink-0 ${alert.color ?? ''}`}
-                      style={alert.accentHex ? { color: alert.accentHex } : undefined}
-                    />
-                    <div className="min-w-0">
-                      <h3
-                        className={`font-bold truncate ${alert.color ?? ''}`}
-                        style={alert.accentHex ? { color: alert.accentHex } : undefined}
-                      >
-                        {alert.title}
-                      </h3>
-                      <p className="text-sm text-slate-300 mt-1 break-words">
-                        {alert.body}
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-slate-400 hover:text-white"
-                    onClick={() => dismissAlert(alert.id)}
-                    aria-label="Dispensar alerta"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
+              <div
+                className="rounded-[14px] bg-[#1a1a1a] px-3 py-2.5 flex gap-2.5 items-start"
+                style={{ borderLeft: `4px solid ${accent}` }}
+              >
+                <div
+                  className="w-[34px] h-[34px] rounded-[10px] text-[#0a0a0a] flex items-center justify-center shrink-0"
+                  style={{ background: accent }}
+                >
+                  <alert.icon className="w-4 h-4" />
                 </div>
-                
-                <div className="flex gap-2">
-                  {alert.cta && (
-                    <Button
-                      size="sm"
-                      onClick={() => executeAction(alert)}
-                      className={
-                        alert.accentHex
-                          ? 'border'
-                          : {
-                              'text-green-400':  'bg-green-500/20 hover:bg-green-500/30 text-green-300 border-green-400/30',
-                              'text-amber-400':  'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border-amber-400/30',
-                              'text-red-400':    'bg-red-500/20 hover:bg-red-500/30 text-red-300 border-red-400/30',
-                            }[alert.color] ?? 'bg-slate-700/60 hover:bg-slate-700 text-slate-300 border-slate-600'
-                      }
-                      style={
-                        alert.accentHex
-                          ? {
-                              background: `${alert.accentHex}33`,
-                              borderColor: `${alert.accentHex}55`,
-                              color: alert.accentHex,
-                            }
-                          : undefined
-                      }
-                      variant="outline"
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between gap-1.5">
+                    <h3 className="text-sm font-extrabold leading-tight text-white">{alert.title}</h3>
+                    <button
+                      type="button"
+                      className="-mt-1 -mr-1 h-7 w-7 flex items-center justify-center rounded-full text-[#a8a8a8] hover:text-white"
+                      onClick={() => dismissAlert(alert.id)}
+                      aria-label="Dispensar alerta"
                     >
-                      {alert.cta.label}
-                    </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => dismissAlert(alert.id)}
-                    className="border-slate-600 text-slate-400 hover:bg-slate-800"
-                  >
-                    Dispensar
-                  </Button>
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <p className="text-[13px] text-[#c8c8c8] leading-snug mt-0.5 break-words">{alert.body}</p>
+                  <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                    {alert.cta && (
+                      <button
+                        type="button"
+                        onClick={() => executeAction(alert)}
+                        className={`${pill} border-0 text-[#0a0a0a]`}
+                        style={{ background: accent }}
+                      >
+                        {alert.cta.label}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => dismissAlert(alert.id)}
+                      className="h-8 px-2 text-xs font-bold text-[#a8a8a8] ml-auto"
+                    >
+                      Dispensar
+                    </button>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
+              </div>
+            </motion.div>
+          );
+        })}
       </AnimatePresence>
     </div>
   );

@@ -16,7 +16,7 @@ export default function PrivacyPolicyPage() {
       className="min-h-screen bg-[#050609] max-w-4xl mx-auto p-6 space-y-8"
     >
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-white font-display flex items-center justify-center gap-3 mb-4">
+        <h1 className="text-4xl text-white font-poster flex items-center justify-center gap-3 mb-4">
           <Shield className="w-10 h-10" style={{ color: primaryHex }} />
           Política de Privacidade
         </h1>

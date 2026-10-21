@@ -345,7 +345,7 @@ export default function ClientDetailModal({
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <DialogTitle className="text-xl sm:text-2xl font-bold text-white font-display truncate">
+                      <DialogTitle className="text-xl sm:text-2xl text-white font-poster truncate">
                         {client.name}
                       </DialogTitle>
                       {client.client_type === 'pessoa' ? (

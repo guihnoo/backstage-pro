@@ -5,7 +5,6 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import {
   isReceivableEvent,
   calculateEventReceivableAmount,
-  isNfPendingEvent,
 } from '@/lib/eventFinance';
 import {
   buildWorkByEvent,
@@ -24,22 +23,12 @@ import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { useExpenses } from '@/lib/useExpenses';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
-  DollarSign,
-  TrendingUp,
-  Users,
-  Clock,
-  BarChart3,
-  FileText,
   AlertCircle,
   ArrowUp,
   ArrowDown,
   Minus,
-  XCircle,
-  Receipt,
-  Briefcase,
   ChevronDown,
 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, subMonths, parseISO, startOfYear, endOfYear, addMonths, startOfWeek, endOfWeek, subWeeks, addWeeks } from 'date-fns';
@@ -48,17 +37,14 @@ import appToast from '@/lib/appToast';
 import { getEventStatus } from '@/components/utils/dateUtils';
 
 // Component imports — charts/map/modais em lazy para reduzir chunk inicial
-import ReportEventList from '@/components/reports/ReportEventList';
 import AllAccessDinheiro from '@/components/reports/AllAccessDinheiro';
 import { Skeleton } from '@/components/ui/skeleton';
 import EmptyState from '@/components/layout/EmptyState';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 // NeonPageShell removido na Entrega 4 All Access
-import LiveClockBar from '@/components/home/LiveClockBar';
 import StatValuePulse from '@/components/home/StatValuePulse';
 import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
@@ -67,27 +53,14 @@ import { enrichEventsWithClients, getClientDisplayName } from '@/lib/eventDispla
 import { Ellipsis } from '@/components/ui/overflowText';
 import { useConnectivity } from '@/lib/offline/useConnectivity';
 
-const ReportsChart = lazy(() => import('@/components/reports/ReportsChart'));
-const MonthlyTrend = lazy(() => import('@/components/reports/MonthlyTrend'));
-const ClientDetailedTable = lazy(() => import('@/components/reports/ClientDetailedTable'));
 const ExpenseAnalysis = lazy(() => import('@/components/reports/ExpenseAnalysis'));
 const ExportManager = lazy(() => import('@/components/reports/ExportManager'));
 const EventDetailModal = lazy(() => import('@/components/calendar/EventDetailModal'));
 const PaymentConfirmModal = lazy(() => import('@/components/reports/PaymentConfirmModal'));
 const EventForm = lazy(() => import('@/components/calendar/EventForm'));
-const ActivityHeatmap = lazy(() => import('@/components/reports/ActivityHeatmap'));
-const SeasonalityChart = lazy(() => import('@/components/reports/SeasonalityChart'));
-const WeekdayBreakdown = lazy(() => import('@/components/reports/WeekdayBreakdown'));
 const NfTracker = lazy(() => import('@/components/reports/NfTracker'));
-const WorkAnalytics = lazy(() => import('@/components/reports/WorkAnalytics'));
-const HoursOriginChart = lazy(() => import('@/components/reports/HoursOriginChart'));
 const HoursReviewList = lazy(() => import('@/components/reports/HoursReviewList'));
 const CashflowForecast = lazy(() => import('@/components/reports/CashflowForecast'));
-const CategoryBreakdown = lazy(() => import('@/components/reports/CategoryBreakdown'));
-const TopClients = lazy(() => import('@/components/reports/TopClients'));
-const ReceivablesAging = lazy(() => import('@/components/reports/ReceivablesAging'));
-const YearOverYear = lazy(() => import('@/components/reports/YearOverYear'));
-const CacheEvolutionChart = lazy(() => import('@/components/reports/CacheEvolutionChart'));
 const IRSummary = lazy(() => import('@/components/reports/IRSummary'));
 const BrazilVisitedMap = lazy(() => import('@/components/reports/BrazilVisitedMap'));
 
@@ -204,7 +177,7 @@ const StatCard = ({ title, value, pulseValue, pulseColor, subtitle, icon: Icon, 
         <div className="space-y-1 min-w-0 mb-3">
           <p className="font-tag text-[10px] sm:text-[11px] font-bold tracking-[0.16em] text-[#888888] truncate">{title}</p>
           <StatValuePulse value={pulseValue ?? value} glowColor={pulseColor}>
-            <p className={`text-2xl sm:text-3xl font-bold font-display tracking-wide truncate ${color}`} title={typeof value === 'string' ? value : undefined}>{value}</p>
+            <p className={`text-2xl sm:text-3xl font-poster tracking-wide truncate ${color}`} title={typeof value === 'string' ? value : undefined}>{value}</p>
           </StatValuePulse>
         </div>
         <div className="flex items-center justify-between gap-2 min-w-0">
@@ -812,6 +785,28 @@ export default function ReportsPage() {
           }}
           onMarkPaid={(ev) => setPayingEvent(ev)}
           workByEvent={workByEvent}
+          // Funcoes que sumiram na troca de visual (20/10) e voltaram em 21/10.
+          receberExtra={
+            <Suspense fallback={<ChartBlockSkeleton />}>
+              <CashflowForecast compact events={data.events} work={data.dailyWork} clients={data.clients} />
+            </Suspense>
+          }
+          fiscalExtra={
+            <Suspense fallback={<ChartBlockSkeleton className="h-64" />}>
+              <NfTracker events={data.events} clients={data.clients} onOpenEvent={(ev) => setSelectedEvent(ev)} />
+              <IRSummary events={data.events} expenses={data.expenses} work={data.dailyWork} />
+            </Suspense>
+          }
+          analiseExtra={
+            <Suspense fallback={<ChartBlockSkeleton className="h-64" />}>
+              <HoursReviewList
+                events={data.events}
+                dailyWork={data.dailyWork}
+                clients={data.clients}
+                onOpenEvent={(ev) => setSelectedEvent(ev)}
+              />
+            </Suspense>
+          }
         />
         <div className="hidden">
           <ExportManager

@@ -12,7 +12,6 @@ import { useExpenses } from '@/lib/useExpenses';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Card, CardContent } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,7 +26,6 @@ import {
   TrendingUp,
   Search,
   X,
-  LayoutGrid,
   List,
   CalendarDays,
   Download,
@@ -45,7 +43,6 @@ import {
 import { exportCalendarIcs } from '@/lib/exportReport';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, parseISO, isValid, addWeeks, subWeeks, startOfWeek, endOfWeek, eachDayOfInterval, differenceInCalendarDays, isBefore } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import BackstageCalendarGrid from '@/components/calendar/BackstageCalendarGrid';
 import AllAccessCalendar from '@/components/calendar/AllAccessCalendar';
 import EventForm from '@/components/calendar/EventForm';
 import DailyWorkModal from '@/components/calendar/DailyWorkModal';
@@ -139,37 +136,36 @@ const StatCard = ({
   value,
   numericValue,
   formatValue,
-  subtext,
   icon: Icon,
   color,
   onClick,
   loading = false,
 }) => (
-  <Card
-    className={`bg-[#121212] border-[#222222] transition-all duration-200 ${onClick ? 'hover:border-slate-700 cursor-pointer hover:scale-[1.02] active:scale-[0.98]' : ''}`}
+  // Mesmo bloco dos numeros do topo (All Access): numero em Anton, rotulo em Space Mono.
+  <button
+    type="button"
     onClick={onClick}
+    disabled={!onClick}
+    className="text-left rounded-[10px] bg-[#161616] border border-[#222222] p-2.5 flex items-center justify-between gap-2 transition-colors hover:border-[#444444] active:scale-[0.98] disabled:active:scale-100"
   >
-    <CardContent className="p-3 sm:p-4">
-      <div className="flex items-center justify-between">
-        <div className="min-w-0 flex-1 mr-2">
-          <p className="font-tag text-[10px] sm:text-[11px] font-bold tracking-[0.16em] text-[#888888] mb-1 truncate">{title}</p>
-          {loading ? (
-            <Skeleton className="h-7 sm:h-8 w-16" />
-          ) : numericValue != null && formatValue ? (
-            <AnimatedStatValue
-              value={numericValue}
-              format={formatValue}
-              className={`text-xl sm:text-2xl font-bold ${color} truncate block`}
-            />
-          ) : (
-            <p className={`text-xl sm:text-2xl font-bold font-display tracking-wide ${color || 'text-white'} truncate`}>{value}</p>
-          )}
-          {subtext && <p className="text-slate-500 text-xs mt-1 truncate">{subtext}</p>}
-        </div>
-        <Icon className={`w-6 h-6 sm:w-8 sm:h-8 ${color} opacity-60 flex-shrink-0`} />
-      </div>
-    </CardContent>
-  </Card>
+    <div className="min-w-0 flex-1">
+      {loading ? (
+        <Skeleton className="h-6 w-14 bg-[#222222]" />
+      ) : numericValue != null && formatValue ? (
+        <AnimatedStatValue
+          value={numericValue}
+          format={formatValue}
+          className={`font-poster text-[22px] leading-none ${color} truncate block`}
+        />
+      ) : (
+        <p className={`font-poster text-[22px] leading-none ${color || 'text-white'} truncate`}>{value}</p>
+      )}
+      <p className="font-tag text-[10px] text-[#a8a8a8] uppercase mt-1 truncate">
+        {title}
+      </p>
+    </div>
+    <Icon className="w-4 h-4 text-[#555555] flex-shrink-0" />
+  </button>
 );
 
 
@@ -1177,31 +1173,94 @@ export default function CalendarPage() {
         )}
 
 
-        {/* Busca de eventos */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar por título, cliente ou local…"
-            className="w-full bg-[#121212] border border-[#242424] rounded-xl pl-9 pr-9 py-2.5 text-sm text-white placeholder-[#666666] focus:outline-none focus:border-[#ffd400]/60 transition-colors"
-            aria-label="Buscar eventos"
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
-              aria-label="Limpar busca"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
+        {/* Busca + "..." (vistas e ferramentas) no visual All Access: uma linha so, para a grade subir */}
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#666666] pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar show, cliente ou local"
+              className="w-full h-11 bg-[#161616] border border-[#333333] rounded-full pl-10 pr-10 text-base text-white placeholder-[#666666] focus:outline-none focus:border-[#ffd400] transition-colors"
+              aria-label="Buscar eventos"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center rounded-full text-[#a8a8a8] hover:text-white transition-colors"
+                aria-label="Limpar busca"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                title="Mais vistas"
+                aria-label="Mais vistas e ferramentas"
+                className={`h-11 w-11 shrink-0 rounded-full border flex items-center justify-center transition-colors ${
+                  ['week', 'list', 'kanban', 'upcoming'].includes(viewMode)
+                    ? 'bg-[#ffd400] border-[#ffd400] text-[#0a0a0a]'
+                    : 'bg-[#161616] border-[#333333] text-white hover:border-[#ffd400]'
+                }`}
+              >
+                <MoreHorizontal className="w-5 h-5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" side="bottom" className="bg-[#161616] border-[#2a2a2a] text-white rounded-[14px] min-w-[220px] z-[110] p-1.5">
+              <div className="font-tag text-[10px] tracking-[2px] text-[#a8a8a8] px-2 pt-1 pb-1.5">VER A AGENDA</div>
+              {[
+                { mode: 'upcoming', label: 'Próximos shows', icon: Zap },
+                { mode: 'week', label: 'Vista Semanal', icon: CalendarDays },
+                { mode: 'list', label: 'Vista em Lista', icon: List },
+                { mode: 'kanban', label: 'Pipeline Kanban', icon: Columns2 },
+              ].map(({ mode, label, icon: Icon }) => (
+                <DropdownMenuItem
+                  key={mode}
+                  onClick={() => {
+                    setViewMode(mode);
+                    if (mode === 'week') setWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 }));
+                  }}
+                  className={`flex items-center gap-2.5 h-10 rounded-[10px] cursor-pointer text-sm font-bold ${
+                    viewMode === mode ? 'bg-[#ffd400] text-[#0a0a0a] focus:bg-[#ffd400] focus:text-[#0a0a0a]' : 'text-white focus:bg-[#222222] focus:text-white'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {label}
+                </DropdownMenuItem>
+              ))}
+              <div className="font-tag text-[10px] tracking-[2px] text-[#a8a8a8] px-2 pt-2.5 pb-1.5 border-t border-[#2a2a2a] mt-1.5">FERRAMENTAS</div>
+              <DropdownMenuItem
+                onClick={() => setShowCalculator(true)}
+                className="flex items-center gap-2.5 h-10 rounded-[10px] cursor-pointer text-sm font-bold text-white focus:bg-[#222222] focus:text-white"
+              >
+                <Calculator className="w-4 h-4 text-[#ffd400]" />
+                Calculadora de cachê
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setShowAvailability(true)}
+                className="flex items-center gap-2.5 h-10 rounded-[10px] cursor-pointer text-sm font-bold text-white focus:bg-[#222222] focus:text-white"
+              >
+                <Share2 className="w-4 h-4 text-[#ffd400]" />
+                Mandar dias livres no WhatsApp
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleExportIcs}
+                className="flex items-center gap-2.5 h-10 rounded-[10px] cursor-pointer text-sm font-bold text-white focus:bg-[#222222] focus:text-white"
+              >
+                <Download className="w-4 h-4 text-[#ffd400]" />
+                Exportar agenda (iCal / Google)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
-        {/* Filtros de status + toggle de vista */}
-        <div className="flex items-center gap-2 flex-wrap">
+        {/* Filtros de status: pilulas All Access, rolam para o lado em vez de quebrar linha */}
+        <div className="flex items-center gap-1.5 overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {[
             { key: 'all', label: 'Todos', count: activeEvents.length },
             { key: 'pending', label: 'Pendentes', count: activeEvents.filter(e => matchesStatusChip(e, 'pending')).length },
@@ -1212,99 +1271,20 @@ export default function CalendarPage() {
             <button
               key={key}
               type="button"
+              aria-pressed={statusFilter === key}
               onClick={() => setStatusFilter(key)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold transition-all border ${
+              className={`shrink-0 h-9 flex items-center gap-1.5 px-3.5 rounded-full text-xs font-extrabold transition-colors border ${
                 statusFilter === key
-                  ? 'bp-chip-active'
-                  : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:border-slate-600 hover:text-slate-300'
+                  ? 'bg-[#ffd400] border-[#ffd400] text-[#0a0a0a]'
+                  : 'bg-[#161616] border-[#2a2a2a] text-[#a8a8a8] hover:text-white'
               }`}
             >
               {label}
-              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${statusFilter === key ? 'bg-[#0a0a0a] text-[#ffd400]' : 'bg-[#222222] text-[#888888]'}`}>
+              <span className={`font-tag text-[10px] px-1.5 rounded-full ${statusFilter === key ? 'bg-[#0a0a0a] text-[#ffd400]' : 'bg-[#222222] text-[#888888]'}`}>
                 {count}
               </span>
             </button>
           ))}
-          <div className="ml-auto flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-[#141414] border border-[#242424] rounded-xl p-1">
-              {/* Views primárias */}
-              <button
-                type="button"
-                onClick={() => setViewMode('grid')}
-                title="Vista em grade mensal"
-                className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bp-view-active' : 'text-slate-500 hover:text-slate-300'}`}
-              >
-                <LayoutGrid className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('upcoming')}
-                title="Próximos shows"
-                className={`p-1.5 rounded-md transition-colors ${viewMode === 'upcoming' ? 'bg-amber-600/30 text-amber-300' : 'text-slate-500 hover:text-slate-300'}`}
-              >
-                <Zap className="w-4 h-4" />
-              </button>
-              {/* Views secundárias no overflow */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    title="Mais vistas"
-                    className={`p-1.5 rounded-md transition-colors ${['week', 'list', 'kanban'].includes(viewMode) ? 'bp-view-active' : 'text-slate-500 hover:text-slate-300'}`}
-                  >
-                    <MoreHorizontal className="w-4 h-4" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" side="bottom" className="bg-slate-900 border-slate-700 min-w-[160px] z-[110]">
-                  <DropdownMenuItem
-                    onClick={() => { setViewMode('week'); setWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 })); }}
-                    className={`flex items-center gap-2 cursor-pointer ${viewMode === 'week' ? 'text-white bg-slate-700/50' : 'text-slate-300'}`}
-                  >
-                    <CalendarDays className="w-4 h-4" />
-                    Vista Semanal
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setViewMode('list')}
-                    className={`flex items-center gap-2 cursor-pointer ${viewMode === 'list' ? 'text-white bg-slate-700/50' : 'text-slate-300'}`}
-                  >
-                    <List className="w-4 h-4" />
-                    Vista em Lista
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setViewMode('kanban')}
-                    className={`flex items-center gap-2 cursor-pointer ${viewMode === 'kanban' ? 'text-white bg-slate-700/50' : 'text-slate-300'}`}
-                  >
-                    <Columns2 className="w-4 h-4" />
-                    Pipeline Kanban
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowCalculator(true)}
-              title="Calculadora de cachê"
-              className="p-1.5 rounded-lg bg-slate-800/60 border border-slate-700/60 text-slate-500 hover:text-yellow-400 hover:border-yellow-600/40 transition-colors"
-            >
-              <Calculator className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowAvailability(true)}
-              title="Compartilhar disponibilidade via WhatsApp"
-              className="p-1.5 rounded-lg bg-slate-800/60 border border-slate-700/60 text-slate-500 hover:text-green-400 hover:border-green-600/40 transition-colors"
-            >
-              <Share2 className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={handleExportIcs}
-              title="Exportar agenda como ICS (iCal / Google Calendar)"
-              className="p-1.5 rounded-lg bg-slate-800/60 border border-slate-700/60 text-slate-500 hover:text-slate-300 hover:border-slate-600 transition-colors"
-            >
-              <Download className="w-4 h-4" />
-            </button>
-          </div>
         </div>
 
         {/* Grade, Semana ou Lista */}
@@ -1790,7 +1770,8 @@ export default function CalendarPage() {
           onOpenEvent={setSelectedEvent}
         />
 
-        {(!isMobile || viewMode !== 'week') && (
+        {/* Na grade o cartao do dia selecionado (hoje, por padrao) ja mostra os shows de hoje. */}
+        {viewMode !== 'grid' && (!isMobile || viewMode !== 'week') && (
           <CalendarTodayStrip
             events={activeEvents}
             dailyWork={dailyWork}
@@ -1803,52 +1784,49 @@ export default function CalendarPage() {
           />
         )}
 
-        {/* Monthly Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+        {/* Numeros do mes (tocar abre a lista de cada um) */}
+        <div className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] pt-1">NÚMEROS DO MÊS</div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-2">
           <StatCard
             title="Eventos"
             value={monthStats.totalEvents}
             numericValue={monthStats.totalEvents}
             formatValue={(v) => String(Math.round(v))}
-            subtext={monthStats.totalEvents === 1 ? 'evento' : 'eventos'}
             icon={Calendar}
-            color="bp-text-primary"
+            color="text-[#ffd400]"
             onClick={handleEventsClick}
             loading={isCoreLoading || isSecondaryLoading}
           />
 
           <StatCard
-            title="Dias"
+            title="Dias de trabalho"
             value={monthStats.workDays}
             numericValue={monthStats.workDays}
             formatValue={(v) => String(Math.round(v))}
-            subtext={monthStats.workDays === 1 ? 'dia' : 'dias'}
             icon={CheckCircle2}
-            color="text-green-400"
+            color="text-white"
             onClick={handleWorkDaysClick}
             loading={isCoreLoading || isSecondaryLoading}
           />
 
           <StatCard
-            title="Horas"
+            title="Horas trabalhadas"
             value={`${monthStats.totalHours}h`}
             numericValue={monthStats.totalHours}
             formatValue={(v) => `${Number(v).toFixed(1)}h`}
-            subtext="trabalhadas"
             icon={Clock}
-            color="text-amber-400"
+            color="text-white"
             onClick={handleHoursClick}
             loading={isCoreLoading || isSecondaryLoading}
           />
 
           <StatCard
-            title="Receita"
+            title="Receita estimada"
             value={isVisible ? formatCurrency(monthStats.totalRevenue) : '••••'}
             numericValue={isVisible ? monthStats.totalRevenue : null}
             formatValue={formatCurrency}
-            subtext="estimada no mês"
             icon={TrendingUp}
-            color="text-emerald-400"
+            color="text-white"
             onClick={handleRevenueClick}
             loading={isCoreLoading || isSecondaryLoading}
           />

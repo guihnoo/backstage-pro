@@ -1,4 +1,3 @@
-import React from 'react';
 import { ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -22,7 +21,7 @@ export default function CalendarPageHeader({
       {/* Top row: Agenda title + Month navigator on left, View Switcher on right */}
       <div className="flex justify-between items-end">
         <div>
-          <div className="font-mono text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">
+          <div className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">
             AGENDA
           </div>
           <div className="flex items-center gap-1.5 mt-0.5">
@@ -34,7 +33,7 @@ export default function CalendarPageHeader({
             >
               <ChevronLeft className="w-5 h-5 stroke-[2.4]" />
             </button>
-            <h1 className="font-display text-[32px] sm:text-[36px] text-white leading-none tracking-wide">
+            <h1 className="font-poster text-[32px] sm:text-[36px] text-white leading-none tracking-wide">
               {monthName}
             </h1>
             <button
@@ -96,28 +95,28 @@ export default function CalendarPageHeader({
       {/* 3 Top KPIs Strip matching Board C */}
       <div className="grid grid-cols-3 gap-1.5">
         <div className="rounded-[10px] bg-[#161616] border border-[#222222] p-2 flex flex-col justify-center">
-          <div className="font-display text-[20px] text-[#ffd400] leading-none">
+          <div className="font-poster text-[20px] text-[#ffd400] leading-none">
             {monthStats.showCount || 0}
           </div>
-          <div className="font-mono text-[10px] text-[#a8a8a8] uppercase mt-0.5 truncate">
+          <div className="font-tag text-[10px] text-[#a8a8a8] uppercase mt-0.5 truncate">
             DIÁRIAS
           </div>
         </div>
 
         <div className="rounded-[10px] bg-[#161616] border border-[#222222] p-2 flex flex-col justify-center">
-          <div className="font-display text-[20px] text-white leading-none truncate">
+          <div className="font-poster text-[20px] text-white leading-none truncate">
             {isVisible ? (monthStats.received > 0 ? formatCurrency(monthStats.received) : 'R$ 0') : '•••••'}
           </div>
-          <div className="font-mono text-[10px] text-[#a8a8a8] uppercase mt-0.5 truncate">
+          <div className="font-tag text-[10px] text-[#a8a8a8] uppercase mt-0.5 truncate">
             NO MÊS
           </div>
         </div>
 
         <div className="rounded-[10px] bg-[#161616] border border-[#222222] p-2 flex flex-col justify-center">
-          <div className="font-display text-[20px] text-[#ff2e88] leading-none truncate">
+          <div className="font-poster text-[20px] text-[#ff2e88] leading-none truncate">
             {isVisible ? (monthStats.pending > 0 ? formatCurrency(monthStats.pending) : 'R$ 0') : '•••••'}
           </div>
-          <div className="font-mono text-[10px] text-[#a8a8a8] uppercase mt-0.5 truncate">
+          <div className="font-tag text-[10px] text-[#a8a8a8] uppercase mt-0.5 truncate">
             A RECEBER
           </div>
         </div>

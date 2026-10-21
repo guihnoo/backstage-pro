@@ -26,7 +26,7 @@ class BrazilMapErrorBoundary extends Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="rounded-xl border border-slate-700/50 bg-slate-900/40 p-6 text-center text-sm text-slate-400">
+        <div className="rounded-xl border border-[#2a2a2a] bg-[#161616] p-6 text-center text-sm text-[#a8a8a8]">
           Mapa indisponível — recarregue a página.
         </div>
       );
@@ -382,21 +382,24 @@ function BrazilVisitedMapInner({ events = [], clients = [] }) {
 
   return (
     <div
-      className="rounded-xl border border-slate-700/50 bg-slate-900/40 p-4"
+      className="rounded-2xl border border-[#222222] bg-[#161616] p-4"
       data-tour="reports-map"
       data-testid="brazil-visited-map"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-1 gap-3 flex-wrap">
-        <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-          <Map className="w-4 h-4" style={{ color: primary }} />
-          Mapa interativo — onde você trabalhou
-        </h3>
-        <div className="flex items-center gap-2 text-xs font-mono flex-wrap justify-end">
+      {/* Header (All Access) */}
+      <div className="flex items-end justify-between mb-1 gap-3 flex-wrap">
+        <div>
+          <div className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8]">ONDE VOCÊ JÁ TRABALHOU</div>
+          <h3 className="font-poster text-[26px] leading-none text-white flex items-center gap-2 mt-1">
+            <Map className="w-5 h-5 text-[#ffd400]" />
+            MINHA TURNÊ
+          </h3>
+        </div>
+        <div className="flex items-center gap-2 text-xs font-tag flex-wrap justify-end">
           <button
             type="button"
             onClick={() => requestMapTour()}
-            className="inline-flex items-center gap-1 text-[10px] text-slate-500 transition-colors font-sans normal-case tracking-normal bp-hover-primary"
+            className="inline-flex items-center gap-1 text-[10px] text-[#888888] transition-colors font-sans normal-case tracking-normal bp-hover-primary"
             aria-label="Como usar o mapa interativo"
           >
             <HelpCircle className="w-3.5 h-3.5" />
@@ -405,13 +408,13 @@ function BrazilVisitedMapInner({ events = [], clients = [] }) {
           <span style={{ color: primary }}>{stateCount}/{totalStates} estados · {pct}%</span>
           {cityCount > 0 && (
             <>
-              <span className="text-slate-600">·</span>
+              <span className="text-[#666666]">·</span>
               <span style={{ color: accent }}>{cityCount} {cityCount === 1 ? 'cidade' : 'cidades'}</span>
             </>
           )}
         </div>
       </div>
-      <p className="text-[11px] text-slate-500 mb-3">
+      <p className="text-[11px] text-[#888888] mb-3">
         Estados e cidades com eventos cadastrados. Toque no mapa ou na lista para ver detalhes.
       </p>
 
@@ -424,21 +427,21 @@ function BrazilVisitedMapInner({ events = [], clients = [] }) {
               type="button"
               onClick={() => zoomAt(zoom + 0.8, pan.x + vbW / 2, pan.y + vbH / 2)}
               disabled={zoom >= 6}
-              className="w-7 h-7 rounded-md bg-slate-800/90 border border-slate-600/60 text-slate-200 hover:text-white hover:bg-slate-700 text-base font-bold flex items-center justify-center backdrop-blur disabled:opacity-30 select-none"
+              className="w-7 h-7 rounded-md bg-[#1f1f1f] border border-[#2a2a2a] text-[#e0e0e0] hover:text-white hover:bg-[#2a2a2a] text-base font-bold flex items-center justify-center backdrop-blur disabled:opacity-30 select-none"
               aria-label="Aproximar"
             >+</button>
             <button
               type="button"
               onClick={() => zoomAt(zoom - 0.8, pan.x + vbW / 2, pan.y + vbH / 2)}
               disabled={zoom <= 1}
-              className="w-7 h-7 rounded-md bg-slate-800/90 border border-slate-600/60 text-slate-200 hover:text-white hover:bg-slate-700 text-base font-bold flex items-center justify-center backdrop-blur disabled:opacity-30 select-none"
+              className="w-7 h-7 rounded-md bg-[#1f1f1f] border border-[#2a2a2a] text-[#e0e0e0] hover:text-white hover:bg-[#2a2a2a] text-base font-bold flex items-center justify-center backdrop-blur disabled:opacity-30 select-none"
               aria-label="Afastar"
             >−</button>
             {zoom > 1.05 && (
               <button
                 type="button"
                 onClick={resetZoom}
-                className="w-7 h-7 rounded-md bg-slate-800/90 border border-slate-600/60 text-slate-400 hover:text-white hover:bg-slate-700 text-[9px] font-semibold flex items-center justify-center backdrop-blur select-none"
+                className="w-7 h-7 rounded-md bg-[#1f1f1f] border border-[#2a2a2a] text-[#a8a8a8] hover:text-white hover:bg-[#2a2a2a] text-[9px] font-semibold flex items-center justify-center backdrop-blur select-none"
                 aria-label="Ver Brasil completo"
               >fit</button>
             )}
@@ -468,12 +471,12 @@ function BrazilVisitedMapInner({ events = [], clients = [] }) {
                     ? isFocus
                       ? rgbaHex(primary, 0.55)
                       : rgbaHex(primary, 0.28)
-                    : 'rgba(30, 41, 59, 0.75)',
+                    : 'rgba(34, 34, 34, 0.9)',
                   stroke: active
                     ? isFocus
                       ? rgbaHex(primary, 1)
                       : rgbaHex(primary, 0.65)
-                    : 'rgba(51, 65, 85, 0.9)',
+                    : 'rgba(68, 68, 68, 0.9)',
                   strokeWidth: isFocus ? 1.4 : 0.8,
                 }}
                 transition={{ duration: 0.2 }}
@@ -551,7 +554,7 @@ function BrazilVisitedMapInner({ events = [], clients = [] }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.15 }}
-            className="mt-2 rounded-lg border bg-slate-900/80 px-3 py-2.5 text-xs"
+            className="mt-2 rounded-lg border bg-[#161616] px-3 py-2.5 text-xs"
             style={{ borderColor: `${primary}40` }}
           >
             {activeCityData ? (
@@ -560,7 +563,7 @@ function BrazilVisitedMapInner({ events = [], clients = [] }) {
                   <div className="flex items-center gap-2 flex-wrap mb-0.5">
                     <span className="font-semibold text-white">{activeCityData.name}</span>
                     {activeCityData.uf && (
-                      <span className="text-slate-400 text-[10px]">{STATE_NAMES[activeCityData.uf] || activeCityData.uf}</span>
+                      <span className="text-[#a8a8a8] text-[10px]">{STATE_NAMES[activeCityData.uf] || activeCityData.uf}</span>
                     )}
                     <span style={{ color: primary }}>{activeCityData.count} evento{activeCityData.count === 1 ? '' : 's'}</span>
                     {activeCityKey === latestCityKey && (
@@ -568,7 +571,7 @@ function BrazilVisitedMapInner({ events = [], clients = [] }) {
                     )}
                   </div>
                   {activeCityData.lastDate && (
-                    <p className="text-slate-500 text-[10px]">
+                    <p className="text-[#888888] text-[10px]">
                       Última vez:{' '}
                       {new Date(activeCityData.lastDate + 'T12:00:00').toLocaleDateString('pt-BR', {
                         day: '2-digit', month: 'short', year: 'numeric',
@@ -576,12 +579,12 @@ function BrazilVisitedMapInner({ events = [], clients = [] }) {
                     </p>
                   )}
                   {activeCityData.events?.length > 0 && (
-                    <div className="mt-1.5 pt-1.5 border-t border-slate-700/50 flex flex-wrap gap-x-3 gap-y-0.5">
+                    <div className="mt-1.5 pt-1.5 border-t border-[#2a2a2a] flex flex-wrap gap-x-3 gap-y-0.5">
                       {activeCityData.events.slice(0, 6).map((item) => (
-                        <span key={item.id || item.title} className="text-slate-300 truncate text-[11px]">{item.title}</span>
+                        <span key={item.id || item.title} className="text-[#c8c8c8] truncate text-[11px]">{item.title}</span>
                       ))}
                       {activeCityData.events.length > 6 && (
-                        <span className="text-slate-500 text-[10px]">+{activeCityData.events.length - 6} mais</span>
+                        <span className="text-[#888888] text-[10px]">+{activeCityData.events.length - 6} mais</span>
                       )}
                     </div>
                   )}
@@ -589,7 +592,7 @@ function BrazilVisitedMapInner({ events = [], clients = [] }) {
                 <button
                   type="button"
                   onClick={() => { setPinnedCityKey(null); resetZoom(); }}
-                  className="text-slate-500 hover:text-white flex-shrink-0 text-lg leading-none mt-[-2px]"
+                  className="text-[#888888] hover:text-white flex-shrink-0 text-lg leading-none mt-[-2px]"
                   aria-label="Fechar"
                 >×</button>
               </div>
@@ -598,10 +601,10 @@ function BrazilVisitedMapInner({ events = [], clients = [] }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-0.5">
                     <span className="font-semibold" style={{ color: primary }}>{STATE_NAMES[focus]}</span>
-                    <span className="text-slate-400">{countsByState[focus]} evento{countsByState[focus] === 1 ? '' : 's'}</span>
+                    <span className="text-[#a8a8a8]">{countsByState[focus]} evento{countsByState[focus] === 1 ? '' : 's'}</span>
                   </div>
                   {focusCities.length > 0 && (
-                    <div className="mt-1 pt-1 border-t border-slate-700/50 flex flex-wrap gap-x-4 gap-y-0.5">
+                    <div className="mt-1 pt-1 border-t border-[#2a2a2a] flex flex-wrap gap-x-4 gap-y-0.5">
                       {focusCities.slice(0, 8).map((c) => (
                         <span key={c.name} className="text-[11px]">
                           <span className="text-white">{c.name}</span>
@@ -609,7 +612,7 @@ function BrazilVisitedMapInner({ events = [], clients = [] }) {
                         </span>
                       ))}
                       {focusCities.length > 8 && (
-                        <span className="text-slate-500 text-[10px]">+{focusCities.length - 8} mais</span>
+                        <span className="text-[#888888] text-[10px]">+{focusCities.length - 8} mais</span>
                       )}
                     </div>
                   )}
@@ -617,7 +620,7 @@ function BrazilVisitedMapInner({ events = [], clients = [] }) {
                 <button
                   type="button"
                   onClick={() => { setActiveUf(null); resetZoom(); }}
-                  className="text-slate-500 hover:text-white flex-shrink-0 text-lg leading-none mt-[-2px]"
+                  className="text-[#888888] hover:text-white flex-shrink-0 text-lg leading-none mt-[-2px]"
                   aria-label="Fechar"
                 >×</button>
               </div>
@@ -631,16 +634,16 @@ function BrazilVisitedMapInner({ events = [], clients = [] }) {
         <div className="flex items-center gap-4 mt-3 flex-wrap">
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded-sm" style={{ background: `${primary}6b`, border: `1px solid ${primary}99` }} />
-            <span className="text-[11px] text-slate-400">Estado visitado</span>
+            <span className="text-[11px] text-[#a8a8a8]">Estado visitado</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full" style={{ background: `${primary}eb`, boxShadow: `0 0 5px ${primary}` }} />
-            <span className="text-[11px] text-slate-400">Cidade</span>
+            <span className="text-[11px] text-[#a8a8a8]">Cidade</span>
           </div>
           {latestCityKey && cities[latestCityKey] && (
             <div className="flex items-center gap-1.5">
               <div className="w-2.5 h-2.5 rounded-full" style={{ background: rgbaHex(accent, 0.92), boxShadow: `0 0 5px ${accent}` }} />
-              <span className="text-[11px] text-slate-400">Mais recente</span>
+              <span className="text-[11px] text-[#a8a8a8]">Mais recente</span>
             </div>
           )}
         </div>
@@ -648,16 +651,16 @@ function BrazilVisitedMapInner({ events = [], clients = [] }) {
 
       {/* Empty state */}
       {stateCount === 0 && (
-        <div className="mt-4 flex flex-col items-center gap-2 rounded-lg border border-slate-700/40 bg-slate-800/30 p-4 text-center">
+        <div className="mt-4 flex flex-col items-center gap-2 rounded-lg border border-[#2a2a2a] bg-[#1f1f1f] p-4 text-center">
           <MapPin className="w-5 h-5" style={{ color: `${primary}99` }} />
-          <p className="text-sm text-slate-300 font-medium">
+          <p className="text-sm text-[#c8c8c8] font-medium">
             {activeEvents.length === 0
               ? events.length === 0
                 ? 'Nenhum evento cadastrado ainda.'
                 : 'Nenhum evento ativo no mapa.'
               : 'Seus eventos ainda não têm localização.'}
           </p>
-          <p className="text-xs text-slate-500 leading-relaxed max-w-xs">
+          <p className="text-xs text-[#888888] leading-relaxed max-w-xs">
             {activeEvents.length === 0
               ? events.length === 0
                 ? 'Adicione eventos com cidade/estado para ver o mapa iluminado.'
@@ -675,9 +678,9 @@ function BrazilVisitedMapInner({ events = [], clients = [] }) {
 
       {/* Lista interativa de cidades */}
       {cityCount > 0 && (
-        <div className="mt-4 pt-3 border-t border-slate-700/40">
+        <div className="mt-4 pt-3 border-t border-[#2a2a2a]">
           <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-            <p className="text-[10px] text-slate-500 uppercase tracking-wide">
+            <p className="text-[10px] text-[#888888] uppercase tracking-wide">
               {listFilterUf
                 ? `Cidades em ${STATE_NAMES[listFilterUf] || listFilterUf}`
                 : 'Suas cidades'}
@@ -708,7 +711,7 @@ function BrazilVisitedMapInner({ events = [], clients = [] }) {
                   className={`text-left rounded-lg border px-3 py-2 transition-colors ${
                     isSelected
                       ? ''
-                      : 'border-slate-700/60 bg-slate-800/40 hover:border-slate-600'
+                      : 'border-[#2a2a2a] bg-[#1f1f1f] hover:border-[#2a2a2a]'
                   }`}
                   style={
                     isSelected
@@ -720,7 +723,7 @@ function BrazilVisitedMapInner({ events = [], clients = [] }) {
                     <div className="min-w-0">
                       <p className="text-xs font-medium text-white truncate">{city.name}</p>
                       {city.uf && (
-                        <p className="text-[10px] text-slate-500">{STATE_NAMES[city.uf] || city.uf}</p>
+                        <p className="text-[10px] text-[#888888]">{STATE_NAMES[city.uf] || city.uf}</p>
                       )}
                     </div>
                     <span className="text-[11px] font-mono flex-shrink-0" style={{ color: primary }}>{city.count}×</span>
