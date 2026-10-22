@@ -4,6 +4,7 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LOOP, loopAnim } from '@/lib/liteMotion';
+import { formatHours } from '@/lib/money';
 
 function ProgressBar({ value, max, color }) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
@@ -64,7 +65,7 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
             <div>
               <span className="text-sm font-bold text-white block">Defina sua meta do mês</span>
               <span className="text-xs text-[#a8a8a8]">
-                Este mês: {diariasAtual} diária{diariasAtual !== 1 ? 's' : ''} · {horasAtual.toFixed(1)}h trabalhadas
+                Este mês: {diariasAtual} diária{diariasAtual !== 1 ? 's' : ''} · {formatHours(horasAtual)} trabalhadas
               </span>
             </div>
           </div>
@@ -106,7 +107,7 @@ export default function MetaMensalBar({ profile, stats, isLoading, accentColor =
           )}
         </div>
         <span className="text-xs font-tag text-[#a8a8a8] flex items-center gap-1">
-          ⏱️ {horasAtual.toFixed(1)}h no mês
+          ⏱️ {formatHours(horasAtual)} no mês
           <ChevronRight className="w-4 h-4 text-[#666666] group-hover:text-[#a8a8a8] transition-colors" />
         </span>
       </div>

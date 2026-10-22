@@ -1,111 +1,21 @@
-import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
+import { useState, useCallback, lazy, Suspense } from 'react';
 import { useQueryAction } from '@/lib/useQueryAction';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Plus, Camera, AlertCircle, Search, Calendar, ChevronDown, ChevronUp, Tag } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { useExpenses } from '@/lib/useExpenses';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
 import appToast from '@/lib/appToast';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
-import { useAuth } from '@/lib/authContext';
-import { getCategoryConfig } from '@/lib/categoryConfig';
-// NeonPageShell removido na Entrega 6 All Access
-import LiveClockBar from '@/components/home/LiveClockBar';
-// NeonGlass removido na Entrega 6 All Access
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useConnectivity } from '@/lib/offline/useConnectivity';
 import EmptyState from '@/components/layout/EmptyState';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
-import { Ellipsis } from '@/components/ui/overflowText';
-import ExpenseListItem from '@/components/expenses/ExpenseListItem';
 import AllAccessDespesas from '@/components/expenses/AllAccessDespesas';
 
 const ExpenseForm = lazy(() => import('@/components/expenses/ExpenseForm'));
 const ReceiptAnalyzer = lazy(() => import('@/components/expenses/ReceiptAnalyzer'));
-
-import { format, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { todayLocalISO } from '@/components/utils/dateUtils';
-
-const CATEGORY_LABELS = {
-  transporte: 'Transporte',
-  alimentacao: 'Alimentação',
-  equipamento: 'Equipamento',
-  hospedagem: 'Hospedagem',
-  combustivel: 'Combustível',
-  manutencao: 'Manutenção',
-  outros: 'Outros',
-};
-
-function MonthGroup({ monthKey, expenses, events, clients, onEdit, onDelete, onMarkReimbursed, formatCurrency, primaryHex: _primaryHex, defaultOpen = true }) {
-    const [open, setOpen] = useState(defaultOpen);
-    const { isVisible } = useFinancialVisibility();
-    const total = expenses.reduce((s, e) => s + (e.amount || 0), 0);
-    const reimbursable = expenses.filter(e => e.is_reimbursable && !e.reimbursed).reduce((s, e) => s + (e.amount || 0), 0);
-
-    let label = monthKey;
-    if (monthKey !== 'sem-data') {
-        try {
-            label = format(parseISO(monthKey + '-01'), "MMMM 'de' yyyy", { locale: ptBR });
-            label = label.charAt(0).toUpperCase() + label.slice(1);
-        } catch { /* mantém original */ }
-    }
-
-    return (
-        <div>
-            <button
-                type="button"
-                onClick={() => setOpen(v => !v)}
-                className="w-full flex items-center justify-between px-1 py-2 group gap-2 min-w-0"
-            >
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                    {open ? <ChevronUp className="w-4 h-4 text-[#888888] flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-[#888888] flex-shrink-0" />}
-                    <span className="text-sm font-bold text-[#c8c8c8] truncate" title={label}>{label}</span>
-                    <span className="text-[11px] text-[#666666] font-tag flex-shrink-0">({expenses.length})</span>
-                </div>
-                <div className="flex items-center gap-3 flex-shrink-0">
-                    {reimbursable > 0 && (
-                        <span className="text-[11px] font-tag text-[#ffd400] truncate max-w-[8rem] sm:max-w-none" title={isVisible ? `${formatCurrency(reimbursable)} a reembolsar` : '•••• a reembolsar'}>{isVisible ? formatCurrency(reimbursable) : '••••'} a reimb.</span>
-                    )}
-                    <span className="text-sm font-bold text-[#ff2e88] truncate max-w-[6rem] sm:max-w-none" title={isVisible ? formatCurrency(total) : '••••'}>{isVisible ? formatCurrency(total) : '••••'}</span>
-                </div>
-            </button>
-            <AnimatePresence initial={false}>
-                {open && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="space-y-3 overflow-hidden"
-                    >
-                        {expenses.map((expense, idx) => {
-                            const ev = events.find(e => e.id === expense.event_id);
-                            const client = ev ? (clients || []).find(c => c.id === ev.client_id) : undefined;
-                            return (
-                            <ExpenseListItem
-                                key={expense.id}
-                                expense={expense}
-                                event={ev}
-                                client={client}
-                                index={idx}
-                                onEdit={onEdit}
-                                onDelete={onDelete}
-                                onMarkReimbursed={onMarkReimbursed}
-                            />
-                            );
-                        })}
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
-    );
-}
 
 const ExpensesSkeleton = () => (
     <div className="p-4 md:p-6 space-y-6">
@@ -121,33 +31,17 @@ const ExpensesSkeleton = () => (
     </div>
 );
 
-const StatCard = ({ title, value, onClick, active, primaryHex, accentHex }) => (
-    <motion.div whileTap={{ scale: 0.98 }} onClick={onClick} className="cursor-pointer min-w-0">
-        <div className={`p-4 rounded-xl border transition-all duration-200 min-w-0 overflow-hidden ${active ? 'border-[#ffd400] bg-[#ffd400]/10 shadow-sm' : 'border-[#222222] bg-[#121212] hover:border-[#333333]'}`}>
-            <p className="text-[10px] font-tag uppercase tracking-wider text-[#888888] mb-1.5 truncate">{title}</p>
-            <p className={`text-xl font-bold font-tag truncate ${active ? 'text-[#ffd400]' : 'text-white'}`} title={typeof value === 'string' ? value : undefined}>{value}</p>
-        </div>
-    </motion.div>
-);
-
 export default function ExpensesPage() {
-    const { expenses, loading: expensesLoading, error: expensesError, refetch: refetchExpenses, update: updateExpense, delete: deleteExpenseById } = useExpenses();
+    const { expenses, loading: expensesLoading, error: expensesError, refetch: refetchExpenses, delete: deleteExpenseById } = useExpenses();
     const { events } = useEvents();
     const { clients } = useClients();
-    const { profile } = useAuth();
     const { offline } = useConnectivity();
-    const config = getCategoryConfig(profile?.category || 'lighting');
     const { isVisible, formatCurrency } = useFinancialVisibility();
 
     const [showForm, setShowForm] = useState(false);
     const [showAnalyzer, setShowAnalyzer] = useState(false);
     const [editingExpense, setEditingExpense] = useState(null);
     const [prefillFromScan, setPrefillFromScan] = useState(null);
-
-    const [searchTerm, setSearchTerm] = useState("");
-    const [categoryFilter, setCategoryFilter] = useState("all");
-    const [statusFilter, setStatusFilter] = useState("all");
-    const [eventFilter, setEventFilter] = useState("all");
     const [confirmDelete, setConfirmDelete] = useState(null);
 
     useQueryAction('new', useCallback(() => {
@@ -155,51 +49,42 @@ export default function ExpensesPage() {
         setEditingExpense(null);
     }, []));
 
+    // O aviso de "salvo" já vem da própria janela da despesa
     const handleFormSuccess = useCallback(() => {
         setShowForm(false);
         setEditingExpense(null);
-        appToast.success(editingExpense ? "Despesa atualizada!" : "Despesa criada!");
         refetchExpenses({ silent: true });
-    }, [editingExpense, refetchExpenses]);
+    }, [refetchExpenses]);
 
     const handleEdit = (expense) => {
         setEditingExpense(expense);
+        setPrefillFromScan(null);
         setShowForm(true);
     };
 
-    const handleMarkReimbursed = async (expense) => {
-        try {
-            await updateExpense(expense.id, { reimbursed: true });
-            appToast.success(`"${expense.title}" marcado como reembolsado!`);
-        } catch (err) {
-            appToast.error('Erro ao atualizar despesa.');
-            console.error(err);
-        }
-    };
-
-    const handleDelete = (expenseId) => {
-        setConfirmDelete(expenseId);
+    // Excluir sai da janela de edição: fecha a janela e pede confirmação
+    const handleDeleteRequest = (expense) => {
+        setShowForm(false);
+        setEditingExpense(null);
+        setConfirmDelete(expense.id);
     };
 
     const handleConfirmDelete = async () => {
         try {
             await deleteExpenseById(confirmDelete);
-            appToast.success("Despesa excluída com sucesso!");
+            appToast.success('Despesa excluída.');
         } catch (err) {
-            appToast.error("Erro ao excluir despesa.");
+            appToast.error('Erro ao excluir despesa.');
             console.error(err);
         } finally {
             setConfirmDelete(null);
         }
     };
 
-    const handleScan = () => {
-        setShowAnalyzer(true);
-    };
-
     const handleAnalyzerExtract = (extractedData) => {
         setPrefillFromScan(extractedData);
         setShowAnalyzer(false);
+        setEditingExpense(null);
         setShowForm(true);
     };
 
@@ -210,71 +95,7 @@ export default function ExpensesPage() {
 
     const { pullDistance, isRefreshing, threshold } = usePullToRefresh(refreshExpenses);
 
-    const allExpenses = useMemo(() => Array.isArray(expenses) ? expenses : [], [expenses]);
-    const currentMonthKey = todayLocalISO().slice(0, 7);
-
-    // Eventos que têm pelo menos uma despesa
-    const eventsWithExpenses = useMemo(() => {
-        const ids = new Set(allExpenses.map(e => e.event_id).filter(Boolean));
-        return events.filter(e => ids.has(e.id));
-    }, [allExpenses, events]);
-
-    const filteredExpenses = useMemo(() => {
-        return allExpenses
-            .filter(exp => {
-                const searchMatch = searchTerm ? (
-                    (exp.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    exp.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    exp.description?.toLowerCase().includes(searchTerm.toLowerCase())
-                ) : true;
-                const categoryMatch = categoryFilter === 'all' ? true : exp.category === categoryFilter;
-                const statusMatch = statusFilter === 'all' ? true :
-                                    statusFilter === 'this_month' ? (exp.expense_date || exp.date || '').startsWith(currentMonthKey) :
-                                    statusFilter === 'reimbursable' ? exp.is_reimbursable && !exp.reimbursed :
-                                    statusFilter === 'reimbursed' ? exp.reimbursed : false;
-                const eventMatch = eventFilter === 'all' ? true :
-                                   eventFilter === 'no-event' ? !exp.event_id :
-                                   exp.event_id === eventFilter;
-                return searchMatch && categoryMatch && statusMatch && eventMatch;
-            })
-            .sort((a, b) => new Date(b.expense_date || b.date) - new Date(a.expense_date || a.date));
-    }, [allExpenses, searchTerm, categoryFilter, statusFilter, eventFilter, currentMonthKey]);
-
-    // Agrupa despesas filtradas por mês
-    const groupedByMonth = useMemo(() => {
-        const groups = {};
-        for (const exp of filteredExpenses) {
-            const dateStr = exp.expense_date || exp.date;
-            const key = dateStr ? dateStr.substring(0, 7) : 'sem-data'; // YYYY-MM
-            if (!groups[key]) groups[key] = [];
-            groups[key].push(exp);
-        }
-        return Object.entries(groups).sort(([a], [b]) => b.localeCompare(a));
-    }, [filteredExpenses]);
-
-    const expenseStats = useMemo(() => {
-        const total = allExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
-        const reimbursable = allExpenses.filter(exp => exp.is_reimbursable && !exp.reimbursed).reduce((sum, exp) => sum + (exp.amount || 0), 0);
-        const reimbursed = allExpenses.filter(exp => exp.reimbursed).reduce((sum, exp) => sum + (exp.amount || 0), 0);
-        const thisMonth = allExpenses
-            .filter(exp => (exp.expense_date || exp.date || '').startsWith(currentMonthKey))
-            .reduce((sum, exp) => sum + (exp.amount || 0), 0);
-        return { total, reimbursable, reimbursed, thisMonth };
-    }, [allExpenses, currentMonthKey]);
-
-    const expenseCategories = useMemo(() => {
-        const categories = new Set(allExpenses.map(exp => exp.category).filter(Boolean));
-        return Array.from(categories).sort();
-    }, [allExpenses]);
-
-    const categoryTotals = useMemo(() => {
-        const map = {};
-        for (const exp of allExpenses) {
-            if (!exp.category) continue;
-            map[exp.category] = (map[exp.category] || 0) + (exp.amount || 0);
-        }
-        return map;
-    }, [allExpenses]);
+    const allExpenses = Array.isArray(expenses) ? expenses : [];
 
     if (expensesLoading && !allExpenses.length) {
         return (
@@ -284,18 +105,15 @@ export default function ExpensesPage() {
         );
     }
 
-    const hasCachedExpenses = allExpenses.length > 0;
-    const showBlockingError = expensesError && !offline && !hasCachedExpenses;
-
-    if (showBlockingError) {
+    if (expensesError && !offline && !allExpenses.length) {
         return (
             <div className="min-h-full bg-[#0a0a0a] text-white flex items-center justify-center p-4">
                 <EmptyState
                     icon={AlertCircle}
-                    title="Erro ao carregar despesas"
-                    description="Não foi possível buscar as informações de despesas. Tente novamente mais tarde."
-                    action={refetchExpenses}
-                    actionLabel="Tentar Novamente"
+                    title="Não deu para carregar as despesas"
+                    description="Confira a internet. Seus dados não foram perdidos."
+                    action={() => refetchExpenses()}
+                    actionLabel="Tentar de novo"
                 />
             </div>
         );
@@ -317,14 +135,13 @@ export default function ExpensesPage() {
                         clients={clients}
                         formatCurrency={formatCurrency}
                         isVisible={isVisible}
-                        onScanReceipt={handleScan}
+                        onScanReceipt={() => setShowAnalyzer(true)}
                         onNewExpense={() => {
                             setEditingExpense(null);
                             setPrefillFromScan(null);
                             setShowForm(true);
                         }}
-                        onEditExpense={(exp) => handleEdit(exp)}
-                        onDeleteExpense={(id) => handleDelete(id)}
+                        onEditExpense={handleEdit}
                     />
                 </div>
             </div>
@@ -337,6 +154,7 @@ export default function ExpensesPage() {
                         expense={editingExpense}
                         events={events}
                         onSuccess={handleFormSuccess}
+                        onDelete={handleDeleteRequest}
                         prefillData={prefillFromScan}
                     />
                 </Suspense>

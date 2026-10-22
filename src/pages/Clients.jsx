@@ -1,5 +1,11 @@
 
-import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
+import {
+  useState,
+  useMemo,
+  useCallback,
+  lazy,
+  Suspense,
+} from 'react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useQueryAction } from '@/lib/useQueryAction';
 import { useClients } from '@/lib/useClients';
@@ -7,38 +13,28 @@ import { useEvents } from '@/lib/useEvents';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Search,
-  Plus,
   Users,
   AlertCircle,
-  Mail,
-  Phone,
-  MessageCircle,
   MoreHorizontal,
-  Building2,
-  User,
-  Calendar,
 } from 'lucide-react';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { getEventStatus, todayLocalISO } from '@/components/utils/dateUtils';
 import { calculateEventReceivableAmount } from '@/lib/eventFinance';
 import { getClientActivity } from '@/lib/clientActivity';
-import { openWhatsAppCharge, buildChargeMessage, formatWhatsAppNumber } from '@/lib/whatsapp';
+
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
-import { useAuth } from '@/lib/authContext';
-import { getCategoryConfig } from '@/lib/categoryConfig';
-import { AUTH_HERO_PRIMARY } from '@/lib/categoryGear';
+
 // NeonPageShell e NeonGlass removidos na Entrega 5 All Access
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useConnectivity } from '@/lib/offline/useConnectivity';
@@ -47,12 +43,10 @@ const InactiveClientsPanel = lazy(() => import('@/components/clients/InactiveCli
 const ClientForm = lazy(() => import('@/components/clients/ClientForm'));
 import EmptyState from '@/components/layout/EmptyState';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
-import { ClientDraftBadge } from '@/components/clients/ClientDraftBadge';
 
 import appToast from '@/lib/appToast';
 import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
-
 
 const ClientsSkeleton = () => (
   <div className="space-y-6">
@@ -90,13 +84,12 @@ export default function ClientsPage() {
   const { events } = useEvents();
   const { dailyWork } = useDailyWork();
   const { formatCurrency, isVisible } = useFinancialVisibility();
-  const { profile } = useAuth();
+
   const { offline } = useConnectivity();
-  const config = getCategoryConfig(profile?.category || 'lighting');
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterActive, setFilterActive] = useState('all');
-  const [sortBy, setSortBy] = useState('nome');
+  const [sortBy] = useState('nome');
   const [showClientForm, setShowClientForm] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
@@ -251,32 +244,6 @@ export default function ClientsPage() {
     }
   }, [deleteClient, confirmDeleteId]);
 
-  const handleContact = useCallback((client, type) => {
-    switch (type) {
-      case 'phone':
-        if (client.phone) window.open(`tel:${client.phone}`, '_blank');
-        break;
-      case 'email':
-        if (client.email) window.open(`mailto:${client.email}`, '_blank');
-        break;
-      case 'whatsapp':
-        if (client.phone) {
-          if (client.stats?.pendingRevenue > 0 && client.stats?.unpaidEvents?.length > 0) {
-            const msg = buildChargeMessage({
-              clientName: client.name,
-              events: client.stats.unpaidEvents,
-              totalAmount: client.stats.pendingRevenue,
-            });
-            openWhatsAppCharge(client.phone, msg);
-          } else {
-            const number = formatWhatsAppNumber(client.phone);
-            if (number) window.open(`https://wa.me/${number}`, '_blank');
-          }
-        }
-        break;
-    }
-  }, []);
-
   const getInitials = (name) => {
     return name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '??';
   };
@@ -297,10 +264,10 @@ export default function ClientsPage() {
       <div className="h-full flex flex-col items-center justify-center p-4">
         <EmptyState
           icon={AlertCircle}
-          title="Erro ao Carregar Clientes"
-          description="Não foi possível buscar sua lista de clientes. Por favor, verifique sua conexão e tente novamente."
-          action={refetchClients}
-          actionLabel="Tentar Novamente"
+          title="Não deu para carregar os clientes"
+          description="Confira a internet. Seus dados não foram perdidos."
+          action={() => refetchClients()}
+          actionLabel="Tentar de novo"
         />
       </div>
     );

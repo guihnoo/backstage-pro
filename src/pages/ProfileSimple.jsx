@@ -26,7 +26,7 @@ import { requestAppTour } from '@/lib/appTourBus';
 import { useUserSettings } from '@/lib/useUserSettings';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEvents } from '@/lib/useEvents';
-import { isCancelledEvent } from '@/lib/eventFinance';
+import { isDoneEvent } from '@/lib/eventFinance';
 
 const PIX_TYPES = ['CPF', 'CNPJ', 'E-mail', 'Telefone', 'Chave aleatória'];
 
@@ -100,7 +100,7 @@ export default function ProfileSimple() {
   const { isVisible, toggleVisibility } = useFinancialVisibility();
   const { events: allEvents } = useEvents();
   const crewStats = useMemo(() => {
-    const valid = (allEvents || []).filter((e) => !isCancelledEvent(e));
+    const valid = (allEvents || []).filter((e) => isDoneEvent(e));
     const cities = new Set(valid.map((e) => (e.location_city || '').trim().toLowerCase()).filter(Boolean));
     return { shows: valid.length, cities: cities.size };
   }, [allEvents]);

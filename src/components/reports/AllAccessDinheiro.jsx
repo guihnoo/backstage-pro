@@ -10,10 +10,11 @@ import {
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, FileDown, CheckCircle2, MessageCircle } from 'lucide-react';
-import { getEventCacheAmount, isPaymentOverdue, daysOverduePayment, isNfPendingEvent } from '@/lib/eventFinance';
+import { getEventCacheAmount, isPaymentOverdue, daysOverduePayment, isNfPendingEvent, isCancelledEvent, isDoneEvent } from '@/lib/eventFinance';
 import { openWhatsAppCharge, buildChargeMessage } from '@/lib/whatsapp';
 import { appToast } from '@/lib/appToast';
 import { paidEventsInPeriod, sumReceived, getEventReceivedAmount, getEventReceivedDate } from '@/lib/financeMetrics';
+import { MEI_LIMIT } from '@/lib/useBackstageData';
 
 export default function AllAccessDinheiro({
   events = [],
@@ -59,7 +60,7 @@ export default function AllAccessDinheiro({
   // Events in this month
   const monthEvents = useMemo(() => {
     return events.filter((ev) => {
-      if (ev.status === 'cancelled') return false;
+      if (isCancelledEvent(ev)) return false;
       const d = ev.start_date || ev.date;
       if (!d) return false;
       const parsed = parseISO(d);
@@ -70,17 +71,7 @@ export default function AllAccessDinheiro({
   // Os blocos extras podem ser funcao: recebem o mes que esta na tela.
   const slot = (extra) => (typeof extra === 'function' ? extra({ currentDate, monthEvents, monthExpenses }) : extra);
 
-  // Previous month events for comparison
   const prevMonthDate = subMonths(currentDate, 1);
-  const prevMonthEvents = useMemo(() => {
-    return events.filter((ev) => {
-      if (ev.status === 'cancelled') return false;
-      const d = ev.start_date || ev.date;
-      if (!d) return false;
-      const parsed = parseISO(d);
-      return isSameMonth(parsed, prevMonthDate);
-    });
-  }, [events, prevMonthDate]);
 
   // Month expenses
   const monthExpenses = useMemo(() => {
@@ -170,11 +161,11 @@ export default function AllAccessDinheiro({
     }));
   }, [events, monthEvents, workByEvent, monthStart, monthEnd]);
 
-  // Top clients ranking
+  // Quem mais te pagou: o que entrou no mês (pela data do pagamento), por cliente
   const topClients = useMemo(() => {
     const map = {};
-    for (const ev of monthEvents) {
-      const val = getEventCacheAmount(ev) || 0;
+    for (const ev of paidEventsInPeriod(events, { start: monthStart, end: monthEnd })) {
+      const val = getEventReceivedAmount(ev, workByEvent[ev.id] || []) || 0;
       const cl = clientMap.get(ev.client_id);
       const name = cl?.name || ev.client_name || 'Outro';
       map[name] = (map[name] || 0) + val;
@@ -187,12 +178,12 @@ export default function AllAccessDinheiro({
       ...t,
       pct: `${Math.round((t.value / max) * 100)}%`,
     }));
-  }, [monthEvents, clientMap]);
+  }, [events, workByEvent, monthStart, monthEnd, clientMap]);
 
   // All pending receivable events across all time
   const allPendingReceivables = useMemo(() => {
     return events
-      .filter((ev) => ev.status !== 'cancelled' && ev.payment_status !== 'paid')
+      .filter((ev) => !isCancelledEvent(ev) && ev.payment_status !== 'paid')
       .sort((a, b) => (a.start_date > b.start_date ? 1 : -1));
   }, [events]);
 
@@ -212,7 +203,7 @@ export default function AllAccessDinheiro({
       .reduce((s, ev) => s + (ev.paid_amount || getEventCacheAmount(ev) || 0), 0);
   }, [events, currentDate]);
 
-  const meiLimit = 81000;
+  const meiLimit = MEI_LIMIT;
   const meiPct = Math.min(100, Math.round((annualTotal / meiLimit) * 100));
 
   return (
@@ -379,10 +370,10 @@ export default function AllAccessDinheiro({
                     <span className="flex-1 text-[14px] font-bold text-white truncate">
                       {c.name}
                     </span>
-                    <div className="w-24 h-1.5 rounded-full bg-[#2a2a2a] overflow-hidden">
+                    <div className="w-16 h-1.5 rounded-full bg-[#2a2a2a] overflow-hidden shrink-0">
                       <div style={{ width: c.pct }} className="h-full bg-[#ffd400]" />
                     </div>
-                    <span className="font-tag text-[12px] text-white w-20 text-right truncate">
+                    <span className="font-tag text-[12px] text-white text-right whitespace-nowrap shrink-0">
                       {isVisible ? formatCurrency(c.value) : '•••••'}
                     </span>
                   </div>
@@ -513,7 +504,7 @@ export default function AllAccessDinheiro({
               <div className="font-poster text-[20px] text-white mt-1">
                 {events.filter(isNfPendingEvent).length} pendentes
               </div>
-              <div className="text-[11px] text-[#a8a8a8] mt-0.5">Shows concluídos</div>
+              <div className="text-[11px] text-[#a8a8a8] mt-0.5">Shows feitos sem nota</div>
             </div>
           </div>
 
@@ -526,10 +517,10 @@ export default function AllAccessDinheiro({
         <section className="flex flex-col gap-2.5">
           <div className="rounded-xl bg-[#161616] border border-[#222222] p-3.5 flex gap-3 items-center">
             <div className="font-poster text-[26px] text-[#ffd400] min-w-[70px] shrink-0">
-              {monthEvents.length}
+              {monthEvents.filter((ev) => isDoneEvent(ev)).length}
             </div>
             <div className="text-[13px] text-[#e0e0e0] leading-snug">
-              Shows e trabalhos realizados no mês selecionado.
+              Shows e trabalhos já feitos no mês (os que ainda vão acontecer não contam).
             </div>
           </div>
 

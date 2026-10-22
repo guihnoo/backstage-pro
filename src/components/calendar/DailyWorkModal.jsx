@@ -18,6 +18,7 @@ import { useFinancialVisibility } from '@/components/context/FinancialVisibility
 import { useClients } from '@/lib/useClients';
 import { resolveMealPolicy } from '@/lib/mealPolicy';
 import { parseBRL, toBRLInput } from '@/lib/money';
+import { formatHours } from '@/lib/money';
 
 const emptyState = {
   date: '',
@@ -291,18 +292,18 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                 </label>
               )}
               {formData.duration_min != null && (
-                <p className="text-xs text-[#ffd400] -mt-1">Usando a duração do cronômetro: {summary.total.toFixed(1)} h.</p>
+                <p className="text-xs text-[#ffd400] -mt-1">Usando a duração do cronômetro: {formatHours(summary.total)}.</p>
               )}
 
               {summary.total > 0 && (
                 <div className="grid grid-cols-3 gap-2">
                   <div className="rounded-lg p-3 text-center border border-[#2a2a2a] bg-[#1f1f1f]">
                     <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Horas</p>
-                    <p className="text-lg font-black" style={{ color: primaryHex }}>{summary.total.toFixed(1)}h</p>
+                    <p className="text-lg font-black" style={{ color: primaryHex }}>{formatHours(summary.total)}</p>
                   </div>
                   <div className="rounded-lg p-3 text-center border border-[#ff2e88]/25 bg-[#ff2e88]/5">
                     <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Extras</p>
-                    <p className="text-lg font-black text-[#ff2e88]">{summary.overtime.toFixed(1)}h</p>
+                    <p className="text-lg font-black text-[#ff2e88]">{formatHours(summary.overtime)}</p>
                   </div>
                   <div className="rounded-lg p-3 text-center border border-[#ffd400]/25 bg-[#ffd400]/5">
                     <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Cachê</p>

@@ -52,7 +52,6 @@ import { useFinancialVisibility } from '@/components/context/FinancialVisibility
 import {
   normalizeDateString,
   todayLocalISO,
-  getEventsForDate,
   getEventStatus,
 } from '@/components/utils/dateUtils';
 import { isCancelledEvent, calculateEventReceivableAmount } from '@/lib/eventFinance';
@@ -83,6 +82,8 @@ import { captureEventLocationFromGps } from '@/lib/eventLocation';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
 import EventHeading from '@/components/events/EventHeading';
 import { enrichEventsWithClients, getClientDisplayName } from '@/lib/eventDisplay';
+import { formatHours } from '@/lib/money';
+import EmptyState from '@/components/layout/EmptyState';
 
 const KanbanPipeline = lazy(() => import('@/components/calendar/KanbanPipeline'));
 const CacheCalculator = lazy(() => import('@/components/calendar/CacheCalculator'));
@@ -346,16 +347,6 @@ export default function CalendarPage() {
     return groups;
   }, [filteredEvents]);
 
-  const todayStr = todayLocalISO();
-  const isLiveShiftToday = useMemo(() => {
-    const todayEvents = getEventsForDate(activeEvents, todayStr);
-    return todayEvents.some((event) => {
-      const work = dailyWork.find(
-        (w) => w.event_id === event.id && normalizeDateString(w.date) === todayStr
-      );
-      return work?.entry_time && !work?.exit_time;
-    });
-  }, [activeEvents, dailyWork, todayStr]);
   useQueryAction('new-event', useCallback(() => {
     setShowEventForm(true);
     setEditingEvent(null);
@@ -432,11 +423,6 @@ export default function CalendarPage() {
     closeModals();
   }, [closeModals]);
 
-  const goToToday = useCallback(() => {
-    const today = new Date();
-    setCurrentDate(today);
-    closeModals();
-  }, [closeModals]);
 
   // Swipe navigation (touch devices)
   const swipeTouchStart = useRef(null);
@@ -1009,7 +995,7 @@ export default function CalendarPage() {
             work.entry_time || ''
           }–${work.exit_time || ''}`,
           amount: Number(work.total_hours) || 0,
-          amountFormatted: `${(Number(work.total_hours) || 0).toFixed(1)}h`,
+          amountFormatted: formatHours(work.total_hours),
           event_id: work.event_id,
           dateSort: isValid(workDate) ? workDate.getTime() : 0,
         };
@@ -1077,10 +1063,6 @@ export default function CalendarPage() {
   }, [quickActions.date, handleQuickWorkEntry]);
 
   // Toque longo / duplo toque em um dia da grade → registrar horas daquele dia.
-  const handleGridQuickAction = useCallback((type, day) => {
-    setQuickActions({ open: false, date: null, target: null });
-    if (type === 'work') handleQuickWorkEntry(day instanceof Date ? day : new Date(day));
-  }, [handleQuickWorkEntry]);
 
   // Hooks sempre antes de qualquer return antecipado (regra do React).
   const handlePullRefresh = useCallback(async () => {
@@ -1110,13 +1092,14 @@ export default function CalendarPage() {
 
   if (showBlockingError) {
     return (
-      <div className="flex flex-col items-center justify-center h-[60vh] text-center p-4">
-        <AlertCircle className="w-12 h-12 text-[#ff2e88] mb-4" />
-        <h2 className="text-xl font-semibold text-[#ff2e88]">Erro ao carregar agenda</h2>
-        <p className="text-[#ff2e88] mt-2 max-w-md">Não foi possível carregar sua agenda. Por favor, tente novamente.</p>
-        <Button onClick={() => { refetchEvents(); refetchDailyWork(); refetchExpenses(); }} className="mt-4 bg-[#ff2e88] hover:bg-[#ff2e88]">
-          Tentar Novamente
-        </Button>
+      <div className="h-[60vh] flex items-center justify-center p-4">
+        <EmptyState
+          icon={AlertCircle}
+          title="Não deu para carregar a agenda"
+          description="Confira a internet. Seus dados não foram perdidos."
+          action={() => { refetchEvents(); refetchDailyWork(); refetchExpenses(); }}
+          actionLabel="Tentar de novo"
+        />
       </div>
     );
   }
@@ -1354,7 +1337,7 @@ export default function CalendarPage() {
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
-              <p className="text-sm font-medium text-[#c8c8c8] capitalize">
+              <p className="text-sm font-medium text-[#c8c8c8]">
                 {format(weekStart, "d 'de' MMM", { locale: ptBR })} –{' '}
                 {format(endOfWeek(weekStart, { weekStartsOn: 0 }), "d 'de' MMM yyyy", { locale: ptBR })}
               </p>
@@ -1815,9 +1798,9 @@ export default function CalendarPage() {
 
           <StatCard
             title="Horas trabalhadas"
-            value={`${monthStats.totalHours}h`}
+            value={formatHours(monthStats.totalHours)}
             numericValue={monthStats.totalHours}
-            formatValue={(v) => `${Number(v).toFixed(1)}h`}
+            formatValue={(v) => formatHours(v)}
             icon={Clock}
             color="text-white"
             onClick={handleHoursClick}

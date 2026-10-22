@@ -1,5 +1,4 @@
-import React, { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useMemo } from 'react';
 import {
   format,
   parseISO,
@@ -9,7 +8,6 @@ import {
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Camera, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
-import { getCategoryConfig } from '@/lib/categoryConfig';
 
 const CATEGORY_COLORS = {
   transporte: '#ffd400',
@@ -40,7 +38,6 @@ export default function AllAccessDespesas({
   onScanReceipt,
   onNewExpense,
   onEditExpense,
-  onDeleteExpense,
 }) {
   const [currentDate, setCurrentDate] = useState(() => new Date());
 
@@ -122,18 +119,20 @@ export default function AllAccessDespesas({
           <div className="flex items-center gap-1.5 font-tag text-[11px] tracking-[2px] text-[#a8a8a8]">
             <button
               type="button"
+              aria-label="Mês anterior"
               onClick={() => setCurrentDate((d) => subMonths(d, 1))}
-              className="p-1 text-[#a8a8a8] hover:text-white"
+              className="-ml-2 w-9 h-9 flex items-center justify-center rounded-full text-[#a8a8a8] hover:text-white"
             >
-              <ChevronLeft className="w-3.5 h-3.5" />
+              <ChevronLeft className="w-4 h-4" />
             </button>
-            <span>{monthLabel}</span>
+            <span aria-live="polite">{monthLabel}</span>
             <button
               type="button"
+              aria-label="Próximo mês"
               onClick={() => setCurrentDate((d) => addMonths(d, 1))}
-              className="p-1 text-[#a8a8a8] hover:text-white"
+              className="w-9 h-9 flex items-center justify-center rounded-full text-[#a8a8a8] hover:text-white"
             >
-              <ChevronRight className="w-3.5 h-3.5" />
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
           <h1 className="font-poster text-[38px] sm:text-[40px] text-white leading-none tracking-wide uppercase mt-0.5">
@@ -251,11 +250,15 @@ export default function AllAccessDespesas({
                 <div className="space-y-1">
                   {grp.items.map((exp) => {
                     const catColor = CATEGORY_COLORS[exp.category] || '#888888';
+                    const expTitle = exp.title || exp.description || CATEGORY_LABELS[exp.category] || 'Despesa';
+                    const expDate = exp.expense_date || exp.date;
                     return (
-                      <div
+                      <button
+                        type="button"
                         key={exp.id}
                         onClick={() => onEditExpense?.(exp)}
-                        className="rounded-xl bg-[#161616] border border-[#222222] hover:border-[#333333] p-2 sm:px-3 flex items-center gap-2.5 cursor-pointer transition-colors"
+                        aria-label={`Editar despesa ${expTitle}`}
+                        className="w-full text-left rounded-xl bg-[#161616] border border-[#222222] hover:border-[#333333] p-2 sm:px-3 flex items-center gap-2.5 cursor-pointer transition-colors"
                       >
                         <div
                           style={{ background: catColor }}
@@ -263,8 +266,13 @@ export default function AllAccessDespesas({
                         >
                           {(exp.category || 'O').slice(0, 2)}
                         </div>
-                        <div className="flex-1 text-[13px] font-bold text-white truncate">
-                          {exp.title || exp.description || CATEGORY_LABELS[exp.category] || 'Despesa'}
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[13px] font-bold text-white truncate">{expTitle}</div>
+                          {expDate && (
+                            <div className="font-tag text-[10px] text-[#888888] mt-0.5">
+                              {format(parseISO(expDate), "dd/MM", { locale: ptBR })} · {CATEGORY_LABELS[exp.category] || 'Outros'}
+                            </div>
+                          )}
                         </div>
                         {exp.is_reimbursable && (
                           <span className="font-tag text-[9px] font-bold text-[#ff2e88] uppercase">
@@ -274,7 +282,7 @@ export default function AllAccessDespesas({
                         <span className="font-tag text-[13px] font-bold text-white min-w-[58px] text-right">
                           {isVisible ? formatCurrency(exp.amount) : '••••'}
                         </span>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>

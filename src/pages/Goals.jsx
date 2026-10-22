@@ -8,8 +8,8 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
 import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
-import { Trophy, Zap, Star, Award, Flame, Calendar, X, Pencil, Check, CheckCircle2, BadgeCheck, Clock as ClockIcon, ChevronRight, Plus, Share2 } from 'lucide-react';
-import { getEventCacheAmount } from '@/lib/eventFinance';
+import { Trophy, Zap, Star, Award, Flame, Calendar, X, Pencil, Check, CheckCircle2, BadgeCheck, Clock as ClockIcon, ChevronRight, Plus, Share2, Users } from 'lucide-react';
+import { getEventCacheAmount, isDoneEvent } from '@/lib/eventFinance';
 import { Input } from '@/components/ui/input';
 import appToast from '@/lib/appToast';
 
@@ -293,15 +293,16 @@ export default function Goals() {
   // MEI anual
   const { annualRevenue, loading: meiLoading, refetch: refetchMei } = useMeiStats(userId);
 
-  // Total de eventos histórico (para nível) — todos os tempos, só completados
-  const { events: allEvents, refetch: refetchAllEvents } = useEvents(userId, { status: 'completed' });
+  // Shows feitos (para nível e conquistas) — todos os tempos, já começados e não cancelados
+  const today = todayLocalISO();
+  const { events: pastEvents, refetch: refetchAllEvents } = useEvents(userId, { to: today, excludeCancelled: true });
+  const allEvents = useMemo(() => pastEvents.filter((e) => isDoneEvent(e, today)), [pastEvents, today]);
 
   // Recebido por mês (histórico, streak, painel anual) — todo evento pago, pela data do pagamento
   const { paidEvents, workByEvent, refetch: refetchPaidEvents } = usePaidEvents(userId);
 
-  // Próximos shows agendados
-  const today = todayLocalISO();
-  const { events: upcomingEvents, refetch: refetchUpcoming } = useEvents(userId, { from: today, limit: 4, ascending: true });
+  // Próximos shows agendados (cancelados ficam de fora)
+  const { events: upcomingEvents, refetch: refetchUpcoming } = useEvents(userId, { from: today, limit: 4, ascending: true, excludeCancelled: true });
 
   const refreshData = useCallback(async () => {
     refetchStats();
@@ -352,7 +353,7 @@ export default function Goals() {
     {
       icon: Star,
       title: 'Primeira Diária',
-      description: 'Complete seu primeiro evento',
+      description: 'Faça seu primeiro show',
       unlocked: totalEvents >= 1,
       color: AUTH_HERO_ACCENT,
       progress: { value: Math.min(totalEvents, 1), max: 1 },
@@ -360,7 +361,7 @@ export default function Goals() {
     {
       icon: Zap,
       title: '5 Shows',
-      description: 'Acumule 5 eventos no ano',
+      description: 'Faça 5 shows',
       unlocked: totalEvents >= 5,
       color: '#60a5fa',
       progress: { value: Math.min(totalEvents, 5), max: 5 },
@@ -368,7 +369,7 @@ export default function Goals() {
     {
       icon: Flame,
       title: 'Em Chamas',
-      description: 'Complete 20 eventos no ano',
+      description: 'Faça 20 shows',
       unlocked: totalEvents >= 20,
       color: '#FF6B35',
       progress: { value: Math.min(totalEvents, 20), max: 20 },
@@ -376,7 +377,7 @@ export default function Goals() {
     {
       icon: Trophy,
       title: 'Pro do Palco',
-      description: '50 eventos concluídos',
+      description: 'Faça 50 shows',
       unlocked: totalEvents >= 50,
       color: AUTH_HERO_PRIMARY,
       progress: { value: Math.min(totalEvents, 50), max: 50 },
@@ -507,7 +508,7 @@ export default function Goals() {
             <div className="min-w-0 flex-1">
               <p className="font-tag text-[10px] font-bold tracking-[1px]">TIER {levelInfo.index + 1} DE {TIERS.length}</p>
               <h2 className="font-poster text-[38px] leading-none uppercase truncate">{levelInfo.title}</h2>
-              <p className="text-xs font-bold mt-1">{totalEvents} show{totalEvents !== 1 ? 's' : ''} concluído{totalEvents !== 1 ? 's' : ''} no total</p>
+              <p className="text-xs font-bold mt-1">{totalEvents} show{totalEvents !== 1 ? 's' : ''} feito{totalEvents !== 1 ? 's' : ''} no total</p>
             </div>
             {levelInfo.next && (
               <div className="text-right shrink-0">
@@ -580,7 +581,7 @@ export default function Goals() {
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h3 className="font-tag text-[11px] font-normal tracking-[2px] text-[#a8a8a8] uppercase">Progresso do Mês</h3>
-                    <p className="text-xs text-[#888888] mt-0.5 capitalize">
+                    <p className="text-xs text-[#888888] mt-0.5 first-letter:uppercase">
                       {format(new Date(), "MMMM 'de' yyyy", { locale: ptBR })}
                     </p>
                   </div>
@@ -694,15 +695,15 @@ export default function Goals() {
                 onClick={() => hardNavigate('/clients')}
                 className="w-full flex items-center gap-4 bg-[#161616] border border-[#222222] rounded-xl p-4 text-left hover:border-[#262626] transition-colors cursor-pointer"
               >
-                <span className="text-2xl">👥</span>
+                <Users className="w-6 h-6 text-[#ffd400] shrink-0" aria-hidden />
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs text-[#888888]">Clientes Ativos</p>
+                  <p className="text-xs text-[#888888]">Clientes ativos</p>
                   <StatValuePulse value={stats.clientes_ativos} glowColor={config.accentHex}>
                     <p className="text-xl font-black mt-0.5" style={{ color: config.accentHex }}>
-                      {stats.clientes_ativos} empresa{stats.clientes_ativos !== 1 ? 's' : ''}
+                      {stats.clientes_ativos} cliente{stats.clientes_ativos !== 1 ? 's' : ''}
                     </p>
                   </StatValuePulse>
-                  <p className="text-[10px] text-[#666666] mt-0.5">contratantes com shows no período</p>
+                  <p className="text-[10px] text-[#666666] mt-0.5">quem te contratou neste mês</p>
                 </div>
                 <ChevronRight className="w-4 h-4 text-[#666666] flex-shrink-0" />
               </motion.button>
@@ -744,7 +745,7 @@ export default function Goals() {
                               </p>
                               {daysLeft > 0 && needed > 0 && (
                                 <p className={`text-xs mt-0.5 ${onTrack ? 'text-[#ffd400]/70' : 'text-[#ffd400]/80'}`}>
-                                  {onTrack ? '✓ No ritmo' : '⚠ Abaixo do ritmo'} · {daysLeft} dias restantes · 1 show a cada {(daysLeft / needed).toFixed(1)} dias
+                                  {onTrack ? '✓ No ritmo' : '⚠ Abaixo do ritmo'} · {daysLeft} dias restantes · 1 show a cada {(daysLeft / needed).toFixed(1).replace('.', ',')} dias
                                 </p>
                               )}
                             </>
@@ -844,7 +845,7 @@ export default function Goals() {
                       if (!ev.start_date) return null;
                       const days = differenceInCalendarDays(parseISO(ev.start_date), new Date());
                       const isUrgent = days <= 1;
-                      const label = days === 0 ? 'Hoje' : days === 1 ? 'Amanhã' : `em ${days}d`;
+                      const label = days === 0 ? 'Hoje' : days === 1 ? 'Amanhã' : days < 0 ? `há ${-days}d` : `em ${days}d`;
                       const isPaid = ev.payment_status === 'paid';
                       const isConfirmed = ev.status === 'confirmed' || ev.status === 'scheduled';
                       const StatusIcon = isPaid ? CheckCircle2 : isConfirmed ? BadgeCheck : ClockIcon;
@@ -924,7 +925,7 @@ export default function Goals() {
 
                   return (
                     <div className="mt-4 pt-4 border-t border-[#222222]/50">
-                      <p className="text-[10px] font-tag text-[#666666] uppercase tracking-wider mb-2 capitalize">
+                      <p className="text-[10px] font-tag text-[#666666] uppercase tracking-wider mb-2">
                         {new Date(year, month, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
                       </p>
                       <div className="grid grid-cols-7 text-center mb-1">
@@ -1000,7 +1001,7 @@ export default function Goals() {
                         key={label}
                         className={`p-3 rounded-xl border ${isCurrent ? 'border-[#333333]/60 bg-[#161616]' : 'border-[#222222]/40 bg-[#161616]/30'}`}
                       >
-                        <p className="text-[10px] text-[#888888] uppercase tracking-wider capitalize mb-1">
+                        <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">
                           {label}{isCurrent ? ' · atual' : ''}
                         </p>
                         <p className="text-sm font-bold text-white">
@@ -1125,7 +1126,7 @@ export default function Goals() {
                     <div className="flex-1 min-w-0">
                       <Ellipsis as="p" className="font-poster text-[20px] leading-none uppercase">{level.title}</Ellipsis>
                       <p className={`font-tag text-[10px] mt-1 ${isCurrent ? 'text-[#0a0a0a]' : 'text-[#a8a8a8]'}`}>
-                        {level.min === 0 ? 'começo da estrada' : `${level.min}+ shows concluídos`}
+                        {level.min === 0 ? 'começo da estrada' : `${level.min}+ shows feitos`}
                       </p>
                     </div>
                     {isCurrent && (

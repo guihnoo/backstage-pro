@@ -6,9 +6,10 @@ import AnimatedStatValue from '@/components/home/AnimatedStatValue';
 import StatValuePulse from '@/components/home/StatValuePulse';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
+import { formatHours } from '@/lib/money';
 
 const statConfigs = [
-  { key: 'horas_trabalhadas', label: 'Horas no Mês', icon: '⏱️', route: '/reports', hint: 'Ver relatórios', format: (v) => `${Number(v).toFixed(1)}h` },
+  { key: 'horas_trabalhadas', label: 'Horas no Mês', icon: '⏱️', route: '/reports', hint: 'Ver relatórios', format: (v) => formatHours(v) },
   { key: 'diarias_count', label: 'Diárias no Mês', icon: '📅', route: '/goals', hint: 'Ver metas', format: (v) => { const n = Math.round(v); return `${n} dia${n !== 1 ? 's' : ''}`; } },
 ];
 

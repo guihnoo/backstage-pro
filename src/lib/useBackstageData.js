@@ -387,14 +387,17 @@ export function useCountdown(eventDate) {
   return { countdown, isToday: isTodayFlag };
 }
 
-// MEI annual revenue limit (2025)
+// Ano dos valores do MEI abaixo — atualizar todo janeiro (salário mínimo novo)
+export const MEI_VALUES_YEAR = 2026;
+
+// Limite de faturamento anual do MEI (sem mudança para 2026)
 export const MEI_LIMIT = 81000;
 
-// DAS 2025 values by activity type
+// DAS 2026: 5% do salário mínimo (R$ 1.621 → R$ 81,05) + ICMS R$ 1 e/ou ISS R$ 5
 export const MEI_DAS = {
-  services:  { label: 'Prestador de serviços', monthly: 80.90 },
-  commerce:  { label: 'Comércio / Indústria',  monthly: 76.90 },
-  both:      { label: 'Comércio + Serviços',   monthly: 81.90 },
+  services:  { label: 'Prestador de serviços', monthly: 86.05 },
+  commerce:  { label: 'Comércio / Indústria',  monthly: 82.05 },
+  both:      { label: 'Comércio + Serviços',   monthly: 87.05 },
 };
 
 export function useMeiStats(userId) {

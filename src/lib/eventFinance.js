@@ -10,6 +10,16 @@ export function isCancelledEvent(event) {
   return status === 'cancelled' || status === 'cancelado';
 }
 
+/**
+ * Show feito (já começou e não foi cancelado). Regra única para nível, conquistas,
+ * crew pass e mapa — o status "concluído" quase nunca é marcado, então não serve.
+ */
+export function isDoneEvent(event, today = todayLocalISO()) {
+  if (!event || isCancelledEvent(event)) return false;
+  const start = String(event.start_date || event.event_date || '').slice(0, 10);
+  return Boolean(start) && start <= today;
+}
+
 export function isReceivableEvent(event) {
   if (isCancelledEvent(event)) return false;
   if (!event) return false;

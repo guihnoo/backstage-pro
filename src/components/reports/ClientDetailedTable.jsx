@@ -20,6 +20,7 @@ import { getEventStatus } from '../utils/dateUtils';
 import { calculateEventReceivableAmount, isReceivableEvent } from '@/lib/eventFinance';
 import { getEventReceivedAmount, isReceivedEvent } from '@/lib/financeMetrics';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
+import { formatHours } from '@/lib/money';
 
 export default function ClientDetailedTable({ data, onClientClick }) {
   const { isVisible, formatCurrency } = useFinancialVisibility();
@@ -278,7 +279,7 @@ export default function ClientDetailedTable({ data, onClientClick }) {
                       </p>
                     </td>
                     <td className="p-3 text-center">
-                      <p className="text-white font-medium">{client.totalHours.toFixed(1)}h</p>
+                      <p className="text-white font-medium">{formatHours(client.totalHours)}</p>
                       <p className="text-xs text-slate-400">
                         {isVisible ? formatCurrency(client.revenuePerHour) : '•••'}/h
                       </p>

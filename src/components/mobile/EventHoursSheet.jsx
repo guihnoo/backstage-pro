@@ -17,6 +17,7 @@ import { useFinancialVisibility } from '@/components/context/FinancialVisibility
 import EventHeading from '@/components/events/EventHeading';
 import { computeWorkDay, addMinutesToClock, isSameEntryExit, REGIME_POR_DIA_ATIVO, defaultDayChoice } from '@/lib/workDay';
 import DayChoicePicker from '@/components/hours/DayChoicePicker';
+import { formatHours } from '@/lib/money';
 
 export default function EventHoursSheet({ 
   isOpen, 
@@ -461,11 +462,11 @@ export default function EventHoursSheet({
                   <div className="grid grid-cols-3 gap-2">
                     <div className="rounded-lg p-3 text-center border border-[#2a2a2a] bg-[#1f1f1f]">
                       <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Horas</p>
-                      <p className="text-lg font-black font-tag leading-tight" style={{ color: primaryHex }}>{hours.total.toFixed(1)}h</p>
+                      <p className="text-lg font-black font-tag leading-tight" style={{ color: primaryHex }}>{formatHours(hours.total)}</p>
                     </div>
                     <div className="rounded-lg p-3 text-center border border-[#ff2e88]/25 bg-[#ff2e88]/5">
                       <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Extras</p>
-                      <p className="text-lg font-black text-[#ff2e88] font-tag leading-tight">{hours.overtime.toFixed(1)}h</p>
+                      <p className="text-lg font-black text-[#ff2e88] font-tag leading-tight">{formatHours(hours.overtime)}</p>
                     </div>
                     <div className="rounded-lg p-3 text-center border border-[#ffd400]/25 bg-[#ffd400]/5">
                       <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Cachê</p>

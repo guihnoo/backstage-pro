@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { addDays, format } from 'date-fns';
 import {
+  isDoneEvent,
   isCancelledEvent,
   isReceivableEvent,
   calcEventDays,
@@ -41,6 +42,21 @@ describe('isCancelledEvent', () => {
     expect(isCancelledEvent({ status: 'confirmed' })).toBe(false);
     expect(isCancelledEvent({ status: 'completed' })).toBe(false);
     expect(isCancelledEvent(null)).toBe(false);
+  });
+});
+
+describe('isDoneEvent — regra única de "show feito"', () => {
+  const today = '2026-10-22';
+  it('conta show que já começou e não foi cancelado, qualquer que seja o status', () => {
+    expect(isDoneEvent({ start_date: '2026-10-03', status: 'confirmed' }, today)).toBe(true);
+    expect(isDoneEvent({ start_date: '2026-10-22', status: 'pending' }, today)).toBe(true);
+    expect(isDoneEvent({ start_date: '2026-09-01', status: 'completed' }, today)).toBe(true);
+  });
+  it('não conta show futuro nem cancelado', () => {
+    expect(isDoneEvent({ start_date: '2026-10-23', status: 'confirmed' }, today)).toBe(false);
+    expect(isDoneEvent({ start_date: '2026-10-01', status: 'cancelled' }, today)).toBe(false);
+    expect(isDoneEvent({ start_date: '2026-10-01', status: 'cancelado' }, today)).toBe(false);
+    expect(isDoneEvent({ status: 'confirmed' }, today)).toBe(false);
   });
 });
 

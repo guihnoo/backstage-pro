@@ -1,11 +1,15 @@
-import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from 'react';
+import {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  lazy,
+  Suspense,
+} from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { hardNavigate } from '@/lib/hardNavigate';
-import {
-  isReceivableEvent,
-  calculateEventReceivableAmount,
-} from '@/lib/eventFinance';
+
+import { isReceivableEvent, calculateEventReceivableAmount } from '@/lib/eventFinance';
 import {
   buildWorkByEvent,
   expensesInPeriod,
@@ -18,20 +22,25 @@ import {
   sumReceived,
   workInPeriod,
 } from '@/lib/financeMetrics';
-import { ExternalLink } from 'lucide-react';
+
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { useExpenses } from '@/lib/useExpenses';
-import { Card, CardContent } from '@/components/ui/card';
+
+import { AlertCircle } from 'lucide-react';
 import {
-  AlertCircle,
-  ArrowUp,
-  ArrowDown,
-  Minus,
-  ChevronDown,
-} from 'lucide-react';
-import { format, startOfMonth, endOfMonth, subMonths, parseISO, startOfYear, endOfYear, addMonths, startOfWeek, endOfWeek, subWeeks, addWeeks } from 'date-fns';
+  startOfMonth,
+  endOfMonth,
+  subMonths,
+  startOfYear,
+  endOfYear,
+  addMonths,
+  startOfWeek,
+  endOfWeek,
+  subWeeks,
+  addWeeks,
+} from 'date-fns';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import appToast from '@/lib/appToast';
 import { getEventStatus } from '@/components/utils/dateUtils';
@@ -41,16 +50,22 @@ import AllAccessDinheiro from '@/components/reports/AllAccessDinheiro';
 import { Skeleton } from '@/components/ui/skeleton';
 import EmptyState from '@/components/layout/EmptyState';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { useAuth } from '@/lib/authContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 // NeonPageShell removido na Entrega 4 All Access
-import StatValuePulse from '@/components/home/StatValuePulse';
+
 import { usePullToRefresh } from '@/lib/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
 import EventHeading from '@/components/events/EventHeading';
-import { enrichEventsWithClients, getClientDisplayName } from '@/lib/eventDisplay';
-import { Ellipsis } from '@/components/ui/overflowText';
+import { enrichEventsWithClients } from '@/lib/eventDisplay';
+
 import { useConnectivity } from '@/lib/offline/useConnectivity';
 
 const ExportManager = lazy(() => import('@/components/reports/ExportManager'));
@@ -89,193 +104,6 @@ const ReportsSkeleton = () => (
   </div>
 );
 
-// Seção colapsável — persiste estado aberto/fechado em localStorage
-function ExpandableSection({ id, label, defaultOpen = false, children }) {
-  const storageKey = id ? `backstage:report-section:${id}` : null;
-  const [open, setOpen] = useState(() => {
-    if (!storageKey) return defaultOpen;
-    try {
-      const stored = localStorage.getItem(storageKey);
-      return stored !== null ? stored === 'true' : defaultOpen;
-    } catch {
-      return defaultOpen;
-    }
-  });
-
-  const toggle = () => {
-    setOpen(v => {
-      const next = !v;
-      if (storageKey) {
-        try { localStorage.setItem(storageKey, String(next)); } catch (_e) { /* storage indisponível */ }
-      }
-      return next;
-    });
-  };
-
-  return (
-    <div className="border border-[#222222] rounded-xl overflow-hidden bg-[#121212]">
-      <button
-        type="button"
-        onClick={toggle}
-        className="w-full flex items-center justify-between px-4 py-3 bg-[#141414] hover:bg-[#1a1a1a] transition-colors border-b border-[#222222]"
-      >
-        <span className="text-xs font-bold font-tag tracking-[0.14em] text-white uppercase">{label}</span>
-        <ChevronDown
-          className="w-4 h-4 text-[#888888] transition-transform duration-200"
-          style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
-        />
-      </button>
-      {open && (
-        <div className="p-4 space-y-6">
-          {children}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Period options for reports
-const PERIOD_OPTIONS = [
-  { value: 'this_week', label: 'Esta Semana' },
-  { value: 'this_month', label: 'Este Mês' },
-  { value: 'last_month', label: 'Mês Passado' },
-  { value: 'last_3_months', label: 'Últimos 3 Meses' },
-  { value: 'last_6_months', label: 'Últimos 6 Meses' },
-  { value: 'this_year', label: 'Este Ano' },
-  { value: 'all_time', label: 'Todo o Período' },
-];
-
-// Enhanced StatCard with comparison indicators
-const StatCard = ({ title, value, pulseValue, pulseColor, subtitle, icon: Icon, color, trend, onClick, isClickable = true }) => {
-  const getTrendIcon = () => {
-    if (!trend) return null;
-    if (trend.change > 0) return <ArrowUp className="w-3 h-3 text-[#ffd400]" />;
-    if (trend.change < 0) return <ArrowDown className="w-3 h-3 text-[#ff2e88]" />;
-    return <Minus className="w-3 h-3 text-[#a8a8a8]" />;
-  };
-
-  const getTrendColor = () => {
-    if (!trend) return 'text-[#a8a8a8]';
-    if (trend.change > 0) return 'text-[#ffd400]';
-    if (trend.change < 0) return 'text-[#ff2e88]';
-    return 'text-[#a8a8a8]';
-  };
-
-  return (
-    <Card
-      className={`bg-[#121212] border-[#222222] transition-all min-w-0 overflow-hidden ${
-        isClickable && onClick
-          ? 'cursor-pointer hover:border-[color-mix(in_srgb,var(--bp-primary)_45%,transparent)] hover:shadow-[0_12px_40px_-12px_color-mix(in_srgb,var(--bp-primary)_35%,transparent)]'
-          : ''
-      }`}
-      onClick={onClick}
-    >
-      <CardContent className="p-4 relative">
-        <Icon className={`w-10 h-10 absolute right-3 top-3 ${color} opacity-10`} />
-        <div className="space-y-1 min-w-0 mb-3">
-          <p className="font-tag text-[10px] sm:text-[11px] font-bold tracking-[0.16em] text-[#888888] truncate">{title}</p>
-          <StatValuePulse value={pulseValue ?? value} glowColor={pulseColor}>
-            <p className={`text-2xl sm:text-3xl font-poster tracking-wide truncate ${color}`} title={typeof value === 'string' ? value : undefined}>{value}</p>
-          </StatValuePulse>
-        </div>
-        <div className="flex items-center justify-between gap-2 min-w-0">
-          {subtitle && <p className="text-xs text-[#888888] truncate flex-1 min-w-0" title={subtitle}>{subtitle}</p>}
-          {trend && (
-            <div className={`flex items-center gap-1 text-xs ${getTrendColor()}`}>
-              {getTrendIcon()}
-              <span>{Math.abs(trend.change).toFixed(1)}%</span>
-            </div>
-          )}
-        </div>
-        {isClickable && onClick && (
-          <div className="mt-2 text-[11px] font-tag text-[#ffd400] opacity-0 group-hover:opacity-100 transition-opacity">
-            Clique para ver detalhes →
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
-
-// Modal para exibir detalhes dos KPIs
-const KPIDetailModal = ({ isOpen, onClose, title, data, type: _type, onItemClick }) => {
-  const { formatCurrency, isVisible } = useFinancialVisibility();
-
-  const getModalContent = () => {
-    if (!data || data.length === 0) {
-      return <p className="text-[#a8a8a8]">Nenhum registro encontrado para este período.</p>;
-    }
-
-    return (
-      <div className="space-y-4">
-        {data.map((item, index) => {
-          const isClickable = !!(item.event_ref || item.client_id);
-          return (
-            <div
-              key={index}
-              role={isClickable ? 'button' : undefined}
-              tabIndex={isClickable ? 0 : undefined}
-              onClick={() => {
-                if (item.event_ref) onItemClick?.(item.event_ref);
-                else if (item.client_id) { onClose?.(); hardNavigate(`/client-detail?id=${item.client_id}`); }
-              }}
-              onKeyDown={isClickable ? (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  if (item.event_ref) onItemClick?.(item.event_ref);
-                  else if (item.client_id) { onClose?.(); hardNavigate(`/client-detail?id=${item.client_id}`); }
-                }
-              } : undefined}
-              className={`flex items-center justify-between p-3 bg-[#1f1f1f] rounded-lg transition-colors gap-3 min-w-0 ${isClickable ? 'cursor-pointer hover:bg-[#2a2a2a]' : ''}`}
-            >
-              <div className="min-w-0 flex-1">
-                {item.event_ref ? (
-                  <>
-                    <EventHeading event={item.event_ref} client={item.client} size="sm" />
-                    {item.subtitle && (
-                      <p className="text-sm text-[#a8a8a8] truncate mt-0.5" title={item.subtitle}>{item.subtitle}</p>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <p className="font-medium text-white truncate" title={item.title}>{item.title}</p>
-                    <p className="text-sm text-[#a8a8a8] truncate" title={item.subtitle}>{item.subtitle}</p>
-                  </>
-                )}
-              </div>
-              <div className="text-right flex-shrink-0">
-                <p className={`font-bold ${item.value < 0 ? 'text-[#ff2e88]' : 'text-[#ffd400]'}`}>{isVisible ? formatCurrency(item.value) : '••••'}</p>
-                {item.date && <p className="text-xs text-[#888888]">{item.date}</p>}
-                {item.event_ref && <p className="text-[10px] text-[#666666] mt-0.5">Toque para detalhes</p>}
-                {item.client_id && (
-                  <p className="text-[10px] mt-0.5 flex items-center gap-0.5 justify-end bp-text-primary">
-                    <ExternalLink className="w-2.5 h-2.5" /> Ver cliente
-                  </p>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90dvh] flex flex-col overflow-hidden p-0">
-        <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0 min-w-0 pr-14">
-          <DialogTitle className="min-w-0">
-            <Ellipsis>{title}</Ellipsis>
-          </DialogTitle>
-          <DialogDescription>
-            Detalhamento dos registros que compõem esta métrica
-          </DialogDescription>
-        </DialogHeader>
-        <div className="bp-modal-scroll px-6 pb-6">{getModalContent()}</div>
-      </DialogContent>
-    </Dialog>
-  );
-};
 
 export default function ReportsPage() {
   const { events, loading: eventsLoading, error: eventsError, refetch: refetchEvents, delete: deleteEvent } = useEvents();
@@ -334,8 +162,7 @@ export default function ReportsPage() {
 
   const { pullDistance, isRefreshing, threshold } = usePullToRefresh(pullRefreshReports);
 
-  const [selectedPeriod, setSelectedPeriod] = useState('this_month');
-  const [selectedView, setSelectedView] = useState('overview');
+  const [selectedPeriod] = useState('this_month');
   const [showProjection, setShowProjection] = useState(false);
 
   // O mapa ganhou tela propria (/mapa, "Mais > Mapa"); link antigo /reports#mapa vai para la.
@@ -344,14 +171,6 @@ export default function ReportsPage() {
   useEffect(() => {
     if (routerLocation.hash === '#mapa') navigate('/mapa', { replace: true });
   }, [routerLocation.hash, navigate]);
-  const [selectedClientFilter, setSelectedClientFilter] = useState(null);
-
-  // Modal states
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalTitle, setModalTitle] = useState('');
-  const [modalData, setModalData] = useState([]);
-  const [modalType, setModalType] = useState('');
-  const [chartFilter, setChartFilter] = useState(null);
 
   // State para o EventDetailModal e formulários de edição
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -360,7 +179,6 @@ export default function ReportsPage() {
   const [confirmDeleteEvent, setConfirmDeleteEvent] = useState(null);
 
   const eventsReady = !loading.events;
-  const isDataReady = eventsReady && !loading.clients && !loading.dailyWork && !loading.expenses;
   const hasError = error.events || error.clients || error.dailyWork || error.expenses;
   const hasCachedData = (events?.length ?? 0) > 0 || (clients?.length ?? 0) > 0;
   const showBlockingError = hasError && !offline && !hasCachedData;
@@ -564,126 +382,10 @@ export default function ReportsPage() {
   }, [data, workByEvent, currentRange, previousRange, nextRange]);
 
   // Handlers para KPIs clicáveis
-  const handleKPIClick = useCallback((type) => {
-    const { current } = processedData;
-
-    switch (type) {
-      case 'faturamento':
-        setModalTitle('Faturamento Realizado');
-        setModalData(current.paidEvents.map((event) => {
-          const client = data.clients.find((c) => c.id === event.client_id);
-          const paidDateStr = event.paid_date
-            ? format(parseISO(event.paid_date), 'dd/MM/yyyy')
-            : 'Data não registrada';
-          return {
-            title: event.title,
-            subtitle: paidDateStr,
-            value: getEventReceivedAmount(event, workByEvent[event.id] || []),
-            date: paidDateStr,
-            event_ref: event,
-            client,
-          };
-        }));
-        break;
-      case 'a_receber': {
-        setModalTitle('Valores a Receber');
-        const receivableEvents = data.events.filter(isReceivableEvent);
-        setModalData(receivableEvents.map((event) => {
-          const client = data.clients.find((c) => c.id === event.client_id);
-          const eventDailyWork = data.dailyWork.filter((w) => w.event_id === event.id);
-          const endLabel = (event.end_date || event.start_date)
-            ? format(parseISO(event.end_date || event.start_date), 'dd/MM/yyyy')
-            : '--';
-          return {
-            title: event.title,
-            subtitle: `Concluído em ${endLabel}`,
-            value: calculateEventReceivableAmount(event, eventDailyWork),
-            event_ref: event,
-            client,
-          };
-        }));
-        break;
-      }
-      case 'lucro':
-        setModalTitle('Composição do Lucro Líquido');
-        setModalData([
-          { title: 'Recebido no período', subtitle: 'Pagamentos com data neste período', value: current.totalRevenue },
-          { title: 'Despesas Totais', subtitle: 'Gastos do período', value: -current.totalExpenses },
-          { title: 'Lucro Líquido', subtitle: 'Recebido - Despesas', value: current.netProfit }]
-        );
-        break;
-      case 'clientes': {
-        setModalTitle('Clientes Ativos');
-        const activeClients = [...new Set(current.events.map((e) => e.client_id))].
-          map((clientId) => data.clients.find((c) => c.id === clientId)).
-          filter(Boolean);
-        setModalData(activeClients.map((client) => ({
-          title: getClientDisplayName(client) || client.name || 'Cliente',
-          subtitle: `${current.events.filter((e) => e.client_id === client.id).length} eventos no período`,
-          value: sumReceived(current.paidEvents.filter((e) => e.client_id === client.id), workByEvent),
-          client_id: client.id,
-        })));
-        break;
-      }
-      default:
-        return;
-    }
-
-    setModalType(type);
-    setModalOpen(true);
-  }, [processedData, data, workByEvent]);
-
-  // Handler para o clique no gráfico
-  const handleChartClick = useCallback((payload) => {
-    if (payload && payload.date) {
-      setChartFilter({ date: payload.date, view: payload.view });
-    }
-  }, []);
-
-  const clearChartFilter = () => {
-    setChartFilter(null);
-  };
-
-  // Clientes presentes nos eventos do período atual
-  const clientsInPeriod = useMemo(() => {
-    const clientIds = new Set(processedData.current.events.map((e) => e.client_id).filter(Boolean));
-    return data.clients.filter((c) => clientIds.has(c.id));
-  }, [processedData, data.clients]);
 
   // Eventos do período filtrados por cliente (se houver filtro ativo)
-  const clientFilteredEvents = useMemo(() => {
-    if (!selectedClientFilter) return processedData.current.events;
-    return processedData.current.events.filter((e) => e.client_id === selectedClientFilter);
-  }, [processedData, selectedClientFilter]);
 
   // Memo para filtrar a lista de eventos com base no clique do gráfico
-  const filteredEventList = useMemo(() => {
-    if (!chartFilter || !chartFilter.date) {
-      return clientFilteredEvents;
-    }
-
-    return clientFilteredEvents.filter(event => {
-      const eventStartDate = event.start_date ? event.start_date.split('T')[0] : null;
-      const eventPaidDate = event.paid_date ? event.paid_date.split('T')[0] : null;
-
-      const chartView = chartFilter.view;
-
-      if (chartView === 'realized' || chartView === 'overview_receita') {
-        return eventPaidDate === chartFilter.date;
-      }
-      if (chartView === 'receivable') {
-        // A receber é baseado na data de finalização do evento
-        const eventEndDate = event.end_date ? event.end_date.split('T')[0] : null;
-        return eventEndDate === chartFilter.date && isReceivableEvent(event);
-      }
-      if (chartView === 'projected') {
-        return eventStartDate === chartFilter.date && getEventStatus(event) === 'scheduled';
-      }
-
-      // Fallback para despesas no modo geral e outras visualizações
-      return eventStartDate === chartFilter.date;
-    });
-  }, [clientFilteredEvents, chartFilter]);
 
   // Handlers para o EventDetailModal
   const handleEventEdit = () => {
@@ -722,10 +424,6 @@ export default function ReportsPage() {
     }
   };
 
-  const handleClientDetail = (clientId) => {
-    hardNavigate(`/client-detail?id=${clientId}`);
-  };
-
   if (!eventsReady) {
     return <ReportsSkeleton />;
   }
@@ -735,10 +433,10 @@ export default function ReportsPage() {
       <div className="h-[60vh] flex items-center justify-center p-4">
         <EmptyState
           icon={AlertCircle}
-          title="Erro ao Carregar Dados"
-          description="Não foi possível carregar os dados para o relatório."
+          title="Não deu para carregar o Dinheiro"
+          description="Confira a internet. Seus dados não foram perdidos."
           action={() => refreshData()}
-          actionLabel="Tentar Novamente"
+          actionLabel="Tentar de novo"
         />
       </div>
     );
@@ -808,15 +506,6 @@ export default function ReportsPage() {
           />
         </div>
       </motion.div>
-
-      {/* Modal de detalhes dos KPIs */}
-      <KPIDetailModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title={modalTitle}
-        data={modalData}
-        type={modalType}
-        onItemClick={(ev) => { setModalOpen(false); setSelectedEvent(ev); }} />
 
       {/* "Recebi": mesma janela de pagamento do app (com a regra das horas preenchidas) */}
       {payingEvent && (
@@ -943,5 +632,4 @@ export default function ReportsPage() {
     </div>
   );
 }
-
 

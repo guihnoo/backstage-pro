@@ -103,7 +103,7 @@ const KanbanCard = ({ ev, client, onOpen, formatCurrency, isVisible, showUrgency
           <div className="flex items-center justify-between gap-2 mt-2">
             <div className="flex items-center gap-1.5 flex-shrink-0">
               {dateStr && (
-                <span className="text-[10px] text-[#888888] capitalize">{dateStr}</span>
+                <span className="text-[10px] text-[#888888] first-letter:uppercase">{dateStr}</span>
               )}
               {durationDays > 1 && (
                 <span className="text-[9px] font-bold px-1 py-0.5 rounded flex-shrink-0" style={{ background: `${evColor}25`, color: evColor }}>

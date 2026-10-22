@@ -23,3 +23,9 @@ export function toBRLInput(n) {
   if (!Number.isFinite(v)) return '';
   return v.toFixed(2).replace('.', ',');
 }
+
+/** Horas no jeito brasileiro: 8 → "8h", 8.5 → "8,5h", 0.04 → "0h". */
+export function formatHours(value) {
+  const n = Math.round((Number(value) || 0) * 10) / 10;
+  return `${Number.isInteger(n) ? n : n.toFixed(1).replace('.', ',')}h`;
+}

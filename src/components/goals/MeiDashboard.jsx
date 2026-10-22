@@ -3,7 +3,7 @@ import { projectYearEnd } from '@/lib/yearProjection';
 import { motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertTriangle, CheckCircle2, TrendingUp, Calendar, Info, ExternalLink } from 'lucide-react';
-import { MEI_LIMIT, MEI_DAS } from '@/lib/useBackstageData';
+import { MEI_LIMIT, MEI_DAS, MEI_VALUES_YEAR } from '@/lib/useBackstageData';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { hardNavigate } from '@/lib/hardNavigate';
 
@@ -262,7 +262,7 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
       </button>
 
       <p className="text-[10px] text-[#666666] text-center font-tag leading-relaxed">
-        Valores baseados no limite MEI 2025 (R$ 81.000/ano). Consulte um contador para decisões fiscais.
+        Valores do MEI de {MEI_VALUES_YEAR} (limite de R$ 81.000/ano). Consulte um contador para decisões fiscais.
       </p>
     </motion.div>
   );

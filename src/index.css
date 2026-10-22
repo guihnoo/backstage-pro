@@ -409,3 +409,10 @@ body:has([role="alertdialog"][data-state="open"]) [data-app-scroll] {
 @media (prefers-reduced-motion: reduce) {
   .aa-beam-sweep, .aa-marquee { animation: none; }
 }
+
+/* Anton (font-poster) com acento (Á, Ê, Ç…) perde o sinal quando o texto corta com
+   reticências e a linha é justa (leading-none): a caixa corta o que passa da altura da letra. */
+.font-poster.truncate,
+.font-poster.overflow-hidden {
+  line-height: 1.2;
+}

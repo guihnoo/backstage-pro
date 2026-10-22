@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Camera, ImagePlus, Loader2, RefreshCw, Sparkles, Trash2 } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import { isCancelledEvent } from '@/lib/eventFinance';
 import appToast from '@/lib/appToast';
 import { parseBRL, toBRLInput } from '@/lib/money';
 
@@ -71,6 +73,7 @@ const defaultState = {
   notes: '',
   receipt_url: '',
   is_reimbursable: false,
+  reimbursed: false,
 };
 
 export default function ExpenseForm({
@@ -82,6 +85,7 @@ export default function ExpenseForm({
   prefillData,
   prefillEventId,
   initialEventId,
+  onDelete,
 }) {
   const { create: createExpense, update: updateExpense } = useExpenses();
   const [loading, setLoading] = useState(false);
@@ -90,6 +94,14 @@ export default function ExpenseForm({
   const [formData, setFormData] = useState(defaultState);
 
   const initialEvent = useMemo(() => prefillEventId || initialEventId || '', [prefillEventId, initialEventId]);
+
+  // Trabalhos mais recentes primeiro, com a data; cancelados só se já estiverem ligados a esta despesa
+  const eventOptions = useMemo(() => {
+    const keep = expense?.event_id || initialEvent;
+    return [...events]
+      .filter((evt) => !isCancelledEvent(evt) || evt.id === keep)
+      .sort((a, b) => String(b.start_date || '').localeCompare(String(a.start_date || '')));
+  }, [events, expense?.event_id, initialEvent]);
 
   useEffect(() => {
     if (!open) return;
@@ -108,6 +120,7 @@ export default function ExpenseForm({
       notes: seed.notes || '',
       receipt_url: seed.receipt_url || '',
       is_reimbursable: seed.is_reimbursable ?? Boolean(initialEvent),
+      reimbursed: Boolean(seed.reimbursed),
     });
   }, [open, expense, prefillData, initialEvent]);
 
@@ -182,6 +195,7 @@ export default function ExpenseForm({
         notes: formData.notes || null,
         receipt_url: formData.receipt_url || null,
         is_reimbursable: formData.is_reimbursable,
+        reimbursed: formData.is_reimbursable ? formData.reimbursed : false,
       };
 
       if (expense?.id) {
@@ -213,18 +227,18 @@ export default function ExpenseForm({
           <ScrollArea fill>
             <div className="space-y-4 p-4 sm:p-6 pb-2">
               <div className="space-y-2">
-                <Label>Título</Label>
-                <Input value={formData.title} onChange={(e) => setField('title', e.target.value)} className="h-12" />
+                <Label htmlFor="exp-title">Título</Label>
+                <Input id="exp-title" value={formData.title} onChange={(e) => setField('title', e.target.value)} className="h-12" />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Valor</Label>
-                  <Input type="text" inputMode="decimal" placeholder="0,00" value={formData.amount} onChange={(e) => setField('amount', e.target.value)} className="h-12" />
+                  <Label htmlFor="exp-amount">Valor</Label>
+                  <Input id="exp-amount" type="text" inputMode="decimal" placeholder="0,00" value={formData.amount} onChange={(e) => setField('amount', e.target.value)} className="h-12" />
                 </div>
                 <div className="space-y-2">
-                  <Label>Data</Label>
-                  <Input type="date" value={formData.date} onChange={(e) => setField('date', e.target.value)} className="h-12" />
+                  <Label htmlFor="exp-date">Data</Label>
+                  <Input id="exp-date" type="date" value={formData.date} onChange={(e) => setField('date', e.target.value)} className="h-12" />
                 </div>
               </div>
 
@@ -269,9 +283,11 @@ export default function ExpenseForm({
                     <SelectValue placeholder="Sem vínculo" />
                   </SelectTrigger>
                   <SelectContent className="max-w-[min(100vw-2rem,24rem)]">
-                    {events.map((evt) => (
+                    {eventOptions.map((evt) => (
                       <SelectItem key={evt.id} value={evt.id} title={evt.title}>
-                        <span className="truncate block">{evt.title}</span>
+                        <span className="truncate block">
+                          {evt.start_date ? `${format(parseISO(evt.start_date), 'dd/MM')} · ` : ''}{evt.title}
+                        </span>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -296,6 +312,27 @@ export default function ExpenseForm({
                 </div>
                 <RefreshCw className={`w-4 h-4 ml-auto flex-shrink-0 ${formData.is_reimbursable ? 'text-[#ffd400]' : 'text-[#666666]'}`} />
               </button>
+
+              {formData.is_reimbursable && (
+                <button
+                  type="button"
+                  aria-pressed={formData.reimbursed}
+                  onClick={() => setField('reimbursed', !formData.reimbursed)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
+                    formData.reimbursed
+                      ? 'bg-[#ffd400]/15 border-[#ffd400]/40 text-[#ffd400]'
+                      : 'bg-[#1f1f1f] border-[#2a2a2a] text-[#a8a8a8]'
+                  }`}
+                >
+                  <div className={`w-9 h-5 rounded-full flex-shrink-0 relative transition-colors ${formData.reimbursed ? 'bg-[#ffd400]' : 'bg-[#333333]'}`}>
+                    <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${formData.reimbursed ? 'left-4' : 'left-0.5'}`} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Já recebi o reembolso</p>
+                    <p className="text-xs opacity-70">Sai da conta “a reembolsar” e não entra mais na cobrança</p>
+                  </div>
+                </button>
+              )}
 
               <div className="space-y-2 rounded-xl border border-[#2a2a2a] bg-[#1f1f1f] p-3">
                 <div className="flex items-center justify-between gap-2">
@@ -369,18 +406,30 @@ export default function ExpenseForm({
               </div>
 
               <div className="space-y-2">
-                <Label>Descrição</Label>
-                <Textarea value={formData.description} onChange={(e) => setField('description', e.target.value)} />
+                <Label htmlFor="exp-description">Descrição</Label>
+                <Textarea id="exp-description" value={formData.description} onChange={(e) => setField('description', e.target.value)} />
               </div>
 
               <div className="space-y-2">
-                <Label>Notas</Label>
-                <Textarea value={formData.notes} onChange={(e) => setField('notes', e.target.value)} />
+                <Label htmlFor="exp-notes">Notas</Label>
+                <Textarea id="exp-notes" value={formData.notes} onChange={(e) => setField('notes', e.target.value)} />
               </div>
             </div>
           </ScrollArea>
 
           <div className="flex gap-3 px-4 py-3 sm:px-6 border-t border-[#2a2a2a] flex-shrink-0 pb-safe">
+            {expense?.id && onDelete && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onDelete(expense)}
+                disabled={loading}
+                aria-label="Excluir despesa"
+                className="h-11 w-11 p-0 shrink-0 border-[#ff2e88]/60 text-[#ff2e88] hover:bg-[#ff2e88]/10 hover:text-[#ff2e88]"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            )}
             <Button type="button" variant="outline" onClick={() => onOpenChange?.(false)} disabled={loading} className="flex-1 h-11">
               Cancelar
             </Button>

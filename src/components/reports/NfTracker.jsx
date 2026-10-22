@@ -35,7 +35,7 @@ function EventRow({ event, client, onOpen }) {
             </p>
           </div>
         ) : (
-          <p className="text-[11px] text-[#ffd400] font-medium">Pendente</p>
+          <p className="text-[11px] text-[#ffd400] font-medium">Sem nota</p>
         )}
         <p className="text-[11px] text-[#888888]">{isVisible ? formatCurrency(amount) : '•••'}</p>
       </div>

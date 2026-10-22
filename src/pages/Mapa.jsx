@@ -4,7 +4,7 @@ import { ptBR } from 'date-fns/locale';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
 import { useDailyWork } from '@/lib/useDailyWork';
-import { isCancelledEvent } from '@/lib/eventFinance';
+import { isDoneEvent } from '@/lib/eventFinance';
 import { buildWorkByEvent, getEventReceivedAmount } from '@/lib/financeMetrics';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -18,7 +18,8 @@ export default function Mapa() {
   const { dailyWork } = useDailyWork();
   const { formatCurrency, isVisible } = useFinancialVisibility();
 
-  const activeEvents = useMemo(() => (events || []).filter((e) => !isCancelledEvent(e)), [events]);
+  // "Onde você já trabalhou": só shows que já aconteceram
+  const activeEvents = useMemo(() => (events || []).filter((e) => isDoneEvent(e)), [events]);
   const workByEvent = useMemo(() => buildWorkByEvent(dailyWork || []), [dailyWork]);
 
   const cities = useMemo(() => {
@@ -74,7 +75,7 @@ export default function Mapa() {
 
         <div id="mapa-visitado" className="scroll-mt-20">
           <Suspense fallback={<Skeleton className="w-full h-72 rounded-2xl" />}>
-            <BrazilVisitedMap events={events} clients={clients} showTitle={false} />
+            <BrazilVisitedMap events={activeEvents} clients={clients} showTitle={false} />
           </Suspense>
         </div>
 

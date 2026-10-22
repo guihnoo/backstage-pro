@@ -14,6 +14,7 @@ import { normalizeDateString, getEventsForDate, getWorkForDate, getEventStatus }
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { fetchPendingFollowUps } from '@/lib/useClientInteractions';
 import { useAuth } from '@/lib/authContext';
+import { formatHours } from '@/lib/money';
 
 function eventNeedsLocation(event) {
   if (!event) return false;
@@ -106,7 +107,7 @@ export default function AlertsPanel({
           id: 'checkout_suggestion',
           kind: 'warning',
           title: 'Registrar saída e hora extra',
-          body: `Mais de 12h desde a entrada (${hoursSinceEntry.toFixed(1)}h).`,
+          body: `Mais de 12h desde a entrada (${formatHours(hoursSinceEntry)}).`,
           icon: Clock,
           color: 'text-[#ffd400]',
           bgColor: 'bg-[#ffd400]/10',
