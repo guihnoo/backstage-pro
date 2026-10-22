@@ -13,6 +13,7 @@ import appToast from '@/lib/appToast';
 import { normalizeDateString, todayLocalISO } from '@/components/utils/dateUtils';
 import { useEvents } from '@/lib/useEvents';
 import { WORK_LOG_MODES, resolveWorkLogMode, eventWorkLogModeToSave } from '@/lib/workLogMode';
+import { functionOptions, eventFunctionId, categoryLabel } from '@/lib/roleRates';
 import { getEventCacheAmount, isCancelledEvent } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { useAuth } from '@/lib/authContext';
@@ -58,6 +59,7 @@ const defaultState = {
   nf_number: '',
   nf_issued_at: '',
   work_log_mode: null, // null = segue o Perfil (ideia #107)
+  category: null, // função neste trabalho (ideia #109); null = função principal do Perfil
 };
 
 export default function EventForm({
@@ -89,6 +91,7 @@ export default function EventForm({
   const [stripOffset, setStripOffset] = useState(0);
   const [showDateInputs, setShowDateInputs] = useState(false);
   const [showMore, setShowMore] = useState(false);
+  const roleOptions = useMemo(() => functionOptions(profile), [profile]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -121,6 +124,7 @@ export default function EventForm({
       nf_number: seed.nf_number || seed.nfe_numero || '',
       nf_issued_at: seed.nf_issued_at ? seed.nf_issued_at.slice(0, 10) : '',
       work_log_mode: seed.work_log_mode || null,
+      category: seed.category || null,
     });
     // "Repetir" sempre começa desligado ao abrir o formulário (antes ficava ligado e duplicava séries).
     setRepeatEnabled(false);
@@ -395,6 +399,10 @@ export default function EventForm({
         ...((formData.meal_policy || null) !== (event?.meal_policy ?? null) ? { meal_policy: formData.meal_policy || null } : {}),
         // Registro das horas deste trabalho (migration 046): só manda quando trocou.
         ...((formData.work_log_mode ?? null) !== (event?.work_log_mode ?? null) ? { work_log_mode: formData.work_log_mode ?? null } : {}),
+        // Função neste trabalho (ideia #109): só manda quando trocou.
+        ...((formData.category ?? null) !== (event?.category ?? null)
+          ? { category: formData.category ?? null, category_label: categoryLabel(formData.category) || null }
+          : {}),
         color: resolveEventColor({ client_id: formData.client_id, color: formData.color }, selectedClient),
         location: formData.location?.trim() || null,
         location_city: formData.location_city || null,
@@ -672,6 +680,36 @@ export default function EventForm({
             location_lng={formData.location_lng}
             onChange={(patch) => setFormData((prev) => ({ ...prev, ...patch }))}
           />
+
+          {/* Função neste trabalho (ideia #109): só aparece para quem tem mais de uma no Perfil */}
+          {roleOptions.length > 1 && (
+            <div className="space-y-1.5">
+              <Label>Função neste trabalho</Label>
+              <div className="flex gap-1.5 overflow-x-auto -mx-[18px] px-[18px] pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group" aria-label="Função neste trabalho">
+                {roleOptions.map((opt) => {
+                  const active = eventFunctionId({ category: formData.category }, profile) === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => setFormData((prev) => ({
+                        ...prev,
+                        category: opt.id,
+                        ...(opt.rate ? { daily_cache_value: String(opt.rate) } : {}),
+                      }))}
+                      className={`shrink-0 h-10 px-3.5 rounded-full border text-[13px] font-extrabold transition-colors ${
+                        active ? 'bg-white border-white text-[#0a0a0a]' : 'bg-[#161616] border-[#333333] text-white'
+                      }`}
+                    >
+                      {opt.label}
+                      {opt.rate ? <span className={`ml-1.5 font-tag text-[11px] ${active ? 'text-[#333333]' : 'text-[#888888]'}`}>{isVisible ? formatCurrency(opt.rate) : '•••'}</span> : null}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Cache e alimentacao em blocos (como no prototipo) */}
           <div className="grid grid-cols-2 gap-2">

@@ -16,6 +16,8 @@ import { openWhatsAppCharge, buildChargeMessage } from '@/lib/whatsapp';
 import { appToast } from '@/lib/appToast';
 import { paidEventsInPeriod, sumReceived, getEventReceivedAmount, getEventReceivedDate } from '@/lib/financeMetrics';
 import { MEI_LIMIT } from '@/lib/useBackstageData';
+import { useAuth } from '@/lib/authContext';
+import { eventFunctionId, categoryLabel } from '@/lib/roleRates';
 
 const DINHEIRO_TABS = ['mes', 'receber', 'fiscal', 'analise'];
 
@@ -40,6 +42,8 @@ export default function AllAccessDinheiro({
   useEffect(() => {
     if (DINHEIRO_TABS.includes(initialTab)) setActiveTab(initialTab);
   }, [initialTab]);
+
+  const { profile } = useAuth();
 
   // "Cobrar": monta a mesma mensagem dos Avisos e abre o WhatsApp do cliente.
   const chargeOnWhatsApp = (ev, cl) => {
@@ -192,6 +196,23 @@ export default function AllAccessDinheiro({
   }, [events, workByEvent, monthStart, monthEnd, clientMap]);
 
   // All pending receivable events across all time
+  // Por função (ideia #109): shows feitos no mês, somados pela função de cada trabalho.
+  // Só aparece quando o mês tem mais de uma função.
+  const byFunction = useMemo(() => {
+    const map = new Map();
+    for (const ev of monthEvents) {
+      if (!isDoneEvent(ev)) continue;
+      const id = eventFunctionId(ev, profile) || 'sem';
+      const cur = map.get(id) || { id, label: categoryLabel(id) || 'Sem função', value: 0, count: 0 };
+      cur.value += getEventCacheAmount(ev);
+      cur.count += 1;
+      map.set(id, cur);
+    }
+    const list = [...map.values()].sort((a, b) => b.value - a.value);
+    const max = list[0]?.value || 1;
+    return list.map((r) => ({ ...r, pct: `${Math.max(6, Math.round((r.value / max) * 100))}%` }));
+  }, [monthEvents, profile]);
+
   const allPendingReceivables = useMemo(() => {
     return events
       .filter((ev) => !isCancelledEvent(ev) && ev.payment_status !== 'paid')
@@ -583,6 +604,28 @@ export default function AllAccessDinheiro({
               Taxa de recebimento sobre o faturamento do mês.
             </div>
           </div>
+
+          {byFunction.length > 1 && (
+            <div className="rounded-xl bg-[#161616] border border-[#222222] p-3.5" data-testid="por-funcao">
+              <div className="font-tag text-[11px] tracking-[0.14em] text-[#a8a8a8] mb-3">POR FUNÇÃO</div>
+              <div className="space-y-2.5">
+                {byFunction.map((r) => (
+                  <div key={r.id} className="flex items-center gap-3">
+                    <span className="flex-1 text-[14px] font-bold text-white truncate">
+                      {r.label} <span className="font-tag text-[11px] text-[#888888]">{r.count}×</span>
+                    </span>
+                    <div className="w-16 h-1.5 rounded-full bg-[#2a2a2a] overflow-hidden shrink-0">
+                      <div style={{ width: r.pct }} className="h-full bg-[#ffd400]" />
+                    </div>
+                    <span className="font-tag text-[12px] text-white text-right whitespace-nowrap shrink-0">
+                      {isVisible ? formatCurrency(r.value) : '•••••'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[11px] text-[#888888] mt-2">Shows feitos no mês, pelo cachê de cada um.</p>
+            </div>
+          )}
           {slot(analiseExtra)}
         </section>
       )}

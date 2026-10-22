@@ -96,7 +96,7 @@ export function ContractPDFDocument({ event, client, settings = {} }) {
   const defaultClauses = [
     {
       num: '1. OBJETO',
-      text: `O CONTRATADO obriga-se a prestar serviços técnicos de ${event?.category || 'áudio/iluminação/produção'} para o evento "${event?.title || 'Evento'}", conforme especificações acordadas entre as partes.`,
+      text: `O CONTRATADO obriga-se a prestar serviços técnicos de ${event?.category_label || 'áudio/iluminação/produção'} para o evento "${event?.title || 'Evento'}", conforme especificações acordadas entre as partes.`,
     },
     {
       num: '2. PRAZO E LOCAL',
@@ -186,10 +186,10 @@ export function ContractPDFDocument({ event, client, settings = {} }) {
                   <Text style={s.eventValue}>{event.location_city}{event.location_state ? ` – ${event.location_state}` : ''}</Text>
                 </View>
               )}
-              {event?.category && (
+              {event?.category_label && (
                 <View style={s.eventItem}>
                   <Text style={s.eventLabel}>Tipo de Serviço</Text>
-                  <Text style={s.eventValue}>{event.category}</Text>
+                  <Text style={s.eventValue}>{event.category_label}</Text>
                 </View>
               )}
             </View>

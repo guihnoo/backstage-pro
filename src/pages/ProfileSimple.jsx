@@ -5,6 +5,7 @@ import { useFinancialVisibility } from '@/components/context/FinancialVisibility
 import { hardNavigate } from '@/lib/hardNavigate';
 import { getCategoryConfig, CATEGORIES, resolveCategoryId } from '@/lib/categoryConfig';
 import { WORK_LOG_MODES } from '@/lib/workLogMode';
+import { ratesListToMap, ratesMapToList, normalizeRoleRates } from '@/lib/roleRates';
 import {
   User, Phone, MapPin, Mail, LogOut, Save, Loader2, CheckCircle, Eye, EyeOff, Download,
   DollarSign, Target, Calendar, Camera, MessageCircle, Inbox, Building2, ChevronRight, Compass, BookOpen, Trash2,
@@ -110,6 +111,8 @@ export default function ProfileSimple() {
   const categoryId = profile?.category || 'lighting';
 
   const [form, setForm] = useState(() => profileToForm(profile));
+  // Outras funções com cachê diferente (ideia #109): { categoria: 'valor digitado' }
+  const [rates, setRates] = useState(() => ratesListToMap(profile?.role_rates));
 
   const config = getCategoryConfig(form.category || categoryId);
   const [saving, setSaving] = useState(false);
@@ -125,7 +128,10 @@ export default function ProfileSimple() {
   const { newCount: ownerNewFeedbacks } = useOwnerFeedbacks(owner);
 
   useEffect(() => {
-    if (profile) setForm(profileToForm(profile));
+    if (profile) {
+      setForm(profileToForm(profile));
+      setRates(ratesListToMap(profile.role_rates));
+    }
   }, [profile]);
 
   useEffect(() => {
@@ -134,8 +140,9 @@ export default function ProfileSimple() {
 
   // A barra de salvar só aparece quando algo mudou em relação ao que está gravado
   const isDirty = useMemo(
-    () => !sameFields(form, profileToForm(profile)) || !sameFields(pixForm, settingsToPix(userSettings)),
-    [form, pixForm, profile, userSettings]
+    () => !sameFields(form, profileToForm(profile)) || !sameFields(pixForm, settingsToPix(userSettings))
+      || JSON.stringify(ratesMapToList(rates, form.category)) !== JSON.stringify(normalizeRoleRates(profile?.role_rates, form.category)),
+    [form, pixForm, rates, profile, userSettings]
   );
 
   const handleExportData = async () => {
@@ -166,6 +173,7 @@ export default function ProfileSimple() {
         daily_rate: form.daily_rate !== '' ? Number(form.daily_rate) : null,
         monthly_goal_revenue: form.monthly_goal_revenue !== '' ? Number(form.monthly_goal_revenue) : null,
         monthly_goal_events: form.monthly_goal_events !== '' ? Number(form.monthly_goal_events) : null,
+        role_rates: ratesMapToList(rates, form.category),
       });
       perfilOk = true;
       const temPix = pixForm.pix_key.trim() || pixForm.cpf_cnpj.trim() || pixForm.report_subtitle.trim()
@@ -298,7 +306,8 @@ export default function ProfileSimple() {
 
         {/* Funcao e cache padrao */}
         <section className="rounded-2xl bg-[#161616] border border-[#222222] p-4 space-y-3">
-          <h2 className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">Minha função e cachê padrão</h2>
+          <h2 className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">Minhas funções e cachês</h2>
+          <div className={labelCls}>Função principal</div>
           <div className="grid grid-cols-2 gap-1.5">
             {Object.values(CATEGORIES).map((cat) => {
               const active = form.category === cat.id;
@@ -319,7 +328,7 @@ export default function ProfileSimple() {
             })}
           </div>
           <div>
-            <label htmlFor="goals-daily_rate" className={labelCls}>Cachê padrão por diária (R$)</label>
+            <label htmlFor="goals-daily_rate" className={labelCls}>Cachê da função principal por diária (R$)</label>
             <div className="relative">
               <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#666666]" />
               <input
@@ -334,9 +343,54 @@ export default function ProfileSimple() {
             </div>
             <p className="text-[11px] text-[#888888] mt-1">Já vem preenchido quando você cria um trabalho novo.</p>
           </div>
+          <div data-testid="outras-funcoes">
+            <div className={labelCls}>Outras funções (cachê diferente)</div>
+            {Object.keys(rates).filter((id) => id !== form.category).length > 0 && (
+              <div className="space-y-2 mb-2">
+                {Object.keys(rates).filter((id) => id !== form.category).map((id) => (
+                  <div key={id} className="flex items-center gap-2">
+                    <span className="flex-1 min-w-0 truncate text-[13px] font-extrabold text-white">{CATEGORIES[id]?.label || id}</span>
+                    <div className="relative w-36 shrink-0">
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#666666]" />
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        aria-label={`Cachê de ${CATEGORIES[id]?.label || id}`}
+                        value={rates[id]}
+                        onChange={(e) => setRates((r) => ({ ...r, [id]: e.target.value }))}
+                        placeholder="950"
+                        className={fieldCls}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      aria-label={`Tirar ${CATEGORIES[id]?.label || id}`}
+                      onClick={() => setRates((r) => { const next = { ...r }; delete next[id]; return next; })}
+                      className="w-9 h-9 shrink-0 rounded-full border border-[#333333] text-[#a8a8a8] flex items-center justify-center"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex flex-wrap gap-1.5">
+              {Object.values(CATEGORIES).filter((cat) => cat.id !== form.category && !(cat.id in rates)).map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setRates((r) => ({ ...r, [cat.id]: '' }))}
+                  className="h-8 px-3 rounded-full bg-transparent border border-dashed border-[#444444] text-xs font-bold text-[#c8c8c8]"
+                >
+                  + {cat.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-[11px] text-[#888888] mt-1">No Novo trabalho você escolhe a função e o cachê dela já vem preenchido.</p>
+          </div>
           {profile?.specialties?.length > 0 && (
             <div>
-              <div className={labelCls}>Também faço</div>
+              <div className={labelCls}>Especialidades</div>
               <div className="flex flex-wrap gap-1.5">
                 {profile.specialties.map((spec) => (
                   <span key={spec} className="h-8 px-3 rounded-full bg-[#0a0a0a] border border-[#333333] text-xs font-bold text-white flex items-center">
