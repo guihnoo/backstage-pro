@@ -3042,3 +3042,12 @@ Registro cronológico de tarefas executadas por agentes.
 - Vercel `index-B5PcdPEn.js`; chunk `ProfileSimple` com a barra nova.
 - Testes contra o site publicado (dados falsos): `profile-save-bar` e `profile-navigation` 2/2.
 - Branch `feat/google-liberacao` segue separada, sem publicar (espera o dominio).
+
+### REVISAO — telas que faltavam (Claude Code, 2026-10-22, branch `review/telas-fase1`)
+- **Pedido**: revisar Despesas, Metas, Dinheiro, Mentor, Perfil, Login, Onboarding, menu Mais, telas vazias e de erro, corrigindo o que achar.
+- **Metodo**: fotos 390 px com dados falsos (com dados / vazia / sem conexao) por um teste temporario fora do repo + leitura do codigo. Cuidado: o mock precisa aplicar os filtros do PostgREST (eq/gte/lte/neq/limit/order e o join `clients`), senao aparecem falsos problemas.
+- **Correcoes**: ver `docs/PLANO_REVISAO_GERAL.md` § Revisao 22/10 (D1-D5, M1-M5, $1-$5, P1-P3, X1, G1).
+- **Novo**: `isDoneEvent` (eventFinance), `formatHours` (money), `LoadErrorBanner`, `DeleteAccountDialog`, funcao `supabase/functions/delete-account` (nao publicada), `MEI_VALUES_YEAR`.
+- **Testes novos**: `expenses-edit-delete`, `profile-delete-account`, unit `isDoneEvent`. Ajustados aos textos novos: `app-routes-navigation`, `bottom-nav-navigation`, `calendar-navigation`, `modal-overflow`. Resultado: unit 281/281, E2E 107 passando (1 pulado).
+- **Extra**: manual do app (`userManualContent.js`) ainda descrevia os niveis antigos e "mais de 20 badges" -> corrigido.
+- **Deploy**: nenhum.

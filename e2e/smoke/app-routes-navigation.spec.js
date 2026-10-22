@@ -22,7 +22,7 @@ test('expenses nao fica preso em Carregando', async ({ page }) => {
   await expectRouteShell(page, {
     path: '/expenses',
     shell: (p) =>
-      p.getByRole('heading', { name: /gerenciador de despesas|erro ao carregar despesas/i }).or(
+      p.getByRole('heading', { name: /gerenciador de despesas|erro ao carregar despesas|não deu para carregar as despesas/i }).or(
         p.getByRole('link', { name: /despesas/i }),
       ),
   });
@@ -43,7 +43,7 @@ test('clients nao fica preso em Carregando', async ({ page }) => {
     path: '/clients',
     viaHome: true,
     shell: (p) =>
-      p.getByRole('heading', { name: /clientes|erro ao carregar clientes/i }).or(
+      p.getByRole('heading', { name: /clientes|erro ao carregar clientes|não deu para carregar os clientes/i }).or(
         p.getByRole('link', { name: /clientes/i }),
       ),
   });
@@ -63,7 +63,7 @@ test('reports nao fica preso em Carregando', async ({ page }) => {
   await expectRouteShell(page, {
     path: '/reports',
     shell: (p) =>
-      p.getByRole('heading', { name: /relatórios|erro ao carregar dados/i }).or(
+      p.getByRole('heading', { name: /relatórios|erro ao carregar dados|não deu para carregar o dinheiro/i }).or(
         p.getByRole('link', { name: /relatório/i }),
       ),
   });

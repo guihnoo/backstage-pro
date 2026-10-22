@@ -79,7 +79,7 @@ export default function Mapa() {
 
         <div id="mapa-visitado" className="scroll-mt-20">
           <Suspense fallback={<Skeleton className="w-full h-72 rounded-2xl" />}>
-            <BrazilVisitedMap events={activeEvents} clients={clients} showTitle={false} />
+            <BrazilVisitedMap events={events} clients={clients} showTitle={false} />
           </Suspense>
         </div>
 

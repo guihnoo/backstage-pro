@@ -5,7 +5,7 @@
 > Este documento ataca: "isso funciona de verdade no meu dia a dia?" e "por que tem tanta coisa na tela?".
 
 **Criado:** 2026-08-28 (Claude Code)
-**Status:** 🔄 Trilha A — Home ✅ · Agenda ✅ · **Clientes + `/client-detail` ✅ (2026-08-28)** · demais ⬜ · **P0 competência/valor recebido ✅ implementado (2026-10-09)**
+**Status:** 🔄 Trilha A — Home ✅ · Agenda ✅ · **Clientes + `/client-detail` ✅ (2026-08-28)** · **Despesas, Metas, Dinheiro, Mentor, Perfil, Onboarding, Login, Mais, telas vazias e de erro ✅ (2026-10-22)** · faltam PWA, acessibilidade e mobile transversal · **P0 competência/valor recebido ✅ implementado (2026-10-09)**
 **Decisões estratégicas aprovadas (2026-08-28):** ver §"Modelo oficial de competência" (**implementado em 2026-10-09** — ver §"Implementação") e §"Status de Negócio × Status Temporal" (**aprovada, ainda NÃO autoriza implementação**)
 **Prioridades P0:** (1) ~~competência/valor de dinheiro~~ ✅ 2026-10-09; (2) semântica de pagamentos parciais; (3) duas dimensões de status confundidas
 
@@ -88,20 +88,20 @@ Ordem aprovada pelo usuário (2026-08-28) — não imutável se a arquitetura re
 | 2 | Detalhe do Cliente `/client-detail` | ✅ 2026-08-28 (junto de Clientes) |
 | 3 | EventDetailModal (componente transversal — calendar + reports) | 🔄 parcial (Agenda) |
 | 4 | Registro de Horas / DailyWork | 🔄 parcial (Agenda) |
-| 5 | Despesas `/expenses` | ⬜ |
-| 6 | Metas `/goals` | ⬜ |
-| 7 | Relatórios `/reports` | ⬜ (leitura financeira parcial já feita no P0) |
-| 8 | IA Mentor | ⬜ |
-| 9 | Perfil / Configurações | ⬜ |
+| 5 | Despesas `/expenses` | ✅ 2026-10-22 (Claude Code, ver § Revisão 22/10) |
+| 6 | Metas `/goals` | ✅ 2026-10-22 (Claude Code, ver § Revisão 22/10) |
+| 7 | Relatórios `/reports` (Dinheiro) | ✅ 2026-10-22 (Claude Code, ver § Revisão 22/10) |
+| 8 | IA Mentor | ✅ 2026-10-22 (Claude Code, ver § Revisão 22/10) |
+| 9 | Perfil / Configurações | ✅ 2026-10-22 (Claude Code, ver § Revisão 22/10) |
 | 10 | Google Calendar | ⬜ (Trilha C) |
 | 11 | Push Notifications | ⬜ (Trilha C) |
 | 12 | Offline / Sync / Realtime | ⬜ (Trilha C) |
-| 13 | Onboarding | ⬜ |
-| 14 | Login / Cadastro / Recuperação | ⬜ |
-| 15 | Navegação global / Bottom Nav / "Mais" | ⬜ |
+| 13 | Onboarding | ✅ 2026-10-22 (Claude Code, ver § Revisão 22/10) |
+| 14 | Login / Cadastro / Recuperação | ✅ 2026-10-22 (Claude Code, ver § Revisão 22/10) |
+| 15 | Navegação global / Bottom Nav / "Mais" | ✅ 2026-10-22 (Claude Code, ver § Revisão 22/10) |
 | 16 | PWA / instalação | ⬜ |
-| 17 | Empty states (varredura transversal) | ⬜ |
-| 18 | Loading / error states (varredura transversal) | ⬜ |
+| 17 | Empty states (varredura transversal) | ✅ 2026-10-22 (Claude Code, ver § Revisão 22/10) |
+| 18 | Loading / error states (varredura transversal) | ✅ 2026-10-22 (Claude Code, ver § Revisão 22/10) |
 | 19 | Acessibilidade (varredura transversal) | ⬜ |
 | 20 | Experiência mobile global (varredura transversal) | ⬜ |
 
@@ -1093,6 +1093,38 @@ Aplicando a hierarquia desejada (ESSENCIAL AGORA → AÇÃO PRINCIPAL → INFO S
 | CLI-16 | Um componente de avatar de cliente/empresa | `components/clients/*` | limpeza | P3 | — |
 
 ---
+
+### Revisão 22/10 — Despesas, Metas, Dinheiro, Mentor, Perfil, Entrada, Mais, vazias e erro (Claude Code)
+
+Método: fotos de cada tela no celular (390 px) com dados falsos em 3 situações (com dados, vazia, sem conexão) + leitura do código. Tudo marcado 🔧 abaixo foi **corrigido** na branch `review/telas-fase1`.
+
+| # | Tela · item | Status | O que era → o que ficou |
+|---|---|---|---|
+| D1 | Despesas · excluir | 🔧 | Não havia como excluir despesa → botão na edição + confirmação |
+| D2 | Despesas · reembolso | 🔧 | Não dava para marcar reembolso recebido → "Já recebi o reembolso" |
+| D3 | Despesas · lista | 🌀 | Sem data, item não era botão → data + categoria, botão acessível |
+| D4 | Despesas · aviso duplo | 🔧 | Dois toasts ao salvar → um |
+| D5 | Despesas · código | ❌ | Filtros/lista por mês antigos, sem uso → removidos (`ExpenseListItem` apagado) |
+| M1 | Metas · nível e conquistas | 🔧 | Contavam só status "concluído" (1 de 41 no banco) → regra única `isDoneEvent` (já começou e não foi cancelado) |
+| M2 | Metas · próximos shows | 🔧 | Show cancelado aparecia → fora |
+| M3 | Metas · textos | 🌀 | "eventos no ano" contando a vida toda, "empresas" incluindo pessoa física, "1.8 dias", "Outubro De" → corrigidos |
+| M4 | Metas · MEI | 🔧 | DAS de 2025 (R$ 80,90) → 2026 (R$ 86,05 serviços); ano centralizado em `MEI_VALUES_YEAR` |
+| M5 | Metas · sem conexão | 🔧 | Mostrava tudo zerado → aviso "Não deu para carregar" |
+| $1 | Dinheiro · a receber | 🔧 | Somava shows futuros (R$ 4.200) enquanto Início/Mentor mostravam só feitos (R$ 950) → mesma regra; futuros em "Ainda vão acontecer" |
+| $2 | Dinheiro · quem mais te pagou | 🔧 | Somava o que nem foi pago e cortava o valor → só o que entrou no mês, sem corte |
+| $3 | Dinheiro · análise | 🔧 | "Realizados" contava futuros → só feitos |
+| $4 | Dinheiro · fiscal | 🌀 | "Pendente" confundia com pagamento → "Sem nota" |
+| $5 | Dinheiro · código | ❌ | ~380 linhas da tela antiga (modais, filtros, gráficos) → removidas |
+| P1 | Perfil · excluir conta | 🔧 | Prometido na privacidade e inexistente → "Excluir minha conta" (função `delete-account`, **não publicada**) |
+| P2 | Perfil · modelos | 🌀 | "Templates de Evento" depois de "Sair" → "Modelos de trabalho" junto das configurações |
+| P3 | Perfil · crew pass e Mapa | 🔧 | Contavam shows futuros como feitos → `isDoneEvent` |
+| T1 | Mentor | ✅ | Ok; atalho de teclado só no computador; saudação de madrugada = "Boa noite" |
+| E1 | Login/Cadastro/Senha | ✅ | Ok; "OAuth 2.0 · Supabase" → "o app não vê sua senha do Google" |
+| E2 | Onboarding | ✅ | 5 passos ok. 🌀 Área usa emojis (Perfil usa barras) — anotado |
+| N1 | Menu Mais | ✅ | Ok |
+| V1 | Telas vazias | ✅ | Todas dizem o que fazer. Horas "0.0h" → `formatHours` ("8,5h") |
+| X1 | Telas de erro | 🔧 | 5 textos diferentes (um em rosa) → "Não deu para carregar …" + "Tentar de novo"; Início/Metas/Mapa avisam em vez de mostrar zero |
+| G1 | Global · acento em Anton | 🔧 | Título cortado com reticências perdia o acento (DIÁRIA → DIARIA) → `line-height` em `.font-poster.truncate` |
 
 ## Trilha C — Integrações "quase funciona"
 

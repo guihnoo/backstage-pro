@@ -30,7 +30,7 @@ test.describe('overflow em modais e sheets (mobile)', () => {
   test('goals badge sheet sem overflow horizontal', async ({ page }) => {
     await gotoAuthed(page, '/goals');
     await page.getByText('Primeira Diária').click();
-    await expect(page.getByText('Complete seu primeiro evento')).toBeVisible({
+    await expect(page.getByText('Faça seu primeiro show')).toBeVisible({
       timeout: 10_000,
     });
 

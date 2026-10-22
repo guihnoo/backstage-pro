@@ -17,7 +17,7 @@ test('calendar nao fica preso em Carregando apos navegacao', async ({ page }) =>
   // Com sessão fake a API pode falhar; o importante é sair do loading e renderizar o shell.
   const calendarShell = page
     .getByRole('link', { name: /agenda/i })
-    .or(page.getByRole('heading', { name: /agenda|calendário|erro ao carregar agenda/i }))
+    .or(page.getByRole('heading', { name: /agenda|calendário|erro ao carregar agenda|não deu para carregar a agenda/i }))
     .or(page.getByRole('button', { name: /tentar novamente/i }));
 
   await expect(calendarShell.first()).toBeVisible({ timeout: 10_000 });

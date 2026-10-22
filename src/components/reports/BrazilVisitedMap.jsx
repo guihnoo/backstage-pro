@@ -11,7 +11,7 @@ import {
 } from '@/lib/parseEventLocation';
 import { latlngToSvg, STATE_CENTROIDS } from '@/lib/brazilMapProjection';
 import { requestMapTour } from '@/lib/appTourBus';
-import { isCancelledEvent } from '@/lib/eventFinance';
+import { isDoneEvent } from '@/lib/eventFinance';
 import { Link } from 'react-router-dom';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import {
@@ -194,8 +194,9 @@ function BrazilVisitedMapInner({ events = [], clients = [], showTitle = true }) 
   const [pinnedCityKey, setPinnedCityKey] = useState(null);
   const [hoverCityKey, setHoverCityKey] = useState(null);
 
+  // Só onde você já trabalhou: show que já aconteceu e não foi cancelado
   const activeEvents = useMemo(
-    () => events.filter((ev) => !isCancelledEvent(ev)),
+    () => events.filter((ev) => isDoneEvent(ev)),
     [events]
   );
 
@@ -208,7 +209,7 @@ function BrazilVisitedMapInner({ events = [], clients = [], showTitle = true }) 
     let latestKey = null;
 
     for (const ev of events) {
-      if (isCancelledEvent(ev)) continue;
+      if (!isDoneEvent(ev)) continue;
 
       let uf = normalizeStateCode(ev.location_state);
       if (!uf) uf = inferStateFromLocation(ev.location);

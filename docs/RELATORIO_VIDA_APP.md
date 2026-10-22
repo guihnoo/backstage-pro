@@ -193,6 +193,10 @@ Os escopos de agenda são "sensíveis": com o app em **Testing**, só entra quem
 
 ## Changelog
 
+### 2026-10-22 — Revisão das telas que faltavam (Claude Code — branch `review/telas-fase1`, **não publicado**)
+
+Despesas, Metas, Dinheiro, Mentor, Perfil, Login/Cadastro, Onboarding, menu Mais, telas vazias e de erro — com fotos no celular em 3 situações (com dados, vazia, sem conexão). Tabela item a item em `docs/PLANO_REVISAO_GERAL.md` § Revisão 22/10. Principais: **Despesas não tinha como excluir** nem marcar reembolso recebido; **nível/conquistas de Metas só contavam status "concluído"** (1 de 41 no banco) → regra única `isDoneEvent` (também no crew pass e no Mapa, que contavam shows futuros); **"A receber" do Dinheiro somava shows futuros** e não batia com Início/Mentor; "quem mais te pagou" somava o que não foi pago; DAS do MEI de 2025 → 2026 (R$ 86,05); **"Excluir minha conta"** (prometido na privacidade) com função `delete-account` **ainda não publicada**; erros com o mesmo texto e aviso em vez de zeros; horas "8,5h"; acento em títulos Anton cortados; ~450 linhas de código morto removidas (Despesas, Clientes, Dinheiro, Agenda — lint limpo nessas telas); manual do app com os níveis e conquistas atuais. Testes: unit 281/281, E2E 107 passando (1 pulado), 6 testes antigos ajustados aos textos novos.
+
 ### 2026-10-22 — Perfil: barra SALVAR presa em cima do menu (Claude Code — **publicado** `b849156`, testes do Perfil contra o site publicado ok)
 
 Bug visto pelo Guih: o SALVAR ALTERAÇÕES do Perfil era `sticky` e andava pela tela ao rolar (ficava por cima dos cartões e depois saía com a página). Agora é uma barra presa logo acima do menu de baixo (`createPortal` no `body`, `fixed`), que só aparece quando há alteração não salva (compara o formulário com o perfil/PIX gravados, como texto: "12" = 12) e mostra "SALVO" por 2,5 s. Teste novo `e2e/regression/profile-save-bar.spec.js` (some sem alteração, posição igual no topo e no fim da página, some ao voltar o valor).
@@ -778,6 +782,8 @@ Padrão do protótipo ("Modal · Novo trabalho") aplicado **nos componentes base
 - (2026-10-21) Testar o Google Agenda v2 com a conta real: ligar "Trazer shows" e escolher a agenda dos shows no Perfil (vem desligado)
 - (2026-10-21) Avisos no celular: a rodada das 8h (`send-push-digest`, 11:00 UTC) de 21/10 deu **500**; a das 18h deu 200. O `net.http_post` do cron 027 usa o timeout padrão de 5 s (a função leva ~26 s) — olhar o log do 500 e subir o timeout
 - (2026-10-21) Investigar o push desconhecido para `main` em 21/10 03:45
+- (2026-10-22) **Publicar a revisão das telas** (`review/telas-fase1`): front + função `delete-account` (verify_jwt padrão)
+- (2026-10-22) Onboarding: área com emojis (Perfil usa barras coloridas) — alinhar se quiser
 
 ### Média
 6. Animações financeiras / charts animados no dashboard (`vendor-charts` já bundlado)

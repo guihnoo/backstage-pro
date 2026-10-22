@@ -31,7 +31,7 @@ test('bottom nav troca pagina sem precisar de refresh', async ({ page }) => {
 
   await clickNavAndWait(page, /^agenda$/i, /\/calendar/);
   await expectPageShell(page, (p) =>
-    p.getByRole('heading', { name: /^agenda$/i }).or(p.getByText(/erro ao carregar agenda/i)),
+    p.getByRole('heading', { name: /^agenda$/i }).or(p.getByText(/erro ao carregar agenda|não deu para carregar a agenda/i)),
   );
 
   await openMaisAndNavigate(page, /^metas$/i, /\/goals/);
@@ -41,7 +41,7 @@ test('bottom nav troca pagina sem precisar de refresh', async ({ page }) => {
 
   await openMaisAndNavigate(page, /^clientes$/i, /\/clients/);
   await expectPageShell(page, (p) =>
-    p.getByRole('heading', { name: /clientes|erro ao carregar clientes/i }).or(
+    p.getByRole('heading', { name: /clientes|erro ao carregar clientes|não deu para carregar os clientes/i }).or(
       p.getByRole('link', { name: /clientes/i }),
     ),
   );
@@ -66,7 +66,7 @@ test('apos FAB novo evento, nav continua funcionando sem refresh', async ({ page
 
   await openMaisAndNavigate(page, /^clientes$/i, /\/clients/);
   await expectPageShell(page, (p) =>
-    p.getByRole('heading', { name: /clientes|erro ao carregar clientes/i }).or(
+    p.getByRole('heading', { name: /clientes|erro ao carregar clientes|não deu para carregar os clientes/i }).or(
       p.getByRole('link', { name: /clientes/i }),
     ),
   );

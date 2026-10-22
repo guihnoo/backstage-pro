@@ -261,11 +261,11 @@ export const USER_MANUAL_SECTIONS = [
       },
       {
         heading: 'Nível',
-        body: 'Pirâmide: Freelancer em Ascensão → Veterano → Pro → Astro → Lenda. Baseado em eventos concluídos.',
+        body: 'Cinco níveis: Staff → Backstage (5 shows) → All Access (20) → Headliner (50) → Lenda (100). Conta os shows que já aconteceram e não foram cancelados.',
       },
       {
         heading: 'Conquistas (badges)',
-        body: 'Mais de 20 badges desbloqueáveis. Ao conquistar, animação de partículas é exibida.',
+        body: '6 conquistas (primeira diária, 5, 20 e 50 shows, meta de faturamento e meta de diárias do mês). Ao conquistar, aparece uma animação.',
       },
       {
         heading: 'Painel MEI',

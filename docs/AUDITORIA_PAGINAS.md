@@ -122,6 +122,8 @@
 ---
 
 ## Despesas `/expenses`
+> **Revisão funcional 2026-10-22** (Claude Code, branch `review/telas-fase1`): excluir e reembolso recebido na edição, data em cada gasto, código antigo removido. Detalhes em `PLANO_REVISAO_GERAL.md` § Revisão 22/10.
+
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
@@ -136,6 +138,8 @@
 ---
 
 ## Relatórios `/reports`
+> **Revisão funcional 2026-10-22** (Claude Code, branch `review/telas-fase1`): "A receber" igual ao Início (só shows feitos), futuros em lista separada; "quem mais te pagou" só com o que entrou; Análise conta só feitos; ~380 linhas mortas removidas. Detalhes em `PLANO_REVISAO_GERAL.md` § Revisão 22/10.
+
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
@@ -170,6 +174,8 @@
 ---
 
 ## Metas `/goals`
+> **Revisão funcional 2026-10-22** (Claude Code, branch `review/telas-fase1`): nível/conquistas pela regra `isDoneEvent`; cancelado fora dos próximos; DAS 2026; aviso quando não carrega. Detalhes em `PLANO_REVISAO_GERAL.md` § Revisão 22/10.
+
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
@@ -184,6 +190,8 @@
 ---
 
 ## Perfil `/profile`
+> **Revisão funcional 2026-10-22** (Claude Code, branch `review/telas-fase1`): "Excluir minha conta" (função `delete-account`, não publicada); "Modelos de trabalho" junto das configurações. Detalhes em `PLANO_REVISAO_GERAL.md` § Revisão 22/10.
+
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
@@ -195,6 +203,8 @@
 ---
 
 ## AI Mentor `/ai-mentor`
+> **Revisão funcional 2026-10-22** (Claude Code, branch `review/telas-fase1`): ok; atalho de teclado só no computador; saudação de madrugada. Detalhes em `PLANO_REVISAO_GERAL.md` § Revisão 22/10.
+
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
@@ -221,6 +231,10 @@
 ---
 
 ## Bugs conhecidos (não repetir)
+
+- **Contar "show feito" por status** (`completed`) quase não funciona: o status quase nunca é marcado. Use `isDoneEvent` (já começou e não foi cancelado).
+- **"A receber"** = show já feito e não pago (`isReceivableEvent`/`isDoneEvent`); show futuro é previsão, não dívida.
+- **Mock de E2E sem filtros** do PostgREST mostra falsos problemas (cancelados, passados, "Sem empresa").
 
 | Bug | Status | Fix / commit |
 |-----|--------|----------------|

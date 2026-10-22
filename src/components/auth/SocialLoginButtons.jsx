@@ -78,7 +78,7 @@ export default function SocialLoginButtons({ mode = 'login' }) {
 
       <div className="flex items-center justify-center gap-1.5 pt-1 text-[11px] text-[#a8a8a8]">
         <ShieldCheck className="w-3.5 h-3.5 text-[#ffd400]" />
-        <span>Autenticação segura · OAuth 2.0 · Supabase</span>
+        <span>Seguro: o app não vê sua senha do Google</span>
       </div>
     </div>
   );

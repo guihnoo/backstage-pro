@@ -153,6 +153,7 @@
 | 111 | **Orçamento em PDF** para mandar à produtora antes do show (hoje "Enviar proposta" é só texto) | 2026-10-22 | ⬜ Sugestão do Claude |
 | 112 | **Deslocamento por km** virando despesa (km × valor) | 2026-10-22 | ⬜ Sugestão do Claude |
 | 113 | **Checklist de equipamento por show** (o que levar e o que voltou) | 2026-10-22 | ⬜ Sugestão do Claude |
+| 115 | **Excluir minha conta** no app (LGPD + verificação do Google) | 2026-10-22 | 🟡 Pronto na branch `review/telas-fase1` (Perfil → Conta + função `delete-account`); falta publicar |
 | 114 | Equipe: convidar colegas para o mesmo show | 2026-10-22 | ❌ Guih decidiu que o app **não** terá isso (22/10) — não sugerir de novo |
 
 ---

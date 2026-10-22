@@ -27,6 +27,7 @@ import { useExpenses } from '@/lib/useExpenses';
 import { useDailyWork } from '@/lib/useDailyWork';
 import { findRecentMissingHours } from '@/lib/homeSummary';
 import HomeMonthSummary from '@/components/home/HomeMonthSummary';
+import LoadErrorBanner from '@/components/layout/LoadErrorBanner';
 
 const EventDetailModal = lazy(() => import('@/components/calendar/EventDetailModal'));
 const EventForm = lazy(() => import('@/components/calendar/EventForm'));
@@ -128,6 +129,7 @@ export default function Home() {
   const firstName = profile?.name?.split(' ')[0] || user?.email?.split('@')[0] || 'Profissional';
   const greeting = (() => {
     const h = new Date().getHours();
+    if (h < 5) return 'Boa noite'; // saindo do show de madrugada
     if (h < 12) return 'Bom dia';
     if (h < 18) return 'Boa tarde';
     return 'Boa noite';
@@ -323,6 +325,9 @@ export default function Home() {
         <HomeSection label="DINHEIRO">
           {cockpitLoading ? (
             <FinanceiroSkeleton />
+          ) : error && !(events?.length) ? (
+            // Sem conexão os valores viriam zerados ("ninguém te devendo") — avisa em vez disso
+            <LoadErrorBanner what="seu dinheiro" onRetry={refreshCockpit} />
           ) : (
             <AReceber
               rows={cockpitReceivableRows}
