@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import appToast from '@/lib/appToast';
 import { normalizeDateString, todayLocalISO } from '@/components/utils/dateUtils';
 import { useEvents } from '@/lib/useEvents';
+import { WORK_LOG_MODES, resolveWorkLogMode, eventWorkLogModeToSave } from '@/lib/workLogMode';
 import { getEventCacheAmount, isCancelledEvent } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { useAuth } from '@/lib/authContext';
@@ -56,6 +57,7 @@ const defaultState = {
   observacoes_md: '',
   nf_number: '',
   nf_issued_at: '',
+  work_log_mode: null, // null = segue o Perfil (ideia #107)
 };
 
 export default function EventForm({
@@ -118,6 +120,7 @@ export default function EventForm({
       observacoes_md: seed.observacoes_md || '',
       nf_number: seed.nf_number || seed.nfe_numero || '',
       nf_issued_at: seed.nf_issued_at ? seed.nf_issued_at.slice(0, 10) : '',
+      work_log_mode: seed.work_log_mode || null,
     });
     // "Repetir" sempre começa desligado ao abrir o formulário (antes ficava ligado e duplicava séries).
     setRepeatEnabled(false);
@@ -390,6 +393,8 @@ export default function EventForm({
           : Number(formData.cache_valor_base),
         // Alimentacao: so manda quando trocou (depende da migration 041).
         ...((formData.meal_policy || null) !== (event?.meal_policy ?? null) ? { meal_policy: formData.meal_policy || null } : {}),
+        // Registro das horas deste trabalho (migration 046): só manda quando trocou.
+        ...((formData.work_log_mode ?? null) !== (event?.work_log_mode ?? null) ? { work_log_mode: formData.work_log_mode ?? null } : {}),
         color: resolveEventColor({ client_id: formData.client_id, color: formData.color }, selectedClient),
         location: formData.location?.trim() || null,
         location_city: formData.location_city || null,
@@ -748,6 +753,31 @@ export default function EventForm({
                       </button>
                     ))}
                   </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label>Registro das horas</Label>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {WORK_LOG_MODES.map((m) => {
+                      const active = resolveWorkLogMode({ work_log_mode: formData.work_log_mode }, profile) === m.id;
+                      return (
+                        <button
+                          key={m.id}
+                          type="button"
+                          aria-pressed={active}
+                          onClick={() => setField('work_log_mode', eventWorkLogModeToSave(m.id, profile))}
+                          className={`h-[38px] rounded-full border text-xs font-extrabold transition-colors ${
+                            active ? 'bg-white border-white text-[#0a0a0a]' : 'bg-transparent border-[#333333] text-[#c8c8c8]'
+                          }`}
+                        >
+                          {m.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[11px] text-[#888888]">
+                    {formData.work_log_mode ? 'Só neste trabalho.' : 'Igual ao Perfil.'}
+                  </p>
                 </div>
 
                 <div className="space-y-1.5">

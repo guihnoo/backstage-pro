@@ -5,7 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { uploadUserFile } from '@/lib/uploadFile';
-import { useDailyWork } from '@/lib/useDailyWork';
+// Fila offline: no local do show o sinal costuma faltar.
+import { useDailyWork } from '@/lib/offline/useOfflineDailyWork';
+import { useAuth } from '@/lib/authContext';
+import { resolveWorkLogMode } from '@/lib/workLogMode';
+import PontoFields from '@/components/hours/PontoFields';
 import { X, Clock, Camera, Loader2, AlertCircle, Save, Zap, Calendar as CalendarIcon, Trash2 } from 'lucide-react';
 import appToast from '@/lib/appToast';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
@@ -28,7 +32,11 @@ export default function EventHoursSheet({
   existingWork,
   onSave 
 }) {
-    const { create, update, delete: deleteWork } = useDailyWork();
+  const { create, update, delete: deleteWork } = useDailyWork();
+  const { profile } = useAuth();
+  // Modo "só entrada e saída" (Perfil ou o próprio trabalho); dá para abrir a ficha completa só desta vez.
+  const [fichaCompleta, setFichaCompleta] = useState(false);
+  const isPonto = resolveWorkLogMode(event, profile) === 'ponto' && !fichaCompleta;
   const { primaryHex } = useCategoryTheme();
   const { formatCurrency, isVisible } = useFinancialVisibility();
   useAppScrollLock(isOpen);
@@ -59,6 +67,7 @@ export default function EventHoursSheet({
   // CRÍTICO: Inicializar formulário corretamente
   useEffect(() => {
     if (isOpen) {
+      setFichaCompleta(false);
       let dateToUse;
 
       if (existingWork?.id) {
@@ -365,6 +374,15 @@ export default function EventHoursSheet({
                 </div>
 
                 {/* Horários */}
+                {isPonto ? (
+                  <PontoFields
+                    idPrefix="mobile-ponto"
+                    entry={formData.entry_time}
+                    exit={formData.exit_time}
+                    onEntryChange={(v) => handleChange('entry_time', v)}
+                    onExitChange={(v) => handleChange('exit_time', v)}
+                  />
+                ) : (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label>Entrada / Saída *</Label>
@@ -432,8 +450,9 @@ export default function EventHoursSheet({
                   </div>
                 </div>
                 </div>
+                )}
 
-                {REGIME_POR_DIA_ATIVO && (
+                {REGIME_POR_DIA_ATIVO && !isPonto && (
                   <DayChoicePicker
                     regime={formData.regime}
                     horaExtra={formData.hora_extra}
@@ -457,8 +476,33 @@ export default function EventHoursSheet({
                   </label>
                 )}
 
+                {/* Modo ponto: só horas e cachê */}
+                {hours.total > 0 && isPonto && (
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="rounded-lg p-3 text-center border border-[#2a2a2a] bg-[#1f1f1f]">
+                      <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Horas</p>
+                      <p className="text-lg font-black font-tag leading-tight" style={{ color: primaryHex }}>{formatHours(hours.total)}</p>
+                    </div>
+                    <div className="rounded-lg p-3 text-center border border-[#ffd400]/25 bg-[#ffd400]/5">
+                      <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Cachê do dia</p>
+                      <p className="text-sm font-black text-[#ffd400] font-tag leading-tight">
+                        {isVisible ? formatCurrency(estimatedCache) : '••••'}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {isPonto && (
+                  <button
+                    type="button"
+                    onClick={() => setFichaCompleta(true)}
+                    className="text-xs text-[#a8a8a8] underline underline-offset-2"
+                  >
+                    Ver ficha completa (extras, observações, foto)
+                  </button>
+                )}
+
                 {/* Cálculos — 3 cards visuais */}
-                {hours.total > 0 && (
+                {hours.total > 0 && !isPonto && (
                   <div className="grid grid-cols-3 gap-2">
                     <div className="rounded-lg p-3 text-center border border-[#2a2a2a] bg-[#1f1f1f]">
                       <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Horas</p>
@@ -482,6 +526,7 @@ export default function EventHoursSheet({
                   </p>
                 )}
 
+                {!isPonto && (<>
                 {/* Observações */}
                 <div className="space-y-2">
                   <Label htmlFor="mobile_notes">
@@ -548,6 +593,7 @@ export default function EventHoursSheet({
                     />
                   )}
                 </div>
+                </>)}
               </form>
             </div>
 

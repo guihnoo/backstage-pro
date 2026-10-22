@@ -11,7 +11,10 @@ import { getTimer, getElapsedMs, formatElapsed } from '@/lib/timerStore';
 import { computeWorkDay, addMinutesToClock, isSameEntryExit, elapsedMsToMinutes, REGIME_POR_DIA_ATIVO, defaultDayChoice } from '@/lib/workDay';
 import DayChoicePicker from '@/components/hours/DayChoicePicker';
 import { normalizeDateString, formatDisplayDate } from '@/components/utils/dateUtils';
-import { useDailyWork } from '@/lib/useDailyWork';
+// Fila offline: no local do show o sinal costuma faltar.
+import { useDailyWork } from '@/lib/offline/useOfflineDailyWork';
+import { resolveWorkLogMode } from '@/lib/workLogMode';
+import PontoFields from '@/components/hours/PontoFields';
 import { useAuth } from '@/lib/authContext';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
@@ -33,7 +36,7 @@ const emptyState = {
 };
 
 export default function DailyWorkModal({ isOpen, onClose, date, event, existingWork, onSuccess }) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { create: createDailyWork, update: updateDailyWork } = useDailyWork();
   const { primaryHex } = useCategoryTheme();
   const { formatCurrency, isVisible } = useFinancialVisibility();
@@ -43,6 +46,9 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState(emptyState);
+  // Modo "só entrada e saída" (Perfil ou o próprio trabalho); dá para abrir a ficha completa só desta vez.
+  const [fichaCompleta, setFichaCompleta] = useState(false);
+  const isPonto = resolveWorkLogMode(event, profile) === 'ponto' && !fichaCompleta;
 
   // Timer ativo para este evento
   const [activeTimer, setActiveTimer] = useState(() => getTimer());
@@ -63,6 +69,7 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
 
   useEffect(() => {
     if (!isOpen) return;
+    setFichaCompleta(false);
 
     if (existingWork?.id) {
       setFormData({
@@ -246,6 +253,15 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                 </div>
               )}
 
+              {isPonto ? (
+                <PontoFields
+                  idPrefix="dw-ponto"
+                  entry={formData.entry_time}
+                  exit={formData.exit_time}
+                  onEntryChange={(v) => setField('entry_time', v)}
+                  onExitChange={(v) => setField('exit_time', v)}
+                />
+              ) : (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label>Entrada / Saída</Label>
@@ -271,8 +287,9 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                   <Input type="time" value={formData.exit_time} onChange={(e) => setField('exit_time', e.target.value)} className="h-12" aria-label="Horário de saída" />
                 </div>
               </div>
+              )}
 
-              {REGIME_POR_DIA_ATIVO && (
+              {REGIME_POR_DIA_ATIVO && !isPonto && (
                 <DayChoicePicker
                   regime={formData.regime}
                   horaExtra={formData.hora_extra}
@@ -295,7 +312,30 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                 <p className="text-xs text-[#ffd400] -mt-1">Usando a duração do cronômetro: {formatHours(summary.total)}.</p>
               )}
 
-              {summary.total > 0 && (
+              {summary.total > 0 && isPonto && (
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="rounded-lg p-3 text-center border border-[#2a2a2a] bg-[#1f1f1f]">
+                    <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Horas</p>
+                    <p className="text-lg font-black" style={{ color: primaryHex }}>{formatHours(summary.total)}</p>
+                  </div>
+                  <div className="rounded-lg p-3 text-center border border-[#ffd400]/25 bg-[#ffd400]/5">
+                    <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Cachê do dia</p>
+                    <p className="text-base font-black text-[#ffd400] leading-tight">
+                      {isVisible ? formatCurrency(summary.cache) : '••••'}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {isPonto && (
+                <button
+                  type="button"
+                  onClick={() => setFichaCompleta(true)}
+                  className="text-xs text-[#a8a8a8] underline underline-offset-2"
+                >
+                  Ver ficha completa (extras, alimentação, observações)
+                </button>
+              )}
+              {summary.total > 0 && !isPonto && (
                 <div className="grid grid-cols-3 gap-2">
                   <div className="rounded-lg p-3 text-center border border-[#2a2a2a] bg-[#1f1f1f]">
                     <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">Horas</p>
@@ -319,7 +359,7 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                 </p>
               )}
 
-              {mealPolicy === 'reembolso' && (
+              {mealPolicy === 'reembolso' && !isPonto && (
                 <div className="space-y-2">
                   <Label htmlFor="dw-meal">Alimentação do dia (cliente reembolsa)</Label>
                   <Input
@@ -333,10 +373,12 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                 </div>
               )}
 
+              {!isPonto && (
               <div className="space-y-2">
                 <Label htmlFor="dw-notes">Observações</Label>
                 <Textarea id="dw-notes" value={formData.notes} onChange={(e) => setField('notes', e.target.value)} placeholder="Detalhes do turno..." rows={3} />
               </div>
+              )}
             </div>
           </ScrollArea>
 

@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/authContext';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { getCategoryConfig, CATEGORIES, resolveCategoryId } from '@/lib/categoryConfig';
+import { WORK_LOG_MODES } from '@/lib/workLogMode';
 import {
   User, Phone, MapPin, Mail, LogOut, Save, Loader2, CheckCircle, Eye, EyeOff, Download,
   DollarSign, Target, Calendar, Camera, MessageCircle, Inbox, Building2, ChevronRight, Compass, BookOpen, Trash2,
@@ -42,6 +43,7 @@ function profileToForm(profile) {
     monthly_goal_revenue: profile?.monthly_goal_revenue || '',
     monthly_goal_events: profile?.monthly_goal_events || '',
     category: resolveCategoryId(profile?.category || ''),
+    work_log_mode: profile?.work_log_mode === 'ponto' ? 'ponto' : 'completo',
   };
 }
 
@@ -344,6 +346,31 @@ export default function ProfileSimple() {
               </div>
             </div>
           )}
+        </section>
+
+        {/* Como registra o trabalho (ideia #107) */}
+        <section className="rounded-2xl bg-[#161616] border border-[#222222] p-4 space-y-3">
+          <h2 className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">Como você registra o trabalho</h2>
+          <div className="grid grid-cols-1 gap-2">
+            {WORK_LOG_MODES.map((m) => {
+              const active = form.work_log_mode === m.id;
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setForm((f) => ({ ...f, work_log_mode: m.id }))}
+                  className={`text-left rounded-[14px] border px-3.5 py-3 transition-colors ${
+                    active ? 'bg-white border-white text-[#0a0a0a]' : 'bg-[#0a0a0a] border-[#2a2a2a] text-white'
+                  }`}
+                >
+                  <span className="block text-[14px] font-extrabold">{m.label}</span>
+                  <span className={`block text-[12px] mt-0.5 ${active ? 'text-[#333333]' : 'text-[#888888]'}`}>{m.hint}</span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-[11px] text-[#888888]">Vale para todos os trabalhos; dá para mudar só um no Novo trabalho › Mais detalhes.</p>
         </section>
 
         {/* Dados pessoais */}
