@@ -3,11 +3,11 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-10-21 (Google Agenda v2 **publicado**; Claude Code)  
+**Última atualização:** 2026-10-22 (barra SALVAR do Perfil **publicada**; Claude Code)  
 **Pendente de deploy:** nada. Migrations 034–044 aplicadas em produção (043 e 044 em 2026-10-21 pelo Claude Code)  
 **Pasta local:** `C:\dev\backstage-pro` (desde 2026-10-09; a cópia antiga em `OneDrive\Documentos\backstage-pro` não é mais a pasta de trabalho)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último deploy:** 2026-10-21 — Google Agenda v2 (`b3ee776`, push de `feat/google-agenda` para `main`; bundle `index-DhSlvymM.js`)  
+**Último deploy:** 2026-10-22 — barra SALVAR do Perfil (`b849156`, push de `fix/perfil-barra-salvar` para `main`; bundle `index-B5PcdPEn.js`). Antes: 2026-10-21 Google Agenda v2 (`b3ee776`)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` v30 (Google Agenda v2, verify_jwt off — confere login por dentro) + `google-calendar-callback` v20 + `analyze-nfe` v5 (Files API + maxOutputTokens 8192 + thinkingBudget 0 — **testado e funcionando em produção** ✅) deployadas no Supabase ✅  
 **E2E:** suíte completa 103 passando, 1 pulado (2026-10-21, branch `feat/google-agenda`) · unit 279/279  
 **Supabase ref:** `cwtallnetgodoacuoaow`
@@ -193,7 +193,7 @@ Os escopos de agenda são "sensíveis": com o app em **Testing**, só entra quem
 
 ## Changelog
 
-### 2026-10-22 — Perfil: barra SALVAR presa em cima do menu (Claude Code — branch `fix/perfil-barra-salvar`)
+### 2026-10-22 — Perfil: barra SALVAR presa em cima do menu (Claude Code — **publicado** `b849156`, testes do Perfil contra o site publicado ok)
 
 Bug visto pelo Guih: o SALVAR ALTERAÇÕES do Perfil era `sticky` e andava pela tela ao rolar (ficava por cima dos cartões e depois saía com a página). Agora é uma barra presa logo acima do menu de baixo (`createPortal` no `body`, `fixed`), que só aparece quando há alteração não salva (compara o formulário com o perfil/PIX gravados, como texto: "12" = 12) e mostra "SALVO" por 2,5 s. Teste novo `e2e/regression/profile-save-bar.spec.js` (some sem alteração, posição igual no topo e no fim da página, some ao voltar o valor).
 

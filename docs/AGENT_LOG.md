@@ -3036,3 +3036,9 @@ Registro cronológico de tarefas executadas por agentes.
 - **Revisao do que falta**: listas de IDEIAS (106–109, 23/24), Trilha A do `PLANO_REVISAO_GERAL.md` (Despesas, Metas, Relatórios, Mentor, Perfil, Onboarding, Login, Navegação, PWA, estados vazios e de erro ⬜), testes manuais em produção (Google, avisos, offline). Backlog limpo: 034 aplicada e "hoje em UTC" já resolvidos.
 - **Achado**: avisos das 8h de 21/10 deram 500 sem mensagem no log; conferir a rodada de 22/10 (11:00 UTC).
 - **Deploy**: nenhum.
+
+### DEPLOY — Perfil: barra SALVAR (Claude Code, 2026-10-22, pedido explicito do Guih)
+- `git push origin fix/perfil-barra-salvar:main` (`b3ee776..b849156`, avanco direto; leva junto o registro do deploy do Google `9c6548d`). Varredura de segredos limpa.
+- Vercel `index-B5PcdPEn.js`; chunk `ProfileSimple` com a barra nova.
+- Testes contra o site publicado (dados falsos): `profile-save-bar` e `profile-navigation` 2/2.
+- Branch `feat/google-liberacao` segue separada, sem publicar (espera o dominio).
