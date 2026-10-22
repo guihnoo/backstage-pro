@@ -788,7 +788,7 @@ Padrão do protótipo ("Modal · Novo trabalho") aplicado **nos componentes base
 - ~~(2026-10-09) Datas "hoje" em UTC~~ — ✅ conferido em 22/10: nenhum `new Date().toISOString()` de "hoje" sobrou; 29 arquivos usam `todayLocalISO()`
 - (2026-10-09) Repositório GitHub está **público** e recebe o backup automático — decidir se fica privado
 - (2026-10-21) Testar o Google Agenda v2 com a conta real: ligar "Trazer shows" e escolher a agenda dos shows no Perfil (vem desligado)
-- (2026-10-21) Avisos no celular: a rodada das 8h (`send-push-digest`, 11:00 UTC) de 21/10 deu **500**; a das 18h deu 200. O `net.http_post` do cron 027 usa o timeout padrão de 5 s (a função leva ~26 s) — olhar o log do 500 e subir o timeout
+- (2026-10-21) Avisos no celular: a rodada das 8h (`send-push-digest`, 11:00 UTC) de 21/10 deu **500**; a das 18h deu 200. **22/10 8h: 200 (28 s)** — erro não repetiu; o timeout de 5 s do agendador ainda pode dar falso erro. O `net.http_post` do cron 027 usa o timeout padrão de 5 s (a função leva ~26 s) — olhar o log do 500 e subir o timeout
 - (2026-10-21) Investigar o push desconhecido para `main` em 21/10 03:45
 - ~~(2026-10-22) Publicar a revisão das telas~~ — ✅ publicado 22/10 (`03ee64a`, migração 045, `delete-account` v1, `send-push-digest` v6)
 - (2026-10-22) Guih testar no iPhone: CHEGUEI/BATER SAÍDA num show de hoje (e sem sinal), "Ver todos" de Clientes em aberto, "Novo job" pelo cliente
