@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import PaymentConfirmModal from '@/components/reports/PaymentConfirmModal';
-import { getEventCacheAmount, calculateEventReceivableAmount, isEstimatedWork, isCancelledEvent } from '@/lib/eventFinance';
+import { getEventCacheAmount, calculateEventReceivableAmount, isEstimatedWork, isCancelledEvent, isDoneEvent } from '@/lib/eventFinance';
 import { buildEventClosing } from '@/lib/eventClosing';
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -65,6 +65,8 @@ import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { getEventDisplay } from '@/lib/eventDisplay';
 import EventLocationSection from '@/components/events/EventLocationSection';
 import { EventChecklist } from '@/components/calendar/EventChecklist';
+import EquipmentChecklist from '@/components/events/EquipmentChecklist';
+import { normalizeKit } from '@/lib/equipment';
 import ClientRatingSection from '@/components/events/ClientRatingSection';
 import { useEvents } from '@/lib/useEvents';
 import { useExpenses } from '@/lib/useExpenses';
@@ -1223,6 +1225,19 @@ export default function EventDetailModal({
               <EventChecklist
                 items={event.checklist_items ?? []}
                 onChange={async (next) => { await updateEvent(event.id, { checklist_items: next }); }}
+              />
+
+              {/* Equipamento: o que levar e o que voltou (ideia #113) */}
+              <EquipmentChecklist
+                items={event.equipment_items ?? []}
+                onChange={async (next) => { await updateEvent(event.id, { equipment_items: next }); }}
+                kit={normalizeKit(userSettings?.equipment_kit)}
+                onSaveKit={async (kit) => {
+                  const r = await upsertUserSettings({ equipment_kit: kit });
+                  if (r?._somenteNoAparelho) throw new Error('Salvo só neste aparelho; tente de novo com internet.');
+                }}
+                // Show terminado (último dia antes de hoje): abre em Volta e avisa o que falta voltar
+                done={isDoneEvent(event) && String(event.end_date || event.start_date || '').slice(0, 10) < new Date().toLocaleDateString('sv-SE')}
               />
 
               {/* Avaliacao do cliente (vinha so na janela dos Relatorios) */}

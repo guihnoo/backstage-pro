@@ -6,6 +6,7 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import { getCategoryConfig, CATEGORIES, resolveCategoryId } from '@/lib/categoryConfig';
 import { WORK_LOG_MODES } from '@/lib/workLogMode';
 import { ratesListToMap, ratesMapToList, normalizeRoleRates } from '@/lib/roleRates';
+import KitEditor from '@/components/profile/KitEditor';
 import {
   User, Phone, MapPin, Mail, LogOut, Save, Loader2, CheckCircle, Eye, EyeOff, Download,
   DollarSign, Target, Calendar, Camera, MessageCircle, Inbox, Building2, ChevronRight, Compass, BookOpen, Trash2,
@@ -426,6 +427,15 @@ export default function ProfileSimple() {
           </div>
           <p className="text-[11px] text-[#888888]">Vale para todos os trabalhos; dá para mudar só um no Novo trabalho › Mais detalhes.</p>
         </section>
+
+        {/* Meu kit de equipamento (ideia #113) */}
+        <KitEditor
+          kit={userSettings?.equipment_kit}
+          onSave={async (kit) => {
+            const r = await upsertSettings({ equipment_kit: kit });
+            if (r?._somenteNoAparelho) throw new Error('Salvo só neste aparelho; tente de novo com internet.');
+          }}
+        />
 
         {/* Dados pessoais */}
         <section id="perfil-dados" className="rounded-2xl bg-[#161616] border border-[#222222] p-4 space-y-3 scroll-mt-20">
