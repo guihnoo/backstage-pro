@@ -67,6 +67,7 @@ import EventLocationSection from '@/components/events/EventLocationSection';
 import { EventChecklist } from '@/components/calendar/EventChecklist';
 import EquipmentChecklist from '@/components/events/EquipmentChecklist';
 import { normalizeKit } from '@/lib/equipment';
+import { buildQuote, quoteMessage } from '@/lib/quote';
 import ClientRatingSection from '@/components/events/ClientRatingSection';
 import { useEvents } from '@/lib/useEvents';
 import { useExpenses } from '@/lib/useExpenses';
@@ -255,6 +256,7 @@ export default function EventDetailModal({
   const [generatingPDF, setGeneratingPDF] = useState(false);
   const [sharingPDF, setSharingPDF] = useState(false);
   const [generatingContract, setGeneratingContract] = useState(false);
+  const [generatingQuote, setGeneratingQuote] = useState(false);
   const [generatingReceipt, setGeneratingReceipt] = useState(false);
   const [applying12h, setApplying12h] = useState(false);
   const [savingLocation, setSavingLocation] = useState(false);
@@ -702,6 +704,44 @@ export default function EventDetailModal({
       appToast.error('Erro ao gerar contrato', { description: err.message });
     } finally {
       setGeneratingContract(false);
+    }
+  };
+
+  // Orçamento em PDF (ideia #111): no celular abre o compartilhar (WhatsApp) com o PDF;
+  // no computador baixa o PDF e abre o WhatsApp do cliente com a mensagem.
+  const handleQuotePDF = async () => {
+    if (generatingQuote) return;
+    setGeneratingQuote(true);
+    try {
+      const { pdf } = await import('@react-pdf/renderer');
+      const { QuotePDFDocument } = await import('@/lib/QuotePDFDocument');
+      const quote = buildQuote({ event, client, settings: userSettings || {}, profile: profile || {} });
+      const blob = await pdf(<QuotePDFDocument quote={quote} />).toBlob();
+      // Nome do arquivo sem acento (abre igual em qualquer celular/computador)
+      const clientSlug = (client?.name || 'cliente').normalize('NFD').replace(/\p{M}/gu, '')
+        .replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 30) || 'cliente';
+      const filename = `Orcamento_${clientSlug}_${quote.number}.pdf`;
+      const file = new File([blob], filename, { type: 'application/pdf' });
+      const message = quoteMessage(quote);
+      if (typeof navigator !== 'undefined' && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ title: `Orçamento — ${event?.title || 'Evento'}`, text: message, files: [file] });
+        appToast.success('Orçamento pronto para enviar!');
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = filename; a.click();
+        URL.revokeObjectURL(url);
+        if (client?.phone) {
+          openWhatsAppCharge(client.phone, message);
+          appToast.success('Orçamento baixado + WhatsApp aberto', { description: 'Anexe o PDF na conversa.' });
+        } else {
+          appToast.success('Orçamento gerado!', { description: filename });
+        }
+      }
+    } catch (err) {
+      if (err?.name !== 'AbortError') appToast.error('Erro ao gerar orçamento', { description: err?.message });
+    } finally {
+      setGeneratingQuote(false);
     }
   };
 
@@ -1724,6 +1764,17 @@ export default function EventDetailModal({
                   )}
                   {['pending', 'scheduled', 'confirmed', 'in_progress'].includes(status) && (
                     <Button
+                      onClick={handleQuotePDF}
+                      disabled={generatingQuote}
+                      variant="outline"
+                      className="w-full h-auto min-h-[52px] py-2.5 justify-start whitespace-normal text-left rounded-[12px] bg-[#0a0a0a] border border-[#222222] text-white hover:bg-[#161616] font-bold"
+                    >
+                      {generatingQuote ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
+                      Orçamento em PDF
+                    </Button>
+                  )}
+                  {['pending', 'scheduled', 'confirmed', 'in_progress'].includes(status) && (
+                    <Button
                       onClick={handleDownloadContract}
                       disabled={generatingContract}
                       variant="outline"
@@ -1798,7 +1849,12 @@ export default function EventDetailModal({
               <DropdownMenuSeparator className="bg-[#1a1a1a]" />
               {['pending', 'scheduled', 'confirmed'].includes(status) && (
                 <DropdownMenuItem onClick={handleSendProposal} className="gap-2 cursor-pointer hover:bg-[#1a1a1a] focus:bg-[#1a1a1a]">
-                  <Send className="w-4 h-4" /> Enviar proposta
+                  <Send className="w-4 h-4" /> Enviar proposta (texto)
+                </DropdownMenuItem>
+              )}
+              {['pending', 'scheduled', 'confirmed'].includes(status) && (
+                <DropdownMenuItem onClick={handleQuotePDF} className="gap-2 cursor-pointer hover:bg-[#1a1a1a] focus:bg-[#1a1a1a]">
+                  <FileText className="w-4 h-4" /> Orçamento em PDF
                 </DropdownMenuItem>
               )}
               {client?.phone && (

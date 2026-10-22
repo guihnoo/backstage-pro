@@ -87,8 +87,9 @@ const s = StyleSheet.create({
 });
 
 export function ReceiptPDFDocument({ event, client, settings = {} }) {
-  const techName = settings.tech_name || settings.name || 'Técnico de Eventos';
-  const techDoc  = settings.tech_cpf || settings.tech_cnpj || '';
+  // Nome e documento vêm do Perfil › Recebimento (user_settings.report_full_name / cpf_cnpj)
+  const techName = settings.report_full_name || settings.tech_name || settings.name || 'Técnico de Eventos';
+  const techDoc  = settings.cpf_cnpj || settings.tech_cpf || settings.tech_cnpj || '';
   const techCity = settings.tech_city || '';
   const pixKey   = settings.pix_key || '';
   const pixType  = settings.pix_key_type || 'PIX';
