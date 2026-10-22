@@ -14,6 +14,8 @@ import { normalizeDateString, todayLocalISO } from '@/components/utils/dateUtils
 import { useEvents } from '@/lib/useEvents';
 import { WORK_LOG_MODES, resolveWorkLogMode, eventWorkLogModeToSave } from '@/lib/workLogMode';
 import { functionOptions, eventFunctionId, categoryLabel } from '@/lib/roleRates';
+import { parseJobMessage } from '@/lib/jobMessageParser';
+import PasteMessagePanel from '@/components/events/PasteMessagePanel';
 import { getEventCacheAmount, isCancelledEvent } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { useAuth } from '@/lib/authContext';
@@ -92,6 +94,8 @@ export default function EventForm({
   const [showDateInputs, setShowDateInputs] = useState(false);
   const [showMore, setShowMore] = useState(false);
   const roleOptions = useMemo(() => functionOptions(profile), [profile]);
+  // Formulário antes de colar a mensagem (para "Desfazer")
+  const [beforePaste, setBeforePaste] = useState(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -325,6 +329,40 @@ export default function EventForm({
     });
   };
 
+  // Mensagem do WhatsApp / credencial (ideias #106 e #108): aplica só o que foi encontrado.
+  const applyParsedJob = (result) => {
+    if (!result?.found?.length) return result;
+    setBeforePaste(formData);
+    const f = result.fields || {};
+    // Cliente primeiro (traz cachê/modelo/cor do cliente); a mensagem vale mais que o padrão.
+    if (f.client_id) handleClientChange(f.client_id);
+    setFormData((prev) => {
+      const next = { ...prev };
+      for (const k of ['title', 'start_date', 'end_date', 'start_time', 'end_time', 'location', 'location_city', 'location_state', 'category']) {
+        if (f[k]) next[k] = f[k];
+      }
+      if (f.daily_cache_value) next.daily_cache_value = String(f.daily_cache_value);
+      if (f.observacoes_md && !prev.observacoes_md) next.observacoes_md = f.observacoes_md;
+      return next;
+    });
+    setStripOffset(0);
+    return result;
+  };
+
+  const handlePasteMessage = (text) => {
+    const result = parseJobMessage(text, { clients: allClients, functions: roleOptions.map((o) => o.id) });
+    if (!result.found.length) {
+      appToast.info('Não achei data, horário ou valor nessa mensagem.', { description: 'Preencha à mão ou tente "Ler com IA".' });
+      return result;
+    }
+    return applyParsedJob(result);
+  };
+
+  const handleUndoPaste = () => {
+    if (beforePaste) setFormData(beforePaste);
+    setBeforePaste(null);
+  };
+
   const handleSelectTemplate = (template) => {
     setFormData(prev => ({
       ...prev,
@@ -496,6 +534,10 @@ export default function EventForm({
               <Sparkles className="w-4 h-4" />
               Usar um modelo salvo
             </button>
+          )}
+
+          {!event?.id && (
+            <PasteMessagePanel onApply={handlePasteMessage} onUndo={handleUndoPaste} />
           )}
 
           {/* Cliente: pilulas dos mais recentes + busca/criar */}
