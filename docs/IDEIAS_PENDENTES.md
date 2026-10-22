@@ -150,6 +150,10 @@
 | 108 | **Credencial do evento com foto** (ler a credencial e preencher o evento) | 2026-10-21 | ⬜ Visto no protótipo; é função nova |
 | 109 | **Várias funções com cachê diferente** (Iluminação R$ 850, Vídeo R$ 950…) | 2026-10-21 | ⬜ Visto no protótipo (Perfil); precisa de mudança no banco |
 | 110 | **Google Agenda para os usuários**: sincronizar sozinho com o app; do Google só entram **eventos e shows** (nada pessoal) | 2026-10-21 | 🟡 **No ar** em 21/10 (`b3ee776`, migrações 043/044, edge v30): opções no Perfil, a cada 15 min, aviso de dia ocupado. Falta #24 para abrir a todos |
+| 111 | **Orçamento em PDF** para mandar à produtora antes do show (hoje "Enviar proposta" é só texto) | 2026-10-22 | ⬜ Sugestão do Claude |
+| 112 | **Deslocamento por km** virando despesa (km × valor) | 2026-10-22 | ⬜ Sugestão do Claude |
+| 113 | **Checklist de equipamento por show** (o que levar e o que voltou) | 2026-10-22 | ⬜ Sugestão do Claude |
+| 114 | Equipe: convidar colegas para o mesmo show | 2026-10-22 | ❌ Guih decidiu que o app **não** terá isso (22/10) — não sugerir de novo |
 
 ---
 
