@@ -324,6 +324,7 @@ const CATEGORY_LABELS = {
   hospedagem:   'Hospedagem',
   equipamento:  'Equipamento',
   combustivel:  'Combustível',
+  quilometragem: 'Quilometragem',
   manutencao:   'Manutenção',
   passagem:     'Passagem',
   uber:         'Uber',

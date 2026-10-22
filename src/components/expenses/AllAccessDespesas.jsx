@@ -15,6 +15,7 @@ const CATEGORY_COLORS = {
   equipamento: '#00d2ff',
   hospedagem: '#a855f7',
   combustivel: '#ff9900',
+  quilometragem: '#38bdf8',
   manutencao: '#10b981',
   outros: '#888888',
 };
@@ -25,6 +26,7 @@ const CATEGORY_LABELS = {
   equipamento: 'Equipamento',
   hospedagem: 'Hospedagem',
   combustivel: 'Combustível',
+  quilometragem: 'Quilometragem',
   manutencao: 'Manutenção',
   outros: 'Outros',
 };

@@ -16,6 +16,8 @@ import { normalizeDateString } from '@/components/utils/dateUtils';
 import { useExpenses } from '@/lib/useExpenses';
 import { UploadFile } from '@/api/integrations';
 import { analyzeReceipt } from '@/lib/analyzeReceiptApi';
+import { useUserSettings } from '@/lib/useUserSettings';
+import { KM_CATEGORY, DEFAULT_KM_RATE, calcMileage, mileageNote, mileageFromExpense, parseKmRate } from '@/lib/mileage';
 
 function fileToCompressedDataUrl(file, maxWidth = 900, quality = 0.72) {
   return new Promise((resolve, reject) => {
@@ -50,6 +52,7 @@ const CATEGORIES = [
   { value: 'hospedagem', label: 'Hospedagem' },
   { value: 'combustivel', label: 'Combustível' },
   { value: 'manutencao', label: 'Manutenção' },
+  { value: KM_CATEGORY, label: 'Quilometragem (km)' },
   { value: 'outros', label: 'Outros' },
 ];
 
@@ -74,6 +77,10 @@ const defaultState = {
   receipt_url: '',
   is_reimbursable: false,
   reimbursed: false,
+  // Quilometragem (ideia #112)
+  km: '',
+  km_rate: '',
+  round_trip: true,
 };
 
 export default function ExpenseForm({
@@ -88,6 +95,8 @@ export default function ExpenseForm({
   onDelete,
 }) {
   const { create: createExpense, update: updateExpense } = useExpenses();
+  const { settings: userSettings, upsert: upsertSettings } = useUserSettings();
+  const savedKmRate = Number(userSettings?.km_rate) > 0 ? Number(userSettings.km_rate) : DEFAULT_KM_RATE;
   const [loading, setLoading] = useState(false);
   const [uploadingReceipt, setUploadingReceipt] = useState(false);
   const [analyzingReceipt, setAnalyzingReceipt] = useState(false);
@@ -107,6 +116,7 @@ export default function ExpenseForm({
     if (!open) return;
 
     const seed = expense || prefillData || {};
+    const km = seed.category === KM_CATEGORY ? mileageFromExpense(seed) : null;
 
     setFormData({
       ...defaultState,
@@ -121,8 +131,21 @@ export default function ExpenseForm({
       receipt_url: seed.receipt_url || '',
       is_reimbursable: seed.is_reimbursable ?? Boolean(initialEvent),
       reimbursed: Boolean(seed.reimbursed),
+      km: km ? String(km.km).replace('.', ',') : '',
+      km_rate: km ? toBRLInput(km.rate) : '',
+      round_trip: km ? km.roundTrip : true,
     });
   }, [open, expense, prefillData, initialEvent]);
+
+  // Quilometragem: o valor da despesa sai de km × valor por km.
+  const isKm = formData.category === KM_CATEGORY;
+  const kmRateInput = formData.km_rate || toBRLInput(savedKmRate);
+  const mileage = isKm ? calcMileage({ km: formData.km, rate: kmRateInput, roundTrip: formData.round_trip }) : null;
+  useEffect(() => {
+    if (!mileage) return;
+    const next = toBRLInput(mileage.amount);
+    setFormData((prev) => (prev.amount === next ? prev : { ...prev, amount: next }));
+  }, [mileage?.amount]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const setField = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -175,8 +198,13 @@ export default function ExpenseForm({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const amountValue = parseBRL(formData.amount); // aceita 45,90 / 1.200,50
-    if (!formData.title || !formData.date || !Number.isFinite(amountValue) || amountValue <= 0) {
+    if (isKm && !mileage) {
+      appToast.error('Preencha os km rodados e o valor por km.');
+      return;
+    }
+    const amountValue = isKm ? mileage.amount : parseBRL(formData.amount); // aceita 45,90 / 1.200,50
+    const titleValue = formData.title.trim() || (isKm ? 'Deslocamento' : '');
+    if (!titleValue || !formData.date || !Number.isFinite(amountValue) || amountValue <= 0) {
       appToast.error('Preencha título, valor e data da despesa.');
       return;
     }
@@ -186,17 +214,25 @@ export default function ExpenseForm({
     try {
       const payload = {
         event_id: formData.event_id || null,
-        title: formData.title.trim(),
+        title: titleValue,
         amount: amountValue,
         category: formData.category || 'outros',
         payment_method: formData.payment_method || null,
         expense_date: normalizeDateString(formData.date),
-        description: formData.description || null,
+        description: formData.description || (isKm ? mileageNote({ km: formData.km, rate: kmRateInput, roundTrip: formData.round_trip }) : null),
         notes: formData.notes || null,
+        // km só vai quando a despesa é (ou era) de quilometragem (migration 046)
+        ...(isKm ? { distance_km: mileage.totalKm } : expense?.distance_km != null ? { distance_km: null } : {}),
         receipt_url: formData.receipt_url || null,
         is_reimbursable: formData.is_reimbursable,
         reimbursed: formData.is_reimbursable ? formData.reimbursed : false,
       };
+
+      // Lembra o valor por km do técnico para a próxima vez
+      const rate = isKm ? parseKmRate(kmRateInput) : null;
+      if (rate != null && rate !== Number(userSettings?.km_rate)) {
+        upsertSettings({ km_rate: rate }).catch(() => {});
+      }
 
       if (expense?.id) {
         await updateExpense(expense.id, payload);
@@ -234,7 +270,7 @@ export default function ExpenseForm({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="exp-amount">Valor</Label>
-                  <Input id="exp-amount" type="text" inputMode="decimal" placeholder="0,00" value={formData.amount} onChange={(e) => setField('amount', e.target.value)} className="h-12" />
+                  <Input id="exp-amount" type="text" inputMode="decimal" placeholder="0,00" value={formData.amount} onChange={(e) => setField('amount', e.target.value)} readOnly={isKm} className={`h-12 ${isKm ? 'opacity-70' : ''}`} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="exp-date">Data</Label>
@@ -275,6 +311,36 @@ export default function ExpenseForm({
                   </Select>
                 </div>
               </div>
+
+              {isKm && (
+                <div className="rounded-2xl bg-[#0a0a0a] border border-[#2a2a2a] p-3 space-y-3" data-testid="km-fields">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="exp-km">Km rodados</Label>
+                      <Input id="exp-km" type="text" inputMode="decimal" placeholder="Ex: 45" value={formData.km} onChange={(e) => setField('km', e.target.value)} className="h-12" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="exp-km-rate">Valor por km (R$)</Label>
+                      <Input id="exp-km-rate" type="text" inputMode="decimal" value={kmRateInput} onChange={(e) => setField('km_rate', e.target.value)} className="h-12" />
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    aria-pressed={formData.round_trip}
+                    onClick={() => setField('round_trip', !formData.round_trip)}
+                    className={`w-full h-10 rounded-full border text-xs font-extrabold transition-colors ${
+                      formData.round_trip ? 'bg-white border-white text-[#0a0a0a]' : 'bg-transparent border-[#333333] text-[#c8c8c8]'
+                    }`}
+                  >
+                    {formData.round_trip ? 'Ida e volta (conta 2×)' : 'Só ida'}
+                  </button>
+                  <p className="text-xs text-[#a8a8a8]">
+                    {mileage
+                      ? `${mileage.totalKm.toLocaleString('pt-BR')} km × R$ ${kmRateInput} = R$ ${toBRLInput(mileage.amount)}`
+                      : 'O valor da despesa é calculado sozinho. O app lembra o seu valor por km.'}
+                  </p>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label>Evento (opcional)</Label>

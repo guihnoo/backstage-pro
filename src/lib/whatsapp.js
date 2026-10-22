@@ -210,6 +210,7 @@ export function buildEventReport({
       hospedagem: 'Hospedagem',
       equipamento: 'Equipamento',
       combustivel: 'Combustível',
+      quilometragem: 'Quilometragem',
       manutencao: 'Manutenção',
       outros: 'Outros',
     };

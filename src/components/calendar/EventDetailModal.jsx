@@ -82,6 +82,7 @@ const EXPENSE_CATEGORY_LABELS = {
   equipamento: 'Equipamento',
   hospedagem: 'Hospedagem',
   combustivel: 'Combustível',
+  quilometragem: 'Quilometragem',
   manutencao: 'Manutenção',
   outros: 'Outros',
 };

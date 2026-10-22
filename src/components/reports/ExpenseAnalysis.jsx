@@ -16,6 +16,7 @@ const CATEGORY_CONFIG = {
   equipamento: { label: 'Equipamento',  color: '#a78bfa' },
   hospedagem:  { label: 'Hospedagem',   color: '#2dd4bf' },
   combustivel: { label: 'Combustível',  color: '#fbbf24' },
+  quilometragem: { label: 'Quilometragem', color: '#38bdf8' },
   manutencao:  { label: 'Manutenção',   color: '#94a3b8' },
   outros:      { label: 'Outros',       color: '#64748b' },
 };
