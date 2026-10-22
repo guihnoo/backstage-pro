@@ -3064,3 +3064,11 @@ Registro cronológico de tarefas executadas por agentes.
 - **Outros**: despesa a partir do trabalho mostra o trabalho no campo; EventActionSheet "Atualizar local" sem GPS não deixa erro solto; aria-label em botões só com ícone (Dinheiro, ClientDetail, EventDetailModal "···", NfTracker, conquista); aria-pressed em filtros de Clientes e no feedback; "+" do checklist desativado vazio; `end` removido do `<Link>` do menu; imports mortos em ClientDetail.
 - **Testes**: unit 281/281; lint `src` 0 erros (1 aviso antigo em Goals); build ok.
 - **Deploy**: nenhum. Para publicar: migração 045, `delete-account`, `send-push-digest`, push da branch para `main` (Vercel).
+
+### DEPLOY — Revisão das telas + CHEGUEI + destinos (Claude Code, 2026-10-22, pedido explícito do Guih: "Publicar tudo")
+- Primeira tentativa bloqueada pelo modo automático ("Continue" não conta como autorização de produção); publicado depois da escolha explícita.
+- **Banco**: `045_daily_work_datas_juntas` aplicada. Antes: sem gatilho, 98 linhas, 0 datas diferentes. Depois: gatilho ativo, 98 linhas, 0 diferentes; simulação do CHEGUEI antigo (insert só com `date`) dentro de DO com exceção → work_date preenchida, nada gravado.
+- **Edge**: `delete-account` v1 (verify_jwt on; sem login → 401) e `send-push-digest` v6 (verify_jwt off como antes; sem segredo → 401; index.ts igual à v5, só os links do `_shared/pushDigest.ts`).
+- **App**: `git push origin review/telas-fase1:main` (`b849156..03ee64a`, avanço direto, varredura de segredos limpa). Vercel em ~40 s: `index-B5PcdPEn.js` → `index-BAYKE3jv.js`; chunk Home com o CHEGUEI novo e `aba=receber`.
+- **Testes contra o site publicado** (banco falso): home-cheguei, destinos-certos (3), profile-delete-account, profile-save-bar, bottom-nav — 8/8.
+- **Falta**: Guih testar no iPhone (CHEGUEI num show de hoje, também sem sinal).
