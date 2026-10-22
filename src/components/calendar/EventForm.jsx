@@ -21,6 +21,7 @@ import { DEFAULT_EVENT_COLOR, resolveEventColor } from '@/lib/brandColors';
 import { useClients } from '@/lib/useClients';
 import ClientCombobox from '@/components/clients/ClientCombobox';
 import EventLocationSection from '@/components/events/EventLocationSection';
+import GoogleBusyWarning from './GoogleBusyWarning';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { parseBRL } from '@/lib/money';
 import { MEAL_POLICY_LABELS } from '@/lib/mealPolicy';
@@ -642,6 +643,8 @@ export default function EventForm({
               </div>
             </div>
           )}
+
+          <GoogleBusyWarning startDate={formData.start_date} endDate={formData.end_date} />
 
           {event?.id && (
             <div className="grid grid-cols-2 gap-2">

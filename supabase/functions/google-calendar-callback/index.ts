@@ -81,14 +81,17 @@ Deno.serve(async (req) => {
 
   const { data: existingSettings } = await serviceClient
     .from('user_settings')
-    .select('id')
+    .select('id, google_account_email, google_calendar_id')
     .eq('user_id', userId)
     .maybeSingle();
 
+  // Reconectar a mesma conta mantém a agenda escolhida; conta nova começa na principal
+  const sameAccount = existingSettings?.google_account_email && existingSettings.google_account_email === email;
   const settingsPayload = {
     google_calendar_connected: true,
     google_account_email: email,
-    google_calendar_id: 'primary',
+    google_calendar_id: (sameAccount && existingSettings?.google_calendar_id) || 'primary',
+    google_last_sync_error: null,
     updated_at: new Date().toISOString(),
   };
 

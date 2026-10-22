@@ -3,13 +3,13 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-10-21 (visual All Access completo + auditoria; **publicado**; Claude Code)  
-**Pendente de deploy:** nada. Migrations 034–042 aplicadas em produção (042 em 2026-10-21 pelo Claude Code)  
+**Última atualização:** 2026-10-21 (Google Agenda v2 na branch `feat/google-agenda`, **não publicado**; Claude Code)  
+**Pendente de deploy:** branch `feat/google-agenda` — migração 043, edge `google-calendar` + callback (verify_jwt false), front, migração 044 (cron). Ordem no § Checklist OAuth. Migrations 034–042 aplicadas em produção  
 **Pasta local:** `C:\dev\backstage-pro` (desde 2026-10-09; a cópia antiga em `OneDrive\Documentos\backstage-pro` não é mais a pasta de trabalho)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-10-21 — visual All Access em todo o app + auditoria (`89132f5`, push de `feat/visual-completo` para `main`)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` v29 (auto-disconnect token inválido) + `analyze-nfe` v5 (Files API + maxOutputTokens 8192 + thinkingBudget 0 — **testado e funcionando em produção** ✅) deployadas no Supabase ✅  
-**E2E:** smoke + regression 96 passando, 1 pulado (2026-10-21) · unit 261/261  
+**E2E:** suíte completa 103 passando, 1 pulado (2026-10-21, branch `feat/google-agenda`) · unit 279/279  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
 ---
@@ -22,7 +22,7 @@
 | **Números entre telas (2026-10-09)** | Regra única em `src/lib/financeMetrics.js`: recebido por `paid_date`, previsto pela data do show, despesa por `expense_date`. Home, Metas, Relatórios e telas de cliente consomem as mesmas funções; todo "marcar pago" grava `paid_amount`. **Não recalcular dinheiro inline — usar o módulo.** Detalhe em `PLANO_REVISAO_GERAL.md` § Implementação |
 | Confirmar Recebimento (`PaymentConfirmModal`) | Estava quebrado em produção desde S82: enviava `payment_method`, coluna que não existe em `events`. Agora só envia/mostra a forma de recebimento se a coluna existir; migration 034 pronta, **aguardando ok para aplicar** |
 | Clientes — Empresa vs Pessoa | `client_type` coluna DB; toggle visual em form/combobox/cards/modais ✅ sessão 20–22 |
-| Google Calendar OAuth + sync | UI + dedupe + smoke E2E mock ✅; **OAuth real pendente** (GCP Testing → Production + reconectar no Perfil) |
+| Google Calendar OAuth + sync | v2 pronta na branch `feat/google-agenda` (sincroniza sozinho a cada 15 min, opções no Perfil, aviso de dia ocupado) — **aguardando ok para publicar** (043 → edge → front → 044); **OAuth para todos pendente** (domínio + verificação Google) |
 | Editar/excluir eventos (todas as telas) | Home, Metas, Agenda, Relatórios, ClientDetail, **NotificationCenter** ✅ |
 | Dedupe Google Calendar | `googleEventDedupe` (unit + edge + smoke Perfil) ✅ |
 | Busca global | `GlobalSearch.jsx` na TopBar — eventos + clientes ✅ |
@@ -147,18 +147,27 @@ Use este roteiro para fechar o item **#8** em `IDEIAS_PENDENTES.md`.
 | D | GCP → OAuth consent screen | Sair de **Testing** → **In production** **ou** adicionar seu e-mail em **Test users** (#24) |
 | E | Segurança (#23) | Rotacionar `GOOGLE_CLIENT_SECRET` no GCP → atualizar secret no Supabase → nunca commitar `client_secret_*.json` |
 
+### Publicar a versão 2 (branch `feat/google-agenda`) — nesta ordem, só com ok do Guih
+
+1. Migração `043_google_agenda_opcoes.sql` (colunas de opções, `events.google_origin`, gatilho `events.updated_at`, corrige 5 eventos `'confirmado'`)
+2. Edge `google-calendar` (com `_shared/googleSyncRules.ts`) com **verify_jwt = false** (está no `config.toml`; o cron usa a chave `sb_secret_…`, que não é JWT — cada ação de usuário confere o login dentro da função) + `google-calendar-callback`
+3. Front (merge na `main` → Vercel)
+4. Migração `044_google_agenda_cron.sql` (sincroniza a cada 15 min; timeout 120 s no `net.http_post`)
+5. Conferir: `cron.job_run_details` + log da função com `sync-all` 200
+
 ### Fluxo E2E no app (15 min)
 
 1. Abrir https://backstage-pro-beta.vercel.app/profile (logado)
-2. Rolar até **Sincronização com Google Calendar** → **Conectar ao Google**
+2. Rolar até **Google Agenda · Sincronização com Google Calendar** → **Conectar ao Google**
 3. Autorizar no Google (aceitar escopos de calendário + e-mail)
-4. Esperar redirect para `/profile?google_connected=1` + toast verde
-5. Confirmar badge **Conectado** + e-mail Google visível
-6. **Sincronizar Agora** — toast com contadores (importados / vinculados / enviados)
-7. **Importar Eventos** — confirmação → toast de sucesso
-8. Se houver duplicatas pós-import: **Limpar duplicatas da agenda** → confirmar → toast com `N duplicata(s) removida(s)`
-9. Na **Agenda**, verificar badge âmbar “eventos não sincronizados” some após sync
-10. **Desconectar** → status **Desconectado**; reconectar deve funcionar sem `missing_refresh_token`
+4. Esperar redirect para `/profile?google_connected=1` + toast
+5. Confirmar **Conectado** + e-mail Google + "Última sincronização: há …"
+6. Opções: **Enviar meus trabalhos** (escolher a agenda que recebe), **Trazer shows do Google** (escolher a agenda dos shows; palavras opcionais tipo `show, montagem`), **Avisar se o dia estiver ocupado**
+7. **Sincronizar agora** — toast com contadores (enviados / trazidos / atualizados pelo Google / ficam para a próxima)
+8. No **Novo trabalho**, tocar num dia com compromisso no Google → aparece **Dia ocupado no Google**
+9. Mudar a data de um trabalho no Google → na próxima rodada a data muda no app
+10. Se houver duplicatas: **Limpar duplicatas da agenda** → confirmar → toast `N duplicata(s) removida(s)`
+11. **Desconectar** → reconectar a mesma conta mantém a agenda escolhida
 
 ### Erros comuns → mensagem no app
 
@@ -172,12 +181,30 @@ Use este roteiro para fechar o item **#8** em `IDEIAS_PENDENTES.md`.
 
 ### Automação existente
 
-- Smoke mock: `e2e/smoke/google-calendar-sync.spec.js` (UI conectada + dedupe)
-- Unit dedupe: `src/lib/googleEventDedupe.test.js` (4 casos)
+- Smoke mock: `e2e/smoke/google-calendar-sync.spec.js` (UI conectada + dedupe + opções)
+- Regression mock: `e2e/regression/google-busy-warning.spec.js` (aviso de dia ocupado no Novo trabalho)
+- Unit: `src/lib/googleEventDedupe.test.js` (4 casos) + `src/lib/googleSyncRules.test.js` (18 casos — o que entra, o que sai, o que mudou)
+
+### Para abrir a todos os usuários (Google Cloud — Guih)
+
+Os escopos de agenda são "sensíveis": com o app em **Testing**, só entra quem está na lista de testadores e a conexão cai a cada 7 dias (o Perfil agora mostra "A conexão com o Google expirou"). Para publicar: domínio próprio (Hostinger) apontado para a Vercel e verificado no Search Console → tela de consentimento com página inicial, privacidade e termos nesse domínio → **Publish app** → pedir verificação dos escopos (vídeo mostrando o uso). Antes disso, rotacionar o `GOOGLE_CLIENT_SECRET` (#23).
 
 ---
 
 ## Changelog
+
+### 2026-10-21 — Google Agenda v2: sincroniza sozinho, opções no Perfil, aviso de dia ocupado (Claude Code — branch `feat/google-agenda`, **não publicado**)
+
+Pedido do Guih: usuários usarem o Google Agenda sincronizado com o app; do Google só entram **eventos e shows**, nunca compromisso pessoal.
+
+- **Opções no Perfil** (`GoogleCalendarSync.jsx`, visual All Access): enviar trabalhos (e para qual agenda — só as que o app pode escrever), trazer shows (de qual agenda + palavras opcionais), avisar dia ocupado; "última sincronização há X min"; erro da última rodada em rosa; atalho da Agenda abre o Perfil já na parte do Google (`?tab=google`).
+- **Edge `google-calendar`**: rodada única `syncUser` (traz da agenda de shows, aplica mudanças de data/horário/local feitas no Google, manda só o que mudou — até 50 por rodada); ações novas `sync-all` (cron, confere `CRON_SECRET` ou chave de serviço) e `busy-days`; `push-event` sem conexão responde `skipped` (antes 400 a cada evento salvo); trabalho que veio do Google (`google_origin = 'google'`) só tem data/horário/local ajustados lá — título e descrição de quem criou ficam; excluir no app não apaga evento de outra pessoa no Google; cancelado vai para o Google como "CANCELADO · …" sem ocupar horário.
+- **Bugs corrigidos**: importação gravava status `'confirmado'` (app usa `'confirmed'`) e não preenchia `event_date` (obrigatório — inserts falhavam calados); fim de evento de dia inteiro entrava com um dia a mais; `sync-now` reenviava **todos** os eventos toda vez; token expirado desconectava sem explicar e apagava a agenda escolhida; `.catch` em query do Supabase (não existe) no auto-desconectar.
+- **Banco** (migração 043, não aplicada): opções em `user_settings`, `events.google_origin`, gatilho que atualiza `events.updated_at` em edição de verdade (ignora colunas `google_*`) — antes `updated_at` nunca mudava. Testado em tabela temporária, sem gravar.
+- **Cron** (migração 044, não aplicada): a cada 15 min.
+- **Novo trabalho**: `GoogleBusyWarning` mostra "Dia ocupado no Google" com os compromissos dos dias escolhidos.
+- `ui/switch.jsx` no visual All Access (não era usado em lugar nenhum).
+- Testes: unit 279/279; E2E completo 103 passando, 1 pulado (inclui os 4 do Google, com mocks); build ok.
 
 ### 2026-10-21 — Auditoria visual e homogeneização do app inteiro (Claude Code)
 
@@ -742,6 +769,9 @@ Padrão do protótipo ("Modal · Novo trabalho") aplicado **nos componentes base
 - (2026-10-09) **Aplicar migration `034_events_payment_method.sql` em produção** e publicar as correções de números (precisa de ok do usuário para os dois)
 - (2026-10-09) Datas "hoje" em UTC (`new Date().toISOString().split('T')[0]`) em Metas, Clientes, Próximo Show, IA Mentor, notificações — depois das 21h (BRT) viram "amanhã"; trocar por `todayLocalISO()`
 - (2026-10-09) Repositório GitHub está **público** e recebe o backup automático — decidir se fica privado
+- (2026-10-21) **Publicar Google Agenda v2** (`feat/google-agenda`): 043 → edge → front → 044, com ok do Guih
+- (2026-10-21) Avisos no celular: a rodada das 8h (`send-push-digest`, 11:00 UTC) de 21/10 deu **500**; a das 18h deu 200. O `net.http_post` do cron 027 usa o timeout padrão de 5 s (a função leva ~26 s) — olhar o log do 500 e subir o timeout
+- (2026-10-21) Investigar o push desconhecido para `main` em 21/10 03:45
 
 ### Média
 6. Animações financeiras / charts animados no dashboard (`vendor-charts` já bundlado)
@@ -751,7 +781,7 @@ Padrão do protótipo ("Modal · Novo trabalho") aplicado **nos componentes base
 
 ### Baixa / segurança
 10. **Rotacionar `GOOGLE_CLIENT_SECRET`** (exposto em sessões passadas)
-11. Publicar app OAuth (sair de “Testing”) quando E2E validado
+11. Publicar app OAuth (sair de “Testing”) quando E2E validado — precisa de domínio próprio (Hostinger → Vercel) + verificação dos escopos de agenda (ver § Checklist OAuth)
 12. ~~`StatDetailModal`~~ — ✅ confirmado órfão; seguro remover quando quiser
 
 ---

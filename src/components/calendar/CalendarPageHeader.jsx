@@ -88,7 +88,7 @@ export default function CalendarPageHeader({
           className="self-start flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border border-[#ff2e88]/40 bg-[#ff2e88]/10 text-[#ff2e88] hover:bg-[#ff2e88]/20 transition-colors"
         >
           <RefreshCw className="w-3 h-3" />
-          {unsyncedCount} fora de sinc com Google Calendar
+          {unsyncedCount} fora do Google Agenda
         </button>
       )}
 

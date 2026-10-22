@@ -128,9 +128,13 @@ async function syncEventUpdate(userId, recordId, payload) {
 
 async function syncEventDelete(userId, recordId) {
   const id = await resolveRecordId(userId, recordId);
-  const { data: existing } = await supabase.from('events').select('google_event_id').eq('id', id).maybeSingle();
+  const { data: existing } = await supabase
+    .from('events')
+    .select('google_event_id, google_origin, google_calendar_id')
+    .eq('id', id)
+    .maybeSingle();
   if (existing?.google_event_id) {
-    syncEventToGoogleCalendar(id, 'delete', existing.google_event_id);
+    syncEventToGoogleCalendar(id, 'delete', existing.google_event_id, existing);
   }
   const { error } = await supabase.from('events').delete().eq('id', id);
   if (error) throw error;

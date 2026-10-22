@@ -1,37 +1,58 @@
-
-import { useState, useEffect, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import {
-  Calendar,
-  RefreshCw,
-  CheckCircle,
-  AlertTriangle,
-  ExternalLink,
-  Loader2,
-  Download,
-  Settings,
-  AlertCircle,
-} from 'lucide-react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useLocation, Link } from 'react-router-dom';
+import { formatDistanceToNowStrict } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { Calendar, RefreshCw, ExternalLink, Loader2, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { UserSettings } from '@/api/entities';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/authContext';
 import { useEvents } from '@/lib/useEvents';
-import { googleAuthStart, googleDisconnect, googleSyncNow, googleListCalendars, googleImportEvents, googleDedupeEvents } from '@/api/functions';
-import { Link } from 'react-router-dom';
+import {
+  googleAuthStart,
+  googleDisconnect,
+  googleSyncNow,
+  googleListCalendars,
+  googleDedupeEvents,
+} from '@/lib/googleCalendarApi';
 import appToast from '@/lib/appToast';
 import ConfirmDialog from '@/components/layout/ConfirmDialog';
 import { formatGoogleOAuthError } from '@/lib/googleOAuthErrors';
-import { isCancelledEvent } from '@/lib/eventFinance';
-import { useCategoryTheme } from '@/lib/useCategoryTheme';
+import { needsGooglePush } from '@/lib/googleSyncRules';
+
+const labelCls = 'block font-tag text-[10px] tracking-[1px] uppercase text-[#a8a8a8] mb-1.5';
+const fieldCls = 'w-full h-12 bg-[#0a0a0a] border border-[#333333] rounded-[12px] px-4 text-base font-semibold text-white placeholder:font-normal placeholder:text-[#666666] focus:outline-none focus:border-[#ffd400] transition-colors';
+
+// O "principal" do Google tem id = e-mail; o app guarda 'primary'
+const calendarValue = (c) => (c.primary ? 'primary' : c.id);
+
+function OptionRow({ id, title, description, checked, onChange, children }) {
+  return (
+    <div className="rounded-[12px] bg-[#0a0a0a] border border-[#222222] p-3.5 space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <label htmlFor={id} className="min-w-0 cursor-pointer">
+          <span className="block text-sm font-extrabold text-white">{title}</span>
+          <span className="block text-xs text-[#a8a8a8] mt-0.5">{description}</span>
+        </label>
+        <Switch id={id} checked={checked} onCheckedChange={onChange} className="mt-0.5" />
+      </div>
+      {checked && children}
+    </div>
+  );
+}
+
+function syncSummary(data) {
+  const parts = [`${data.synced_events || 0} enviados ao Google`];
+  if (data.imported_count) parts.push(`${data.imported_count} shows trazidos do Google`);
+  if (data.linked_count) parts.push(`${data.linked_count} vinculados`);
+  if (data.updated_from_google) parts.push(`${data.updated_from_google} atualizados pelo Google`);
+  if (data.pending_push) parts.push(`${data.pending_push} ficam para a próxima rodada`);
+  return parts;
+}
 
 export default function GoogleCalendarSync() {
-  const theme = useCategoryTheme();
   const { user } = useAuth();
-  const { events } = useEvents();
+  const { events, refetch: refetchEvents } = useEvents();
   const location = useLocation();
   const locationPathname = location.pathname;
   const [settings, setSettings] = useState(null);
@@ -40,92 +61,101 @@ export default function GoogleCalendarSync() {
   const [calendars, setCalendars] = useState([]);
   const [lastSyncStatus, setLastSyncStatus] = useState(null);
   const [pendingAction, setPendingAction] = useState(null);
+  const [keywordsDraft, setKeywordsDraft] = useState('');
+
+  const isConnected = Boolean(settings?.google_calendar_connected);
+  const pushOn = settings?.google_push_enabled !== false;
+  const importOn = settings?.google_import_enabled === true;
+  const busyOn = settings?.google_busy_check_enabled !== false;
 
   const unsyncedCount = useMemo(() => {
-    if (!settings?.google_calendar_connected) return 0;
-    return events.filter((e) => !e.google_event_id && !isCancelledEvent(e)).length;
-  }, [events, settings?.google_calendar_connected]);
+    if (!isConnected || !pushOn) return 0;
+    return events.filter(needsGooglePush).length;
+  }, [events, isConnected, pushOn]);
+
+  const writableCalendars = useMemo(() => calendars.filter((c) => c.writable !== false), [calendars]);
+
+  const loadCalendars = useCallback(async () => {
+    const { data } = await googleListCalendars();
+    if (data?.success) {
+      setCalendars(data.calendars || []);
+    } else {
+      setCalendars([]);
+      appToast.info('Lista de agendas indisponível', {
+        description: 'Conecte o Google de novo para atualizar as permissões.',
+      });
+    }
+  }, []);
+
+  const loadSettings = useCallback(async () => {
+    if (!user?.id) return;
+    setIsLoading(true);
+    try {
+      const rows = await UserSettings.filter({ user_id: user.id });
+      const row = rows?.[0] ?? null;
+      setSettings(row);
+      setKeywordsDraft(row?.google_import_keywords || '');
+      if (row?.google_calendar_connected) await loadCalendars();
+    } catch (error) {
+      console.error('Erro ao carregar configurações:', error);
+      setSettings(null);
+    }
+    setIsLoading(false);
+  }, [user?.id, loadCalendars]);
 
   useEffect(() => {
-    if (user?.id) loadSettings();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+    loadSettings();
+  }, [loadSettings]);
 
   useEffect(() => {
-    checkUrlForError();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.search, locationPathname, user?.id]);
-
-  const checkUrlForError = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const error = urlParams.get('error');
     const connected = urlParams.get('google_connected');
     if (error) {
-      appToast.error('Falha ao conectar Google Calendar', {
+      appToast.error('Falha ao conectar o Google Agenda', {
         description: formatGoogleOAuthError(error),
         duration: 8000,
       });
       window.history.replaceState({}, '', locationPathname);
     }
     if (connected === '1') {
-      appToast.success('Google Calendar conectado com sucesso!');
+      appToast.success('Google Agenda ligado ao app!');
       window.history.replaceState({}, '', locationPathname);
       loadSettings();
     }
-  };
+  }, [location.search, locationPathname, loadSettings]);
 
-  const loadSettings = async () => {
-    setIsLoading(true);
-    try {
-      const userSettings = await UserSettings.filter({ user_id: user.id });
-      
-      if (userSettings && userSettings.length > 0) {
-        setSettings(userSettings[0]);
-        if (userSettings[0].google_calendar_connected) {
-          await loadCalendars();
-        }
-      } else {
-        setSettings(null);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar configurações:', error);
-      setSettings(null);
-    }
-    setIsLoading(false);
-  };
+  // Atalho da Agenda ("fora do Google Agenda") abre o Perfil já nesta parte
+  useEffect(() => {
+    if (isLoading || new URLSearchParams(location.search).get('tab') !== 'google') return;
+    document.getElementById('perfil-google')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [isLoading, location.search]);
 
-  const loadCalendars = async () => {
-    try {
-      const { data } = await googleListCalendars();
-      if (data.success) {
-        setCalendars(data.calendars || []);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar calendários:', error);
-      setCalendars([]);
-      appToast.info('Lista de calendários indisponível', {
-        description: 'Reconecte o Google Calendar em Perfil para atualizar permissões.',
-      });
+  const saveOption = async (patch) => {
+    const previous = settings;
+    setSettings((s) => ({ ...(s || {}), ...patch }));
+    const { error } = await supabase.from('user_settings').update(patch).eq('user_id', user.id);
+    if (error) {
+      setSettings(previous);
+      appToast.error('Não deu para salvar a opção', { description: error.message });
     }
   };
 
   const handleConnect = async () => {
     try {
-      appToast.info("Redirecionando para autenticação do Google...");
+      appToast.info('Abrindo o Google...');
       const { data } = await googleAuthStart();
-      
       if (data?.success && data.authUrl) {
         window.location.href = data.authUrl;
         return;
       }
-      throw new Error(data?.error || 'Não foi possível obter a URL de autorização do Google.');
+      throw new Error(data?.error || 'Não foi possível abrir o Google.');
     } catch (error) {
-      console.error('Erro ao iniciar conexão:', error);
       const msg = error.message || '';
       const hint = /GOOGLE_CLIENT|não configurado|FunctionsFetchError|Failed to fetch/i.test(msg)
         ? 'Verifique se as Edge Functions e secrets GOOGLE_* estão no Supabase.'
         : msg;
-      appToast.error('Erro ao conectar com Google Calendar', {
+      appToast.error('Erro ao conectar com o Google', {
         description: hint || 'Tente novamente em alguns instantes.',
         duration: 8000,
       });
@@ -133,306 +163,279 @@ export default function GoogleCalendarSync() {
   };
 
   const handleDisconnect = async () => {
-    try {
-      appToast.info("Desconectando do Google Calendar...");
-      await googleDisconnect();
-      await loadSettings();
-      setCalendars([]);
-      appToast.success("Desconectado com sucesso!");
-    } catch (error) {
-      console.error('Erro ao desconectar:', error);
-      appToast.error("Erro ao desconectar. Tente novamente.");
+    const { data } = await googleDisconnect();
+    if (data?.success === false) {
+      appToast.error('Erro ao desconectar. Tente novamente.');
+      return;
     }
+    setCalendars([]);
+    await loadSettings();
+    appToast.success('Google Agenda desligado do app.');
   };
 
   const handleSyncNow = async () => {
     setIsSyncing(true);
     setLastSyncStatus(null);
-    
-    try {
-      appToast.info("Sincronizando eventos com Google Calendar...");
-      const { data } = await googleSyncNow();
-      
-      if (data.success) {
-        const parts = [];
-        if (data.imported_count) parts.push(`${data.imported_count} importados`);
-        if (data.linked_count) parts.push(`${data.linked_count} vinculados`);
-        if (data.skipped_count) parts.push(`${data.skipped_count} ignorados (já existiam)`);
-        parts.push(`${data.synced_events || 0} enviados ao Google`);
-        setLastSyncStatus({
-          success: true,
-          message: `Sincronização concluída: ${parts.join(', ')}.`,
-          timestamp: new Date()
-        });
-        appToast.success("Sincronização concluída!", { description: parts.join(' · ') });
-      } else {
-        throw new Error(data.error || 'Erro desconhecido na sincronização');
-      }
-    } catch (error) {
-      console.error('Erro na sincronização:', error);
-      setLastSyncStatus({
-        success: false,
-        message: error.message || 'Erro na sincronização',
-        timestamp: new Date()
-      });
-      appToast.error('Erro na sincronização', {
-        description: error.message || 'Verifique sua conexão com o Google.',
-        duration: 8000,
-      });
-    }
-    setIsSyncing(false);
-  };
-
-  const handleImportEvents = async () => {
-    setIsSyncing(true);
-    try {
-      appToast.info("Importando eventos do Google Calendar...");
-      const { data } = await googleImportEvents({ days_back: 30, days_forward: 90 });
-      
-      if (data.success) {
-        const msg = [
-          data.imported_count ? `${data.imported_count} novos` : null,
-          data.linked_count ? `${data.linked_count} vinculados` : null,
-          data.skipped_count ? `${data.skipped_count} ignorados` : null,
-        ].filter(Boolean).join(', ') || 'Nenhum evento novo';
-        appToast.success('Importação concluída', { description: msg });
-      } else {
-        throw new Error(data.error || 'Erro na importação');
-      }
-    } catch (error) {
-      console.error('Erro na importação:', error);
-      appToast.error("Erro ao importar eventos. Tente novamente.");
+    const { data } = await googleSyncNow();
+    if (data?.success) {
+      const parts = syncSummary(data);
+      setLastSyncStatus({ success: true, message: `Pronto: ${parts.join(', ')}.` });
+      appToast.success('Sincronização concluída!', { description: parts.join(' · ') });
+      refetchEvents?.();
+      const rows = await UserSettings.filter({ user_id: user.id }).catch(() => null);
+      if (rows?.[0]) setSettings(rows[0]);
+    } else {
+      const message = data?.error || 'Erro na sincronização';
+      setLastSyncStatus({ success: false, message });
+      appToast.error('Erro na sincronização', { description: message, duration: 8000 });
     }
     setIsSyncing(false);
   };
 
   const handleDedupeEvents = async () => {
     setIsSyncing(true);
-    try {
-      const { data } = await googleDedupeEvents();
-      if (data.success) {
-        appToast.success('Limpeza concluída', {
-          description: `${data.removed_count || 0} duplicata(s) removida(s).`,
-        });
-      } else {
-        throw new Error(data.error || 'Erro na limpeza');
-      }
-    } catch (error) {
-      appToast.error('Erro ao limpar duplicatas', { description: error.message });
+    const { data } = await googleDedupeEvents();
+    if (data?.success) {
+      appToast.success('Limpeza concluída', {
+        description: `${data.removed_count || 0} duplicata(s) removida(s).`,
+      });
+      refetchEvents?.();
+    } else {
+      appToast.error('Erro ao limpar duplicatas', { description: data?.error });
     }
     setIsSyncing(false);
   };
 
   if (isLoading) {
     return (
-      <Card className="rounded-2xl bg-[#161616] border-[#222222] shadow-none min-w-0 overflow-hidden">
-        <CardContent className="p-6 text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" style={theme.accentStyle} />
-          <p className="text-[#a8a8a8]">Carregando configurações...</p>
-        </CardContent>
-      </Card>
+      <section className="rounded-2xl bg-[#161616] border border-[#222222] p-6 text-center">
+        <Loader2 className="w-7 h-7 animate-spin mx-auto mb-3 text-[#ffd400]" />
+        <p className="text-sm text-[#a8a8a8]">Carregando Google Agenda...</p>
+      </section>
     );
   }
 
-  const isConnected = settings?.google_calendar_connected;
+  const lastSyncLabel = settings?.google_last_sync_at
+    ? `há ${formatDistanceToNowStrict(new Date(settings.google_last_sync_at), { locale: ptBR })}`
+    : 'ainda não sincronizou';
+  const syncError = settings?.google_last_sync_error;
 
   return (
     <>
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-6 min-w-0"
-    >
-      <Card className="rounded-2xl bg-[#161616] border-[#222222] shadow-none min-w-0 overflow-hidden">
-        <CardHeader className="min-w-0">
-          <CardTitle className="font-tag text-[11px] font-normal tracking-[2px] uppercase text-[#a8a8a8] flex flex-wrap items-center gap-2">
-            <Calendar className="w-6 h-6 text-[#ffd400] shrink-0" />
-            <span className="min-w-0">Sincronização com Google Calendar</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6 min-w-0">
-          {/* Status da Conexão */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between min-w-0">
-            <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1">
-              <div className={`w-3 h-3 rounded-full shrink-0 ${isConnected ? 'bg-[#ffd400] animate-pulse' : 'bg-[#ff2e88]'}`} />
-              <span className="text-white font-medium">
-                {isConnected ? 'Conectado' : 'Desconectado'}
-              </span>
-              {isConnected && settings?.google_account_email && (
-                <Badge variant="outline" className="bg-[#ffd400]/20 text-[#ffd400] border-[#ffd400]/50 max-w-full truncate">
-                  {settings.google_account_email}
-                </Badge>
-              )}
-            </div>
-            
-            {isConnected ? (
-              <Button variant="destructive" onClick={() => setPendingAction('disconnect')} size="sm" className="w-full sm:w-auto shrink-0">
-                Desconectar
-              </Button>
-            ) : (
-              <Button onClick={handleConnect} className="w-full sm:w-auto shrink-0">
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Conectar ao Google
-              </Button>
-            )}
+      <section id="perfil-google" className="rounded-2xl bg-[#161616] border border-[#222222] p-4 space-y-4 min-w-0 scroll-mt-4" aria-labelledby="gcal-title">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">Google Agenda</h2>
+            <p id="gcal-title" className="font-extrabold text-white text-base mt-1">Sincronização com Google Calendar</p>
           </div>
+          <Calendar className="w-6 h-6 text-[#ffd400] shrink-0" aria-hidden />
+        </div>
 
-          {/* Informações da Conta Conectada */}
-          {isConnected && (
-            <div className="space-y-4">
-              <div className="bg-[#0a0a0a] border border-[#222222] rounded-[12px] p-4 space-y-3">
-                <div className="flex flex-col gap-1 sm:flex-row sm:justify-between text-sm min-w-0">
-                  <span className="text-[#a8a8a8] shrink-0">Última Sincronização:</span>
-                  <span className="text-white break-words text-right sm:text-left">
-                    {settings.google_last_sync_at ?
-                      new Date(settings.google_last_sync_at).toLocaleString('pt-BR') :
-                      'Nunca'
-                    }
+        {syncError && (
+          <div className="rounded-[12px] bg-[#1a1a1a] px-3 py-2.5 text-xs flex gap-2" style={{ borderLeft: '4px solid #ff2e88' }} role="alert">
+            <AlertTriangle className="w-4 h-4 text-[#ff2e88] shrink-0 mt-0.5" />
+            <p className="text-[#c8c8c8]"><span className="font-extrabold text-white">Última tentativa falhou.</span> {syncError}</p>
+          </div>
+        )}
+
+        {isConnected ? (
+          <>
+            <div className="rounded-[12px] bg-[#0a0a0a] border border-[#222222] p-3.5 space-y-1.5 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 min-w-0">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#ffd400] shrink-0" aria-hidden />
+                <span className="text-sm font-extrabold text-white">Conectado</span>
+                {settings?.google_account_email && (
+                  <span className="font-tag text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#ffd400] text-[#0a0a0a] max-w-full truncate">
+                    {settings.google_account_email}
                   </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[#a8a8a8]">Calendários Disponíveis:</span>
-                  <span className="text-white">{calendars.length}</span>
-                </div>
+                )}
               </div>
+              <p className="text-xs text-[#a8a8a8]">
+                Última sincronização: <span className="text-white font-bold">{lastSyncLabel}</span>
+              </p>
+              <p className="font-tag text-[10px] tracking-[1px] uppercase text-[#666666]">O app sincroniza sozinho a cada 15 min</p>
+            </div>
 
-              {/* Lista de Calendários */}
-              {calendars.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-white font-medium flex items-center gap-2">
-                    <Settings className="w-4 h-4" />
-                    Seus Calendários do Google
-                  </h4>
-                  <div className="space-y-2 max-h-32 overflow-y-auto">
-                    {calendars.map((calendar, index) => (
-                      <div key={index} className="flex items-center justify-between gap-2 bg-[#161616] rounded p-2 min-w-0">
-                        <span className="text-[#c8c8c8] text-sm truncate min-w-0 flex-1">{calendar.summary}</span>
-                        <Badge variant="outline" className={`shrink-0 ${calendar.primary ? 'border-[#ffd400] text-[#ffd400]' : 'border-[#2a2a2a] text-[#a8a8a8]'}`}>
-                          {calendar.primary ? 'Principal' : 'Secundário'}
-                        </Badge>
-                      </div>
+            <div className="space-y-2">
+              <OptionRow
+                id="gcal-push"
+                title="Enviar meus trabalhos para o Google"
+                description="Cada trabalho novo ou editado aparece na sua agenda do Google."
+                checked={pushOn}
+                onChange={(v) => saveOption({ google_push_enabled: v })}
+              >
+                <div>
+                  <label htmlFor="gcal-push-calendar" className={labelCls}>Agenda que recebe os trabalhos</label>
+                  <select
+                    id="gcal-push-calendar"
+                    value={settings?.google_calendar_id || 'primary'}
+                    onChange={(e) => saveOption({ google_calendar_id: e.target.value })}
+                    className={fieldCls}
+                  >
+                    {writableCalendars.length === 0 && <option value="primary">Agenda principal</option>}
+                    {writableCalendars.map((c) => (
+                      <option key={calendarValue(c)} value={calendarValue(c)}>
+                        {c.primary ? `${c.summary} (principal)` : c.summary}
+                      </option>
                     ))}
+                  </select>
+                  <p className="text-[11px] text-[#888888] mt-1.5">Os trabalhos já enviados continuam onde estão.</p>
+                </div>
+              </OptionRow>
+
+              <OptionRow
+                id="gcal-import"
+                title="Trazer shows do Google para o app"
+                description="Só entra o que estiver na agenda que você escolher. Compromisso pessoal fica de fora."
+                checked={importOn}
+                onChange={(v) => saveOption({ google_import_enabled: v })}
+              >
+                <div className="space-y-3">
+                  <div>
+                    <label htmlFor="gcal-import-calendar" className={labelCls}>Agenda dos shows</label>
+                    <select
+                      id="gcal-import-calendar"
+                      value={settings?.google_import_calendar_id || ''}
+                      onChange={(e) => saveOption({ google_import_calendar_id: e.target.value || null })}
+                      className={`${fieldCls} ${settings?.google_import_calendar_id ? '' : 'border-[#ffd400]'}`}
+                    >
+                      <option value="">Escolha a agenda</option>
+                      {calendars.map((c) => (
+                        <option key={calendarValue(c)} value={calendarValue(c)}>
+                          {c.primary ? `${c.summary} (principal)` : c.summary}
+                        </option>
+                      ))}
+                    </select>
+                    {!settings?.google_import_calendar_id && (
+                      <p className="text-[11px] text-[#ffd400] mt-1.5">Escolha a agenda para começar a trazer os shows.</p>
+                    )}
+                  </div>
+                  <div>
+                    <label htmlFor="gcal-import-keywords" className={labelCls}>Só trazer se o nome tiver (opcional)</label>
+                    <input
+                      id="gcal-import-keywords"
+                      value={keywordsDraft}
+                      onChange={(e) => setKeywordsDraft(e.target.value)}
+                      onBlur={() => {
+                        const next = keywordsDraft.trim() || null;
+                        if (next !== (settings?.google_import_keywords || null)) saveOption({ google_import_keywords: next });
+                      }}
+                      placeholder="show, montagem, evento"
+                      className={fieldCls}
+                    />
+                    <p className="text-[11px] text-[#888888] mt-1.5">
+                      Útil se seus shows ficam na agenda principal junto com coisas pessoais. Separe por vírgula.
+                    </p>
                   </div>
                 </div>
-              )}
+              </OptionRow>
 
-              {/* Indicador de eventos não sincronizados */}
-              {unsyncedCount > 0 && (
-                <Alert className="border-[#ffd400]/40 bg-[#ffd400]/10">
-                  <AlertCircle className="w-4 h-4 text-[#ffd400]" />
-                  <AlertDescription className="text-[#ffd400] text-sm">
-                    <strong>{unsyncedCount} evento{unsyncedCount === 1 ? '' : 's'}</strong> do app ainda não enviado{unsyncedCount === 1 ? '' : 's'} ao Google Calendar.
-                    {' '}Clique em <strong>Sincronizar Agora</strong> para enviar.
-                  </AlertDescription>
-                </Alert>
-              )}
+              <OptionRow
+                id="gcal-busy"
+                title="Avisar se o dia estiver ocupado no Google"
+                description="Ao marcar um trabalho, o app confere sua agenda do Google e avisa se já tem compromisso."
+                checked={busyOn}
+                onChange={(v) => saveOption({ google_busy_check_enabled: v })}
+              />
+            </div>
 
-              {/* Ações de Sincronização */}
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button
-                  onClick={handleSyncNow}
-                  disabled={isSyncing}
-                  className="flex-1"
-                >
-                  {isSyncing ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                  )}
-                  Sincronizar Agora
-                </Button>
-                
-                <Button
-                  onClick={() => setPendingAction('import')}
-                  disabled={isSyncing}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Importar Eventos
-                </Button>
+            {unsyncedCount > 0 && (
+              <div className="rounded-[12px] bg-[#1a1a1a] px-3 py-2.5 text-xs" style={{ borderLeft: '4px solid #ffd400' }}>
+                <p className="text-[#c8c8c8]">
+                  <span className="font-extrabold text-white">{unsyncedCount} trabalho{unsyncedCount === 1 ? '' : 's'}</span>
+                  {' '}ainda não enviado{unsyncedCount === 1 ? '' : 's'} ao Google. Vão na próxima sincronização.
+                </p>
               </div>
+            )}
 
-              <Button
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={handleSyncNow}
+                disabled={isSyncing}
+                className="w-full h-12 rounded-full bg-[#ffd400] text-[#0a0a0a] font-extrabold text-sm flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-60"
+              >
+                {isSyncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                Sincronizar agora
+              </button>
+              <button
                 type="button"
                 onClick={() => setPendingAction('dedupe')}
                 disabled={isSyncing}
-                variant="outline"
-                className="w-full border-[#ffd400]/40 text-[#ffd400] hover:bg-[#ffd400]/10"
+                className="w-full h-12 rounded-full border border-[#444444] text-white font-bold text-sm active:scale-[0.98] disabled:opacity-60"
               >
                 Limpar duplicatas da agenda
-              </Button>
-
-              {/* Status da Última Sincronização */}
-              {lastSyncStatus && (
-                <Alert className={lastSyncStatus.success ? 'border-[#ffd400] bg-[#ffd400]/10' : 'border-[#ff2e88] bg-[#ff2e88]/10'}>
-                  {lastSyncStatus.success ? (
-                    <CheckCircle className="w-4 h-4 text-[#ffd400]" />
-                  ) : (
-                    <AlertTriangle className="w-4 h-4 text-[#ff2e88]" />
-                  )}
-                  <AlertDescription className={lastSyncStatus.success ? 'text-[#ffd400]' : 'text-[#ff2e88]'}>
-                    {lastSyncStatus.message}
-                    <br />
-                    <span className="text-xs opacity-75">
-                      {lastSyncStatus.timestamp.toLocaleString('pt-BR')}
-                    </span>
-                  </AlertDescription>
-                </Alert>
-              )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setPendingAction('disconnect')}
+                className="w-full h-12 rounded-full border border-[#ff2e88]/60 text-[#ff2e88] font-bold text-sm active:scale-[0.98]"
+              >
+                Desconectar
+              </button>
             </div>
-          )}
 
-          {/* Informações sobre a Sincronização */}
-          {!isConnected && (
-            <Alert className="border-[#ffd400] bg-[#ffd400]/10">
-              <Calendar className="w-4 h-4 text-[#ffd400]" />
-              <AlertDescription className="text-[#ffd400]">
-                <strong>Benefícios da Sincronização:</strong>
-                <ul className="mt-2 space-y-1 text-sm">
-                  <li>• Seus eventos do Backstage Pro aparecem no Google Calendar</li>
-                  <li>• Importação automática de eventos existentes</li>
-                  <li>• Sincronização bidirecional em tempo real</li>
-                  <li>• Notificações unificadas em todos os dispositivos</li>
-                </ul>
-              </AlertDescription>
-            </Alert>
-          )}
+            {lastSyncStatus && (
+              <div
+                className="rounded-[12px] bg-[#1a1a1a] px-3 py-2.5 text-xs flex gap-2"
+                style={{ borderLeft: `4px solid ${lastSyncStatus.success ? '#ffd400' : '#ff2e88'}` }}
+                role="status"
+              >
+                {lastSyncStatus.success
+                  ? <CheckCircle className="w-4 h-4 text-[#ffd400] shrink-0 mt-0.5" />
+                  : <AlertTriangle className="w-4 h-4 text-[#ff2e88] shrink-0 mt-0.5" />}
+                <p className="text-[#c8c8c8]">{lastSyncStatus.message}</p>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <ul className="space-y-2 text-sm text-[#c8c8c8]">
+              {[
+                'Seus trabalhos aparecem na agenda do Google, no celular e no computador.',
+                'Shows marcados no Google entram no app — só da agenda que você escolher.',
+                'Aviso quando você marca trabalho num dia que já está ocupado no Google.',
+              ].map((text) => (
+                <li key={text} className="flex gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#ffd400] shrink-0 mt-2" aria-hidden />
+                  <span>{text}</span>
+                </li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              onClick={handleConnect}
+              className="w-full h-12 rounded-full bg-[#ffd400] text-[#0a0a0a] font-extrabold text-sm flex items-center justify-center gap-2 active:scale-[0.98]"
+            >
+              <ExternalLink className="w-4 h-4" />
+              Conectar ao Google
+            </button>
+          </>
+        )}
 
-          <p className="text-xs text-[#888888] text-center pt-2">
-            Ao conectar, você concorda com a{' '}
-            <Link to="/privacidade" className="hover:underline" style={theme.accentStyle}>Política de Privacidade</Link>
-            {' e os '}
-            <Link to="/termos" className="hover:underline" style={theme.accentStyle}>Termos de Uso</Link>.
-          </p>
-        </CardContent>
-      </Card>
-    </motion.div>
+        <p className="text-[11px] text-[#888888] text-center">
+          Ao conectar, você concorda com a{' '}
+          <Link to="/privacidade" className="text-[#ffd400] hover:underline">Política de Privacidade</Link>
+          {' e os '}
+          <Link to="/termos" className="text-[#ffd400] hover:underline">Termos de Uso</Link>.
+        </p>
+      </section>
 
       <ConfirmDialog
         open={!!pendingAction}
         onOpenChange={(open) => { if (!open) setPendingAction(null); }}
-        title={
-          pendingAction === 'disconnect' ? 'Desconectar Google Calendar?' :
-          pendingAction === 'import' ? 'Importar eventos do Google?' :
-          'Limpar duplicatas da agenda?'
-        }
+        title={pendingAction === 'disconnect' ? 'Desligar o Google Agenda?' : 'Limpar duplicatas da agenda?'}
         description={
-          pendingAction === 'disconnect' ? 'Você perderá a sincronização com o Google Calendar.' :
-          pendingAction === 'import' ? 'Eventos dos últimos 30 dias e próximos 90 dias serão importados. Duplicatas serão ignoradas automaticamente.' :
-          'Mantém o registro com Google vinculado ou com horas lançadas. Outros duplicados serão removidos.'
+          pendingAction === 'disconnect'
+            ? 'O app para de sincronizar com o Google. O que já está lá continua lá.'
+            : 'Mantém o registro com Google vinculado ou com horas lançadas. Outros duplicados serão removidos.'
         }
-        confirmLabel={
-          pendingAction === 'disconnect' ? 'Desconectar' :
-          pendingAction === 'import' ? 'Importar' :
-          'Limpar'
-        }
-        destructive={pendingAction === 'disconnect' || pendingAction === 'dedupe'}
+        confirmLabel={pendingAction === 'disconnect' ? 'Desconectar' : 'Limpar'}
+        destructive
         onConfirm={() => {
           const action = pendingAction;
           setPendingAction(null);
           if (action === 'disconnect') handleDisconnect();
-          else if (action === 'import') handleImportEvents();
           else if (action === 'dedupe') handleDedupeEvents();
         }}
       />

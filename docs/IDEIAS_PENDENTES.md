@@ -25,7 +25,7 @@
 
 | # | Ideia | Status | Onde / notas |
 |---|-------|--------|--------------|
-| 8 | Google Calendar OAuth + sync completo | 🟡 | UI + dedupe + smoke E2E ✅; checklist manual em `RELATORIO_VIDA_APP.md` § OAuth |
+| 8 | Google Calendar OAuth + sync completo | 🟡 | v2 na branch `feat/google-agenda` (2026-10-21, ver #110), aguardando ok para publicar; OAuth para todos depende de #24 |
 | 9 | Local do evento (endereço + GPS check-in) | ✅ | EventLocationSection, Modo Palco |
 | 10 | Mapa Brasil visitados (relatórios) | ✅ | BrazilVisitedMap — marcadores recalibrados S39 |
 | 11 | Alertas agenda — check-in local hoje | ✅ | AlertsPanel |
@@ -56,7 +56,7 @@
 | # | Ideia | Status |
 |---|-------|--------|
 | 23 | Rotacionar GOOGLE_CLIENT_SECRET | ⬜ |
-| 24 | OAuth app sair de modo Testing (GCP) | ⬜ |
+| 24 | OAuth app sair de modo Testing (GCP) | ⬜ Precisa de domínio próprio (Hostinger → Vercel, verificado no Search Console) + verificação dos escopos de agenda; roteiro em `RELATORIO_VIDA_APP.md` § Checklist OAuth |
 | 25 | Nunca commitar `client_secret_*.json` | ✅ Regra documentada |
 
 ---
@@ -149,6 +149,7 @@
 | 107 | Modo **"entrada e saída"** (só bater o ponto) além da ficha completa | 2026-10-21 | ⬜ Visto no protótipo (Perfil e Novo trabalho); é função nova |
 | 108 | **Credencial do evento com foto** (ler a credencial e preencher o evento) | 2026-10-21 | ⬜ Visto no protótipo; é função nova |
 | 109 | **Várias funções com cachê diferente** (Iluminação R$ 850, Vídeo R$ 950…) | 2026-10-21 | ⬜ Visto no protótipo (Perfil); precisa de mudança no banco |
+| 110 | **Google Agenda para os usuários**: sincronizar sozinho com o app; do Google só entram **eventos e shows** (nada pessoal) | 2026-10-21 | 🟡 Pronto na branch `feat/google-agenda` (opções no Perfil, a cada 15 min, aviso de dia ocupado no Novo trabalho); falta publicar (043 → edge → front → 044) e #24 |
 
 ---
 

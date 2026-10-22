@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import {
+  addDaysISO,
   corsHeaders,
   eventToGooglePayload,
   getAccessToken,
@@ -8,11 +9,38 @@ import {
   GOOGLE_SCOPES,
   jsonResponse,
   signState,
-  normalizeGoogleDay,
   normalizeTitleKey,
   pickDefaultClientColor,
 } from '../_shared/googleCalendar.ts';
 import { pickDuplicateIdsToRemove } from '../_shared/googleEventDedupe.ts';
+import {
+  backstageIdFromGoogle,
+  busyItemsFromGoogle,
+  changesFromGoogle,
+  googleTiming,
+  needsGooglePush,
+  parseImportKeywords,
+  shouldImportGoogleEvent,
+} from '../_shared/googleSyncRules.ts';
+
+// Janela que a sincronização olha no Google
+const DAYS_BACK = 30;
+const DAYS_FORWARD = 180;
+// Limite por rodada para não estourar o tempo da função; o resto vai na próxima (15 min)
+const MAX_PUSH_PER_RUN = 50;
+const SYNC_ALL_BUDGET_MS = 100_000;
+
+type Svc = ReturnType<typeof serviceClient>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Row = Record<string, any>;
+
+class GoogleApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
 
 function serviceClient() {
   return createClient(getEnv('SUPABASE_URL'), getEnv('SUPABASE_SERVICE_ROLE_KEY'));
@@ -29,9 +57,18 @@ async function authUser(req: Request) {
   return user;
 }
 
-async function getUserSettings(svc: ReturnType<typeof serviceClient>, userId: string) {
+/** Chamada do agendador (pg_cron): mesmo esquema do send-push-digest. */
+function isCronCall(req: Request) {
+  const cronSecret = getEnv('CRON_SECRET');
+  const serviceRoleKey = getEnv('SUPABASE_SERVICE_ROLE_KEY');
+  const headerSecret = req.headers.get('x-cron-secret');
+  const bearer = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '') || '';
+  return Boolean((cronSecret && headerSecret === cronSecret) || (serviceRoleKey && bearer === serviceRoleKey));
+}
+
+async function getUserSettings(svc: Svc, userId: string) {
   const { data } = await svc.from('user_settings').select('*').eq('user_id', userId).maybeSingle();
-  return data;
+  return data as Row | null;
 }
 
 async function googleFetch(accessToken: string, path: string, init?: RequestInit) {
@@ -45,50 +82,107 @@ async function googleFetch(accessToken: string, path: string, init?: RequestInit
   });
   if (res.status === 204) return {};
   const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(body.error?.message || `Google API ${res.status}`);
+  if (!res.ok) throw new GoogleApiError(body.error?.message || `Google API ${res.status}`, res.status);
   return body;
 }
 
-async function pushOneEvent(svc: ReturnType<typeof serviceClient>, userId: string, eventId: string) {
-  const settings = await getUserSettings(svc, userId);
-  if (!settings?.google_calendar_connected) throw new Error('Google Calendar não conectado');
+async function listGoogleEvents(accessToken: string, calendarId: string, timeMin: string, timeMax: string, maxPages = 4) {
+  const items: Row[] = [];
+  let pageToken = '';
+  for (let page = 0; page < maxPages; page++) {
+    const params = new URLSearchParams({
+      timeMin,
+      timeMax,
+      singleEvents: 'true',
+      orderBy: 'startTime',
+      maxResults: '250',
+      timeZone: 'America/Sao_Paulo',
+    });
+    if (pageToken) params.set('pageToken', pageToken);
+    const data = await googleFetch(accessToken, `/calendars/${encodeURIComponent(calendarId)}/events?${params}`);
+    items.push(...(data.items ?? []));
+    pageToken = data.nextPageToken || '';
+    if (!pageToken) break;
+  }
+  return items;
+}
+
+type PushContext = { settings: Row; accessToken: string; clientNames: Map<string, string | null> };
+
+async function clientNameFor(svc: Svc, clientId: string | null, cache?: Map<string, string | null>) {
+  if (!clientId) return null;
+  if (cache?.has(clientId)) return cache.get(clientId) ?? null;
+  const { data: client } = await svc.from('clients').select('name').eq('id', clientId).maybeSingle();
+  const name = client?.name ?? null;
+  cache?.set(clientId, name);
+  return name;
+}
+
+/**
+ * Manda um trabalho para o Google.
+ * - Criado no app: título, descrição, data e local completos, na agenda escolhida.
+ * - Veio do Google (google_origin = 'google'): só data, horário e local; título e descrição de quem criou ficam.
+ */
+async function pushOneEvent(svc: Svc, userId: string, eventId: string, ctx?: PushContext) {
+  const settings = ctx?.settings ?? await getUserSettings(svc, userId);
+  if (!settings?.google_calendar_connected || settings.google_push_enabled === false) {
+    return { skipped: true, google_event_id: null as string | null };
+  }
 
   const { data: event, error } = await svc.from('events').select('*').eq('id', eventId).eq('user_id', userId).single();
   if (error || !event) throw new Error('Evento não encontrado');
 
-  let clientName: string | null = null;
-  if (event.client_id) {
-    const { data: client } = await svc.from('clients').select('name').eq('id', event.client_id).maybeSingle();
-    clientName = client?.name ?? null;
-  }
-
-  const accessToken = await getAccessToken(svc, userId);
-  const calendarId = encodeURIComponent(settings.google_calendar_id || 'primary');
-  const includeFinancial = settings.financial_visibility !== false;
-  const payload = eventToGooglePayload(event, clientName, includeFinancial);
+  const accessToken = ctx?.accessToken ?? await getAccessToken(svc, userId);
+  const targetCalendar = settings.google_calendar_id || 'primary';
+  const eventCalendar = event.google_calendar_id || targetCalendar;
+  const clientName = await clientNameFor(svc, event.client_id, ctx?.clientNames);
+  const payload = eventToGooglePayload(event, clientName, settings.financial_visibility !== false);
+  const now = () => new Date().toISOString();
 
   let googleEventId = event.google_event_id as string | null;
-  if (googleEventId) {
-    await googleFetch(accessToken, `/calendars/${calendarId}/events/${encodeURIComponent(googleEventId)}`, {
-      method: 'PUT',
-      body: JSON.stringify(payload),
-    });
+  let calendarUsed = eventCalendar;
+
+  if (googleEventId && event.google_origin === 'google') {
+    try {
+      await googleFetch(accessToken, `/calendars/${encodeURIComponent(eventCalendar)}/events/${encodeURIComponent(googleEventId)}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ start: payload.start, end: payload.end, ...(event.location ? { location: event.location } : {}) }),
+      });
+    } catch (err) {
+      // Agenda só de leitura (de outra pessoa) ou evento apagado lá: o trabalho segue só no app
+      if (!(err instanceof GoogleApiError) || ![403, 404, 410].includes(err.status)) throw err;
+    }
   } else {
-    const created = await googleFetch(accessToken, `/calendars/${calendarId}/events`, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-    googleEventId = created.id;
+    let created = !googleEventId;
+    if (googleEventId) {
+      try {
+        await googleFetch(accessToken, `/calendars/${encodeURIComponent(eventCalendar)}/events/${encodeURIComponent(googleEventId)}`, {
+          method: 'PUT',
+          body: JSON.stringify(payload),
+        });
+      } catch (err) {
+        // Apagado no Google: o app manda de novo (o app é quem manda nos trabalhos criados nele)
+        if (!(err instanceof GoogleApiError) || ![404, 410].includes(err.status)) throw err;
+        created = true;
+      }
+    }
+    if (created) {
+      calendarUsed = targetCalendar;
+      const res = await googleFetch(accessToken, `/calendars/${encodeURIComponent(targetCalendar)}/events`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      googleEventId = res.id;
+    }
   }
 
-  const now = new Date().toISOString();
   await svc.from('events').update({
     google_event_id: googleEventId,
-    google_calendar_id: settings.google_calendar_id || 'primary',
-    google_synced_at: now,
+    google_calendar_id: calendarUsed,
+    google_synced_at: now(),
   }).eq('id', eventId);
 
-  return googleEventId;
+  return { skipped: false, google_event_id: googleEventId };
 }
 
 const BR_STATES = new Set([
@@ -128,8 +222,7 @@ function normalizeForMatch(s: string): string {
     .trim();
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function findOrCreateClientByName(svc: any, userId: string, name: string) {
+async function findOrCreateClientByName(svc: Svc, userId: string, name: string) {
   const trimmed = name.trim();
   // Ignore empty or generic fallback titles
   if (!trimmed || trimmed === 'Evento Google') return null;
@@ -165,98 +258,214 @@ async function findOrCreateClientByName(svc: any, userId: string, name: string) 
   return created?.id ?? null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function importGoogleEventsForUser(
-  svc: any,
-  userId: string,
-  daysBack = 30,
-  daysForward = 90,
-) {
-  const settings = await getUserSettings(svc, userId);
-  if (!settings?.google_calendar_connected) throw new Error('Google Calendar não conectado');
+type SyncCounts = {
+  imported_count: number;
+  linked_count: number;
+  skipped_count: number;
+  updated_from_google: number;
+  synced_events: number;
+  pending_push: number;
+};
 
-  const now = new Date();
-  const timeMin = new Date(now.getTime() - daysBack * 86400000).toISOString();
-  const timeMax = new Date(now.getTime() + daysForward * 86400000).toISOString();
-  const accessToken = await getAccessToken(svc, userId);
-  const calendarId = encodeURIComponent(settings.google_calendar_id || 'primary');
-  const data = await googleFetch(
-    accessToken,
-    `/calendars/${calendarId}/events?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}&singleEvents=true&orderBy=startTime&maxResults=250`,
-  );
+function emptyCounts(): SyncCounts {
+  return { imported_count: 0, linked_count: 0, skipped_count: 0, updated_from_google: 0, synced_events: 0, pending_push: 0 };
+}
 
-  const { data: existingEvents } = await svc.from('events').select('id, title, start_date, google_event_id, client_id, clients(name)').eq('user_id', userId);
-  const byGoogleId = new Map<string, { id: string }>();
-  const byDateTitle = new Map<string, { id: string }>();
-  for (const ev of existingEvents ?? []) {
-    if (ev.google_event_id) byGoogleId.set(ev.google_event_id, ev);
-    const clientName = (ev as { clients?: { name?: string } }).clients?.name || '';
-    const key = `${ev.start_date}|${normalizeTitleKey(clientName || ev.title)}`;
+async function loadUserEvents(svc: Svc, userId: string) {
+  const { data } = await svc
+    .from('events')
+    .select('id, title, status, start_date, end_date, start_time, end_time, location, updated_at, google_event_id, google_calendar_id, google_synced_at, google_origin, client_id, clients(name)')
+    .eq('user_id', userId);
+  return (data ?? []) as Row[];
+}
+
+/** Novos shows da agenda escolhida entram no app; os que o usuário já tem ficam só vinculados. */
+async function importNewShows(svc: Svc, userId: string, settings: Row, items: Row[], events: Row[], counts: SyncCounts) {
+  const calendarId = settings.google_import_calendar_id as string;
+  const keywords = parseImportKeywords(settings.google_import_keywords);
+  const byGoogleId = new Set(events.filter((e) => e.google_event_id).map((e) => e.google_event_id));
+  const byDateTitle = new Map<string, Row>();
+  for (const ev of events) {
+    if (ev.google_event_id) continue;
+    const key = `${ev.start_date}|${normalizeTitleKey(ev.clients?.name || ev.title)}`;
     byDateTitle.set(key, ev);
   }
 
-  let imported = 0;
-  let linked = 0;
-  let skipped = 0;
-
-  for (const g of data.items ?? []) {
-    const desc = String(g.description || '');
-    const backstageMatch = desc.match(/backstage:\/\/event\/([a-f0-9-]+)/i);
-    if (backstageMatch) {
-      skipped++;
+  for (const g of items) {
+    if (g.id && byGoogleId.has(g.id)) continue;
+    if (!shouldImportGoogleEvent(g, keywords)) {
+      if (!backstageIdFromGoogle(g)) counts.skipped_count++;
       continue;
     }
-    if (g.id && byGoogleId.has(g.id)) {
-      skipped++;
-      continue;
-    }
-
-    const start = g.start?.dateTime || g.start?.date;
-    if (!start) continue;
-    const end = g.end?.dateTime || g.end?.date || start;
-    const startDate = normalizeGoogleDay(start);
-    const endDate = normalizeGoogleDay(end);
+    const timing = googleTiming(g);
+    if (!timing) continue;
     const summary = String(g.summary || '').trim() || 'Evento Google';
-    const titleKey = normalizeTitleKey(summary);
+    const now = new Date().toISOString();
 
-    const existingByMeta = byDateTitle.get(`${startDate}|${titleKey}`);
-    if (existingByMeta) {
+    const sameShow = byDateTitle.get(`${timing.start_date}|${normalizeTitleKey(summary)}`);
+    if (sameShow) {
       await svc.from('events').update({
         google_event_id: g.id,
-        google_calendar_id: settings.google_calendar_id || 'primary',
-        google_synced_at: new Date().toISOString(),
-      }).eq('id', existingByMeta.id);
-      linked++;
+        google_calendar_id: calendarId,
+        google_synced_at: now,
+        google_origin: 'google',
+      }).eq('id', sameShow.id);
+      byDateTitle.delete(`${timing.start_date}|${normalizeTitleKey(summary)}`);
+      counts.linked_count++;
       continue;
     }
 
     const clientId = await findOrCreateClientByName(svc, userId, summary);
-    const { city: parsedCity, state: parsedState } = parseLocationForCity(g.location || '');
+    const { city, state } = parseLocationForCity(g.location || '');
     const { error } = await svc.from('events').insert({
       user_id: userId,
       client_id: clientId,
       title: summary,
-      start_date: startDate,
-      end_date: endDate,
-      start_time: g.start?.dateTime ? start.slice(11, 16) : null,
-      end_time: g.end?.dateTime ? end.slice(11, 16) : null,
+      event_date: timing.start_date,
+      start_date: timing.start_date,
+      end_date: timing.end_date,
+      start_time: timing.start_time,
+      end_time: timing.end_time,
       location: g.location || null,
-      location_city: parsedCity,
-      location_state: parsedState,
+      location_city: city,
+      location_state: state,
       google_event_id: g.id,
-      google_calendar_id: settings.google_calendar_id || 'primary',
-      google_synced_at: new Date().toISOString(),
-      status: 'confirmado',
+      google_calendar_id: calendarId,
+      google_synced_at: now,
+      google_origin: 'google',
+      status: 'confirmed',
     });
-    if (!error) imported++;
+    if (!error) {
+      counts.imported_count++;
+      byGoogleId.add(g.id);
+    }
   }
-
-  await svc.from('user_settings').update({ google_last_sync_at: new Date().toISOString() }).eq('user_id', userId);
-  return { imported_count: imported, linked_count: linked, skipped_count: skipped };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function dedupeEventsForUser(svc: any, userId: string) {
+/** Data, horário ou local mudados no Google voltam para os trabalhos já ligados. */
+async function applyChangesFromGoogle(svc: Svc, items: Row[], events: Row[], counts: SyncCounts) {
+  const byId = new Map(events.map((e) => [e.id, e]));
+  const byGoogleId = new Map(events.filter((e) => e.google_event_id).map((e) => [e.google_event_id, e]));
+  for (const g of items) {
+    const ev = byId.get(backstageIdFromGoogle(g) || '') || (g.id ? byGoogleId.get(g.id) : null);
+    if (!ev) continue;
+    const patch = changesFromGoogle(g, ev);
+    if (!patch) continue;
+    const { error } = await svc.from('events').update({ ...patch, google_synced_at: new Date().toISOString() }).eq('id', ev.id);
+    if (!error) counts.updated_from_google++;
+  }
+}
+
+async function pushPendingEvents(svc: Svc, userId: string, ctx: PushContext, counts: SyncCounts) {
+  const events = await loadUserEvents(svc, userId);
+  const pending = events.filter(needsGooglePush);
+  for (const ev of pending.slice(0, MAX_PUSH_PER_RUN)) {
+    try {
+      const res = await pushOneEvent(svc, userId, ev.id, ctx);
+      if (!res.skipped) counts.synced_events++;
+    } catch { /* tenta de novo na próxima rodada */ }
+  }
+  counts.pending_push = Math.max(0, pending.length - counts.synced_events);
+}
+
+/** Uma rodada completa para um usuário: trazer do Google (se ligado) e mandar o que mudou no app. */
+async function syncUser(svc: Svc, userId: string) {
+  const counts = emptyCounts();
+  const settings = await getUserSettings(svc, userId);
+  if (!settings?.google_calendar_connected) throw new Error('Google Calendar não conectado');
+
+  try {
+    const accessToken = await getAccessToken(svc, userId);
+    const pushOn = settings.google_push_enabled !== false;
+    const importOn = settings.google_import_enabled === true && Boolean(settings.google_import_calendar_id);
+    const pushCalendar = settings.google_calendar_id || 'primary';
+    const today = new Date().toISOString().slice(0, 10);
+    const timeMin = `${addDaysISO(today, -DAYS_BACK)}T00:00:00-03:00`;
+    const timeMax = `${addDaysISO(today, DAYS_FORWARD)}T00:00:00-03:00`;
+
+    const calendars = new Set<string>();
+    if (pushOn) calendars.add(pushCalendar);
+    if (importOn) calendars.add(settings.google_import_calendar_id);
+
+    const events = await loadUserEvents(svc, userId);
+    for (const calendarId of calendars) {
+      const items = await listGoogleEvents(accessToken, calendarId, timeMin, timeMax);
+      await applyChangesFromGoogle(svc, items, events, counts);
+      if (importOn && calendarId === settings.google_import_calendar_id) {
+        await importNewShows(svc, userId, settings, items, events, counts);
+      }
+    }
+
+    if (pushOn) {
+      await pushPendingEvents(svc, userId, { settings, accessToken, clientNames: new Map() }, counts);
+    }
+
+    await svc.from('user_settings').update({
+      google_last_sync_at: new Date().toISOString(),
+      google_last_sync_error: null,
+    }).eq('user_id', userId);
+    return counts;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Erro na sincronização';
+    if (!/não conectado/i.test(message)) {
+      await svc.from('user_settings').update({ google_last_sync_error: message.slice(0, 300) }).eq('user_id', userId);
+    }
+    throw err;
+  }
+}
+
+async function syncAllUsers(svc: Svc) {
+  const startedAt = Date.now();
+  const { data: rows } = await svc
+    .from('user_settings')
+    .select('user_id')
+    .eq('google_calendar_connected', true);
+  const result = { users: 0, ok: 0, failed: 0, deferred: 0 };
+  for (const row of rows ?? []) {
+    if (Date.now() - startedAt > SYNC_ALL_BUDGET_MS) {
+      result.deferred++;
+      continue;
+    }
+    result.users++;
+    try {
+      await syncUser(svc, row.user_id);
+      result.ok++;
+    } catch {
+      result.failed++;
+    }
+  }
+  return result;
+}
+
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Compromissos do Google nos dias do trabalho (aviso de "dia ocupado" no Novo trabalho). */
+async function busyDays(svc: Svc, userId: string, startDate: string, endDate: string) {
+  const settings = await getUserSettings(svc, userId);
+  if (!settings?.google_calendar_connected || settings.google_busy_check_enabled === false) return [];
+
+  const accessToken = await getAccessToken(svc, userId);
+  const calendars = new Set<string>(['primary', settings.google_calendar_id || 'primary']);
+  if (settings.google_import_enabled && settings.google_import_calendar_id) calendars.add(settings.google_import_calendar_id);
+
+  const timeMin = `${startDate}T00:00:00-03:00`;
+  const timeMax = `${addDaysISO(endDate, 1)}T00:00:00-03:00`;
+  const items: Row[] = [];
+  for (const calendarId of calendars) {
+    try {
+      items.push(...await listGoogleEvents(accessToken, calendarId, timeMin, timeMax, 1));
+    } catch { /* agenda removida ou sem acesso: ignora */ }
+  }
+  const ids = items.map((g) => g.id).filter(Boolean);
+  const linked = new Set<string>();
+  if (ids.length) {
+    const { data } = await svc.from('events').select('google_event_id').eq('user_id', userId).in('google_event_id', ids);
+    for (const row of data ?? []) linked.add(row.google_event_id);
+  }
+  return busyItemsFromGoogle(items, linked).slice(0, 10);
+}
+
+async function dedupeEventsForUser(svc: Svc, userId: string) {
   const { data: events } = await svc
     .from('events')
     .select('id, title, start_date, google_event_id, client_id, created_at, clients(name)')
@@ -279,12 +488,18 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
-    const user = await authUser(req);
-    if (!user) return jsonResponse({ success: false, error: 'Não autorizado' }, 401);
-
-    const body = req.method === 'POST' ? await req.json() : {};
+    const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
     const action = body.action as string;
     const svc = serviceClient();
+
+    if (action === 'sync-all') {
+      if (!isCronCall(req)) return jsonResponse({ success: false, error: 'Não autorizado' }, 401);
+      const result = await syncAllUsers(svc);
+      return jsonResponse({ success: true, ...result });
+    }
+
+    const user = await authUser(req);
+    if (!user) return jsonResponse({ success: false, error: 'Não autorizado' }, 401);
     const jwtSecret = getEnv('SUPABASE_JWT_SECRET', getEnv('SUPABASE_SERVICE_ROLE_KEY'));
 
     if (action === 'auth-start') {
@@ -311,7 +526,9 @@ Deno.serve(async (req) => {
         google_calendar_connected: false,
         google_account_email: null,
         google_calendar_id: null,
+        google_import_calendar_id: null,
         google_last_sync_at: null,
+        google_last_sync_error: null,
       }).eq('user_id', user.id);
       return jsonResponse({ success: true });
     }
@@ -319,10 +536,13 @@ Deno.serve(async (req) => {
     if (action === 'list-calendars') {
       const accessToken = await getAccessToken(svc, user.id);
       const data = await googleFetch(accessToken, '/users/me/calendarList');
-      const calendars = (data.items ?? []).map((c: { id: string; summary: string; primary?: boolean }) => ({
+      const calendars = (data.items ?? []).map((c: Row) => ({
         id: c.id,
-        summary: c.summary,
+        summary: c.summaryOverride || c.summary,
         primary: Boolean(c.primary),
+        // owner/writer: dá para o app escrever nela
+        writable: c.accessRole === 'owner' || c.accessRole === 'writer',
+        color: c.backgroundColor || null,
       }));
       return jsonResponse({ success: true, calendars });
     }
@@ -330,19 +550,27 @@ Deno.serve(async (req) => {
     if (action === 'push-event') {
       const eventId = body.event_id as string;
       if (!eventId) return jsonResponse({ success: false, error: 'event_id obrigatório' }, 400);
-      const googleEventId = await pushOneEvent(svc, user.id, eventId);
-      return jsonResponse({ success: true, google_event_id: googleEventId });
+      const res = await pushOneEvent(svc, user.id, eventId);
+      return jsonResponse({ success: true, ...res });
     }
 
     if (action === 'delete-event') {
       const settings = await getUserSettings(svc, user.id);
       const googleEventId = (body.google_event_id as string) || null;
       if (settings?.google_calendar_connected && googleEventId) {
-        const accessToken = await getAccessToken(svc, user.id);
-        const calendarId = encodeURIComponent(settings.google_calendar_id || 'primary');
-        await googleFetch(accessToken, `/calendars/${calendarId}/events/${encodeURIComponent(googleEventId)}`, {
-          method: 'DELETE',
-        }).catch(() => null);
+        // Só apaga no Google o que o app criou; evento de outra pessoa fica lá.
+        // O app manda origem e agenda junto porque a linha costuma já ter sido apagada.
+        const { data: ev } = body.event_id
+          ? await svc.from('events').select('google_origin, google_calendar_id').eq('id', body.event_id).eq('user_id', user.id).maybeSingle()
+          : { data: null };
+        const origin = body.google_origin ?? ev?.google_origin ?? null;
+        if (origin !== 'google') {
+          const accessToken = await getAccessToken(svc, user.id);
+          const calendarId = encodeURIComponent(body.google_calendar_id || ev?.google_calendar_id || settings.google_calendar_id || 'primary');
+          await googleFetch(accessToken, `/calendars/${calendarId}/events/${encodeURIComponent(googleEventId)}`, {
+            method: 'DELETE',
+          }).catch(() => null);
+        }
       }
       if (body.event_id) {
         await svc.from('events').update({
@@ -354,28 +582,19 @@ Deno.serve(async (req) => {
       return jsonResponse({ success: true });
     }
 
-    if (action === 'sync-now') {
-      const settings = await getUserSettings(svc, user.id);
-      if (!settings?.google_calendar_connected) {
-        return jsonResponse({ success: false, error: 'Google Calendar não conectado' });
-      }
-      const importResult = await importGoogleEventsForUser(svc, user.id);
-      const { data: events } = await svc.from('events').select('id').eq('user_id', user.id);
-      let synced = 0;
-      for (const ev of events ?? []) {
-        try {
-          await pushOneEvent(svc, user.id, ev.id);
-          synced++;
-        } catch { /* continue */ }
-      }
-      return jsonResponse({ success: true, synced_events: synced, ...importResult });
+    if (action === 'sync-now' || action === 'import-events') {
+      const counts = await syncUser(svc, user.id);
+      return jsonResponse({ success: true, ...counts });
     }
 
-    if (action === 'import-events') {
-      const daysBack = Number(body.days_back ?? 30);
-      const daysForward = Number(body.days_forward ?? 90);
-      const result = await importGoogleEventsForUser(svc, user.id, daysBack, daysForward);
-      return jsonResponse({ success: true, ...result });
+    if (action === 'busy-days') {
+      const startDate = String(body.start_date || '');
+      const endDate = String(body.end_date || startDate);
+      if (!ISO_DAY.test(startDate) || !ISO_DAY.test(endDate) || endDate < startDate) {
+        return jsonResponse({ success: false, error: 'Datas inválidas' }, 400);
+      }
+      const busy = await busyDays(svc, user.id, startDate, endDate);
+      return jsonResponse({ success: true, busy });
     }
 
     if (action === 'dedupe-events') {

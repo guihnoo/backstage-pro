@@ -56,6 +56,7 @@ import {
   getEventStatus,
 } from '@/components/utils/dateUtils';
 import { isCancelledEvent, calculateEventReceivableAmount } from '@/lib/eventFinance';
+import { needsGooglePush } from '@/lib/googleSyncRules';
 import AnimatedStatValue from '@/components/home/AnimatedStatValue';
 import CalendarPageHeader from '@/components/calendar/CalendarPageHeader';
 import CalendarTodayStrip from '@/components/calendar/CalendarTodayStrip';
@@ -192,10 +193,11 @@ export default function CalendarPage() {
   const { settings: userSettings } = useUserSettings();
   const { offline } = useConnectivity();
 
-  const unsyncedCount = useMemo(() => {
-    if (!userSettings?.google_calendar_connected) return 0;
-    return events.filter((e) => !e.google_event_id && !isCancelledEvent(e)).length;
-  }, [events, userSettings?.google_calendar_connected]);
+  const googlePushOn = Boolean(userSettings?.google_calendar_connected) && userSettings?.google_push_enabled !== false;
+  const unsyncedCount = useMemo(
+    () => (googlePushOn ? events.filter(needsGooglePush).length : 0),
+    [events, googlePushOn]
+  );
 
   const isCoreLoading = eventsLoading || clientsLoading;
   const isCoreReady = Array.isArray(events) && Array.isArray(clients);

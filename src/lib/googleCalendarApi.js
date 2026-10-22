@@ -30,6 +30,13 @@ export const googleListCalendars = () => invokeGoogleCalendar('list-calendars');
 export const googleSyncNow = () => invokeGoogleCalendar('sync-now');
 export const googleImportEvents = (opts) => invokeGoogleCalendar('import-events', opts);
 export const googleDedupeEvents = () => invokeGoogleCalendar('dedupe-events');
+export const googleBusyDays = (startDate, endDate) =>
+  invokeGoogleCalendar('busy-days', { start_date: startDate, end_date: endDate || startDate });
 export const googlePushEvent = (eventId) => invokeGoogleCalendar('push-event', { event_id: eventId });
-export const googleDeleteEvent = (eventId, googleEventId) =>
-  invokeGoogleCalendar('delete-event', { event_id: eventId, google_event_id: googleEventId ?? null });
+export const googleDeleteEvent = (eventId, googleEventId, { google_origin = null, google_calendar_id = null } = {}) =>
+  invokeGoogleCalendar('delete-event', {
+    event_id: eventId,
+    google_event_id: googleEventId ?? null,
+    google_origin,
+    google_calendar_id,
+  });

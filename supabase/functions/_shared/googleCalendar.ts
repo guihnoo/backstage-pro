@@ -1,7 +1,9 @@
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-cron-secret',
 };
+
+export const GOOGLE_EXPIRED_MESSAGE = 'A conexão com o Google expirou. Conecte de novo para voltar a sincronizar.';
 
 export const GOOGLE_SCOPES = [
   'https://www.googleapis.com/auth/calendar.events',
@@ -90,23 +92,27 @@ export function eventToGooglePayload(event: Record<string, unknown>, clientName:
   if (event.observacoes_md) lines.push('', String(event.observacoes_md));
   lines.push('', `backstage://event/${event.id}`);
   const title = String(event.title || '');
-  const summary = clientName ? (title && title !== clientName ? `${clientName} — ${title}` : clientName) : title;
+  const baseSummary = clientName ? (title && title !== clientName ? `${clientName} — ${title}` : clientName) : title;
+  // Cancelado continua no Google, avisando, mas não ocupa o horário
+  const cancelled = event.status === 'cancelled' || event.status === 'cancelado';
+  const common = {
+    summary: cancelled ? `CANCELADO · ${baseSummary}` : baseSummary,
+    description: lines.join('\n'),
+    location: event.location || undefined,
+    transparency: cancelled ? 'transparent' : 'opaque',
+  };
   const hasTimes = Boolean(event.start_time && event.end_time);
   if (hasTimes) {
     const st = String(event.start_time).split(':');
     const et = String(event.end_time).split(':');
     return {
-      summary,
-      description: lines.join('\n'),
-      location: event.location || undefined,
+      ...common,
       start: { dateTime: `${startDate}T${st[0]?.padStart(2, '0')}:${st[1]?.padStart(2, '0')}:00`, timeZone: 'America/Sao_Paulo' },
       end: { dateTime: `${endDate}T${et[0]?.padStart(2, '0')}:${et[1]?.padStart(2, '0')}:00`, timeZone: 'America/Sao_Paulo' },
     };
   }
   return {
-    summary,
-    description: lines.join('\n'),
-    location: event.location || undefined,
+    ...common,
     start: { date: startDate },
     end: { date: addDaysISO(endDate, 1) },
   };
@@ -148,12 +154,11 @@ export async function getAccessToken(serviceClient: any, userId: string) {
     const isTokenError = /invalid_grant|token.*expired|token.*revoked|revoked/i.test(msg);
     if (isTokenError) {
       await serviceClient.from('google_calendar_connections').delete().eq('user_id', userId);
+      // Mantém as escolhas (agendas, opções) para a reconexão; o Perfil mostra o motivo
       await serviceClient.from('user_settings').update({
         google_calendar_connected: false,
-        google_account_email: null,
-        google_calendar_id: null,
-        google_last_sync_at: null,
-      }).eq('user_id', userId).catch(() => null);
+        google_last_sync_error: GOOGLE_EXPIRED_MESSAGE,
+      }).eq('user_id', userId);
     }
     throw new Error('Google Calendar não conectado: reconecte nas configurações do app');
   }

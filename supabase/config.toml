@@ -380,6 +380,11 @@ verify_jwt = false
 [functions.google-calendar-callback]
 verify_jwt = false
 
+# O cron (044) chama com a chave secreta nova (sb_secret_...), que não é JWT.
+# Toda ação de usuário confere o login dentro da função (authUser); "sync-all" confere a chave.
+[functions.google-calendar]
+verify_jwt = false
+
 [edge_runtime]
 enabled = true
 # Supported request policies: `oneshot`, `per_worker`.

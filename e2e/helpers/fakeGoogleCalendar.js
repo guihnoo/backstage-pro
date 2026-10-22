@@ -10,7 +10,13 @@ export function fakeGoogleUserSettings() {
     google_calendar_connected: true,
     google_account_email: 'e2e-test@gmail.com',
     google_calendar_id: 'primary',
-    google_last_sync_at: new Date().toISOString(),
+    google_last_sync_at: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+    google_push_enabled: true,
+    google_import_enabled: false,
+    google_import_calendar_id: null,
+    google_import_keywords: null,
+    google_busy_check_enabled: true,
+    google_last_sync_error: null,
     financial_visibility: true,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -81,7 +87,32 @@ export async function installGoogleCalendarMocks(page, { dedupeRemoved = 2 } = {
         contentType: 'application/json',
         body: JSON.stringify({
           success: true,
-          calendars: [{ summary: 'E2E Principal', primary: true }],
+          calendars: [
+            { id: 'e2e-test@gmail.com', summary: 'E2E Principal', primary: true, writable: true },
+            { id: 'shows@group.calendar.google.com', summary: 'E2E Shows', primary: false, writable: true },
+            { id: 'feriados@group.v.calendar.google.com', summary: 'Feriados', primary: false, writable: false },
+          ],
+        }),
+      });
+      return;
+    }
+
+    if (action === 'busy-days') {
+      const body = route.request().postDataJSON() || {};
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          busy: [{
+            id: 'gcal-busy-1',
+            title: 'E2E Dentista',
+            start_date: body.start_date,
+            end_date: body.start_date,
+            start_time: '14:00',
+            end_time: '15:00',
+            all_day: false,
+          }],
         }),
       });
       return;

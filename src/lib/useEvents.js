@@ -145,7 +145,7 @@ export function useEvents() {
   const remove = useCallback(async (id) => {
     const existing = events.find((e) => e.id === id);
     if (existing?.google_event_id) {
-      syncEventToGoogleCalendar(id, 'delete', existing.google_event_id);
+      syncEventToGoogleCalendar(id, 'delete', existing.google_event_id, existing);
     }
     const { error: err } = await supabase.from('events').delete().eq('id', id);
     if (err) throw err;
