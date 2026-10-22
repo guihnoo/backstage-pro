@@ -3027,3 +3027,12 @@ Registro cronológico de tarefas executadas por agentes.
 - **Cron**: `044_google_agenda_cron` (`google-agenda-sync`, a cada 15 min). Rodada manual igual a do cron: HTTP 200 `{users:1, ok:1, failed:0}`, `google_last_sync_at` atualizado, nenhum trabalho alterado.
 - **Testes contra producao** (mocks): 4/4 do Google.
 - **Falta**: Guih testar com a conta real e ligar "Trazer shows" no Perfil; abrir para todos depende do dominio + verificacao do Google (#24).
+
+### FIX — Perfil: barra SALVAR presa (Claude Code, 2026-10-22, branch `fix/perfil-barra-salvar`)
+- **Pedido**: Guih viu o SALVAR do Perfil "flutuando de cima a baixo" sem ficar fixo.
+- **Causa**: `div.sticky.bottom-24` — gruda enquanto o fim do formulário está abaixo da tela e depois sobe junto com a página, por cima dos cartões.
+- **Correção**: `src/pages/ProfileSimple.jsx` — barra `fixed` acima do menu (via `createPortal`), só quando há alteração (`sameFields` compara como texto), "SALVO" por 2,5 s. Gravação igual à de antes.
+- **Teste**: `e2e/regression/profile-save-bar.spec.js`.
+- **Revisao do que falta**: listas de IDEIAS (106–109, 23/24), Trilha A do `PLANO_REVISAO_GERAL.md` (Despesas, Metas, Relatórios, Mentor, Perfil, Onboarding, Login, Navegação, PWA, estados vazios e de erro ⬜), testes manuais em produção (Google, avisos, offline). Backlog limpo: 034 aplicada e "hoje em UTC" já resolvidos.
+- **Achado**: avisos das 8h de 21/10 deram 500 sem mensagem no log; conferir a rodada de 22/10 (11:00 UTC).
+- **Deploy**: nenhum.

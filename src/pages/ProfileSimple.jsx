@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '@/lib/authContext';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { hardNavigate } from '@/lib/hardNavigate';
@@ -28,6 +29,34 @@ import { useEvents } from '@/lib/useEvents';
 import { isCancelledEvent } from '@/lib/eventFinance';
 
 const PIX_TYPES = ['CPF', 'CNPJ', 'E-mail', 'Telefone', 'Chave aleatória'];
+
+function profileToForm(profile) {
+  return {
+    name: profile?.name || '',
+    phone: profile?.phone || '',
+    city: profile?.city || '',
+    state: profile?.state || '',
+    years_experience: profile?.years_experience != null ? String(profile.years_experience) : '',
+    daily_rate: profile?.daily_rate || '',
+    monthly_goal_revenue: profile?.monthly_goal_revenue || '',
+    monthly_goal_events: profile?.monthly_goal_events || '',
+    category: resolveCategoryId(profile?.category || ''),
+  };
+}
+
+// Campo digitado vira texto ("12") e o gravado pode ser número (12): compara como texto
+function sameFields(a, b) {
+  return Object.keys(b).every((k) => String(a[k] ?? '').trim() === String(b[k] ?? '').trim());
+}
+
+function settingsToPix(settings) {
+  return {
+    pix_key: settings?.pix_key || '',
+    pix_key_type: settings?.pix_key_type || 'CPF',
+    cpf_cnpj: settings?.cpf_cnpj || '',
+    report_subtitle: settings?.report_subtitle || '',
+  };
+}
 
 function ProfileSkeleton() {
   return (
@@ -77,17 +106,7 @@ export default function ProfileSimple() {
   }, [allEvents]);
   const categoryId = profile?.category || 'lighting';
 
-  const [form, setForm] = useState({
-    name: profile?.name || '',
-    phone: profile?.phone || '',
-    city: profile?.city || '',
-    state: profile?.state || '',
-    years_experience: profile?.years_experience != null ? String(profile.years_experience) : '',
-    daily_rate: profile?.daily_rate || '',
-    monthly_goal_revenue: profile?.monthly_goal_revenue || '',
-    monthly_goal_events: profile?.monthly_goal_events || '',
-    category: resolveCategoryId(profile?.category || ''),
-  });
+  const [form, setForm] = useState(() => profileToForm(profile));
 
   const config = getCategoryConfig(form.category || categoryId);
   const [saving, setSaving] = useState(false);
@@ -96,42 +115,24 @@ export default function ProfileSimple() {
   const [exporting, setExporting] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
-  const [pixForm, setPixForm] = useState({
-    pix_key: '',
-    pix_key_type: 'CPF',
-    cpf_cnpj: '',
-    report_subtitle: '',
-  });
+  const [pixForm, setPixForm] = useState(() => settingsToPix(null));
   const photoInputRef = useRef(null);
   const owner = isAppOwner(user, profile);
   const { newCount: ownerNewFeedbacks } = useOwnerFeedbacks(owner);
 
   useEffect(() => {
-    if (profile) {
-      setForm({
-        name: profile.name || '',
-        phone: profile.phone || '',
-        city: profile.city || '',
-        state: profile.state || '',
-        years_experience: profile.years_experience != null ? String(profile.years_experience) : '',
-        daily_rate: profile.daily_rate || '',
-        monthly_goal_revenue: profile.monthly_goal_revenue || '',
-        monthly_goal_events: profile.monthly_goal_events || '',
-        category: resolveCategoryId(profile.category || ''),
-      });
-    }
+    if (profile) setForm(profileToForm(profile));
   }, [profile]);
 
   useEffect(() => {
-    if (userSettings) {
-      setPixForm({
-        pix_key: userSettings.pix_key || '',
-        pix_key_type: userSettings.pix_key_type || 'CPF',
-        cpf_cnpj: userSettings.cpf_cnpj || '',
-        report_subtitle: userSettings.report_subtitle || '',
-      });
-    }
+    if (userSettings) setPixForm(settingsToPix(userSettings));
   }, [userSettings]);
+
+  // A barra de salvar só aparece quando algo mudou em relação ao que está gravado
+  const isDirty = useMemo(
+    () => !sameFields(form, profileToForm(profile)) || !sameFields(pixForm, settingsToPix(userSettings)),
+    [form, pixForm, profile, userSettings]
+  );
 
   const handleExportData = async () => {
     setExporting(true);
@@ -473,25 +474,39 @@ export default function ProfileSimple() {
           <p className="text-[11px] text-[#888888]">Diária = dia trabalhado (dois clientes no mesmo dia contam um).</p>
         </section>
 
-        {/* Salvar unico: dados, funcao, metas e PIX */}
-        <div className="sticky bottom-24 z-10">
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className={`w-full h-14 rounded-full font-poster text-[20px] tracking-[2px] flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] disabled:opacity-70 ${
-              saved ? 'bg-white text-[#0a0a0a]' : 'bg-[#ffd400] text-[#0a0a0a]'
-            }`}
+        {/* Salvar unico (dados, funcao, metas e PIX): barra presa em cima do menu, so com alteracao.
+            Fica no body para o "fixed" nao depender das animacoes da pagina. */}
+        {(isDirty || saving || saved) && createPortal(
+          <div
+            role="region"
+            aria-label="Salvar alterações do perfil"
+            className="fixed left-0 right-0 z-20 bg-[#0a0a0a] border-t border-[#222222]"
+            style={{ bottom: 'calc(60px + env(safe-area-inset-bottom, 0px))' }}
           >
-            {saving ? (
-              <><Loader2 className="w-5 h-5 animate-spin" /> SALVANDO</>
-            ) : saved ? (
-              <><CheckCircle className="w-5 h-5" /> SALVO</>
-            ) : (
-              <><Save className="w-5 h-5" /> SALVAR ALTERAÇÕES</>
-            )}
-          </button>
-        </div>
+            <div className="max-w-2xl mx-auto px-4 py-2.5 flex items-center gap-3">
+              <p className="flex-1 min-w-0 text-xs text-[#a8a8a8]">
+                {saved ? 'Tudo salvo.' : 'Alterações não salvas'}
+              </p>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saving || (!isDirty && saved)}
+                className={`h-11 px-6 rounded-full font-poster text-[18px] tracking-[2px] flex items-center justify-center gap-2 shrink-0 active:scale-[0.98] disabled:opacity-80 ${
+                  saved ? 'bg-white text-[#0a0a0a]' : 'bg-[#ffd400] text-[#0a0a0a]'
+                }`}
+              >
+                {saving ? (
+                  <><Loader2 className="w-5 h-5 animate-spin" /> SALVANDO</>
+                ) : saved ? (
+                  <><CheckCircle className="w-5 h-5" /> SALVO</>
+                ) : (
+                  <><Save className="w-5 h-5" /> SALVAR ALTERAÇÕES</>
+                )}
+              </button>
+            </div>
+          </div>,
+          document.body,
+        )}
 
         {/* Avisos e Google Agenda (componentes proprios) */}
         <PushNotificationSettings />

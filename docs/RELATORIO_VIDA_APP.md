@@ -193,6 +193,10 @@ Os escopos de agenda são "sensíveis": com o app em **Testing**, só entra quem
 
 ## Changelog
 
+### 2026-10-22 — Perfil: barra SALVAR presa em cima do menu (Claude Code — branch `fix/perfil-barra-salvar`)
+
+Bug visto pelo Guih: o SALVAR ALTERAÇÕES do Perfil era `sticky` e andava pela tela ao rolar (ficava por cima dos cartões e depois saía com a página). Agora é uma barra presa logo acima do menu de baixo (`createPortal` no `body`, `fixed`), que só aparece quando há alteração não salva (compara o formulário com o perfil/PIX gravados, como texto: "12" = 12) e mostra "SALVO" por 2,5 s. Teste novo `e2e/regression/profile-save-bar.spec.js` (some sem alteração, posição igual no topo e no fim da página, some ao voltar o valor).
+
 ### 2026-10-21 — Google Agenda v2: sincroniza sozinho, opções no Perfil, aviso de dia ocupado (Claude Code — **publicado** `b3ee776`)
 
 **Deploy (pedido do Guih):** 043 aplicada (5 eventos `'confirmado'` → `'confirmed'` + `google_origin='google'`; nenhum trabalho ficou pendente de envio) → edge `google-calendar` v30 + callback v20 → `main` `89132f5..b3ee776` (Vercel `index-DhSlvymM.js`) → 044 (cron `*/15`). Rodada manual igual à do cron: HTTP 200, 1 usuário ok, 0 falhas, nenhum trabalho alterado. Testes do Google (4) contra o site publicado: ok. Roteiro para desfazer guardado fora do repo.
@@ -768,8 +772,8 @@ Padrão do protótipo ("Modal · Novo trabalho") aplicado **nos componentes base
 3. OAuth Google — checklist E2E manual (validar com sua conta real)
 4. ~~Deploy sessão 11~~ — ✅ `0b666c7` em prod
 5. Testar `CompanySearchInput` aba CNPJ com `42.993.331/0001-10` (Amarrok)
-- (2026-10-09) **Aplicar migration `034_events_payment_method.sql` em produção** e publicar as correções de números (precisa de ok do usuário para os dois)
-- (2026-10-09) Datas "hoje" em UTC (`new Date().toISOString().split('T')[0]`) em Metas, Clientes, Próximo Show, IA Mentor, notificações — depois das 21h (BRT) viram "amanhã"; trocar por `todayLocalISO()`
+- ~~(2026-10-09) Aplicar migration 034 em produção~~ — ✅ aplicada (034–044 no ar)
+- ~~(2026-10-09) Datas "hoje" em UTC~~ — ✅ conferido em 22/10: nenhum `new Date().toISOString()` de "hoje" sobrou; 29 arquivos usam `todayLocalISO()`
 - (2026-10-09) Repositório GitHub está **público** e recebe o backup automático — decidir se fica privado
 - (2026-10-21) Testar o Google Agenda v2 com a conta real: ligar "Trazer shows" e escolher a agenda dos shows no Perfil (vem desligado)
 - (2026-10-21) Avisos no celular: a rodada das 8h (`send-push-digest`, 11:00 UTC) de 21/10 deu **500**; a das 18h deu 200. O `net.http_post` do cron 027 usa o timeout padrão de 5 s (a função leva ~26 s) — olhar o log do 500 e subir o timeout

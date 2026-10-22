@@ -187,7 +187,7 @@
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
-| Página ProfileSimple | [x] | 🟢 | `NeonPageShell min-h-full pb-28` ✅; pull-to-refresh (`refetchStats`) ✅ lapida |
+| Página ProfileSimple | [x] | 🟢 | `NeonPageShell min-h-full pb-28` ✅; pull-to-refresh (`refetchStats`) ✅ lapida · 2026-10-22: barra SALVAR presa acima do menu, só com alteração (antes `sticky` andava pela tela) ✅ |
 | `GoogleCalendarSync` | [x] | 🟡 | v2 no ar (2026-10-21, `b3ee776`): opções enviar/trazer/avisar, agenda escolhida, última sincronização; smoke com mocks ✅; OAuth E2E manual pendente |
 | Template fechamento PDF | [x] | 🟢 | sessão 10 — campos nome/subtítulo/PIX ✅ |
 | Visibilidade financeira | [x] | 🟢 | Supabase sync ✅ |
