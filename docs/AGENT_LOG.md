@@ -3072,3 +3072,13 @@ Registro cronológico de tarefas executadas por agentes.
 - **App**: `git push origin review/telas-fase1:main` (`b849156..03ee64a`, avanço direto, varredura de segredos limpa). Vercel em ~40 s: `index-B5PcdPEn.js` → `index-BAYKE3jv.js`; chunk Home com o CHEGUEI novo e `aba=receber`.
 - **Testes contra o site publicado** (banco falso): home-cheguei, destinos-certos (3), profile-delete-account, profile-save-bar, bottom-nav — 8/8.
 - **Falta**: Guih testar no iPhone (CHEGUEI num show de hoje, também sem sinal).
+
+### IDEIAS NOVAS — #106 a #113 implementadas (Claude Code, 2026-10-22, branch `feat/ideias-novas`)
+- **Pedido**: "instalar todas as ideias novas, deixando tudo funcionando, passo a passo"; depois as revisões que faltam.
+- **Commits**: `ccd7d65` #107 + migração 046 · `34f4e76` #112 · `f661986` #109 · `6613a83` #106 · `4a384b9` #108 · `70878c3` #113 · `ff0037a` #111.
+- **Arquivos novos**: `src/lib/{workLogMode,mileage,roleRates,jobMessageParser,analyzeJobApi,equipment,quote}.js` (+ testes), `src/lib/QuotePDFDocument.jsx`, `src/components/hours/PontoFields.jsx`, `src/components/events/{PasteMessagePanel,EquipmentChecklist}.jsx`, `src/components/profile/KitEditor.jsx`, `supabase/functions/analyze-job/index.ts`, `supabase/migrations/046_ideias_novas.sql`.
+- **Alterados**: EventForm, DailyWorkModal, EventHoursSheet (fila offline + modo ponto), ProfileSimple, ExpenseForm, EventDetailModal, AllAccessDinheiro, ContractPDF/ReceiptPDF, mapas de categoria de despesa, `e2e/helpers/dbSchema.js` (colunas da 046).
+- **Pegos pelos testes antes de publicar**: lista de equipamento esvaziava depois do clique (`x ?? []` novo a cada render no efeito de sincronia → comparar por conteúdo); aba "Volta" num show de hoje (agora só depois que o show termina); categoria de km caiu na lista de forma de pagamento; nome do PDF com acento cortado.
+- **Incidente**: um `git stash`/`stash pop` para comparar build aplicou um stash antigo (17/10) por cima dos docs; nada se perdeu (tudo commitado) — os 4 arquivos voltaram com `git checkout HEAD --`, stash@{0} preservado. Não usar stash para comparar.
+- **Testes**: unit 337/337; lint `src` 0 erros; build ok; E2E smoke+regression 124 passando, 1 pulado (profile-navigation atualizado aos nomes novos das seções).
+- **Deploy**: nenhum. Ordem: 046 → analyze-job → push main.

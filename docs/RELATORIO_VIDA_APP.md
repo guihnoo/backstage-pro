@@ -3,8 +3,8 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-10-22 (CHEGUEI corrigido + varredura de todos os botões + revisão das telas — **publicado**; Claude Code)  
-**Pendente de deploy:** nada. Migrations 034–045 aplicadas em produção (045 em 2026-10-22 pelo Claude Code)  
+**Última atualização:** 2026-10-22 (ideias novas 106–113 implementadas na branch `feat/ideias-novas`, **não publicadas**; Claude Code)  
+**Pendente de deploy:** branch `feat/ideias-novas` (ideias 106–113) — **ordem obrigatória**: 1) migração `046_ideias_novas` (sem ela o Perfil não salva e o Novo trabalho falha), 2) Edge `analyze-job` (verify_jwt on; usa GEMINI_API_KEY), 3) push para `main`. Migrations 034–045 já em produção  
 **Pasta local:** `C:\dev\backstage-pro` (desde 2026-10-09; a cópia antiga em `OneDrive\Documentos\backstage-pro` não é mais a pasta de trabalho)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-10-22 — revisão das telas + CHEGUEI + destinos (`03ee64a`, push de `review/telas-fase1` para `main`; bundle `index-BAYKE3jv.js`). Antes: 2026-10-22 barra SALVAR do Perfil (`b849156`)  
@@ -192,6 +192,19 @@ Os escopos de agenda são "sensíveis": com o app em **Testing**, só entra quem
 ---
 
 ## Changelog
+
+### 2026-10-22 — Ideias novas 106–113 (Claude Code — branch `feat/ideias-novas`, **não publicado**)
+
+Uma por vez, cada uma com testes de unidade e de tela (com a trava do banco):
+- **#107 Só entrada e saída** — Perfil "Como você registra o trabalho" (ficha completa / só entrada e saída) e escolha por trabalho no Novo trabalho › Mais detalhes. No modo ponto, Registrar horas (janela e gaveta do celular) mostra só ENTRADA e SAÍDA com "Agora"; horas e cachê pela regra única; "Ver ficha completa". Registrar horas passou a usar a fila offline.
+- **#112 Quilometragem** — categoria de despesa "Quilometragem (km)": km × valor por km, ida e volta, valor calculado sozinho e lembrado (`user_settings.km_rate`); km em `expenses.distance_km`.
+- **#109 Várias funções** — Perfil "Minhas funções e cachês" (`profiles.role_rates`); Novo trabalho "Função neste trabalho" troca o cachê e grava `events.category/category_label`; Dinheiro › Análise "Por função". Contrato PDF mostra o nome da função.
+- **#106 Colar do WhatsApp** — leitor local (sem internet) de datas, horários, cachê, local, cliente e função; resumo do que preencheu, Desfazer, mensagem inteira em Observações.
+- **#108 Foto da credencial + Ler com IA** — Edge `analyze-job` (Gemini; foto em base64, não guardada; tudo conferido de novo no app).
+- **#113 Equipamento** — na janela do trabalho, Ida (na mala) e Volta (voltou), Usar/Salvar meu kit, aviso "Falta voltar" depois do show; "Meu kit de equipamento" no Perfil.
+- **#111 Orçamento em PDF** — janela do trabalho (aba Dinheiro e menu ···): compartilhar no celular, ou baixar + WhatsApp do cliente; validade de 7 dias, condições pelo modelo de pagamento, PIX. Recibo PDF passou a usar o nome do Perfil (antes saía "Técnico de Eventos").
+
+Migração `046_ideias_novas` (colunas de 107/109/112/113, todas com padrão — o app de antes segue igual). Testes: unit 337/337; E2E novos: ponto-mode (4), quilometragem (1), funcoes-cache (3), colar-whatsapp (3), credencial-ia (3), equipamento (3), orcamento-pdf (1).
 
 ### 2026-10-22 — CHEGUEI corrigido + varredura de todos os botões e destinos (Claude Code — **publicado** `03ee64a`, bundle `index-BAYKE3jv.js`; migração 045, `delete-account` v1, `send-push-digest` v6)
 
@@ -793,6 +806,8 @@ Padrão do protótipo ("Modal · Novo trabalho") aplicado **nos componentes base
 - ~~(2026-10-22) Publicar a revisão das telas~~ — ✅ publicado 22/10 (`03ee64a`, migração 045, `delete-account` v1, `send-push-digest` v6)
 - (2026-10-22) Guih testar no iPhone: CHEGUEI/BATER SAÍDA num show de hoje (e sem sinal), "Ver todos" de Clientes em aberto, "Novo job" pelo cliente
 - (2026-10-22) Agenda: `NotesSheet` ficou sem botão (o "Notas" saiu do menu do trabalho; notas seguem em Abrir › Resumo) — remover o código ou devolver o botão
+- (2026-10-22) **Publicar as ideias novas** (`feat/ideias-novas`): 046 → `analyze-job` → push; depois testar no iPhone (modo ponto, colar mensagem, foto de credencial, km, equipamento, orçamento)
+- (2026-10-22) Aviso de CSS no build (`-: .;`) vem de `src/lib/exportReport.js:191` (`/[-:.]/g` lido pelo Tailwind como classe) — antigo e inofensivo
 - (2026-10-22) Sobras do visual antigo: props `primary/accent/glow` em `NeonGlass`/`NeonPageShell` e `userCategory` no `ProximoShow` não fazem nada — limpar quando mexer nessas telas
 - (2026-10-22) Onboarding: área com emojis (Perfil usa barras coloridas) — alinhar se quiser
 

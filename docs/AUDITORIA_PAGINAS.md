@@ -62,6 +62,7 @@
 ---
 
 ## Agenda `/calendar`
+> **Ideias novas 2026-10-22** (branch `feat/ideias-novas`): Novo trabalho com "Colar mensagem do WhatsApp" / "Foto da credencial" (#106/#108), "Função neste trabalho" (#109), "Registro das horas" em Mais detalhes (#107); janela do trabalho com "Equipamento" (#113) e "Orçamento em PDF" (#111); Registrar horas no modo ponto. Testes `e2e/regression/{ponto-mode,colar-whatsapp,credencial-ia,funcoes-cache,equipamento,orcamento-pdf}.spec.js`.
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
@@ -123,6 +124,7 @@
 ---
 
 ## Despesas `/expenses`
+> **Ideias novas 2026-10-22**: categoria "Quilometragem (km)" (#112) — km × valor por km, ida e volta. Teste `e2e/regression/quilometragem.spec.js`.
 > **Revisão funcional 2026-10-22** (Claude Code, branch `review/telas-fase1`): excluir e reembolso recebido na edição, data em cada gasto, código antigo removido. Detalhes em `PLANO_REVISAO_GERAL.md` § Revisão 22/10.
 
 
@@ -139,6 +141,7 @@
 ---
 
 ## Relatórios `/reports`
+> **Ideias novas 2026-10-22**: Análise com "Por função" quando o mês tem 2+ funções (#109).
 > **Revisão funcional 2026-10-22** (Claude Code, branch `review/telas-fase1`): "A receber" igual ao Início (só shows feitos), futuros em lista separada; "quem mais te pagou" só com o que entrou; Análise conta só feitos; ~380 linhas mortas removidas. Detalhes em `PLANO_REVISAO_GERAL.md` § Revisão 22/10.
 
 
@@ -191,6 +194,7 @@
 ---
 
 ## Perfil `/profile`
+> **Ideias novas 2026-10-22**: "Minhas funções e cachês" (#109), "Como você registra o trabalho" (#107), "Meu kit de equipamento" (#113, grava na hora).
 > **Revisão funcional 2026-10-22** (Claude Code, branch `review/telas-fase1`): "Excluir minha conta" (função `delete-account`, não publicada); "Modelos de trabalho" junto das configurações. Detalhes em `PLANO_REVISAO_GERAL.md` § Revisão 22/10.
 
 

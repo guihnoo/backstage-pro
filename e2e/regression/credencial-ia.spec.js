@@ -2,6 +2,7 @@
 // A IA (Edge Function analyze-job) é simulada; o teste confere o que o app manda e o que faz com a resposta.
 import { test, expect } from '../helpers/test.js';
 import { seedAuth } from '../helpers/fakeAuth.js';
+import { Buffer } from 'node:buffer';
 import { installFakeDb, FAKE_IDS } from '../helpers/fakeDb.js';
 
 // PNG 2x2 válido

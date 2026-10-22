@@ -1,5 +1,5 @@
 import { E2E_USER_ID } from './fakeAuth.js';
-import { E2E_CLIENT_ID, fakeClient } from './dataMocks.js';
+import { fakeClient } from './dataMocks.js';
 
 export const E2E_SETTINGS_ID = '00000000-0000-4000-8000-000000000010';
 
