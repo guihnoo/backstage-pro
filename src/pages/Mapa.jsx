@@ -8,12 +8,13 @@ import { isDoneEvent } from '@/lib/eventFinance';
 import { buildWorkByEvent, getEventReceivedAmount } from '@/lib/financeMetrics';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import LoadErrorBanner from '@/components/layout/LoadErrorBanner';
 
 const BrazilVisitedMap = lazy(() => import('@/components/reports/BrazilVisitedMap'));
 
 // "Minha turne" (prototipo All Access): onde voce ja trabalhou e quanto ganhou em cada cidade.
 export default function Mapa() {
-  const { events, loading: eventsLoading } = useEvents();
+  const { events, loading: eventsLoading, error: eventsError, refetch: refetchEvents } = useEvents();
   const { clients } = useClients();
   const { dailyWork } = useDailyWork();
   const { formatCurrency, isVisible } = useFinancialVisibility();
@@ -55,6 +56,9 @@ export default function Mapa() {
           <p className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">Onde você já trabalhou</p>
           <h1 className="font-poster text-[40px] leading-none uppercase tracking-wide mt-0.5">Minha turnê</h1>
         </div>
+        {eventsError && !(events || []).length && (
+          <LoadErrorBanner what="seus shows" onRetry={() => refetchEvents()} />
+        )}
 
         <div className="grid grid-cols-3 gap-1.5">
           {[

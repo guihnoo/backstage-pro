@@ -82,13 +82,13 @@ export default function EventTemplatesManager({ primaryHex }) {
               <Sparkles className="w-4 h-4" style={{ color: accentColor }} />
             </div>
             <div className="text-left">
-              <p className="text-sm font-semibold text-white">Templates de Evento</p>
+              <p className="text-sm font-semibold text-white">Modelos de trabalho</p>
               <p className="text-[11px] text-[#888888]">
                 {open && !loading
                   ? templates.length === 0
                     ? 'Nenhum salvo ainda'
-                    : `${templates.length} template${templates.length > 1 ? 's' : ''} salvo${templates.length > 1 ? 's' : ''}`
-                  : 'Gerencie seus modelos de evento'}
+                    : `${templates.length} modelo${templates.length > 1 ? 's' : ''} salvo${templates.length > 1 ? 's' : ''}`
+                  : 'Usados no “Novo trabalho” para preencher mais rápido'}
               </p>
             </div>
           </div>

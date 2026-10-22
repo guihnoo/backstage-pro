@@ -6,7 +6,7 @@ import { hardNavigate } from '@/lib/hardNavigate';
 import { getCategoryConfig, CATEGORIES, resolveCategoryId } from '@/lib/categoryConfig';
 import {
   User, Phone, MapPin, Mail, LogOut, Save, Loader2, CheckCircle, Eye, EyeOff, Download,
-  DollarSign, Target, Calendar, Camera, MessageCircle, Inbox, Building2, ChevronRight, Compass, BookOpen,
+  DollarSign, Target, Calendar, Camera, MessageCircle, Inbox, Building2, ChevronRight, Compass, BookOpen, Trash2,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import FeedbackModal from '@/components/feedback/FeedbackModal';
@@ -27,6 +27,7 @@ import { useUserSettings } from '@/lib/useUserSettings';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEvents } from '@/lib/useEvents';
 import { isDoneEvent } from '@/lib/eventFinance';
+import DeleteAccountDialog from '@/components/profile/DeleteAccountDialog';
 
 const PIX_TYPES = ['CPF', 'CNPJ', 'E-mail', 'Telefone', 'Chave aleatória'];
 
@@ -112,6 +113,7 @@ export default function ProfileSimple() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
@@ -208,6 +210,12 @@ export default function ProfileSimple() {
 
   const handleLogout = async () => {
     await signOut();
+    hardNavigate('/login');
+  };
+
+  // Conta já apagada no servidor: só limpa a sessão local e volta ao login
+  const handleAccountDeleted = async () => {
+    await signOut().catch(() => {});
     hardNavigate('/login');
   };
 
@@ -509,6 +517,8 @@ export default function ProfileSimple() {
         )}
 
         {/* Avisos e Google Agenda (componentes proprios) */}
+        <EventTemplatesManager primaryHex="#ffd400" />
+
         <PushNotificationSettings />
         <GoogleCalendarSync />
 
@@ -613,9 +623,16 @@ export default function ProfileSimple() {
               </span>
             </button>
           )}
+          <button type="button" onClick={() => setShowDeleteAccount(true)} className={rowCls}>
+            <span className="flex items-center gap-3">
+              <Trash2 className="w-5 h-5 text-[#ff2e88]" />
+              <span className="text-sm font-bold text-[#ff2e88]">Excluir minha conta</span>
+            </span>
+            <ChevronRight className="w-4 h-4 text-[#666666] shrink-0" />
+          </button>
         </section>
 
-        <EventTemplatesManager primaryHex="#ffd400" />
+        <DeleteAccountDialog open={showDeleteAccount} onOpenChange={setShowDeleteAccount} onDeleted={handleAccountDeleted} />
 
         <InstallPwaCard primaryHex="#ffd400" />
 

@@ -32,6 +32,7 @@ import { computeEventsNeededForGoal, computeGoalStreak, paidRevenueInMonth } fro
 import { Skeleton } from '@/components/ui/skeleton';
 import { todayLocalISO } from '@/components/utils/dateUtils';
 import { LOOP, loopAnim } from '@/lib/liteMotion';
+import LoadErrorBanner from '@/components/layout/LoadErrorBanner';
 
 function CirclesSkeleton() {
   return (
@@ -288,14 +289,14 @@ export default function Goals() {
   };
 
   // Stats reais
-  const { stats, loading: statsLoading, refetch: refetchStats } = useStats(userId);
+  const { stats, loading: statsLoading, error: statsError, refetch: refetchStats } = useStats(userId);
 
   // MEI anual
   const { annualRevenue, loading: meiLoading, refetch: refetchMei } = useMeiStats(userId);
 
   // Shows feitos (para nível e conquistas) — todos os tempos, já começados e não cancelados
   const today = todayLocalISO();
-  const { events: pastEvents, refetch: refetchAllEvents } = useEvents(userId, { to: today, excludeCancelled: true });
+  const { events: pastEvents, error: pastEventsError, refetch: refetchAllEvents } = useEvents(userId, { to: today, excludeCancelled: true });
   const allEvents = useMemo(() => pastEvents.filter((e) => isDoneEvent(e, today)), [pastEvents, today]);
 
   // Recebido por mês (histórico, streak, painel anual) — todo evento pago, pela data do pagamento
@@ -493,6 +494,11 @@ export default function Goals() {
         <p className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">Sua carreira na estrada</p>
         <h1 className="font-poster text-[40px] leading-none uppercase tracking-wide mt-0.5">Metas</h1>
         <p className="text-[13px] font-bold text-[#ffd400] mt-1">{config.label}</p>
+        {(statsError || pastEventsError) && (
+          <div className="mt-3">
+            <LoadErrorBanner what="suas metas" onRetry={refreshData} />
+          </div>
+        )}
       </div>
 
       <div className="px-4 max-w-2xl xl:max-w-6xl mx-auto w-full min-w-0">

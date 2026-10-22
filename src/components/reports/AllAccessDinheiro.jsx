@@ -7,10 +7,11 @@ import {
   addMonths,
   parseISO,
   isSameMonth,
+  differenceInCalendarDays,
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, FileDown, CheckCircle2, MessageCircle } from 'lucide-react';
-import { getEventCacheAmount, isPaymentOverdue, daysOverduePayment, isNfPendingEvent, isCancelledEvent, isDoneEvent } from '@/lib/eventFinance';
+import { ChevronLeft, ChevronRight, ChevronDown, FileDown, CheckCircle2, MessageCircle } from 'lucide-react';
+import { getEventCacheAmount, calculateEventReceivableAmount, isPaymentOverdue, daysOverduePayment, isNfPendingEvent, isCancelledEvent, isDoneEvent } from '@/lib/eventFinance';
 import { openWhatsAppCharge, buildChargeMessage } from '@/lib/whatsapp';
 import { appToast } from '@/lib/appToast';
 import { paidEventsInPeriod, sumReceived, getEventReceivedAmount, getEventReceivedDate } from '@/lib/financeMetrics';
@@ -97,11 +98,14 @@ export default function AllAccessDinheiro({
     return sumReceived(paidEventsInPeriod(events, range), workByEvent);
   }, [events, workByEvent, monthStart, monthEnd]);
 
+  // A receber = mesma regra do Início e do Mentor: show já feito e ainda não pago
+  const amountDue = (ev) => calculateEventReceivableAmount(ev, workByEvent[ev.id] || []) || getEventCacheAmount(ev) || 0;
   const totalPending = useMemo(() => {
     return monthEvents
-      .filter((ev) => ev.payment_status !== 'paid')
-      .reduce((sum, ev) => sum + (getEventCacheAmount(ev) || 0), 0);
-  }, [monthEvents]);
+      .filter((ev) => ev.payment_status !== 'paid' && isDoneEvent(ev))
+      .reduce((sum, ev) => sum + amountDue(ev), 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [monthEvents, workByEvent]);
 
   const totalExpense = useMemo(() => {
     return monthExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
@@ -187,9 +191,79 @@ export default function AllAccessDinheiro({
       .sort((a, b) => (a.start_date > b.start_date ? 1 : -1));
   }, [events]);
 
-  const totalAllPending = useMemo(() => {
-    return allPendingReceivables.reduce((s, ev) => s + (getEventCacheAmount(ev) || 0), 0);
-  }, [allPendingReceivables]);
+  // Já feitos (cobráveis agora) x ainda vão acontecer (só para acompanhar)
+  const dueNow = useMemo(() => allPendingReceivables.filter((ev) => isDoneEvent(ev)), [allPendingReceivables]);
+  const notYet = useMemo(() => allPendingReceivables.filter((ev) => !isDoneEvent(ev)), [allPendingReceivables]);
+  const totalAllPending = useMemo(
+    () => dueNow.reduce((s, ev) => s + amountDue(ev), 0),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [dueNow, workByEvent]
+  );
+  const totalNotYet = useMemo(() => notYet.reduce((s, ev) => s + (getEventCacheAmount(ev) || 0), 0), [notYet]);
+  const [showNotYet, setShowNotYet] = useState(false);
+
+  const renderReceivable = (ev, { upcoming = false } = {}) => {
+    const cl = clientMap.get(ev.client_id);
+    const amount = upcoming ? getEventCacheAmount(ev) || 0 : amountDue(ev);
+    const dateStr = ev.start_date ? format(parseISO(ev.start_date), "d 'de' MMMM", { locale: ptBR }) : '';
+    const isOverdue = isPaymentOverdue(ev);
+    const daysAhead = ev.start_date ? differenceInCalendarDays(parseISO(ev.start_date), new Date()) : 0;
+    const daysOver = daysOverduePayment(ev);
+
+    return (
+      <div
+        key={ev.id}
+        className="rounded-xl bg-[#161616] border border-[#222222] p-3 flex flex-col gap-2"
+      >
+        <div className="flex justify-between items-baseline gap-2">
+          <div className="min-w-0">
+            <div className="text-[15px] font-extrabold text-white truncate">
+              {cl?.name || ev.client_name || 'Cliente'}
+            </div>
+            <div className="text-xs text-[#a8a8a8] truncate mt-0.5">
+              {ev.title} · {dateStr}
+            </div>
+          </div>
+          <span className={`font-poster text-[22px] shrink-0 ${upcoming ? 'text-[#a8a8a8]' : 'text-[#ff2e88]'}`}>
+            {isVisible ? formatCurrency(amount) : '•••••'}
+          </span>
+        </div>
+
+        <div className="flex justify-between items-center gap-2 pt-1 border-t border-[#222222]/60">
+          <span
+            className={`h-6 px-2.5 rounded-full font-tag text-[10px] font-bold flex items-center ${
+              isOverdue
+                ? 'bg-[#ff2e88]/15 text-[#ff2e88] border border-[#ff2e88]/30'
+                : 'bg-[#ffd400]/15 text-[#ffd400] border border-[#ffd400]/30'
+            }`}
+          >
+            {upcoming ? (daysAhead <= 0 ? 'Hoje' : `Show em ${daysAhead}d`) : isOverdue ? `${daysOver}d atraso` : 'Aguardando vencimento'}
+          </span>
+
+          <div className="flex gap-2">
+            {onMarkPaid && (
+              <button
+                type="button"
+                onClick={() => onMarkPaid(ev)}
+                className="h-8 px-3 rounded-full border border-[#333333] bg-transparent text-white font-sans text-xs font-extrabold hover:bg-[#222222] transition-colors flex items-center gap-1 active:scale-95"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#ffd400]" />
+                Recebi
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => chargeOnWhatsApp(ev, cl)}
+              className="h-8 px-3 rounded-full border-none bg-[#ff2e88] text-[#0a0a0a] font-sans text-xs font-extrabold hover:opacity-90 transition-opacity flex items-center gap-1 active:scale-95 shadow-sm"
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              Cobrar
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   // Annual MEI faturamento
   const annualTotal = useMemo(() => {
@@ -390,81 +464,41 @@ export default function AllAccessDinheiro({
       {activeTab === 'receber' && (
         <section className="flex flex-col gap-2.5">
           <div className="text-[13px] text-[#c8c8c8] px-1">
-            {allPendingReceivables.length} show{allPendingReceivables.length !== 1 ? 's' : ''} esperando pagamento ·{' '}
+            {dueNow.length} show{dueNow.length !== 1 ? 's' : ''} já feito{dueNow.length !== 1 ? 's' : ''} esperando pagamento ·{' '}
             <strong className="text-white">
               {isVisible ? formatCurrency(totalAllPending) : '•••••'} no total
             </strong>
           </div>
 
-          {allPendingReceivables.length > 0 ? (
+          {dueNow.length > 0 ? (
             <div className="space-y-2">
-              {allPendingReceivables.map((ev) => {
-                const cl = clientMap.get(ev.client_id);
-                const amount = getEventCacheAmount(ev) || 0;
-                const dateStr = ev.start_date ? format(parseISO(ev.start_date), "d 'de' MMMM", { locale: ptBR }) : '';
-                const isOverdue = isPaymentOverdue(ev);
-                const daysOver = daysOverduePayment(ev);
-
-                return (
-                  <div
-                    key={ev.id}
-                    className="rounded-xl bg-[#161616] border border-[#222222] p-3 flex flex-col gap-2"
-                  >
-                    <div className="flex justify-between items-baseline gap-2">
-                      <div className="min-w-0">
-                        <div className="text-[15px] font-extrabold text-white truncate">
-                          {cl?.name || ev.client_name || 'Cliente'}
-                        </div>
-                        <div className="text-xs text-[#a8a8a8] truncate mt-0.5">
-                          {ev.title} · {dateStr}
-                        </div>
-                      </div>
-                      <span className="font-poster text-[22px] text-[#ff2e88] shrink-0">
-                        {isVisible ? formatCurrency(amount) : '•••••'}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between items-center gap-2 pt-1 border-t border-[#222222]/60">
-                      <span
-                        className={`h-6 px-2.5 rounded-full font-tag text-[10px] font-bold flex items-center ${
-                          isOverdue
-                            ? 'bg-[#ff2e88]/15 text-[#ff2e88] border border-[#ff2e88]/30'
-                            : 'bg-[#ffd400]/15 text-[#ffd400] border border-[#ffd400]/30'
-                        }`}
-                      >
-                        {isOverdue ? `${daysOver}d atraso` : 'Aguardando vencimento'}
-                      </span>
-
-                      <div className="flex gap-2">
-                        {onMarkPaid && (
-                          <button
-                            type="button"
-                            onClick={() => onMarkPaid(ev)}
-                            className="h-8 px-3 rounded-full border border-[#333333] bg-transparent text-white font-sans text-xs font-extrabold hover:bg-[#222222] transition-colors flex items-center gap-1 active:scale-95"
-                          >
-                            <CheckCircle2 className="w-3.5 h-3.5 text-[#ffd400]" />
-                            Recebi
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => chargeOnWhatsApp(ev, cl)}
-                          className="h-8 px-3 rounded-full border-none bg-[#ff2e88] text-[#0a0a0a] font-sans text-xs font-extrabold hover:opacity-90 transition-opacity flex items-center gap-1 active:scale-95 shadow-sm"
-                        >
-                          <MessageCircle className="w-3.5 h-3.5" />
-                          Cobrar
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+              {dueNow.map((ev) => renderReceivable(ev))}
             </div>
           ) : (
             <div className="rounded-xl bg-[#161616] border border-[#222222] p-6 text-center">
               <CheckCircle2 className="w-8 h-8 text-[#ffd400] mx-auto mb-2" />
               <p className="font-bold text-white">Tudo em dia!</p>
-              <p className="text-xs text-[#888888] font-tag mt-1">Nenhum show com pagamento pendente.</p>
+              <p className="text-xs text-[#888888] font-tag mt-1">Nenhum show feito com pagamento pendente.</p>
+            </div>
+          )}
+
+          {notYet.length > 0 && (
+            <div className="space-y-2">
+              <button
+                type="button"
+                aria-expanded={showNotYet}
+                onClick={() => setShowNotYet((v) => !v)}
+                className="w-full flex items-center justify-between gap-2 px-1 py-2 text-left"
+              >
+                <span className="font-tag text-[11px] tracking-[2px] uppercase text-[#a8a8a8]">
+                  Ainda vão acontecer · {notYet.length}
+                </span>
+                <span className="font-tag text-[12px] text-white flex items-center gap-1">
+                  {isVisible ? formatCurrency(totalNotYet) : '•••••'}
+                  <ChevronDown className={`w-4 h-4 text-[#888888] transition-transform ${showNotYet ? 'rotate-180' : ''}`} />
+                </span>
+              </button>
+              {showNotYet && notYet.map((ev) => renderReceivable(ev, { upcoming: true }))}
             </div>
           )}
           {slot(receberExtra)}
@@ -529,8 +563,7 @@ export default function AllAccessDinheiro({
               {totalPending > 0 ? formatCurrency(totalPending) : 'R$ 0'}
             </div>
             <div className="text-[13px] text-[#e0e0e0] leading-snug">
-              Valores a receber de shows já confirmados ou aguardando pagamento.
-            </div>
+              Shows do mês já feitos e ainda não pagos.</div>
           </div>
 
           <div className="rounded-xl bg-[#161616] border border-[#222222] p-3.5 flex gap-3 items-center">

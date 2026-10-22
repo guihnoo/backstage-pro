@@ -431,8 +431,10 @@ export default function AIMentorPage() {
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
             </Button>
           </div>
+          {/* Atalho de teclado só faz sentido no computador */}
           <p className="text-[9px] text-[#555555] font-tag text-center mt-1.5">
-            Enter para enviar · Shift+Enter para nova linha · contexto financeiro incluído automaticamente
+            <span className="hidden sm:inline">Enter para enviar · Shift+Enter para nova linha · </span>
+            Seus números do mês vão junto na pergunta
           </p>
         </div>
       </div>
