@@ -14,7 +14,8 @@ import { normalizeDateString, todayLocalISO } from '@/components/utils/dateUtils
 import { useEvents } from '@/lib/useEvents';
 import { WORK_LOG_MODES, resolveWorkLogMode, eventWorkLogModeToSave } from '@/lib/workLogMode';
 import { functionOptions, eventFunctionId, categoryLabel } from '@/lib/roleRates';
-import { parseJobMessage } from '@/lib/jobMessageParser';
+import { parseJobMessage, aiResultToParsed } from '@/lib/jobMessageParser';
+import { analyzeJob, fileToJpegBase64 } from '@/lib/analyzeJobApi';
 import PasteMessagePanel from '@/components/events/PasteMessagePanel';
 import { getEventCacheAmount, isCancelledEvent } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
@@ -358,6 +359,43 @@ export default function EventForm({
     return applyParsedJob(result);
   };
 
+  // IA (ideia #108): mensagem confusa ("Ler com IA") ou foto da credencial.
+  const aiContext = () => ({
+    clients: allClients.map((c) => c.name).filter(Boolean).slice(0, 60),
+    functions: roleOptions.map((o) => o.id),
+  });
+
+  const handleReadWithAI = async (text) => {
+    try {
+      const data = await analyzeJob({ mode: 'text', text, ...aiContext() });
+      const result = aiResultToParsed(data, { clients: allClients, functions: roleOptions.map((o) => o.id), source: 'mensagem', originalText: text });
+      if (!result.found.length) {
+        appToast.info('A IA não achou dados de trabalho nessa mensagem.');
+        return result;
+      }
+      return applyParsedJob({ ...result, source: 'mensagem' });
+    } catch (err) {
+      appToast.error('Não deu para ler com a IA agora.', { description: err?.message });
+      return null;
+    }
+  };
+
+  const handleCredentialPhoto = async (file) => {
+    try {
+      const { base64, mimeType } = await fileToJpegBase64(file);
+      const data = await analyzeJob({ mode: 'image', image_base64: base64, mime_type: mimeType, ...aiContext() });
+      const result = aiResultToParsed(data, { clients: allClients, functions: roleOptions.map((o) => o.id), source: 'credencial' });
+      if (!result.found.length) {
+        appToast.info('Não deu para ler a credencial.', { description: 'Tente uma foto mais de perto e com boa luz.' });
+        return result;
+      }
+      return applyParsedJob({ ...result, source: 'credencial' });
+    } catch (err) {
+      appToast.error('Não deu para ler a credencial agora.', { description: err?.message });
+      return null;
+    }
+  };
+
   const handleUndoPaste = () => {
     if (beforePaste) setFormData(beforePaste);
     setBeforePaste(null);
@@ -537,7 +575,12 @@ export default function EventForm({
           )}
 
           {!event?.id && (
-            <PasteMessagePanel onApply={handlePasteMessage} onUndo={handleUndoPaste} />
+            <PasteMessagePanel
+              onApply={handlePasteMessage}
+              onUndo={handleUndoPaste}
+              onReadWithAI={handleReadWithAI}
+              onCredentialPhoto={handleCredentialPhoto}
+            />
           )}
 
           {/* Cliente: pilulas dos mais recentes + busca/criar */}

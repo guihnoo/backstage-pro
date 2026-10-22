@@ -1,14 +1,17 @@
-import { useState } from 'react';
-import { ClipboardPaste, MessageCircle, Undo2, Loader2, Sparkles } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { ClipboardPaste, MessageCircle, Undo2, Loader2, Sparkles, Camera } from 'lucide-react';
 
 // "Colar mensagem do WhatsApp" no Novo trabalho (ideia #106).
 // onApply(texto) devolve { found, clientName } do leitor; onUndo volta o formulário como estava.
-// onReadWithAI (opcional, ideia #108) lê a mesma mensagem com a IA.
-export default function PasteMessagePanel({ onApply, onUndo, onReadWithAI }) {
+// onReadWithAI (opcional, ideia #108) lê a mesma mensagem com a IA;
+// onCredentialPhoto (opcional, ideia #108) lê a foto de uma credencial com a IA.
+export default function PasteMessagePanel({ onApply, onUndo, onReadWithAI, onCredentialPhoto }) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState('');
   const [result, setResult] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [photoLoading, setPhotoLoading] = useState(false);
+  const photoRef = useRef(null);
   const canPaste = typeof navigator !== 'undefined' && Boolean(navigator.clipboard?.readText);
 
   const apply = (value) => {
@@ -45,14 +48,48 @@ export default function PasteMessagePanel({ onApply, onUndo, onReadWithAI }) {
     }
   };
 
+  const readPhoto = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file || !onCredentialPhoto) return;
+    setPhotoLoading(true);
+    try {
+      const r = await onCredentialPhoto(file);
+      if (r?.found?.length) setResult(r);
+    } finally {
+      setPhotoLoading(false);
+    }
+  };
+
+  const photoInput = onCredentialPhoto ? (
+    <input
+      ref={photoRef}
+      type="file"
+      accept="image/*"
+      capture="environment"
+      className="hidden"
+      onChange={readPhoto}
+      data-testid="credential-input"
+    />
+  ) : null;
+
+  if (photoLoading) {
+    return (
+      <div className="rounded-2xl border border-[#333333] bg-[#0a0a0a] p-3.5 flex items-center gap-3" role="status">
+        <Loader2 className="w-5 h-5 text-[#ffd400] animate-spin shrink-0" />
+        <span className="text-[13px] font-extrabold text-white">Lendo a credencial com a IA…</span>
+      </div>
+    );
+  }
+
   if (result && !open) {
     return (
       <div className="rounded-2xl border border-[#ffd400]/40 bg-[#ffd400]/10 p-3" role="status" data-testid="paste-result">
-        <p className="text-[13px] font-extrabold text-[#ffd400]">Preenchido pela mensagem: {result.found.join(', ')}</p>
+        <p className="text-[13px] font-extrabold text-[#ffd400]">Preenchido{result.source === 'credencial' ? ' pela credencial' : ' pela mensagem'}: {result.found.join(', ')}</p>
         {result.clientName && result.found.includes('cliente (novo)') && (
           <p className="text-xs text-[#e0e0e0] mt-1">Cliente na mensagem: <strong>{result.clientName}</strong> — não está na sua lista; escolha ou crie abaixo.</p>
         )}
-        <p className="text-xs text-[#c8c8c8] mt-1">Confira antes de salvar. A mensagem inteira ficou em Observações.</p>
+        <p className="text-xs text-[#c8c8c8] mt-1">Confira antes de salvar. {result.source === 'credencial' ? 'O que a IA leu ficou em Observações.' : 'A mensagem inteira ficou em Observações.'}</p>
         <div className="flex gap-2 mt-2">
           <button
             type="button"
@@ -75,17 +112,34 @@ export default function PasteMessagePanel({ onApply, onUndo, onReadWithAI }) {
 
   if (!open) {
     return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="w-full rounded-2xl border border-dashed border-[#444444] bg-[#0a0a0a] px-3.5 py-3 text-left flex items-center gap-3 active:scale-[0.99]"
-      >
-        <MessageCircle className="w-5 h-5 text-[#25D366] shrink-0" />
-        <span className="min-w-0">
-          <span className="block text-[14px] font-extrabold text-white">Colar mensagem do WhatsApp</span>
-          <span className="block text-[11px] text-[#888888]">O app preenche data, horário, local, cliente e cachê</span>
-        </span>
-      </button>
+      <div className={onCredentialPhoto ? 'grid grid-cols-2 gap-2' : ''}>
+        <button
+          type="button"
+          aria-label="Colar mensagem do WhatsApp"
+          onClick={() => setOpen(true)}
+          className="w-full rounded-2xl border border-dashed border-[#444444] bg-[#0a0a0a] px-3.5 py-3 text-left flex items-center gap-3 active:scale-[0.99]"
+        >
+          <MessageCircle className="w-5 h-5 text-[#25D366] shrink-0" />
+          <span className="min-w-0">
+            <span className="block text-[14px] font-extrabold text-white">{onCredentialPhoto ? 'Colar do WhatsApp' : 'Colar mensagem do WhatsApp'}</span>
+            <span className="block text-[11px] text-[#888888]">{onCredentialPhoto ? 'Preenche sozinho' : 'O app preenche data, horário, local, cliente e cachê'}</span>
+          </span>
+        </button>
+        {onCredentialPhoto && (
+          <button
+            type="button"
+            onClick={() => photoRef.current?.click()}
+            className="w-full rounded-2xl border border-dashed border-[#444444] bg-[#0a0a0a] px-3.5 py-3 text-left flex items-center gap-3 active:scale-[0.99]"
+          >
+            <Camera className="w-5 h-5 text-[#ffd400] shrink-0" />
+            <span className="min-w-0">
+              <span className="block text-[14px] font-extrabold text-white">Foto da credencial</span>
+              <span className="block text-[11px] text-[#888888]">A IA lê e preenche</span>
+            </span>
+          </button>
+        )}
+        {photoInput}
+      </div>
     );
   }
 

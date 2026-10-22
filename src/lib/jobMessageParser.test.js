@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseJobMessage, normalizeText } from './jobMessageParser';
+import { parseJobMessage, normalizeText, aiResultToParsed, findClient } from './jobMessageParser';
 
 // Quinta-feira, 22/10/2026
 const today = new Date(2026, 9, 22);
@@ -131,5 +131,65 @@ describe('normalizeText', () => {
     const s = 'Ribeirão Preto 📍 São';
     expect(normalizeText(s)).toHaveLength(s.length);
     expect(normalizeText('ÁÉÍÓÚ Ç')).toBe('aeiou c');
+  });
+});
+
+describe('aiResultToParsed — resposta da IA (credencial / "Ler com IA")', () => {
+  it('aproveita o que veio certo e acha o cliente da lista', () => {
+    const r = aiResultToParsed({
+      title: 'Rock in Rio 2026',
+      client_name: 'Palco Norte',
+      start_date: '2026-11-13',
+      end_date: '2026-11-15',
+      start_time: '12:00',
+      end_time: null,
+      location: 'Parque Olímpico',
+      location_city: 'Rio de Janeiro',
+      location_state: 'RJ',
+      daily_cache_value: null,
+      function: 'lighting',
+      notes: 'Acesso: backstage palco Mundo',
+    }, { clients, functions, source: 'credencial' });
+    expect(r.fields).toMatchObject({
+      title: 'Rock in Rio 2026',
+      client_id: 'c1',
+      start_date: '2026-11-13',
+      end_date: '2026-11-15',
+      start_time: '12:00',
+      location_city: 'Rio de Janeiro',
+      location_state: 'RJ',
+      category: 'lighting',
+    });
+    expect(r.fields.daily_cache_value).toBeUndefined();
+    expect(r.fields.observacoes_md).toContain('Lido da foto da credencial');
+    expect(r.fields.observacoes_md).toContain('backstage palco Mundo');
+  });
+
+  it('descarta formato errado que a IA devolver', () => {
+    const r = aiResultToParsed({
+      start_date: '13/11/2026', start_time: '25:00', location_state: 'XX',
+      daily_cache_value: 'muito', function: 'astronauta', title: '  ',
+    }, { clients, functions });
+    expect(r.found).toEqual([]);
+    expect(r.fields).toEqual({});
+  });
+
+  it('cliente que não está na lista vem como novo', () => {
+    const r = aiResultToParsed({ client_name: 'Live Mais', start_date: '2026-11-01' }, { clients });
+    expect(r.clientName).toBe('Live Mais');
+    expect(r.found).toContain('cliente (novo)');
+  });
+
+  it('resposta vazia não preenche nada', () => {
+    expect(aiResultToParsed(null).found).toEqual([]);
+  });
+});
+
+describe('findClient', () => {
+  it('pelo rótulo nos dois sentidos e pelo texto', () => {
+    expect(findClient({ name: 'Palco Norte' }, clients)?.id).toBe('c1');
+    expect(findClient({ name: 'palco norte produções ltda' }, clients)?.id).toBe('c1');
+    expect(findClient({ text: 'falei com a Ana Ribeiro ontem' }, clients)?.id).toBe('c2');
+    expect(findClient({ name: 'Ana' }, clients)).toBeNull();
   });
 });

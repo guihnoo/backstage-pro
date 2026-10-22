@@ -289,20 +289,10 @@ export function parseJobMessage(text, { today = new Date(), clients = [], functi
 
   // ---- cliente ----
   let clientName = label(/^\W*(?:produtora|cliente|contratante|empresa|agencia|produtor)\s*[:\-–]\s*/);
-  const candidates = (clients || [])
-    .flatMap((c) => [c.name, c.company].filter(Boolean).map((n) => ({ c, n: normalizeText(n).trim() })))
-    .filter(({ n }) => n.length >= 3)
-    .sort((a, b) => b.n.length - a.n.length);
-  const lookIn = clientName ? normalizeText(clientName).trim() : norm;
-  const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const hit = candidates.find(({ n }) => new RegExp(`(^|[^a-z0-9])${escape(n)}([^a-z0-9]|$)`).test(lookIn))
-    // "Produtora: Palco Norte" e o cliente salvo é "Palco Norte Produções"
-    || (clientName && lookIn.length >= 4
-      ? candidates.find(({ n }) => new RegExp(`(^|[^a-z0-9])${escape(lookIn)}([^a-z0-9]|$)`).test(n))
-      : null);
+  const hit = findClient({ name: clientName, text: norm }, clients);
   if (hit) {
-    fields.client_id = hit.c.id;
-    clientName = hit.c.name;
+    fields.client_id = hit.id;
+    clientName = hit.name;
     found.push('cliente');
   } else if (clientName) {
     found.push('cliente (novo)');
@@ -319,4 +309,80 @@ export function parseJobMessage(text, { today = new Date(), clients = [], functi
 
   fields.observacoes_md = original.trim().slice(0, 2000);
   return { fields, found, clientName: clientName || null };
+}
+
+const escapeRe = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * Cliente da lista citado na mensagem: pelo nome do rótulo ("Produtora: Palco Norte") nos dois
+ * sentidos (o salvo pode ser "Palco Norte Produções"), ou pelo nome aparecendo no texto.
+ */
+export function findClient({ name = null, text = '' } = {}, clients = []) {
+  const candidates = (clients || [])
+    .flatMap((c) => [c.name, c.company].filter(Boolean).map((n) => ({ c, n: normalizeText(n).trim() })))
+    .filter(({ n }) => n.length >= 3)
+    .sort((a, b) => b.n.length - a.n.length);
+  const lookIn = name ? normalizeText(name).trim() : normalizeText(text);
+  const word = (needle, hay) => new RegExp(`(^|[^a-z0-9])${escapeRe(needle)}([^a-z0-9]|$)`).test(hay);
+  const hit = candidates.find(({ n }) => word(n, lookIn))
+    || (name && lookIn.length >= 4 ? candidates.find(({ n }) => word(lookIn, n)) : null);
+  return hit ? hit.c : null;
+}
+
+const isIsoDate = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
+const isClock = (v) => typeof v === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(v);
+
+/**
+ * Resposta da IA (Edge Function analyze-job) no mesmo formato do leitor local,
+ * conferindo de novo cada campo (a IA pode errar o formato).
+ */
+export function aiResultToParsed(data, { clients = [], functions = [], source = 'mensagem', originalText = '' } = {}) {
+  const fields = {};
+  const found = [];
+  if (!data || typeof data !== 'object') return { fields, found, clientName: null };
+
+  if (isIsoDate(data.start_date)) {
+    fields.start_date = data.start_date;
+    fields.end_date = isIsoDate(data.end_date) && data.end_date >= data.start_date ? data.end_date : data.start_date;
+    found.push('data');
+  }
+  if (isClock(data.start_time)) {
+    fields.start_time = data.start_time;
+    if (isClock(data.end_time)) fields.end_time = data.end_time;
+    found.push('horário');
+  }
+  if (typeof data.location === 'string' && data.location.trim()) fields.location = data.location.trim().slice(0, 200);
+  if (typeof data.location_city === 'string' && data.location_city.trim()) fields.location_city = data.location_city.trim().slice(0, 60);
+  if (typeof data.location_state === 'string' && new RegExp(`^(${UF})$`).test(data.location_state)) fields.location_state = data.location_state;
+  if (fields.location || fields.location_city) found.push('local');
+  const amount = Number(data.daily_cache_value);
+  if (Number.isFinite(amount) && amount >= 50 && amount <= 100000) {
+    fields.daily_cache_value = Math.round(amount * 100) / 100;
+    found.push('cachê');
+  }
+  if (typeof data.title === 'string' && data.title.trim()) {
+    fields.title = data.title.trim().slice(0, 80);
+    found.push('nome');
+  }
+
+  let clientName = typeof data.client_name === 'string' && data.client_name.trim() ? data.client_name.trim().slice(0, 80) : null;
+  const hit = clientName ? findClient({ name: clientName }, clients) : null;
+  if (hit) {
+    fields.client_id = hit.id;
+    clientName = hit.name;
+    found.push('cliente');
+  } else if (clientName) {
+    found.push('cliente (novo)');
+  }
+
+  if (functions.length > 1 && functions.includes(data.function)) {
+    fields.category = data.function;
+    found.push('função');
+  }
+
+  const notes = typeof data.notes === 'string' ? data.notes.trim() : '';
+  const header = source === 'credencial' ? 'Lido da foto da credencial' : 'Lido pela IA';
+  const body = [originalText.trim(), notes].filter(Boolean).join('\n\n');
+  if (found.length) fields.observacoes_md = `${header}:\n${body || '(sem outras informações)'}`.slice(0, 2000);
+  return { fields, found, clientName };
 }
