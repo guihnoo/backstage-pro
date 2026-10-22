@@ -3,12 +3,12 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-10-21 (Google Agenda v2 na branch `feat/google-agenda`, **não publicado**; Claude Code)  
-**Pendente de deploy:** branch `feat/google-agenda` — migração 043, edge `google-calendar` + callback (verify_jwt false), front, migração 044 (cron). Ordem no § Checklist OAuth. Migrations 034–042 aplicadas em produção  
+**Última atualização:** 2026-10-21 (Google Agenda v2 **publicado**; Claude Code)  
+**Pendente de deploy:** nada. Migrations 034–044 aplicadas em produção (043 e 044 em 2026-10-21 pelo Claude Code)  
 **Pasta local:** `C:\dev\backstage-pro` (desde 2026-10-09; a cópia antiga em `OneDrive\Documentos\backstage-pro` não é mais a pasta de trabalho)  
 **Produção:** https://backstage-pro-beta.vercel.app  
-**Último deploy:** 2026-10-21 — visual All Access em todo o app + auditoria (`89132f5`, push de `feat/visual-completo` para `main`)  
-**Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` v29 (auto-disconnect token inválido) + `analyze-nfe` v5 (Files API + maxOutputTokens 8192 + thinkingBudget 0 — **testado e funcionando em produção** ✅) deployadas no Supabase ✅  
+**Último deploy:** 2026-10-21 — Google Agenda v2 (`b3ee776`, push de `feat/google-agenda` para `main`; bundle `index-DhSlvymM.js`)  
+**Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` v30 (Google Agenda v2, verify_jwt off — confere login por dentro) + `google-calendar-callback` v20 + `analyze-nfe` v5 (Files API + maxOutputTokens 8192 + thinkingBudget 0 — **testado e funcionando em produção** ✅) deployadas no Supabase ✅  
 **E2E:** suíte completa 103 passando, 1 pulado (2026-10-21, branch `feat/google-agenda`) · unit 279/279  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
@@ -22,7 +22,7 @@
 | **Números entre telas (2026-10-09)** | Regra única em `src/lib/financeMetrics.js`: recebido por `paid_date`, previsto pela data do show, despesa por `expense_date`. Home, Metas, Relatórios e telas de cliente consomem as mesmas funções; todo "marcar pago" grava `paid_amount`. **Não recalcular dinheiro inline — usar o módulo.** Detalhe em `PLANO_REVISAO_GERAL.md` § Implementação |
 | Confirmar Recebimento (`PaymentConfirmModal`) | Estava quebrado em produção desde S82: enviava `payment_method`, coluna que não existe em `events`. Agora só envia/mostra a forma de recebimento se a coluna existir; migration 034 pronta, **aguardando ok para aplicar** |
 | Clientes — Empresa vs Pessoa | `client_type` coluna DB; toggle visual em form/combobox/cards/modais ✅ sessão 20–22 |
-| Google Calendar OAuth + sync | v2 pronta na branch `feat/google-agenda` (sincroniza sozinho a cada 15 min, opções no Perfil, aviso de dia ocupado) — **aguardando ok para publicar** (043 → edge → front → 044); **OAuth para todos pendente** (domínio + verificação Google) |
+| Google Calendar OAuth + sync | v2 **no ar** desde 2026-10-21 (sincroniza sozinho a cada 15 min via cron `google-agenda-sync`, opções no Perfil, aviso de dia ocupado); **OAuth para todos pendente** (domínio + verificação Google) |
 | Editar/excluir eventos (todas as telas) | Home, Metas, Agenda, Relatórios, ClientDetail, **NotificationCenter** ✅ |
 | Dedupe Google Calendar | `googleEventDedupe` (unit + edge + smoke Perfil) ✅ |
 | Busca global | `GlobalSearch.jsx` na TopBar — eventos + clientes ✅ |
@@ -147,7 +147,7 @@ Use este roteiro para fechar o item **#8** em `IDEIAS_PENDENTES.md`.
 | D | GCP → OAuth consent screen | Sair de **Testing** → **In production** **ou** adicionar seu e-mail em **Test users** (#24) |
 | E | Segurança (#23) | Rotacionar `GOOGLE_CLIENT_SECRET` no GCP → atualizar secret no Supabase → nunca commitar `client_secret_*.json` |
 
-### Publicar a versão 2 (branch `feat/google-agenda`) — nesta ordem, só com ok do Guih
+### Publicar a versão 2 — ✅ feito em 2026-10-21 (ordem usada, para referência)
 
 1. Migração `043_google_agenda_opcoes.sql` (colunas de opções, `events.google_origin`, gatilho `events.updated_at`, corrige 5 eventos `'confirmado'`)
 2. Edge `google-calendar` (com `_shared/googleSyncRules.ts`) com **verify_jwt = false** (está no `config.toml`; o cron usa a chave `sb_secret_…`, que não é JWT — cada ação de usuário confere o login dentro da função) + `google-calendar-callback`
@@ -193,7 +193,9 @@ Os escopos de agenda são "sensíveis": com o app em **Testing**, só entra quem
 
 ## Changelog
 
-### 2026-10-21 — Google Agenda v2: sincroniza sozinho, opções no Perfil, aviso de dia ocupado (Claude Code — branch `feat/google-agenda`, **não publicado**)
+### 2026-10-21 — Google Agenda v2: sincroniza sozinho, opções no Perfil, aviso de dia ocupado (Claude Code — **publicado** `b3ee776`)
+
+**Deploy (pedido do Guih):** 043 aplicada (5 eventos `'confirmado'` → `'confirmed'` + `google_origin='google'`; nenhum trabalho ficou pendente de envio) → edge `google-calendar` v30 + callback v20 → `main` `89132f5..b3ee776` (Vercel `index-DhSlvymM.js`) → 044 (cron `*/15`). Rodada manual igual à do cron: HTTP 200, 1 usuário ok, 0 falhas, nenhum trabalho alterado. Testes do Google (4) contra o site publicado: ok. Roteiro para desfazer guardado fora do repo.
 
 Pedido do Guih: usuários usarem o Google Agenda sincronizado com o app; do Google só entram **eventos e shows**, nunca compromisso pessoal.
 
@@ -769,7 +771,7 @@ Padrão do protótipo ("Modal · Novo trabalho") aplicado **nos componentes base
 - (2026-10-09) **Aplicar migration `034_events_payment_method.sql` em produção** e publicar as correções de números (precisa de ok do usuário para os dois)
 - (2026-10-09) Datas "hoje" em UTC (`new Date().toISOString().split('T')[0]`) em Metas, Clientes, Próximo Show, IA Mentor, notificações — depois das 21h (BRT) viram "amanhã"; trocar por `todayLocalISO()`
 - (2026-10-09) Repositório GitHub está **público** e recebe o backup automático — decidir se fica privado
-- (2026-10-21) **Publicar Google Agenda v2** (`feat/google-agenda`): 043 → edge → front → 044, com ok do Guih
+- (2026-10-21) Testar o Google Agenda v2 com a conta real: ligar "Trazer shows" e escolher a agenda dos shows no Perfil (vem desligado)
 - (2026-10-21) Avisos no celular: a rodada das 8h (`send-push-digest`, 11:00 UTC) de 21/10 deu **500**; a das 18h deu 200. O `net.http_post` do cron 027 usa o timeout padrão de 5 s (a função leva ~26 s) — olhar o log do 500 e subir o timeout
 - (2026-10-21) Investigar o push desconhecido para `main` em 21/10 03:45
 

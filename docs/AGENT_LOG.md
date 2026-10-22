@@ -3018,3 +3018,12 @@ Registro cronológico de tarefas executadas por agentes.
 - **Achados fora do escopo** (no backlog): cron de avisos 8h deu 500 em 21/10 e usa timeout de 5 s; push desconhecido na `main` 03:45.
 - **Testes**: unit 279/279 (18 novos); E2E completo 103 passando, 1 pulado (4 do Google, com mocks); build ok.
 - **Deploy**: nenhum. Ordem para publicar no RELATORIO (§ Checklist OAuth).
+
+### DEPLOY — Google Agenda v2 (Claude Code, 2026-10-21, pedido explicito do Guih)
+- **Antes**: estado guardado (5 ids `'confirmado'`, sem colunas novas, 2 jobs de cron) + SQL para desfazer 043/044 fora do repo.
+- **Banco**: `043_google_agenda_opcoes` aplicada — 0 `'confirmado'` restantes, 5 com `google_origin='google'`, gatilho ativo, 0 trabalhos pendentes de envio.
+- **Edge**: `google-calendar` v30 (verify_jwt false; sem login -> 401) e `google-calendar-callback` v20 (sem code -> 302 para o Perfil). Antes de publicar, troquei um regex com caracteres invisiveis por `\p{M}` (`b3ee776`).
+- **App**: `git push origin feat/google-agenda:main` (`89132f5..b3ee776`, avanco direto, varredura de segredos limpa). Vercel `index-DhSlvymM.js` com as telas novas.
+- **Cron**: `044_google_agenda_cron` (`google-agenda-sync`, a cada 15 min). Rodada manual igual a do cron: HTTP 200 `{users:1, ok:1, failed:0}`, `google_last_sync_at` atualizado, nenhum trabalho alterado.
+- **Testes contra producao** (mocks): 4/4 do Google.
+- **Falta**: Guih testar com a conta real e ligar "Trazer shows" no Perfil; abrir para todos depende do dominio + verificacao do Google (#24).

@@ -25,7 +25,7 @@
 
 | # | Ideia | Status | Onde / notas |
 |---|-------|--------|--------------|
-| 8 | Google Calendar OAuth + sync completo | 🟡 | v2 na branch `feat/google-agenda` (2026-10-21, ver #110), aguardando ok para publicar; OAuth para todos depende de #24 |
+| 8 | Google Calendar OAuth + sync completo | 🟡 | v2 no ar (2026-10-21, `b3ee776`, ver #110); OAuth para todos depende de #24 |
 | 9 | Local do evento (endereço + GPS check-in) | ✅ | EventLocationSection, Modo Palco |
 | 10 | Mapa Brasil visitados (relatórios) | ✅ | BrazilVisitedMap — marcadores recalibrados S39 |
 | 11 | Alertas agenda — check-in local hoje | ✅ | AlertsPanel |
@@ -149,7 +149,7 @@
 | 107 | Modo **"entrada e saída"** (só bater o ponto) além da ficha completa | 2026-10-21 | ⬜ Visto no protótipo (Perfil e Novo trabalho); é função nova |
 | 108 | **Credencial do evento com foto** (ler a credencial e preencher o evento) | 2026-10-21 | ⬜ Visto no protótipo; é função nova |
 | 109 | **Várias funções com cachê diferente** (Iluminação R$ 850, Vídeo R$ 950…) | 2026-10-21 | ⬜ Visto no protótipo (Perfil); precisa de mudança no banco |
-| 110 | **Google Agenda para os usuários**: sincronizar sozinho com o app; do Google só entram **eventos e shows** (nada pessoal) | 2026-10-21 | 🟡 Pronto na branch `feat/google-agenda` (opções no Perfil, a cada 15 min, aviso de dia ocupado no Novo trabalho); falta publicar (043 → edge → front → 044) e #24 |
+| 110 | **Google Agenda para os usuários**: sincronizar sozinho com o app; do Google só entram **eventos e shows** (nada pessoal) | 2026-10-21 | 🟡 **No ar** em 21/10 (`b3ee776`, migrações 043/044, edge v30): opções no Perfil, a cada 15 min, aviso de dia ocupado. Falta #24 para abrir a todos |
 
 ---
 

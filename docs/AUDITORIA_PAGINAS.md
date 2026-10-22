@@ -70,7 +70,7 @@
 | Vista Kanban (`kanban`) | [x] | 🟢 | `KanbanPipeline.jsx` card `<button type="button">` ✅; colunas scroll-x OK (S139 auditoria) |
 | `BackstageCalendarGrid` | [x] | 🟢 | `role="grid"` + roving tabindex + Arrow keys; `EventLanesOverlay` `type="button"` ✅ (S138) |
 | `EventForm` | [x] | 🟢 | `ScrollArea fill` ✅ |
-| `GoogleBusyWarning` | [x] | 🟢 | Novo trabalho: "Dia ocupado no Google" (2026-10-21, branch `feat/google-agenda`); regression com mocks ✅ |
+| `GoogleBusyWarning` | [x] | 🟢 | Novo trabalho: "Dia ocupado no Google" (2026-10-21, no ar `b3ee776`); regression com mocks ✅ (local e produção) |
 | `EventDetailModal` (calendar) | [x] | 🟢 | S184: fullscreen mobile `100dvh`; ScrollArea fill ✅ |
 | `DailyWorkModal` (LOCKED) | [x] | 🟢 | `bp-modal-scroll` ✅ |
 | `DateInfoModal` | [x] | 🟢 | `ScrollArea fill` ✅ |
@@ -188,7 +188,7 @@
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
 | Página ProfileSimple | [x] | 🟢 | `NeonPageShell min-h-full pb-28` ✅; pull-to-refresh (`refetchStats`) ✅ lapida |
-| `GoogleCalendarSync` | [x] | 🟡 | v2 (2026-10-21, branch `feat/google-agenda`): opções enviar/trazer/avisar, agenda escolhida, última sincronização; smoke com mocks ✅; OAuth E2E manual pendente |
+| `GoogleCalendarSync` | [x] | 🟡 | v2 no ar (2026-10-21, `b3ee776`): opções enviar/trazer/avisar, agenda escolhida, última sincronização; smoke com mocks ✅; OAuth E2E manual pendente |
 | Template fechamento PDF | [x] | 🟢 | sessão 10 — campos nome/subtítulo/PIX ✅ |
 | Visibilidade financeira | [x] | 🟢 | Supabase sync ✅ |
 
