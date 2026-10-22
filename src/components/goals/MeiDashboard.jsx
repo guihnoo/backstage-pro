@@ -254,7 +254,7 @@ export default function MeiDashboard({ annualRevenue = 0, loading = false, dasTy
       {/* CTA */}
       <button
         type="button"
-        onClick={() => hardNavigate('/reports')}
+        onClick={() => hardNavigate('/reports?aba=fiscal')}
         className="w-full py-3 rounded-xl border border-[#2a2a2a] bg-[#1f1f1f] text-xs text-[#a8a8a8] transition-all flex items-center justify-center gap-2 bp-hover-primary"
       >
         <CheckCircle2 className="w-3.5 h-3.5" />

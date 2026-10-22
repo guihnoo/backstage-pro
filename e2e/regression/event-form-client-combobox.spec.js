@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/test.js';
 import { seedAuth, E2E_USER_ID } from '../helpers/fakeAuth.js';
 
 const MOCK_CLIENT = {

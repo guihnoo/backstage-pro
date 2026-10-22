@@ -39,6 +39,7 @@ agent-review/incoming/*
 # Playwright
 playwright-report/
 test-results/
+crawl-report/
 
 # Vault Obsidian interno (relatorios de agentes) - nao publicar
 docs/obsidian-vault/

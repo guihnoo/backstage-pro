@@ -112,7 +112,7 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid,
         </div>
         <button
           type="button"
-          onClick={() => hardNavigate('/reports')}
+          onClick={() => hardNavigate('/reports?aba=receber')}
           className="text-xs text-[#888888] flex items-center gap-1 transition-colors bp-hover-primary shrink-0"
         >
           Ver todos
@@ -269,7 +269,7 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid,
       {rows.length > 6 && (
         <button
           type="button"
-          onClick={() => hardNavigate('/reports')}
+          onClick={() => hardNavigate('/reports?aba=receber')}
           className="w-full mt-3 text-center text-xs text-[#888888] py-2 bp-hover-primary transition-colors"
         >
           + {rows.length - 6} cliente{rows.length - 6 !== 1 ? 's' : ''} — ver todos

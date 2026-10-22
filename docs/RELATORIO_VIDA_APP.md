@@ -3,13 +3,13 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-10-22 (barra SALVAR do Perfil **publicada**; Claude Code)  
-**Pendente de deploy:** nada. Migrations 034–044 aplicadas em produção (043 e 044 em 2026-10-21 pelo Claude Code)  
+**Última atualização:** 2026-10-22 (CHEGUEI corrigido + varredura de todos os botões; Claude Code — branch `review/telas-fase1`, **não publicado**)  
+**Pendente de deploy:** branch `review/telas-fase1` (revisão das telas + CHEGUEI + destinos) · migração `045_daily_work_datas_juntas` (pronta, testada em transação) · função `delete-account` (nova) · `send-push-digest` (avisos abrem a tela certa). Migrations 034–044 já em produção  
 **Pasta local:** `C:\dev\backstage-pro` (desde 2026-10-09; a cópia antiga em `OneDrive\Documentos\backstage-pro` não é mais a pasta de trabalho)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-10-22 — barra SALVAR do Perfil (`b849156`, push de `fix/perfil-barra-salvar` para `main`; bundle `index-B5PcdPEn.js`). Antes: 2026-10-21 Google Agenda v2 (`b3ee776`)  
 **Edge Functions:** `ai-chat` + `analyze-receipt` + `google-calendar` v30 (Google Agenda v2, verify_jwt off — confere login por dentro) + `google-calendar-callback` v20 + `analyze-nfe` v5 (Files API + maxOutputTokens 8192 + thinkingBudget 0 — **testado e funcionando em produção** ✅) deployadas no Supabase ✅  
-**E2E:** suíte completa 103 passando, 1 pulado (2026-10-21, branch `feat/google-agenda`) · unit 279/279  
+**E2E:** smoke+regression com a **trava do banco** (todo POST/PATCH conferido contra as colunas reais) — **106 passando, 1 pulado** com os novos `home-cheguei` e `destinos-certos` (2026-10-22) · robô de botões `BP_CRAWL=1 npx playwright test e2e/audit --workers=3` · unit 281/281  
 **Supabase ref:** `cwtallnetgodoacuoaow`
 
 ---
@@ -192,6 +192,14 @@ Os escopos de agenda são "sensíveis": com o app em **Testing**, só entra quem
 ---
 
 ## Changelog
+
+### 2026-10-22 — CHEGUEI corrigido + varredura de todos os botões e destinos (Claude Code — branch `review/telas-fase1`, **não publicado**)
+
+**CHEGUEI dava erro** no iPhone ("Não foi possível registrar a entrada"): o botão gravava direto no banco só a coluna `date`, e `work_date` é obrigatória — o log do Supabase mostra 5 recusas (21/10 e 22/10 às 09:28–09:34). Agora CHEGUEI/BATER SAÍDA vão pelo mesmo caminho do "Registrar horas" (`useDailyWork` offline): grava as duas datas, não duplica o dia e **funciona sem sinal** (guarda na fila e sobe quando volta). Migração `045_daily_work_datas_juntas` (pronta, testada numa tabela temporária, **não aplicada**) preenche uma data com a outra no banco — conserta até a versão que está no ar.
+
+**Varredura** (pedido: "conferir todos os meios de interligação e botões"): (1) leitura automática do código inteiro (290 arquivos) contra o banco real — colunas, obrigatórias, funções, pastas, 438 destinos de botão/link contra as rotas, parâmetros de URL, ações não ligadas e props com nome errado; (2) **trava do banco nos testes**: `e2e/helpers/test.js` confere todo POST/PATCH contra as colunas reais (`e2e/helpers/dbSchema.js`) — o banco falso aceitava qualquer coisa, por isso o CHEGUEI passava nos testes; (3) **robô que aperta todos os botões** (`e2e/audit/buttons-crawl.spec.js`, banco falso completo `e2e/helpers/fakeDb.js`) em 11 telas, 2 níveis (janelas, abas, menus): **392 cliques**, nenhuma tela quebrou, nenhum erro de JavaScript, nenhum destino inexistente, nenhuma gravação recusada.
+
+Corrigido: "Clientes em aberto › Ver todos" e o quadro A RECEBER abriam Dinheiro na aba Mês → abrem em **A receber** (`/reports?aba=`); MEI → aba Fiscal; "Horas no mês" → Análise (conferência de horas); avisos do celular "Hoje em cena" → Início (onde está o CHEGUEI), "Show amanhã" → o próprio trabalho, "Pagamento pendente" → A receber (`send-push-digest`, precisa publicar a função); **"Novo job" no cliente abria sem o cliente** (prop `prefillClient` que o formulário não lê → `prefillData`); despesa criada de dentro do trabalho mostrava o campo "Trabalho" vazio; "◎ Atualizar local" sem permissão de GPS deixava erro solto; botão vermelho na exclusão de modelo (`confirmVariant` → `destructive`); cor do título dos alertas (`Ellipsis` sem `style`); botões sem nome para o leitor de tela (setas do mês no Dinheiro, anotações do cliente, "···" do trabalho, NF, fechar conquista); "+" do checklist desativado com o campo vazio; aviso `end` no menu de baixo.
 
 ### 2026-10-22 — Revisão das telas que faltavam (Claude Code — branch `review/telas-fase1`, **não publicado**)
 
@@ -782,7 +790,9 @@ Padrão do protótipo ("Modal · Novo trabalho") aplicado **nos componentes base
 - (2026-10-21) Testar o Google Agenda v2 com a conta real: ligar "Trazer shows" e escolher a agenda dos shows no Perfil (vem desligado)
 - (2026-10-21) Avisos no celular: a rodada das 8h (`send-push-digest`, 11:00 UTC) de 21/10 deu **500**; a das 18h deu 200. O `net.http_post` do cron 027 usa o timeout padrão de 5 s (a função leva ~26 s) — olhar o log do 500 e subir o timeout
 - (2026-10-21) Investigar o push desconhecido para `main` em 21/10 03:45
-- (2026-10-22) **Publicar a revisão das telas** (`review/telas-fase1`): front + função `delete-account` (verify_jwt padrão)
+- (2026-10-22) **Publicar a revisão das telas** (`review/telas-fase1`): front + função `delete-account` (verify_jwt padrão) + migração 045 + `send-push-digest` (links dos avisos)
+- (2026-10-22) Agenda: `NotesSheet` ficou sem botão (o "Notas" saiu do menu do trabalho; notas seguem em Abrir › Resumo) — remover o código ou devolver o botão
+- (2026-10-22) Sobras do visual antigo: props `primary/accent/glow` em `NeonGlass`/`NeonPageShell` e `userCategory` no `ProximoShow` não fazem nada — limpar quando mexer nessas telas
 - (2026-10-22) Onboarding: área com emojis (Perfil usa barras coloridas) — alinhar se quiser
 
 ### Média

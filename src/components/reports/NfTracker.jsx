@@ -42,6 +42,7 @@ function EventRow({ event, client, onOpen }) {
       <button
         type="button"
         onClick={() => onOpen(event)}
+        aria-label="Abrir trabalho"
         className="p-1.5 rounded-lg text-[#888888] hover:bg-[#1f1f1f] transition-colors flex-shrink-0 bp-hover-primary"
       >
         <ExternalLink className="w-3.5 h-3.5" />

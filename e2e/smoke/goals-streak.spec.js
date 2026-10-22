@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/test.js';
 import { fakeQuickPaidEvents, seedGoalsAuth } from '../helpers/fakeGoals.js';
 
 test('metas exibe streak e projeção de shows com dados mockados', async ({ page }) => {

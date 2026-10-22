@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/test.js';
 
 const protectedRoutes = ['/', '/calendar', '/clients', '/expenses', '/reports', '/profile'];
 

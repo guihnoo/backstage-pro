@@ -1758,7 +1758,7 @@ export default function EventDetailModal({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="flex-shrink-0 border-[#262626] hover:bg-[#1a1a1a]">
+              <Button variant="outline" size="icon" aria-label="Mais ações do trabalho" className="flex-shrink-0 border-[#262626] hover:bg-[#1a1a1a]">
                 <MoreHorizontal className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -1831,6 +1831,8 @@ export default function EventDetailModal({
       open={showExpenseForm}
       onOpenChange={setShowExpenseForm}
       initialEventId={event?.id}
+      // Sem a lista, o campo "Trabalho" aparecia vazio (a despesa ligava, mas não mostrava a qual show).
+      events={event ? [event] : []}
       onSuccess={() => {
         refetchExpenses();
         setShowExpenseForm(false);

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/test.js';
 import { seedAuthWithData, E2E_EVENT_ID } from '../helpers/dataMocks.js';
 import { E2E_USER_ID } from '../helpers/fakeAuth.js';
 

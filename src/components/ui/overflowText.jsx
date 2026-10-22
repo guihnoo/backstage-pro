@@ -1,10 +1,10 @@
 import { cn } from '@/lib/utils';
 
 /** Uma linha com reticências; use title nativo para ver texto completo no hover/long-press. */
-export function Ellipsis({ children, className, as: Tag = 'span', title }) {
+export function Ellipsis({ children, className, style, as: Tag = 'span', title }) {
   const tip = title ?? (typeof children === 'string' ? children : undefined);
   return (
-    <Tag className={cn('block min-w-0 truncate', className)} title={tip}>
+    <Tag className={cn('block min-w-0 truncate', className)} style={style} title={tip}>
       {children}
     </Tag>
   );

@@ -336,6 +336,7 @@ export default function ClientsPage() {
                 key={f.id}
                 type="button"
                 onClick={() => setFilterActive(filterActive === f.id && f.id !== 'all' ? 'all' : f.id)}
+                aria-pressed={filterActive === f.id}
                 className={`h-8 px-3.5 rounded-full font-sans text-xs font-extrabold transition-all border ${
                   filterActive === f.id
                     ? 'bg-[#ffd400] text-[#0a0a0a] border-[#ffd400] shadow-sm'

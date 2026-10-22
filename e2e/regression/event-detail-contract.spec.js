@@ -1,6 +1,6 @@
 // Rede de seguranca para juntar as duas janelas de detalhe do evento (missao 5d404).
 // Tem que continuar passando antes e depois da troca.
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/test.js';
 import { abrirEventoDemo } from '../helpers/abrirEvento.js';
 import { seedAuthWithData } from '../helpers/dataMocks.js';
 

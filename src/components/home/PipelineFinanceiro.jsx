@@ -63,7 +63,7 @@ export default function PipelineFinanceiro({ stats, despesasMes = 0, isLoading, 
       </button>
       <div className="grid grid-cols-3 gap-2">
         <Tile label="RECEBIDO" value={formatCurrency(pago)} onClick={() => hardNavigate('/reports')} />
-        <Tile label="A RECEBER" value={formatCurrency(aReceber)} color={accentHex} onClick={() => hardNavigate('/reports')} />
+        <Tile label="A RECEBER" value={formatCurrency(aReceber)} color={accentHex} onClick={() => hardNavigate('/reports?aba=receber')} />
         <Tile label="DESPESAS" value={formatCurrency(despesasMes)} onClick={() => hardNavigate('/expenses')} />
       </div>
     </div>

@@ -9,7 +9,7 @@ import { AUTH_HERO_PRIMARY, AUTH_HERO_ACCENT } from '@/lib/categoryGear';
 import { formatHours } from '@/lib/money';
 
 const statConfigs = [
-  { key: 'horas_trabalhadas', label: 'Horas no Mês', icon: '⏱️', route: '/reports', hint: 'Ver relatórios', format: (v) => formatHours(v) },
+  { key: 'horas_trabalhadas', label: 'Horas no Mês', icon: '⏱️', route: '/reports?aba=analise', hint: 'Conferir horas', format: (v) => formatHours(v) },
   { key: 'diarias_count', label: 'Diárias no Mês', icon: '📅', route: '/goals', hint: 'Ver metas', format: (v) => { const n = Math.round(v); return `${n} dia${n !== 1 ? 's' : ''}`; } },
 ];
 

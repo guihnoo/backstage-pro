@@ -41,11 +41,10 @@ function isNavActive(pathname, matchPath, end) {
   return pathname === matchPath || pathname.startsWith(`${matchPath}/`);
 }
 
-function NavTab({ to, match, label, icon: Icon, end, tour, active }) {
+function NavTab({ to, match, label, icon: Icon, tour, active }) {
   return (
     <Link
       to={to}
-      end={end}
       data-tour={tour}
       aria-label={label}
       aria-current={active ? 'page' : undefined}

@@ -34,6 +34,7 @@
 ---
 
 ## Home `/`
+> **Varredura de botões 2026-10-22** (Claude Code, branch `review/telas-fase1`): CHEGUEI/BATER SAÍDA corrigidos (davam erro — faltava `work_date`) e agora funcionam sem sinal (fila offline); "Clientes em aberto › Ver todos" e o quadro A RECEBER abrem Dinheiro direto em "A receber"; "Horas no mês" abre a Análise (conferência de horas). Robô `e2e/audit/buttons-crawl.spec.js` apertou todos os botões das 11 telas.
 
 | Item | Scroll | Status | Notas |
 |------|--------|--------|-------|
@@ -252,6 +253,9 @@
 | "Marcar pago" sem gravar `paid_amount` (toggle rápido, Agenda, A Receber) | ✅ Corrigido | 2026-10-09 — `buildMarkPaidUpdate` / `distributePaidAmount` |
 | Enviar no update uma coluna que não existe no banco derruba o update inteiro (`events.payment_method`) | ✅ Corrigido | 2026-10-09 — conferir o schema real antes de adicionar campo a um payload; migration 034 |
 | Buscar eventos por `status = 'completed'` para métrica financeira (quase nenhum evento real tem esse status) | ✅ Corrigido em Metas | 2026-10-09 — dinheiro recebido usa `payment_status = 'paid'` (`usePaidEvents`) |
+| Gravar direto com `supabase.from('daily_work')` fora do `useDailyWork` (CHEGUEI gravava só `date`; `work_date` é obrigatória → "Não foi possível registrar a entrada") | ✅ Corrigido | 2026-10-22 — horas/turno sempre pelo `useDailyWork` (offline) / `mapPayloadToDb`; migração 045 preenche uma data com a outra no banco |
+| Banco falso dos E2E aceitava qualquer coluna (bug de gravação passava nos testes) | ✅ Corrigido | 2026-10-22 — `e2e/helpers/test.js` + `dbSchema.js`: todo POST/PATCH é conferido contra as colunas reais; **importar `test` de `../helpers/test.js`**, nunca de `@playwright/test`; atualizar `dbSchema.js` a cada migração que mexa em coluna |
+| Prop com nome que o componente não lê (`prefillClient` no `EventForm` → "Novo job" do cliente sem cliente) | ✅ Corrigido | 2026-10-22 — conferir o nome da prop na assinatura do componente; objeto de `prefillData` sempre em `useMemo` (o formulário recomeça quando ele muda) |
 
 ---
 

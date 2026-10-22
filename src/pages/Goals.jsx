@@ -124,6 +124,7 @@ function BadgeCelebration({ badge, onClose }) {
         <button
           type="button"
           onClick={onClose}
+          aria-label="Fechar"
           className="absolute top-3 right-3 p-2 text-[#666666] hover:text-[#a8a8a8] transition-colors"
         >
           <X className="w-4 h-4" />

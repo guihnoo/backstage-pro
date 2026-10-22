@@ -1,7 +1,7 @@
 // CONSOLE LIMPO (19/10/2026): abre cada tela (e a janela do evento) e reprova se o React
 // reclamar de algo que costuma esconder bug: chave duplicada em lista, janela sem titulo,
 // NaN na tela, troca de componente controlado/nao controlado.
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/test.js';
 import { abrirEventoDemo } from '../helpers/abrirEvento.js';
 import { seedAuthWithData } from '../helpers/dataMocks.js';
 import { APP_ROUTES } from '../helpers/scrollAudit.js';

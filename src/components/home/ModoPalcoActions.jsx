@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { LogIn, LogOut, Clock, Loader2 } from 'lucide-react';
 import appToast from '@/lib/appToast';
 
-import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/lib/authContext';
+import { useDailyWork } from '@/lib/offline/useOfflineDailyWork';
 import { todayLocalISO } from '@/components/utils/dateUtils';
 import { computeWorkDay, REGIME_POR_DIA_ATIVO, defaultDayChoice } from '@/lib/workDay';
 
@@ -17,64 +16,36 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
 import { AUTH_HERO_CATEGORY } from '@/lib/categoryGear';
 
 export default function ModoPalcoActions({ event, accentColor = getCategoryConfig(AUTH_HERO_CATEGORY).primaryHex, onRefresh }) {
-  const { user } = useAuth();
-  const [record, setRecord] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Mesmo caminho do "Registrar horas": grava work_date + date, não duplica o dia
+  // e, sem sinal no local do show, guarda na fila e sobe quando a conexão volta.
+  const { dailyWork, loading, create, update } = useDailyWork();
   const [saving, setSaving] = useState(false);
 
   const today = todayLocalISO();
 
-  const loadRecord = useCallback(async () => {
-    if (!user?.id || !event?.id) {
-      setRecord(null);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('daily_work')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('event_id', event.id)
-        .eq('date', today)
-        .maybeSingle();
-
-      if (error) throw error;
-      setRecord(data || null);
-    } catch (err) {
-      console.error('Erro ao carregar registro do dia:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [user?.id, event?.id, today]);
-
-  useEffect(() => {
-    loadRecord();
-  }, [loadRecord]);
+  const record = useMemo(
+    () => (dailyWork || []).find((w) => w.event_id === event?.id && (w.work_date || w.date) === today) || null,
+    [dailyWork, event?.id, today]
+  );
 
   const handleEntry = async () => {
-    if (!user?.id || !event?.id) return;
+    if (!event?.id) return;
     setSaving(true);
     try {
       const entryTime = nowTimeString();
-      const { data, error } = await supabase
-        .from('daily_work')
-        .insert({
-          user_id: user.id,
-          event_id: event.id,
-          date: today,
-          entry_time: entryTime,
-          status: 'pending',
-          total_hours: 0,
-        })
-        .select()
-        .single();
+      const saved = await create({
+        event_id: event.id,
+        work_date: today,
+        entry_time: entryTime,
+        status: 'pending',
+        total_hours: 0,
+      });
 
-      if (error) throw error;
-      setRecord(data);
-      appToast.success(`Entrada registrada às ${entryTime}`);
+      appToast.success(
+        saved?._offlinePending
+          ? `Entrada às ${entryTime} guardada — sobe quando o sinal voltar`
+          : `Entrada registrada às ${entryTime}`
+      );
       onRefresh?.();
     } catch (err) {
       console.error(err);
@@ -100,24 +71,17 @@ export default function ModoPalcoActions({ event, accentColor = getCategoryConfi
       const worked = { total: day.totalHours, overtime: day.overtimeHours };
       const cache = day.cache;
 
-      const { data, error } = await supabase
-        .from('daily_work')
-        .update({
-          exit_time: exitTime,
-          total_hours: worked.total,
-          overtime_hours: worked.overtime,
-          daily_cache: cache,
-          status: 'completed',
-          ...(REGIME_POR_DIA_ATIVO
-            ? { regime: choice.regime, hora_extra: choice.horaExtra, origem: 'lancada' }
-            : {}),
-        })
-        .eq('id', record.id)
-        .select()
-        .single();
+      await update(record.id, {
+        exit_time: exitTime,
+        total_hours: worked.total,
+        overtime_hours: worked.overtime,
+        daily_cache: cache,
+        status: 'completed',
+        ...(REGIME_POR_DIA_ATIVO
+          ? { regime: choice.regime, hora_extra: choice.horaExtra, origem: 'lancada' }
+          : {}),
+      });
 
-      if (error) throw error;
-      setRecord(data);
       appToast.success(`Saída às ${exitTime} · ${worked.total}h · R$ ${cache.toLocaleString('pt-BR')}`);
       onRefresh?.();
     } catch (err) {

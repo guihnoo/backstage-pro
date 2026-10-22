@@ -1,6 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft,
   Phone,
@@ -11,8 +10,6 @@ import {
   Check,
   X,
   AlertCircle,
-  Calendar,
-  Building,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -25,7 +22,7 @@ import { useFinancialVisibility } from '@/components/context/FinancialVisibility
 import { hardNavigate } from '@/lib/hardNavigate';
 import { calculateEventReceivableAmount, isReceivableEvent } from '@/lib/eventFinance';
 import { getEventReceivedAmount } from '@/lib/financeMetrics';
-import { getEventStatus, todayLocalISO } from '@/components/utils/dateUtils';
+import { getEventStatus } from '@/components/utils/dateUtils';
 import { openWhatsAppCharge, buildChargeMessage } from '@/lib/whatsapp';
 import appToast from '@/lib/appToast';
 
@@ -53,7 +50,7 @@ export default function ClientDetailPage() {
   const { clients, loading: clientsLoading, refetch: refetchClients, update: updateClient, delete: deleteClient } = useClients();
   const { events, loading: eventsLoading, refetch: refetchEvents, delete: deleteEvent } = useEvents();
   const { dailyWork, loading: dailyWorkLoading, refetch: refetchDailyWork } = useDailyWork();
-  const { expenses, loading: expensesLoading, refetch: refetchExpenses } = useExpenses();
+  const { loading: expensesLoading, refetch: refetchExpenses } = useExpenses();
   const { formatCurrency, isVisible } = useFinancialVisibility();
 
   const [showClientForm, setShowClientForm] = useState(false);
@@ -73,6 +70,10 @@ export default function ClientDetailPage() {
     !clientsLoading && Array.isArray(clients) ? clients.find(c => c.id === clientId) : null,
     [clients, clientId, clientsLoading]
   );
+
+  // "Novo trabalho" daqui já vem com o cliente escolhido. Memo: o formulário recomeça
+  // quando esse objeto muda, então não pode ser um objeto novo a cada render.
+  const newEventPrefill = useMemo(() => (clientId ? { client_id: clientId } : undefined), [clientId]);
 
   const clientEvents = useMemo(() =>
     events.filter(e => e.client_id === clientId).sort((a, b) => new Date(b.start_date || 0) - new Date(a.start_date || 0)),
@@ -436,6 +437,7 @@ export default function ClientDetailPage() {
                   setNotesValue(client.notes || '');
                   setEditingNotes(true);
                 }}
+                aria-label="Editar anotações"
                 className="text-[#ffd400] hover:text-white transition-colors p-1"
               >
                 <Pencil className="w-3.5 h-3.5" />
@@ -446,6 +448,7 @@ export default function ClientDetailPage() {
                   type="button"
                   onClick={handleSaveNotes}
                   disabled={savingNotes}
+                  aria-label="Salvar anotações"
                   className="text-[#ffd400] hover:text-white transition-colors p-1"
                 >
                   <Check className="w-4 h-4" />
@@ -453,6 +456,7 @@ export default function ClientDetailPage() {
                 <button
                   type="button"
                   onClick={() => setEditingNotes(false)}
+                  aria-label="Cancelar edição das anotações"
                   className="text-[#ff2e88] hover:text-white transition-colors p-1"
                 >
                   <X className="w-4 h-4" />
@@ -492,7 +496,7 @@ export default function ClientDetailPage() {
           onClose={() => setShowEventForm(false)}
           event={editingEvent}
           clients={clients}
-          prefillClient={client}
+          prefillData={newEventPrefill}
           onSuccess={handleSuccess}
         />
       )}

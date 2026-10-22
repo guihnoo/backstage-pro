@@ -1,5 +1,5 @@
 // PERFIL DE CPU da abertura do Inicio (diagnostico): mostra onde o celular gasta tempo.
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/test.js';
 import fs from 'node:fs';
 import { seedAuthWithData } from '../helpers/dataMocks.js';
 

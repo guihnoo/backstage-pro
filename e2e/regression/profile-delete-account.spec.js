@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/test.js';
 import { seedAuth } from '../helpers/fakeAuth.js';
 
 // Revisão 22/10: a Política de Privacidade promete excluir a conta, mas o app não tinha o botão.

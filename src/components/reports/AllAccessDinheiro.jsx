@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   format,
   startOfMonth,
@@ -17,6 +17,8 @@ import { appToast } from '@/lib/appToast';
 import { paidEventsInPeriod, sumReceived, getEventReceivedAmount, getEventReceivedDate } from '@/lib/financeMetrics';
 import { MEI_LIMIT } from '@/lib/useBackstageData';
 
+const DINHEIRO_TABS = ['mes', 'receber', 'fiscal', 'analise'];
+
 export default function AllAccessDinheiro({
   events = [],
   clients = [],
@@ -30,9 +32,14 @@ export default function AllAccessDinheiro({
   receberExtra = null,
   fiscalExtra = null,
   analiseExtra = null,
+  // Aba pedida pelo link (/reports?aba=receber): "A receber" do Início abre direto nela.
+  initialTab = null,
 }) {
   const [currentDate, setCurrentDate] = useState(() => new Date());
-  const [activeTab, setActiveTab] = useState('mes'); // 'mes', 'receber', 'fiscal', 'analise'
+  const [activeTab, setActiveTab] = useState(() => (DINHEIRO_TABS.includes(initialTab) ? initialTab : 'mes'));
+  useEffect(() => {
+    if (DINHEIRO_TABS.includes(initialTab)) setActiveTab(initialTab);
+  }, [initialTab]);
 
   // "Cobrar": monta a mesma mensagem dos Avisos e abre o WhatsApp do cliente.
   const chargeOnWhatsApp = (ev, cl) => {
@@ -289,6 +296,7 @@ export default function AllAccessDinheiro({
             <button
               type="button"
               onClick={() => setCurrentDate((d) => subMonths(d, 1))}
+              aria-label="Mês anterior"
               className="p-1 text-[#a8a8a8] hover:text-white"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
@@ -297,6 +305,7 @@ export default function AllAccessDinheiro({
             <button
               type="button"
               onClick={() => setCurrentDate((d) => addMonths(d, 1))}
+              aria-label="Próximo mês"
               className="p-1 text-[#a8a8a8] hover:text-white"
             >
               <ChevronRight className="w-3.5 h-3.5" />

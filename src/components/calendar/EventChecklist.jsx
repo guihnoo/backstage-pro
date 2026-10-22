@@ -235,6 +235,7 @@ export function EventChecklist({ items = [], onChange, readOnly = false }) {
                       size="sm"
                       variant="outline"
                       onClick={() => addItem(newText)}
+                      disabled={!newText.trim()}
                       className="h-8 px-2 border-[#2a2a2a]"
                       aria-label="Adicionar item"
                     >

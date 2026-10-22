@@ -3,7 +3,7 @@
 //  1) a pagina ou a janela nao deixa rolar ate o fim (conteudo cortado);
 //  2) depois de fechar uma janela a tela fica sem toque / sem rolagem (precisava atualizar);
 //  3) algum campo de digitar tem letra < 16px (o iPhone da zoom sozinho e nao volta).
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/test.js';
 import { abrirEventoDemo } from '../helpers/abrirEvento.js';
 import { seedAuthWithData } from '../helpers/dataMocks.js';
 import { APP_ROUTES } from '../helpers/scrollAudit.js';

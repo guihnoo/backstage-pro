@@ -102,7 +102,8 @@ export function buildPushDigest({
           priority: 'urgent',
           title: 'Hoje em cena',
           body: `${ev.title} com ${clientName}.`,
-          url: '/calendar',
+          // Início: é lá que ficam o CHEGUEI / BATER SAÍDA do show de hoje.
+          url: '/',
         });
       } else if (startStr === tomorrowStr) {
         out.push({
@@ -111,7 +112,7 @@ export function buildPushDigest({
           priority: 'high',
           title: 'Show amanhã',
           body: `${ev.title} — confirme com ${clientName}.`,
-          url: '/calendar',
+          url: `/calendar?event=${ev.id}`,
         });
       }
     }
@@ -127,7 +128,7 @@ export function buildPushDigest({
           priority: daysLate > 7 ? 'urgent' : 'high',
           title: 'Pagamento pendente',
           body: `${ev.title} · ${formatBRL(amount)} · ${daysLate}d em atraso.`,
-          url: '/reports',
+          url: '/reports?aba=receber',
         });
       }
     }

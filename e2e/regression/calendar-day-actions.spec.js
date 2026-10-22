@@ -1,6 +1,6 @@
 // Botoes do cartao do dia na Agenda (Horas / Despesa / Abrir).
 // 21/10: "Horas" derrubava a Agenda ("Oops! Algo deu errado") porque mandava o evento no lugar da data.
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/test.js';
 import { seedAuthWithData } from '../helpers/dataMocks.js';
 
 async function tocarNoDiaDoEvento(page) {

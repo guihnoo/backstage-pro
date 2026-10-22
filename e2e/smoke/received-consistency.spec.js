@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/test.js';
 import { fakeLastMonthShowPaidThisMonth, seedGoalsAuth } from '../helpers/fakeGoals.js';
 
 test('recebido do mês é o mesmo em Home, Relatórios e Metas', async ({ page }) => {

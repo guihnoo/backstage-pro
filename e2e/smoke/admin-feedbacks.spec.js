@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/test.js';
 import { seedOwnerAuth } from '../helpers/fakeAuth.js';
 import { installFeedbackMocks } from '../helpers/fakeFeedback.js';
 

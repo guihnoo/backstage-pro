@@ -1,4 +1,4 @@
-﻿import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '../helpers/test.js';
 
 async function assertRouteGuarded(page, route) {
   await page.goto(route, { waitUntil: 'domcontentloaded' });

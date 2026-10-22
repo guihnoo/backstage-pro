@@ -469,6 +469,7 @@ export default function ReportsPage() {
           }}
           onMarkPaid={(ev) => setPayingEvent(ev)}
           workByEvent={workByEvent}
+          initialTab={new URLSearchParams(routerLocation.search).get('aba')}
           // Funcoes que sumiram na troca de visual (20/10) e voltaram em 21/10.
           receberExtra={
             <Suspense fallback={<ChartBlockSkeleton />}>

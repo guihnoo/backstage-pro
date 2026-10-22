@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/test.js';
 import { seedGoogleCalendarAuth } from '../helpers/fakeGoogleCalendar.js';
 
 test('Novo trabalho avisa compromisso do Google no dia escolhido', async ({ page }) => {

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/test.js';
 import { seedGoogleCalendarAuth } from '../helpers/fakeGoogleCalendar.js';
 
 test('perfil exibe Google Calendar conectado e alerta de eventos não sincronizados', async ({ page }) => {

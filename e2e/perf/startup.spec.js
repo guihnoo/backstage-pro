@@ -1,7 +1,7 @@
 // MEDIDOR DE VELOCIDADE (19/10/2026): abre o app ja montado (como na Vercel) num "celular medio
 // com 4G ruim" e mede quanto tempo ate a tela ficar pronta e quantos KB baixou.
 // Rodar com: workspace\checar-velocidade.cmd (serve o build e aponta PLAYWRIGHT_BASE_URL).
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/test.js';
 import fs from 'node:fs';
 import { seedAuthWithData } from '../helpers/dataMocks.js';
 

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/test.js';
 import { seedAuth } from '../helpers/fakeAuth.js';
 import { seedAuthWithData } from '../helpers/dataMocks.js';
 

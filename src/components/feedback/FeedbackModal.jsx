@@ -142,6 +142,7 @@ export default function FeedbackModal({ open, onClose, primaryHex: primaryHexPro
                       key={t.id}
                       type="button"
                       onClick={() => setType(t.id)}
+                      aria-pressed={type === t.id}
                       className="flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all min-w-0"
                       style={
                         type === t.id
@@ -174,6 +175,7 @@ export default function FeedbackModal({ open, onClose, primaryHex: primaryHexPro
                       key={n}
                       type="button"
                       onClick={() => setRating(rating === n ? 0 : n)}
+                      aria-pressed={n <= rating}
                       className="p-1.5 rounded-lg hover:bg-[#1f1f1f] transition-colors"
                       aria-label={`${n} estrela${n > 1 ? 's' : ''}`}
                     >

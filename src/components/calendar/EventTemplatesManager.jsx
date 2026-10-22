@@ -66,7 +66,7 @@ export default function EventTemplatesManager({ primaryHex }) {
         title="Remover template?"
         description={`O template "${confirmDelete?.name}" será excluído permanentemente.`}
         confirmLabel="Remover"
-        confirmVariant="destructive"
+        destructive
         onConfirm={() => handleDelete(confirmDelete?.id)}
       />
 

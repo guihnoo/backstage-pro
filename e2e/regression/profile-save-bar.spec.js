@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/test.js';
 import { seedAuth } from '../helpers/fakeAuth.js';
 
 // Bug 22/10: o SALVAR do Perfil era "sticky" e andava pela tela ao rolar.

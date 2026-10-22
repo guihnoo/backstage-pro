@@ -38,7 +38,7 @@ export function buildUserNotifications({
         priority: 'urgent',
         title: `Hoje em cena: ${ev.title}`,
         message: `Show hoje com ${clientName}.`,
-        action_url: '/calendar',
+        action_url: '/',
         event_ref: ev,
         created_date: todayStr,
       });
@@ -49,7 +49,7 @@ export function buildUserNotifications({
         priority: 'high',
         title: `Show amanhã: ${ev.title}`,
         message: `Confirme com ${clientName}.`,
-        action_url: '/calendar',
+        action_url: `/calendar?event=${ev.id}`,
         event_ref: ev,
         created_date: todayStr,
       });
@@ -72,7 +72,7 @@ export function buildUserNotifications({
         priority: isUrgent ? 'urgent' : 'high',
         title: `Pagamento pendente: ${ev.title}`,
         message: `${clientName} · ${amountLabel} · ${daysLate} dia${daysLate !== 1 ? 's' : ''} em atraso.`,
-        action_url: '/reports',
+        action_url: '/reports?aba=receber',
         event_ref: ev,
         created_date: todayStr,
         phone: clientMap.get(ev.client_id)?.phone || null,

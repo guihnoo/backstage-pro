@@ -81,6 +81,8 @@ export default function EventActionSheet({
     try {
       await onCheckInLocation(event);
       onClose();
+    } catch {
+      // Quem chamou já mostrou o motivo (ex.: localização negada); o menu fica aberto para tentar de novo.
     } finally {
       setCheckingIn(false);
     }

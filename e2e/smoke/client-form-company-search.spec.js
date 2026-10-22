@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../helpers/test.js';
 import { seedAuthWithData } from '../helpers/dataMocks.js';
 
 async function openNewClientForm(page) {
