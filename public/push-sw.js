@@ -23,8 +23,8 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: '/icon-192x192.png',
-      badge: '/icon-192x192.png',
+      icon: '/icon-v2-192.png',
+      badge: '/badge-v2-96.png',
       tag: data.tag || 'backstage-alert',
       data: { url: data.url || '/' },
       vibrate: [120, 60, 120],

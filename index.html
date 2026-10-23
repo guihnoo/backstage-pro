@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="/icon-v2.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-v2.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#050609" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -49,10 +49,12 @@
       #bp-boot{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#050609;color:#e5e7eb;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
       #bp-boot b{font-size:20px;letter-spacing:.04em}
       #bp-boot i{display:block;width:120px;height:3px;border-radius:2px;background:linear-gradient(90deg,transparent,#EAB308,transparent);background-size:200% 100%;animation:bpb 1.1s linear infinite}
+      #bp-boot svg{width:112px;height:112px;transform-origin:50% 0;animation:bpsw 2.4s ease-in-out infinite}
       @keyframes bpb{from{background-position:200% 0}to{background-position:-200% 0}}
-      @media (prefers-reduced-motion:reduce){#bp-boot i{animation:none;background:#EAB30866}}
+      @keyframes bpsw{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+      @media (prefers-reduced-motion:reduce){#bp-boot i{animation:none;background:#EAB30866}#bp-boot svg{animation:none}}
     </style>
-    <div id="root"><div id="bp-boot" role="status" aria-label="Abrindo o Backstage Pro"><b>BACKSTAGE PRO</b><i></i></div></div>
+    <div id="root"><div id="bp-boot" role="status" aria-label="Abrindo o Backstage Pro"><svg viewBox="0 0 512 512" aria-hidden="true"><path d="M150 -10L246 176M362 -10L266 176" stroke="#ff2e88" stroke-width="30" fill="none"/><rect x="46" y="176" width="420" height="286" rx="30" fill="#f1efe6"/><path d="M46 206Q46 176 76 176H436Q466 176 466 206V250H46Z" fill="#ffd400"/><rect x="236" y="160" width="40" height="36" rx="9" fill="#f1efe6"/><rect x="224" y="190" width="64" height="12" rx="6" fill="#0a0a0a"/><path transform="translate(198 266) scale(.6)" d="M0 0H115A70 70 0 0 1 115 140A80 80 0 0 1 115 300H0ZM60 45H110A25 25 0 0 1 110 95H60ZM60 175H112A40 40 0 0 1 112 255H60Z" fill="#0a0a0a" fill-rule="evenodd"/><rect x="78" y="212" width="130" height="14" rx="7" fill="#0a0a0a"/></svg><b>BACKSTAGE PRO</b><i></i></div></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

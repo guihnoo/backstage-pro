@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Backstage Pro"><rect width="512" height="512" rx="108" fill="#050609"/><path d="M150 -10L246 176M362 -10L266 176" stroke="#ff2e88" stroke-width="30" fill="none"/>
+    <rect x="46" y="176" width="420" height="286" rx="30" fill="#f1efe6"/>
+    <path d="M46 206Q46 176 76 176H436Q466 176 466 206V250H46Z" fill="#ffd400"/>
+    <rect x="236" y="160" width="40" height="36" rx="9" fill="#f1efe6"/><rect x="224" y="190" width="64" height="12" rx="6" fill="#0a0a0a"/>
+    <path transform="translate(198 266) scale(.6)" d="M0 0H115A70 70 0 0 1 115 140A80 80 0 0 1 115 300H0ZM60 45H110A25 25 0 0 1 110 95H60ZM60 175H112A40 40 0 0 1 112 255H60Z" fill="#0a0a0a" fill-rule="evenodd"/>
+       <rect x="78" y="212" width="130" height="14" rx="7" fill="#0a0a0a"/></svg>

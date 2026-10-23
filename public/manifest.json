@@ -25,19 +25,19 @@
   ],
   "icons": [
     {
-      "src": "/icon-192x192.png",
+      "src": "/icon-v2-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-512x512.png",
+      "src": "/icon-v2-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-maskable-512.png",
+      "src": "/icon-v2-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -49,21 +49,21 @@
       "short_name": "Evento",
       "description": "Criar evento na agenda",
       "url": "/calendar?action=new",
-      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/icon-v2-192.png", "sizes": "192x192" }]
     },
     {
       "name": "Agenda de hoje",
       "short_name": "Hoje",
       "description": "Ver shows de hoje",
       "url": "/calendar",
-      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/icon-v2-192.png", "sizes": "192x192" }]
     },
     {
       "name": "Pagamentos",
       "short_name": "Financeiro",
       "description": "Relatório e pendências",
       "url": "/reports",
-      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/icon-v2-192.png", "sizes": "192x192" }]
     }
   ]
 }

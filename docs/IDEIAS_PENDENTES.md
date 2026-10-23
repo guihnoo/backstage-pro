@@ -156,8 +156,8 @@
 | 115 | **Excluir minha conta** no app (LGPD + verificação do Google) | 2026-10-22 | ✅ **No ar** em 22/10 (`03ee64a`, função `delete-account` v1): Perfil → Conta → "Excluir minha conta" (digitar EXCLUIR) |
 | 116 | **Foto do perfil** por câmera, galeria ou arquivo (com redução automática) | 2026-10-22 | 🟡 Pronto na branch `feat/foto-perfil-pwa`; falta publicar |
 | 117 | **Atualização do app instalado** (checagem própria, botão no Perfil, não recarregar digitando) | 2026-10-22 | 🟡 Pronto na branch `feat/foto-perfil-pwa`; falta publicar e testar no iPhone real |
-| 118 | **Nova logo** e ícone novo do app instalado (PWA), com aviso para quem usa iPhone apagar e readicionar o ícone | 2026-10-22 | 🔄 4 conceitos prontos (artefato "Logo Backstage Pro"); falta o Guih escolher. Plano em `docs/PLANO_NOVA_LOGO.md` (branch `docs/plano-nova-logo`) |
-| 119 | **Dar vida ao app**: animações e interatividade leves (abertura animada, salvar com check, números que sobem, confete, listas suaves). Regras em `docs/PLANO_VIDA_E_ANIMACAO.md` | 2026-10-22 | ⬜ Plano pronto; a abertura espera a escolha da logo |
+| 118 | **Nova logo** e ícone novo do app instalado (PWA), com aviso para quem usa iPhone apagar e readicionar o ícone | 2026-10-22 | ✅ Logo escolhida em 23/10: **Credencial horizontal**. Kit v2, abertura animada e aviso do iPhone prontos na branch `feat/logo-motion` (não publicado). Faltam: teste Android/iPhone real, PDFs e página pública, logo do Google |
+| 119 | **Dar vida ao app**: animações e interatividade leves (abertura animada, salvar com check, números que sobem, confete, listas suaves). Regras em `docs/PLANO_VIDA_E_ANIMACAO.md` | 2026-10-22 | 🔄 Abertura animada feita (credencial balançando, 23/10). Faltam salvar com check, números que sobem, anéis/confete, listas, aba |
 | 114 | Equipe: convidar colegas para o mesmo show | 2026-10-22 | ❌ Guih decidiu que o app **não** terá isso (22/10) — não sugerir de novo |
 
 ---

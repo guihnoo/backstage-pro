@@ -193,6 +193,16 @@ Os escopos de agenda são "sensíveis": com o app em **Testing**, só entra quem
 
 ## Changelog
 
+### 2026-10-23 — Nova logo: Credencial horizontal (Claude Code — branch `feat/logo-motion`, **não publicado**)
+
+- **Escolha**: depois de 8 rodadas de opções (fita, passe, feixe, case… corujas, bichos, objetos de bastidor), o Guih escolheu a **Credencial horizontal**: crachá claro na fita rosa, faixa amarela ALL ACCESS, **BACKSTAGE** preto, **PRO** rosa e código de barras.
+- **Kit de ícones v2** (nomes novos para furar o cache; os antigos ficam no `public/` até todo mundo atualizar): `icon-v2.svg` (aba e logo dentro do app, só com o B, sem texto, que não depende de fonte), `icon-v2-192.png`, `icon-v2-512.png`, `icon-v2-maskable-512.png` (dentro da zona segura de 80% do Android), `apple-touch-icon-v2.png` (180, sem transparência), `badge-v2-96.png` (monocromático, para o aviso push). Gerados por script (Chromium com Anton e Space Mono).
+- **Trocado**: `index.html` (aba e ícone do iPhone), `manifest.json` (ícones e atalhos), `push-sw.js` (ícone e `badge`), lista `includeAssets` do `vite.config.js` (só a lista), `BackstageLogo.jsx`.
+- **Abertura animada**: a tela instantânea do `index.html` ganhou a credencial balançando na fita (SVG embutido, sem fonte; respeita "reduzir movimento"), no lugar de só o texto.
+- **Aviso do iPhone** (`IconUpdateNotice`): uma vez, só no iPhone/iPad com o app instalado (`navigator.standalone`), diz que o ícone mudou e que é preciso apagar e adicionar de novo, com "Como fazer" (3 passos) e "Já fiz" (grava em `localStorage`). Android troca o ícone sozinho (~1 dia). Teste `e2e/regression/icon-update-notice.spec.js` (instalado vê e dispensa; Safari comum não vê).
+- **Correção de passagem**: `SlowLoadingHint` e o aviso novo ficavam **atrás da barra fixa do topo** (renderizados antes do `<main>`); agora ficam dentro do `<main>`, logo abaixo da barra.
+- **Não feito**: logo na tela de consentimento do Google (120×120, exige o domínio), PDFs e página pública de fechamento ainda usam a marca antiga, `theme_color` mantido em `#050609`, teste no Android instalando a versão antiga e publicando por cima, teste no iPhone real.
+
 ### 2026-10-22 — Foto do perfil, atualização do PWA, tela travada e auditoria geral (Claude Code — branch `feat/foto-perfil-pwa`, **não publicado**)
 
 - **Foto do perfil** (`ProfilePhotoPicker`, `imageResize.js`): janela com **Tirar uma foto agora** (câmera), **Escolher da galeria** e **Escolher um arquivo**, mais **Remover foto**. A foto é cortada em quadrado (512 px) e reduzida antes do envio: foto de celular (4–12 MB) era **recusada** pelo limite de 5 MB; agora sai com ~100 KB. Teste `e2e/regression/profile-photo.spec.js`.

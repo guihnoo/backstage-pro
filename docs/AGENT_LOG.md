@@ -3093,3 +3093,13 @@ Registro cronológico de tarefas executadas por agentes.
 - **Erro meu**: `Write` em `src/lib/appVersion.js` sobrescreveu um arquivo existente (`APP_VERSION`); percebido pelo teste (modulo sem export); restaurado com `git checkout` e codigo movido para `appBuild.js`. Antes de criar arquivo, checar se o nome ja existe.
 - **Entregue**: apresentacao "Backstage Pro Analise Geral" (18 slides) como artefato Slides.
 - **Deploy**: nenhum.
+
+### NOVA LOGO: CREDENCIAL HORIZONTAL (Claude Code, 2026-10-23, branch `feat/logo-motion`)
+- **Pedido**: depois de 8 rodadas de opcoes, "credencial horizontal. vamos usar ela a partir de agora".
+- **Arquivos**: `public/icon-v2.svg`, `icon-v2-192.png`, `icon-v2-512.png`, `icon-v2-maskable-512.png`, `apple-touch-icon-v2.png`, `badge-v2-96.png` (novos, gerados por script); `index.html`, `public/manifest.json`, `public/push-sw.js`, `vite.config.js` (so `includeAssets`), `src/components/brand/BackstageLogo.jsx`, `src/components/layout/AppLayout.jsx`, `src/components/layout/IconUpdateNotice.jsx` (novo), `e2e/regression/icon-update-notice.spec.js` (novo).
+- **Abertura**: credencial balancando no `#bp-boot` (SVG embutido).
+- **Aviso iPhone**: so iOS instalado (`navigator.standalone`), uma vez (`bp_icon_v2_notice`).
+- **Bug achado de passagem**: avisos renderizados antes do `<main>` ficavam atras da barra fixa do topo (inclusive o `SlowLoadingHint`); movidos para dentro do `<main>`.
+- **Erro meu**: escrevi no aviso um endereco de site que nao existe no projeto; corrigido para texto sem endereco antes de qualquer teste. Nao inventar URL/dominio.
+- **Testes**: build ok (6 arquivos novos no precache); E2E icon-update-notice 2/2, slow-loading-hint, profile-photo ok; eslint dos arquivos alterados limpo. `slow-loading-hint` ja e sensivel a carga quando roda em paralelo com outros (passa sozinho).
+- **Deploy**: nenhum. Pendente: Android (instalar antigo, publicar, ver trocar), iPhone real, PDFs/pagina publica com a marca nova, logo do consentimento Google.

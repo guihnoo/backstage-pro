@@ -13,7 +13,7 @@ export default function BackstageLogo({
 }) {
   const icon = (
     <img
-      src="/icon.svg"
+      src="/icon-v2.svg"
       alt="Backstage Pro"
       width={size}
       height={size}

@@ -8,6 +8,7 @@ import { getCategoryConfig } from '@/lib/categoryConfig';
 import AppTopBar, { getAppTopBarOffset } from '@/components/layout/AppTopBar';
 import OfflineBanner from '@/components/layout/OfflineBanner';
 import SlowLoadingHint from '@/components/layout/SlowLoadingHint';
+import IconUpdateNotice from '@/components/layout/IconUpdateNotice';
 import { prefetchRoute, prefetchCriticalRoutes } from '@/lib/routePrefetch';
 import AppTour from '@/components/tour/AppTour';
 import { FloatingTimer } from '@/components/timer/FloatingTimer';
@@ -130,7 +131,6 @@ export default function AppLayout() {
       <AppTour />
       <AppTopBar />
       <OfflineBanner />
-      <SlowLoadingHint />
       <main
         ref={mainRef}
         data-app-scroll
@@ -141,6 +141,9 @@ export default function AppLayout() {
           WebkitOverflowScrolling: 'touch',
         }}
       >
+        {/* Avisos dentro do main: a barra do topo é fixa e cobriria o que ficasse acima dele. */}
+        <SlowLoadingHint />
+        <IconUpdateNotice />
         <Suspense fallback={<RouteSkeleton />}>
           <Outlet />
         </Suspense>
