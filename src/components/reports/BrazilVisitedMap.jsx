@@ -525,6 +525,7 @@ function BrazilVisitedMapInner({ events = [], clients = [], showTitle = true }) 
                     fill="none"
                     stroke={isLatest ? rgbaHex(accent, 0.6) : rgbaHex(primary, 0.5)}
                     strokeWidth={1}
+                    initial={{ r: r + 3, opacity: 0.7 }}
                     animate={{ r: [r + 3, r + 7, r + 3], opacity: [0.7, 0, 0.7] }}
                     transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
                   />
@@ -542,6 +543,7 @@ function BrazilVisitedMapInner({ events = [], clients = [], showTitle = true }) 
                   cy={y}
                   r={r}
                   fill={isLatest ? rgbaHex(accent, 0.95) : `${primary}eb`}
+                  initial={{ r }}
                   animate={isActiveCity ? { r: r * 1.4 } : { r }}
                   transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                   style={{ filter: `drop-shadow(0 0 ${r * 1.2}px ${isLatest ? accent : primary})` }}

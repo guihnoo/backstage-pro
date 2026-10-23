@@ -1088,7 +1088,7 @@ export default function CalendarPage() {
 
 
   const hasError = Boolean(eventsError);
-  const showBlockingError = hasError && !offline && !(events?.length > 0);
+  const showBlockingError = hasError && !(events?.length > 0);
 
   if (showBlockingError) {
     return (
@@ -1096,7 +1096,7 @@ export default function CalendarPage() {
         <EmptyState
           icon={AlertCircle}
           title="Não deu para carregar a agenda"
-          description="Confira a internet. Seus dados não foram perdidos."
+          description={offline ? 'Você está sem internet e este aparelho ainda não guardou esses dados. Eles aparecem quando a conexão voltar.' : 'Confira a internet. Seus dados não foram perdidos.'}
           action={() => { refetchEvents(); refetchDailyWork(); refetchExpenses(); }}
           actionLabel="Tentar de novo"
         />

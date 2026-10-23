@@ -105,13 +105,13 @@ export default function ExpensesPage() {
         );
     }
 
-    if (expensesError && !offline && !allExpenses.length) {
+    if (expensesError && !allExpenses.length) {
         return (
             <div className="min-h-full bg-[#0a0a0a] text-white flex items-center justify-center p-4">
                 <EmptyState
                     icon={AlertCircle}
                     title="Não deu para carregar as despesas"
-                    description="Confira a internet. Seus dados não foram perdidos."
+                    description={offline ? 'Você está sem internet e este aparelho ainda não guardou esses dados. Eles aparecem quando a conexão voltar.' : 'Confira a internet. Seus dados não foram perdidos.'}
                     action={() => refetchExpenses()}
                     actionLabel="Tentar de novo"
                 />

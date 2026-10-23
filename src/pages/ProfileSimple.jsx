@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '@/lib/authContext';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
@@ -16,7 +16,8 @@ import FeedbackModal from '@/components/feedback/FeedbackModal';
 import { isAppOwner } from '@/lib/isAppOwner';
 import { useOwnerFeedbacks } from '@/lib/useFeedback';
 import { createBackup } from '@/api/functions';
-import { uploadUserFile } from '@/lib/uploadFile';
+import ProfilePhotoPicker from '@/components/profile/ProfilePhotoPicker';
+import { runningBuildId, hasNewerBuild, hardRefresh } from '@/lib/appBuild';
 import appToast from '@/lib/appToast';
 import GoogleCalendarSync from '@/components/calendar/GoogleCalendarSync';
 import PushNotificationSettings from '@/components/notifications/PushNotificationSettings';
@@ -121,10 +122,10 @@ export default function ProfileSimple() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
   const [exporting, setExporting] = useState(false);
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoOpen, setPhotoOpen] = useState(false);
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [pixForm, setPixForm] = useState(() => settingsToPix(null));
-  const photoInputRef = useRef(null);
   const owner = isAppOwner(user, profile);
   const { newCount: ownerNewFeedbacks } = useOwnerFeedbacks(owner);
 
@@ -203,20 +204,25 @@ export default function ProfileSimple() {
     }
   };
 
-  const handlePhotoUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploadingPhoto(true);
+  const handlePhotoRemove = async () => {
     try {
-      const { file_url } = await uploadUserFile(file, { folder: 'avatars' });
-      await updateProfile({ avatar_url: file_url });
-      appToast.success('Foto de perfil atualizada!');
+      await updateProfile({ avatar_url: null });
+      appToast.success('Foto removida.');
     } catch (err) {
-      appToast.error('Erro ao enviar foto', { description: err.message });
-    } finally {
-      setUploadingPhoto(false);
-      if (photoInputRef.current) photoInputRef.current.value = '';
+      appToast.error('Não deu para remover a foto', { description: err.message });
     }
+  };
+
+  const handleCheckUpdate = async () => {
+    setCheckingUpdate(true);
+    const newer = await hasNewerBuild();
+    if (newer) {
+      appToast.info('Versão nova encontrada. Atualizando…');
+      await hardRefresh();
+      return;
+    }
+    setCheckingUpdate(false);
+    appToast.success('Você já está na versão mais recente.');
   };
 
   const handleLogout = async () => {
@@ -259,12 +265,10 @@ export default function ProfileSimple() {
         {/* Crew pass (credencial amarela) */}
         <section className="relative rounded-[18px] bg-[#ffd400] text-[#0a0a0a] p-4 pt-6 overflow-hidden">
           <span className="absolute top-2 left-1/2 -translate-x-1/2 w-14 h-1.5 rounded-full bg-[#0a0a0a]" aria-hidden />
-          <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={() => photoInputRef.current?.click()}
-              disabled={uploadingPhoto}
+              onClick={() => setPhotoOpen(true)}
               aria-label="Trocar foto de perfil"
               className="relative w-16 h-16 rounded-[14px] bg-[#0a0a0a] text-[#ffd400] overflow-hidden flex items-center justify-center shrink-0 font-poster text-[32px]"
             >
@@ -274,7 +278,7 @@ export default function ProfileSimple() {
                 displayName.charAt(0).toUpperCase() || '?'
               )}
               <span className="absolute bottom-0 right-0 w-5 h-5 rounded-tl-[8px] bg-[#ffd400] flex items-center justify-center">
-                {uploadingPhoto ? <Loader2 className="w-3 h-3 animate-spin" /> : <Camera className="w-3 h-3" />}
+                <Camera className="w-3 h-3" />
               </span>
             </button>
             <div className="min-w-0">
@@ -727,7 +731,25 @@ export default function ProfileSimple() {
 
         <InstallPwaCard primaryHex="#ffd400" />
 
-        <p className="text-center text-[#555555] text-xs pb-2 font-tag">Backstage Pro v1.0</p>
+        <div className="text-center pb-2 space-y-1.5">
+          <p className="text-[#555555] text-xs font-tag">Backstage Pro · versão {runningBuildId()?.slice(0, 8) || 'dev'}</p>
+          <button
+            type="button"
+            onClick={handleCheckUpdate}
+            disabled={checkingUpdate}
+            className="text-xs font-bold text-[#ffd400] underline underline-offset-2 disabled:opacity-60"
+          >
+            {checkingUpdate ? 'Verificando…' : 'Verificar atualização'}
+          </button>
+        </div>
+
+        <ProfilePhotoPicker
+          open={photoOpen}
+          onOpenChange={setPhotoOpen}
+          hasPhoto={Boolean(profile?.avatar_url)}
+          onUploaded={(url) => updateProfile({ avatar_url: url })}
+          onRemove={handlePhotoRemove}
+        />
       </div>
 
       <FeedbackModal

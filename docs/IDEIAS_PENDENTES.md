@@ -154,6 +154,8 @@
 | 112 | **Deslocamento por km** virando despesa (km × valor) | 2026-10-22 | ✅ **Feito** 22/10 (branch `feat/ideias-novas`, não publicado): despesa "Quilometragem (km)" — km × valor por km, ida e volta, valor lembrado |
 | 113 | **Checklist de equipamento por show** (o que levar e o que voltou) | 2026-10-22 | ✅ **Feito** 22/10 (branch `feat/ideias-novas`, não publicado): "Equipamento" na janela do trabalho (Ida/Volta, aviso do que falta voltar) + "Meu kit" no Perfil |
 | 115 | **Excluir minha conta** no app (LGPD + verificação do Google) | 2026-10-22 | ✅ **No ar** em 22/10 (`03ee64a`, função `delete-account` v1): Perfil → Conta → "Excluir minha conta" (digitar EXCLUIR) |
+| 116 | **Foto do perfil** por câmera, galeria ou arquivo (com redução automática) | 2026-10-22 | 🟡 Pronto na branch `feat/foto-perfil-pwa`; falta publicar |
+| 117 | **Atualização do app instalado** (checagem própria, botão no Perfil, não recarregar digitando) | 2026-10-22 | 🟡 Pronto na branch `feat/foto-perfil-pwa`; falta publicar e testar no iPhone real |
 | 114 | Equipe: convidar colegas para o mesmo show | 2026-10-22 | ❌ Guih decidiu que o app **não** terá isso (22/10) — não sugerir de novo |
 
 ---

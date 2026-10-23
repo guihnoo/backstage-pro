@@ -181,7 +181,7 @@ export default function ReportsPage() {
   const eventsReady = !loading.events;
   const hasError = error.events || error.clients || error.dailyWork || error.expenses;
   const hasCachedData = (events?.length ?? 0) > 0 || (clients?.length ?? 0) > 0;
-  const showBlockingError = hasError && !offline && !hasCachedData;
+  const showBlockingError = hasError && !hasCachedData;
 
   // Calculate date ranges for current and previous periods
   const { currentRange, previousRange, nextRange } = useMemo(() => {
@@ -434,7 +434,7 @@ export default function ReportsPage() {
         <EmptyState
           icon={AlertCircle}
           title="Não deu para carregar o Dinheiro"
-          description="Confira a internet. Seus dados não foram perdidos."
+          description={offline ? 'Você está sem internet e este aparelho ainda não guardou esses dados. Eles aparecem quando a conexão voltar.' : 'Confira a internet. Seus dados não foram perdidos.'}
           action={() => refreshData()}
           actionLabel="Tentar de novo"
         />

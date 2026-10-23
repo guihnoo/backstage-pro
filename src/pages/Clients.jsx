@@ -257,7 +257,7 @@ export default function ClientsPage() {
   }
 
   const hasCachedClients = (clients?.length ?? 0) > 0;
-  const showBlockingError = clientsError && !offline && !hasCachedClients;
+  const showBlockingError = clientsError && !hasCachedClients;
 
   if (showBlockingError) {
     return (
@@ -265,7 +265,7 @@ export default function ClientsPage() {
         <EmptyState
           icon={AlertCircle}
           title="Não deu para carregar os clientes"
-          description="Confira a internet. Seus dados não foram perdidos."
+          description={offline ? 'Você está sem internet e este aparelho ainda não guardou esses dados. Eles aparecem quando a conexão voltar.' : 'Confira a internet. Seus dados não foram perdidos.'}
           action={() => refetchClients()}
           actionLabel="Tentar de novo"
         />

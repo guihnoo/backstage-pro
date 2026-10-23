@@ -20,8 +20,17 @@
     // Quando o novo SW ativa (skipWaiting+clientsClaim), força reload imediato.
     if ('serviceWorker' in navigator) {
       var _bpReloading = false;
+      var _bpFirst = 0;
+      function _bpBusy() {
+        if (document.querySelector('[role="dialog"], [role="alertdialog"]')) return true;
+        var t = document.activeElement && document.activeElement.tagName;
+        return t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT';
+      }
+      // Não recarrega no meio de um formulário; depois de 5 min atualiza mesmo assim.
       function _bpReload() {
         if (_bpReloading) return;
+        if (!_bpFirst) _bpFirst = Date.now();
+        if (_bpBusy() && Date.now() - _bpFirst < 300000) { setTimeout(_bpReload, 4000); return; }
         _bpReloading = true;
         window.location.reload();
       }

@@ -193,6 +193,15 @@ Os escopos de agenda são "sensíveis": com o app em **Testing**, só entra quem
 
 ## Changelog
 
+### 2026-10-22 — Foto do perfil, atualização do PWA, tela travada e auditoria geral (Claude Code — branch `feat/foto-perfil-pwa`, **não publicado**)
+
+- **Foto do perfil** (`ProfilePhotoPicker`, `imageResize.js`): janela com **Tirar uma foto agora** (câmera), **Escolher da galeria** e **Escolher um arquivo**, mais **Remover foto**. A foto é cortada em quadrado (512 px) e reduzida antes do envio: foto de celular (4–12 MB) era **recusada** pelo limite de 5 MB; agora sai com ~100 KB. Teste `e2e/regression/profile-photo.spec.js`.
+- **PWA instalado não atualiza**: no navegador a versão nova entra sozinha em 6–10 s (testado publicando uma versão por cima, app aberto) e os cabeçalhos do servidor estão certos; a causa no iPhone não pôde ser reproduzida aqui. Reforços que não dependem do iOS: checagem própria da versão publicada (`appBuild.js`, compara o nome do `assets/index-*.js` em `/index.html?bp=…`) ao voltar ao app, reconectar e a cada 45 s; botão **Verificar atualização** + número da versão no Perfil; `hardRefresh` limpa o cache do app; o recarregamento espera o usuário terminar de digitar/fechar a janela (até 5–10 min). **Quem já está preso numa versão antiga precisa abrir o app uma vez ou reinstalar o ícone.**
+- **Tela travada**: consulta de dados (`/rest/v1/`) ganha limite de 20 s (`supabase.js`); `SlowLoadingHint` no layout avisa após 12 s só com esqueleto e oferece "Tentar de novo"; Agenda/Clientes/Despesas/Dinheiro mostram o erro com botão mesmo quando o app se acha sem internet e não há dados guardados (antes ficava esqueleto em ciclo). Teste `slow-loading-hint.spec.js`.
+- **Auditoria** (52 medições = 13 telas × 4 aparelhos, axe, servidor lento, offline, versão nova, verificadores do Supabase): 0 telas presas, 0 estouros de largura, 1 erro de console (círculo do mapa sem raio — corrigido), setas de mês do Dinheiro 22→36 px. Pendências na apresentação "Backstage Pro Análise Geral" e abaixo.
+- **Pendências abertas**: segurança do banco (senha vazada desligada, 1 opção de 2 etapas, 8 funções `SECURITY DEFINER` chamáveis por anon/authenticated); desempenho (18 políticas sem `(select auth.uid())`, 3 FKs sem índice); acessibilidade (contraste em 5 telas, `aria-prohibited-attr` no mapa, alvos < 40 px em 8 de 13 telas).
+- **Atenção**: um arquivo meu sobrescreveu `src/lib/appVersion.js` (exporta `APP_VERSION`); restaurado do git antes de qualquer commit; o código novo ficou em `appBuild.js`.
+
 ### 2026-10-22 — Ideias novas 106–113 (Claude Code — branch `feat/ideias-novas`, **não publicado**)
 
 Uma por vez, cada uma com testes de unidade e de tela (com a trava do banco):

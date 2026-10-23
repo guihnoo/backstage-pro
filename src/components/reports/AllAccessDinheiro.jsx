@@ -318,18 +318,18 @@ export default function AllAccessDinheiro({
               type="button"
               onClick={() => setCurrentDate((d) => subMonths(d, 1))}
               aria-label="Mês anterior"
-              className="p-1 text-[#a8a8a8] hover:text-white"
+              className="-ml-2 w-9 h-9 flex items-center justify-center rounded-full text-[#a8a8a8] hover:text-white"
             >
-              <ChevronLeft className="w-3.5 h-3.5" />
+              <ChevronLeft className="w-4 h-4" />
             </button>
             <span>{monthLabel}</span>
             <button
               type="button"
               onClick={() => setCurrentDate((d) => addMonths(d, 1))}
               aria-label="Próximo mês"
-              className="p-1 text-[#a8a8a8] hover:text-white"
+              className="w-9 h-9 flex items-center justify-center rounded-full text-[#a8a8a8] hover:text-white"
             >
-              <ChevronRight className="w-3.5 h-3.5" />
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
           <h1 className="font-poster text-[38px] sm:text-[40px] text-white leading-none tracking-wide uppercase">

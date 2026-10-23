@@ -27,9 +27,27 @@ function sanitizeRequestHeaders(headers) {
   );
 }
 
+/** Consulta de dados que não responde em 20 s vira erro (a tela mostra "Tentar de novo" em vez de carregar para sempre). */
+const DATA_REQUEST_TIMEOUT_MS = 20_000;
+
+function fetchWithTimeout(input, init) {
+  const url = typeof input === 'string' ? input : input?.url || '';
+  // Só dados (/rest/v1/). Envio de arquivo e IA podem demorar de verdade.
+  if (!url.includes('/rest/v1/')) return fetch(input, init);
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(new DOMException('Tempo esgotado', 'TimeoutError')), DATA_REQUEST_TIMEOUT_MS);
+  const outer = init?.signal;
+  if (outer) {
+    if (outer.aborted) controller.abort(outer.reason);
+    else outer.addEventListener('abort', () => controller.abort(outer.reason), { once: true });
+  }
+  return fetch(input, { ...init, signal: controller.signal }).finally(() => clearTimeout(timer));
+}
+
 function latin1SafeFetch(input, init) {
-  if (!init?.headers) return fetch(input, init);
-  return fetch(input, { ...init, headers: sanitizeRequestHeaders(init.headers) });
+  if (!init?.headers) return fetchWithTimeout(input, init);
+  return fetchWithTimeout(input, { ...init, headers: sanitizeRequestHeaders(init.headers) });
 }
 
 function loadSupabaseEnv(name) {

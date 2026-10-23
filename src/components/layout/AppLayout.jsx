@@ -7,6 +7,7 @@ import { useProfile } from '@/lib/profileOfflineContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import AppTopBar, { getAppTopBarOffset } from '@/components/layout/AppTopBar';
 import OfflineBanner from '@/components/layout/OfflineBanner';
+import SlowLoadingHint from '@/components/layout/SlowLoadingHint';
 import { prefetchRoute, prefetchCriticalRoutes } from '@/lib/routePrefetch';
 import AppTour from '@/components/tour/AppTour';
 import { FloatingTimer } from '@/components/timer/FloatingTimer';
@@ -129,6 +130,7 @@ export default function AppLayout() {
       <AppTour />
       <AppTopBar />
       <OfflineBanner />
+      <SlowLoadingHint />
       <main
         ref={mainRef}
         data-app-scroll

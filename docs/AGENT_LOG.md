@@ -3082,3 +3082,14 @@ Registro cronológico de tarefas executadas por agentes.
 - **Incidente**: um `git stash`/`stash pop` para comparar build aplicou um stash antigo (17/10) por cima dos docs; nada se perdeu (tudo commitado) — os 4 arquivos voltaram com `git checkout HEAD --`, stash@{0} preservado. Não usar stash para comparar.
 - **Testes**: unit 337/337; lint `src` 0 erros; build ok; E2E smoke+regression 124 passando, 1 pulado (profile-navigation atualizado aos nomes novos das seções).
 - **Deploy**: nenhum. Ordem: 046 → analyze-job → push main.
+
+### AUDITORIA GERAL + foto do perfil + PWA (Claude Code, 2026-10-22, branch `feat/foto-perfil-pwa`)
+- **Pedido**: foto do perfil por camera/galeria/arquivo; analise geral tela a tela "para uma multinacional"; achar erros, deformacoes, travamentos e o PWA que nao atualiza.
+- **Foto**: `ProfilePhotoPicker` + `imageResize.js` (quadrado 512 px JPEG). Antes: foto de celular >5 MB era recusada.
+- **PWA**: servidor ok; no navegador atualiza em 6-10 s (teste real: build v1, servidor local, publica v2 por cima). Reforcos: `appBuild.js`, `PwaLiveUpdater`, `index.html` (espera nao-ocupado), botao no Perfil.
+- **Travamento**: timeout 20 s em `/rest/v1/`; `SlowLoadingHint`; erro com botao tambem "offline sem dados". O mock do Playwright com servidor pendurado mostrou um ciclo (falha -> 1 s -> novo pedido) causado pelo sonar de conectividade; por isso a protecao e global, no layout.
+- **Medido** (13 telas x 4 aparelhos, dados de teste): 0 presas, 0 estouro, 1 erro de console (mapa, corrigido); axe serio/critico: contraste (12 nos, 5 telas), `aria-prohibited-attr` mapa (27), `aria-required-children` agenda (1), `link-in-text-block` termos (1); alvos <40 px em 8/13 telas; fonte <10 px em Metas (25).
+- **Banco** (advisors + SQL): 18/18 tabelas com RLS, 25 politicas; avisos de seguranca (senha vazada off, MFA, 8 funcoes SECURITY DEFINER abertas) e desempenho (18 politicas sem `(select auth.uid())`, 3 FKs sem indice, 14 indices sem uso).
+- **Erro meu**: `Write` em `src/lib/appVersion.js` sobrescreveu um arquivo existente (`APP_VERSION`); percebido pelo teste (modulo sem export); restaurado com `git checkout` e codigo movido para `appBuild.js`. Antes de criar arquivo, checar se o nome ja existe.
+- **Entregue**: apresentacao "Backstage Pro Analise Geral" (18 slides) como artefato Slides.
+- **Deploy**: nenhum.
