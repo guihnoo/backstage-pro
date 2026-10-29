@@ -43,7 +43,9 @@ import {
 } from 'date-fns';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import appToast from '@/lib/appToast';
-import { getEventStatus } from '@/components/utils/dateUtils';
+import { getEventStatus, todayLocalISO } from '@/components/utils/dateUtils';
+import { buildFinanceDashboard } from '@/lib/financeDashboard';
+import { openFinanceReport } from '@/lib/financeDashboardExport';
 
 // Component imports — charts/map/modais em lazy para reduzir chunk inicial
 import AllAccessDinheiro from '@/components/reports/AllAccessDinheiro';
@@ -68,13 +70,11 @@ import { enrichEventsWithClients } from '@/lib/eventDisplay';
 
 import { useConnectivity } from '@/lib/offline/useConnectivity';
 
-const ExportManager = lazy(() => import('@/components/reports/ExportManager'));
 const EventDetailModal = lazy(() => import('@/components/calendar/EventDetailModal'));
 const PaymentConfirmModal = lazy(() => import('@/components/reports/PaymentConfirmModal'));
 const EventForm = lazy(() => import('@/components/calendar/EventForm'));
 const NfTracker = lazy(() => import('@/components/reports/NfTracker'));
 const HoursReviewList = lazy(() => import('@/components/reports/HoursReviewList'));
-const CashflowForecast = lazy(() => import('@/components/reports/CashflowForecast'));
 const IRSummary = lazy(() => import('@/components/reports/IRSummary'));
 
 function ChartBlockSkeleton({ className = 'h-64' }) {
@@ -462,20 +462,29 @@ export default function ReportsPage() {
           expenses={data.expenses || []}
           formatCurrency={formatCurrency}
           isVisible={isVisible}
-          onExportPdf={() => {
-            const expBtn = document.querySelector('[data-export-trigger]');
-            if (expBtn) expBtn.click();
-            else appToast.info('Gerando exportação de relatórios...');
+          onExportPdf={(monthKey) => {
+            if (!isVisible) {
+              appToast.info('Mostre os valores para exportar o relatório.');
+              return;
+            }
+            try {
+              openFinanceReport(buildFinanceDashboard({
+                events: data.events,
+                clients: data.clients,
+                expenses: data.expenses,
+                workByEvent,
+                monthKey,
+                today: todayLocalISO(),
+              }));
+            } catch (error) {
+              appToast.error('Não foi possível abrir o relatório.', { description: error.message });
+            }
           }}
+          onOpenEvent={(ev) => setSelectedEvent(ev)}
           onMarkPaid={(ev) => setPayingEvent(ev)}
           workByEvent={workByEvent}
           initialTab={new URLSearchParams(routerLocation.search).get('aba')}
           // Funcoes que sumiram na troca de visual (20/10) e voltaram em 21/10.
-          receberExtra={
-            <Suspense fallback={<ChartBlockSkeleton />}>
-              <CashflowForecast compact events={data.events} work={data.dailyWork} clients={data.clients} />
-            </Suspense>
-          }
           fiscalExtra={
             <Suspense fallback={<ChartBlockSkeleton className="h-64" />}>
               <NfTracker events={data.events} clients={data.clients} onOpenEvent={(ev) => setSelectedEvent(ev)} />
@@ -493,19 +502,6 @@ export default function ReportsPage() {
             </Suspense>
           }
         />
-        <div className="hidden">
-          <ExportManager
-            data={{
-              events: processedData.current.events,
-              paidEvents: processedData.current.paidEvents,
-              allWork: data.dailyWork,
-              work: processedData.current.work,
-              expenses: processedData.current.expenses,
-              clients: data.clients
-            }}
-            period={currentRange}
-          />
-        </div>
       </motion.div>
 
       {/* "Recebi": mesma janela de pagamento do app (com a regra das horas preenchidas) */}
@@ -514,7 +510,7 @@ export default function ReportsPage() {
           <PaymentConfirmModal
             event={payingEvent}
             client={data.clients.find((c) => c.id === payingEvent.client_id)}
-            dailyWork={data.dailyWork || []}
+            dailyWork={(data.dailyWork || []).filter((work) => work.event_id === payingEvent.id)}
             isOpen={!!payingEvent}
             onClose={() => setPayingEvent(null)}
             onSuccess={() => { setPayingEvent(null); refreshData({ silent: true }); }}

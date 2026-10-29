@@ -57,12 +57,15 @@ test.describe('várias funções com cachê diferente', () => {
     expect(criado.category_label).toMatch(/Vídeo/);
   });
 
-  test('Dinheiro › Análise mostra "Por função" quando o mês tem duas funções', async ({ page }) => {
+  test('Dinheiro › Análise mostra "Por função" para trabalhos encerrados com duas funções', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await seedAuth(page, PERFIL_DUAS_FUNCOES);
     const seed = richSeed();
     const hoje = new Date().toLocaleDateString('sv-SE');
-    seed.events.find((e) => e.id === FAKE_IDS.showHoje).category = 'video';
+    // O faturamento só inclui encerrados. O exemplo fecha manualmente o show de hoje.
+    const showEncerrado = seed.events.find((e) => e.id === FAKE_IDS.showHoje);
+    showEncerrado.category = 'video';
+    showEncerrado.status = 'completed';
     seed.events.push({
       ...seed.events.find((e) => e.id === FAKE_IDS.showHoje),
       id: '00000000-0000-4000-8000-000000000299',
@@ -81,5 +84,6 @@ test.describe('várias funções com cachê diferente', () => {
     await expect(quadro).toBeVisible({ timeout: 60_000 });
     await expect(quadro).toContainText('Iluminação');
     await expect(quadro).toContainText('Vídeo');
+    await expect(quadro).toContainText('900,00');
   });
 });

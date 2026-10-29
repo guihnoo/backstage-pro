@@ -3103,3 +3103,15 @@ Registro cronológico de tarefas executadas por agentes.
 - **Erro meu**: escrevi no aviso um endereco de site que nao existe no projeto; corrigido para texto sem endereco antes de qualquer teste. Nao inventar URL/dominio.
 - **Testes**: build ok (6 arquivos novos no precache); E2E icon-update-notice 2/2, slow-loading-hint, profile-photo ok; eslint dos arquivos alterados limpo. `slow-loading-hint` ja e sensivel a carga quando roda em paralelo com outros (passa sozinho).
 - **Deploy**: nenhum. Pendente: Android (instalar antigo, publicar, ver trocar), iPhone real, PDFs/pagina publica com a marca nova, logo do consentimento Google.
+
+
+### 2026-10-29 — FINANCEIRO DETALHADO (Codex)
+- Branch local codex/financeiro-detalhado, base main a4d352a conferida.
+- Modelo A como Mês; B como Empresas; C como Calendário, com dados reais dos hooks existentes e regra de faturamento pelo encerramento.
+- Recebimentos por paid_date, grupos por empresa, previsões separadas, despesas detalhadas, gráficos de diárias/recebimentos e PDF do mês selecionado.
+- Pagamento abre a confirmação existente; diárias filtradas pelo evento. Datas ausentes/invalidas ficam sinalizadas. Sem alterações de banco ou dependências.
+- Validação final: unitários 357/357; E2E completo 141 passando e 24 pulados; lint direcionado --no-ignore e build aprovados.
+- Detalhes e limites: docs/FINANCEIRO_DETALHADO.md. Capturas com dados fictícios no diretório de artefatos desta conversa.
+- Publicação: nenhuma. Aguardar revisão final da implementação pelo usuário. Backup respeita PAUSE_AUTO_GIT já existente.
+
+- Continuação: usuário aprovou publicação no app real em 29/10/2026. Conferidos os 11 arquivos da entrega contra o retrato testado; main remota permanece a4d352a. Consultas mantêm filtro do usuário autenticado, sem migração ou gravação automática introduzida. Preparando commit e publicação pelo GitHub/Vercel.

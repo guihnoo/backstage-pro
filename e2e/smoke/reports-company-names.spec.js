@@ -21,7 +21,7 @@ test.fixme('aba Fiscal exibe nome da empresa nos eventos (não Sem empresa)', as
   await expect(page.getByText('Sem empresa')).toHaveCount(0);
 });
 
-test('inadimplência na visão geral mostra empresa do cliente', async ({ page }) => {
+test('realizados sem vencimento mostram a empresa sem presumir atraso', async ({ page }) => {
   const clients = fakeReportClients();
   const events = [
     ...fakeReportEvents(),
@@ -48,8 +48,12 @@ test('inadimplência na visão geral mostra empresa do cliente', async ({ page }
 
   await page.getByRole('tab', { name: /a receber/i }).click();
 
-  const agingPanel = page.locator('section').filter({ hasText: /atraso/i }).first();
-  await expect(agingPanel.getByText('Show em aberto E2E')).toBeVisible({ timeout: 10_000 });
-  await expect(agingPanel.getByText('Eventos E2E Rio').first()).toBeVisible();
-  await expect(agingPanel.getByText('Sem empresa')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Sem vencimento', exact: true }).click();
+  await page.getByTestId('finance-company-' + E2E_CLIENT_RJ_ID).click();
+  const companyPanel = page.getByTestId('finance-company-detail');
+  await expect(companyPanel.getByText('Show em aberto E2E')).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByTestId('finance-companies').getByText('Eventos E2E Rio').first()).toBeVisible();
+  await expect(companyPanel.getByText('Sem vencimento informado').first()).toBeVisible();
+  await expect(companyPanel).not.toContainText('Vencido');
+  await expect(companyPanel.getByText('Sem empresa')).toHaveCount(0);
 });
