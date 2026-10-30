@@ -10,11 +10,11 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import appToast from '@/lib/appToast';
 import { useEvents } from '@/lib/useEvents';
-import { getEventReceivedAmount, buildMarkPaidUpdate } from '@/lib/financeMetrics';
+import { buildMarkPaidUpdate } from '@/lib/financeMetrics';
 import EventHeading from '@/components/events/EventHeading';
-import { getEventHoursStatus } from '@/lib/eventFinance';
+import { getEventHoursStatus, calculateEventReceivableAmount } from '@/lib/eventFinance';
 import { buildHoursGateMessage, shouldBlockPayment } from '@/lib/hoursGate';
-import { parseBRL, toBRLInput } from '@/lib/money';
+import { parseBRL } from '@/lib/money';
 
 const PAYMENT_METHODS = [
   { value: 'pix', label: 'PIX' },
@@ -27,12 +27,12 @@ const PAYMENT_METHODS = [
 export default function PaymentConfirmModal({ event, client, dailyWork = [], isOpen, onClose, onSuccess }) {
   const { update: updateEvent } = useEvents();
   const [paidAmount, setPaidAmount] = useState('');
-  const [paidDate, setPaidDate] = useState(new Date());
+  const [paidDate, setPaidDate] = useState(undefined);
   const [paymentMethod, setPaymentMethod] = useState('pix');
   const [loading, setLoading] = useState(false);
   const [ackMissingHours, setAckMissingHours] = useState(false);
 
-  const estimatedValue = event ? getEventReceivedAmount(event, dailyWork) : 0;
+  const estimatedValue = event ? calculateEventReceivableAmount(event, dailyWork) : 0;
   // events.payment_method nasce na migration 034; sem a coluna o PostgREST rejeita o update inteiro
   const canStoreMethod = Boolean(event) && 'payment_method' in event;
 
@@ -43,8 +43,8 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
 
   useEffect(() => {
     if (event && isOpen) {
-      setPaidAmount(estimatedValue > 0 ? toBRLInput(estimatedValue) : '');
-      setPaidDate(new Date());
+      setPaidAmount('');
+      setPaidDate(undefined);
       setPaymentMethod(event.payment_method || 'pix');
       setAckMissingHours(false);
     }
@@ -57,11 +57,14 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
     }
     const rawText = String(paidAmount ?? '').trim();
     const parsedAmount = parseBRL(rawText); // aceita 1.200,50 / 1200,50 / 1.200 / 1200.50
-    if (!rawText || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+    if (!rawText || !Number.isFinite(parsedAmount) || parsedAmount < 0) {
       appToast.error('Informe o valor real recebido em conta.');
       return;
     }
 
+    if (!paidDate || format(paidDate,'yyyy-MM-dd') > format(new Date(),'yyyy-MM-dd')) {
+      appToast.error('Selecione o dia em que o dinheiro entrou na sua conta.'); return;
+    }
     setLoading(true);
     try {
       const updatePayload = buildMarkPaidUpdate(event, dailyWork, {
@@ -128,7 +131,7 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
               Valor Real Recebido em Conta (R$)
             </Label>
             <p className="text-xs text-[#a8a8a8]">
-              Preenchido com o valor total do evento. Se o valor depositado pelo cliente foi diferente, ajuste aqui.
+              Digite o valor que entrou na sua conta. O cálculo do evento é apenas uma referência e não confirma o depósito.
             </p>
             <div className="relative">
               <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#a8a8a8]" />
@@ -168,7 +171,7 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
           )}
 
           <div className="space-y-2">
-            <Label>Data do Recebimento</Label>
+            <Label>Data do Recebimento</Label><p className="text-xs text-[#a8a8a8]">Escolha o dia do depósito, mesmo que esteja registrando depois.</p><button type="button" className="text-xs font-bold text-[#ffd400]" onClick={()=>setPaidDate(new Date())}>Recebi hoje</button>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -182,6 +185,7 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
               <PopoverContent className="w-auto p-0 bg-[#1f1f1f] border-[#2a2a2a]">
                 <Calendar
                   mode="single"
+                  disabled={{ after: new Date() }}
                   selected={paidDate}
                   onSelect={(date) => date && setPaidDate(date)}
                   locale={ptBR}
@@ -203,7 +207,7 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
           </Button>
           <Button
             onClick={handleConfirm}
-            disabled={loading || blockedByHours}
+            disabled={loading || blockedByHours || !paidAmount.trim() || !paidDate}
           >
             {loading ? 'Confirmando...' : 'Confirmar Pagamento'}
           </Button>

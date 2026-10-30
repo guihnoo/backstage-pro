@@ -88,7 +88,7 @@ describe('buildFinanceDashboard', () => {
     expect(dashboard.receiptRows[0].receivedAmount).toBe(0);
     expect(dashboard.totals.received).toBe(0);
     expect(dashboard.totals.pending).toBe(0);
-    expect(dashboard.totals.revenue).toBe(500);
+    expect(dashboard.totals.revenue).toBe(0);
   });
 
   it('does not fabricate receipt dates for legacy, invalid or future payments', () => {
@@ -197,4 +197,28 @@ describe('valor explícito da diária', () => {
       if (recorded === 'inválido') expect(codes(dashboard)).toContain('invalid_amount');
     }
   });
+});
+
+it('keeps confirmed payment over recalculated work while retaining the comparison', () => {
+  const dashboard = build({
+    events: [event('confirmed', { actual_revenue: 1175, payment_status: 'paid', paid_amount: 1175, paid_date: '2026-11-10' })],
+    workByEvent: { confirmed: [{ date: '2026-11-10', daily_cache: 1000 }] },
+  });
+  expect(dashboard.totals.revenue).toBe(1175);
+  expect(dashboard.totals.received).toBe(1175);
+  expect(dashboard.billedRows[0]).toMatchObject({ amount: 1175, calculatedAmount: 1000, amountSource: 'payment' });
+});
+
+
+it('mantém a origem estimada da data sem alterar o valor confirmado', () => {
+  const dashboard = build({
+    events: [event('estimated-date', {
+      start_date: '2026-10-28', end_date: '2026-11-10',
+      payment_status: 'paid', paid_date: '2026-11-20', paid_amount: 1175,
+      paid_date_meta: { source: 'estimated', basis: 'event_end_plus_days', days: 10 },
+    })],
+  });
+  expect(dashboard.totals.received).toBe(1175);
+  expect(dashboard.receiptRows[0]).toMatchObject({ receivedDateEstimated: true, receivedDateEstimateDays: 10 });
+  expect(dashboard.warnings).toContainEqual(expect.objectContaining({ code: 'estimated_paid_date', count: 1 }));
 });

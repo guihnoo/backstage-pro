@@ -24,7 +24,10 @@ export function toDateKey(value) {
     if (Number.isNaN(value.getTime())) return null;
     return `${value.getFullYear()}-${pad2(value.getMonth() + 1)}-${pad2(value.getDate())}`;
   }
-  if (typeof value === 'string' && DATE_KEY.test(value)) return value.slice(0, 10);
+  if (typeof value === 'string' && DATE_KEY.test(value)) {
+    const key=value.slice(0,10), parsed=new Date(key+'T00:00:00Z');
+    return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0,10)===key ? key : null;
+  }
   return null;
 }
 
@@ -85,24 +88,20 @@ export function isReceivedEvent(event) {
 /**
  * Quanto foi recebido num evento pago.
  * `paid_amount` é a fonte; como 0 é válido, a ausência é testada com null (nunca `||`).
- * Pagos antigos sem `paid_amount`: `actual_revenue` (onde o antigo "marcar recebido" gravava
- * o valor ajustado) e, na falta dele, o mesmo valor que o evento mostrava em "A receber".
+ * Legado: aceita actual_revenue explicitamente informado, inclusive zero.
+ * Cachê e diárias calculadas não comprovam depósito e ficam fora do recebido.
  */
-export function getEventReceivedAmount(event, dailyWorkForEvent = []) {
+export function getEventReceivedAmount(event) {
   if (!event) return 0;
   const recorded = recordedAmount(event.paid_amount);
   if (recorded !== null) return recorded;
-  if (Number(event.actual_revenue) > 0) return Number(event.actual_revenue);
-  return calculateEventReceivableAmount(event, dailyWorkForEvent);
+  return recordedAmount(event.actual_revenue) ?? 0;
 }
 
-/** Data de competência do recebimento; pagos antigos sem `paid_date` caem na data do show. */
+/** Data do recebimento informada e válida; sem inferir pelo dia do evento. */
 export function getEventReceivedDate(event) {
-  return (
-    toDateKey(event?.paid_date) ??
-    toDateKey(event?.start_date) ??
-    toDateKey(event?.event_date)
-  );
+  const date = toDateKey(event?.paid_date);
+  return date && date <= todayLocalISO() ? date : null;
 }
 
 export function paidEventsInPeriod(events = [], range) {
@@ -178,21 +177,23 @@ export function hoursInPeriod(dailyWork = [], range) {
 /**
  * Payload para marcar um evento como pago. Todo caminho de "marcar pago" passa por aqui,
  * para que `paid_date` e `paid_amount` nunca fiquem para trás.
- * Sem `paidAmount` explícito assume o valor que o evento mostrava em "A receber".
+ * Exige valor e data explícitos; não transforma previsão em depósito.
  */
-export function buildMarkPaidUpdate(event, dailyWorkForEvent = [], { paidAmount, paidDate } = {}) {
-  const amount =
-    recordedAmount(paidAmount) ?? calculateEventReceivableAmount(event, dailyWorkForEvent);
+export function buildMarkPaidUpdate(event, _dailyWorkForEvent = [], { paidAmount, paidDate } = {}) {
+  const amount = recordedAmount(paidAmount);
+  const date = toDateKey(paidDate);
+  if (amount === null || amount < 0) throw new RangeError('Informe o valor real recebido.');
+  if (!date || date > todayLocalISO()) throw new RangeError('Informe a data real do recebimento, até hoje.');
   return {
-    payment_status: 'paid',
-    paid_date: toDateKey(paidDate) ?? todayLocalISO(),
-    // Evento ainda sem valor: fica NULL para a leitura acompanhar o cachê quando for preenchido.
-    paid_amount: amount > 0 ? roundMoney(amount) : null,
+    payment_status: 'paid', paid_date: date, paid_amount: roundMoney(amount),
+    ...(event && 'paid_date_meta' in event ? {paid_date_meta:{source:'user_confirmed'}} : {}),
   };
 }
 
-export function buildMarkUnpaidUpdate() {
-  return { payment_status: 'unpaid', paid_date: null, paid_amount: null };
+export function buildMarkUnpaidUpdate(event) {
+  return { payment_status: 'unpaid', paid_date: null, paid_amount: null,
+    ...(event && 'paid_date_meta' in event ? {paid_date_meta:null} : {}),
+  };
 }
 
 /**

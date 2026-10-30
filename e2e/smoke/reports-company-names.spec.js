@@ -50,10 +50,11 @@ test('realizados sem vencimento mostram a empresa sem presumir atraso', async ({
 
   await page.getByRole('button', { name: 'Sem vencimento', exact: true }).click();
   await page.getByTestId('finance-company-' + E2E_CLIENT_RJ_ID).click();
-  const companyPanel = page.getByTestId('finance-company-detail');
+  const companyPanel = page.getByTestId('finance-metric-dialog');
   await expect(companyPanel.getByText('Show em aberto E2E')).toBeVisible({ timeout: 10_000 });
-  await expect(page.getByTestId('finance-companies').getByText('Eventos E2E Rio').first()).toBeVisible();
-  await expect(companyPanel.getByText('Sem vencimento informado').first()).toBeVisible();
+  await expect(companyPanel).toContainText('Eventos E2E Rio');
+  await companyPanel.getByRole('button', {name:'Abrir evento: Show em aberto E2E',exact:true}).click();
+  await expect(companyPanel.getByText('Sem prazo informado').first()).toBeVisible();
   await expect(companyPanel).not.toContainText('Vencido');
   await expect(companyPanel.getByText('Sem empresa')).toHaveCount(0);
 });

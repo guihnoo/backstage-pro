@@ -16,12 +16,12 @@ describe('paidRevenueInMonth — competência pela data do pagamento', () => {
     expect(paidRevenueInMonth(events, month)).toBe(3000);
   });
 
-  it('paid sem paid_date usa start_date como competência', () => {
+  it('paid sem data fica fora da competência mensal', () => {
     const events = [{ payment_status: 'paid', paid_amount: 2500, start_date: '2026-06-10' }];
-    expect(paidRevenueInMonth(events, month)).toBe(2500);
+    expect(paidRevenueInMonth(events, month)).toBe(0);
   });
 
-  it('paid com paid_amount null soma o valor do evento', () => {
+  it('paid sem valor final não soma estimativas', () => {
     const events = [
       {
         payment_status: 'paid',
@@ -31,7 +31,7 @@ describe('paidRevenueInMonth — competência pela data do pagamento', () => {
         start_date: '2026-06-01',
       },
     ];
-    expect(paidRevenueInMonth(events, month)).toBe(1800);
+    expect(paidRevenueInMonth(events, month)).toBe(0);
   });
 
   it('paid com paid_amount 0 soma 0', () => {
@@ -63,14 +63,14 @@ describe('computeGoalStreak', () => {
 
   it('conta meses consecutivos batendo a meta (exclui mês atual)', () => {
     const events = [
-      { payment_status: 'paid', start_date: `${monthKeyFromOffset(1, REF)}-10`, paid_amount: 10_000 },
-      { payment_status: 'paid', start_date: `${monthKeyFromOffset(2, REF)}-05`, paid_amount: 12_000 },
-      { payment_status: 'paid', start_date: `${monthKeyFromOffset(3, REF)}-01`, paid_amount: 4_000 },
+      { payment_status: 'paid', paid_date: `${monthKeyFromOffset(1, REF)}-10`, paid_amount: 10_000 },
+      { payment_status: 'paid', paid_date: `${monthKeyFromOffset(2, REF)}-05`, paid_amount: 12_000 },
+      { payment_status: 'paid', paid_date: `${monthKeyFromOffset(3, REF)}-01`, paid_amount: 4_000 },
     ];
     expect(computeGoalStreak(events, 10_000, REF)).toBe(2);
   });
 
-  it('pagos sem paid_amount contam pelo valor do evento', () => {
+  it('pagos sem valor final não comprovam meta atingida', () => {
     const events = [
       {
         payment_status: 'paid',
@@ -79,7 +79,7 @@ describe('computeGoalStreak', () => {
         estimated_revenue: 10_000,
       },
     ];
-    expect(computeGoalStreak(events, 10_000, REF)).toBe(1);
+    expect(computeGoalStreak(events, 10_000, REF)).toBe(0);
   });
 });
 
@@ -90,9 +90,9 @@ describe('computeEventsNeededForGoal', () => {
 
   it('estima shows restantes pela média dos últimos 3 meses', () => {
     const events = [
-      { payment_status: 'paid', start_date: `${monthKeyFromOffset(0, REF)}-01`, paid_amount: 3_000 },
-      { payment_status: 'paid', start_date: `${monthKeyFromOffset(1, REF)}-01`, paid_amount: 5_000 },
-      { payment_status: 'paid', start_date: `${monthKeyFromOffset(2, REF)}-01`, paid_amount: 5_000 },
+      { payment_status: 'paid', paid_date: `${monthKeyFromOffset(0, REF)}-01`, paid_amount: 3_000 },
+      { payment_status: 'paid', paid_date: `${monthKeyFromOffset(1, REF)}-01`, paid_amount: 5_000 },
+      { payment_status: 'paid', paid_date: `${monthKeyFromOffset(2, REF)}-01`, paid_amount: 5_000 },
     ];
     const result = computeEventsNeededForGoal(events, 10_000, 3_000, REF);
     expect(result).toEqual({ remaining: 7_000, avg: 4_333.333333333333, count: 2 });

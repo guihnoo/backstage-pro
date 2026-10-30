@@ -7,12 +7,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-cron-secret',
 };
 
-function todayUtcDateStr() {
-  return new Date().toISOString().split('T')[0];
+function todayLocalDateStr() {
+  return new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 }
 
 function monthBounds() {
-  const now = new Date();
+  const now = new Date(todayLocalDateStr()+'T12:00:00Z');
   const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
   const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0));
   return {
@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   );
 
-  const sentDate = todayUtcDateStr();
+  const sentDate = todayLocalDateStr();
   const { monthStart, monthEnd } = monthBounds();
 
   const { data: settingsRows, error: settingsError } = await supabase
@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
       supabase.from('push_subscriptions').select('endpoint, p256dh, auth').eq('user_id', userId),
       supabase
         .from('events')
-        .select('id, title, client_id, start_date, end_date, payment_status, status, daily_cache_value, actual_revenue, estimated_revenue')
+        .select('id, title, client_id, start_date, end_date, payment_due_date, payment_status, status, daily_cache_value, actual_revenue, estimated_revenue')
         .eq('user_id', userId),
       supabase.from('clients').select('id, name').eq('user_id', userId),
       supabase.from('profiles').select('monthly_goal_events').eq('id', userId).maybeSingle(),

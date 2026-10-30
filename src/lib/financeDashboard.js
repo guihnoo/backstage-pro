@@ -1,6 +1,5 @@
 import { todayLocalISO } from '@/components/utils/dateUtils';
 import { calculateEventReceivableAmount, dedupeWorkByDay, isCancelledEvent, isEstimatedWork } from './eventFinance';
-import { getEventReceivedAmount } from './financeMetrics';
 import { buildClientMap, getEventDisplay, resolveClientForEvent } from './eventDisplay';
 
 const DAY_MS = 86400000;
@@ -36,8 +35,11 @@ const inRange = (date, range) => Boolean(date && date >= range.start && date <= 
 const intersects = (row, range) => Boolean(row.startDate && row.endDate && row.startDate <= range.end && row.endDate >= range.start);
 
 const WARNING_LABELS = {
+  estimated_paid_date: 'O histórico inclui datas de recebimento estimadas; as comparações por mês são aproximadas nesses registros.',
   invalid_event_dates: 'Eventos com período inválido não entraram no faturamento ou na previsão.',
   invalid_paid_date: 'Pagamentos com data inválida não entraram nos recebimentos.',
+  unverified_paid_amount: 'No histórico, pagamentos sem valor final informado não entram no recebido; confira os valores.',
+  legacy_paid_amount: 'No histórico, pagamentos antigos usam o valor final do evento; confira o valor do recebimento.',
   missing_paid_date: 'Eventos pagos sem data de pagamento não entraram nos recebimentos.',
   future_paid_date: 'Pagamentos com data futura não entraram nos recebimentos.',
   cancelled_paid: 'Eventos cancelados marcados como pagos foram excluídos; revise os dados.',
@@ -96,15 +98,26 @@ export function buildFinanceDashboard({
       warn('future_paid_date');
       receivedDate = null;
     }
+    const receivedDateEstimated = paid && event.paid_date_meta?.source === 'estimated';
+    if (receivedDateEstimated) warn('estimated_paid_date');
     const dueDate = validDate(event.payment_due_date);
     if (!missing(event.payment_due_date) && !dueDate) warn('invalid_due_date');
+    const calculatedAmount = amount(calculateEventReceivableAmount(event, work));
+    const hasFinalAmount = (value) => !missing(value) && Number.isFinite(Number(value));
+    const amountSource = paid && hasFinalAmount(event.paid_amount) ? 'payment'
+      : paid && hasFinalAmount(event.actual_revenue) ? 'actual' : 'calculated';
+    const finalAmount = amountSource === 'payment' ? amount(event.paid_amount)
+      : amountSource === 'actual' ? amount(event.actual_revenue) : null;
+    if (paid && amountSource === 'calculated') warn('unverified_paid_amount');
+    else if (paid && amountSource === 'actual') warn('legacy_paid_amount');
+    if (paid && !missing(event.paid_amount) && !hasFinalAmount(event.paid_amount)) warn('invalid_amount');
     rows.push({
       id: event.id ?? 'event-' + index, event, client, companyKey, companyName,
       startDate, endDate, stage,
       revenueDate: stage === 'completed' ? endDate : null,
-      amount: amount(calculateEventReceivableAmount(event, work)),
-      receivedAmount: paid ? amount(getEventReceivedAmount(event, work)) : 0,
-      receivedDate, paid, dueDate,
+      amount: finalAmount ?? calculatedAmount, calculatedAmount, amountSource,
+      receivedAmount: paid ? finalAmount ?? calculatedAmount : 0,
+      receivedDate, receivedDateEstimated, receivedDateEstimateDays: receivedDateEstimated ? event.paid_date_meta?.days : null, paid, dueDate,
       overdue: stage === 'completed' && !paid && Boolean(dueDate && dueDate < today),
       expenseAmount: 0,
     });
@@ -126,7 +139,8 @@ export function buildFinanceDashboard({
   for (const row of rows) row.expenseAmount = (expenseByEvent.get(String(row.id)) || 0) / 100;
 
   const billedRows = rows.filter((row) => inRange(row.revenueDate, range));
-  const receiptRows = rows.filter((row) => row.paid && inRange(row.receivedDate, range));
+  const receiptRows = rows.filter((row) => row.paid && row.amountSource !== 'calculated' && inRange(row.receivedDate, range));
+  const unverifiedReceiptRows = rows.filter((row) => row.paid && row.amountSource === 'calculated' && inRange(row.receivedDate, range));
   const pendingRows = rows.filter((row) => row.stage === 'completed' && !row.paid);
   const ongoingRows = rows.filter((row) => row.stage === 'ongoing' && intersects(row, range));
   const upcomingRows = rows.filter((row) => row.stage === 'upcoming' && intersects(row, range));
@@ -160,7 +174,7 @@ export function buildFinanceDashboard({
     day.earned = moneySum(day.works, (work) => work.amount);
   }
 
-  const relevant = new Set([...billedRows, ...receiptRows, ...pendingRows, ...ongoingRows, ...upcomingRows]);
+  const relevant = new Set([...billedRows, ...receiptRows, ...unverifiedReceiptRows, ...pendingRows, ...ongoingRows, ...upcomingRows]);
   for (const row of rows) if (row.expenseAmount !== 0) relevant.add(row);
   const companyMap = new Map();
   for (const row of relevant) {
@@ -190,7 +204,7 @@ export function buildFinanceDashboard({
   };
   totals.cash = (cents(totals.received) - cents(totals.expenses)) / 100;
   return {
-    monthKey, range, rows, billedRows, receiptRows, pendingRows, ongoingRows,
+    monthKey, range, rows, billedRows, receiptRows, unverifiedReceiptRows, pendingRows, ongoingRows,
     upcomingRows, monthExpenses, companies, calendarDays, totals,
     warnings: [...warningCounts].map(([code, count]) => ({ code, count, label: WARNING_LABELS[code] })),
   };

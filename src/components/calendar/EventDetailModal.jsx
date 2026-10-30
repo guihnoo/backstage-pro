@@ -844,7 +844,7 @@ export default function EventDetailModal({
 
   const profitSummary = useMemo(() => {
     if (!event) return null;
-    const revenue = Number(event.paid_amount) > 0 ? Number(event.paid_amount) : receivableAmount || 0;
+    const revenue = event.paid_amount != null && Number.isFinite(Number(event.paid_amount)) ? Number(event.paid_amount) : receivableAmount || 0;
     if (revenue <= 0 && expenseTotals.total <= 0) return null;
     const profit = revenue - expenseTotals.total;
     const margin = revenue > 0 ? (profit / revenue) * 100 : null;

@@ -192,33 +192,28 @@ export function daysSinceEventEnd(event) {
   }
 }
 
-/**
- * Dias de atraso respeitando payment_due_date quando definida.
- * Retorna valor negativo quando o vencimento ainda não chegou (quantos dias faltam).
- * Retorna 0+ quando já venceu.
- */
-export function daysOverduePayment(event) {
-  if (!event) return 0;
-  if (event.payment_due_date) {
-    try {
-      return differenceInDays(new Date(), parseISO(event.payment_due_date));
-    } catch { return 0; }
-  }
-  return daysSinceEventEnd(event);
+/** Vencimento explícito válido. Prazo usual não é vencimento. */
+function paymentDueDateKey(event) {
+  const value = event?.payment_due_date;
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}(?:$|T)/.test(value)) return null;
+  const key = value.slice(0, 10);
+  const parsed = new Date(key + 'T00:00:00Z');
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === key ? key : null;
 }
 
-/**
- * Retorna true somente quando o pagamento está efetivamente em atraso:
- * - se payment_due_date existe: somente após essa data
- * - se não existe: 7+ dias após end_date (comportamento legado)
- */
+/** Dias em relação ao vencimento informado; sem vencimento retorna zero. */
+export function daysOverduePayment(event) {
+  if (!event || event.payment_status === 'paid' || isCancelledEvent(event)) return 0;
+  const due = paymentDueDateKey(event);
+  if (!due) return 0;
+  return Math.round((Date.parse(todayLocalISO() + 'T00:00:00Z') - Date.parse(due + 'T00:00:00Z')) / 86400000);
+}
+
+/** Vencido somente com vencimento explícito passado. Lembretes começam no dia 10. */
 export function isPaymentOverdue(event) {
-  if (!event || event.payment_status === 'paid') return false;
-  if (event.payment_due_date) {
-    // "Hoje" no fuso de São Paulo (antes: UTC, que virava o dia às 21 h).
-    return String(event.payment_due_date).slice(0, 10) < todayLocalISO();
-  }
-  return daysSinceEventEnd(event) >= 7;
+  if (!event || event.payment_status === 'paid' || isCancelledEvent(event)) return false;
+  const due = paymentDueDateKey(event);
+  return Boolean(due && due < todayLocalISO());
 }
 
 /** Evento ja tem nota fiscal registrada (qualquer um dos campos usados no app). */

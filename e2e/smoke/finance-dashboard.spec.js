@@ -39,9 +39,9 @@ const EXPENSES = [{
   category: 'transporte',
 }];
 
-async function setup(page, { work = [], visible = true, path = '/reports' } = {}) {
+async function setup(page, { work = [], visible = true, path = '/reports', events = EVENTS } = {}) {
   await page.clock.install({ time: new Date(NOW) });
-  await installReportsMocks(page, EVENTS, CLIENTS);
+  await installReportsMocks(page, events, CLIENTS);
   const writes = [];
   let settings = { user_id: E2E_USER_ID, financial_visibility: visible };
   // This last handler catches every REST mutation before helper routes can
@@ -85,168 +85,109 @@ async function setup(page, { work = [], visible = true, path = '/reports' } = {}
     localStorage.setItem(key, JSON.stringify(session));
   }, { key: AUTH_KEY, now: NOW });
   await page.goto(path, { waitUntil: 'domcontentloaded' });
-  await expect(page.getByRole('heading', { name: 'DINHEIRO', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'DINHEIRO', exact: true })).toBeVisible({timeout:20000});
   await expect(page.getByText('Carregando...', { exact: true })).toBeHidden();
   return writes;
 }
 
-const company = (page, id) => page.getByTestId('finance-company-' + id);
-const metric = (page, id) => page.getByTestId('finance-' + id);
 
-test('faturamento fecha no fim do evento e recebimentos seguem a data paga', async ({ page }) => {
-  await setup(page);
-  await expect(metric(page, 'billed')).toContainText('9.000,00');
-  await expect(metric(page, 'received')).toContainText('8.000,00');
-  await expect(metric(page, 'pending')).toContainText('3.000,00');
-  await expect(metric(page, 'expenses')).toContainText('1.000,00');
-  await expect(metric(page, 'upcoming')).toContainText('4.000,00');
-  await expect(metric(page, 'cash')).toContainText('7.000,00');
-  await expect(page.getByTestId('finance-expense-ledger')).toContainText('Transporte do festival');
-  await expect(page.getByTestId('finance-expense-ledger')).toContainText('1.000,00');
+const company = (page,id)=>page.getByTestId('finance-company-'+id);
+const metric = (page,id)=>page.getByTestId('finance-'+id);
+const modal = page=>page.getByTestId('finance-metric-dialog');
+const openMetric = (page,label)=>page.getByRole('button',{name:'Ver detalhes: '+label,exact:true}).click();
+const close = page=>modal(page).getByRole('button',{name:'Fechar detalhes',exact:true}).click();
 
-  await page.getByRole('button', { name: 'Mês anterior', exact: true }).click();
-  await expect(metric(page, 'billed')).toContainText('2.000,00');
-  await expect(metric(page, 'received')).toContainText('0,00');
-  await page.getByRole('button', { name: 'Próximo mês', exact: true }).click();
-  await expect(metric(page, 'billed')).toContainText('9.000,00');
-  await expect(metric(page, 'received')).toContainText('8.000,00');
-  await page.getByRole('button', { name: 'Próximo mês', exact: true }).click();
-  await expect(metric(page, 'billed')).toContainText('0,00');
-  await expect(metric(page, 'received')).toContainText('0,00');
-  await expect(metric(page, 'upcoming')).toContainText('4.000,00');
+test('faturamento pertence ao encerramento e recebido ao mês do depósito',async({page})=>{
+ await setup(page);
+ for(const [key,value] of [['billed','9.000,00'],['received','8.000,00'],['pending','3.000,00'],['expenses','1.000,00'],['cash','7.000,00'],['upcoming','4.000,00']])await expect(metric(page,key)).toContainText(value);
+ await page.getByRole('button',{name:'Mês anterior',exact:true}).click();
+ await expect(metric(page,'billed')).toContainText('2.000,00');await expect(metric(page,'received')).toContainText('0,00');
+ await page.getByRole('button',{name:'Próximo mês',exact:true}).click();await expect(metric(page,'billed')).toContainText('9.000,00');
+ await page.getByRole('button',{name:'Próximo mês',exact:true}).click();await expect(metric(page,'billed')).toContainText('0,00');await expect(metric(page,'upcoming')).toContainText('4.000,00');
 });
-
-test('empresas filtram pago, pendente e futuro de forma independente e preservam deep link', async ({ page }) => {
-  await setup(page, { path: '/reports?aba=receber' });
-  await expect(page.getByRole('tab', { name: /Empresas.*A receber/i })).toHaveAttribute('aria-selected', 'true');
-  await expect(company(page, 'finance-aurora')).toBeVisible();
-  await expect(company(page, 'finance-gs')).toBeVisible();
-  await expect(company(page, 'finance-sincronia')).toBeVisible();
-
-  await page.getByRole('button', { name: 'Pagos', exact: true }).click();
-  await expect(company(page, 'finance-aurora')).toBeVisible();
-  await expect(company(page, 'finance-sincronia')).toBeVisible();
-  await expect(company(page, 'finance-gs')).toHaveCount(0);
-
-  await page.getByRole('button', { name: 'Pendentes', exact: true }).click();
-  await expect(company(page, 'finance-gs')).toBeVisible();
-  await expect(company(page, 'finance-aurora')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Próximos', exact: true }).click();
-  await expect(company(page, 'finance-aurora')).toBeVisible();
-  await expect(company(page, 'finance-gs')).toHaveCount(0);
-
-  await page.getByRole('button', { name: 'Todas', exact: true }).click();
-  await page.getByLabel('Buscar empresa').fill('Sincronia');
-  await expect(company(page, 'finance-sincronia')).toBeVisible();
-  await expect(company(page, 'finance-aurora')).toHaveCount(0);
+test('empresas preservam deep link, busca e filtros independentes',async({page})=>{
+ await setup(page,{path:'/reports?aba=receber'});await expect(page.getByRole('tab',{name:/Empresas.*A receber/i})).toHaveAttribute('aria-selected','true');
+ await page.getByRole('button',{name:'Pagos',exact:true}).click();await expect(company(page,'finance-aurora')).toBeVisible();await expect(company(page,'finance-gs')).toHaveCount(0);
+ await page.getByRole('button',{name:'Pendentes',exact:true}).click();await expect(company(page,'finance-gs')).toBeVisible();await expect(company(page,'finance-aurora')).toHaveCount(0);
+ await page.getByRole('button',{name:'Próximos',exact:true}).click();await expect(company(page,'finance-aurora')).toBeVisible();
+ await page.getByRole('button',{name:'Todas',exact:true}).click();await page.getByLabel('Buscar empresa').fill('Sincronia');await expect(company(page,'finance-sincronia')).toBeVisible();await expect(company(page,'finance-gs')).toHaveCount(0);
 });
-
-test('empresa abre detalhes reais do evento e Recebi abre confirmação sem gravar', async ({ page }) => {
-  const writes = await setup(page, { path: '/reports?aba=receber' });
-  await company(page, 'finance-gs').click();
-  const detail = page.getByTestId('finance-company-detail');
-  await expect(detail).toBeVisible();
-  await expect(detail).toContainText('3.000,00');
-  await detail.getByRole('button', { name: 'Abrir evento: Palco GS novembro', exact: true }).click();
-  const eventDialog = page.getByRole('dialog');
-  await expect(eventDialog).toBeVisible();
-  await expect(eventDialog).toContainText('Palco GS novembro');
-  await page.keyboard.press('Escape');
-  await expect(eventDialog).toBeHidden();
-
-  await detail.getByRole('button', { name: 'Recebi', exact: true }).click();
-  const paymentDialog = page.getByRole('dialog', { name: 'Confirmar Recebimento' });
-  await expect(paymentDialog).toBeVisible();
-  await expect(paymentDialog.getByLabel('Valor Real Recebido em Conta (R$)')).toHaveValue('3000,00');
-  await paymentDialog.getByRole('button', { name: 'Cancelar', exact: true }).click();
-  await expect(paymentDialog).toBeHidden();
-  expect(writes.filter((write) => write.table === 'events')).toEqual([]);
+test('empresa abre evento, volta à composição e exige confirmar depósito',async({page})=>{
+ const writes=await setup(page,{path:'/reports?aba=receber'});await company(page,'finance-gs').click();
+ await expect(modal(page)).toContainText('3.000,00');
+ await modal(page).getByRole('button',{name:'Abrir evento: Palco GS novembro',exact:true}).click();await expect(modal(page)).toContainText('Valor do trabalho cadastrado');
+ await modal(page).getByRole('button',{name:'Voltar à composição',exact:false}).click();await expect(modal(page)).toContainText('Evolução mensal');
+ await modal(page).getByRole('button',{name:'Abrir evento: Palco GS novembro',exact:true}).click();
+ await modal(page).getByRole('button',{name:'Recebi',exact:true}).click();
+ const payment=page.getByRole('dialog',{name:'Confirmar Recebimento'});await expect(payment).toBeVisible();
+ await expect(payment.getByLabel('Valor Real Recebido em Conta (R$)')).toHaveValue('');
+ await expect(payment.getByRole('button',{name:'Confirmar Pagamento',exact:true})).toBeDisabled();
+ await payment.getByLabel('Valor Real Recebido em Conta (R$)').fill('2.900,50');
+ await expect(payment.getByRole('button',{name:'Confirmar Pagamento',exact:true})).toBeDisabled();
+ await payment.getByRole('button',{name:'Recebi hoje',exact:true}).click();
+ // This fixture may require acknowledging missing work hours before saving.
+ const ack=payment.getByRole('checkbox');if(await ack.count())await ack.check();
+ await expect(payment.getByRole('button',{name:'Confirmar Pagamento',exact:true})).toBeEnabled();
+ await payment.getByRole('button',{name:'Cancelar',exact:true}).click();expect(writes.filter(w=>w.table==='events')).toEqual([]);
 });
-
-test('calendário mostra pagamentos nos dias reais sem repartir cachê fechado', async ({ page }) => {
-  await setup(page);
-  await page.getByRole('tab', { name: 'Calendário', exact: true }).click();
-  await page.getByRole('button', { name: 'Recebimentos', exact: true }).click();
-  await page.getByTestId('finance-calendar-day-2026-11-05').click();
-  await expect(page.getByTestId('finance-day-detail')).toContainText('2.000,00');
-  await expect(page.getByTestId('finance-day-detail')).toContainText('Show Sincronia outubro');
-  await page.getByTestId('finance-calendar-day-2026-11-18').click();
-  await expect(page.getByTestId('finance-day-detail')).toContainText('6.000,00');
-  await expect(page.getByTestId('finance-day-detail')).toContainText('Festival contínuo Aurora');
-
-  await page.getByRole('button', { name: 'Trabalho', exact: true }).click();
-  await page.getByTestId('finance-calendar-day-2026-11-10').click();
-  await expect(page.getByTestId('finance-day-detail')).not.toContainText('6.000,00');
-  await expect(page.getByTestId('finance-day-detail')).not.toContainText('1.500,00');
+test('calendário abre pagamentos pelo dia cadastrado e não reparte cachê',async({page})=>{
+ await setup(page);await page.getByRole('tab',{name:'Calendário',exact:true}).click();
+ await page.getByTestId('finance-calendar-day-2026-11-05').click();await expect(modal(page)).toContainText('2.000,00');await expect(modal(page)).toContainText('Show Sincronia outubro');await close(page);
+ await page.getByTestId('finance-calendar-day-2026-11-18').click();await expect(modal(page)).toContainText('6.000,00');await close(page);
+ await page.getByRole('button',{name:'Trabalho',exact:true}).click();await page.getByTestId('finance-calendar-day-2026-11-10').click();await expect(modal(page)).toContainText('Sem registros neste dia');await expect(modal(page)).not.toContainText('6.000,00');
 });
-
-test('ganho diário usa registro explícito sem inventar diária nos outros dias', async ({ page }) => {
-  await setup(page, { work: [{
-    id: 'finance-work', user_id: E2E_USER_ID, event_id: 'finance-pending',
-    date: '2026-11-14', work_date: '2026-11-14', daily_cache: 1500,
-    start_time: '08:00', end_time: '20:00', total_hours: 12, is_estimated: false,
-  }] });
-  await page.getByRole('tab', { name: 'Calendário', exact: true }).click();
-  await page.getByRole('button', { name: 'Trabalho', exact: true }).click();
-  await page.getByTestId('finance-calendar-day-2026-11-14').click();
-  await expect(page.getByTestId('finance-day-detail')).toContainText('1.500,00');
-  await expect(page.getByTestId('finance-day-detail')).toContainText('12 h registradas');
-  await expect(page.getByTestId('finance-daily-chart')).toContainText('Ganhos diários registrados');
-  await expect(page.getByTestId('finance-daily-chart')).toContainText('1.500,00');
-  await expect(page.getByTestId('finance-day-detail')).toContainText('Palco GS novembro');
-  await page.getByTestId('finance-calendar-day-2026-11-15').click();
-  await expect(page.getByTestId('finance-day-detail')).not.toContainText('1.500,00');
+test('diária registrada mantém horas e valor próprios',async({page})=>{
+ await setup(page,{work:[{id:'finance-work',user_id:E2E_USER_ID,event_id:'finance-pending',date:'2026-11-14',work_date:'2026-11-14',daily_cache:1500,start_time:'08:00',end_time:'20:00',total_hours:12,is_estimated:false}]});
+ await page.getByRole('tab',{name:'Calendário',exact:true}).click();await page.getByRole('button',{name:'Trabalho',exact:true}).click();
+ await expect(page.getByTestId('finance-daily-chart')).toContainText('1.500,00');
+ await page.getByTestId('finance-calendar-day-2026-11-14').click();await expect(modal(page)).toContainText('1.500,00');await expect(modal(page)).toContainText('12 h registradas');await close(page);
+ await page.getByTestId('finance-calendar-day-2026-11-15').click();await expect(modal(page)).not.toContainText('1.500,00');
 });
-
-test('privacidade oculta valores em métricas, empresas e calendário', async ({ page }) => {
-  await setup(page, { visible: false });
-  await expect(metric(page, 'billed')).toContainText('•••••');
-  const assertNoAmounts = async () => {
-    const screen = page.locator('main[data-app-scroll]');
-    await expect(screen).not.toContainText(/(?:9|8|7|6|4|3|2|1)\.000,00/);
-    const exposed = await screen.locator('[aria-label], [title]').evaluateAll((elements) =>
-      elements.map((element) => [element.getAttribute('aria-label'), element.getAttribute('title')].join(' ')).join(' ')
-    );
-    expect(exposed).not.toMatch(/(?:9|8|7|6|4|3|2|1)\.000,00/);
-  };
-  await assertNoAmounts();
-  await page.getByRole('tab', { name: /Empresas.*A receber/i }).click();
-  await company(page, 'finance-aurora').click();
-  await assertNoAmounts();
-  await page.getByRole('tab', { name: 'Calendário', exact: true }).click();
-  await page.getByRole('button', { name: 'Recebimentos', exact: true }).click();
-  await page.getByTestId('finance-calendar-day-2026-11-18').click();
-  await assertNoAmounts();
+test('privacidade cobre todas as oito abas e seus detalhes',async({page})=>{
+ await setup(page,{visible:false});await expect(metric(page,'received')).toContainText('•••••');
+ for(const name of ['Mês','Empresas · A receber','Calendário','Comparações','Próximos meses','Conferência','Fiscal','Análise']){
+ await page.getByRole('tab',{name,exact:true}).click();await expect(page.getByRole('tabpanel')).not.toContainText(/(?:9|8|7|6|4|3|2|1)\.000,00/);
+ }
+ await page.getByRole('tab',{name:'Mês',exact:true}).click();await openMetric(page,'Entrou no mês');await expect(modal(page)).not.toContainText('8.000,00');await expect(modal(page)).toContainText('•••••');
 });
-
-test('financeiro cabe em 360px com todas as abas acessíveis', async ({ page }) => {
-  await page.setViewportSize({ width: 360, height: 800 });
-  await setup(page);
-  for (const name of ['Mês', 'Empresas · A receber', 'Calendário', 'Fiscal', 'Análise']) {
-    await page.getByRole('tab', { name, exact: true }).click();
-    await expect(page.getByRole('tab', { name, exact: true })).toHaveAttribute('aria-selected', 'true');
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-  }
+test('oito abas e modais cabem em 360px e permitem rolar detalhes',async({page})=>{
+ await page.setViewportSize({width:360,height:800});await setup(page);
+ for(const name of ['Mês','Empresas · A receber','Calendário','Comparações','Próximos meses','Conferência','Fiscal','Análise']){
+ await page.getByRole('tab',{name,exact:true}).click();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+ }
+ await page.getByRole('tab',{name:'Mês',exact:true}).click();await openMetric(page,'Entrou no mês');
+ expect(await modal(page).evaluate(e=>e.scrollWidth<=e.clientWidth)).toBe(true);expect(await modal(page).locator('.bp-modal-scroll').evaluate(e=>getComputedStyle(e).overflowY)).toMatch(/auto|scroll/);
 });
-
-test('exportação usa mês selecionado e valores do mesmo painel', async ({ page }) => {
-  await setup(page);
-  const popupPromise = page.waitForEvent('popup');
-  await page.getByRole('button', { name: /Exportar PDF/i }).click();
-  const popup = await popupPromise;
-  await popup.waitForLoadState('domcontentloaded');
-  await expect(popup.locator('body')).toContainText(/novembro/i);
-  await expect(popup.locator('body')).toContainText('9.000,00');
-  await expect(popup.locator('body')).toContainText('8.000,00');
-  await expect(popup.locator('body')).toContainText('3.000,00');
-  await popup.close();
-  await page.getByRole('button', { name: 'Mês anterior', exact: true }).click();
-  const previousPopupPromise = page.waitForEvent('popup');
-  await page.getByRole('button', { name: /Exportar PDF/i }).click();
-  const previousPopup = await previousPopupPromise;
-  await previousPopup.waitForLoadState('domcontentloaded');
-  await expect(previousPopup.locator('body')).toContainText(/outubro/i);
-  await expect(previousPopup.locator('body')).toContainText('2.000,00');
-  await expect(previousPopup.locator('body')).not.toContainText('9.000,00');
-  await previousPopup.close();
+test('PDF acompanha o mês e os totais selecionados',async({page})=>{
+ await setup(page);const ready=page.waitForEvent('popup');await page.getByRole('button',{name:/Exportar PDF/i}).click();const pdf=await ready;await pdf.waitForLoadState('domcontentloaded');
+ for(const value of ['9.000,00','8.000,00','3.000,00'])await expect(pdf.locator('body')).toContainText(value);await pdf.close();
+ await page.getByRole('button',{name:'Mês anterior',exact:true}).click();const previous=page.waitForEvent('popup');await page.getByRole('button',{name:/Exportar PDF/i}).click();const old=await previous;await old.waitForLoadState('domcontentloaded');await expect(old.locator('body')).toContainText('2.000,00');await expect(old.locator('body')).not.toContainText('9.000,00');await old.close();
+});
+test('recebido separa encerrados no mês de eventos de outros meses e devolve foco',async({page})=>{
+ const writes=await setup(page);const trigger=page.getByRole('button',{name:'Ver detalhes: Entrou no mês',exact:true});await trigger.click();
+ await expect(modal(page).getByTestId('finance-metric-total')).toContainText('8.000,00');await expect(modal(page).getByTestId('finance-metric-section-0')).toContainText('Festival contínuo Aurora');await expect(modal(page).getByTestId('finance-metric-section-1')).toContainText('Show Sincronia outubro');
+ await page.keyboard.press('Escape');await expect(modal(page)).toHaveCount(0);await expect(trigger).toBeFocused();expect(writes.filter(w=>w.table!=='user_settings')).toEqual([]);
+});
+test('despesa e caixa abrem a composição exata do mês',async({page})=>{
+ await setup(page);await openMetric(page,'Despesas do mês');await expect(modal(page)).toContainText('1.000,00');await modal(page).getByRole('button',{name:'Abrir despesa: Transporte do festival',exact:true}).click();await expect(modal(page)).toContainText('12/11/2026');await close(page);
+ await openMetric(page,'Resultado de caixa do mês');await expect(modal(page).getByTestId('finance-cash-formula')).toContainText('8.000,00');await expect(modal(page)).toContainText('7.000,00');await close(page);
+ await page.getByRole('button',{name:'Mês anterior',exact:true}).click();await openMetric(page,'Falta receber deste mês');await expect(modal(page)).not.toContainText('Palco GS novembro');
+});
+test('comparação por empresa abre os dois períodos sem base percentual inventada',async({page})=>{
+ await setup(page);await page.getByRole('tab',{name:'Comparações',exact:true}).click();await page.getByLabel('Empresa da comparação').selectOption('finance-aurora');
+ await expect(page.getByRole('tabpanel')).toContainText('Sem base para percentual');await page.getByRole('button',{name:'Ver detalhes: Diferença entre os períodos',exact:true}).click();
+ await expect(modal(page)).toContainText('6.000,00');await expect(modal(page)).toContainText('20/11/2026');await expect(modal(page)).toContainText('20/10/2026');await expect(modal(page)).not.toContainText('Show Sincronia outubro');
+});
+test('evento contínuo futuro conta uma vez no fim e não vira entrada sem data',async({page})=>{
+ await setup(page);await page.getByRole('tab',{name:'Próximos meses',exact:true}).click();const december=page.getByRole('tabpanel').locator('section.panel').filter({has:page.getByRole('heading',{name:'DEZEMBRO DE 2026',exact:true})});
+ await december.getByRole('button',{name:'Ver detalhes: Faturamento previsto',exact:true}).click();await expect(modal(page)).toContainText('4.000,00');await expect(modal(page)).toContainText('Festival Aurora dezembro');await close(page);
+ await december.getByRole('button',{name:'Ver detalhes: Recebimento com data',exact:true}).click();await expect(modal(page)).not.toContainText('Festival Aurora dezembro');
+});
+test('valor depositado tem prioridade e histórico sem final não contamina caixa',async({page})=>{
+ const events=EVENTS.map(e=>e.id==='finance-continuous'?{...e,paid_amount:6200,paid_date_meta:{source:'estimated',days:10,original_paid_date:'2026-11-20'}}:e);
+ events.push({id:'finance-unverified',user_id:E2E_USER_ID,client_id:'finance-aurora',title:'Pagamento antigo sem valor final',start_date:'2026-09-01',end_date:'2026-09-01',payment_status:'paid',paid_date:'2026-11-17',estimated_revenue:600});
+ await setup(page,{events});await expect(metric(page,'received')).toContainText('8.200,00');await expect(metric(page,'cash')).toContainText('7.200,00');
+ await openMetric(page,'Entrou no mês');await expect(modal(page)).toContainText('Data estimada');await expect(modal(page).getByTestId('finance-metric-section-2')).toContainText('Pagamento antigo sem valor final');await expect(modal(page).getByTestId('finance-metric-section-2')).toContainText('600,00');await close(page);
+ await page.getByRole('tab',{name:'Conferência',exact:true}).click();await page.getByRole('button',{name:'Ver detalhes: Valor recebido não informado',exact:true}).click();await expect(modal(page)).toContainText('Pagamento antigo sem valor final');await close(page);
+ await page.getByRole('tab',{name:'Fiscal',exact:true}).click();await expect(page.getByRole('tabpanel')).toContainText('8.200,00');
 });

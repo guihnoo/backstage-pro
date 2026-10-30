@@ -4,6 +4,8 @@ type EventRow = {
   client_id: string | null;
   start_date: string;
   end_date: string | null;
+  event_date?: string | null;
+  payment_due_date?: string | null;
   payment_status: string | null;
   status: string | null;
   daily_cache_value: number | null;
@@ -22,6 +24,41 @@ export type PushPayload = {
   body: string;
   url: string;
 };
+
+const DAY_MS = 86_400_000;
+export const PUSH_PAYMENT_REMINDER_START_DAYS = 10;
+
+const missing = (value: unknown) => value === null || value === undefined || value === '';
+
+function dateKey(value: unknown): string | null {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}(?:$|T)/.test(value)) return null;
+  const key = value.slice(0, 10);
+  const parsed = new Date(key + 'T00:00:00Z');
+  if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== key) return null;
+  if (value.length > 10 && !Number.isFinite(Date.parse(value))) return null;
+  return key;
+}
+
+/**
+ * Server-local equivalent of the app reminder policy, covered by parity tests.
+ * Ten days after completion is a reminder threshold, never an inferred due date.
+ * No src import: this module must remain independently deployable in Deno.
+ */
+export function getPushPaymentReminderTiming(event: Partial<EventRow> | null | undefined, todayISO: unknown) {
+  if (!event || event.payment_status === 'paid' || ['cancelled', 'cancelado'].includes(event.status || '')) return null;
+  const today = dateKey(todayISO);
+  const startDate = dateKey(missing(event.start_date) ? event.event_date : event.start_date);
+  const endDate = missing(event.end_date) ? startDate : dateKey(event.end_date);
+  if (!today || !startDate || !endDate || endDate < startDate || endDate >= today) return null;
+  const daysSinceEnd = (Date.parse(today + 'T00:00:00Z') - Date.parse(endDate + 'T00:00:00Z')) / DAY_MS;
+  if (daysSinceEnd < PUSH_PAYMENT_REMINDER_START_DAYS) return null;
+  const dueDate = dateKey(event.payment_due_date);
+  const isOverdue = Boolean(dueDate && dueDate < today);
+  return {
+    endDate, daysSinceEnd, dueDate, isOverdue,
+    daysOverdue: isOverdue ? (Date.parse(today + 'T00:00:00Z') - Date.parse(dueDate + 'T00:00:00Z')) / DAY_MS : 0,
+  };
+}
 
 function addDays(date: Date, days: number) {
   const d = new Date(date);
@@ -82,16 +119,17 @@ export function buildPushDigest({
   today?: Date;
   prefs?: { push_events?: boolean; push_payments?: boolean; push_goals?: boolean };
 }): PushPayload[] {
-  const todayStr = toDateStr(today);
-  const tomorrowStr = toDateStr(addDays(today, 1));
+  if (!Number.isFinite(today.getTime())) return [];
+  const todayStr = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(today);
+  const tomorrowStr = toDateStr(addDays(parseDate(todayStr), 1));
   const clientMap = new Map(clients.map((c) => [c.id, c.name || 'Cliente']));
   const out: PushPayload[] = [];
 
   for (const ev of events) {
-    if (ev.status === 'cancelled') continue;
-    const startStr = ev.start_date?.split('T')[0];
-    const endStr = (ev.end_date || ev.start_date)?.split('T')[0];
-    if (!startStr) continue;
+    if (['cancelled', 'cancelado'].includes(ev.status || '')) continue;
+    const startStr = dateKey(missing(ev.start_date) ? ev.event_date : ev.start_date);
+    const endStr = missing(ev.end_date) ? startStr : dateKey(ev.end_date);
+    if (!startStr || !endStr || endStr < startStr) continue;
     const clientName = (ev.client_id && clientMap.get(ev.client_id)) || 'Cliente';
 
     if (prefs.push_events !== false) {
@@ -117,20 +155,22 @@ export function buildPushDigest({
       }
     }
 
-    if (prefs.push_payments !== false && ev.payment_status !== 'paid' && endStr) {
-      const endDate = parseDate(endStr);
-      if (startOfDayUTC(endDate) < startOfDayUTC(today)) {
-        const daysLate = daysBetween(endDate, today);
-        const amount = getEventAmount(ev);
-        out.push({
-          key: `payment:${ev.id}`,
-          type: 'payment_reminder',
-          priority: daysLate > 7 ? 'urgent' : 'high',
-          title: 'Pagamento pendente',
-          body: `${ev.title} · ${formatBRL(amount)} · ${daysLate}d em atraso.`,
-          url: '/reports?aba=receber',
-        });
-      }
+    const paymentTiming = prefs.push_payments !== false ? getPushPaymentReminderTiming(ev, todayStr) : null;
+    if (paymentTiming) {
+      const amount = getEventAmount(ev);
+      const dueMessage = paymentTiming.isOverdue
+        ? `Vencimento ultrapassado há ${paymentTiming.daysOverdue} dias.`
+        : paymentTiming.dueDate
+          ? `Vencimento em ${paymentTiming.dueDate.split('-').reverse().join('/')}.`
+          : 'Sem vencimento informado.';
+      out.push({
+        key: `payment:${ev.id}`,
+        type: 'payment_reminder',
+        priority: paymentTiming.isOverdue ? 'urgent' : 'high',
+        title: paymentTiming.isOverdue ? 'Pagamento vencido' : 'Pagamento pendente',
+        body: `${ev.title} · ${formatBRL(amount)} · encerrado há ${paymentTiming.daysSinceEnd} dias. ${dueMessage}`,
+        url: '/reports?aba=receber',
+      });
     }
   }
 
