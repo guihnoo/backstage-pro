@@ -13,7 +13,6 @@ import {
 } from './eventFinance';
 import {
   buildWorkByEvent,
-  distributePaidAmount,
   monthRange,
   receivedInPeriod,
   workInPeriod,
@@ -277,39 +276,6 @@ export function useHomeDashboard(userId) {
     [receivableRows]
   );
 
-  const markClientPaid = useCallback(
-    async (clientId, paidAmount) => {
-      const row = receivableRows.find((r) => r.clientId === clientId);
-      if (!row || !userId) return;
-
-      const today = todayLocalISO();
-      setReceivableRows((prev) => prev.filter((r) => r.clientId !== clientId));
-
-      const adjusted = paidAmount != null && paidAmount > 0;
-      const results = await Promise.all(
-        distributePaidAmount(row.events, paidAmount).map((share) =>
-          supabase
-            .from('events')
-            .update({
-              payment_status: 'paid',
-              paid_date: today,
-              paid_amount: share.amount > 0 ? share.amount : null,
-              ...(adjusted ? { actual_revenue: share.amount } : {}),
-            })
-            .eq('id', share.id)
-            .eq('user_id', userId)
-        )
-      );
-      const err = results.find((r) => r.error)?.error;
-      if (err) {
-        refetch();
-        throw err;
-      }
-      refetch();
-    },
-    [receivableRows, userId, refetch]
-  );
-
   return {
     stats,
     proximoEvento,
@@ -321,6 +287,5 @@ export function useHomeDashboard(userId) {
     loading,
     error,
     refetch,
-    markClientPaid,
   };
 }

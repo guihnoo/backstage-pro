@@ -23,7 +23,6 @@ import {
 } from './financeMetrics';
 
 const JUNE = { start: '2026-06-01', end: '2026-06-30' };
-const today = format(new Date(), 'yyyy-MM-dd');
 const inDays = (n) => format(addDays(new Date(), n), 'yyyy-MM-dd');
 
 describe('datas e períodos', () => {
@@ -71,14 +70,14 @@ describe('getEventReceivedAmount — valor canônico do recebido', () => {
     expect(getEventReceivedAmount({ paid_amount: 0, estimated_revenue: 2000 })).toBe(0);
   });
 
-  it('sem paid_amount cai no valor do evento', () => {
-    expect(getEventReceivedAmount({ paid_amount: null, estimated_revenue: 2000 })).toBe(2000);
-    expect(getEventReceivedAmount({ estimated_revenue: 2000 })).toBe(2000);
+  it('sem valor final não transforma previsão em recebido', () => {
+    expect(getEventReceivedAmount({ paid_amount: null, estimated_revenue: 2000 })).toBe(0);
+    expect(getEventReceivedAmount({ estimated_revenue: 2000 })).toBe(0);
   });
 
-  it('sem paid_amount usa o valor que estava em "A receber" (horas registradas)', () => {
+  it('horas registradas não comprovam depósito', () => {
     const event = { paid_amount: null, estimated_revenue: 2000 };
-    expect(getEventReceivedAmount(event, [{ daily_cache: 1200 }, { daily_cache: 1000 }])).toBe(2200);
+    expect(getEventReceivedAmount(event, [{ daily_cache: 1200 }, { daily_cache: 1000 }])).toBe(0);
   });
 
   it('sem paid_amount, actual_revenue (valor ajustado do fluxo antigo) vence as horas', () => {
@@ -105,15 +104,15 @@ describe('recebido por período — competência paid_date', () => {
     expect(receivedInPeriod(events, JUNE)).toBe(0);
   });
 
-  it('pago antigo sem paid_date entra pela data do show', () => {
+  it('pago sem data fica fora da competência mensal', () => {
     const event = paid({ start_date: '2026-06-10', paid_amount: 2500 });
-    expect(getEventReceivedDate(event)).toBe('2026-06-10');
-    expect(receivedInPeriod([event], JUNE)).toBe(2500);
+    expect(getEventReceivedDate(event)).toBeNull();
+    expect(receivedInPeriod([event], JUNE)).toBe(0);
   });
 
-  it('pago sem paid_amount soma o valor do evento em vez de zero', () => {
+  it('pago sem valor final fica fora do recebido', () => {
     const events = [paid({ paid_date: '2026-06-05', paid_amount: null, estimated_revenue: 1800 })];
-    expect(receivedInPeriod(events, JUNE)).toBe(1800);
+    expect(receivedInPeriod(events, JUNE)).toBe(0);
   });
 
   it('não pagos e cancelados ficam de fora', () => {
@@ -136,7 +135,7 @@ describe('recebido por período — competência paid_date', () => {
       { event_id: 'a', daily_cache: 1400 },
       { event_id: null, daily_cache: 999 },
     ]);
-    expect(receivedInPeriod(events, JUNE, workByEvent)).toBe(2400);
+    expect(receivedInPeriod(events, JUNE, workByEvent)).toBe(0);
   });
 
   it('período aberto soma tudo que foi recebido', () => {
@@ -200,32 +199,22 @@ describe('despesas e horas por período', () => {
 describe('buildMarkPaidUpdate / buildMarkUnpaidUpdate', () => {
   const event = { estimated_revenue: 2000, start_date: '2026-06-10', end_date: '2026-06-10' };
 
-  it('grava paid_date de hoje e o valor que estava em "A receber"', () => {
-    expect(buildMarkPaidUpdate(event)).toEqual({
-      payment_status: 'paid',
-      paid_date: today,
-      paid_amount: 2000,
-    });
+  it('exige valor e data explícitos, sem preencher pelo cálculo', () => {
+    expect(()=>buildMarkPaidUpdate(event)).toThrow();
+    expect(()=>buildMarkPaidUpdate(event, [],{paidAmount:2000})).toThrow();
+    expect(()=>buildMarkPaidUpdate(event, [],{paidDate:'2026-06-15'})).toThrow();
+    for(const paidDate of ['2026-02-30','2099-01-01','invalida'])expect(()=>buildMarkPaidUpdate(event,[],{paidAmount:100,paidDate})).toThrow();
   });
-
-  it('usa as horas registradas quando existem', () => {
-    expect(buildMarkPaidUpdate(event, [{ daily_cache: 1100.111 }, { daily_cache: 1150.222 }]).paid_amount).toBe(
-      2250.33
-    );
+  it('preserva zero explícito e registra origem confirmada',()=>{
+    expect(buildMarkPaidUpdate({...event,paid_date_meta:null},[],{paidAmount:0,paidDate:'2026-06-15'})).toEqual({payment_status:'paid',paid_amount:0,paid_date:'2026-06-15',paid_date_meta:{source:'user_confirmed'}});
+    expect(buildMarkUnpaidUpdate({paid_date_meta:{source:'estimated'}}).paid_date_meta).toBeNull();
   });
-
   it('valor e data explícitos têm prioridade', () => {
     expect(buildMarkPaidUpdate(event, [], { paidAmount: 1750, paidDate: '2026-06-15' })).toEqual({
       payment_status: 'paid',
       paid_date: '2026-06-15',
       paid_amount: 1750,
     });
-  });
-
-  it('evento sem valor grava paid_amount NULL (leitura acompanha o cachê depois)', () => {
-    const update = buildMarkPaidUpdate({ start_date: '2026-06-10' });
-    expect(update.paid_amount).toBeNull();
-    expect(getEventReceivedAmount({ ...update, estimated_revenue: 900 })).toBe(900);
   });
 
   it('desmarcar limpa data e valor', () => {

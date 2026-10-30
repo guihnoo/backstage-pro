@@ -22,6 +22,7 @@ function baseEvent(overrides) {
     status: 'completed',
     payment_status: 'paid',
     paid_amount: 5000,
+    paid_date: overrides.paid_date || overrides.start_date || start,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     ...overrides,

@@ -13,12 +13,13 @@ function table(headers, rows) {
 }
 
 export function buildFinanceReportHtml(dashboard) {
-  const { monthKey, range, totals, billedRows, receiptRows, pendingRows, ongoingRows, upcomingRows, monthExpenses, warnings } = dashboard;
+  const { monthKey, range, totals, billedRows, receiptRows, unverifiedReceiptRows = [], pendingRows, ongoingRows, upcomingRows, monthExpenses, warnings } = dashboard;
   const month = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' })
     .format(new Date(range.start + 'T12:00:00Z'));
   const metricRows = [
     ['Faturamento do mês — eventos encerrados', money(totals.revenue)],
     ['Entrou no mês — data real de pagamento', money(totals.received)],
+    ['Falta receber deste mês — eventos encerrados', money(billedRows.filter((r) => !r.paid).reduce((sum, r) => sum + Math.round(r.amount * 100), 0) / 100)],
     ['Falta receber de realizados — todos os períodos', money(totals.pending)],
     ['Despesas registradas no mês', money(totals.expenses)],
     ['Resultado de caixa registrado no mês', money(totals.cash)],
@@ -42,8 +43,9 @@ export function buildFinanceReportHtml(dashboard) {
     '<p>Resultado de caixa considera apenas entradas e despesas registradas; não representa saldo bancário ou lucro contábil.</p>' + warningText +
     '<h2>Eventos que formam o faturamento do mês</h2>' + table(eventHeaders, eventRows(billedRows)) +
     '<h2>Recebimentos do mês</h2>' + table(['Empresa', 'Evento', 'Data do pagamento', 'Recebido'], receiptRows.map((r) => [
-      r.companyName, r.event.title || 'Evento', dateLabel(r.receivedDate), money(r.receivedAmount),
+      r.companyName, r.event.title || 'Evento', dateLabel(r.receivedDate) + (r.receivedDateEstimated ? ' (estimada)' : ''), money(r.receivedAmount),
     ])) +
+    (unverifiedReceiptRows.length ? '<h2>Pagamentos sem valor final — não somados</h2><p>Referências calculadas, fora do recebido e do resultado de caixa.</p>' + table(['Empresa', 'Evento', 'Data cadastrada', 'Referência a conferir'], unverifiedReceiptRows.map((r) => [r.companyName, r.event.title || 'Evento', dateLabel(r.receivedDate), money(r.receivedAmount)])) : '') +
     '<h2>Realizados a receber — todos os períodos</h2>' + table(['Empresa', 'Evento', 'Vencimento', 'Valor a receber'], pendingRows.map((r) => [
       r.companyName, r.event.title || 'Evento', dateLabel(r.dueDate), money(r.amount),
     ])) +

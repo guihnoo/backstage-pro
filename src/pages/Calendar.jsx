@@ -77,7 +77,7 @@ import PullToRefreshIndicator from '@/components/layout/PullToRefreshIndicator';
 import { applyAuto12Hours } from '@/lib/applyAuto12Hours';
 import { useUserSettings } from '@/lib/useUserSettings';
 import { getEventCacheAmount } from '@/lib/eventFinance';
-import { buildMarkPaidUpdate, buildMarkUnpaidUpdate } from '@/lib/financeMetrics';
+import { buildMarkUnpaidUpdate } from '@/lib/financeMetrics';
 import { captureEventLocationFromGps } from '@/lib/eventLocation';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
 import EventHeading from '@/components/events/EventHeading';
@@ -669,12 +669,8 @@ export default function CalendarPage() {
       if (!eventToUpdate) return;
       const newStatus = eventToUpdate.payment_status === 'paid' ? 'unpaid' : 'paid';
       try {
-        const updateData = newStatus === 'paid'
-          ? buildMarkPaidUpdate(
-              eventToUpdate,
-              dailyWork.filter((w) => w.event_id === eventToUpdate.id)
-            )
-          : buildMarkUnpaidUpdate();
+        if(newStatus==='paid') {setPayEvent(eventToUpdate);return;}
+        const updateData=buildMarkUnpaidUpdate(eventToUpdate);
         await updateEvent(eventToUpdate.id, updateData);
         appToast.success(
           newStatus === 'paid'
@@ -687,7 +683,7 @@ export default function CalendarPage() {
         appToast.error('Erro ao atualizar status de pagamento.');
       }
     },
-    [handleFormSuccess, updateEvent, dailyWork]
+    [handleFormSuccess, updateEvent]
   );
 
   // Pagamento SEMPRE pela janela do valor real (regra do dono: digita o que caiu na conta).

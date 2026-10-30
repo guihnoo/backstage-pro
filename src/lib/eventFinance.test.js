@@ -325,3 +325,17 @@ describe('daysOverduePayment / isPaymentOverdue', () => {
     ).toBe(false);
   });
 });
+
+
+describe('pendência não significa vencimento', () => {
+  it('não presume atraso pelo tempo desde o evento sem prazo informado', () => {
+    const event = pastEvent({ end_date: '2020-01-01', payment_status: 'unpaid' });
+    expect(isPaymentOverdue(event)).toBe(false);
+    expect(daysOverduePayment(event)).toBe(0);
+  });
+  it('ignora vencimento inválido e eventos cancelados', () => {
+    expect(isPaymentOverdue(pastEvent({ payment_due_date: '2026-02-30' }))).toBe(false);
+    expect(daysOverduePayment(pastEvent({ payment_due_date: 'invalid' }))).toBe(0);
+    expect(isPaymentOverdue(pastEvent({ status: 'cancelled', payment_due_date: '2020-01-01' }))).toBe(false);
+  });
+});

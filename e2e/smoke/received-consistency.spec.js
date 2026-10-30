@@ -2,7 +2,8 @@ import { test, expect } from '../helpers/test.js';
 import { fakeLastMonthShowPaidThisMonth, seedGoalsAuth } from '../helpers/fakeGoals.js';
 
 test('recebido do mês é o mesmo em Home, Relatórios e Metas', async ({ page }) => {
-  await seedGoalsAuth(page, fakeLastMonthShowPaidThisMonth());
+  // Comparar recebimento confirmado; valor apenas estimado fica fora do novo caixa.
+  await seedGoalsAuth(page, fakeLastMonthShowPaidThisMonth().map((event) => ({ ...event, paid_amount: 1800 })));
 
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 20_000 });

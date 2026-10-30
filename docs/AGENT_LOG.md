@@ -3115,3 +3115,60 @@ Registro cronológico de tarefas executadas por agentes.
 - Publicação: nenhuma. Aguardar revisão final da implementação pelo usuário. Backup respeita PAUSE_AUTO_GIT já existente.
 
 - Continuação: usuário aprovou publicação no app real em 29/10/2026. Conferidos os 11 arquivos da entrega contra o retrato testado; main remota permanece a4d352a. Consultas mantêm filtro do usuário autenticado, sem migração ou gravação automática introduzida. Preparando commit e publicação pelo GitHub/Vercel.
+
+### 2026-10-29 — PUBLICACAO DO FINANCEIRO DETALHADO (Codex)
+- Publicacao expressamente autorizada pelo usuario. Commit de entrega 98dcd806; PR https://github.com/guihnoo/backstage-pro/pull/1 integrado em main como d37ba6ae21a5b18db7e0e674806179223303b029.
+- Vercel Preview e Production concluidos com sucesso. Producao: https://backstage-pro-beta.vercel.app/reports; deployment 4TBw1AErasb6MF4w18G29MLHfWpN / GitHub deployment 7424343062.
+- Verificacao publica: HTTP 200, bundle Reports-B3ldFm4g.js com marcadores novos. E2E financeiro no dominio real: 8/8 passaram com dados ficticios e gravacoes REST remotas bloqueadas. Log validacao-producao-financeiro.log nos artefatos da conversa.
+- Sem migracao nem alteracao em massa de dados. Arquivos anteriores alheios preservados; backup respeita PAUSE_AUTO_GIT. Esta entrada de resultado permanece local para evitar novo deploy apenas documental.
+
+
+### 2026-10-29 — MODAIS E AUDITORIA DO FINANCEIRO (Codex)
+- Conta autenticada consultada com autorização; SQL somente SELECT e limitado aos eventos observados/conta correspondente. Nenhuma mutação ou migração remota.
+- FinanceMetricDetails.jsx + financeMetricDetails.js: modais de origem, separação de recebimentos por mês do evento, despesas, caixa, previsões, comparação de valores e privacidade.
+- financeDashboard.js: prioriza valor final pago; preserva cálculo anterior; separa pagamentos sem valor final e sinaliza cadastros antigos. Cartão mensal de pendência limitado ao mês. PDF e resumo anual alinhados.
+- Testes monetários de fonte final, zero, mês, legado e conciliação adicionados. Unitários 365/365, lint e build aprovados. Capturas e conferência privada nos artefatos locais.
+- Sem commit oficial, push ou publicação desta rodada. Arquivos anteriores alheios preservados. Backup deve respeitar PAUSE_AUTO_GIT existente.
+
+- Validação final da rodada: 365 unitários e 17 E2E financeiros passaram; 1 fixme fiscal existente pulado. Teste de consistência atualizado para pagamento confirmado (paid_amount), mantendo caso separado que exige excluir estimativa sem valor final. Sem deploy novo; conta e banco preservados.
+
+
+### 2026-10-29 — ESTIMATIVA DE DEZ DIAS E AVISOS DE PENDENCIA (Codex + time)
+- Usuário escolheu reconstrução histórica em 10 dias após fim para os seis pagamentos delimitados e avisos de pendência a partir do décimo dia corrido; pagamento único por evento.
+- Preflight apenas dos campos financeiros: seis registros iguais aos originais; backup e plano transacional com checagens/reversão em artefatos privados. Nenhuma observação privada acessada.
+- Migração local 047_recebimento_data_origem adiciona campo opcional paid_date_meta para distinguir estimativa de data confirmada. Aplicação remota foi rejeitada pela revisão automática por exigir autorização explícita de DDL. Migração e seis correções NÃO aplicadas.
+- FinanceDashboard, composição/modal e PDF preparados para identificar datas estimadas e origem. Dados antigos sem classificação não são marcados como exatos automaticamente.
+- notificationRules + paymentReminderTiming: início no dia10, sem declarar atraso por prazo usual; pagos/cancelados/datas inválidas não avisam. eventFinance remove inferência antiga de vencimento sem due explícito.
+- Código de push alinhado localmente e consulta de vencimento incluída; nenhum envio ou deploy. Paridade testada no Node; Deno CLI indisponível, runtime Edge não testado. Calendário UTC existente do digest preservado.
+- Validação: 428 unitários passaram; build e lint direcionado aprovados. Testes de navegação em conclusão nos logs dos artefatos.
+- Sem commit/push/deploy. Arquivos alheios preservados e backup respeita PAUSE_AUTO_GIT.
+
+- Validação final desta rodada: 428 unitários e 17 E2E financeiros passaram; 1 fixme fiscal existente pulado. Build, lint direcionado e diff-check aprovados. DDL047 e seis datas permanecem pendentes de autorização explícita; nenhuma escrita remota realizada.
+
+### 2026-10-29 — PREVIA INTERATIVA ANTES DA PUBLICACAO (Codex + UX)
+- Usuario priorizou cards e modais detalhados antes de migrar/publicar. Migração047 e seis datas continuam sem aplicação.
+- Prévia React independente nos artefatos privados, com snapshot financeiro da conta consultado por SELECT delimitado. Nenhuma observação privada ou contato selecionado. Dados particulares não incluídos no repositório.
+- Seis visões com composições clicáveis, eventos, empresas, dias, comparações equivalentes, carteira futura e conferência de origens. Reutiliza os helpers locais existentes; não é implantação no app real.
+- Validação:48 cards,10 consultas de dias, filtros, volta ao contexto, valores ausentes, privacidade e6 visões mobile aprovados. Totais da base e cenário +10 conciliados. Nenhum erro JS, chamada HTTP ou mutação remota.
+- Abertura automática file:// bloqueada pela política do navegador; não houve contorno. Arquivo e capturas entregues para revisão manual.
+- Sem commit oficial, push, deploy, migração ou alteração financeira. Backup respeita PAUSE_AUTO_GIT.
+
+
+## 2026-10-30 — Publicação autorizada do financeiro interativo (em validação)
+
+- Autorização do usuário: integrar, aplicar 047, corrigir seis datas por fim +10 dias, publicar app e push, validar produção.
+- Migração 047 aplicada remotamente. Correção atômica alterou apenas paid_date e paid_date_meta dos seis registros aprovados, com guardas de ID/proprietário/data/valor/status. Backup e reversão permanecem privados fora do repositório.
+- Conferência remota: seis datas estimadas e valores dos pagamentos preservados. Totais de conta e evidências detalhadas ficam apenas nos artefatos privados.
+- Interface ligada aos hooks reais; nenhum snapshot de conta ou identificador privado entrou no código. Comparações, previsões e detalhes usam o mesmo modelo mensal.
+- Recebi exige valor e data explícitos; baixa por empresa substituída pela conferência individual. Leituras de caixa não inferem depósito de cachê ou data do evento.
+- Regra de pendência: fim +10 dias; vencido somente por prazo cadastrado. Push usa calendário de São Paulo.
+- 435 testes unitários passaram. Rodada financeira E2E: 13 passaram de primeira e 1 na repetição por carregamento inicial; rodada completa ainda pendente.
+
+
+### Validação final da integração — 30/10
+- Build e lint aprovados; 435 testes unitários aprovados.
+- Suíte E2E completa contra build: 144 aprovados,24 pulados por condições/fixme existentes,2 falhas de expectativas antigas (Metas sem valor final e navegação de empresa em painel).
+- Após ajustar somente essas expectativas ao comportamento aprovado, repetição dirigida:4 aprovados,1 fixme existente pulado. Nenhuma mudança de implementação após o build completo.
+- Os 13 cenários financeiros passaram na suíte completa: composição, empresas, calendário, comparação equivalente, previsão por encerramento, privacidade, celular e PDF.
+- Push v7 ativo, agendamentos existentes ativos. Não foi realizado disparo manual.
+- A anotação técnica desta entrega foi revisada para não conter totais privados da conta.

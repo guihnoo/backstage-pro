@@ -1,12 +1,7 @@
-import {
-  differenceInDays,
-  parseISO,
-  isValid,
-  addDays,
-  startOfDay,
-} from 'date-fns';
+import { addDays } from 'date-fns';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { todayLocalISO } from '@/components/utils/dateUtils';
+import { getPaymentReminderTiming } from './paymentReminderTiming';
 
 /**
  * Regras compartilhadas: NotificationCenter (in-app) e push futuro.
@@ -55,13 +50,9 @@ export function buildUserNotifications({
       });
     }
 
-    const endDate = endStr ? parseISO(endStr) : null;
-    const isPast = endDate && isValid(endDate) && startOfDay(endDate) < startOfDay(today);
-    const unpaid = ev.payment_status !== 'paid';
+    const timing = getPaymentReminderTiming(ev, todayStr);
 
-    if (isPast && unpaid) {
-      const daysLate = differenceInDays(today, endDate);
-      const isUrgent = daysLate > 7;
+    if (timing) {
       const amount = getEventCacheAmount(ev);
       const amountLabel = formatCurrency
         ? formatCurrency(amount)
@@ -69,9 +60,12 @@ export function buildUserNotifications({
       notes.push({
         id: `payment:${ev.id}`,
         type: 'payment_reminder',
-        priority: isUrgent ? 'urgent' : 'high',
-        title: `Pagamento pendente: ${ev.title}`,
-        message: `${clientName} · ${amountLabel} · ${daysLate} dia${daysLate !== 1 ? 's' : ''} em atraso.`,
+        priority: timing.isOverdue ? 'urgent' : 'high',
+        title: `${timing.isOverdue ? 'Pagamento vencido' : 'Pagamento pendente'}: ${ev.title}`,
+        message: `${clientName} · ${amountLabel} · evento encerrado há ${timing.daysSinceEnd} dias.` +
+          (timing.isOverdue
+            ? ` Vencimento informado ultrapassado há ${timing.daysOverdue} dia${timing.daysOverdue !== 1 ? 's' : ''}.`
+            : timing.dueDate ? ` Vencimento informado: ${timing.dueDate.split('-').reverse().join('/')}.` : ' Sem vencimento informado.'),
         action_url: '/reports?aba=receber',
         event_ref: ev,
         created_date: todayStr,

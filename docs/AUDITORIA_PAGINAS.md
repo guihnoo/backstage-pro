@@ -270,3 +270,11 @@
 3. [x] **Rotas públicas** — auditadas sessão 11 ✅ (fora AppLayout, scroll nativo OK)
 4. [x] **`StatDetailModal`** — órfão confirmado; QuickStats usa `hardNavigate`; seguro remover quando quiser
 5. [x] **NotificationCenter** — DropdownMenu + `ScrollArea max-h-[60dvh]` ✅ não usa Dialog, sem scroll lock; aceitável
+
+
+## 2026-10-29 — Detalhes dos indicadores de Dinheiro
+- [x] Auditoria de leitura da conta autenticada e de registros delimitados no Supabase.
+- [x] Modais locais: origem do faturamento e dos recebimentos separada por mês do evento.
+- [x] Validação local de fechamento, despesas, caixa, teclado, privacidade e largura de 360px.
+- [ ] Publicação e validação dos novos modais na conta real.
+- [ ] Conferência com comprovantes dos registros sem valor final de pagamento.

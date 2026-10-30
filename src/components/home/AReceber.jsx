@@ -31,9 +31,9 @@ function ReceivableSkeleton() {
   );
 }
 
-export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid, onOpenEvent }) {
+export default function AReceber({ rows, totalReceivable, isLoading, onOpenEvent }) {
   const { formatCurrency, isVisible } = useFinancialVisibility();
-  const [marking, setMarking] = useState(null);
+  const marking = null;
   const [confirming, setConfirming] = useState(null); // clientId awaiting confirm
   const [expanded, setExpanded] = useState(new Set());
 
@@ -80,18 +80,10 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid,
     if (!ok) appToast.error('Não foi possível abrir o WhatsApp.');
   };
 
-  const handleMarkPaid = async (row) => {
-    haptics.success();
+  const handleMarkPaid = (row) => {
     setConfirming(null);
-    setMarking(row.clientId);
-    try {
-      await onMarkPaid?.(row.clientId, row.totalAmount);
-      appToast.success(`Pagamento integral de ${row.clientName} confirmado!`);
-    } catch {
-      appToast.error('Erro ao marcar pagamento. Tente novamente.');
-    } finally {
-      setMarking(null);
-    }
+    if(row.events.length===1)onOpenEvent?.(row.events[0],'fiscal');
+    else {setExpanded(prev=>new Set([...prev,row.clientId])); appToast.info('Abra cada evento para informar o valor e a data do depósito.');}
   };
 
   const topRows = rows.slice(0, 6);
@@ -247,7 +239,7 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid,
                 >
                   <div className="px-4 py-3 border-t border-[#ffd400]/20 bg-[#ffd400]/5 flex items-center justify-between gap-3">
                     <p className="text-xs text-[#ffd400]">
-                      Confirmar recebimento integral de <span className="font-tag font-bold">{isVisible ? formatCurrency(row.totalAmount) : '••••'}</span>?
+                      Conferir os recebimentos de <span className="font-tag font-bold">{isVisible ? formatCurrency(row.totalAmount) : '••••'}</span>?
                     </p>
                     <button
                       type="button"
@@ -256,7 +248,7 @@ export default function AReceber({ rows, totalReceivable, isLoading, onMarkPaid,
                       className="flex items-center gap-1.5 px-3.5 h-8 rounded-lg text-xs font-bold bg-[#ffd400]/40 border border-[#ffd400]/60 text-[#ffd400] hover:bg-[#ffd400]/60 transition-colors disabled:opacity-50 shrink-0"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
-                      {marking === row.clientId ? '...' : 'Confirmar'}
+                      {marking === row.clientId ? '...' : 'Conferir'}
                     </button>
                   </div>
                 </motion.div>

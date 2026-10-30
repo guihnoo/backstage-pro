@@ -862,3 +862,14 @@ npx supabase functions deploy google-calendar --project-ref cwtallnetgodoacuoaow
 ```
 
 **Arquivos sensíveis:** `.env.local`, `client_secret_*.json` — nunca commitar.
+
+
+## 2026-10-29 — Modais de origem dos valores (local)
+Depois da publicação d37ba6a, o usuário solicitou detalhamento dos indicadores e consulta à sua conta. Modais de faturamento, entradas, pendências do mês, despesas, caixa e previsões preparados localmente. Consultas de auditoria somente de leitura, restritas à conta identificada na interface; detalhes privados ficam nos artefatos locais, fora do repositório.
+Eventos pagos passam a priorizar o valor final confirmado e preservam o cálculo de diárias para comparação. Pagamentos sem paid_amount nem actual_revenue ficam separados do recebido e do caixa. Registros antigos com actual_revenue permanecem identificados. Cartão de pendência considera apenas eventos encerrados no mês; histórico completo em Empresas. PDF e resumo anual usam os mesmos valores confirmados.
+Sem migração, gravação de pagamentos ou publicação desta rodada. Conferir os dados históricos incompletos com o usuário; esta leitura do app não equivale a conciliação bancária. Home/Metas e outros helpers legados não foram alterados nesta rodada.
+
+
+## 2026-10-29 — Pendência no décimo dia (local)
+Regra solicitada: pagamento único; referências de 5–15 dias, lembrete a partir do décimo dia corrido após encerramento. Vencido exige vencimento explícito passado. Implementação local alinhada em notificationRules e pushDigest, com testes de paridade. Helpers de atraso deixam de presumir vencimento por sete dias.
+Origem de datas estimadas preparada via coluna opcional paid_date_meta (migração047). Banco de produção não alterado: revisão automática exige autorização explícita da migração antes de gravar a classificação e aplicar as seis datas históricas de+10dias já escolhidas. Plano, backup e reversão estão nos artefatos locais. Nenhum dado privado do plano foi incluído no repositório. Avisos e alterações do app/Edge ainda não publicados.

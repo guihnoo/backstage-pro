@@ -1,12 +1,10 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { supabase } from './supabase';
-import { todayLocalISO } from '@/components/utils/dateUtils';
 import {
   isReceivableEvent,
   calculateEventReceivableAmount,
   daysOverduePayment,
 } from './eventFinance';
-import { distributePaidAmount } from './financeMetrics';
 
 export function useReceivableByClient(userId) {
   const [rows, setRows] = useState([]);
@@ -102,36 +100,10 @@ export function useReceivableByClient(userId) {
     return () => { cancelledRef.current = true; };
   }, [fetchReceivable]);
 
-  const markClientPaid = useCallback(async (clientId, paidAmount) => {
-    const row = rows.find(r => r.clientId === clientId);
-    if (!row) return;
-    const today = todayLocalISO();
-    setRows(prev => prev.filter(r => r.clientId !== clientId));
-
-    // Distribute paidAmount proportionally across events if provided
-    const adjusted = paidAmount != null && paidAmount > 0;
-    const results = await Promise.all(
-      distributePaidAmount(row.events, paidAmount).map(share =>
-        supabase
-          .from('events')
-          .update({
-            payment_status: 'paid',
-            paid_date: today,
-            paid_amount: share.amount > 0 ? share.amount : null,
-            ...(adjusted ? { actual_revenue: share.amount } : {}),
-          })
-          .eq('id', share.id)
-          .eq('user_id', userId)
-      )
-    );
-    const err = results.find(r => r.error)?.error;
-    if (err) { await fetchReceivable(); throw err; }
-  }, [rows, userId, fetchReceivable]);
-
   const totalReceivable = useMemo(
     () => rows.reduce((sum, r) => sum + r.totalAmount, 0),
     [rows]
   );
 
-  return { rows, totalReceivable, loading, error, refetch: fetchReceivable, markClientPaid };
+  return { rows, totalReceivable, loading, error, refetch: fetchReceivable };
 }

@@ -168,3 +168,21 @@
 2. Ao implementar → `🔄` durante trabalho → `✅` ou `🟡` ao terminar
 3. Referenciar commit/deploy na coluna notas
 4. Se descartar → `❌` com motivo
+
+
+## 2026-10-29 — Abrir a origem dos valores financeiros
+- [x] Preparar modais nos indicadores mensais com empresa, evento, valor e data.
+- [x] Separar recebido de eventos do próprio mês e de eventos de outros meses.
+- [x] Priorizar o pagamento final confirmado e manter o cálculo anterior visível para comparação.
+- [x] Separar pagamentos sem valor final dos totais confirmados, sem preencher dados automaticamente.
+- [ ] Publicar esta rodada e validar com os dados da conta.
+- [ ] Usuário conferir e informar valores faltantes no histórico.
+
+
+## 2026-10-29 — Reconstrução de recebimentos e lembrete
+- [x] Regra escolhida pelo usuário: data estimada no décimo dia após encerramento.
+- [x] Backup financeiro, atualização transacional e reversão delimitados preparados nos artefatos privados.
+- [x] Identificação de datas estimadas, avisos do app e código de push preparados localmente.
+- [ ] Autorização explícita da migração047 exigida pela revisão automática.
+- [ ] Aplicar e conferir as seis datas após a autorização da etapa anterior.
+- [ ] Publicar e validar app/Edge; avisos ainda não ativos com a nova regra.

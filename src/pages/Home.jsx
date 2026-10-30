@@ -147,7 +147,6 @@ export default function Home() {
     loading,
     error,
     refetch,
-    markClientPaid,
   } = useHomeDashboard(userId);
 
   const enrichedEvents = useMemo(
@@ -239,13 +238,6 @@ export default function Home() {
 
   const { pullDistance, isRefreshing, threshold } = usePullToRefresh(refreshCockpit);
 
-  const handleMarkPaid = useCallback(
-    async (clientId, paidAmount) => {
-      await markClientPaid(clientId, paidAmount);
-    },
-    [markClientPaid]
-  );
-
   return (
     <div className="relative min-h-full overflow-x-clip bg-[#0a0a0a] text-white">
       <PullToRefreshIndicator
@@ -333,7 +325,6 @@ export default function Home() {
               rows={cockpitReceivableRows}
               totalReceivable={cockpitTotalReceivable}
               isLoading={false}
-              onMarkPaid={handleMarkPaid}
               onOpenEvent={(ev, tab = 'fiscal') => {
                 const full = enrichedEvents.find((x) => x.id === ev.id) || ev;
                 setDetailInitialTab(tab);
