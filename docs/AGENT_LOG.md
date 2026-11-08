@@ -3213,3 +3213,10 @@ Registro cronológico de tarefas executadas por agentes.
 - **Bug pego no teste**: saída aberta guardava a lista de registros em vez do registro ("Entrada às undef").
 - **Testes**: unit 481/481; E2E pendencias 2/2 + relacionados; build ok.
 - **Deploy**: nenhum — aguardando autorização (função, app, 048).
+
+### DEPLOY — Pendências e lembretes (Claude Code, 2026-11-08, pedido explícito do Guih: "Pode publicar e continuar")
+- Função `send-push-digest` v8 (verify_jwt off como antes; sem login → 401).
+- App: PR #5 squash `ff15674`; Vercel `index-DXgEU53R.js`.
+- Migração `048_push_saida_de_hora_em_hora`: cron `send-push-exit-hourly` (17 * * * *) ativo junto dos 3 jobs existentes.
+- Testes contra o site publicado: pendencias, finance-dashboard, home-cheguei — 16/16.
+- Falta: a conta do Guih segue com push_enabled=false (3 aparelhos) — tocar "Ativar" no Perfil.
