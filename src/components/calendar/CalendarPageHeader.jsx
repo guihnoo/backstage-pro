@@ -33,7 +33,7 @@ export default function CalendarPageHeader({
               type="button"
               onClick={onPreviousMonth}
               aria-label="Mês anterior"
-              className="w-8 h-10 border-0 bg-transparent text-[#a8a8a8] hover:text-white p-0 flex items-center justify-center transition-colors active:scale-95"
+              className="w-11 h-11 border-0 bg-transparent text-[#a8a8a8] hover:text-white p-0 flex items-center justify-center transition-colors active:scale-95"
             >
               <ChevronLeft className="w-5 h-5 stroke-[2.4]" />
             </button>
@@ -44,7 +44,7 @@ export default function CalendarPageHeader({
               type="button"
               onClick={onNextMonth}
               aria-label="Próximo mês"
-              className="w-8 h-10 border-0 bg-transparent text-[#a8a8a8] hover:text-white p-0 flex items-center justify-center transition-colors active:scale-95"
+              className="w-11 h-11 border-0 bg-transparent text-[#a8a8a8] hover:text-white p-0 flex items-center justify-center transition-colors active:scale-95"
             >
               <ChevronRight className="w-5 h-5 stroke-[2.4]" />
             </button>

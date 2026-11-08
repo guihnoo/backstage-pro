@@ -38,7 +38,7 @@ export function buildRoadieContext({ events = [], clients = [], dailyWork = [], 
   for (const ev of events || []) {
     if (!ev || isCancelledEvent(ev)) continue;
     const id = ev.client_id || 'sem';
-    const c = porCliente.get(id) || { cliente: clientName.get(ev.client_id) || 'Sem cliente', trabalhos: 0, total: 0, deve: 0, prazos: [], ultimo: null };
+    const c = porCliente.get(id) || { id: ev.client_id || null, cliente: clientName.get(ev.client_id) || 'Sem cliente', trabalhos: 0, total: 0, deve: 0, prazos: [], ultimo: null };
     const end = day(ev.end_date) || day(ev.start_date);
     const valor = calculateEventReceivableAmount(ev, workByEvent[ev.id] || []);
     c.trabalhos += 1;
@@ -51,6 +51,7 @@ export function buildRoadieContext({ events = [], clients = [], dailyWork = [], 
     porCliente.set(id, c);
   }
   const clientesResumo = [...porCliente.values()].map((c) => ({
+    id: c.id,
     cliente: c.cliente,
     trabalhos: c.trabalhos,
     total: r2(c.total),
@@ -91,8 +92,9 @@ export function buildRoadieContext({ events = [], clients = [], dailyWork = [], 
     pendencias: {
       confirmar_recebimento: pend.receber.length,
       falta_valor: pend.pagosSemValor.map((it) => `${it.event.title} (${it.end})`),
-      falta_horas: pend.semHoras.map((it) => `${it.event.title}: ${it.dias.length} dia(s)`),
-      saida_aberta: pend.saidaAberta.map((it) => `${it.event.title}: entrou ${String(it.work.entry_time).slice(0, 5)}, ${it.horasDesdeEntrada} h`),
+      // ids para o Roadie preparar a ação (fase 2): /acao/horas?event=ID&dia=...  /acao/saida?work=ID&saida=...
+      falta_horas: pend.semHoras.slice(0, 10).map((it) => ({ id: it.event.id, trabalho: it.event.title, dias: it.dias.slice(0, 10), cache_dia: Number(it.event.daily_cache_value) || null })),
+      saida_aberta: pend.saidaAberta.map((it) => ({ work_id: it.work.id, trabalho: it.event.title, dia: it.dia, entrada: String(it.work.entry_time).slice(0, 5), horas_desde_entrada: it.horasDesdeEntrada })),
     },
     ultimos_6_meses: meses,
     clientes: clientesResumo,

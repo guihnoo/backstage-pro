@@ -21,6 +21,8 @@ import { useDailyWork } from '@/lib/useDailyWork';
 import { useExpenses } from '@/lib/useExpenses';
 import { buildRoadieContext } from '@/lib/roadie/context';
 import RoadieAvatar from '@/components/roadie/RoadieAvatar';
+import { RoadieActionsContext } from '@/components/roadie/roadieActionsContext';
+import { useDailyWork as useDailyWorkWrite } from '@/lib/offline/useOfflineDailyWork';
 import { useLocation, useSearchParams } from 'react-router-dom';
 
 const CATEGORY_HINTS = {
@@ -123,12 +125,23 @@ function AIMentorSession({ userId }) {
   const { clients, loading: clientsLoading } = useClients();
   const today = todayLocalISO();
   // Roadie: retrato completo da conta (todos os trabalhos, horas e despesas), com as regras das telas.
-  const { events: allEvents, loading: eventsLoading } = useAllEvents();
-  const { dailyWork: allWork } = useDailyWork();
+  const { events: allEvents, loading: eventsLoading, update: updateEvent, refetch: refetchEvents } = useAllEvents();
+  const { dailyWork: allWork, refetch: refetchWork } = useDailyWork();
+  const { create: createWork, update: updateWork } = useDailyWorkWrite();
   const { expenses: allExpenses } = useExpenses();
   const { pathname } = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const roadieContext = useMemo(() => buildRoadieContext({ events: allEvents || [], clients: clients || [], dailyWork: allWork || [], expenses: allExpenses || [], profile, today, route: pathname }), [allEvents, clients, allWork, allExpenses, profile, today, pathname]);
+  // Roadie fase 2: dados e gravações para os cartões de ação da conversa (sempre com "Confirmar").
+  const roadieActions = useMemo(() => ({
+    events: allEvents || [], clients: clients || [], dailyWork: allWork || [], today,
+    gravar: async ({ tabela, id, dados }) => {
+      if (tabela === 'events') await updateEvent(id, dados);
+      else if (tabela === 'daily_work') { if (id) await updateWork(id, dados); else await createWork(dados); }
+      else throw new Error('tabela desconhecida');
+      await Promise.allSettled([refetchEvents?.(), refetchWork?.()]);
+    },
+  }), [allEvents, clients, allWork, today, updateEvent, updateWork, createWork, refetchEvents, refetchWork]);
   // Visual All Access: amarelo no lugar da cor da categoria.
   const config = { ...getCategoryConfig(profile?.category || 'lighting'), primaryHex: '#ffd400', accentHex: '#ff2e88' };
   const { formatCurrency, isVisible } = useFinancialVisibility();
@@ -307,6 +320,7 @@ function AIMentorSession({ userId }) {
   const greeting = hour < 5 ? 'Boa noite' : hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
 
   return (
+    <RoadieActionsContext.Provider value={roadieActions}>
     <div className="relative min-h-full bg-[#0a0a0a] text-white">
       <div className="flex flex-col h-[calc(100dvh-10rem)]">
         <motion.div
@@ -355,7 +369,7 @@ function AIMentorSession({ userId }) {
               variant="ghost"
               size="icon"
               onClick={toggleAudio}
-              className={`w-9 h-9 ${isAudioEnabled ? 'text-[#ffd400]' : 'text-[#888888]'}`}
+              className={`w-11 h-11 ${isAudioEnabled ? 'text-[#ffd400]' : 'text-[#888888]'}`}
               title={isAudioEnabled ? 'Desativar áudio' : 'Ativar leitura em voz alta'}
               aria-label={isAudioEnabled ? 'Desativar áudio' : 'Ativar leitura em voz alta'}
             >
@@ -365,7 +379,7 @@ function AIMentorSession({ userId }) {
               variant="ghost"
               size="icon"
               onClick={() => setHistoryOpen(true)}
-              className="w-9 h-9 text-[#888888] hover:text-white relative"
+              className="w-11 h-11 text-[#888888] hover:text-white relative"
               title="Histórico"
               aria-label="Histórico de conversas"
             >
@@ -376,7 +390,7 @@ function AIMentorSession({ userId }) {
                 </span>
               )}
             </Button>
-            <Button onClick={handleNewConv} size="sm" className="h-9 px-3.5 gap-1.5 text-xs">
+            <Button onClick={handleNewConv} size="sm" className="h-11 px-4 gap-1.5 text-xs">
               <Plus className="w-3.5 h-3.5" />
               Nova
             </Button>
@@ -500,5 +514,6 @@ function AIMentorSession({ userId }) {
         </SheetContent>
       </Sheet>
     </div>
+    </RoadieActionsContext.Provider>
   );
 }

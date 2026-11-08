@@ -59,10 +59,11 @@ Deno.serve(async (req) => {
 
   const sentDate = todayLocalDateStr();
   // 'exit' = rodada de hora em hora (só a saída esquecida); padrão = resumo das 8h/18h.
-  let mode: 'digest' | 'exit' = 'digest';
+  let mode: 'digest' | 'exit' | 'brief' = 'digest';
   try {
     const body = await req.clone().json();
     if (body?.mode === 'exit') mode = 'exit';
+    else if (body?.mode === 'brief') mode = 'brief';
   } catch { /* sem corpo */ }
   const lookback = new Date(Date.parse(sentDate + 'T12:00:00Z') - 60 * 86_400_000).toISOString().slice(0, 10);
   const { monthStart, monthEnd } = monthBounds();

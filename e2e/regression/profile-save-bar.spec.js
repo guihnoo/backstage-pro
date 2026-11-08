@@ -10,6 +10,7 @@ test('perfil: barra de salvar só aparece com alteração e fica presa ao rolar'
   await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 15_000 });
 
   const bar = page.getByRole('region', { name: 'Salvar alterações do perfil' });
+  await page.getByRole('button', { name: /Minha meta do mês/ }).click({ timeout: 15_000 });
   const goal = page.getByLabel('Diárias');
   await expect(goal).toBeVisible({ timeout: 10_000 });
   await expect(bar).toHaveCount(0);

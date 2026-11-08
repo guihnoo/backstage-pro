@@ -15,14 +15,6 @@ function Empty({
 }) {
   return <p className="empty">{children}</p>;
 }
-function Metric({
-  label,
-  value,
-  money,
-  onClick
-}) {
-  return <button className="card" onClick={onClick}><span>{label}</span><strong className="amount">{money(value)}</strong><small>Ver composição ↗</small></button>;
-}
 export default function FinanceLegacyPanels({
   activeTab,
   dashboard,
@@ -62,28 +54,48 @@ export default function FinanceLegacyPanels({
   // Usa as mesmas datas e valores finais do recebido mensal.
   const annualTotal = useMemo(() => dashboard.rows.filter(row => row.paid && row.amountSource !== 'calculated' && row.receivedDate?.startsWith(String(currentDate.getFullYear()))).reduce((sum, row) => sum + Math.round(row.receivedAmount * 100), 0) / 100, [dashboard.rows, currentDate]);
   const meiPct = Math.min(100, Math.round(annualTotal / MEI_LIMIT * 100));
-  return <>      {activeTab === 'fiscal' && <div className="space-y-4">
-        <Panel title="MEI · Recebido no ano">
-          <div className="font-poster text-4xl">{money(annualTotal)}</div>
-          {isVisible ? <><div className="my-3 h-2.5 overflow-hidden rounded-full bg-[#2a2a2a]"><div style={{
-              width: meiPct + '%'
-            }} className="h-full bg-[#ffd400]" /></div><p className="text-xs text-[#ccc]">{meiPct}% do limite anual do MEI (R$ 81.000) · {annualTotal < MEI_LIMIT ? 'você está seguro dentro do limite anual.' : 'atenção: limite anual atingido.'}</p></> : <Empty>Valores e indicador fiscal ocultos.</Empty>}
-        </Panel>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Panel title="DAS MEI"><div className="font-poster text-2xl">Vence dia 20</div><p className="mt-1 text-xs text-[#ffd400]">Guia mensal PGMEI</p></Panel>
-          <Panel title="Notas fiscais"><div className="font-poster text-2xl">{events.filter(isNfPendingEvent).length} pendentes</div><p className="mt-1 text-xs text-[#aaa]">Shows feitos sem nota</p></Panel>
+  const nfPendentes = events.filter(isNfPendingEvent).length;
+  const funcMax = Math.max(1, ...byFunction.map(i => i.value));
+  // Anel do MEI (lote 3): enche até a % do limite anual.
+  const R = 52, C = 2 * Math.PI * R;
+  const meiCor = meiPct >= 90 ? '#ff2e88' : '#ffd400';
+  return <>
+      {activeTab === 'fiscal' && <div className="space-y-4">
+        <section className="fm-fiscal" data-testid="fiscal-mei">
+          <div className="fm-ring" aria-hidden="true">
+            <svg viewBox="0 0 120 120" width="120" height="120">
+              <circle cx="60" cy="60" r={R} fill="none" stroke="#262626" strokeWidth="12" />
+              <circle cx="60" cy="60" r={R} fill="none" stroke={meiCor} strokeWidth="12" strokeLinecap="round"
+                strokeDasharray={C} strokeDashoffset={isVisible ? C * (1 - meiPct / 100) : C} transform="rotate(-90 60 60)" className="fm-ring-fill" />
+            </svg>
+            <span style={{ color: meiCor }}>{isVisible ? meiPct + '%' : '•••'}</span>
+          </div>
+          <div className="min-w-0">
+            <p className="fm-tag text-[#a8a8a8]">MEI · Recebido no ano</p>
+            <p className="fm-mid">{money(annualTotal)}</p>
+            {isVisible ? <p className="text-xs text-[#ccc] mt-1">de R$ 81.000 · {annualTotal < MEI_LIMIT ? 'dentro do limite anual.' : 'atenção: limite anual atingido.'}</p> : <Empty>Valores e indicador fiscal ocultos.</Empty>}
+          </div>
+        </section>
+        <div className="fm-kpis two">
+          <div className="fm-kpi"><span className="fm-tag fm-kpi-head">DAS MEI</span><span className="fm-mid">Dia 20</span><span className="fm-note">Guia mensal PGMEI</span></div>
+          <div className={'fm-kpi' + (nfPendentes ? ' pink' : '')}><span className="fm-tag fm-kpi-head">Notas fiscais</span><span className="fm-mid">{nfPendentes}</span><span className="fm-note">{nfPendentes === 1 ? 'show feito sem nota' : 'shows feitos sem nota'}</span></div>
         </div>
         {slot(fiscalExtra)}
       </div>}
 
       {activeTab === 'analise' && <div className="space-y-4">
-        <Panel title="Trabalhos encerrados no mês"><div className="font-poster text-4xl text-[#ffd400]">{billedRows.length}</div><p className="mt-2 text-xs text-[#aaa]">Faturamento pelo encerramento; eventos futuros ficam na previsão.</p></Panel>
-        <Metric label="Realizados do mês ainda não pagos" value={monthPending} money={money} pink onClick={event => openDetail('pending', event)} />
+        <div className="fm-kpis two">
+          <div className="fm-kpi"><span className="fm-tag fm-kpi-head">Encerrados no mês</span><span className="fm-mid" style={{ color: '#ffd400' }}>{billedRows.length}</span><span className="fm-note">trabalhos que terminaram</span></div>
+          <button type="button" className="fm-kpi pink" onClick={event => openDetail('pending', event)} aria-label="Ver detalhes: Realizados do mês ainda não pagos"><span className="fm-tag fm-kpi-head">Feitos e não pagos</span><span className="fm-mid">{money(monthPending)}</span><span className="fm-note">ver composição ↗</span></button>
+        </div>
         {byFunction.length > 1 && <Panel title="Por função" data-testid="por-funcao">
-          <div className="space-y-3">{byFunction.map(item => <div key={item.id} className="flex flex-wrap justify-between gap-2 text-sm"><span className="font-bold">{item.label} <span className="font-tag text-[10px] text-[#aaa]">{item.count}×</span></span><span className="font-tag text-xs text-[#ffd400]">{money(item.value)}</span></div>)}</div>
+          <div className="space-y-3">{byFunction.map(item => <div key={item.id}>
+            <div className="flex flex-wrap justify-between gap-2 text-sm"><span className="font-bold">{item.label} <span className="font-tag text-[10px] text-[#aaa]">{item.count}×</span></span><span className="font-tag text-xs text-[#ffd400]">{money(item.value)}</span></div>
+            <div className="mt-1.5 h-2 rounded-full bg-[#262626] overflow-hidden"><div className="h-full rounded-full bg-[#ffd400] fm-grow-x" style={{ width: (isVisible ? Math.max(4, item.value / funcMax * 100) : 0) + '%' }} /></div>
+          </div>)}</div>
           <p className="mt-3 text-[11px] text-[#aaa]">Eventos encerrados no mês, pelo valor de cada trabalho.</p>
         </Panel>}
-        <Panel title="O que cada número representa"><p className="text-xs leading-relaxed text-[#bbb]">Faturamento e recebimentos têm datas de referência diferentes. Comparar suas somas não mede a taxa de pagamento dos mesmos eventos. Despesas não registradas também não entram no saldo apresentado.</p></Panel>
+        <p className="text-[11px] leading-relaxed text-[#8a8a8a] px-1">Faturamento conta pelo fim do trabalho; recebido, pela data do pagamento. Despesas não registradas não entram no saldo.</p>
         {slot(analiseExtra)}
       </div>}
 </>;

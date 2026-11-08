@@ -28,6 +28,7 @@ import { findRecentMissingHours } from '@/lib/homeSummary';
 import HomeMonthSummary from '@/components/home/HomeMonthSummary';
 import LoadErrorBanner from '@/components/layout/LoadErrorBanner';
 import PendenciasBanner from '@/components/home/PendenciasBanner';
+import EscalaDoDia from '@/components/home/EscalaDoDia';
 
 const EventDetailModal = lazy(() => import('@/components/calendar/EventDetailModal'));
 const EventForm = lazy(() => import('@/components/calendar/EventForm'));
@@ -281,6 +282,8 @@ export default function Home() {
             }}
           />
         )}
+
+        {!cockpitLoading && <EscalaDoDia events={events} dailyWork={hookDailyWork} clients={clients} />}
 
         {!cockpitLoading && <PendenciasBanner events={events} dailyWork={hookDailyWork} clients={clients} />}
 

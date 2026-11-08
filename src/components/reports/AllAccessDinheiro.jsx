@@ -419,7 +419,18 @@ export default function AllAccessDinheiro({
   </>}
   {tab === 'compare' && <>
    <div className="section-intro"><h2>UM MÊS EXPLICA O OUTRO</h2><p>Compare o mesmo indicador e abra os registros que causaram a diferença.</p></div>
-   <div className="filters"><select aria-label="Indicador da comparação" value={metric} onChange={e => setMetric(e.target.value)}><option value="received">Recebido</option><option value="revenue">Faturamento</option><option value="expenses">Despesas</option></select><select aria-label="Empresa da comparação" value={company} onChange={e => setCompany(e.target.value)}><option value="">Todas as empresas</option>{model.clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select><select aria-label="Recorte da comparação" value={equivalent ? 'equivalent' : 'full'} onChange={e => setEquivalent(e.target.value === 'equivalent')}><option value="equivalent">Mesmos dias · mês atual</option><option value="full">Meses completos</option></select></div>
+   <div className="filters chips" role="group" aria-label="Indicador da comparação">{[['received', 'Recebido'], ['revenue', 'Faturamento'], ['expenses', 'Despesas']].map(([k, l]) => <button type="button" className="action" key={k} aria-pressed={metric === k} onClick={() => setMetric(k)}>{l}</button>)}<span className="fm-chip-sep" aria-hidden="true" />{[[true, 'Mesmos dias'], [false, 'Mês inteiro']].map(([k, l]) => <button type="button" className="action" key={l} aria-pressed={equivalent === k} onClick={() => setEquivalent(k)}>{l}</button>)}</div>
+   <div className="filters"><select aria-label="Empresa da comparação" value={company} onChange={e => setCompany(e.target.value)}><option value="">Todas as empresas</option>{model.clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
+   {(() => {
+            const max = Math.max(compare.current.total, compare.prior.total, 1);
+            const h = v => visible ? Math.max(v > 0 ? 6 : 0, v / max * 100) + '%' : '40%';
+            const up = compare.delta >= 0;
+            return <button type="button" className="fm-duel" data-testid="compare-duel" onClick={() => open({ type: 'comparison', metric, company, equivalent })}>
+              <div className="fm-duel-col"><strong>{money(compare.prior.total)}</strong><span className="fm-duel-bar" style={{ height: h(compare.prior.total) }} /><small>{monthLabel(compare.previous)}</small></div>
+              <div className="fm-duel-col now"><strong>{money(compare.current.total)}</strong><span className="fm-duel-bar" style={{ height: h(compare.current.total) }} /><small>{monthLabel(month)}</small></div>
+              <div className={'fm-duel-delta' + (up === (metric !== 'expenses') ? '' : ' bad')}><span>{up ? '▲' : '▼'} {money(Math.abs(compare.delta))}</span><small>{compare.percent === null ? 'sem base' : visible ? Math.abs(compare.percent).toFixed(0) + '%' : '•••'}</small></div>
+            </button>;
+          })()}
    <div className="grid three">{card(monthLabel(month), compare.current.total, () => open({
               type: 'comparison',
               metric,

@@ -18,7 +18,8 @@ const PREF_ITEMS = [
   { key: 'push_goals', label: 'Metas', hint: 'Quase na meta do mês' },
 ];
 
-export default function PushNotificationSettings() {
+/** variant="banner" (lote 3): faixa grande no topo do Perfil, só quando os avisos estão desligados neste aparelho. */
+export default function PushNotificationSettings({ variant = 'card' }) {
   const { user } = useAuth();
   const [prefs, setPrefs] = useState({
     push_enabled: false,
@@ -197,6 +198,32 @@ export default function PushNotificationSettings() {
     !window.navigator.standalone &&
     !window.matchMedia('(display-mode: standalone)').matches;
 
+  if (variant === 'banner') {
+    if (loading || enabled || !supported) return null;
+    return (
+      <section data-testid="avisos-desligados" className="rounded-2xl border-2 border-[#ff2e88] bg-[#ff2e88]/12 p-4">
+        <div className="flex items-start gap-3">
+          <div className="w-12 h-12 rounded-full bg-[#ff2e88] text-white flex items-center justify-center shrink-0">
+            <BellOff className="w-6 h-6" />
+          </div>
+          <div className="min-w-0">
+            <p className="font-poster text-[24px] leading-none uppercase">Avisos desligados</p>
+            <p className="text-[13px] text-[#e0e0e0] mt-1 leading-snug">
+              Sem eles você não recebe a Escala do dia, o lembrete de horas e de saída nem os pagamentos atrasados.
+            </p>
+          </div>
+        </div>
+        {iosHint ? (
+          <p className="text-xs text-[#ffd400] mt-3">No iPhone: adicione o Backstage à Tela de Início antes de ativar.</p>
+        ) : (
+          <button type="button" onClick={handleEnable} disabled={busy} className="w-full min-h-[48px] mt-3 rounded-full bg-[#ff2e88] text-white font-extrabold text-[15px] flex items-center justify-center gap-2 disabled:opacity-60">
+            {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <Bell className="w-5 h-5" />} Ativar avisos neste celular
+          </button>
+        )}
+      </section>
+    );
+  }
+
   return (
     <section className="rounded-2xl bg-[#161616] border border-[#222222] p-4">
       <div className="flex items-start gap-3 mb-4">
@@ -206,7 +233,7 @@ export default function PushNotificationSettings() {
         <div className="min-w-0">
           <h2 className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">Avisos no celular</h2>
           <p className="text-xs text-[#a8a8a8] mt-1 leading-relaxed">
-            Shows de hoje/amanhã e pagamentos pendentes a partir de 10 dias depois do fim do trabalho — 8h e 18h (horário de Brasília).
+            Escala do dia às 8h; às 18h, horas que faltam e pagamentos pendentes (10 dias depois do fim). Saída esquecida: de hora em hora depois de 12 h.
           </p>
         </div>
       </div>

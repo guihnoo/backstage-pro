@@ -6,6 +6,7 @@ import {
   lazy,
   Suspense,
 } from 'react';
+import { pickDefaultClientColor } from '@/lib/brandColors';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useQueryAction } from '@/lib/useQueryAction';
 import { useClients } from '@/lib/useClients';
@@ -114,6 +115,14 @@ export default function ClientsPage() {
       };
 
       const generatedRevenue = clientEvents.reduce((sum, e) => sum + getEventRevenue(e), 0);
+      // Lote 3: total do ano (pelo fim do trabalho, sem cancelados) e o que falta receber
+      // pela mesma regra das Pendências (já terminou e não foi pago).
+      const hojeISO = todayLocalISO();
+      const anoAtual = hojeISO.slice(0, 4);
+      const fimDe = (e) => String(e.end_date || e.start_date || '').slice(0, 10);
+      const ativos = clientEvents.filter((e) => !['cancelled', 'cancelado'].includes(e.status));
+      const yearRevenue = ativos.filter((e) => fimDe(e).startsWith(anoAtual) && fimDe(e) <= hojeISO).reduce((sum, e) => sum + getEventRevenue(e), 0);
+      const toReceive = ativos.filter((e) => fimDe(e) && fimDe(e) < hojeISO && e.payment_status !== 'paid').reduce((sum, e) => sum + getEventRevenue(e), 0);
 
       const completedUnpaidEvents = clientEvents.filter(e =>
         getEventStatus(e) === 'completed' && e.payment_status === 'unpaid'
@@ -145,6 +154,8 @@ export default function ClientsPage() {
           totalEvents: clientEvents.length,
           generatedRevenue,
           pendingRevenue,
+          yearRevenue,
+          toReceive,
           ...activity,
           nextEventDate: nextEvent?.start_date,
           paymentScore,
@@ -187,7 +198,7 @@ export default function ClientsPage() {
     }
 
     if (sortBy === 'nome') filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-    else if (sortBy === 'pendencia') filtered.sort((a, b) => b.stats.pendingRevenue - a.stats.pendingRevenue);
+    else if (sortBy === 'pendencia') filtered.sort((a, b) => b.stats.toReceive - a.stats.toReceive);
     else if (sortBy === 'eventos') filtered.sort((a, b) => b.stats.totalEvents - a.stats.totalEvents);
     else if (sortBy === 'recente') filtered.sort((a, b) => {
       const da = a.stats.lastEventDate ? new Date(a.stats.lastEventDate) : new Date(0);
@@ -337,7 +348,7 @@ export default function ClientsPage() {
                 type="button"
                 onClick={() => setFilterActive(filterActive === f.id && f.id !== 'all' ? 'all' : f.id)}
                 aria-pressed={filterActive === f.id}
-                className={`h-8 px-3.5 rounded-full font-sans text-xs font-extrabold transition-all border ${
+                className={`h-11 px-3.5 rounded-full font-sans text-xs font-extrabold transition-all border ${
                   filterActive === f.id
                     ? 'bg-[#ffd400] text-[#0a0a0a] border-[#ffd400] shadow-sm'
                     : 'bg-[#161616] border-[#2a2a2a] text-[#888888] hover:text-white'
@@ -358,20 +369,25 @@ export default function ClientsPage() {
         {filteredAndSortedClients.length > 0 ? (
           <div className="flex flex-col gap-2">
             {filteredAndSortedClients.map((client) => {
-              const pending = client.stats?.pendingRevenue || 0;
-              const revenue = client.stats?.totalRevenue || 0;
+              // Lote 3: cor da empresa, total do ano e o que ainda falta receber.
+              const pending = client.stats?.toReceive || 0;
+              const revenue = client.stats?.yearRevenue || 0;
+              const cor = client.brand_color || pickDefaultClientColor(client.name);
               return (
                 <div
                   key={client.id}
                   onClick={() => handleClientClick(client)}
-                  className="rounded-2xl bg-[#161616] border border-[#222222] hover:border-[#383838] p-3 sm:p-3.5 flex items-center gap-3 sm:gap-3.5 transition-all cursor-pointer shadow-sm active:scale-[0.99]"
+                  data-testid="cliente-card"
+                  className="relative overflow-hidden rounded-2xl bg-[#161616] border border-[#222222] hover:border-[#383838] p-3 pl-4 sm:p-3.5 sm:pl-[18px] flex items-center gap-3 sm:gap-3.5 transition-all cursor-pointer shadow-sm active:scale-[0.99]"
                 >
+                  <span aria-hidden="true" className="pointer-events-none absolute left-0 top-0 bottom-0 w-1.5" style={{ background: cor }} />
+                  <span aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.07]" style={{ background: `linear-gradient(90deg, ${cor}, transparent 60%)` }} />
                   {client.logo_url ? (
                     <div className="w-11 h-11 rounded-xl bg-white overflow-hidden flex items-center justify-center flex-shrink-0 p-1">
                       <img src={client.logo_url} alt={client.name} className="w-full h-full object-contain" />
                     </div>
                   ) : (
-                    <div className="w-11 h-11 rounded-xl bg-[#ffd400] text-[#0a0a0a] font-poster text-[18px] flex items-center justify-center flex-shrink-0">
+                    <div className="w-11 h-11 rounded-xl text-[#0a0a0a] font-poster text-[18px] flex items-center justify-center flex-shrink-0" style={{ background: cor }}>
                       {getInitials(client.name)}
                     </div>
                   )}
@@ -381,16 +397,17 @@ export default function ClientsPage() {
                       {client.contact_person || 'Sem contato'} · {client.stats?.totalEvents || 0} shows
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <div className="font-poster text-[18px] text-white">
+                  <div className="text-right flex-shrink-0 relative">
+                    <div className="font-tag text-[9px] text-[#8a8a8a] uppercase">Em {new Date().getFullYear()}</div>
+                    <div className="font-poster text-[18px] text-white leading-tight">
                       {isVisible ? formatCurrency(revenue) : '•••••'}
                     </div>
                     <div
                       className={`font-tag text-[10px] font-bold uppercase ${
-                        pending > 0 ? 'text-[#ff2e88]' : 'text-[#ffd400]'
+                        pending > 0 ? 'text-[#ff2e88]' : 'text-[#8a8a8a]'
                       }`}
                     >
-                      {pending > 0 ? `${formatCurrency(pending)} pendente` : 'Paga em dia'}
+                      {pending > 0 ? `falta ${isVisible ? formatCurrency(pending) : '•••'}` : 'nada a receber'}
                     </div>
                   </div>
                   {/* Menu ⋯: Editar e Excluir direto da lista (voltou; tinha sumido na reescrita) */}
@@ -400,7 +417,7 @@ export default function ClientsPage() {
                         type="button"
                         onClick={(e) => e.stopPropagation()}
                         aria-label={`Ações do cliente ${client.name}`}
-                        className="w-9 h-9 shrink-0 rounded-full flex items-center justify-center text-[#a8a8a8] hover:text-white hover:bg-[#222222]"
+                        className="w-11 h-11 -mr-1 shrink-0 rounded-full flex items-center justify-center text-[#a8a8a8] hover:text-white hover:bg-[#222222] relative"
                       >
                         <MoreHorizontal className="w-5 h-5" />
                       </button>

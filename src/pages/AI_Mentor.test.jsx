@@ -8,6 +8,7 @@ vi.mock('@/lib/useBackstageData', () => ({ useStats: () => ({ stats: {} }), useE
 vi.mock('@/lib/useClients', () => ({ useClients: () => ({ clients: [], loading: false }) }));
 vi.mock('@/lib/useEvents', () => ({ useEvents: () => ({ events: [] }) }));
 vi.mock('@/lib/useDailyWork', () => ({ useDailyWork: () => ({ dailyWork: [] }) }));
+vi.mock('@/lib/offline/useOfflineDailyWork', () => ({ useDailyWork: () => ({ create: vi.fn(), update: vi.fn() }) }));
 vi.mock('@/lib/useExpenses', () => ({ useExpenses: () => ({ expenses: [] }) }));
 vi.mock('react-router-dom', () => ({ useLocation: () => ({ pathname: '/roadie' }), useSearchParams: () => [new URLSearchParams(), () => {}], useNavigate: () => () => {} }));
 vi.mock('@/lib/supabase', () => ({ supabase: { functions: { invoke } } }));

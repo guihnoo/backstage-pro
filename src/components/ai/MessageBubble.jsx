@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useNavigate } from 'react-router-dom';
 import RoadieAvatar from '@/components/roadie/RoadieAvatar';
+import RoadieActionCard from '@/components/roadie/RoadieActionCard';
 import { Button } from "@/components/ui/button";
 import { Copy, Zap, CheckCircle2, AlertCircle, Loader2, ChevronRight, Clock, User } from 'lucide-react';
 import { cn } from "@/lib/utils";
@@ -99,25 +100,8 @@ export default function MessageBubble({ message }) {
     const { primaryHex } = useCategoryTheme();
     const linkColor = primaryHex;
     const navigate = useNavigate();
-    
-    return (
-        <div className={cn("flex gap-3 my-4", isUser ? "justify-end" : "justify-start")}>
-            {!isUser && (
-                <RoadieAvatar size={32} className="flex-shrink-0 mt-0.5" />
-            )}
-            <div className={cn("max-w-[85%]", isUser && "flex flex-col items-end")}>
-                {message.content && (
-                    <div className={cn(
-                        "rounded-2xl px-4 py-2.5",
-                        isUser ? "bg-[#c8c8c8] text-[#333333]" : "bg-[#1f1f1f] text-[#e0e0e0] border border-[#2a2a2a]"
-                    )}>
-                        {isUser ? (
-                            <p className="text-sm leading-relaxed">{message.content}</p>
-                        ) : (
-                            // react-markdown 9+ não aceita className (derrubava a tela a cada resposta) — vai no div.
-                            <div className="text-sm prose prose-sm prose-slate max-w-none prose-invert [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
-                            <ReactMarkdown
-                                components={{
+    // Componentes estáveis: recriar a cada render remontava os cartões de ação e perdia o "Feito".
+    const mdComponents = useMemo(() => ({
                                     code: ({ inline, className, children, ...props }) => {
                                         const match = /language-(\w+)/.exec(className || '');
                                         return !inline && match ? (
@@ -144,9 +128,11 @@ export default function MessageBubble({ message }) {
                                             </code>
                                         );
                                     },
-                                    a: ({ children, href = '', ...props }) => (href.startsWith('/') ? (
+                                    a: ({ children, href = '', ...props }) => (href.startsWith('/acao/') ? (
+                                        <RoadieActionCard href={href}>{children}</RoadieActionCard>
+                                    ) : href.startsWith('/') ? (
                                         <button type="button" onClick={() => navigate(href)} data-testid="roadie-acao"
-                                            className="inline-flex items-center gap-1 my-1 mr-1 min-h-[40px] px-4 rounded-full bg-[#ffd400] text-[#0a0a0a] font-extrabold text-[13px] no-underline">
+                                            className="inline-flex items-center gap-1 my-1 mr-1 min-h-[44px] px-4 rounded-full bg-[#ffd400] text-[#0a0a0a] font-extrabold text-[13px] no-underline">
                                             {children} →
                                         </button>
                                     ) : (
@@ -164,7 +150,26 @@ export default function MessageBubble({ message }) {
                                             {children}
                                         </blockquote>
                                     ),
-                                }}
+}), [navigate, linkColor]);
+    
+    return (
+        <div className={cn("flex gap-3 my-4", isUser ? "justify-end" : "justify-start")}>
+            {!isUser && (
+                <RoadieAvatar size={32} className="flex-shrink-0 mt-0.5" />
+            )}
+            <div className={cn("max-w-[85%]", isUser && "flex flex-col items-end")}>
+                {message.content && (
+                    <div className={cn(
+                        "rounded-2xl px-4 py-2.5",
+                        isUser ? "bg-[#c8c8c8] text-[#333333]" : "bg-[#1f1f1f] text-[#e0e0e0] border border-[#2a2a2a]"
+                    )}>
+                        {isUser ? (
+                            <p className="text-sm leading-relaxed">{message.content}</p>
+                        ) : (
+                            // react-markdown 9+ não aceita className (derrubava a tela a cada resposta) — vai no div.
+                            <div className="text-sm prose prose-sm prose-slate max-w-none prose-invert [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+                            <ReactMarkdown
+                                components={mdComponents}
                             >
                                 {message.content}
                             </ReactMarkdown>

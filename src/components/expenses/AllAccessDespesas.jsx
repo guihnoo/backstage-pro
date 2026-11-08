@@ -7,7 +7,9 @@ import {
   addMonths,
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { motion } from 'framer-motion';
 import { Camera, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import SwipeRow from '@/components/layout/SwipeRow';
 
 const CATEGORY_COLORS = {
   transporte: '#ffd400',
@@ -40,6 +42,7 @@ export default function AllAccessDespesas({
   onScanReceipt,
   onNewExpense,
   onEditExpense,
+  onDeleteExpense,
 }) {
   const [currentDate, setCurrentDate] = useState(() => new Date());
 
@@ -69,6 +72,21 @@ export default function AllAccessDespesas({
   const totalMonth = useMemo(() => {
     return monthExpenses.reduce((s, e) => s + (e.amount || 0), 0);
   }, [monthExpenses]);
+
+  // Lote 3: barras dos últimos 6 meses (até o mês escolhido); tocar troca o mês.
+  const monthBars = useMemo(() => {
+    const out = [];
+    for (let i = 5; i >= 0; i -= 1) {
+      const d = subMonths(currentDate, i);
+      const total = expenses.reduce((s, exp) => {
+        const dt = exp.expense_date || exp.date;
+        return dt && isSameMonth(parseISO(dt), d) ? s + (Number(exp.amount) || 0) : s;
+      }, 0);
+      out.push({ date: d, total, label: format(d, 'MMM', { locale: ptBR }).replace('.', ''), current: i === 0 });
+    }
+    return out;
+  }, [expenses, currentDate]);
+  const barMax = Math.max(1, ...monthBars.map((b) => b.total));
 
   // "PRA ONDE FOI" category distribution
   const categoryStats = useMemo(() => {
@@ -123,7 +141,7 @@ export default function AllAccessDespesas({
               type="button"
               aria-label="Mês anterior"
               onClick={() => setCurrentDate((d) => subMonths(d, 1))}
-              className="-ml-2 w-9 h-9 flex items-center justify-center rounded-full text-[#a8a8a8] hover:text-white"
+              className="-ml-3 w-11 h-11 flex items-center justify-center rounded-full text-[#a8a8a8] hover:text-white"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -132,7 +150,7 @@ export default function AllAccessDespesas({
               type="button"
               aria-label="Próximo mês"
               onClick={() => setCurrentDate((d) => addMonths(d, 1))}
-              className="w-9 h-9 flex items-center justify-center rounded-full text-[#a8a8a8] hover:text-white"
+              className="w-11 h-11 flex items-center justify-center rounded-full text-[#a8a8a8] hover:text-white"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -172,6 +190,32 @@ export default function AllAccessDespesas({
           <Plus className="w-5 h-5 stroke-[2.2]" />
           Digitar
         </button>
+      </div>
+
+      {/* Últimos 6 meses */}
+      <div className="rounded-2xl bg-[#161616] border border-[#222222] p-3.5" data-testid="despesas-meses">
+        <div className="font-tag text-[11px] tracking-wider text-[#a8a8a8] mb-2">ÚLTIMOS 6 MESES</div>
+        <div className="flex items-end gap-2 h-24">
+          {monthBars.map((b, i) => (
+            <button
+              key={b.label + i}
+              type="button"
+              onClick={() => setCurrentDate(b.date)}
+              aria-label={`${format(b.date, "MMMM 'de' yyyy", { locale: ptBR })}: ${isVisible ? formatCurrency(b.total) : 'valor oculto'}`}
+              aria-pressed={b.current}
+              className="flex-1 h-full flex flex-col justify-end items-center gap-1 min-w-0"
+            >
+              <motion.span
+                className="block w-full rounded-t-md"
+                initial={{ height: 0 }}
+                animate={{ height: `${isVisible ? Math.max(b.total > 0 ? 6 : 2, (b.total / barMax) * 100) : 30}%` }}
+                transition={{ duration: 0.5, delay: i * 0.04, ease: [0.16, 1, 0.3, 1] }}
+                style={{ background: b.current ? '#ff2e88' : b.total > 0 ? '#3a3a3a' : '#262626' }}
+              />
+              <span className={`font-tag text-[10px] capitalize ${b.current ? 'text-[#ff2e88] font-bold' : 'text-[#777]'}`}>{b.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* PRA ONDE FOI Card */}
@@ -255,12 +299,12 @@ export default function AllAccessDespesas({
                     const expTitle = exp.title || exp.description || CATEGORY_LABELS[exp.category] || 'Despesa';
                     const expDate = exp.expense_date || exp.date;
                     return (
+                      <SwipeRow key={exp.id} onSwipeLeft={onDeleteExpense ? () => onDeleteExpense(exp) : undefined} leftLabel="Excluir" testId="despesa-linha">
                       <button
                         type="button"
-                        key={exp.id}
                         onClick={() => onEditExpense?.(exp)}
                         aria-label={`Editar despesa ${expTitle}`}
-                        className="w-full text-left rounded-xl bg-[#161616] border border-[#222222] hover:border-[#333333] p-2 sm:px-3 flex items-center gap-2.5 cursor-pointer transition-colors"
+                        className="w-full min-h-[52px] text-left rounded-xl bg-[#161616] border border-[#222222] hover:border-[#333333] p-2 sm:px-3 flex items-center gap-2.5 cursor-pointer transition-colors"
                       >
                         <div
                           style={{ background: catColor }}
@@ -285,6 +329,7 @@ export default function AllAccessDespesas({
                           {isVisible ? formatCurrency(exp.amount) : '••••'}
                         </span>
                       </button>
+                      </SwipeRow>
                     );
                   })}
                 </div>

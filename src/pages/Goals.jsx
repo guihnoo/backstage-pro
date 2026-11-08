@@ -402,22 +402,26 @@ export default function Goals() {
     },
   ], [totalEvents, stats, diariasMes, metaDiarias, metaReceita, config]);
 
-  // Histórico mensal dos últimos 4 meses (receita recebida)
-  const monthlyHistory = useMemo(() => {
+  // Lote 3: últimos 12 meses (recebido), um gráfico só com a linha da meta.
+  const last12 = useMemo(() => {
     const now = new Date();
-    return [3, 2, 1, 0].map(monthsBack => {
-      const d = new Date(now.getFullYear(), now.getMonth() - monthsBack, 1);
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const monthStr = `${year}-${month}`;
-      const label = d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
+    return Array.from({ length: 12 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1);
+      const monthStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
       const revenue = paidRevenueInMonth(paidEvents, monthStr, workByEvent);
-      const pct = metaReceita > 0 ? Math.min((revenue / metaReceita) * 100, 100) : null;
-      const hit = metaReceita > 0 && revenue >= metaReceita;
-      const isCurrent = monthsBack === 0;
-      return { monthStr, label, revenue, pct, hit, isCurrent };
+      return {
+        monthStr,
+        label: d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', ''),
+        longLabel: d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }),
+        revenue,
+        hit: metaReceita > 0 && revenue >= metaReceita,
+        isCurrent: i === 11,
+      };
     });
   }, [paidEvents, workByEvent, metaReceita]);
+  const last12Max = Math.max(1, metaReceita * 1.1, ...last12.map(m => m.revenue));
+  const [mesFocoKey, setMesFocoKey] = useState(null);
+  const mesFoco = last12.find(m => m.monthStr === mesFocoKey) || null;
 
   const goalStreak = useMemo(
     () => computeGoalStreak(paidEvents, metaReceita, undefined, workByEvent),
@@ -571,7 +575,7 @@ export default function Goals() {
               aria-selected={activeTab === tab.id}
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 h-9 px-1 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap ${
+              className={`flex-1 h-11 px-1 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap ${
                 activeTab === tab.id
                   ? 'bg-[#ffd400] text-[#0a0a0a]'
                   : 'text-[#a8a8a8] hover:text-white'
@@ -606,7 +610,7 @@ export default function Goals() {
                     <button
                       type="button"
                       onClick={openGoalEdit}
-                      className="flex items-center gap-1.5 text-xs text-[#888888] transition-colors px-2 py-1 rounded-lg bp-hover-primary hover:bg-[color-mix(in_srgb,var(--bp-primary)_10%,transparent)]"
+                      className="flex items-center gap-1.5 min-h-[44px] text-xs text-[#888888] transition-colors px-3 rounded-lg bp-hover-primary hover:bg-[color-mix(in_srgb,var(--bp-primary)_10%,transparent)]"
                     >
                       <Pencil className="w-3.5 h-3.5" />
                       Editar metas
@@ -1008,84 +1012,57 @@ export default function Goals() {
                 </div>
               )}
 
-              {/* Histórico mensal */}
-              {monthlyHistory.some(m => m.revenue > 0) && (
-                <div className="bg-[#161616] border border-[#222222] rounded-2xl p-5">
-                  <h3 className="font-tag text-[11px] font-normal tracking-[2px] text-[#a8a8a8] uppercase mb-4">Histórico Recente</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {monthlyHistory.map(({ label, revenue, pct, hit, isCurrent }) => (
-                      <div
-                        key={label}
-                        className={`p-3 rounded-xl border ${isCurrent ? 'border-[#333333]/60 bg-[#161616]' : 'border-[#222222]/40 bg-[#161616]/30'}`}
-                      >
-                        <p className="text-[10px] text-[#888888] uppercase tracking-wider mb-1">
-                          {label}{isCurrent ? ' · atual' : ''}
-                        </p>
-                        <p className="text-sm font-bold text-white">
-                          {isVisible ? formatCurrency(revenue) : '•••'}
-                        </p>
-                        {pct !== null && (
-                          <div className="mt-2">
-                            <div className="h-1 rounded-full bg-[#222222]/60">
-                              <div
-                                className="h-1 rounded-full transition-all duration-500"
-                                style={{ width: `${pct}%`, background: hit ? '#10b981' : config.primaryHex }}
-                              />
-                            </div>
-                            <p className="text-[10px] text-[#666666] mt-1">
-                              {Math.round(pct)}% da meta {hit ? '✅' : ''}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Painel Anual */}
-              {yearlyPanel.totalYear > 0 && (
-                <div className="bg-[#161616] border border-[#222222] rounded-2xl p-5">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-tag text-[11px] font-normal tracking-[2px] text-[#a8a8a8] uppercase">
-                      {new Date().getFullYear()} em Resumo
-                    </h3>
+              {/* Lote 3: um gráfico só — últimos 12 meses com a linha da meta. */}
+              {last12.some(m => m.revenue > 0) && (
+                <div className="bg-[#161616] border border-[#222222] rounded-2xl p-5" data-testid="metas-12-meses">
+                  <div className="flex items-center justify-between mb-1 gap-2">
+                    <h3 className="font-tag text-[11px] font-normal tracking-[2px] text-[#a8a8a8] uppercase">Últimos 12 meses</h3>
                     {yearlyPanel.monthsHit > 0 && (
                       <span className="text-[11px] font-bold text-[#ffd400]">
-                        {yearlyPanel.monthsHit} {yearlyPanel.monthsHit === 1 ? 'mês bateu' : 'meses bateram'} a meta
+                        {yearlyPanel.monthsHit} {yearlyPanel.monthsHit === 1 ? 'mês bateu' : 'meses bateram'} a meta em {new Date().getFullYear()}
                       </span>
                     )}
                   </div>
-
-                  {/* Barras mensais */}
-                  <div className="flex items-end gap-1 h-14 mb-3">
-                    {yearlyPanel.months.map(({ label, pct, hit, isCurrent, isFuture }) => (
-                      <div key={label} className="flex-1 flex flex-col items-center gap-0.5">
-                        <div className="w-full flex items-end" style={{ height: 40 }}>
-                          <div
-                            className={`w-full rounded-t-sm transition-all duration-700 ${isCurrent ? 'animate-pulse' : ''}`}
+                  <p className="text-[13px] text-white font-bold mb-3 min-h-[20px]">
+                    {mesFoco ? <>{mesFoco.longLabel}: {isVisible ? formatCurrency(mesFoco.revenue) : '•••'}{metaReceita > 0 ? <span className="text-[#a8a8a8] font-normal"> · {Math.round((mesFoco.revenue / metaReceita) * 100)}% da meta</span> : null}</> : <span className="text-[#8a8a8a] font-normal">Toque num mês para ver o valor</span>}
+                  </p>
+                  <div className="relative h-36">
+                    {metaReceita > 0 && (
+                      <div className="absolute left-0 right-0 border-t border-dashed border-[#ffd400]/60 pointer-events-none" style={{ bottom: `${(metaReceita / last12Max) * 100}%` }}>
+                        <span className="absolute right-0 -top-4 font-tag text-[9px] text-[#ffd400]">META</span>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 flex items-end gap-1">
+                      {last12.map((m, i) => (
+                        <button
+                          key={m.monthStr}
+                          type="button"
+                          onClick={() => setMesFocoKey(m.monthStr === mesFocoKey ? null : m.monthStr)}
+                          aria-label={`${m.longLabel}: ${isVisible ? formatCurrency(m.revenue) : 'valor oculto'}`}
+                          className="flex-1 h-full flex items-end min-w-0"
+                        >
+                          <motion.span
+                            className="block w-full rounded-t-md"
+                            initial={{ height: 0 }}
+                            animate={{ height: `${isVisible ? Math.max(m.revenue > 0 ? 3 : 1.5, (m.revenue / last12Max) * 100) : 30}%` }}
+                            transition={{ duration: 0.6, delay: i * 0.03, ease: [0.16, 1, 0.3, 1] }}
                             style={{
-                              height: isFuture ? 3 : `${Math.max(pct, isFuture ? 0 : 4)}%`,
-                              background: isFuture
-                                ? '#222222'
-                                : hit
-                                ? '#10b981'
-                                : pct > 0
-                                ? config.accentHex
-                                : '#222222',
-                              opacity: isFuture ? 0.3 : 1,
+                              background: m.isCurrent ? '#ffd400' : m.hit ? '#ffd400cc' : m.revenue > 0 ? '#4a4a4a' : '#262626',
+                              outline: mesFocoKey === m.monthStr ? '2px solid #fff' : 'none',
+                              outlineOffset: 1,
                             }}
                           />
-                        </div>
-                        <span className={`text-[8px] font-tag capitalize ${isCurrent ? 'bp-text-primary font-bold' : 'text-[#666666]'}`}>
-                          {label}
-                        </span>
-                      </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex gap-1 mt-1.5">
+                    {last12.map(m => (
+                      <span key={m.monthStr} className={`flex-1 text-center text-[9px] font-tag capitalize ${m.isCurrent ? 'text-[#ffd400] font-bold' : 'text-[#666666]'}`}>{m.label.slice(0, 3)}</span>
                     ))}
                   </div>
 
-                  {/* Stats anuais */}
-                  <div className="grid grid-cols-2 gap-3 pt-3 border-t border-[#222222]/60">
+                  <div className="grid grid-cols-2 gap-3 pt-3 mt-3 border-t border-[#222222]/60">
                     <div>
                       <p className="text-[10px] text-[#888888] uppercase tracking-wider">Recebido em {new Date().getFullYear()}</p>
                       <p className="text-base font-black text-white mt-0.5">
