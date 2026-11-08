@@ -10,7 +10,7 @@ const tabs = [['month', 'Mês'], ['companies', 'Empresas · A receber'], ['calen
 const metricNames = {
   received: 'Recebido registrado',
   revenue: 'Faturamento do mês',
-  pending: 'Falta receber deste mês',
+  pending: 'A receber',
   expenses: 'Despesas do mês',
   cash: 'Resultado de caixa do mês',
   ongoing: 'Em andamento',
@@ -77,7 +77,13 @@ export default function AllAccessDinheiro({
   }), [events, clients, expenses, workByEvent, today]);
   const d = model.dashboard(month);
   const money = v => visible ? formatCurrency(Number(v || 0)) : '•••••';
-  const pendingMonth = sum(d.billedRows.filter(r => !r.paid));
+  // A receber acumulado: encerrados até o fim do mês escolhido e ainda não pagos (não zera na virada).
+  const openRows = d.pendingRows.filter(r => r.endDate && r.endDate <= d.range.end);
+  const pendingMonth = sum(openRows);
+  const pendingEarlier = openRows.filter(r => r.endDate < d.range.start);
+  const pendingNote = !openRows.length ? 'Nada em aberto' : pendingEarlier.length
+    ? `${money(sum(openRows.filter(r => r.endDate >= d.range.start)))} deste mês · ${money(sum(pendingEarlier))} de meses anteriores`
+    : 'Tudo deste mês';
   const current = stack.at(-1);
   const open = desc => {
     if (!stack.length) trigger.current = document.activeElement;
@@ -327,7 +333,7 @@ export default function AllAccessDinheiro({
             type: 'metric',
             metric: 'received'
           }), !d.receiptRows.length ? 'Sem recebimentos cadastrados neste recorte.' : d.receiptRows.some(r => r.receivedDateEstimated) ? 'Inclui datas estimadas · veja a composição.' : 'Valor informado no recebimento, pela data do depósito.', 'hero', 'finance-received')}
-   <div className="grid three">{metricCard('revenue', d.totals.revenue, 'Eventos encerrados neste mês')}{metricCard('pending', pendingMonth, 'Somente trabalhos encerrados no mês', 'pink-card')}{metricCard('expenses', d.totals.expenses, 'Despesas registradas na sua conta')}</div>
+   <div className="grid three">{metricCard('revenue', d.totals.revenue, 'Eventos encerrados neste mês')}{metricCard('pending', pendingMonth, pendingNote, 'pink-card')}{metricCard('expenses', d.totals.expenses, 'Despesas registradas na sua conta')}</div>
    <div className="grid two"><section className="panel"><div className="panel-heading"><h2>DE ONDE VEIO</h2><button className="text-btn" onClick={() => open({
                   type: 'metric',
                   metric: 'received'

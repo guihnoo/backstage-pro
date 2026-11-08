@@ -22,13 +22,23 @@ describe('monthly metric details', () => {
     expect(detail(dashboard, 'revenue').sections[0].rows.map((row) => row.id)).toEqual(['continuous']);
   });
 
-  it('limits pending to selected month while global history remains in dashboard', () => {
-    const dashboard = build([event('current'), event('old', { start_date: '2026-10-20', end_date: '2026-10-20', estimated_revenue: 500 })]);
-    expect(dashboard.totals.pending).toBe(600);
-    expect(detail(dashboard, 'pending').total).toBe(100);
-    expect(ids(detail(dashboard, 'pending').sections[0])).toEqual(['current']);
+  it('a receber não zera na virada: soma meses anteriores ainda não pagos', () => {
+    const dashboard = build([
+      event('current'),
+      event('old', { start_date: '2026-10-20', end_date: '2026-10-20', estimated_revenue: 500 }),
+      event('older', { start_date: '2026-06-26', end_date: '2026-06-26', estimated_revenue: 50 }),
+      event('paidOld', { start_date: '2026-10-01', end_date: '2026-10-01', payment_status: 'paid', paid_amount: 900, paid_date: '2026-10-15' }),
+    ]);
+    const pending = detail(dashboard, 'pending');
+    expect(pending.total).toBe(650);
+    expect(ids(pending.sections[0])).toEqual(['current']);
+    expect(ids(pending.sections[1])).toEqual(['older', 'old']);
+    // Primeiro dia de dezembro, nada encerrado no mês: continua mostrando o que falta.
+    const december = buildFinanceDashboard({ events: dashboard.rows.map((row) => row.event), monthKey: '2026-12', today: '2026-12-01' });
+    expect(detail(december, 'pending').total).toBe(650);
+    // Olhando outubro, trabalhos de novembro ainda não entram.
     const october = build(dashboard.rows.map((row) => row.event), [], '2026-10');
-    expect(detail(october, 'pending').total).toBe(500);
+    expect(detail(october, 'pending').total).toBe(550);
   });
 
   it('reconciles cash to receipt rows minus dated expenses in cents', () => {
