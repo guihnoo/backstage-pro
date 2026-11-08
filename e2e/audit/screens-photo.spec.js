@@ -24,6 +24,7 @@ const TELAS = [
   ['perfil', '/profile'],
   ['mentor', '/ai-mentor'],
   ['ajuda', '/help'],
+  ['pendencias', '/pendencias?grupo=receber'],
   ['trabalho-hoje', `/calendar?event=${FAKE_IDS.showHoje}`],
   ['trabalho-a-receber', `/calendar?event=${FAKE_IDS.showAReceber}`],
   ['trabalho-pago', `/calendar?event=${FAKE_IDS.showPago}`],
