@@ -3220,3 +3220,9 @@ Registro cronológico de tarefas executadas por agentes.
 - Migração `048_push_saida_de_hora_em_hora`: cron `send-push-exit-hourly` (17 * * * *) ativo junto dos 3 jobs existentes.
 - Testes contra o site publicado: pendencias, finance-dashboard, home-cheguei — 16/16.
 - Falta: a conta do Guih segue com push_enabled=false (3 aparelhos) — tocar "Ativar" no Perfil.
+
+### 2026-11-08 — Dinheiro com visual do app (Claude Code, branch feat/dinheiro-visual)
+- **Pedido**: Dinheiro "com cara de Excel".
+- **Novo**: FinanceMonthHero (ingresso amarelo com número que sobe em 0,6 s, seta vs mês anterior, barras animadas dos últimos 6 meses; A receber/Faturamento/Despesas em cartões); CSS com Anton/Space Mono, cantos 18 px; caixa/em andamento/próximos lado a lado; "Variação do recebido" → "Variação até hoje".
+- **Testes**: unit 481/481; E2E Dinheiro 14/14 (+15/15 antes do ajuste). Respeita "reduzir movimento".
+- **Deploy**: nenhum.
