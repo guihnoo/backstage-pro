@@ -66,6 +66,8 @@ export default function AllAccessDinheiro({
   const [search, setSearch] = useState(''),
     [companyFilter, setCompanyFilter] = useState('Todas'),
     [metric, setMetric] = useState('received'),
+    // Aba Empresas abre no que falta receber (08/11): antes abria em "Recebido no mês" com tudo R$ 0.
+    [companyMetric, setCompanyMetric] = useState('pending'),
     [company, setCompany] = useState(''),
     [equivalent, setEquivalent] = useState(true),
     [calendarMode, setCalendarMode] = useState('received');
@@ -309,10 +311,12 @@ export default function AllAccessDinheiro({
     if (companyFilter === 'Em atraso') return rows.some(r => r.overdue);
     if (companyFilter === 'Sem vencimento') return rows.some(r => r.stage === 'completed' && !r.paid && !r.dueDate);
     return true;
-  }).map(c => ({
-    c,
-    data: model.metric(month, metric, c.id)
-  })).sort((a, b) => b.data.total - a.data.total);
+  }).map(c => {
+    if (companyMetric !== 'pending') return { c, data: model.metric(month, companyMetric, c.id) };
+    const rows = model.all.rows.filter(r => r.companyKey === c.id && r.stage === 'completed' && !r.paid);
+    return { c, data: { rows, total: sum(rows) } };
+  }).sort((a, b) => b.data.total - a.data.total);
+  const companyMax = Math.max(1, ...companyCards.map(x => x.data.total));
   const futureMonths = Array.from({
     length: 6
   }, (_, i) => shiftMonth(today.slice(0, 7), i));
@@ -383,15 +387,15 @@ export default function AllAccessDinheiro({
   </>}
   {tab === 'companies' && <>
    <div className="section-intro"><h2>EMPRESAS EM FOCO</h2><p>Cada empresa abre seus valores, os eventos e a evolução mensal.</p></div>
-   <div className="filters"><input aria-label="Buscar empresa" placeholder="Buscar empresa" value={search} onChange={e => setSearch(e.target.value)} /><select aria-label="Indicador das empresas" value={metric} onChange={e => setMetric(e.target.value)}><option value="received">Recebido no mês</option><option value="revenue">Faturamento do mês</option><option value="expenses">Despesas vinculadas</option></select></div>
-   <div className="filters" aria-label="Filtrar empresas">{['Todas', 'Pagos', 'Pendentes', 'Próximos', 'Em andamento', 'Em atraso', 'Sem vencimento'].map(filter => <button type="button" className="action" key={filter} aria-pressed={companyFilter === filter} onClick={() => setCompanyFilter(filter)}>{filter}</button>)}</div>
+   <div className="filters"><input aria-label="Buscar empresa" placeholder="Buscar empresa" value={search} onChange={e => setSearch(e.target.value)} /><select aria-label="Indicador das empresas" value={companyMetric} onChange={e => setCompanyMetric(e.target.value)}><option value="pending">A receber · todos os meses</option><option value="received">Recebido no mês</option><option value="revenue">Faturamento do mês</option><option value="expenses">Despesas vinculadas</option></select></div>
+   <div className="filters chips" aria-label="Filtrar empresas">{['Todas', 'Pagos', 'Pendentes', 'Próximos', 'Em andamento', 'Em atraso', 'Sem vencimento'].map(filter => <button type="button" className="action" key={filter} aria-pressed={companyFilter === filter} onClick={() => setCompanyFilter(filter)}>{filter}</button>)}</div>
    <div className="grid three">{companyCards.map(({
               c,
               data
-            }) => card(c.name, data.total, () => open({
+            }) => <div key={c.id} className="fm-company">{card(c.name, data.total, () => open({
               type: 'company',
               id: c.id
-            }), data.rows.length ? data.rows.length + ' registros · abrir empresa' : 'Sem registros deste indicador no mês', '', 'finance-company-' + c.id))}</div>
+            }), data.rows.length ? data.rows.length + (companyMetric === 'pending' ? (data.rows.length === 1 ? ' trabalho sem pagamento' : ' trabalhos sem pagamento') : ' registros') + ' · abrir empresa' : companyMetric === 'pending' ? 'Nada a receber' : 'Sem registros deste indicador no mês', companyMetric === 'pending' && data.total > 0 ? 'pink-card' : '', 'finance-company-' + c.id)}<span className="fm-company-bar" aria-hidden="true"><span style={{ width: visible ? Math.max(data.total > 0 ? 4 : 0, data.total / companyMax * 100) + '%' : '0%' }} /></span></div>)}</div>
   </>}
   {tab === 'calendar' && <>
    <div className="section-intro"><h2>CADA DIA CONTA</h2><p>O dia do trabalho e o dia do depósito têm informações diferentes.</p></div><div className="segmented">{[['received', 'Recebimentos'], ['work', 'Trabalho']].map(([key, label]) => <button aria-pressed={calendarMode === key} onClick={() => setCalendarMode(key)} key={key}>{label}</button>)}</div>
@@ -405,7 +409,7 @@ export default function AllAccessDinheiro({
                   mode: calendarMode
                 })}><b>{Number(day.date.slice(-2))}</b><small>{count ? count + ' registros' : '—'}</small></button>;
               })}</div><p className="footnote">Todos os dias abrem detalhes. Sem registro não comprova ganho zero. Cachês fechados não são divididos entre dias.</p></section>
-   <section className="panel" data-testid="finance-daily-chart"><h2>{calendarMode === 'received' ? 'ENTRADAS POR DIA' : 'Ganhos diários registrados'}</h2><div className="bars">{d.calendarDays.filter(day => calendarMode === 'received' ? day.receipts.length : day.works.length).map(day => <button className="bar-row" key={day.date} onClick={() => open({
+   <section className="panel" data-testid="finance-daily-chart"><h2>{calendarMode === 'received' ? 'ENTRADAS POR DIA' : 'Ganhos diários registrados'}</h2>{!d.calendarDays.some(day => calendarMode === 'received' ? day.receipts.length : day.works.length) && <p className="empty">{calendarMode === 'received' ? 'Nenhum dinheiro entrou neste mês ainda. Quando você confirmar um recebimento, ele aparece no dia do depósito.' : 'Nenhuma hora registrada neste mês.'}</p>}<div className="bars">{d.calendarDays.filter(day => calendarMode === 'received' ? day.receipts.length : day.works.length).map(day => <button className="bar-row" key={day.date} onClick={() => open({
                 type: 'day',
                 date: day.date,
                 mode: calendarMode
@@ -470,7 +474,7 @@ export default function AllAccessDinheiro({
    <div className="section-intro"><h2>CONFIANÇA EM CADA NÚMERO</h2><p>Abra cada grupo para entender o dado disponível, o que falta e seu efeito nos totais.</p></div><div className="grid two">{statusReview.map(group => card(group.title, String(group.rows.length) + ' registros', () => open({
               type: 'review',
               key: group.key
-            }), group.note, group.key === 'missing' ? 'pink-card' : ''))}</div>
+            }), group.note, group.key === 'missing' && group.rows.length > 0 ? 'pink-card' : ''))}</div>{pendTotal > 0 && <Link to="/pendencias" className="review-strip" data-testid="review-pendencias"><span><b>Resolver {pendTotal} pendência{pendTotal > 1 ? 's' : ''} de uma vez</b><small>Dar baixa em vários, informar valores que faltam, fechar trabalhos e registrar horas.</small></span><span>→</span></Link>}
    <section className="panel"><h2>FONTES QUE NÃO SE CONFUNDEM</h2><dl><div><dt>Valor recebido</dt><dd>O valor informado pelo usuário em “Recebi”.</dd></div><div><dt>Data do depósito</dt><dd>Dia informado ou estimativa identificada; diferente da data da baixa.</dd></div><div><dt>Faturamento</dt><dd>Mês do encerramento do evento.</dd></div><div><dt>Entrada futura</dt><dd>Data de vencimento cadastrada; cenário +10 fica separado.</dd></div><div><dt>Aviso de pendência</dt><dd>A partir do décimo dia após o fim, se ainda não pago.</dd></div></dl></section>
   </>}
   {(tab === 'fiscal' || tab === 'analise') && <FinanceLegacyPanels activeTab={tab} dashboard={d} currentDate={new Date(month + '-01T12:00:00')} money={money} events={events} fiscalExtra={fiscalExtra} analiseExtra={analiseExtra} slot={slot} openDetail={key => open({
