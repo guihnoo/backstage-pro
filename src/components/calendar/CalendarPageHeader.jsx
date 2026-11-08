@@ -13,6 +13,7 @@ export default function CalendarPageHeader({
   monthStats = { showCount: 0, received: 0, pending: 0 },
   formatCurrency,
   isVisible = true,
+  loading = false,
 }) {
   const monthName = format(currentDate, 'MMMM', { locale: ptBR }).toUpperCase();
 
@@ -96,7 +97,7 @@ export default function CalendarPageHeader({
       <div className="grid grid-cols-3 gap-1.5">
         <div className="rounded-[10px] bg-[#161616] border border-[#222222] p-2 flex flex-col justify-center">
           <div className="font-poster text-[20px] text-[#ffd400] leading-none">
-            {monthStats.showCount || 0}
+            {loading ? '…' : (monthStats.showCount || 0)}
           </div>
           <div className="font-tag text-[10px] text-[#a8a8a8] uppercase mt-0.5 truncate">
             DIÁRIAS
@@ -105,7 +106,7 @@ export default function CalendarPageHeader({
 
         <div className="rounded-[10px] bg-[#161616] border border-[#222222] p-2 flex flex-col justify-center">
           <div className="font-poster text-[20px] text-white leading-none truncate">
-            {isVisible ? (monthStats.received > 0 ? formatCurrency(monthStats.received) : 'R$ 0') : '•••••'}
+            {loading ? '…' : isVisible ? (monthStats.received > 0 ? formatCurrency(monthStats.received) : 'R$ 0') : '•••••'}
           </div>
           <div className="font-tag text-[10px] text-[#a8a8a8] uppercase mt-0.5 truncate">
             NO MÊS
@@ -114,7 +115,7 @@ export default function CalendarPageHeader({
 
         <div className="rounded-[10px] bg-[#161616] border border-[#222222] p-2 flex flex-col justify-center">
           <div className="font-poster text-[20px] text-[#ff2e88] leading-none truncate">
-            {isVisible ? (monthStats.pending > 0 ? formatCurrency(monthStats.pending) : 'R$ 0') : '•••••'}
+            {loading ? '…' : isVisible ? (monthStats.pending > 0 ? formatCurrency(monthStats.pending) : 'R$ 0') : '•••••'}
           </div>
           <div className="font-tag text-[10px] text-[#a8a8a8] uppercase mt-0.5 truncate">
             A RECEBER

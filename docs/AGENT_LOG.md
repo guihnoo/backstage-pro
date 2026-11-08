@@ -3199,3 +3199,10 @@ Registro cronológico de tarefas executadas por agentes.
 - Sem migração e sem função nova.
 - Testes contra o site publicado (banco falso, nada gravado no real): calendar-hours-day, nfe-conferencia, relatorio-horas, home-cheguei, finance-dashboard — 19/19.
 - Falta: Guih tocar "Ativar" em Avisos no celular (push_enabled da conta está false desde o bug); testar no iPhone registrar horas em outro dia e anexar uma nota real.
+
+### 2026-11-08 — Varredura geral (Claude Code, branch fix/varredura-0811)
+- **Pedido**: vasculhar o app inteiro em uso real (travamentos, telas, informações e nomes errados, funções, cards/modais, animação e design).
+- **Método**: robô de botões (BP_CRAWL, 537 cliques/11 telas, 17,9 min); fotos de 18 telas a 390 px com erros de console e tempo (novo e2e/audit/screens-photo.spec.js); SQL só leitura de consistência dos dados reais; leitura do código dos pontos suspeitos.
+- **Corrigido**: A receber/No mês da Agenda (regra do Dinheiro); carregando em vez de "dia livre"/zeros; conquistas antigas sem festa em aparelho novo; textos de Metas.
+- **Testes**: unit 475/475; E2E agenda/metas/modais 15/15 (inclui os 2 que falhavam por data).
+- **Deploy**: nenhum.

@@ -193,6 +193,13 @@ Os escopos de agenda são "sensíveis": com o app em **Testing**, só entra quem
 
 ## Changelog
 
+### 2026-11-08 — Varredura geral (Claude Code — branch `fix/varredura-0811`, **não publicado**)
+
+- **Robô de botões**: 537 cliques em 11 telas, 0 erros de JavaScript, 0 telas quebradas, 0 destinos inexistentes. "Nada aconteceu"/"não deu para clicar" conferidos: animação dos números (Agenda) e a comemoração de conquista por cima de Metas.
+- **Fotos 390 px de 18 telas** (`e2e/audit/screens-photo.spec.js`, só com `BP_CRAWL=1`): nenhuma presa carregando (todas < 1,6 s com banco falso), nenhum "undefined/NaN/Invalid Date" na tela.
+- **Corrigido**: "A receber" do topo da Agenda somava shows futuros (R$ 2.500 × R$ 700 no Início) → mesma regra do Dinheiro; "No mês" da Agenda passa a ser pela data do pagamento. Agenda mostrava "0 / R$ 0 / DIA LIVRE" enquanto carregava → "…" e esqueleto. Conquistas antigas eram comemoradas de novo, uma por visita, em aparelho novo/ícone reinstalado → entram como vistas. Metas: "7 diárias para bater a meta" × "12 shows para bater a meta" → "para a meta de diárias do mês" / "para a meta de faturamento"; "Projeção dezembro" → "Previsto no ano".
+- **Dados reais (só leitura)**: 21 trabalhos pagos sem valor recebido (ficam fora do "Entrou no mês" — conferir em Dinheiro › Conferência); 42 trabalhos passados ainda "confirmado/pendente"; 5 sem valor; 1 registro de horas fora dos dias do trabalho.
+
 ### 2026-11-07 — Agenda, A receber, escolha por dia, nota fiscal, relatório de horas e avisos (Claude Code — branch `feat/financeiro-calendario-v2`, **não publicado**)
 
 - **Agenda / horas**: registrar horas abre **no dia tocado** (o atalho do celular usava hoje ou o 1º dia). O campo de data só aceitava até hoje e o navegador barrava o Salvar com aviso em inglês ("Value must be … or earlier"): agora vale qualquer dia do trabalho, com aviso em português. A janela não apaga mais o horário digitado quando a tela atualiza (`new Date()` novo a cada render reiniciava o formulário). Teste `calendar-hours-day.spec.js`.

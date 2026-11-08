@@ -903,12 +903,23 @@ export default function CalendarPage() {
     const monthClientIds = new Set(monthEvents.map((e) => e.client_id).filter(Boolean));
     const uniqueClients = monthClientIds.size;
 
-    const received = monthEvents
-      .filter(e => e.payment_status === 'paid')
-      .reduce((sum, e) => sum + (Number(e.paid_amount) || getEventCacheAmount(e)), 0);
-    const pending = monthEvents
-      .filter(e => e.payment_status !== 'paid')
-      .reduce((sum, e) => sum + getEventCacheAmount(e), 0);
+    // Mesma regra do Dinheiro e do Início (07/11): "no mês" = o que entrou pela data do
+    // pagamento; "a receber" = trabalhos já encerrados até o fim do mês e ainda não pagos
+    // (de qualquer mês). Antes somava shows futuros e dava R$ 2.500 aqui e R$ 700 no Início.
+    const monthStartIso = format(monthStart, 'yyyy-MM-dd');
+    const monthEndIso = format(monthEnd, 'yyyy-MM-dd');
+    const todayIso = todayLocalISO();
+    const received = events
+      .filter(e => e.payment_status === 'paid' && e.paid_date
+        && e.paid_date.slice(0, 10) >= monthStartIso && e.paid_date.slice(0, 10) <= monthEndIso)
+      .reduce((sum, e) => sum + (Number(e.paid_amount) || 0), 0);
+    const pending = events
+      .filter(e => e.payment_status !== 'paid' && !['cancelled', 'cancelado'].includes(e.status))
+      .filter(e => {
+        const end = String(e.end_date || e.start_date || '').slice(0, 10);
+        return end && end < todayIso && end <= monthEndIso;
+      })
+      .reduce((sum, e) => sum + calculateEventReceivableAmount(e, dailyWork.filter(w => w.event_id === e.id)), 0);
 
     return {
       totalEvents,
@@ -1121,6 +1132,7 @@ export default function CalendarPage() {
           onSyncNow={() => hardNavigate('/profile?tab=google')}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
+          loading={isCoreLoading}
           monthStats={{
             showCount: monthStats.totalEvents,
             received: monthStats.received,
@@ -1279,6 +1291,7 @@ export default function CalendarPage() {
             events={filteredEvents}
             clients={clients}
             selectedDate={selectedDate}
+            loading={isCoreLoading}
             onDateSelect={(day) => setSelectedDate(day)}
             onEventClick={handleEventClick}
             onNewEvent={(date) => handleNewEvent(date)}
