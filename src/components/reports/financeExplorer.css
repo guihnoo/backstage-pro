@@ -6,3 +6,47 @@
 .finance-explorer{min-width:0;width:100%;max-width:1160px;margin:auto;color:#eee;font-family:Archivo,Arial,sans-serif}.finance-explorer.finance-explorer-dialog{max-height:90dvh;display:flex;flex-direction:column}.finance-explorer .dialog-scroll{flex:1;overflow:auto;min-height:0}.finance-explorer .amount{overflow-wrap:anywhere}.finance-explorer .dialog-heading{flex-shrink:0}
 
 .finance-explorer .action[aria-pressed=true]{border-color:#ffd400;color:#ffd400}
+
+/* ── Visual All Access no Dinheiro (08/11): fontes do app, cartões como o Início ── */
+.finance-explorer{font-family:inherit}
+.finance-explorer h1,.finance-explorer h2{font-family:'Anton',Impact,sans-serif;letter-spacing:.5px;text-transform:uppercase}
+.finance-explorer h1{font-size:44px;line-height:1}
+.finance-explorer h2{font-size:20px}
+.finance-explorer .eyebrow,.finance-explorer .month-control{font-family:'Space Mono',ui-monospace,monospace;letter-spacing:2px}
+.finance-explorer .card,.finance-explorer .panel{border-radius:18px;background:#161616;border-color:#222}
+.finance-explorer .card .amount{font-family:'Anton',Impact,sans-serif;letter-spacing:.3px}
+.finance-explorer .tabs{border-radius:999px;background:#111;border-color:#222}
+.finance-explorer .tabs [role=tab]{border-radius:999px;font-weight:800}
+.finance-explorer .ledger-row{border-radius:14px}
+
+.fm-hero-wrap{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+.fm-ticket{position:relative;display:flex;flex-direction:column;align-items:flex-start;text-align:left;width:100%;border:0;border-radius:22px;background:#ffd400;color:#0a0a0a;padding:18px 18px 26px;overflow:hidden;box-shadow:0 10px 40px rgba(255,212,0,.18)}
+.fm-ticket-top{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;flex-wrap:wrap}
+.fm-tag{font-family:'Space Mono',ui-monospace,monospace;font-size:10.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+.fm-delta{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:800;border-radius:999px;padding:3px 8px;background:#0a0a0a;color:#ffd400}
+.fm-delta.down{color:#ff2e88}
+.fm-big{font-family:'Anton',Impact,sans-serif;font-size:52px;line-height:1.05;margin-top:6px;letter-spacing:.5px}
+.fm-note{font-size:12px;opacity:.75;margin-top:2px}
+.fm-bars{display:flex;align-items:flex-end;gap:8px;height:70px;width:100%;margin-top:14px}
+.fm-bar-col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:4px}
+.fm-bar{width:100%;border-radius:6px 6px 2px 2px;background:rgba(10,10,10,.22)}
+.fm-bar.now{background:#0a0a0a}
+.fm-bar-label{font-family:'Space Mono',ui-monospace,monospace;font-size:9px;text-transform:uppercase;opacity:.7}
+.fm-perf{position:absolute;left:0;right:0;bottom:0;height:10px;background:radial-gradient(circle at 6px 10px,#0a0a0a 5px,transparent 5.5px) 0 0/16px 10px repeat-x}
+.fm-kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fm-kpis .fm-kpi:first-child{grid-column:1/-1}
+.fm-kpi{display:flex;flex-direction:column;align-items:flex-start;text-align:left;border:1px solid #222;background:#161616;border-radius:18px;padding:14px;color:#fff;min-width:0}
+.fm-kpi .fm-note{color:#a8a8a8;opacity:1;font-size:11px}
+.fm-kpi-head{display:flex;align-items:center;gap:6px;color:#a8a8a8}
+.fm-mid{font-family:'Anton',Impact,sans-serif;font-size:28px;line-height:1.1;margin-top:6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fm-kpi.pink{border-color:rgba(255,46,136,.45);background:linear-gradient(135deg,rgba(255,46,136,.16),#161616 70%)}
+.fm-kpi.pink .fm-mid,.fm-kpi.pink .fm-kpi-head{color:#ff2e88}
+@media (min-width:760px){.fm-kpis{grid-template-columns:repeat(3,1fr)}.fm-kpis .fm-kpi:first-child{grid-column:auto}}
+.finance-explorer .fm-ticket{color:#0a0a0a}
+.finance-explorer .fm-ticket .fm-note{color:#0a0a0a}
+.finance-explorer .fm-kpi{color:#fff}
+.finance-explorer .fm-mini{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.finance-explorer .fm-mini>.card:first-child{grid-column:1/-1}
+.finance-explorer .fm-mini .card{padding:14px;min-height:0}
+.finance-explorer .fm-mini .card .amount{font-size:24px}
+.finance-explorer .fm-mini .card .note{font-size:11px}
