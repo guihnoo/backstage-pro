@@ -37,6 +37,7 @@ export default function AllAccessCalendar({
   onAddExpense,
   formatCurrency,
   isVisible = true,
+  loading = false,
 }) {
   const clientMap = useMemo(() => {
     const map = new Map();
@@ -314,6 +315,9 @@ export default function AllAccessCalendar({
               );
             })}
           </div>
+        ) : loading ? (
+          /* Enquanto os trabalhos carregam, não dizer "dia livre" (07/11) */
+          <div className="h-[76px] rounded-2xl bg-[#161616] animate-pulse" aria-label="Carregando trabalhos do dia" />
         ) : (
           /* Free day dashed banner matching Board C */
           <section className="rounded-2xl border-2 border-dashed border-[#333333] p-4 flex justify-between items-center gap-3 bg-[#111111]/50">

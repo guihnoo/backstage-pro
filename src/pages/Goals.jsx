@@ -457,6 +457,16 @@ export default function Goals() {
   useEffect(() => {
     if (!badges.length) return;
     const seen = seenRef.current;
+    // Aparelho novo / app reinstalado (lista nunca gravada): as conquistas que já existiam
+    // entram como vistas sem festa — antes o app comemorava de novo, uma por visita (07/11).
+    let fresh = false;
+    try { fresh = localStorage.getItem(SEEN_BADGES_KEY) == null; } catch { /* modo privado */ }
+    const unlocked = badges.filter(b => b.unlocked);
+    if (fresh && unlocked.length > 1) {
+      unlocked.forEach(b => seen.add(b.title));
+      try { localStorage.setItem(SEEN_BADGES_KEY, JSON.stringify([...seen])); } catch { /* quota / private mode */ }
+      return;
+    }
     const newlyUnlocked = badges.find(b => b.unlocked && !seen.has(b.title));
     if (newlyUnlocked) {
       seen.add(newlyUnlocked.title);
@@ -748,7 +758,7 @@ export default function Goals() {
                           return (
                             <>
                               <p className="text-sm font-bold text-white">
-                                {needed} diária{needed !== 1 ? 's' : ''} para bater a meta do mês
+                                {needed} diária{needed !== 1 ? 's' : ''} para a meta de diárias do mês
                               </p>
                               {daysLeft > 0 && needed > 0 && (
                                 <p className={`text-xs mt-0.5 ${onTrack ? 'text-[#ffd400]/70' : 'text-[#ffd400]/80'}`}>
@@ -988,10 +998,10 @@ export default function Goals() {
                     <div className={`bg-[#161616]/40 border border-[#262626]/50 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 text-center ${!goalStreak ? 'col-span-2' : ''}`}>
                       <p className="text-2xl font-black text-white">{eventsNeededForGoal.count}</p>
                       <p className="text-[11px] text-[#a8a8a8] leading-tight">
-                        {eventsNeededForGoal.count === 1 ? 'show ainda' : 'shows ainda'} para bater a meta
+                        {eventsNeededForGoal.count === 1 ? 'show' : 'shows'} para a meta de faturamento
                       </p>
                       <p className="text-[10px] text-[#666666] mt-0.5">
-                        média {isVisible ? formatCurrency(eventsNeededForGoal.avg) : '•••'}/show
+                        pelo seu cachê médio de {isVisible ? formatCurrency(eventsNeededForGoal.avg) : '•••'}
                       </p>
                     </div>
                   )}
@@ -1084,7 +1094,7 @@ export default function Goals() {
                     </div>
                     {yearlyPanel.projected > yearlyPanel.totalYear && (
                       <div>
-                        <p className="text-[10px] text-[#888888] uppercase tracking-wider">Projeção dezembro</p>
+                        <p className="text-[10px] text-[#888888] uppercase tracking-wider">Previsto no ano</p>
                         <p className="text-base font-black text-[#ffd400] mt-0.5">
                           {isVisible ? formatCurrency(yearlyPanel.projected) : '•••'}
                         </p>
