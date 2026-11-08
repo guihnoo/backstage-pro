@@ -1687,7 +1687,11 @@ export default function EventDetailModal({
                   <FileText className="w-3.5 h-3.5 text-[#ffd400]" />
                   Nota Fiscal Eletrônica
                 </h4>
-                <NFeAttachment event={event} client={client} />
+                <NFeAttachment
+                  event={event}
+                  client={client}
+                  appAmount={event ? calculateEventReceivableAmount({ ...event, nfe_analise: null }, eventWork) : 0}
+                />
               </div>
 
               <Separator className="bg-[#1a1a1a]" />
