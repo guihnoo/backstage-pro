@@ -13,6 +13,7 @@ import { applyAuto12Hours } from '@/lib/applyAuto12Hours';
 import { computeWorkDay, defaultDayChoice } from '@/lib/workDay';
 import { getClientDisplayName } from '@/lib/eventDisplay';
 import { haptics } from '@/lib/haptics';
+import { confetti } from '@/lib/celebrate';
 import appToast from '@/lib/appToast';
 
 const GRUPOS = [
@@ -99,6 +100,7 @@ export default function Pendencias() {
     refetchEvents?.();
     if (ok) {
       haptics.success();
+      if (tab === 'receber' || ok === selecionados.length) confetti();
       appToast.success(`${ok} ${ok === 1 ? 'trabalho resolvido' : 'trabalhos resolvidos'}`);
     }
     if (falhas.length) appToast.error(`Não deu certo em ${falhas.length}`, { description: falhas.slice(0, 3).join(' · ') });

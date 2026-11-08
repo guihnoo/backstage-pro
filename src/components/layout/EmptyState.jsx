@@ -22,28 +22,28 @@ export default function EmptyState({
     >
       {Icon && (
         <motion.div
-          initial={{ scale: 0.7, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.1, type: 'spring', stiffness: 200, damping: 18 }}
-          className="mb-5 relative"
+          initial={{ y: -18, rotate: -6, opacity: 0 }}
+          animate={{ y: 0, rotate: 0, opacity: 1 }}
+          transition={{ delay: 0.05, type: 'spring', stiffness: 160, damping: 12 }}
+          className="mb-6 relative flex flex-col items-center"
+          aria-hidden="true"
         >
-          <div
-            className="absolute inset-0 rounded-full blur-2xl opacity-20"
-            style={{ background: theme.primaryHex, transform: 'scale(1.6)' }}
-          />
-          <div
-            className="relative w-20 h-20 rounded-full flex items-center justify-center"
-            style={{
-              background: `radial-gradient(circle at 40% 35%, ${theme.primaryHex}20, transparent 70%)`,
-              border: `1px solid ${theme.primaryHex}28`,
-            }}
-          >
-            <Icon className="w-9 h-9" style={{ color: theme.primaryHex, opacity: 0.7 }} />
+          {/* Credencial do app (fita rosa + crachá com faixa ALL ACCESS), como na logo (08/11). */}
+          <div className="w-3 h-9 rounded-sm bg-[#ff2e88]" />
+          <div className="-mt-1 w-[104px] rounded-[14px] bg-[#f4f4f4] shadow-[0_14px_40px_rgba(0,0,0,0.45)] overflow-hidden">
+            <div className="mx-auto mt-2 w-6 h-1.5 rounded-full bg-[#0a0a0a]/25" />
+            <div className="flex items-center justify-center h-14">
+              <Icon className="w-8 h-8 text-[#0a0a0a]" />
+            </div>
+            <div className="bg-[#ffd400] text-[#0a0a0a] font-tag text-[9px] font-bold tracking-[2px] text-center py-1">ALL ACCESS</div>
+            <div className="flex justify-center gap-[2px] py-2">
+              {[2, 1, 3, 1, 2, 1, 1, 3, 2, 1, 2].map((w, i) => <span key={i} className="h-3 bg-[#0a0a0a]" style={{ width: w }} />)}
+            </div>
           </div>
         </motion.div>
       )}
 
-      <h3 className="text-lg font-bold text-white mb-2">
+      <h3 className="font-poster text-[24px] uppercase tracking-wide text-white mb-2">
         {title}
       </h3>
 
