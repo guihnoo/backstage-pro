@@ -3193,3 +3193,9 @@ Registro cronológico de tarefas executadas por agentes.
 - **Banco**: só leitura (contagens e esquema). Nenhuma gravação, migração ou função publicada.
 - **Testes**: unit 475/475; E2E 144 ok, 2 falhas pré-existentes (conferido na versão anterior em worktree temporário); build ok; PDF do relatório de horas aberto e conferido (sem valores).
 - **Deploy**: nenhum — aguardando autorização. Só app (push para main).
+
+### DEPLOY — rodada de 07/11 (Claude Code, 2026-11-07, pedido explícito do Guih: "ok, pode publicar agora")
+- PR #3 squash na main: f0d61b4. Vercel produção ok em ~50 s: index-DtJZSkBA.js → index-DNAjL5MY.js.
+- Sem migração e sem função nova.
+- Testes contra o site publicado (banco falso, nada gravado no real): calendar-hours-day, nfe-conferencia, relatorio-horas, home-cheguei, finance-dashboard — 19/19.
+- Falta: Guih tocar "Ativar" em Avisos no celular (push_enabled da conta está false desde o bug); testar no iPhone registrar horas em outro dia e anexar uma nota real.

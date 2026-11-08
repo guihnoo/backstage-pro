@@ -3,8 +3,8 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-11-07 (agenda/horas, A receber acumulado, escolha por dia, nota fiscal, relatório de horas, avisos — branch `feat/financeiro-calendario-v2`, **não publicado**; Claude Code)  
-**Pendente de deploy:** branch `feat/financeiro-calendario-v2` (só app, sem migração nem função). Ideias 106–113, foto do perfil, logo e Financeiro (PRs #1/#2, migração 047) **já estão no ar** — o registro do deploy de 22/10 ficou no commit `583dfba`, fora da main  
+**Última atualização:** 2026-11-07 (agenda/horas, A receber acumulado, escolha por dia, nota fiscal, relatório de horas, avisos — **publicado** f0d61b4 em 07/11; Claude Code)  
+**Pendente de deploy:** nada. Rodada de 07/11 publicada (PR #3, `f0d61b4`, bundle `index-DNAjL5MY.js`). Ideias 106–113, foto do perfil, logo e Financeiro (PRs #1/#2, migração 047) **já estão no ar** — o registro do deploy de 22/10 ficou no commit `583dfba`, fora da main  
 **Pasta local:** `C:\dev\backstage-pro` (desde 2026-10-09; a cópia antiga em `OneDrive\Documentos\backstage-pro` não é mais a pasta de trabalho)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-10-22 — revisão das telas + CHEGUEI + destinos (`03ee64a`, push de `review/telas-fase1` para `main`; bundle `index-BAYKE3jv.js`). Antes: 2026-10-22 barra SALVAR do Perfil (`b849156`)  
