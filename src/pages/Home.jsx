@@ -11,7 +11,6 @@ import { todayLocalISO, isDateBetween, getWorkForDate } from '@/components/utils
 import { isCancelledEvent } from '@/lib/eventFinance';
 import ProximoShow from '@/components/home/ProximoShow';
 import MetaMensalBar from '@/components/home/MetaMensalBar';
-import AReceber from '@/components/home/AReceber';
 import PipelineFinanceiro from '@/components/home/PipelineFinanceiro';
 import ProximosEventos from '@/components/home/ProximosEventos';
 import LiveClockBar from '@/components/home/LiveClockBar';
@@ -141,8 +140,6 @@ export default function Home() {
   const {
     stats,
     proximoEvento,
-    receivableRows,
-    totalReceivable,
     upcomingEvents,
     dailyWork,
     loading,
@@ -168,12 +165,8 @@ export default function Home() {
 
   const cockpitStats = useFallback ? fallbackDashboard.stats : stats;
   const cockpitProximo = useFallback ? fallbackDashboard.proximoEvento : proximoEvento;
-  const cockpitReceivableRows = useFallback ? fallbackDashboard.receivableRows : receivableRows;
   const cockpitUpcoming = useFallback ? fallbackDashboard.upcomingEvents : upcomingEvents;
   const cockpitDailyWork = useFallback ? fallbackDashboard.dailyWork : dailyWork;
-  const cockpitTotalReceivable = useFallback
-    ? fallbackDashboard.receivableRows.reduce((sum, r) => sum + r.totalAmount, 0)
-    : totalReceivable;
 
   // Exclui o próximo evento já exibido em destaque no bloco Palco para não duplicar na lista Agenda
   const proximosEventos = useMemo(
@@ -323,18 +316,8 @@ export default function Home() {
           ) : error && !(events?.length) ? (
             // Sem conexão os valores viriam zerados ("ninguém te devendo") — avisa em vez disso
             <LoadErrorBanner what="seu dinheiro" onRetry={refreshCockpit} />
-          ) : (
-            <AReceber
-              rows={cockpitReceivableRows}
-              totalReceivable={cockpitTotalReceivable}
-              isLoading={false}
-              onOpenEvent={(ev, tab = 'fiscal') => {
-                const full = enrichedEvents.find((x) => x.id === ev.id) || ev;
-                setDetailInitialTab(tab);
-                setDetailEvent(full);
-              }}
-            />
-          )}
+          ) : null}
+          {/* "Clientes em aberto" saiu (08/11): repetia o A receber. Quem deve aparece em Pendências. */}
           <PipelineFinanceiro
             stats={cockpitStats}
             despesasMes={despesasMes}
