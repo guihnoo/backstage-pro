@@ -11,18 +11,11 @@ import { getEventCacheAmount } from '@/lib/eventFinance';
 import { getClientDisplayName } from '@/lib/eventDisplay';
 import { toast } from 'sonner';
 import { todayLocalISO } from '@/components/utils/dateUtils';
+import { removePreviousNFe, replaceNFeFile, updateNFeWithLegacyFallback } from '@/lib/nfeFileSafety';
 
 const BUCKET = 'backstage';
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 const ACCEPT = 'application/pdf,.pdf';
-
-function extractStoragePath(publicUrl) {
-  try {
-    return publicUrl.split(`/storage/v1/object/public/${BUCKET}/`)[1] ?? null;
-  } catch {
-    return null;
-  }
-}
 
 // ── Card de resultado da análise IA ──────────────────────────────────────────
 function AnaliseCard({ analise, clienteNome }) {
@@ -142,18 +135,7 @@ export default function NFeAttachment({ event, client }) {
   const clienteNome = client ? getClientDisplayName(client) : null;
 
   async function safeUpdateNFe(patch) {
-    try {
-      return await updateEvent(event.id, patch);
-    } catch (err) {
-      // Fallback caso a migration 034 ainda não tenha sido aplicada no banco remoto
-      if (patch.nfe_numero !== undefined) {
-        return await updateEvent(event.id, {
-          nf_number: patch.nfe_numero,
-          ...(patch.nf_issued_at !== undefined ? { nf_issued_at: patch.nf_issued_at } : {}),
-        });
-      }
-      throw err;
-    }
+    return updateNFeWithLegacyFallback(updateEvent, event.id, patch);
   }
 
   async function runAnalise(pdfUrl) {
@@ -214,32 +196,19 @@ export default function NFeAttachment({ event, client }) {
       const userId = authData?.user?.id;
       if (!userId) throw new Error('Não autenticado.');
 
-      // Remove arquivo anterior
-      if (event.nfe_arquivo_url) {
-        const oldPath = extractStoragePath(event.nfe_arquivo_url);
-        if (oldPath) await supabase.storage.from(BUCKET).remove([oldPath]);
-      }
-
-      const path = `${userId}/nfe/${event.id}-${Date.now()}.pdf`;
-      const { data, error } = await supabase.storage.from(BUCKET).upload(path, file, {
-        cacheControl: '3600',
-        upsert: true,
-        contentType: 'application/pdf',
-      });
-      if (error) throw error;
-
-      const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(data.path);
-      const publicUrl = urlData.publicUrl;
       const resolvedNum = numero.trim() || currentSavedNumero || null;
-
-      await safeUpdateNFe({
-        nfe_arquivo_url: publicUrl,
-        nfe_arquivo_nome: file.name,
-        nfe_numero: resolvedNum,
-        nf_number: resolvedNum,
-        nf_issued_at: issuedAt || event?.nf_issued_at || todayLocalISO(),
-        nfe_analise: null, // limpa análise anterior
+      const { url: publicUrl, cleanupPending } = await replaceNFeFile({
+        storage: supabase.storage.from(BUCKET), file, userId, eventId: event.id,
+        previousUrl: event.nfe_arquivo_url,
+        update: safeUpdateNFe,
+        patch: {
+          nfe_numero: resolvedNum,
+          nf_number: resolvedNum,
+          nf_issued_at: issuedAt || event?.nf_issued_at || todayLocalISO(),
+          nfe_analise: null,
+        },
       });
+      if (cleanupPending) toast.warning('Novo PDF salvo. A limpeza do arquivo anterior ficou pendente.');
 
       toast.success('PDF enviado — analisando com IA...');
       setUploading(false);
@@ -273,10 +242,8 @@ export default function NFeAttachment({ event, client }) {
 
   async function handleDelete() {
     try {
-      if (event.nfe_arquivo_url) {
-        const oldPath = extractStoragePath(event.nfe_arquivo_url);
-        if (oldPath) await supabase.storage.from(BUCKET).remove([oldPath]);
-      }
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError || !authData?.user?.id) throw new Error('Não autenticado.');
       await safeUpdateNFe({
         nfe_arquivo_url: null,
         nfe_arquivo_nome: null,
@@ -285,6 +252,8 @@ export default function NFeAttachment({ event, client }) {
         nf_issued_at: null,
         nfe_analise: null,
       });
+      const cleaned = await removePreviousNFe(supabase.storage.from(BUCKET), event.nfe_arquivo_url, authData.user.id);
+      if (!cleaned) toast.warning('Vínculo removido. A limpeza do arquivo ficou pendente.');
       setNumero('');
       setIssuedAt('');
       toast.success('NF-e removida do evento.');

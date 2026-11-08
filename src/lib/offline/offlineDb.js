@@ -1,5 +1,5 @@
 const DB_NAME = 'backstage-offline-v1';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 const ENTITY_STORES = ['events', 'clients', 'expenses', 'daily_work'];
 
@@ -36,6 +36,19 @@ function openDb() {
         const m = db.createObjectStore('id_map', { keyPath: 'tempId' });
         m.createIndex('user_id', 'user_id', { unique: false });
       }
+      // Versão 1 gravava userId, mas os índices consultam user_id.
+      // Corrigir apenas o campo de índice, sem descartar fila ou mapeamentos.
+      ['sync_queue', 'id_map'].forEach((name) => {
+        const migrationCursor = req.transaction.objectStore(name).openCursor();
+        migrationCursor.onsuccess = () => {
+          const cursor = migrationCursor.result;
+          if (!cursor) return;
+          if (!cursor.value.user_id && cursor.value.userId) {
+            cursor.update({ ...cursor.value, user_id: cursor.value.userId });
+          }
+          cursor.continue();
+        };
+      });
     };
 
     req.onsuccess = () => resolve(req.result);
@@ -55,6 +68,7 @@ function tx(storeNames, mode, fn) {
         try {
           result = fn(...stores);
         } catch (err) {
+          transaction.abort();
           reject(err);
           return;
         }
@@ -71,15 +85,23 @@ export async function replaceMirrorStore(storeName, userId, rows) {
     const idx = store.index('user_id');
     const req = idx.openCursor(IDBKeyRange.only(userId));
     req.onsuccess = () => {
-      const cursor = req.result;
-      if (cursor) {
-        store.delete(cursor.primaryKey);
-        cursor.continue();
+      try {
+        const cursor = req.result;
+        if (cursor) {
+          store.delete(cursor.primaryKey);
+          cursor.continue();
+        } else {
+          // Inserir só após terminar a exclusão; o cursor também vê novos puts
+          // no mesmo índice e poderia apagar os registros recém-inseridos.
+          rows.forEach((row) => {
+            if (row?.id) store.put({ ...row, user_id: userId });
+          });
+        }
+      } catch {
+        // Falha ao clonar um registro precisa reverter também as exclusões.
+        store.transaction.abort();
       }
     };
-    rows.forEach((row) => {
-      if (row?.id) store.put({ ...row, user_id: userId });
-    });
   });
 }
 
@@ -111,7 +133,7 @@ export async function getMirrorRows(storeName, userId) {
 
 export async function enqueueSyncItem(item) {
   await tx(['sync_queue'], 'readwrite', (store) => {
-    store.put(item);
+    store.put({ ...item, user_id: item.user_id || item.userId });
   });
 }
 
@@ -145,16 +167,19 @@ export async function getSyncQueueCount(userId) {
 
 export async function saveIdMapping(userId, tempId, realId, entity) {
   await tx(['id_map'], 'readwrite', (store) => {
-    store.put({ tempId, userId, realId, entity });
+    store.put({ tempId, userId, user_id: userId, realId, entity });
   });
 }
 
 export async function resolveRecordId(userId, recordId) {
-  if (!recordId) return recordId;
+  if (!recordId || !userId) return recordId;
   const mapped = await tx(['id_map'], 'readonly', (store) => {
     return new Promise((resolve, reject) => {
       const req = store.get(recordId);
-      req.onsuccess = () => resolve(req.result?.realId || recordId);
+      req.onsuccess = () => {
+        const row = req.result;
+        resolve((row?.user_id || row?.userId) === userId ? row.realId : recordId);
+      };
       req.onerror = () => reject(req.error);
     });
   });

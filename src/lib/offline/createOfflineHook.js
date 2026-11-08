@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../authContext';
 import {
   getMirrorRows,
@@ -40,9 +40,12 @@ export function createOfflineHook({
     const { offline: isOffline } = useConnectivity();
 
     const baseRows = base[dataKey];
-    const [mirrorRows, setMirrorRows] = useState([]);
-    const [queueItems, setQueueItems] = useState([]);
-    const [mirrorReady, setMirrorReady] = useState(false);
+    const [localSnapshot, setLocalSnapshot] = useState({ userId: null, rows: [], queue: [], ready: false });
+    const currentUserRef = useRef(userId);
+    currentUserRef.current = userId;
+    const mirrorRows = localSnapshot.userId === userId ? localSnapshot.rows : [];
+    const queueItems = localSnapshot.userId === userId ? localSnapshot.queue : [];
+    const mirrorReady = localSnapshot.userId === userId && localSnapshot.ready;
 
     const refreshLocal = useCallback(async () => {
       if (!userId) return;
@@ -50,9 +53,8 @@ export function createOfflineHook({
         getMirrorRows(storeName, userId),
         getSyncQueue(userId),
       ]);
-      setMirrorRows(rows.map(mapRowFromDb));
-      setQueueItems(queue);
-      setMirrorReady(true);
+      if (currentUserRef.current !== userId) return;
+      setLocalSnapshot({ userId, rows: rows.map(mapRowFromDb), queue, ready: true });
     }, [userId, storeName, mapRowFromDb]);
 
     useEffect(() => {
@@ -70,17 +72,20 @@ export function createOfflineHook({
     }, [refreshLocal]);
 
     useEffect(() => {
-      if (!userId || base.loading) return;
-      replaceMirrorStore(storeName, userId, (baseRows || []).map((r) => ({ ...r, user_id: userId }))).catch(
+      if (!userId || base.loading || base.error || isOffline) return;
+      // Hooks online podem manter a resposta da conta anterior enquanto recarregam.
+      // Não reatribuir essas linhas ao novo usuário nem contaminar seu espelho.
+      if ((baseRows || []).some(row => row.user_id !== userId)) return;
+      replaceMirrorStore(storeName, userId, baseRows || []).catch(
         () => {}
       );
-    }, [userId, baseRows, base.loading, storeName]);
+    }, [userId, baseRows, base.loading, base.error, isOffline, storeName]);
 
     const entityQueue = queueItems.filter((q) => q.entity === entity);
     const hasPending = entityQueue.length > 0;
 
     const effectiveRows = useMemo(() => {
-      let source = baseRows || [];
+      let source = (baseRows || []).filter(row => row.user_id === userId);
 
       if ((isOffline || base.error) && mirrorRows.length) {
         source = mirrorRows;
@@ -94,6 +99,7 @@ export function createOfflineHook({
       return [...source].sort(sortRows);
     }, [
       baseRows,
+      userId,
       base.error,
       mirrorRows,
       queueItems,

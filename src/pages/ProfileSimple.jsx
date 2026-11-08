@@ -152,7 +152,7 @@ export default function ProfileSimple() {
     try {
       const result = await createBackup({});
       if (result?.data?.success) {
-        appToast.success('Dados exportados!', { description: 'Arquivo JSON salvo no seu dispositivo.' });
+        appToast.success('Dados exportados!', { description: 'Cadastros exportados. Arquivos anexados e restauração não estão incluídos.' });
       } else {
         appToast.error('Erro ao exportar', { description: result?.data?.error || 'Tente novamente.' });
       }
@@ -694,8 +694,11 @@ export default function ProfileSimple() {
             <span className="text-sm font-bold text-white">Privacidade e termos</span>
             <ChevronRight className="w-4 h-4 text-[#666666] shrink-0" />
           </Link>
-          <button type="button" onClick={handleExportData} disabled={exporting} className={`${rowCls} disabled:opacity-50`}>
-            <span className="text-sm font-bold text-white">{exporting ? 'Exportando...' : 'Baixar meus dados'}</span>
+          <button type="button" onClick={handleExportData} disabled={exporting} aria-label={exporting ? 'Exportando...' : 'Baixar meus dados'} aria-describedby="export-scope" className={`${rowCls} disabled:opacity-50`}>
+            <span className="min-w-0 text-left">
+              <span className="block text-sm font-bold text-white">{exporting ? 'Exportando...' : 'Baixar meus dados'}</span>
+              <span id="export-scope" className="block text-[11px] text-[#888888]">Eventos, diárias, clientes, despesas e configurações. Sem arquivos anexados ou restauração.</span>
+            </span>
             {exporting ? <Loader2 className="w-4 h-4 animate-spin text-[#a8a8a8]" /> : <Download className="w-4 h-4 text-[#666666] shrink-0" />}
           </button>
           {showLogoutConfirm ? (

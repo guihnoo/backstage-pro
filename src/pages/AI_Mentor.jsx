@@ -17,8 +17,7 @@ import { getEventCacheAmount } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { todayLocalISO } from '@/components/utils/dateUtils';
 
-const STORAGE_KEY = 'backstage_ai_conversations';
-const MAX_HISTORY = 20;
+import { loadMentorHistory, saveMentorHistory } from '@/lib/mentorHistory';
 
 const CATEGORY_HINTS = {
   audio:      'Pergunte sobre cachês PA/FOH, diárias, contratos pendentes e metas.',
@@ -56,15 +55,6 @@ function TypingDots({ color }) {
       </div>
     </div>
   );
-}
-
-function loadConversations() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-  catch { return []; }
-}
-
-function saveConversations(convs) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(convs.slice(0, MAX_HISTORY)));
 }
 
 function newConversation() {
@@ -115,6 +105,12 @@ function ConversationItem({ conv, isActive, onSelect, onDelete, primaryHex }) {
 }
 
 export default function AIMentorPage() {
+  const { user } = useAuth();
+  // A troca de conta desmonta imediatamente estado, mensagens e requisições da anterior.
+  return user?.id ? <AIMentorSession key={user.id} userId={user.id} /> : null;
+}
+
+function AIMentorSession({ userId }) {
   const { user, profile } = useAuth();
   const { stats } = useStats(user?.id);
   const { clients } = useClients();
@@ -126,13 +122,22 @@ export default function AIMentorPage() {
   const metaDiarias = Number(profile?.monthly_goal_events) || 0;
   const metaReceita = Number(profile?.monthly_goal_revenue) || 0;
 
-  const [conversations, setConversations] = useState(() => loadConversations());
+  const [conversations, setConversations] = useState(() => loadMentorHistory(userId));
   const [currentConv, setCurrentConv] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+
+  const activeRef = useRef(true);
+  useEffect(() => {
+    activeRef.current = true;
+    return () => {
+      activeRef.current = false;
+      window.speechSynthesis?.cancel();
+    };
+  }, []);
 
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
@@ -184,9 +189,14 @@ export default function AIMentorPage() {
   }), [stats, events, clientMap, clients, profile]);
 
   const persistConversations = useCallback((convs) => {
+    if (!activeRef.current) return;
+    try {
+      saveMentorHistory(userId, convs);
+    } catch {
+      appToast.error('Não foi possível salvar o histórico neste aparelho.');
+    }
     setConversations(convs);
-    saveConversations(convs);
-  }, []);
+  }, [userId]);
 
   const handleSelectConv = useCallback((conv) => {
     setCurrentConv(conv);
@@ -245,6 +255,7 @@ export default function AIMentorPage() {
         },
       });
 
+      if (!activeRef.current) return;
       if (error) {
         const ctx = error.context;
         let detail = error.message || 'Erro na edge function';
@@ -268,11 +279,12 @@ export default function AIMentorPage() {
       ));
       setCurrentConv(finalConv);
     } catch (err) {
+      if (!activeRef.current) return;
       appToast.error('Erro ao enviar mensagem', { description: err.message });
       setMessages(updatedMessages.slice(0, -1)); // revert user message on error
     } finally {
-      setLoading(false);
-      if (textareaRef.current) {
+      if (activeRef.current) setLoading(false);
+      if (activeRef.current && textareaRef.current) {
         textareaRef.current.style.height = '';
         textareaRef.current.focus();
       }
