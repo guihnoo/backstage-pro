@@ -178,7 +178,7 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
           ? { meal_allowance: Math.max(0, Number.isFinite(parseBRL(formData.meal)) ? parseBRL(formData.meal) : Number(mealClient?.meal_daily_value) || 0) }
           : {}),
         ...(REGIME_POR_DIA_ATIVO
-          ? { regime: formData.regime, hora_extra: Boolean(formData.hora_extra), origem: 'lancada' }
+          ? { regime: summary.regime || 'cheia', hora_extra: Boolean(formData.hora_extra), origem: 'lancada' }
           : {}),
       };
 
@@ -300,9 +300,10 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
               </div>
               )}
 
-              {REGIME_POR_DIA_ATIVO && !isPonto && (
+              {REGIME_POR_DIA_ATIVO && (
                 <DayChoicePicker
-                  regime={formData.regime}
+                  regime={summary.regime || 'cheia'}
+                  auto={summary.regimeAuto}
                   horaExtra={formData.hora_extra}
                   accentColor={primaryHex}
                   onChange={({ regime, horaExtra }) => setFormData((prev) => ({ ...prev, regime, hora_extra: horaExtra }))}

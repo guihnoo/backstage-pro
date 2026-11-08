@@ -79,7 +79,7 @@ export function FloatingTimer() {
         total_hours: hours,
         ...(event ? { overtime_hours: day.overtimeHours, daily_cache: day.cache } : {}),
         ...(event && REGIME_POR_DIA_ATIVO && choice
-          ? { regime: choice.regime, hora_extra: Boolean(choice.horaExtra), origem: 'lancada' }
+          ? { regime: day.regime || 'cheia', hora_extra: Boolean(choice.horaExtra), origem: 'lancada' }
           : {}),
         notes: `Registrado via Timer — ${formatElapsed(ms)} de trabalho`,
       });

@@ -1505,7 +1505,15 @@ export default function EventDetailModal({
                       return (
                         <div key={work.id || idx} className="p-3 bg-[#161616] rounded-lg border border-[#262626]">
                           <div className="flex justify-between items-start mb-2 gap-2">
-                            <p className="font-medium text-white text-sm">{formatDisplayDate(work.date)}</p>
+                            <div className="min-w-0">
+                              <p className="font-medium text-white text-sm">{formatDisplayDate(work.work_date || work.date)}</p>
+                              {(work.regime || Number(work.overtime_hours) > 0) && (
+                                <p className="text-[11px] text-[#a8a8a8]" data-testid="work-day-choice">
+                                  {{ meia: 'Meio cachê', cheia: 'Cachê cheio', dobra: 'Dobra' }[work.regime] || 'Cachê'}
+                                  {work.hora_extra !== false && Number(work.overtime_hours) > 0 ? ` + ${String(work.overtime_hours).replace('.', ',')}h extra` : ''}
+                                </p>
+                              )}
+                            </div>
                             <div className="flex items-center gap-1 flex-shrink-0">
                               <div className="text-right mr-1">
                                 <p className="text-[#ffd400] font-bold text-sm">{isVisible ? formatCurrency(work.daily_cache || 0) : '••••'}</p>

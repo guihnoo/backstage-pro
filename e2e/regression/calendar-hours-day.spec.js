@@ -63,4 +63,38 @@ test.describe('Agenda: horas no dia tocado', () => {
       expect(gravado).toMatchObject({ event_id: MULTI_ID, work_date: localISO(offset), entry_time: '14:00', exit_time: '22:00' });
     });
   }
+
+  test('mesmo trabalho: ontem hora extra, amanhã dobra', async ({ page }) => {
+    const mesmoMes = [-1, 1].every((o) => { const d = new Date(); d.setDate(d.getDate() + o); return d.getMonth() === new Date().getMonth(); });
+    test.skip(!mesmoMes, 'dias em outro mês');
+    await page.setViewportSize({ width: 390, height: 844 });
+    await seedAuth(page);
+    await installFakeDb(page, seedComTrabalhoDeVariosDias());
+    const gravados = [];
+    page.on('request', (r) => {
+      if (/\/rest\/v1\/daily_work/.test(r.url()) && ['POST', 'PATCH'].includes(r.method())) gravados.push(r.postDataJSON());
+    });
+
+    // Ontem: 08:00–22:00 com hora extra (cachê 900 + 2 h × 75).
+    let dialog = await abrirHorasNoDia(page, -1);
+    await dialog.locator('input[type="time"]').nth(0).fill('08:00');
+    await dialog.locator('input[type="time"]').nth(1).fill('22:00');
+    await expect(dialog.getByTestId('day-choice')).toContainText('automático');
+    await expect(dialog.getByRole('checkbox', { name: 'Contar hora extra neste dia' })).toBeChecked();
+    await dialog.getByRole('button', { name: /^salvar$/i }).click();
+    await expect.poll(() => gravados.length, { timeout: 10_000 }).toBe(1);
+    expect(gravados[0]).toMatchObject({ work_date: localISO(-1), regime: 'cheia', hora_extra: true, daily_cache: 1050 });
+    await expect(dialog).toBeHidden({ timeout: 10_000 });
+
+    // Amanhã: 08:00–20:00 em dobra, sem hora extra.
+    dialog = await abrirHorasNoDia(page, 1);
+    await dialog.locator('input[type="time"]').nth(0).fill('08:00');
+    await dialog.locator('input[type="time"]').nth(1).fill('20:00');
+    await dialog.getByRole('radio', { name: /Dobra/ }).click();
+    await dialog.getByRole('checkbox', { name: 'Contar hora extra neste dia' }).uncheck();
+    await expect(dialog.getByTestId('day-choice')).not.toContainText('automático');
+    await dialog.getByRole('button', { name: /^salvar$/i }).click();
+    await expect.poll(() => gravados.length, { timeout: 10_000 }).toBe(2);
+    expect(gravados[1]).toMatchObject({ work_date: localISO(1), regime: 'dobra', hora_extra: false, daily_cache: 1800 });
+  });
 });

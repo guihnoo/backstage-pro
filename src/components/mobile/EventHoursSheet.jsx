@@ -252,7 +252,7 @@ export default function EventHoursSheet({
         notes: formData.notes || null,
         photo_url: formData.photo_url || null,
         ...(REGIME_POR_DIA_ATIVO
-          ? { regime: formData.regime, hora_extra: Boolean(formData.hora_extra), origem: 'lancada' }
+          ? { regime: day.regime || 'cheia', hora_extra: Boolean(formData.hora_extra), origem: 'lancada' }
           : {})
       };
 
@@ -465,9 +465,10 @@ export default function EventHoursSheet({
                 </div>
                 )}
 
-                {REGIME_POR_DIA_ATIVO && !isPonto && (
+                {REGIME_POR_DIA_ATIVO && (
                   <DayChoicePicker
-                    regime={formData.regime}
+                    regime={day.regime || 'cheia'}
+                    auto={day.regimeAuto}
                     horaExtra={formData.hora_extra}
                     accentColor={primaryHex}
                     onChange={({ regime, horaExtra }) => {
