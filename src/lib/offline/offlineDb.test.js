@@ -66,7 +66,7 @@ describe('IndexedDB real com dados sintéticos e rede bloqueada', () => {
     expect(result.b).toHaveLength(1);
     expect(result.mapping).toBe('tmpA');
   });
-  it('migra a versão 1 preservando a fila e os mapeamentos existentes', async () => {
+  it('migra a versão 1: mapeamentos valem, fila antiga fica guardada sem reenvio automático', async () => {
     await page.evaluate(() => new Promise((resolve, reject) => {
       const request = indexedDB.open('backstage-offline-v1', 1);
       request.onupgradeneeded = () => {
@@ -86,9 +86,27 @@ describe('IndexedDB real com dados sintéticos e rede bloqueada', () => {
       request.onerror = () => reject(request.error);
     }));
     await load();
-    const result = await page.evaluate(async () => ({ a: await window.offlineTest.getSyncQueue('A'), b: await window.offlineTest.getSyncQueue('B'), mapped: await window.offlineTest.resolveRecordId('A', 'oldTemp') }));
-    expect(result.a.map(row => row.id)).toEqual(['legacyA']);
-    expect(result.b.map(row => row.id)).toEqual(['legacyB']);
+    const result = await page.evaluate(async () => {
+      // Primeiro o app abre o banco (faz a migração); só depois olhamos o que ficou guardado.
+      const a = await window.offlineTest.getSyncQueue('A');
+      const b = await window.offlineTest.getSyncQueue('B');
+      const mapped = await window.offlineTest.resolveRecordId('A', 'oldTemp');
+      const guardados = await new Promise((resolve, reject) => {
+        const req = indexedDB.open('backstage-offline-v1');
+        req.onsuccess = () => {
+          const all = req.result.transaction('sync_queue').objectStore('sync_queue').getAll();
+          all.onsuccess = () => { resolve(all.result); req.result.close(); };
+          all.onerror = () => reject(all.error);
+        };
+        req.onerror = () => reject(req.error);
+      });
+      return { a, b, mapped, guardados };
+    });
+    // Não reenvia alterações antigas (sobrescreveriam edições feitas depois)...
+    expect(result.a).toEqual([]);
+    expect(result.b).toEqual([]);
+    // ...mas não apaga nada: ficam guardadas e marcadas.
+    expect(result.guardados.map(row => [row.id, row.legacy_v1])).toEqual([['legacyA', true], ['legacyB', true]]);
     expect(result.mapped).toBe('oldReal');
   });
 });

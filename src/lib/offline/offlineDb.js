@@ -36,15 +36,19 @@ function openDb() {
         const m = db.createObjectStore('id_map', { keyPath: 'tempId' });
         m.createIndex('user_id', 'user_id', { unique: false });
       }
-      // Versão 1 gravava userId, mas os índices consultam user_id.
-      // Corrigir apenas o campo de índice, sem descartar fila ou mapeamentos.
+      // Versão 1 gravava userId, mas os índices consultam user_id: a fila antiga NUNCA foi enviada.
+      // Mapeamentos (id_map) são corrigidos — só ajudam a achar o id real.
+      // A fila antiga fica guardada e marcada, mas NÃO volta a ser enviada sozinha: uma alteração
+      // de semanas atrás sobrescreveria o que o usuário editou depois (decisão de 07/11/2026).
       ['sync_queue', 'id_map'].forEach((name) => {
         const migrationCursor = req.transaction.objectStore(name).openCursor();
         migrationCursor.onsuccess = () => {
           const cursor = migrationCursor.result;
           if (!cursor) return;
           if (!cursor.value.user_id && cursor.value.userId) {
-            cursor.update({ ...cursor.value, user_id: cursor.value.userId });
+            cursor.update(name === 'id_map'
+              ? { ...cursor.value, user_id: cursor.value.userId }
+              : { ...cursor.value, legacy_v1: true });
           }
           cursor.continue();
         };
