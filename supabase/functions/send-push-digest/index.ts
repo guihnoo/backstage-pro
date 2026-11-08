@@ -58,6 +58,13 @@ Deno.serve(async (req) => {
   );
 
   const sentDate = todayLocalDateStr();
+  // 'exit' = rodada de hora em hora (só a saída esquecida); padrão = resumo das 8h/18h.
+  let mode: 'digest' | 'exit' = 'digest';
+  try {
+    const body = await req.clone().json();
+    if (body?.mode === 'exit') mode = 'exit';
+  } catch { /* sem corpo */ }
+  const lookback = new Date(Date.parse(sentDate + 'T12:00:00Z') - 60 * 86_400_000).toISOString().slice(0, 10);
   const { monthStart, monthEnd } = monthBounds();
 
   const { data: settingsRows, error: settingsError } = await supabase
@@ -84,16 +91,15 @@ Deno.serve(async (req) => {
       supabase.from('push_subscriptions').select('endpoint, p256dh, auth').eq('user_id', userId),
       supabase
         .from('events')
-        .select('id, title, client_id, start_date, end_date, payment_due_date, payment_status, status, daily_cache_value, actual_revenue, estimated_revenue')
+        .select('id, title, client_id, start_date, end_date, payment_due_date, payment_status, status, daily_cache_value, actual_revenue, estimated_revenue, nfe_numero, nf_number, nfe_arquivo_url, nf_issued_at')
         .eq('user_id', userId),
-      supabase.from('clients').select('id, name').eq('user_id', userId),
+      supabase.from('clients').select('id, name, client_type').eq('user_id', userId),
       supabase.from('profiles').select('monthly_goal_events').eq('id', userId).maybeSingle(),
       supabase
         .from('daily_work')
-        .select('date')
+        .select('id, event_id, date, work_date, entry_time, exit_time')
         .eq('user_id', userId)
-        .gte('date', monthStart)
-        .lte('date', monthEnd),
+        .gte('date', lookback),
       supabase
         .from('push_sent_log')
         .select('notification_key')
@@ -105,13 +111,16 @@ Deno.serve(async (req) => {
     if (!subscriptions.length) continue;
 
     const alreadySent = new Set((sentRes.data || []).map((r) => r.notification_key));
-    const uniqueDays = new Set((workRes.data || []).map((w) => w.date));
+    const work = workRes.data || [];
+    const uniqueDays = new Set(work.map((w) => w.date).filter((d) => d && d >= monthStart && d <= monthEnd));
 
     const payloads = buildPushDigest({
       events: eventsRes.data || [],
       clients: clientsRes.data || [],
       profile: profileRes.data,
       diariasCount: uniqueDays.size,
+      work,
+      mode,
       prefs: {
         push_events: settings.push_events,
         push_payments: settings.push_payments,
@@ -159,7 +168,7 @@ Deno.serve(async (req) => {
   }
 
   return new Response(
-    JSON.stringify({ ok: true, users, sent, skipped, date: sentDate }),
+    JSON.stringify({ ok: true, mode, users, sent, skipped, date: sentDate }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
   );
 });

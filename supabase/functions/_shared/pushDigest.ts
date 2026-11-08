@@ -11,9 +11,28 @@ type EventRow = {
   daily_cache_value: number | null;
   actual_revenue: number | null;
   estimated_revenue: number | null;
+  nfe_numero?: string | null;
+  nf_number?: string | null;
+  nfe_arquivo_url?: string | null;
+  nf_issued_at?: string | null;
 };
 
-type ClientRow = { id: string; name: string | null };
+type ClientRow = { id: string; name: string | null; client_type?: string | null };
+
+export type WorkRow = {
+  id: string;
+  event_id: string | null;
+  work_date?: string | null;
+  date?: string | null;
+  entry_time?: string | null;
+  exit_time?: string | null;
+};
+
+/** Depois de 12 h da entrada sem saída, lembra a cada 3 h até registrar. */
+export const PUSH_EXIT_AFTER_HOURS = 12;
+export const PUSH_EXIT_REPEAT_HOURS = 3;
+/** Horas que faltam: só trabalhos que terminaram nos últimos 45 dias (não lembrar de 2024). */
+export const PUSH_HOURS_LOOKBACK_DAYS = 45;
 type ProfileRow = { monthly_goal_events: number | null };
 
 export type PushPayload = {
@@ -111,6 +130,8 @@ export function buildPushDigest({
   diariasCount = 0,
   today = new Date(),
   prefs = { push_events: true, push_payments: true, push_goals: false },
+  work = [],
+  mode = 'digest',
 }: {
   events: EventRow[];
   clients: ClientRow[];
@@ -118,12 +139,95 @@ export function buildPushDigest({
   diariasCount?: number;
   today?: Date;
   prefs?: { push_events?: boolean; push_payments?: boolean; push_goals?: boolean };
+  work?: WorkRow[];
+  /** 'digest' = 8h/18h (tudo); 'exit' = rodada de hora em hora, só a saída esquecida. */
+  mode?: 'digest' | 'exit';
 }): PushPayload[] {
   if (!Number.isFinite(today.getTime())) return [];
   const todayStr = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(today);
   const tomorrowStr = toDateStr(addDays(parseDate(todayStr), 1));
   const clientMap = new Map(clients.map((c) => [c.id, c.name || 'Cliente']));
+  const clientById = new Map(clients.map((c) => [c.id, c]));
+  const eventById = new Map(events.map((e) => [e.id, e]));
   const out: PushPayload[] = [];
+
+  // Saída esquecida (CHEGUEI sem BATER SAÍDA): 12 h depois da entrada e a cada 3 h até registrar.
+  if (prefs.push_events !== false) {
+    for (const w of work) {
+      if (!w?.entry_time || w.exit_time || !w.event_id) continue;
+      const day = dateKey(w.work_date || w.date);
+      const hhmm = String(w.entry_time).slice(0, 5);
+      if (!day || !/^\d{2}:\d{2}$/.test(hhmm)) continue;
+      // Horário do Brasil (UTC-3, sem horário de verão desde 2019).
+      const entryAt = Date.parse(`${day}T${hhmm}:00-03:00`);
+      const hours = (today.getTime() - entryAt) / 3_600_000;
+      if (!(hours >= PUSH_EXIT_AFTER_HOURS) || hours > 72) continue;
+      const slot = Math.floor((hours - PUSH_EXIT_AFTER_HOURS) / PUSH_EXIT_REPEAT_HOURS);
+      const ev = eventById.get(w.event_id);
+      out.push({
+        key: `exit:${w.id}:${slot}`,
+        type: 'exit_reminder',
+        priority: 'urgent',
+        title: 'Registre sua saída',
+        body: `${ev?.title || 'Trabalho'}: entrada às ${hhmm}, ${Math.floor(hours)} h sem saída. Toque para registrar.`,
+        url: '/pendencias?grupo=saidaAberta',
+      });
+    }
+  }
+  if (mode === 'exit') return out.slice(0, 3);
+
+  // Horas que faltam: dias já passados de trabalhos recentes sem registro — todo dia até registrar.
+  if (prefs.push_events !== false) {
+    const workDays = new Map<string, Set<string>>();
+    for (const w of work) {
+      const day = dateKey(w?.work_date || w?.date);
+      if (!w?.event_id || !day) continue;
+      if (!workDays.has(w.event_id)) workDays.set(w.event_id, new Set());
+      workDays.get(w.event_id)!.add(day);
+    }
+    const oldest = toDateStr(addDays(parseDate(todayStr), -PUSH_HOURS_LOOKBACK_DAYS));
+    for (const ev of events) {
+      if (['cancelled', 'cancelado'].includes(ev.status || '')) continue;
+      const startStr = dateKey(missing(ev.start_date) ? ev.event_date : ev.start_date);
+      const endStr = missing(ev.end_date) ? startStr : dateKey(ev.end_date);
+      if (!startStr || !endStr || endStr < startStr || endStr < oldest) continue;
+      const have = workDays.get(ev.id) || new Set();
+      let missingDays = 0;
+      for (let d = parseDate(startStr), i = 0; toDateStr(d) < todayStr && toDateStr(d) <= endStr && i < 60; d = addDays(d, 1), i++) {
+        if (!have.has(toDateStr(d))) missingDays += 1;
+      }
+      if (!missingDays) continue;
+      out.push({
+        key: `hours:${ev.id}`,
+        type: 'hours_reminder',
+        priority: 'high',
+        title: 'Registre as horas',
+        body: `${ev.title}: ${missingDays} dia${missingDays > 1 ? 's' : ''} sem horas registradas.`,
+        url: '/pendencias?grupo=semHoras',
+      });
+    }
+  }
+
+  // Nota fiscal: um resumo por dia dos trabalhos de empresa já feitos sem nota.
+  if (prefs.push_payments !== false) {
+    const semNota = events.filter((ev) => {
+      if (['cancelled', 'cancelado'].includes(ev.status || '')) return false;
+      const endStr = dateKey(ev.end_date) || dateKey(ev.start_date);
+      const client = ev.client_id ? clientById.get(ev.client_id) : null;
+      return Boolean(endStr && endStr < todayStr && client && client.client_type !== 'pessoa'
+        && !(ev.nfe_numero || ev.nf_number || ev.nfe_arquivo_url || ev.nf_issued_at));
+    }).length;
+    if (semNota) {
+      out.push({
+        key: 'nf:resumo',
+        type: 'nf_reminder',
+        priority: 'medium',
+        title: 'Notas fiscais pendentes',
+        body: `${semNota} trabalho${semNota > 1 ? 's' : ''} sem nota registrada. Marque as já enviadas.`,
+        url: '/pendencias?grupo=semNota',
+      });
+    }
+  }
 
   for (const ev of events) {
     if (['cancelled', 'cancelado'].includes(ev.status || '')) continue;
@@ -169,7 +273,7 @@ export function buildPushDigest({
         priority: paymentTiming.isOverdue ? 'urgent' : 'high',
         title: paymentTiming.isOverdue ? 'Pagamento vencido' : 'Pagamento pendente',
         body: `${ev.title} · ${formatBRL(amount)} · encerrado há ${paymentTiming.daysSinceEnd} dias. ${dueMessage}`,
-        url: '/reports?aba=receber',
+        url: '/pendencias?grupo=receber',
       });
     }
   }
@@ -192,5 +296,5 @@ export function buildPushDigest({
   const order = { urgent: 0, high: 1, medium: 2 };
   return out
     .sort((a, b) => order[a.priority] - order[b.priority])
-    .slice(0, 3);
+    .slice(0, 4);
 }
