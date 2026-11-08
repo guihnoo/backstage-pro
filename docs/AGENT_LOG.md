@@ -3247,3 +3247,9 @@ Registro cronológico de tarefas executadas por agentes.
 - **Novo**: src/lib/roadie/context.js (retrato da conta com as regras das telas: mês, 6 meses, a receber, pendências, clientes com média/prazo médio/deve, próximos); src/lib/roadie/engine.js (cartões proativos); RoadieDock (botão em todas as telas + gaveta com cartões por tela + pergunta); RoadieAvatar (credencial com R); /roadie (mesma página, nome novo, atalhos, envio automático de ?q=, respostas com botões para rotas do app); ai-chat com instrução do Roadie e respostas locais.
 - **Testes**: unit 487/487; E2E roadie.spec.js 2/2; build ok.
 - **Deploy**: pendente de ok (app + ai-chat).
+
+### 2026-11-08 — Deploy do Roadie fase 1 (Claude Code)
+- **Pedido**: "ok autorizado, continue".
+- **Supabase**: ai-chat v18 (verify_jwt mantido; sem login responde 401).
+- **App**: PR #10 mesclado (main `632e9f7`), Vercel produção `index-BO3bkKJ7.js`.
+- **Testes em produção**: roadie.spec.js 2/2.
