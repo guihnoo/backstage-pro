@@ -4,6 +4,7 @@ const routeLoaders = {
   '/clients': () => import('@/pages/Clients.jsx'),
   '/goals': () => import('@/pages/Goals.jsx'),
   '/mapa': () => import('@/pages/Mapa.jsx'),
+  '/pendencias': () => import('@/pages/Pendencias.jsx'),
   '/expenses': () => import('@/pages/Expenses.jsx'),
   '/reports': () => import('@/pages/Reports.jsx'),
   '/profile': () => import('@/pages/ProfileSimple.jsx'),

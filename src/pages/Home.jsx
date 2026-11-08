@@ -28,6 +28,7 @@ import { useDailyWork } from '@/lib/useDailyWork';
 import { findRecentMissingHours } from '@/lib/homeSummary';
 import HomeMonthSummary from '@/components/home/HomeMonthSummary';
 import LoadErrorBanner from '@/components/layout/LoadErrorBanner';
+import PendenciasBanner from '@/components/home/PendenciasBanner';
 
 const EventDetailModal = lazy(() => import('@/components/calendar/EventDetailModal'));
 const EventForm = lazy(() => import('@/components/calendar/EventForm'));
@@ -287,6 +288,8 @@ export default function Home() {
             }}
           />
         )}
+
+        {!cockpitLoading && <PendenciasBanner events={events} dailyWork={hookDailyWork} clients={clients} />}
 
         {/* Bloco 1 — Palco */}
         <HomeSection label="PRÓXIMO SHOW">

@@ -16,7 +16,7 @@ import { installFakeDb, resetFakeDb, FAKE_IDS } from '../helpers/fakeDb.js';
 test.skip(!process.env.BP_CRAWL, 'varredura longa: rode com BP_CRAWL=1');
 test.describe.configure({ mode: 'parallel' });
 
-const ROTAS_VALIDAS = ['/', '/calendar', '/clients', '/expenses', '/reports', '/client-detail', '/goals', '/mapa', '/profile', '/help', '/ai-mentor', '/admin/feedbacks', '/admin/empresas', '/login', '/onboarding', '/privacidade', '/termos', '/fechamento'];
+const ROTAS_VALIDAS = ['/', '/pendencias', '/calendar', '/clients', '/expenses', '/reports', '/client-detail', '/goals', '/mapa', '/profile', '/help', '/ai-mentor', '/admin/feedbacks', '/admin/empresas', '/login', '/onboarding', '/privacidade', '/termos', '/fechamento'];
 
 const TELAS = [
   { nome: 'inicio', url: '/' },
