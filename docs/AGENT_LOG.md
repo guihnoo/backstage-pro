@@ -3240,3 +3240,10 @@ Registro cronológico de tarefas executadas por agentes.
 - **Dados**: os 3 trabalhos não pagos de outubro (24/10, 27/10, 31/10) que o fechamento tinha dado baixa voltaram ao estado anterior (confirmed/unpaid, sem valor/data). Até 30/09 segue fechado.
 - **Lote 2**: Início sem "Clientes em aberto" (repetia o A receber) e CHEGUEI com contador ao vivo; Agenda com números do mês só no topo (grade 2×2 tocável), ponto amarelo/rosa de horas em cada dia passado e cartão do dia deslizando; janela do trabalho com ciclo tocável (Agendado edita, Realizado marca, Horas abre o 1º dia que falta, Pago abre a confirmação) e gaveta com puxador no celular.
 - **Testes**: unit 482/482; E2E 144 ok, instáveis por carga repetidos sozinhos 26/26; novo janela-ciclo.spec.js.
+
+### 2026-11-08 — Roadie fase 1 (Claude Code, branch feat/roadie)
+- **Pedido**: Mentor "não serve pra nada"; nome novo (Roadie, escolhido; "Contrarregra" recusado); ele tem que interagir sozinho com o usuário e o app. Liberdade padrão: preparar e o usuário aprova.
+- **Diagnóstico**: só ~8 números + 5 próximos trabalhos iam para a IA; 1 conversa no banco; e **toda resposta derrubava a tela** (MessageBubble passava className ao react-markdown 9).
+- **Novo**: src/lib/roadie/context.js (retrato da conta com as regras das telas: mês, 6 meses, a receber, pendências, clientes com média/prazo médio/deve, próximos); src/lib/roadie/engine.js (cartões proativos); RoadieDock (botão em todas as telas + gaveta com cartões por tela + pergunta); RoadieAvatar (credencial com R); /roadie (mesma página, nome novo, atalhos, envio automático de ?q=, respostas com botões para rotas do app); ai-chat com instrução do Roadie e respostas locais.
+- **Testes**: unit 487/487; E2E roadie.spec.js 2/2; build ok.
+- **Deploy**: pendente de ok (app + ai-chat).
