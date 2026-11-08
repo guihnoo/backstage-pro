@@ -3261,3 +3261,8 @@ Registro cronológico de tarefas executadas por agentes.
 - **Build**: ok. **Unit** 497/497. **E2E** 156 ok, 1 pulado.
 - **Deploy**: pendente de ok (app + ai-chat + send-push-digest + migração 049).
 
+### 2026-11-08 — Deploy Roadie fases 2–3 + design lote 3 (Claude Code)
+- **Pedido**: "Pode publicar agora".
+- **Supabase**: ai-chat v19 (ações; sem login 401), send-push-digest v10 (mode brief; sem chave 401), migração 049 aplicada (cron da manhã com {"mode":"brief"}, conferido).
+- **App**: PR #11 mesclado (main a25a288), Vercel produção index-BF_j3hGK.js.
+- **Testes em produção**: roadie, roadie-acoes, pendencias, profile-navigation, finance-dashboard — 21 ok + 1 instável na 1ª rodada (cache do bundle novo); roadie-acoes repetido 5/5.
