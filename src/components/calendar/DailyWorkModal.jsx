@@ -67,6 +67,9 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
     return () => clearInterval(id);
   }, [timerForThisEvent]);
 
+  // O formulário só recomeça quando muda o DIA, o trabalho ou o registro — não a cada
+  // atualização da tela (antes: `new Date()` novo a cada render apagava o que foi digitado).
+  const dateKey = date ? normalizeDateString(date) : '';
   useEffect(() => {
     if (!isOpen) return;
     setFichaCompleta(false);
@@ -98,7 +101,8 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
       regime: defaultDayChoice(event).regime,
       hora_extra: defaultDayChoice(event).horaExtra,
     });
-  }, [isOpen, existingWork, date, event]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, existingWork?.id, dateKey, event?.id]);
 
   // Regra única de horas e cachê (src/lib/workDay.js)
   const summary = useMemo(() => {
@@ -135,6 +139,13 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
 
     if (!formData.date || !formData.entry_time || !formData.exit_time) {
       appToast.error('Preencha data, entrada e saída.');
+      return;
+    }
+
+    const firstDay = normalizeDateString(event.start_date || event.event_date || formData.date);
+    const lastDay = normalizeDateString(event.end_date || event.start_date || formData.date);
+    if (formData.date < firstDay || formData.date > lastDay) {
+      appToast.error(`Escolha um dia do trabalho: de ${formatDisplayDate(firstDay)} a ${formatDisplayDate(lastDay)}.`);
       return;
     }
 
@@ -198,7 +209,7 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
           </DialogTitle>
         </DialogHeader>
 
-        <form className="flex flex-col flex-1 min-h-0" onSubmit={handleSubmit}>
+        <form className="flex flex-col flex-1 min-h-0" onSubmit={handleSubmit} noValidate>
           <ScrollArea fill>
             <div className="space-y-4 p-4 sm:p-6 pb-2">
               <div className="space-y-2">
@@ -208,7 +219,7 @@ export default function DailyWorkModal({ isOpen, onClose, date, event, existingW
                   type="date"
                   value={formData.date}
                   min={event?.start_date || undefined}
-                  max={normalizeDateString(new Date())}
+                  max={event?.end_date || event?.start_date || undefined}
                   onChange={(e) => setField('date', e.target.value)}
                   className="h-12"
                 />
