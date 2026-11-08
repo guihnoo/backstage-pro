@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
   format,
   startOfMonth,
@@ -38,7 +39,12 @@ export default function AllAccessCalendar({
   formatCurrency,
   isVisible = true,
   loading = false,
+  dailyWork = [],
 }) {
+  const reduceMotion = useReducedMotion();
+  // Dias com horas registradas (para o ponto amarelo/rosa em cada dia que já passou).
+  const workDays = useMemo(() => new Set((dailyWork || []).map((w) => String(w.work_date || w.date || '').slice(0, 10)).filter(Boolean)), [dailyWork]);
+  const todayIso = format(new Date(), 'yyyy-MM-dd');
   const clientMap = useMemo(() => {
     const map = new Map();
     for (const c of clients) map.set(c.id, c);
@@ -173,6 +179,13 @@ export default function AllAccessCalendar({
                   >
                     {dayNum}
                   </span>
+                  {hasEvents && iso < todayIso && (
+                    <span
+                      aria-hidden="true"
+                      className="mt-[3px] w-[5px] h-[5px] rounded-full"
+                      style={{ background: workDays.has(iso) ? '#ffd400' : '#ff2e88' }}
+                    />
+                  )}
                 </button>
 
                 {/* Continuous event bar under date number */}
@@ -216,11 +229,23 @@ export default function AllAccessCalendar({
             <span className="w-3 h-1.5 rounded-sm bg-[#5a5a5a]" />
             pago
           </span>
+          <span className="flex items-center gap-1.5 ml-auto">
+            <span className="w-[5px] h-[5px] rounded-full bg-[#ff2e88]" />
+            falta hora
+          </span>
         </div>
       </div>
 
       {/* Selected day section */}
-      <div className="flex flex-col gap-2 pt-2">
+      <AnimatePresence mode="popLayout" initial={false}>
+      <motion.div
+        key={selectedIso}
+        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, x: 24 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -24 }}
+        transition={{ duration: 0.22, ease: 'easeOut' }}
+        className="flex flex-col gap-2 pt-2"
+      >
         <div className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">
           {isTodayDate(activeSelected) ? 'HOJE · ' : ''}
           {format(activeSelected, "d 'de' MMMM", { locale: ptBR })}
@@ -336,7 +361,8 @@ export default function AllAccessCalendar({
             </button>
           </section>
         )}
-      </div>
+      </motion.div>
+      </AnimatePresence>
     </div>
   );
 }

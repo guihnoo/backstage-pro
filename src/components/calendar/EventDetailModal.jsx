@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import PaymentConfirmModal from '@/components/reports/PaymentConfirmModal';
 import { getEventCacheAmount, calculateEventReceivableAmount, isEstimatedWork, isCancelledEvent, isDoneEvent } from '@/lib/eventFinance';
 import { buildEventClosing } from '@/lib/eventClosing';
+import { motion } from 'framer-motion';
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -50,6 +51,7 @@ import {
   getEventStatus,
   getEventStatusConfig,
   normalizeDateString,
+  todayLocalISO,
 } from '../utils/dateUtils';
 import { useFinancialVisibility } from '../context/FinancialVisibilityContext';
 import { useAuth } from '@/lib/authContext';
@@ -90,26 +92,33 @@ const EXPENSE_CATEGORY_LABELS = {
   outros: 'Outros',
 };
 
-function LifecycleBar({ event, hasWork }) {
+function LifecycleBar({ event, hasWork, onStep }) {
   const { primaryHex, accentHex } = useCategoryTheme();
   const status = getEventStatus(event);
   if (status === 'cancelled') return null;
 
   const steps = [
-    { label: 'Agendado', done: true, color: primaryHex },
-    { label: 'Realizado', done: status === 'completed' || status === 'archived', color: '#22c55e' },
-    { label: 'Horas', done: hasWork, color: accentHex },
-    { label: 'Pago', done: event.payment_status === 'paid', color: '#34d399' },
+    { key: 'agendado', label: 'Agendado', done: true, color: primaryHex, hint: 'Editar o trabalho' },
+    { key: 'realizado', label: 'Realizado', done: status === 'completed' || status === 'archived', color: '#22c55e', hint: 'Marcar como realizado' },
+    { key: 'horas', label: 'Horas', done: hasWork, color: accentHex, hint: 'Registrar horas' },
+    { key: 'pago', label: 'Pago', done: event.payment_status === 'paid', color: '#34d399', hint: 'Confirmar recebimento' },
   ];
+  const nextKey = steps.find((st) => !st.done)?.key;
 
   return (
     <div className="px-6 py-2.5 border-b border-[#222222] bg-[#141414] flex-shrink-0">
       <div className="flex items-center gap-0">
         {steps.map((step, i) => (
           <span key={step.label} className="contents">
-            <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => onStep?.(step.key)}
+              aria-label={`${step.label}: ${step.done ? 'feito' : step.hint}`}
+              data-testid={`ciclo-${step.key}`}
+              className="flex flex-col items-center gap-0.5 flex-shrink-0 min-w-[44px] min-h-[44px] justify-center rounded-lg active:scale-95 transition-transform"
+            >
               <div
-                className="w-5 h-5 rounded-full flex items-center justify-center border-2 transition-all"
+                className={`w-6 h-6 rounded-full flex items-center justify-center border-2 transition-all ${step.key === nextKey ? 'animate-pulse' : ''}`}
                 style={{
                   backgroundColor: step.done ? step.color : 'transparent',
                   borderColor: step.done ? step.color : '#555555',
@@ -121,10 +130,10 @@ function LifecycleBar({ event, hasWork }) {
                   </svg>
                 )}
               </div>
-              <span className={`text-[9px] font-medium leading-none ${step.done ? 'text-[#e0e0e0]' : 'text-[#666666]'}`}>
+              <span className={`text-[10px] font-medium leading-none ${step.done ? 'text-[#e0e0e0]' : step.key === nextKey ? 'text-[#ffd400]' : 'text-[#888888]'}`}>
                 {step.label}
               </span>
-            </div>
+            </button>
             {i < steps.length - 1 && (
               <div
                 className="flex-1 h-0.5 mb-4 transition-colors"
@@ -1158,7 +1167,18 @@ export default function EventDetailModal({
   return (
     <>
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-3xl h-[95dvh] bg-[#0a0a0a] border-[#222222] text-white flex flex-col p-0 overflow-hidden bp-focus-scope [&>button:last-child]:text-[#0a0a0a] [&>button:last-child]:opacity-100">
+      <DialogContent className="sm:max-w-3xl h-[95dvh] max-sm:h-[92dvh] max-sm:max-h-[92dvh] max-sm:top-auto max-sm:bottom-0 max-sm:translate-y-0 max-sm:rounded-b-none max-sm:data-[state=open]:slide-in-from-top-[100%] max-sm:data-[state=open]:zoom-in-100 bg-[#0a0a0a] border-[#222222] text-white flex flex-col p-0 overflow-hidden bp-focus-scope [&>button:last-child]:text-[#0a0a0a] [&>button:last-child]:opacity-100">
+        <motion.div
+          drag="y"
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={{ top: 0, bottom: 0.6 }}
+          onDragEnd={(_, info) => { if (info.offset.y > 90 || info.velocity.y > 600) onClose?.(); }}
+          className="sm:hidden absolute top-0 left-0 right-0 h-6 z-20 flex justify-center items-start pt-2 cursor-grab touch-none"
+          aria-hidden="true"
+          data-testid="gaveta-puxador"
+        >
+          <span className="w-10 h-1.5 rounded-full bg-[#0a0a0a]/40" />
+        </motion.div>
 
         {/* Header: credencial amarela do evento (visual All Access) */}
         <DialogHeader className="flex-shrink-0 space-y-0 text-left">
@@ -1187,7 +1207,37 @@ export default function EventDetailModal({
         </DialogHeader>
 
         {/* Lifecycle bar */}
-        <LifecycleBar event={event} hasWork={hasWork} />
+        <LifecycleBar
+          event={event}
+          hasWork={hasWork}
+          onStep={async (key) => {
+            if (key === 'agendado') { onEdit?.(event); return; }
+            if (key === 'horas') {
+              // Primeiro dia que falta; senão hoje (se for dia do trabalho) ou o primeiro dia.
+              const hoje = todayLocalISO();
+              const ini = String(event.start_date || '').slice(0, 10);
+              const fim = String(event.end_date || event.start_date || '').slice(0, 10);
+              const dia = closing?.semHoras?.[0] || (hoje >= ini && hoje <= fim ? hoje : ini || null);
+              setActiveTab('trabalho');
+              openWorkModal(dia, null);
+              return;
+            }
+            if (key === 'pago') {
+              if (event.payment_status === 'paid') setActiveTab('fiscal');
+              else requestMarkPaid();
+              return;
+            }
+            if (key === 'realizado') {
+              if (['completed', 'archived'].includes(getEventStatus(event))) { setActiveTab('resumo'); return; }
+              try {
+                await updateEvent(event.id, { status: 'completed' });
+                appToast.success('Trabalho marcado como realizado');
+              } catch (err) {
+                appToast.error('Não foi possível marcar como realizado', { description: err.message });
+              }
+            }
+          }}
+        />
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0">

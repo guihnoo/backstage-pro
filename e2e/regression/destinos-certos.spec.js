@@ -20,13 +20,13 @@ test.describe('destinos certos', () => {
     await expect(page.getByRole('tab', { name: 'Mês' })).toHaveAttribute('aria-selected', 'false');
   });
 
-  test('Clientes em aberto › Ver todos leva para Dinheiro › A receber', async ({ page }) => {
+  test('Início › faixa de Pendências leva para a tela Pendências (substitui Clientes em aberto, 08/11)', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    const verTodos = page.getByRole('button', { name: /^ver todos$/i }).first();
-    await expect(verTodos).toBeVisible({ timeout: 60_000 });
-    await verTodos.click();
-    await expect(page).toHaveURL(/\/reports\?aba=receber$/);
-    await expect(page.getByRole('tab', { name: 'A receber' })).toHaveAttribute('aria-selected', 'true', { timeout: 30_000 });
+    const faixa = page.getByTestId('pendencias-banner');
+    await expect(faixa).toBeVisible({ timeout: 60_000 });
+    await faixa.click();
+    await expect(page).toHaveURL(/\/pendencias/);
+    await expect(page.getByTestId('pendencias')).toBeVisible({ timeout: 30_000 });
   });
 
   test('Novo job no cliente já vem com o cliente escolhido', async ({ page }) => {

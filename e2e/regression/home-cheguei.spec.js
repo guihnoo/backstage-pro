@@ -58,6 +58,8 @@ test.describe('CHEGUEI no Início', () => {
 
     const saida = page.getByRole('button', { name: /registrar saída \(bater saída\)/i });
     await expect(saida).toBeVisible({ timeout: 10_000 });
+    // Contador ao vivo depois da entrada (08/11).
+    await expect(page.getByTestId('em-cena')).toContainText(/\d+ h \d{2} min/);
     await saida.click();
 
     await expect(page.getByText(/turno encerrado/i)).toBeVisible({ timeout: 10_000 });

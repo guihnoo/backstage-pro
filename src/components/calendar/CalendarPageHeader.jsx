@@ -2,6 +2,8 @@ import { ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+const formatHoursShort = (v) => `${String(Math.round((Number(v) || 0) * 10) / 10).replace('.', ',')}h`;
+
 export default function CalendarPageHeader({
   currentDate,
   unsyncedCount = 0,
@@ -14,6 +16,7 @@ export default function CalendarPageHeader({
   formatCurrency,
   isVisible = true,
   loading = false,
+  onOpenStat,
 }) {
   const monthName = format(currentDate, 'MMMM', { locale: ptBR }).toUpperCase();
 
@@ -93,34 +96,25 @@ export default function CalendarPageHeader({
         </button>
       )}
 
-      {/* 3 Top KPIs Strip matching Board C */}
-      <div className="grid grid-cols-3 gap-1.5">
-        <div className="rounded-[10px] bg-[#161616] border border-[#222222] p-2 flex flex-col justify-center">
-          <div className="font-poster text-[20px] text-[#ffd400] leading-none">
-            {loading ? '…' : (monthStats.showCount || 0)}
-          </div>
-          <div className="font-tag text-[10px] text-[#a8a8a8] uppercase mt-0.5 truncate">
-            DIÁRIAS
-          </div>
-        </div>
-
-        <div className="rounded-[10px] bg-[#161616] border border-[#222222] p-2 flex flex-col justify-center">
-          <div className="font-poster text-[20px] text-white leading-none truncate">
-            {loading ? '…' : isVisible ? (monthStats.received > 0 ? formatCurrency(monthStats.received) : 'R$ 0') : '•••••'}
-          </div>
-          <div className="font-tag text-[10px] text-[#a8a8a8] uppercase mt-0.5 truncate">
-            NO MÊS
-          </div>
-        </div>
-
-        <div className="rounded-[10px] bg-[#161616] border border-[#222222] p-2 flex flex-col justify-center">
-          <div className="font-poster text-[20px] text-[#ff2e88] leading-none truncate">
-            {loading ? '…' : isVisible ? (monthStats.pending > 0 ? formatCurrency(monthStats.pending) : 'R$ 0') : '•••••'}
-          </div>
-          <div className="font-tag text-[10px] text-[#a8a8a8] uppercase mt-0.5 truncate">
-            A RECEBER
-          </div>
-        </div>
+      {/* Números do mês (08/11): uma grade só, tocável — antes repetia no fim da Agenda. */}
+      <div className="grid grid-cols-2 gap-1.5" data-testid="agenda-numeros">
+        {[
+          { key: 'events', label: 'TRABALHOS', value: loading ? '…' : String(monthStats.showCount || 0), color: '#ffd400', onClick: onOpenStat?.events },
+          { key: 'hours', label: 'HORAS', value: loading ? '…' : formatHoursShort(monthStats.hours), color: '#ffffff', onClick: onOpenStat?.hours },
+          { key: 'received', label: 'NO MÊS', value: loading ? '…' : isVisible ? (monthStats.received > 0 ? formatCurrency(monthStats.received) : 'R$ 0') : '•••••', color: '#ffffff', onClick: onOpenStat?.received },
+          { key: 'pending', label: 'A RECEBER', value: loading ? '…' : isVisible ? (monthStats.pending > 0 ? formatCurrency(monthStats.pending) : 'R$ 0') : '•••••', color: '#ff2e88', onClick: onOpenStat?.pending },
+        ].map((k) => (
+          <button
+            key={k.key}
+            type="button"
+            onClick={k.onClick}
+            aria-label={`Ver detalhes: ${k.label.toLowerCase()}`}
+            className="min-h-[56px] rounded-[12px] bg-[#161616] border border-[#222222] px-3 py-2 flex flex-col justify-center text-left active:scale-[0.98] transition-transform"
+          >
+            <span className="font-poster text-[20px] leading-none truncate" style={{ color: k.color }}>{k.value}</span>
+            <span className="font-tag text-[10px] text-[#a8a8a8] uppercase mt-1 truncate">{k.label}</span>
+          </button>
+        ))}
       </div>
     </div>
   );

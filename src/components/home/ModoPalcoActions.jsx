@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { LogIn, LogOut, Clock, Loader2 } from 'lucide-react';
 import appToast from '@/lib/appToast';
@@ -10,6 +10,34 @@ import { computeWorkDay, REGIME_POR_DIA_ATIVO, defaultDayChoice } from '@/lib/wo
 function nowTimeString() {
   const d = new Date();
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+/** Contador ao vivo depois do CHEGUEI (08/11): "4 h 12 min em cena", atualiza a cada segundo. */
+function EmCena({ date, entry }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const hhmm = String(entry || '').slice(0, 5);
+  const start = /^\d{2}:\d{2}$/.test(hhmm) ? new Date(`${date}T${hhmm}:00`).getTime() : NaN;
+  if (!Number.isFinite(start)) return null;
+  const secs = Math.max(0, Math.floor((now - start) / 1000));
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = secs % 60;
+  const pastShift = secs >= 12 * 3600;
+  return (
+    <div className="text-center mb-2" data-testid="em-cena">
+      <p className="font-poster text-[40px] leading-none tracking-wide" style={{ color: pastShift ? '#ff2e88' : '#ffffff' }}>
+        {h}<span className="text-[22px]"> h </span>{String(m).padStart(2, '0')}<span className="text-[22px]"> min </span>
+        <span className="text-[18px] text-[#a8a8a8] tabular-nums">{String(s).padStart(2, '0')}s</span>
+      </p>
+      <p className="font-tag text-[10px] tracking-[2px] uppercase text-[#a8a8a8] mt-1">
+        {pastShift ? 'Passou de 12 h · conta hora extra' : `Em cena desde ${hhmm}`}
+      </p>
+    </div>
+  );
 }
 
 import { getCategoryConfig } from '@/lib/categoryConfig';
@@ -136,6 +164,8 @@ export default function ModoPalcoActions({ event, accentColor = getCategoryConfi
           CHEGUEI
         </motion.button>
       )}
+
+      {hasEntry && !isCompleted && <EmCena date={record.work_date || record.date || today} entry={record.entry_time} />}
 
       {hasEntry && !isCompleted && (
         <motion.button

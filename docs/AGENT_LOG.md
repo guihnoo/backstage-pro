@@ -3234,3 +3234,9 @@ Registro cronológico de tarefas executadas por agentes.
 - **Design lote 1**: ✓ animado + vibração em todo aviso de gravação (appToast → FeedbackLayer); números em 0,6 s (AnimatedStatValue); confete ao confirmar recebimento e ao dar baixa; telas vazias com a credencial.
 - **Testes**: unit 482/482; E2E completo 145 ok (1 falha + 2 instáveis por carga, passam sozinhos).
 - **Deploy**: pendente de ok (app + send-push-digest v9 sem o aviso de nota).
+
+### 2026-11-08 — Reversão de 3 trabalhos de outubro + design lote 2 (Claude Code)
+- **Pedido**: "eventos não pagos de outubro pra frente deixa para o usuário"; lote 2 de design.
+- **Dados**: os 3 trabalhos não pagos de outubro (24/10, 27/10, 31/10) que o fechamento tinha dado baixa voltaram ao estado anterior (confirmed/unpaid, sem valor/data). Até 30/09 segue fechado.
+- **Lote 2**: Início sem "Clientes em aberto" (repetia o A receber) e CHEGUEI com contador ao vivo; Agenda com números do mês só no topo (grade 2×2 tocável), ponto amarelo/rosa de horas em cada dia passado e cartão do dia deslizando; janela do trabalho com ciclo tocável (Agendado edita, Realizado marca, Horas abre o 1º dia que falta, Pago abre a confirmação) e gaveta com puxador no celular.
+- **Testes**: unit 482/482; E2E 144 ok, instáveis por carga repetidos sozinhos 26/26; novo janela-ciclo.spec.js.
