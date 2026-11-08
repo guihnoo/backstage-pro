@@ -111,14 +111,14 @@ export function dayCacheForMinutes(event, minutes) {
 }
 
 /**
- * Lote 2: escolha por dia. Liga só depois que a migration 035 estiver aplicada no banco
- * (senão o Supabase recusa as colunas novas). Variável de ambiente: VITE_REGIME_POR_DIA=true.
+ * Lote 2: escolha por dia. Migrations 035/036 aplicadas em produção (conferido em 07/11/2026),
+ * por isso fica LIGADO por padrão. Para desligar num build: VITE_REGIME_POR_DIA=false.
  */
 export const REGIME_POR_DIA_ATIVO = (() => {
   try {
-    return import.meta.env?.VITE_REGIME_POR_DIA === 'true';
+    return import.meta.env?.VITE_REGIME_POR_DIA !== 'false';
   } catch {
-    return false;
+    return true;
   }
 })();
 
@@ -126,9 +126,9 @@ export const REGIME_POR_DIA_ATIVO = (() => {
 export const REGIME_POR_DIA_DESDE = (() => {
   try {
     const v = import.meta.env?.VITE_REGIME_POR_DIA_DESDE;
-    return /^\d{4}-\d{2}-\d{2}$/.test(v || '') ? v : null;
+    return /^\d{4}-\d{2}-\d{2}$/.test(v || '') ? v : '2026-11-08';
   } catch {
-    return null;
+    return '2026-11-08';
   }
 })();
 
@@ -144,10 +144,25 @@ export function isValidRegime(regime) {
   return Object.prototype.hasOwnProperty.call(FATOR_REGIME, regime);
 }
 
-/** Sugestão inicial para um dia novo: cachê cheio; hora extra ligada se o evento é "Horas Extras". */
+/** Regime "automático": decidido pelas horas do dia até o usuário escolher outro. */
+export const REGIME_AUTO = 'auto';
+
+/**
+ * Regime que as horas sugerem. "Meio cachê e dobra": até 6 h meia, até 12 h cheia, acima dobra
+ * (a regra antiga). "Horas extras": sempre cheia (as horas acima de 12 h viram hora extra).
+ */
+export function suggestedRegime(event, minutes) {
+  const mins = Math.max(0, Math.round(Number(minutes) || 0));
+  if (paymentModelOf(event) !== MODELO_MEIO_E_DOBRA) return 'cheia';
+  if (mins > 0 && mins <= MEIA_JORNADA_MIN) return 'meia';
+  if (mins > JORNADA_PADRAO_MIN) return 'dobra';
+  return 'cheia';
+}
+
+/** Sugestão inicial para um dia novo: automático pelas horas; hora extra ligada se o evento é "Horas Extras". */
 export function defaultDayChoice(event, existing = null) {
   return {
-    regime: isValidRegime(existing?.regime) ? existing.regime : 'cheia',
+    regime: isValidRegime(existing?.regime) ? existing.regime : REGIME_AUTO,
     horaExtra: typeof existing?.hora_extra === 'boolean'
       ? existing.hora_extra
       : paymentModelOf(event) === MODELO_HORAS_EXTRAS,
@@ -180,14 +195,18 @@ export function computeWorkDay({
     ? Math.max(0, Math.round(Number(durationMinutes)))
     : workedMinutes(entry, exit, { nextDay });
   const overtimeMinutes = Math.max(0, minutes - JORNADA_PADRAO_MIN);
-  const useChoice = isValidRegime(regime);
+  const resolvedRegime = regime === REGIME_AUTO ? suggestedRegime(event, minutes) : regime;
+  const useChoice = isValidRegime(resolvedRegime);
   return {
     minutes,
     overtimeMinutes,
     totalHours: round1(minutes / 60),
     overtimeHours: round1(overtimeMinutes / 60),
+    /** Regime que vale para gravar (o automático já resolvido pelas horas); null = regra antiga. */
+    regime: useChoice ? resolvedRegime : null,
+    regimeAuto: regime === REGIME_AUTO,
     cache: useChoice
-      ? dayCacheForChoice(event, minutes, { regime, horaExtra: Boolean(horaExtra) })
+      ? dayCacheForChoice(event, minutes, { regime: resolvedRegime, horaExtra: Boolean(horaExtra) })
       : dayCacheForMinutes(event, minutes),
     needsNextDayAnswer: durationMinutes == null && !nextDay && isSameEntryExit(entry, exit),
   };

@@ -64,6 +64,7 @@ export default function EventHoursSheet({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const photoInputRef = useRef(null);
 
+  const initialDateKey = initialDate ? normalizeDateString(initialDate) : '';
   // CRÍTICO: Inicializar formulário corretamente
   useEffect(() => {
     if (isOpen) {
@@ -71,7 +72,8 @@ export default function EventHoursSheet({
       let dateToUse;
 
       if (existingWork?.id) {
-        dateToUse = existingWork.date ? normalizeDateString(existingWork.date) : normalizeDateString(new Date());
+        const savedDay = existingWork.work_date || existingWork.date;
+        dateToUse = savedDay ? normalizeDateString(savedDay) : normalizeDateString(new Date());
         setFormData({
           date: dateToUse,
           entry_time: existingWork.entry_time || '',
@@ -112,7 +114,10 @@ export default function EventHoursSheet({
       setErrors({});
       setTouched({});
     }
-  }, [existingWork, initialDate, event, isOpen]);
+    // Depende do DIA e dos IDs: a Agenda passa `new Date()` novo a cada render e isso
+    // apagava o horário digitado sempre que a tela atualizava os dados (07/11).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [existingWork?.id, initialDateKey, event?.id, isOpen]);
 
   // Regra única de horas e cachê (src/lib/workDay.js)
   // Evento sem cachê preenchido usa o cachê padrão do cliente (auditoria 1C).
@@ -208,6 +213,14 @@ export default function EventHoursSheet({
       return;
     }
 
+    const firstDay = normalizeDateString(event.start_date || event.event_date || formData.date);
+    const lastDay = normalizeDateString(event.end_date || event.start_date || formData.date);
+    if (formData.date < firstDay || formData.date > lastDay) {
+      const br = (iso) => iso.split('-').reverse().join('/');
+      appToast.error(`Escolha um dia do trabalho: de ${br(firstDay)} a ${br(lastDay)}.`);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -239,7 +252,7 @@ export default function EventHoursSheet({
         notes: formData.notes || null,
         photo_url: formData.photo_url || null,
         ...(REGIME_POR_DIA_ATIVO
-          ? { regime: formData.regime, hora_extra: Boolean(formData.hora_extra), origem: 'lancada' }
+          ? { regime: day.regime || 'cheia', hora_extra: Boolean(formData.hora_extra), origem: 'lancada' }
           : {})
       };
 
@@ -343,7 +356,7 @@ export default function EventHoursSheet({
 
             {/* Content */}
             <div className="bp-modal-scroll px-6 py-4 pb-safe">
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-5" noValidate>
                 {/* Data */}
                 <div className="space-y-2">
                   <Label htmlFor="mobile_work_date" className="flex items-center gap-2">
@@ -452,9 +465,10 @@ export default function EventHoursSheet({
                 </div>
                 )}
 
-                {REGIME_POR_DIA_ATIVO && !isPonto && (
+                {REGIME_POR_DIA_ATIVO && (
                   <DayChoicePicker
-                    regime={formData.regime}
+                    regime={day.regime || 'cheia'}
+                    auto={day.regimeAuto}
                     horaExtra={formData.hora_extra}
                     accentColor={primaryHex}
                     onChange={({ regime, horaExtra }) => {

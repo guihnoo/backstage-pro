@@ -78,7 +78,7 @@ export default function ModoPalcoActions({ event, accentColor = getCategoryConfi
         daily_cache: cache,
         status: 'completed',
         ...(REGIME_POR_DIA_ATIVO
-          ? { regime: choice.regime, hora_extra: choice.horaExtra, origem: 'lancada' }
+          ? { regime: day.regime || 'cheia', hora_extra: choice.horaExtra, origem: 'lancada' }
           : {}),
       });
 

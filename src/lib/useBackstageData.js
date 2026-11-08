@@ -270,7 +270,7 @@ export function useClients(userId) {
         // Mesma consulta da lista de clientes (useClients): pedidos simultâneos viram um só.
         const { data, error: err } = await dedupeRequest(`clients:${userId}`, () => supabase
           .from('clients')
-          .select('*, company:companies(logo_url)')
+          .select('*, company:companies(logo_url, cnpj, name, trading_name)')
           .eq('user_id', userId)
           .order('name', { ascending: true }));
 

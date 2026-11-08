@@ -3,8 +3,8 @@
 > Documento vivo para Cursor, Claude Code e humanos.  
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
-**Última atualização:** 2026-10-22 (ideias novas 106–113 implementadas na branch `feat/ideias-novas`, **não publicadas**; Claude Code)  
-**Pendente de deploy:** branch `feat/ideias-novas` (ideias 106–113) — **ordem obrigatória**: 1) migração `046_ideias_novas` (sem ela o Perfil não salva e o Novo trabalho falha), 2) Edge `analyze-job` (verify_jwt on; usa GEMINI_API_KEY), 3) push para `main`. Migrations 034–045 já em produção  
+**Última atualização:** 2026-11-07 (agenda/horas, A receber acumulado, escolha por dia, nota fiscal, relatório de horas, avisos — branch `feat/financeiro-calendario-v2`, **não publicado**; Claude Code)  
+**Pendente de deploy:** branch `feat/financeiro-calendario-v2` (só app, sem migração nem função). Ideias 106–113, foto do perfil, logo e Financeiro (PRs #1/#2, migração 047) **já estão no ar** — o registro do deploy de 22/10 ficou no commit `583dfba`, fora da main  
 **Pasta local:** `C:\dev\backstage-pro` (desde 2026-10-09; a cópia antiga em `OneDrive\Documentos\backstage-pro` não é mais a pasta de trabalho)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-10-22 — revisão das telas + CHEGUEI + destinos (`03ee64a`, push de `review/telas-fase1` para `main`; bundle `index-BAYKE3jv.js`). Antes: 2026-10-22 barra SALVAR do Perfil (`b849156`)  
@@ -192,6 +192,18 @@ Os escopos de agenda são "sensíveis": com o app em **Testing**, só entra quem
 ---
 
 ## Changelog
+
+### 2026-11-07 — Agenda, A receber, escolha por dia, nota fiscal, relatório de horas e avisos (Claude Code — branch `feat/financeiro-calendario-v2`, **não publicado**)
+
+- **Agenda / horas**: registrar horas abre **no dia tocado** (o atalho do celular usava hoje ou o 1º dia). O campo de data só aceitava até hoje e o navegador barrava o Salvar com aviso em inglês ("Value must be … or earlier"): agora vale qualquer dia do trabalho, com aviso em português. A janela não apaga mais o horário digitado quando a tela atualiza (`new Date()` novo a cada render reiniciava o formulário). Teste `calendar-hours-day.spec.js`.
+- **A receber não zera na virada do mês**: o cartão rosa da aba Mês soma tudo que terminou até o fim do mês escolhido e não foi pago — "deste mês" + "de meses anteriores" (mais antigos primeiro). Antes só contava os encerrados no próprio mês.
+- **Escolha por dia ligada** (`REGIME_POR_DIA_ATIVO` padrão; desliga com `VITE_REGIME_POR_DIA=false`; 035/036 já estavam no banco): meio cachê / cheio / dobra + "contar hora extra" em cada dia, inclusive no modo só entrada e saída. Regime `auto`: até o usuário escolher, decide pelas horas (mesmo valor da regra antiga). Janela do trabalho mostra a escolha de cada dia.
+- **Nota fiscal** (`nfeReconcile.js`, sem mudança no banco): o CNPJ do cliente nunca chegava à conferência (`client.cnpj` não existe; vem da empresa vinculada) e o valor era comparado com o cachê base. Agora: empresa pelo CNPJ ou pelos nomes (cadastro, razão social, nome fantasia, sem LTDA/ME/acentos); "É a mesma empresa — guardar o CNPJ da nota" vincula a empresa ao cliente; valor diferente → "Usar valor da nota" / "Manter valor do app" (`nfe_analise.escolha_valor`, vale no A receber e no Recebi via `calculateEventReceivableAmount`).
+- **Relatório só de horas** para o cliente: janela do trabalho › Horas (e Dinheiro › Documentos). PDF "RELATÓRIO DE HORAS" com dias, entrada/saída, horas, H.E. e tipo da diária; sem cachê, alimentação, reembolsos, total, vencimento e PIX.
+- **Avisos (push)**: abrir o Perfil num aparelho sem inscrição (ex.: ícone reinstalado pela logo nova) gravava `push_enabled=false` **para a conta inteira** — por isso nenhum aviso desde 02/11, apesar de 2 pagamentos com 12 e 15 dias. Agora fica "desativado neste aparelho"; desativar só desliga a conta quando não sobra aparelho. A regra dos 10 dias já estava no ar (push v7).
+- **Lote 31/10 (Codex) incluído** + correção: na v1 a fila sem internet **nunca foi enviada** (itens com `userId`, índice em `user_id`). A migração não reenvia a fila antiga (sobrescreveria edições feitas depois); itens ficam marcados `legacy_v1`.
+- **Testes**: unit 475/475; E2E smoke+regression 144 passando e 2 falhas que também falham na versão anterior (`modal-overflow` badge de Metas, `calendar-navigation` semana — dependem da data); build ok.
+- **Para publicar**: só o app (branch → `main`). Depois, tocar "Ativar" nos avisos do Perfil no celular.
 
 ### 2026-10-23 — Nova logo: Credencial horizontal (Claude Code — branch `feat/logo-motion`, **não publicado**)
 

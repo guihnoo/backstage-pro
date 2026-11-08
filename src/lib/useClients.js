@@ -7,7 +7,8 @@ import { companyPatchFromClient, stripInheritedLogo, withCompanyLogo } from './c
 import { enrichCompanyById, upsertCompanyRecord } from './companyService';
 
 /** Ficha pessoal + só o logo do catálogo (para mostrar quando a ficha não tem logo próprio). */
-export const CLIENT_SELECT = '*, company:companies(logo_url)';
+// cnpj/name/trading_name: a conferência da nota fiscal reconhece a empresa pelo CNPJ e pela razão social.
+export const CLIENT_SELECT = '*, company:companies(logo_url, cnpj, name, trading_name)';
 
 export async function linkClientToCompanyAfterCreate(client, userId) {
   if (!client || client.client_type === 'pessoa' || !userId) return client;

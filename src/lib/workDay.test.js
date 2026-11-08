@@ -170,8 +170,25 @@ describe('Lote 2 — escolha por dia (½ / 1 / 2 e hora extra)', () => {
   });
 
   it('sugestão: cheia; hora extra ligada só para evento "Horas Extras"', () => {
-    expect(defaultDayChoice(horasExtras)).toEqual({ regime: 'cheia', horaExtra: true });
-    expect(defaultDayChoice(ev)).toEqual({ regime: 'cheia', horaExtra: false });
+    expect(defaultDayChoice(horasExtras)).toEqual({ regime: 'auto', horaExtra: true });
+    expect(defaultDayChoice(ev)).toEqual({ regime: 'auto', horaExtra: false });
+  });
+
+  it('automático pelas horas dá o mesmo valor da regra antiga', () => {
+    // Meio cachê e dobra: 5 h meia, 10 h cheia, 14 h dobra.
+    expect(computeWorkDay({ event: meioEDobra, entry: '08:00', exit: '13:00', regime: 'auto' })).toMatchObject({ regime: 'meia', cache: 250, regimeAuto: true });
+    expect(computeWorkDay({ event: meioEDobra, entry: '08:00', exit: '18:00', regime: 'auto' })).toMatchObject({ regime: 'cheia', cache: 500 });
+    expect(computeWorkDay({ event: meioEDobra, entry: '08:00', exit: '22:00', regime: 'auto' })).toMatchObject({ regime: 'dobra', cache: 1000 });
+    // Horas extras: 14 h = cachê + 2 h extras (1200/12 = 100 por hora).
+    expect(computeWorkDay({ event: horasExtras, entry: '08:00', exit: '22:00', regime: 'auto', horaExtra: true })).toMatchObject({ regime: 'cheia', cache: 1400 });
+    expect(computeWorkDay({ event: horasExtras, entry: '08:00', exit: '22:00' }).cache).toBe(1400);
+  });
+
+  it('mesmo trabalho: um dia com hora extra e outro com dobra ou meio cachê', () => {
+    const sexta = computeWorkDay({ event: horasExtras, entry: '08:00', exit: '23:00', regime: 'cheia', horaExtra: true });
+    const sabado = computeWorkDay({ event: horasExtras, entry: '08:00', exit: '20:00', regime: 'dobra', horaExtra: false });
+    const domingo = computeWorkDay({ event: horasExtras, entry: '08:00', exit: '12:00', regime: 'meia', horaExtra: false });
+    expect([sexta.cache, sabado.cache, domingo.cache]).toEqual([1500, 2400, 600]);
   });
 
   it('sugestão respeita o que já foi gravado no dia', () => {

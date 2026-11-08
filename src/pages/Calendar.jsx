@@ -714,10 +714,14 @@ export default function CalendarPage() {
       const today = todayLocalISO();
       const start = selectedActionSheetEvent.start_date || today;
       const end = selectedActionSheetEvent.end_date || start;
-      // Use today if within the event's date range, otherwise use event start date
-      const dateStr = today >= start && today <= end ? today : start;
+      // 1º o dia que o usuário tocou na Agenda (se for do trabalho); depois hoje; depois o 1º dia.
+      const picked = selectedDate ? normalizeDateString(selectedDate) : null;
+      const dateStr = picked && picked >= start && picked <= end
+        ? picked
+        : today >= start && today <= end ? today : start;
       const work = dailyWork.find(
-        (w) => w.event_id === selectedActionSheetEvent.id && normalizeDateString(w.date) === normalizeDateString(dateStr)
+        (w) => w.event_id === selectedActionSheetEvent.id
+          && normalizeDateString(w.work_date || w.date) === normalizeDateString(dateStr)
       );
 
       setMobileHoursEventData({
@@ -728,7 +732,7 @@ export default function CalendarPage() {
       setSelectedActionSheetEvent(null); // Close the event action sheet
       setShowMobileHoursSheet(true); // Open the hours sheet
     }
-  }, [selectedActionSheetEvent, dailyWork]);
+  }, [selectedActionSheetEvent, dailyWork, selectedDate]);
 
   const handleActionSheetOpenNotes = useCallback(() => {
     if (selectedActionSheetEvent) {

@@ -2,6 +2,7 @@ import { parseISO, differenceInDays } from 'date-fns';
 import { getEventStatus, todayLocalISO } from '@/components/utils/dateUtils';
 import { dailyBaseValue } from './workDay';
 import { reimbursableMeals } from './mealPolicy';
+import { nfeChosenAmount } from './nfeReconcile';
 
 const UNPAID_STATUSES = new Set(['pending', 'unpaid', 'partial']);
 
@@ -108,6 +109,9 @@ function isWithinEvent(event, dayKey) {
  * os outros dias (antes: evento de 3 dias com 1 registro caía de 3 para 1 diária).
  */
 export function calculateEventReceivableAmount(event, dailyWorkForEvent = []) {
+  // O usuário escolheu ficar com o valor da nota fiscal: ele vale para o trabalho inteiro.
+  const fromInvoice = nfeChosenAmount(event);
+  if (fromInvoice != null) return fromInvoice;
   const rows = dedupeWorkByDay(dailyWorkForEvent || []);
   // Alimentacao so entra quando o cliente reembolsa (sem regra = 0, dados antigos nao mudam).
   const meals = reimbursableMeals(event, rows);

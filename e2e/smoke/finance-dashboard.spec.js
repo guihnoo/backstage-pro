@@ -171,7 +171,9 @@ test('recebido separa encerrados no mês de eventos de outros meses e devolve fo
 test('despesa e caixa abrem a composição exata do mês',async({page})=>{
  await setup(page);await openMetric(page,'Despesas do mês');await expect(modal(page)).toContainText('1.000,00');await modal(page).getByRole('button',{name:'Abrir despesa: Transporte do festival',exact:true}).click();await expect(modal(page)).toContainText('12/11/2026');await close(page);
  await openMetric(page,'Resultado de caixa do mês');await expect(modal(page).getByTestId('finance-cash-formula')).toContainText('8.000,00');await expect(modal(page)).toContainText('7.000,00');await close(page);
- await page.getByRole('button',{name:'Mês anterior',exact:true}).click();await openMetric(page,'Falta receber deste mês');await expect(modal(page)).not.toContainText('Palco GS novembro');
+ await page.getByRole('button',{name:'Mês anterior',exact:true}).click();await openMetric(page,'A receber');await expect(modal(page)).not.toContainText('Palco GS novembro');await close(page);
+ // Virada do mês: em dezembro o que ficou de novembro continua no A receber.
+ await page.getByRole('button',{name:'Próximo mês',exact:true}).click();await page.getByRole('button',{name:'Próximo mês',exact:true}).click();await openMetric(page,'A receber');await expect(modal(page)).toContainText('Palco GS novembro');await expect(modal(page)).toContainText('De meses anteriores');
 });
 test('comparação por empresa abre os dois períodos sem base percentual inventada',async({page})=>{
  await setup(page);await page.getByRole('tab',{name:'Comparações',exact:true}).click();await page.getByLabel('Empresa da comparação').selectOption('finance-aurora');

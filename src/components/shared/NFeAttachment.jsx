@@ -9,119 +9,124 @@ import { supabase } from '@/lib/supabase';
 import { useEvents } from '@/lib/useEvents';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { getClientDisplayName } from '@/lib/eventDisplay';
+import { reconcileNFe } from '@/lib/nfeReconcile';
+import { useClients } from '@/lib/useClients';
+import { useAuth } from '@/lib/authContext';
+import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
+import { findCompanyByCNPJ, upsertCompanyRecord } from '@/lib/companyService';
 import { toast } from 'sonner';
 import { todayLocalISO } from '@/components/utils/dateUtils';
+import { removePreviousNFe, replaceNFeFile, updateNFeWithLegacyFallback } from '@/lib/nfeFileSafety';
 
 const BUCKET = 'backstage';
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 const ACCEPT = 'application/pdf,.pdf';
 
-function extractStoragePath(publicUrl) {
-  try {
-    return publicUrl.split(`/storage/v1/object/public/${BUCKET}/`)[1] ?? null;
-  } catch {
-    return null;
-  }
+// ── Card de resultado da análise IA ──────────────────────────────────────────
+const brl = (v) => 'R$ ' + Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtCnpj = (d) => (d && d.length === 14 ? `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}` : d || '');
+
+function Linha({ ok, warn, children }) {
+  const Icon = ok ? CheckCircle2 : warn ? AlertTriangle : XCircle;
+  const color = ok || warn ? '#ffd400' : '#ff2e88';
+  return (
+    <div className="flex items-start gap-1.5">
+      <Icon className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color }} />
+      <div className="min-w-0 flex-1" style={{ color: ok ? '#ffd400' : '#e0e0e0' }}>{children}</div>
+    </div>
+  );
 }
 
-// ── Card de resultado da análise IA ──────────────────────────────────────────
-function AnaliseCard({ analise, clienteNome }) {
-  if (!analise) return null;
-
-  const ok = analise.cliente_reconhecido && analise.valor_confere;
-  const divergencias = analise.divergencias ?? [];
+function AnaliseCard({ analise, clienteNome, conf, busy, onEscolherValor, onVincularCnpj, isVisible = true }) {
+  if (!analise || !conf) return null;
+  const empresaOk = conf.empresa === 'cnpj' || conf.empresa === 'nome';
+  const valorOk = conf.valor === 'confere' || conf.escolha != null;
+  const ok = empresaOk && valorOk;
+  const money = (v) => (isVisible ? brl(v) : '•••••');
 
   return (
-    <div className={`rounded-lg border p-3 space-y-2 text-xs ${
-      ok
-        ? 'bg-[#ffd400]/20 border-[#ffd400]/30'
-        : 'bg-[#ffd400]/20 border-[#ffd400]/30'
-    }`}>
-      {/* Status geral */}
+    <div className="rounded-lg border p-3 space-y-2.5 text-xs bg-[#ffd400]/10 border-[#ffd400]/30" data-testid="nfe-conferencia">
       <div className="flex items-center gap-2">
-        {ok
-          ? <CheckCircle2 className="w-4 h-4 text-[#ffd400] flex-shrink-0" />
-          : <AlertTriangle className="w-4 h-4 text-[#ffd400] flex-shrink-0" />
-        }
-        <span className={`font-semibold ${ok ? 'text-[#ffd400]' : 'text-[#ffd400]'}`}>
-          {ok ? 'NF-e verificada pela IA' : 'Atenção — divergências encontradas'}
-        </span>
+        {ok ? <CheckCircle2 className="w-4 h-4 text-[#ffd400]" /> : <AlertTriangle className="w-4 h-4 text-[#ffd400]" />}
+        <span className="font-semibold text-[#ffd400]">{ok ? 'Nota conferida' : 'Confira a nota'}</span>
       </div>
 
-      {/* Dados extraídos */}
-      <div className="grid grid-cols-2 gap-x-4 gap-y-1 bg-[#161616] rounded px-2.5 py-2">
-        {analise.nfe_numero && (
-          <>
-            <span className="text-[#a8a8a8]">Número</span>
-            <span className="text-white font-tag font-medium">{analise.nfe_numero}</span>
-          </>
-        )}
-        {analise.nfe_tomador_nome && (
-          <>
-            <span className="text-[#a8a8a8]">Tomador</span>
-            <span className="text-white truncate" title={analise.nfe_tomador_nome}>{analise.nfe_tomador_nome}</span>
-          </>
-        )}
-        {analise.nfe_tomador_cnpj && (
-          <>
-            <span className="text-[#a8a8a8]">CNPJ tomador</span>
-            <span className="text-white font-tag">{analise.nfe_tomador_cnpj}</span>
-          </>
-        )}
-        {analise.nfe_valor > 0 && (
-          <>
-            <span className="text-[#a8a8a8]">Valor na NF</span>
-            <span className={`font-semibold ${analise.valor_confere ? 'text-[#ffd400]' : 'text-[#ffd400]'}`}>
-              R$ {analise.nfe_valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-            </span>
-          </>
-        )}
-        {analise.nfe_competencia && (
-          <>
-            <span className="text-[#a8a8a8]">Competência</span>
-            <span className="text-white">{analise.nfe_competencia}</span>
-          </>
-        )}
-        {analise.nfe_descricao && (
-          <>
-            <span className="text-[#a8a8a8] self-start">Serviço</span>
-            <span className="text-[#c8c8c8] line-clamp-2">{analise.nfe_descricao}</span>
-          </>
-        )}
+      <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 bg-[#161616] rounded px-2.5 py-2">
+        {analise.nfe_numero && (<><span className="text-[#a8a8a8]">Número</span><span className="text-white font-tag">{analise.nfe_numero}</span></>)}
+        {analise.nfe_tomador_nome && (<><span className="text-[#a8a8a8]">Empresa na nota</span><span className="text-white break-words">{analise.nfe_tomador_nome}</span></>)}
+        {analise.nfe_tomador_cnpj && (<><span className="text-[#a8a8a8]">CNPJ</span><span className="text-white font-tag">{fmtCnpj(String(analise.nfe_tomador_cnpj))}</span></>)}
+        {analise.nfe_competencia && (<><span className="text-[#a8a8a8]">Competência</span><span className="text-white">{analise.nfe_competencia}</span></>)}
+        {analise.nfe_descricao && (<><span className="text-[#a8a8a8] self-start">Serviço</span><span className="text-[#c8c8c8] line-clamp-2">{analise.nfe_descricao}</span></>)}
       </div>
 
-      {/* Validação cliente */}
-      <div className="flex items-center gap-1.5">
-        {analise.cliente_reconhecido
-          ? <CheckCircle2 className="w-3.5 h-3.5 text-[#ffd400] flex-shrink-0" />
-          : <XCircle className="w-3.5 h-3.5 text-[#ff2e88] flex-shrink-0" />
-        }
-        <span className={analise.cliente_reconhecido ? 'text-[#ffd400]' : 'text-[#ff2e88]'}>
-          {analise.cliente_reconhecido
-            ? `Tomador reconhecido: ${clienteNome ?? 'cliente do evento'}`
-            : `Tomador não corresponde ao cliente do evento`
-          }
-        </span>
-      </div>
+      {/* Empresa */}
+      {conf.empresa === 'cnpj' && <Linha ok>Empresa confere pelo CNPJ ({clienteNome || 'cliente do trabalho'}).</Linha>}
+      {conf.empresa === 'nome' && (
+        <Linha ok>
+          Empresa reconhecida: {clienteNome || 'cliente do trabalho'}.
+          {conf.podeVincularCnpj && (
+            <button type="button" disabled={busy} onClick={onVincularCnpj}
+              className="block mt-1 text-[11px] underline underline-offset-2 text-white disabled:opacity-50">
+              Guardar o CNPJ e a razão social da nota no cadastro
+            </button>
+          )}
+        </Linha>
+      )}
+      {conf.empresa === 'nome_diferente' && (
+        <Linha warn>
+          O nome na nota é diferente do cadastro ({clienteNome || 'sem cliente'}).
+          {conf.podeVincularCnpj ? (
+            <button type="button" disabled={busy} onClick={onVincularCnpj}
+              className="mt-1.5 w-full h-9 rounded-full bg-[#ffd400] text-[#0a0a0a] font-bold disabled:opacity-50">
+              É a mesma empresa — guardar o CNPJ da nota
+            </button>
+          ) : <span className="block text-[#a8a8a8]">Confira se a nota é deste trabalho.</span>}
+        </Linha>
+      )}
+      {conf.empresa === 'cnpj_diferente' && (
+        <Linha>O CNPJ da nota é de outra empresa. Confira se a nota é deste trabalho.</Linha>
+      )}
 
-      {/* Divergências */}
-      {divergencias.length > 0 && (
-        <ul className="space-y-0.5">
-          {divergencias.map((d, i) => (
-            <li key={i} className="flex items-start gap-1.5 text-[#ffd400]">
-              <span className="mt-0.5">⚠</span>
-              <span>{d}</span>
-            </li>
-          ))}
-        </ul>
+      {/* Valor */}
+      {conf.valor === 'sem_valor' && <Linha warn>A IA não encontrou o valor na nota.</Linha>}
+      {conf.valor === 'confere' && <Linha ok>Valor confere: {money(conf.valorNota)}.</Linha>}
+      {conf.valor === 'diferente' && (
+        <div className="space-y-1.5" data-testid="nfe-escolha-valor">
+          <Linha warn>
+            Valor diferente: nota {money(conf.valorNota)} · app {money(conf.valorApp)}
+            {isVisible ? ` (${conf.diferenca > 0 ? '+' : '−'}${brl(Math.abs(conf.diferenca))})` : ''}.
+          </Linha>
+          <div className="grid grid-cols-2 gap-2">
+            {[['nota', 'Usar valor da nota', conf.valorNota], ['app', 'Manter valor do app', conf.valorApp]].map(([key, label, v]) => {
+              const active = conf.escolha === key;
+              return (
+                <button key={key} type="button" disabled={busy} aria-pressed={active}
+                  onClick={() => onEscolherValor(active ? null : key)}
+                  className={`rounded-lg border px-2 py-2 text-left disabled:opacity-50 ${active ? 'bg-[#ffd400] border-[#ffd400] text-[#0a0a0a]' : 'bg-[#161616] border-[#333333] text-white'}`}>
+                  <span className="block font-bold text-[12px]">{label}</span>
+                  <span className="block text-[11px] opacity-80">{money(v)}</span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-[11px] text-[#a8a8a8]">
+            {conf.escolha === 'nota' ? 'O A receber, o Recebi e os relatórios usam o valor da nota. Toque de novo para desfazer.'
+              : conf.escolha === 'app' ? 'Fica o valor calculado no app. Toque de novo para desfazer.'
+                : 'Escolha qual valor vale para este trabalho.'}
+          </p>
+        </div>
       )}
     </div>
   );
 }
 
 // ── Componente principal ──────────────────────────────────────────────────────
-export default function NFeAttachment({ event, client }) {
+export default function NFeAttachment({ event, client, appAmount }) {
   const { update: updateEvent } = useEvents();
+  const { update: updateClient } = useClients();
+  const { user } = useAuth();
+  const { isVisible } = useFinancialVisibility();
+  const [conferindo, setConferindo] = useState(false);
   const fileInputRef = useRef(null);
 
   const currentSavedNumero = event?.nfe_numero || event?.nf_number || '';
@@ -138,22 +143,14 @@ export default function NFeAttachment({ event, client }) {
 
   const hasArquivo = Boolean(event?.nfe_arquivo_url);
   const hasNFe = hasArquivo || Boolean(currentSavedNumero);
-  const analise = event?.nfe_analise ?? null;
+  // Cópia local: a escolha aparece na hora, sem esperar a tela recarregar o trabalho.
+  const [analiseLocal, setAnaliseLocal] = useState(null);
+  useEffect(() => { setAnaliseLocal(null); }, [event?.id, event?.nfe_analise]);
+  const analise = analiseLocal ?? event?.nfe_analise ?? null;
   const clienteNome = client ? getClientDisplayName(client) : null;
 
   async function safeUpdateNFe(patch) {
-    try {
-      return await updateEvent(event.id, patch);
-    } catch (err) {
-      // Fallback caso a migration 034 ainda não tenha sido aplicada no banco remoto
-      if (patch.nfe_numero !== undefined) {
-        return await updateEvent(event.id, {
-          nf_number: patch.nfe_numero,
-          ...(patch.nf_issued_at !== undefined ? { nf_issued_at: patch.nf_issued_at } : {}),
-        });
-      }
-      throw err;
-    }
+    return updateNFeWithLegacyFallback(updateEvent, event.id, patch);
   }
 
   async function runAnalise(pdfUrl) {
@@ -163,7 +160,8 @@ export default function NFeAttachment({ event, client }) {
         titulo: event.title,
         cliente_nome: clienteNome,
         cliente_cnpj: client?.cnpj ?? null,
-        valor: getEventCacheAmount(event) || null,
+        // Valor calculado do trabalho (com horas extras/dobras), não o cachê base.
+        valor: (appAmount ?? getEventCacheAmount(event)) || null,
       };
 
       const { data, error } = await supabase.functions.invoke('analyze-nfe', {
@@ -181,16 +179,57 @@ export default function NFeAttachment({ event, client }) {
         nfe_numero: resolvedNum,
         nf_number: resolvedNum,
       });
+      setAnaliseLocal(resultado);
 
-      if (resultado.cliente_reconhecido && resultado.valor_confere) {
-        toast.success('NF-e verificada pela IA — tudo confere!');
+      const conf = reconcileNFe({ analise: resultado, client, expectedAmount: appAmount ?? getEventCacheAmount(event) });
+      if (['cnpj', 'nome'].includes(conf.empresa) && conf.valor === 'confere') {
+        toast.success('Nota conferida — empresa e valor batem com o trabalho!');
+      } else if (conf.valor === 'diferente') {
+        toast.warning('Nota lida — o valor é diferente do app. Escolha qual valor vale.');
       } else {
-        toast.warning('NF-e analisada — verifique as divergências apontadas.');
+        toast.warning('Nota lida — confira a empresa da nota.');
       }
     } catch (err) {
       toast.error(`Erro na análise: ${err.message}`);
     } finally {
       setAnalyzing(false);
+    }
+  }
+
+  // "Usar valor da nota" / "Manter valor do app" — guardado na própria análise da nota.
+  async function handleEscolherValor(escolha) {
+    if (!analise) return;
+    setConferindo(true);
+    try {
+      const next = { ...analise, escolha_valor: escolha, escolha_em: escolha ? new Date().toISOString() : null };
+      await safeUpdateNFe({ nfe_analise: next });
+      setAnaliseLocal(next);
+      toast.success(escolha === 'nota' ? 'Valor da nota aplicado ao trabalho.' : escolha === 'app' ? 'Mantido o valor do app.' : 'Escolha desfeita.');
+    } catch (err) {
+      toast.error(`Não foi possível salvar: ${err.message}`);
+    } finally {
+      setConferindo(false);
+    }
+  }
+
+  // Guarda o CNPJ e a razão social da nota no cadastro do cliente (empresa vinculada).
+  async function handleVincularCnpj() {
+    if (!analise?.nfe_tomador_cnpj || !client?.id) return;
+    setConferindo(true);
+    try {
+      const cnpj = String(analise.nfe_tomador_cnpj).replace(/\D/g, '');
+      const company = (await findCompanyByCNPJ(cnpj))
+        || (await upsertCompanyRecord({ name: analise.nfe_tomador_nome || clienteNome, trading_name: clienteNome, cnpj, source: 'nfe' }, user?.id));
+      if (!company?.id) throw new Error('empresa não encontrada');
+      await updateClient(client.id, { company_id: company.id });
+      const next = { ...analise, cliente_reconhecido: true, cnpj_guardado: true };
+      await safeUpdateNFe({ nfe_analise: next });
+      setAnaliseLocal(next);
+      toast.success('CNPJ guardado no cadastro do cliente.', { description: 'As próximas notas desta empresa são reconhecidas pelo CNPJ.' });
+    } catch (err) {
+      toast.error(`Não foi possível guardar o CNPJ: ${err.message}`);
+    } finally {
+      setConferindo(false);
     }
   }
 
@@ -214,32 +253,19 @@ export default function NFeAttachment({ event, client }) {
       const userId = authData?.user?.id;
       if (!userId) throw new Error('Não autenticado.');
 
-      // Remove arquivo anterior
-      if (event.nfe_arquivo_url) {
-        const oldPath = extractStoragePath(event.nfe_arquivo_url);
-        if (oldPath) await supabase.storage.from(BUCKET).remove([oldPath]);
-      }
-
-      const path = `${userId}/nfe/${event.id}-${Date.now()}.pdf`;
-      const { data, error } = await supabase.storage.from(BUCKET).upload(path, file, {
-        cacheControl: '3600',
-        upsert: true,
-        contentType: 'application/pdf',
-      });
-      if (error) throw error;
-
-      const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(data.path);
-      const publicUrl = urlData.publicUrl;
       const resolvedNum = numero.trim() || currentSavedNumero || null;
-
-      await safeUpdateNFe({
-        nfe_arquivo_url: publicUrl,
-        nfe_arquivo_nome: file.name,
-        nfe_numero: resolvedNum,
-        nf_number: resolvedNum,
-        nf_issued_at: issuedAt || event?.nf_issued_at || todayLocalISO(),
-        nfe_analise: null, // limpa análise anterior
+      const { url: publicUrl, cleanupPending } = await replaceNFeFile({
+        storage: supabase.storage.from(BUCKET), file, userId, eventId: event.id,
+        previousUrl: event.nfe_arquivo_url,
+        update: safeUpdateNFe,
+        patch: {
+          nfe_numero: resolvedNum,
+          nf_number: resolvedNum,
+          nf_issued_at: issuedAt || event?.nf_issued_at || todayLocalISO(),
+          nfe_analise: null,
+        },
       });
+      if (cleanupPending) toast.warning('Novo PDF salvo. A limpeza do arquivo anterior ficou pendente.');
 
       toast.success('PDF enviado — analisando com IA...');
       setUploading(false);
@@ -273,10 +299,8 @@ export default function NFeAttachment({ event, client }) {
 
   async function handleDelete() {
     try {
-      if (event.nfe_arquivo_url) {
-        const oldPath = extractStoragePath(event.nfe_arquivo_url);
-        if (oldPath) await supabase.storage.from(BUCKET).remove([oldPath]);
-      }
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError || !authData?.user?.id) throw new Error('Não autenticado.');
       await safeUpdateNFe({
         nfe_arquivo_url: null,
         nfe_arquivo_nome: null,
@@ -285,6 +309,8 @@ export default function NFeAttachment({ event, client }) {
         nf_issued_at: null,
         nfe_analise: null,
       });
+      const cleaned = await removePreviousNFe(supabase.storage.from(BUCKET), event.nfe_arquivo_url, authData.user.id);
+      if (!cleaned) toast.warning('Vínculo removido. A limpeza do arquivo ficou pendente.');
       setNumero('');
       setIssuedAt('');
       toast.success('NF-e removida do evento.');
@@ -398,7 +424,15 @@ export default function NFeAttachment({ event, client }) {
             IA lendo a NF-e e cruzando com os dados do evento...
           </div>
         )}
-        <AnaliseCard analise={analise} clienteNome={clienteNome} />
+        <AnaliseCard
+          analise={analise}
+          clienteNome={clienteNome}
+          conf={analise ? reconcileNFe({ analise, client, expectedAmount: appAmount ?? getEventCacheAmount(event) }) : null}
+          busy={conferindo}
+          isVisible={isVisible}
+          onEscolherValor={handleEscolherValor}
+          onVincularCnpj={handleVincularCnpj}
+        />
 
         <input ref={fileInputRef} type="file" accept={ACCEPT} className="hidden" onChange={handleFileChange} />
       </div>

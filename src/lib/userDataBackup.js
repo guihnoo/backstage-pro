@@ -1,54 +1,68 @@
 import { supabase } from './supabase';
 import { todayLocalISO } from '@/components/utils/dateUtils';
 
-/**
- * Exporta todos os dados do usuário autenticado como JSON e dispara download.
- * Retorno compatível com o contrato legado Base44: { data: { success, error? } }
- */
+const TABLES = ['events', 'daily_work', 'clients', 'expenses'];
+const PAGE_SIZE = 500;
+
+async function readAllRows(table, userId) {
+  const rows = [];
+  for (let offset = 0; ; offset += PAGE_SIZE) {
+    const { data, error } = await supabase.from(table).select('*')
+      .eq('user_id', userId).order('id', { ascending: true }).range(offset, offset + PAGE_SIZE - 1);
+    if (error || !Array.isArray(data)) throw new Error('Não foi possível consultar todos os dados. Nenhum arquivo foi gerado. Tente novamente.');
+    rows.push(...data);
+    if (data.length < PAGE_SIZE) return rows;
+  }
+}
+
+/** Exportação dos cadastros listados no manifesto, não um backup restaurável. */
 export async function createBackup(_args) {
   try {
-    const { data: authData } = await supabase.auth.getUser();
+    const { data: authData, error: authError } = await supabase.auth.getUser();
     const userId = authData?.user?.id;
-    if (!userId) {
-      return { data: { success: false, error: 'Usuário não autenticado.' } };
-    }
+    if (authError || !userId) return { data: { success: false, error: 'Usuário não autenticado.' } };
 
-    const [eventsRes, dailyWorkRes, clientsRes, expensesRes, settingsRes] = await Promise.all([
-      supabase.from('events').select('*').eq('user_id', userId),
-      supabase.from('daily_work').select('*').eq('user_id', userId),
-      supabase.from('clients').select('*').eq('user_id', userId),
-      supabase.from('expenses').select('*').eq('user_id', userId),
+    const [collections, settingsRes] = await Promise.all([
+      Promise.all(TABLES.map(table => readAllRows(table, userId))),
       supabase.from('user_settings').select('*').eq('user_id', userId).maybeSingle(),
     ]);
+    if (settingsRes.error) throw new Error('Não foi possível consultar as configurações. Nenhum arquivo foi gerado. Tente novamente.');
+    const { data: currentAuth, error: currentAuthError } = await supabase.auth.getUser();
+    if (currentAuthError || currentAuth?.user?.id !== userId) throw new Error('A conta mudou durante a exportação. Inicie novamente.');
 
     const snapshot = {
+      export_version: 2,
       exported_at: new Date().toISOString(),
       user_id: userId,
-      events: eventsRes.data || [],
-      daily_work: dailyWorkRes.data || [],
-      clients: clientsRes.data || [],
-      expenses: expensesRes.data || [],
+      ...Object.fromEntries(TABLES.map((table, index) => [table, collections[index]])),
       user_settings: settingsRes.data || null,
+      manifest: {
+        included: [...TABLES, 'user_settings'],
+        excluded: ['profiles', 'event_templates', 'mentor_history', 'attachment_files'],
+        attachment_links_only: true,
+        restore_available: false,
+        consistency: 'independent_queries',
+      },
     };
-
     const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = `backstage-backup-${todayLocalISO()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
+    try {
+      a.href = url;
+      a.download = `backstage-dados-${todayLocalISO()}.json`;
+      document.body.appendChild(a);
+      a.click();
+    } finally {
+      a.remove();
+      // Permitir que o navegador consuma a URL antes de liberá-la.
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
     return { data: { success: true } };
   } catch (error) {
-    console.error('createBackup:', error);
     return { data: { success: false, error: error.message || 'Falha ao exportar dados.' } };
   }
 }
 
-/** Alias — mesmo comportamento que createBackup */
 export async function exportUserSnapshot(args) {
   return createBackup(args);
 }

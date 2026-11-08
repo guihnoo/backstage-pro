@@ -29,7 +29,12 @@ export function buildFinanceMetricDetails(dashboard, key) {
   const receipts = dashboard.receiptRows.map((row) => eventEntry(row, true));
   const unverified = (dashboard.unverifiedReceiptRows || []).map((row) => eventEntry(row, true));
   const billed = dashboard.billedRows.map((row) => eventEntry(row));
-  const pending = dashboard.billedRows.filter((row) => !row.paid).map((row) => eventEntry(row));
+  // A receber não zera na virada do mês: tudo que já terminou até o fim do mês escolhido
+  // e continua sem pagamento, separado entre este mês e meses anteriores (07/11).
+  const openRows = (dashboard.pendingRows || []).filter((row) => row.endDate && row.endDate <= dashboard.range.end);
+  const pendingThisMonth = openRows.filter((row) => row.endDate >= dashboard.range.start).map((row) => eventEntry(row));
+  const pendingEarlier = openRows.filter((row) => row.endDate < dashboard.range.start)
+    .sort((a, b) => a.endDate.localeCompare(b.endDate)).map((row) => eventEntry(row));
   const expenses = dashboard.monthExpenses.map((expense, index) => {
     const linked = rowsById.get(String(expense.event_id));
     return {
@@ -57,9 +62,12 @@ export function buildFinanceMetricDetails(dashboard, key) {
       ],
     },
     pending: {
-      title: 'Falta receber deste mês',
-      description: 'Somente eventos encerrados neste mês e ainda não marcados como pagos. O histórico completo continua na aba Empresas.',
-      sections: [section('Eventos do mês ainda não pagos', pending)],
+      title: 'A receber',
+      description: 'Trabalhos já encerrados que ainda não foram pagos — deste mês e de meses anteriores. O valor só sai daqui quando você confirma o recebimento.',
+      sections: [
+        section('Encerrados neste mês', pendingThisMonth),
+        section('De meses anteriores (mais antigos primeiro)', pendingEarlier),
+      ],
     },
     expenses: {
       title: 'Despesas do mês',
