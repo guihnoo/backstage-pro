@@ -2,7 +2,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import { hardNavigate } from '@/lib/hardNavigate';
 import { useQueryAction } from '@/lib/useQueryAction';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/authContext';
 import { useProfile } from '@/lib/profileOfflineContext';
 import { useEvents } from '@/lib/useEvents';
@@ -19,11 +19,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Calendar,
   Clock,
   AlertCircle,
   CheckCircle2,
-  TrendingUp,
   Search,
   X,
   List,
@@ -56,7 +54,6 @@ import {
 } from '@/components/utils/dateUtils';
 import { isCancelledEvent, calculateEventReceivableAmount } from '@/lib/eventFinance';
 import { needsGooglePush } from '@/lib/googleSyncRules';
-import AnimatedStatValue from '@/components/home/AnimatedStatValue';
 import CalendarPageHeader from '@/components/calendar/CalendarPageHeader';
 import CalendarTodayStrip from '@/components/calendar/CalendarTodayStrip';
 import appToast from '@/lib/appToast';
@@ -133,44 +130,6 @@ const CalendarSkeleton = () => (
   </div>
 );
 
-const StatCard = ({
-  title,
-  value,
-  numericValue,
-  formatValue,
-  icon: Icon,
-  color,
-  onClick,
-  loading = false,
-}) => (
-  // Mesmo bloco dos numeros do topo (All Access): numero em Anton, rotulo em Space Mono.
-  <button
-    type="button"
-    onClick={onClick}
-    disabled={!onClick}
-    className="text-left rounded-[10px] bg-[#161616] border border-[#222222] p-2.5 flex items-center justify-between gap-2 transition-colors hover:border-[#444444] active:scale-[0.98] disabled:active:scale-100"
-  >
-    <div className="min-w-0 flex-1">
-      {loading ? (
-        <Skeleton className="h-6 w-14 bg-[#222222]" />
-      ) : numericValue != null && formatValue ? (
-        <AnimatedStatValue
-          value={numericValue}
-          format={formatValue}
-          className={`font-poster text-[22px] leading-none ${color} truncate block`}
-        />
-      ) : (
-        <p className={`font-poster text-[22px] leading-none ${color || 'text-white'} truncate`}>{value}</p>
-      )}
-      <p className="font-tag text-[10px] text-[#a8a8a8] uppercase mt-1 truncate">
-        {title}
-      </p>
-    </div>
-    <Icon className="w-4 h-4 text-[#555555] flex-shrink-0" />
-  </button>
-);
-
-
 /**
  * Chips da Agenda: "Concluidos" segue a data (mesmo criterio do badge do card);
  * "Pendentes"/"Confirmados" sao o status do negocio, so para eventos que ainda nao terminaram.
@@ -183,13 +142,14 @@ function matchesStatusChip(event, key) {
 
 export default function CalendarPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const profile = useProfile();
   const config = getCategoryConfig(profile?.category || 'lighting');
   const { events, loading: eventsLoading, error: eventsError, refetch: refetchEvents, update: updateEvent, delete: deleteEvent } = useEvents();
   const { clients, loading: clientsLoading } = useClients();
-  const { dailyWork, loading: dailyWorkLoading, refetch: refetchDailyWork, delete: deleteDailyWorkEntry } = useDailyWork();
-  const { loading: expensesLoading, refetch: refetchExpenses } = useExpenses();
+  const { dailyWork, refetch: refetchDailyWork, delete: deleteDailyWorkEntry } = useDailyWork();
+  const { refetch: refetchExpenses } = useExpenses();
   const { formatCurrency, isVisible } = useFinancialVisibility();
   const { settings: userSettings } = useUserSettings();
   const { offline } = useConnectivity();
@@ -202,7 +162,6 @@ export default function CalendarPage() {
 
   const isCoreLoading = eventsLoading || clientsLoading;
   const isCoreReady = Array.isArray(events) && Array.isArray(clients);
-  const isSecondaryLoading = dailyWorkLoading || expensesLoading;
 
   const enrichedEvents = useMemo(
     () => enrichEventsWithClients(events || [], clients || []),
@@ -966,32 +925,6 @@ export default function CalendarPage() {
     setDrilldownOpen(true);
   }, [monthStats.monthEvents, clientMap, currentDate, closeModals, dailyWork, formatCurrency, isVisible]);
 
-  const handleWorkDaysClick = useCallback(() => {
-    closeModals();
-    const items = monthStats.monthWork
-      .map((work) => {
-        const event = eventMap.get(work.event_id);
-        const client = event ? clientMap.get(event.client_id) : null;
-        const workDate = parseISO(work.date);
-
-        return {
-          title: `${getClientDisplayName(client) || 'Sem empresa'} — ${event?.title || 'Evento'}`,
-          subtitle: `${isValid(workDate) ? format(workDate, 'dd/MM/yy', { locale: ptBR }) : ''} • ${
-            work.total_hours || 0
-          }h trabalhadas`,
-          amount: work.daily_cache || 0,
-          amountFormatted: isVisible ? formatCurrency(work.daily_cache || 0) : '••••',
-          event_id: work.event_id,
-          dateSort: isValid(workDate) ? workDate.getTime() : 0,
-        };
-      })
-      .sort((a, b) => b.dateSort - a.dateSort);
-
-    setDrilldownTitle(`Dias Trabalhados em ${format(currentDate, 'MMMM yyyy', { locale: ptBR })}`);
-    setDrilldownItems(items);
-    setDrilldownOpen(true);
-  }, [monthStats.monthWork, eventMap, clientMap, currentDate, formatCurrency, closeModals, isVisible]);
-
   const handleHoursClick = useCallback(() => {
     closeModals();
     const items = monthStats.monthWork
@@ -1018,33 +951,6 @@ export default function CalendarPage() {
     setDrilldownOpen(true);
   }, [currentDate, monthStats.monthWork, eventMap, clientMap, closeModals]);
 
-
-  const handleRevenueClick = useCallback(() => {
-    closeModals();
-    const items = monthStats.monthEvents
-      .filter(event => getEventCacheAmount(event) > 0 || dailyWork.some(w => w.event_id === event.id))
-      .map((event) => {
-        const client = clientMap.get(event.client_id);
-        const startDate = parseISO(event.start_date);
-        const workForEvent = dailyWork
-          .filter(w => w.event_id === event.id);
-        const value = calculateEventReceivableAmount(event, workForEvent);
-        const statusLabel = event.payment_status === 'paid' ? 'Pago' : 'Pendente';
-        return {
-          title: event.title,
-          subtitle: `${client?.name || 'Cliente'} · ${statusLabel}`,
-          amount: value,
-          amountFormatted: isVisible ? formatCurrency(value) : '••••',
-          event_id: event.id,
-          dateSort: isValid(startDate) ? startDate.getTime() : 0,
-        };
-      })
-      .sort((a, b) => b.dateSort - a.dateSort);
-
-    setDrilldownTitle(`Receita de ${format(currentDate, 'MMMM yyyy', { locale: ptBR })}`);
-    setDrilldownItems(items);
-    setDrilldownOpen(true);
-  }, [monthStats.monthEvents, clientMap, currentDate, closeModals, dailyWork, formatCurrency, isVisible]);
 
   const handleDrilldownItemClick = useCallback(
     (item) => {
@@ -1135,8 +1041,15 @@ export default function CalendarPage() {
           loading={isCoreLoading}
           monthStats={{
             showCount: monthStats.totalEvents,
+            hours: monthStats.totalHours,
             received: monthStats.received,
             pending: monthStats.pending,
+          }}
+          onOpenStat={{
+            events: handleEventsClick,
+            hours: handleHoursClick,
+            received: () => navigate('/reports'),
+            pending: () => navigate('/pendencias?grupo=receber'),
           }}
           formatCurrency={formatCurrency}
           isVisible={isVisible}
@@ -1292,6 +1205,7 @@ export default function CalendarPage() {
             clients={clients}
             selectedDate={selectedDate}
             loading={isCoreLoading}
+            dailyWork={dailyWork}
             onDateSelect={(day) => setSelectedDate(day)}
             onEventClick={handleEventClick}
             onNewEvent={(date) => handleNewEvent(date)}
@@ -1784,53 +1698,6 @@ export default function CalendarPage() {
           />
         )}
 
-        {/* Numeros do mes (tocar abre a lista de cada um) */}
-        <div className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] pt-1">NÚMEROS DO MÊS</div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-2">
-          <StatCard
-            title="Eventos"
-            value={monthStats.totalEvents}
-            numericValue={monthStats.totalEvents}
-            formatValue={(v) => String(Math.round(v))}
-            icon={Calendar}
-            color="text-[#ffd400]"
-            onClick={handleEventsClick}
-            loading={isCoreLoading || isSecondaryLoading}
-          />
-
-          <StatCard
-            title="Dias de trabalho"
-            value={monthStats.workDays}
-            numericValue={monthStats.workDays}
-            formatValue={(v) => String(Math.round(v))}
-            icon={CheckCircle2}
-            color="text-white"
-            onClick={handleWorkDaysClick}
-            loading={isCoreLoading || isSecondaryLoading}
-          />
-
-          <StatCard
-            title="Horas trabalhadas"
-            value={formatHours(monthStats.totalHours)}
-            numericValue={monthStats.totalHours}
-            formatValue={(v) => formatHours(v)}
-            icon={Clock}
-            color="text-white"
-            onClick={handleHoursClick}
-            loading={isCoreLoading || isSecondaryLoading}
-          />
-
-          <StatCard
-            title="Receita estimada"
-            value={isVisible ? formatCurrency(monthStats.totalRevenue) : '••••'}
-            numericValue={isVisible ? monthStats.totalRevenue : null}
-            formatValue={formatCurrency}
-            icon={TrendingUp}
-            color="text-white"
-            onClick={handleRevenueClick}
-            loading={isCoreLoading || isSecondaryLoading}
-          />
-        </div>
       </motion.div>
 
       {/* Ações Rápidas Desktop */}
