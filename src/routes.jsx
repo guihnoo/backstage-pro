@@ -157,6 +157,7 @@ export const router = createBrowserRouter([
           { path: 'pendencias', lazy: wrapPage(() => import('./pages/Pendencias')) },
           { path: 'profile', lazy: wrapPage(() => import('./pages/ProfileSimple')) },
           { path: 'help', lazy: wrapPage(() => import('./pages/AppHelp')) },
+          { path: 'roadie', lazy: wrapPage(() => import('./pages/AI_Mentor')) },
           { path: 'ai-mentor', lazy: wrapPage(() => import('./pages/AI_Mentor')) },
           { path: 'admin/feedbacks', lazy: wrapPage(() => import('./pages/AdminFeedbacks')) },
           { path: 'admin/empresas', lazy: wrapPage(() => import('./pages/AdminEmpresas')) },

@@ -9,6 +9,7 @@ const routeLoaders = {
   '/reports': () => import('@/pages/Reports.jsx'),
   '/profile': () => import('@/pages/ProfileSimple.jsx'),
   '/ai-mentor': () => import('@/pages/AI_Mentor.jsx'),
+  '/roadie': () => import('@/pages/AI_Mentor.jsx'),
 };
 
 const prefetched = new Set();

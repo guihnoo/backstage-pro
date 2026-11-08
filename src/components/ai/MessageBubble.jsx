@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { useNavigate } from 'react-router-dom';
+import RoadieAvatar from '@/components/roadie/RoadieAvatar';
 import { Button } from "@/components/ui/button";
 import { Copy, Zap, CheckCircle2, AlertCircle, Loader2, ChevronRight, Clock, User } from 'lucide-react';
 import { cn } from "@/lib/utils";
@@ -94,19 +96,14 @@ const FunctionDisplay = ({ toolCall }) => {
 
 export default function MessageBubble({ message }) {
     const isUser = message.role === 'user';
-    const { primaryHex, accentHex } = useCategoryTheme();
+    const { primaryHex } = useCategoryTheme();
     const linkColor = primaryHex;
-    const avatarGradient = `linear-gradient(to bottom right, ${primaryHex}, ${accentHex})`;
+    const navigate = useNavigate();
     
     return (
         <div className={cn("flex gap-3 my-4", isUser ? "justify-end" : "justify-start")}>
             {!isUser && (
-                <div
-                  className="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                  style={{ background: avatarGradient }}
-                >
-                    <Zap className="h-4 w-4 text-white" />
-                </div>
+                <RoadieAvatar size={32} className="flex-shrink-0 mt-0.5" />
             )}
             <div className={cn("max-w-[85%]", isUser && "flex flex-col items-end")}>
                 {message.content && (
@@ -117,8 +114,9 @@ export default function MessageBubble({ message }) {
                         {isUser ? (
                             <p className="text-sm leading-relaxed">{message.content}</p>
                         ) : (
-                            <ReactMarkdown 
-                                className="text-sm prose prose-sm prose-slate max-w-none prose-invert [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
+                            // react-markdown 9+ não aceita className (derrubava a tela a cada resposta) — vai no div.
+                            <div className="text-sm prose prose-sm prose-slate max-w-none prose-invert [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+                            <ReactMarkdown
                                 components={{
                                     code: ({ inline, className, children, ...props }) => {
                                         const match = /language-(\w+)/.exec(className || '');
@@ -146,9 +144,14 @@ export default function MessageBubble({ message }) {
                                             </code>
                                         );
                                     },
-                                    a: ({ children, ...props }) => (
-                                        <a {...props} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: linkColor }}>{children}</a>
-                                    ),
+                                    a: ({ children, href = '', ...props }) => (href.startsWith('/') ? (
+                                        <button type="button" onClick={() => navigate(href)} data-testid="roadie-acao"
+                                            className="inline-flex items-center gap-1 my-1 mr-1 min-h-[40px] px-4 rounded-full bg-[#ffd400] text-[#0a0a0a] font-extrabold text-[13px] no-underline">
+                                            {children} →
+                                        </button>
+                                    ) : (
+                                        <a {...props} href={href} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: linkColor }}>{children}</a>
+                                    )),
                                     p: ({ children }) => <p className="my-1 leading-relaxed">{children}</p>,
                                     ul: ({ children }) => <ul className="my-1 ml-4 list-disc">{children}</ul>,
                                     ol: ({ children }) => <ol className="my-1 ml-4 list-decimal">{children}</ol>,
@@ -165,6 +168,7 @@ export default function MessageBubble({ message }) {
                             >
                                 {message.content}
                             </ReactMarkdown>
+                            </div>
                         )}
                     </div>
                 )}
