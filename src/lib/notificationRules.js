@@ -2,6 +2,7 @@ import { addDays } from 'date-fns';
 import { getEventCacheAmount } from '@/lib/eventFinance';
 import { todayLocalISO } from '@/components/utils/dateUtils';
 import { getPaymentReminderTiming } from './paymentReminderTiming';
+import { buildPendencias } from './pendencias';
 
 /**
  * Regras compartilhadas: NotificationCenter (in-app) e push futuro.
@@ -11,6 +12,7 @@ export function buildUserNotifications({
   clients,
   profile,
   diariasCount = 0,
+  dailyWork = null,
   today = new Date(),
   formatCurrency,
 }) {
@@ -66,12 +68,43 @@ export function buildUserNotifications({
           (timing.isOverdue
             ? ` Vencimento informado ultrapassado há ${timing.daysOverdue} dia${timing.daysOverdue !== 1 ? 's' : ''}.`
             : timing.dueDate ? ` Vencimento informado: ${timing.dueDate.split('-').reverse().join('/')}.` : ' Sem vencimento informado.'),
-        action_url: '/reports?aba=receber',
+        action_url: '/pendencias?grupo=receber',
         event_ref: ev,
         created_date: todayStr,
         phone: clientMap.get(ev.client_id)?.phone || null,
         clientName,
         amount,
+      });
+    }
+  }
+
+  // Lembretes que repetem até o usuário resolver (08/11): saída aberta há 12 h+, horas que faltam,
+  // nota não registrada. Mesma regra da tela Pendências.
+  if (Array.isArray(dailyWork)) {
+    const pend = buildPendencias({ events, dailyWork, clients, today: todayStr, now: today });
+    for (const it of pend.saidaAberta) {
+      notes.push({
+        id: `exit:${it.work.id}:${todayStr}`, type: 'exit_reminder', priority: 'urgent',
+        title: `Registre sua saída: ${it.event.title || 'trabalho'}`,
+        message: `Entrada às ${String(it.work.entry_time).slice(0, 5)} · ${it.horasDesdeEntrada} h sem saída registrada.`,
+        action_url: '/pendencias?grupo=saidaAberta', event_ref: it.event, created_date: todayStr,
+      });
+    }
+    for (const it of pend.semHoras) {
+      const n = it.dias.length;
+      notes.push({
+        id: `hours:${it.event.id}:${todayStr}`, type: 'hours_reminder', priority: 'high',
+        title: `Registre as horas: ${it.event.title || 'trabalho'}`,
+        message: `${n} dia${n > 1 ? 's' : ''} sem horas (${it.dias.slice(0, 3).map((d) => d.split('-').reverse().slice(0, 2).join('/')).join(', ')}${n > 3 ? '…' : ''}).`,
+        action_url: '/pendencias?grupo=semHoras', event_ref: it.event, created_date: todayStr,
+      });
+    }
+    if (pend.semNota.length) {
+      notes.push({
+        id: `nf:${todayStr}`, type: 'nf_reminder', priority: 'medium',
+        title: `${pend.semNota.length} trabalho${pend.semNota.length > 1 ? 's' : ''} sem nota fiscal`,
+        message: 'Registre ou marque as notas já enviadas.',
+        action_url: '/pendencias?grupo=semNota', created_date: todayStr,
       });
     }
   }

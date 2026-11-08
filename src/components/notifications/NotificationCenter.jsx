@@ -46,6 +46,9 @@ const TYPE_LOOK = {
   payment_reminder: { tag: 'R$', color: '#ff2e88' },
   goal_reminder: { tag: '★', color: '#ffd400' },
   work_reminder: { tag: 'H', color: '#ffffff' },
+  exit_reminder: { tag: 'SAI', color: '#ff2e88' },
+  hours_reminder: { tag: 'H', color: '#ffd400' },
+  nf_reminder: { tag: 'NF', color: '#ffffff' },
 };
 
 function NotificationItem({ notification, onDismiss, onNavigate, onViewEvent }) {
@@ -165,10 +168,11 @@ export default function NotificationCenter({ compact = false }) {
       clients,
       profile,
       diariasCount: diariasMes,
+      dailyWork,
       today: new Date(),
       formatCurrency,
     });
-  }, [events, clients, profile, diariasMes, formatCurrency]);
+  }, [events, clients, profile, diariasMes, formatCurrency, dailyWork]);
 
   const visible = useMemo(() =>
     allNotifications.filter(n => !dismissed.has(n.id)),

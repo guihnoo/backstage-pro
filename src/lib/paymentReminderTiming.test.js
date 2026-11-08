@@ -79,7 +79,7 @@ describe('payment notification integration', () => {
     for (const [today, day] of [['2026-10-11', 10], ['2026-10-16', 15]]) {
       const notes = payments([event()], today);
       expect(notes).toHaveLength(1);
-      expect(notes[0]).toMatchObject({ id: 'payment:payment-timing', title: 'Pagamento pendente: Trabalho exemplo', priority: 'high', action_url: '/reports?aba=receber' });
+      expect(notes[0]).toMatchObject({ id: 'payment:payment-timing', title: 'Pagamento pendente: Trabalho exemplo', priority: 'high', action_url: '/pendencias?grupo=receber' });
       expect(notes[0].message).toContain(`encerrado há ${day} dias`);
       expect(notes[0].message).toContain('Sem vencimento informado');
       expect(notes[0].message).not.toMatch(/atraso|atrasado|vencido/i);

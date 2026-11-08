@@ -5,6 +5,8 @@ import { openWhatsAppCharge, buildChargeMessage } from '@/lib/whatsapp';
 import { appToast } from '@/lib/appToast';
 import FinanceLegacyPanels from './FinanceLegacyPanels';
 import './financeExplorer.css';
+import { Link } from 'react-router-dom';
+import { buildPendencias } from '@/lib/pendencias';
 import { createFinanceExplorerModel, buildFinanceMetricDetails, getPaymentReminderTiming, sum, shiftMonth } from '@/lib/financeExplorer';
 const tabs = [['month', 'Mês'], ['companies', 'Empresas · A receber'], ['calendar', 'Calendário'], ['compare', 'Comparações'], ['future', 'Próximos meses'], ['review', 'Conferência'], ['fiscal', 'Fiscal'], ['analise', 'Análise']];
 const metricNames = {
@@ -76,6 +78,8 @@ export default function AllAccessDinheiro({
     today
   }), [events, clients, expenses, workByEvent, today]);
   const d = model.dashboard(month);
+  // Pendências (dar baixa em vários, pagos sem valor, horas, nota): mesmo número do Início.
+  const pendTotal = useMemo(() => buildPendencias({ events, clients, dailyWork: Object.values(workByEvent || {}).flat(), today }).total, [events, clients, workByEvent, today]);
   const money = v => visible ? formatCurrency(Number(v || 0)) : '•••••';
   // A receber acumulado: encerrados até o fim do mês escolhido e ainda não pagos (não zera na virada).
   const openRows = d.pendingRows.filter(r => r.endDate && r.endDate <= d.range.end);
@@ -324,6 +328,7 @@ export default function AllAccessDinheiro({
     if (!openWhatsAppCharge(row.client?.phone, message)) appToast.info('Cadastre o WhatsApp do cliente para cobrar por aqui.');
   }
   return <><div className="finance-explorer">  <section className="heading-row"><div><p className="eyebrow">CADA VALOR TEM UMA ORIGEM</p><h1>DINHEIRO</h1><p className="muted">Toque nas caixas para abrir a composição.</p></div><div className="month-control"><button onClick={() => setMonth(m => shiftMonth(m, -1))} aria-label="Mês anterior">‹</button><span>{monthLabel(month)}</span><button onClick={() => setMonth(m => shiftMonth(m, 1))} aria-label="Próximo mês">›</button></div></section>
+  {pendTotal > 0 && <Link to="/pendencias" className="action" data-testid="dinheiro-pendencias" style={{ background: '#ff2e88', color: '#fff', borderColor: '#ff2e88' }}>Pendências · {pendTotal} →</Link>}
   {onExportPdf && <button className="action" onClick={() => onExportPdf(month)}>Exportar PDF</button>}
   {d.warnings.length > 0 && <button className="review-strip" onClick={() => setTab('review')}><span><b>Dados que precisam de conferência</b><small>Abra a conferência para ver estimativas, dados ausentes e valores antigos.</small></span><span>↗</span></button>}
   <nav role="tablist" aria-label="Visões financeiras" className="tabs">{tabs.map(([key, label]) => <button role="tab" aria-selected={tab === key} key={key} onClick={() => setTab(key)}>{label}</button>)}</nav>

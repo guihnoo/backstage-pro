@@ -31,7 +31,7 @@ describe('server push payment reminder policy', () => {
       const notification = reminders([event()], date)[0];
       expect(notification).toMatchObject({
         key: 'payment:push-timing', type: 'payment_reminder', title: 'Pagamento pendente',
-        priority: 'high', url: '/reports?aba=receber',
+        priority: 'high', url: '/pendencias?grupo=receber',
       });
       expect(notification.body).toContain('encerrado há ' + day + ' dias');
       expect(notification.body).toContain('Sem vencimento informado');
@@ -80,7 +80,9 @@ describe('server push payment reminder policy', () => {
       event(),
       event({ id: 'today', start_date: '2026-10-11', end_date: '2026-10-11' }),
     ], '2026-10-11', { push_events: true, push_payments: false });
-    expect(output.map((item) => item.type)).toEqual(['today_event']);
+    expect(output.map((item) => item.type)).toContain('today_event');
+    expect(output.map((item) => item.type)).not.toContain('payment_reminder');
+    expect(output.map((item) => item.type)).not.toContain('nf_reminder');
   });
 
   it('keeps today, tomorrow and goal reminders working with their original routes', () => {
@@ -101,16 +103,17 @@ describe('server push payment reminder policy', () => {
     ]);
   });
 
-  it('retains priority sorting, three-item cap and immutable inputs', () => {
+  it('retains priority sorting, four-item cap and immutable inputs', () => {
     const events = Object.freeze([
       Object.freeze(event({ id: 'plain' })),
       Object.freeze(event({ id: 'overdue', payment_due_date: '2026-10-05' })),
       Object.freeze(event({ id: 'third' })),
       Object.freeze(event({ id: 'fourth' })),
+      Object.freeze(event({ id: 'fifth' })),
     ]);
     const before = JSON.stringify(events);
     const output = reminders(events);
-    expect(output).toHaveLength(3);
+    expect(output).toHaveLength(4);
     expect(output[0].key).toBe('payment:overdue');
     expect(JSON.stringify(events)).toBe(before);
     expect(events[0]).not.toHaveProperty('payment_due_date');
@@ -153,4 +156,29 @@ it('limiar do push respeita a virada do dia de São Paulo',()=>{
  const args={events:[event()],clients:[],profile:{},prefs:{push_events:false,push_payments:true,push_goals:false}};
  expect(buildPushDigest({...args,today:new Date('2026-10-11T02:59:00Z')}).filter(n=>n.type==='payment_reminder')).toHaveLength(0);
  expect(buildPushDigest({...args,today:new Date('2026-10-11T03:00:00Z')}).filter(n=>n.type==='payment_reminder')).toHaveLength(1);
+});
+
+describe('lembretes que repetem até resolver (08/11)', () => {
+  const base = { clients: [{ id: 'client', name: 'Produtora', client_type: 'empresa' }], profile: {}, prefs: { push_events: true, push_payments: true, push_goals: false } };
+  it('saída: 12 h depois da entrada e de novo a cada 3 h; a rodada de hora em hora só manda a saída', () => {
+    const ev = event({ id: 'show', start_date: '2026-11-08', end_date: '2026-11-08', status: 'confirmed' });
+    const work = [{ id: 'w1', event_id: 'show', work_date: '2026-11-08', entry_time: '08:00', exit_time: null }];
+    // 08:00 em São Paulo = 11:00 UTC.
+    const at = (utc, mode) => buildPushDigest({ ...base, events: [ev], work, today: new Date(utc), mode }).filter((p) => p.type === 'exit_reminder');
+    expect(at('2026-11-08T22:00:00Z')).toEqual([]);
+    expect(at('2026-11-08T23:00:00Z').map((p) => p.key)).toEqual(['exit:w1:0']);
+    expect(at('2026-11-09T02:30:00Z').map((p) => p.key)).toEqual(['exit:w1:1']);
+    const soSaida = buildPushDigest({ ...base, events: [ev], work, today: new Date('2026-11-08T23:00:00Z'), mode: 'exit' });
+    expect(soSaida.map((p) => p.type)).toEqual(['exit_reminder']);
+    expect(soSaida[0].url).toBe('/pendencias?grupo=saidaAberta');
+  });
+  it('horas que faltam todo dia até registrar, nota fiscal em resumo', () => {
+    const ev = event({ id: 'feira', start_date: '2026-11-01', end_date: '2026-11-02', payment_status: 'paid' });
+    const work = [{ id: 'w', event_id: 'feira', work_date: '2026-11-01', entry_time: '08:00', exit_time: '20:00' }];
+    const out = buildPushDigest({ ...base, events: [ev], work, today: new Date('2026-11-08T12:00:00Z') });
+    expect(out.find((p) => p.type === 'hours_reminder')).toMatchObject({ key: 'hours:feira', body: expect.stringContaining('1 dia sem horas') });
+    expect(out.find((p) => p.type === 'nf_reminder')).toMatchObject({ key: 'nf:resumo', url: '/pendencias?grupo=semNota' });
+    const comNota = buildPushDigest({ ...base, events: [{ ...ev, nfe_numero: '9' }], work, today: new Date('2026-11-08T12:00:00Z') });
+    expect(comNota.find((p) => p.type === 'nf_reminder')).toBeUndefined();
+  });
 });

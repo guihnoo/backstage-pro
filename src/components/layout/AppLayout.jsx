@@ -2,7 +2,7 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import RouteSkeleton from '@/components/layout/RouteSkeleton';
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
-import { Home, Calendar, CircleDollarSign, MoreHorizontal, Plus, Users, Receipt, Target, Sparkles, MapPin, UserCircle, X } from 'lucide-react';
+import { Home, Calendar, CircleDollarSign, MoreHorizontal, Plus, Users, Receipt, Target, Sparkles, MapPin, UserCircle, X, ListChecks } from 'lucide-react';
 import { useProfile } from '@/lib/profileOfflineContext';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import AppTopBar, { getAppTopBarOffset } from '@/components/layout/AppTopBar';
@@ -30,6 +30,7 @@ const rightNavItems = [
 
 // Itens do "Mais"
 const secondaryNavItems = [
+  { to: '/pendencias', match: '/pendencias', label: 'Pendências', icon: ListChecks },
   { to: '/mapa', match: '/mapa', label: 'Mapa', icon: MapPin },
   { to: '/clients', match: '/clients', label: 'Clientes', icon: Users },
   { to: '/expenses', match: '/expenses', label: 'Despesas', icon: Receipt },

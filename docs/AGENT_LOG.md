@@ -3206,3 +3206,10 @@ Registro cronológico de tarefas executadas por agentes.
 - **Corrigido**: A receber/No mês da Agenda (regra do Dinheiro); carregando em vez de "dia livre"/zeros; conquistas antigas sem festa em aparelho novo; textos de Metas.
 - **Testes**: unit 475/475; E2E agenda/metas/modais 15/15 (inclui os 2 que falhavam por data).
 - **Deploy**: nenhum.
+
+### 2026-11-08 — Pendências e lembretes (Claude Code, branch feat/pendencias-lembretes)
+- **Pedido**: dar baixa em vários de uma vez e deixar só o que não recebeu; lembrar horas até registrar; lembrar a saída 12 h após a entrada até registrar; avisos constantes do que é importante.
+- **Novo**: src/lib/pendencias.js (+ testes), src/pages/Pendencias.jsx (rota /pendencias), PendenciasBanner no Início, selo no Dinheiro, item no Mais; lembretes exit/hours/nf em notificationRules (app) e _shared/pushDigest.ts (push, modo 'exit' de hora em hora); migração 048 (cron send-push-exit-hourly, só agenda — não altera dados).
+- **Bug pego no teste**: saída aberta guardava a lista de registros em vez do registro ("Entrada às undef").
+- **Testes**: unit 481/481; E2E pendencias 2/2 + relacionados; build ok.
+- **Deploy**: nenhum — aguardando autorização (função, app, 048).

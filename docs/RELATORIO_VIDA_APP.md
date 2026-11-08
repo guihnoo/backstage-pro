@@ -193,6 +193,13 @@ Os escopos de agenda são "sensíveis": com o app em **Testing**, só entra quem
 
 ## Changelog
 
+### 2026-11-08 — Pendências e lembretes que repetem (Claude Code — branch `feat/pendencias-lembretes`, **não publicado**)
+
+- **Tela `/pendencias`** (Início › faixa rosa, Dinheiro › "Pendências · N", Mais › Pendências), regra única em `src/lib/pendencias.js`: **A receber** (dar baixa em vários de uma vez — valor previsto já preenchido, data sugerida fim + 10 dias "estimada" para os antigos e hoje para os recentes, "Mesma data" para todos), **Pago sem valor** (confirmar valores), **Não fechados** (marcar realizados), **Sem horas** (lançar 12 h nos dias que faltam), **Saída aberta** (registrar a saída esquecida), **Sem nota** (marcar "já enviei"). Itens somem com animação quando resolvidos; botão fixo "Dar baixa (N) · R$ X".
+- **Lembretes** (sininho e celular): horas que faltam — todo dia até registrar (push: trabalhos dos últimos 45 dias); saída esquecida — 12 h depois da entrada e a cada 3 h até registrar (push de hora em hora, `send-push-exit-hourly`, migração 048); notas pendentes — resumo diário; pagamento pendente agora abre a tela Pendências. Push: até 4 avisos por rodada.
+- **Testes**: unit 481/481; E2E `pendencias.spec.js` (baixa em vários + saída esquecida) e relacionados 19/19; build ok.
+- **Para publicar (ordem)**: 1) função `send-push-digest` (v8), 2) app (main), 3) migração 048 (cron de hora em hora).
+
 ### 2026-11-08 — Varredura geral (Claude Code — branch `fix/varredura-0811`, **não publicado**)
 
 - **Robô de botões**: 537 cliques em 11 telas, 0 erros de JavaScript, 0 telas quebradas, 0 destinos inexistentes. "Nada aconteceu"/"não deu para clicar" conferidos: animação dos números (Agenda) e a comemoração de conquista por cima de Metas.
