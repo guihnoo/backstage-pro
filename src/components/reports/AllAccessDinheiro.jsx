@@ -6,6 +6,7 @@ import { appToast } from '@/lib/appToast';
 import FinanceLegacyPanels from './FinanceLegacyPanels';
 import './financeExplorer.css';
 import { Link } from 'react-router-dom';
+import FinanceMonthHero from './FinanceMonthHero';
 import { buildPendencias } from '@/lib/pendencias';
 import { createFinanceExplorerModel, buildFinanceMetricDetails, getPaymentReminderTiming, sum, shiftMonth } from '@/lib/financeExplorer';
 const tabs = [['month', 'Mês'], ['companies', 'Empresas · A receber'], ['calendar', 'Calendário'], ['compare', 'Comparações'], ['future', 'Próximos meses'], ['review', 'Conferência'], ['fiscal', 'Fiscal'], ['analise', 'Análise']];
@@ -78,6 +79,12 @@ export default function AllAccessDinheiro({
     today
   }), [events, clients, expenses, workByEvent, today]);
   const d = model.dashboard(month);
+  // Barras do topo: recebido dos últimos 6 meses (mesma regra do cartão).
+  const receivedHistory = useMemo(() => Array.from({ length: 6 }, (_, k) => {
+    const m = shiftMonth(month, k - 5);
+    return { month: m, label: new Intl.DateTimeFormat('pt-BR', { month: 'short' }).format(new Date(m + '-15T12:00:00')).replace('.', ''), value: model.dashboard(m).totals.received };
+  }), [model, month]);
+  const prevMonthReceived = receivedHistory[4]?.value ?? null;
   // Pendências (dar baixa em vários, pagos sem valor, horas, nota): mesmo número do Início.
   const pendTotal = useMemo(() => buildPendencias({ events, clients, dailyWork: Object.values(workByEvent || {}).flat(), today }).total, [events, clients, workByEvent, today]);
   const money = v => visible ? formatCurrency(Number(v || 0)) : '•••••';
@@ -334,11 +341,20 @@ export default function AllAccessDinheiro({
   <nav role="tablist" aria-label="Visões financeiras" className="tabs">{tabs.map(([key, label]) => <button role="tab" aria-selected={tab === key} key={key} onClick={() => setTab(key)}>{label}</button>)}</nav>
   <section role="tabpanel" aria-label={tabs.find(t => t[0] === tab)[1]} className="tab-body">
   {tab === 'month' && <>
-   {card('Entrou no mês', d.totals.received, () => open({
-            type: 'metric',
-            metric: 'received'
-          }), !d.receiptRows.length ? 'Sem recebimentos cadastrados neste recorte.' : d.receiptRows.some(r => r.receivedDateEstimated) ? 'Inclui datas estimadas · veja a composição.' : 'Valor informado no recebimento, pela data do depósito.', 'hero', 'finance-received')}
-   <div className="grid three">{metricCard('revenue', d.totals.revenue, 'Eventos encerrados neste mês')}{metricCard('pending', pendingMonth, pendingNote, 'pink-card')}{metricCard('expenses', d.totals.expenses, 'Despesas registradas na sua conta')}</div>
+   <FinanceMonthHero
+     received={d.totals.received}
+     prevReceived={prevMonthReceived}
+     revenue={d.totals.revenue}
+     pending={pendingMonth}
+     pendingNote={pendingNote}
+     expenses={d.totals.expenses}
+     history={receivedHistory}
+     monthLabel={monthLabel(month)}
+     visible={visible}
+     formatCurrency={formatCurrency}
+     receivedNote={!d.receiptRows.length ? 'Sem recebimentos registrados neste mês.' : d.receiptRows.some(r => r.receivedDateEstimated) ? 'Inclui datas estimadas · toque para ver a composição.' : 'Pela data em que o dinheiro entrou · toque para ver.'}
+     onOpen={key => open({ type: 'metric', metric: key })}
+   />
    <div className="grid two"><section className="panel"><div className="panel-heading"><h2>DE ONDE VEIO</h2><button className="text-btn" onClick={() => open({
                   type: 'metric',
                   metric: 'received'
@@ -357,13 +373,12 @@ export default function AllAccessDinheiro({
                   type: 'group',
                   title: 'Eventos encerrados · ' + monthLabel(month),
                   rows: d.billedRows
-                }), 'Abrir os trabalhos deste mês')}{card('Variação do recebido', model.compare(month, 'received', null, true).delta, () => open({
+                }), 'Abrir os trabalhos deste mês')}{card('Variação até hoje', model.compare(month, 'received', null, true).delta, () => open({
                   type: 'comparison',
                   metric: 'received',
                   equivalent: true
-                }), 'Comparação equivalente com o mês anterior')}</div></section></div>
-   {metricCard('cash', d.totals.cash, 'Entradas menos despesas registradas; não é saldo bancário nem lucro contábil.')}
-   <div className="grid two">{metricCard('ongoing', d.totals.ongoing, 'Agenda do período · valor previsto')}{metricCard('upcoming', d.totals.upcoming, 'Agenda do período · não somar meses sobrepostos')}</div>
+                }), 'Recebido até este dia × mesmo período do mês anterior')}</div></section></div>
+   <div className="fm-mini">{metricCard('cash', d.totals.cash, 'Entradas menos despesas; não é saldo bancário.')}{metricCard('ongoing', d.totals.ongoing, 'Previsto · em andamento')}{metricCard('upcoming', d.totals.upcoming, 'Previsto · próximos trabalhos')}</div>
    <button className="review-strip" onClick={() => setTab('review')}><span><b>Conferir a qualidade do histórico</b><small>Datas a revisar, valores antigos e dados não informados.</small></span><span>↗</span></button>
   </>}
   {tab === 'companies' && <>
