@@ -10,6 +10,7 @@ import OfflineBanner from '@/components/layout/OfflineBanner';
 import SlowLoadingHint from '@/components/layout/SlowLoadingHint';
 import IconUpdateNotice from '@/components/layout/IconUpdateNotice';
 import FeedbackLayer from '@/components/layout/FeedbackLayer';
+import RoadieDock from '@/components/roadie/RoadieDock';
 import { prefetchRoute, prefetchCriticalRoutes } from '@/lib/routePrefetch';
 import AppTour from '@/components/tour/AppTour';
 import { FloatingTimer } from '@/components/timer/FloatingTimer';
@@ -36,7 +37,7 @@ const secondaryNavItems = [
   { to: '/clients', match: '/clients', label: 'Clientes', icon: Users },
   { to: '/expenses', match: '/expenses', label: 'Despesas', icon: Receipt },
   { to: '/goals', match: '/goals', label: 'Metas', icon: Target },
-  { to: '/ai-mentor', match: '/ai-mentor', label: 'Mentor', icon: Sparkles },
+  { to: '/roadie', match: '/roadie', label: 'Roadie', icon: Sparkles },
   { to: '/profile', match: '/profile', label: 'Perfil', icon: UserCircle },
 ];
 
@@ -132,6 +133,7 @@ export default function AppLayout() {
     >
       <AppTour />
       <FeedbackLayer />
+      <RoadieDock />
       <AppTopBar />
       <OfflineBanner />
       <main

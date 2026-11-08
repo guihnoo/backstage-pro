@@ -4,20 +4,24 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Sparkles, Loader2, Send, Volume2, VolumeX, History, Plus, MessageSquare, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
-import { useEvents, useStats } from '@/lib/useBackstageData';
+import { useStats } from '@/lib/useBackstageData';
 import { useClients } from '@/lib/useClients';
 import { supabase } from '@/lib/supabase';
 import appToast from '@/lib/appToast';
 import MessageBubble from '@/components/ai/MessageBubble';
-import SmartSuggestions from '@/components/ai/SmartSuggestions';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { getCategoryConfig } from '@/lib/categoryConfig';
-import { getEventCacheAmount } from '@/lib/eventFinance';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { todayLocalISO } from '@/components/utils/dateUtils';
 
 import { loadMentorHistory, saveMentorHistory } from '@/lib/mentorHistory';
+import { useEvents as useAllEvents } from '@/lib/useEvents';
+import { useDailyWork } from '@/lib/useDailyWork';
+import { useExpenses } from '@/lib/useExpenses';
+import { buildRoadieContext } from '@/lib/roadie/context';
+import RoadieAvatar from '@/components/roadie/RoadieAvatar';
+import { useLocation, useSearchParams } from 'react-router-dom';
 
 const CATEGORY_HINTS = {
   audio:      'Pergunte sobre cachês PA/FOH, diárias, contratos pendentes e metas.',
@@ -31,7 +35,10 @@ const CATEGORY_HINTS = {
   catering:   'Pergunte sobre contratos, cachês, clientes e metas.',
   other:      'Pergunte sobre diárias, cachês, clientes e metas do mês.',
 };
-const DEFAULT_HINT = 'Pergunte sobre diárias, cachês, clientes, cobranças e metas do mês.';
+const DEFAULT_HINT = 'Eu conheço seus trabalhos, clientes e dinheiro. Pergunte quem te deve, como foi o mês ou quanto cobrar — e eu já deixo o botão para resolver.';
+
+// Atalhos do Roadie (08/11): perguntas que ele responde com os seus dados.
+const ROADIE_ATALHOS = ['Quem me deve?', 'Como foi meu mês?', 'O que falta eu resolver?', 'Qual cliente paga mais rápido?', 'Quanto cobrar no próximo trabalho?', 'Quanto falta para a meta?'];
 
 function TypingDots({ color }) {
   return (
@@ -113,9 +120,15 @@ export default function AIMentorPage() {
 function AIMentorSession({ userId }) {
   const { user, profile } = useAuth();
   const { stats } = useStats(user?.id);
-  const { clients } = useClients();
+  const { clients, loading: clientsLoading } = useClients();
   const today = todayLocalISO();
-  const { events } = useEvents(user?.id, { from: today, limit: 10, ascending: true });
+  // Roadie: retrato completo da conta (todos os trabalhos, horas e despesas), com as regras das telas.
+  const { events: allEvents, loading: eventsLoading } = useAllEvents();
+  const { dailyWork: allWork } = useDailyWork();
+  const { expenses: allExpenses } = useExpenses();
+  const { pathname } = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const roadieContext = useMemo(() => buildRoadieContext({ events: allEvents || [], clients: clients || [], dailyWork: allWork || [], expenses: allExpenses || [], profile, today, route: pathname }), [allEvents, clients, allWork, allExpenses, profile, today, pathname]);
   // Visual All Access: amarelo no lugar da cor da categoria.
   const config = { ...getCategoryConfig(profile?.category || 'lighting'), primaryHex: '#ffd400', accentHex: '#ff2e88' };
   const { formatCurrency, isVisible } = useFinancialVisibility();
@@ -166,27 +179,7 @@ function AIMentorSession({ userId }) {
     });
   }, []);
 
-  const clientMap = useMemo(() => new Map((clients || []).map(c => [c.id, c])), [clients]);
 
-  // Contexto financeiro enviado ao Claude
-  const financialContext = useMemo(() => ({
-    faturamento_mes: stats?.faturamento_pago ?? 0,
-    a_receber: stats?.a_receber ?? 0,
-    eventos_mes: stats?.eventos_count ?? 0,
-    diarias_mes: stats?.diarias_count ?? 0,
-    clientes_ativos: stats?.clientes_ativos ?? 0,
-    proximos_eventos: events?.slice(0, 5).map(e => ({
-      titulo: e.title,
-      data: e.start_date,
-      cliente: clientMap.get(e.client_id)?.name || 'Sem cliente',
-      valor: getEventCacheAmount(e),
-    })) ?? [],
-    total_clientes: clients?.length ?? 0,
-    categoria: profile?.category_label || profile?.category || 'técnico de eventos',
-    meta_receita: profile?.monthly_goal_revenue || 0,
-    meta_eventos: profile?.monthly_goal_events || 0,
-    meta_diarias: profile?.monthly_goal_events || 0,
-  }), [stats, events, clientMap, clients, profile]);
 
   const persistConversations = useCallback((convs) => {
     if (!activeRef.current) return;
@@ -251,7 +244,7 @@ function AIMentorSession({ userId }) {
       const { data, error } = await supabase.functions.invoke('ai-chat', {
         body: {
           messages: updatedMessages.map(m => ({ role: m.role, content: m.content })),
-          context: financialContext,
+          context: roadieContext,
         },
       });
 
@@ -289,7 +282,17 @@ function AIMentorSession({ userId }) {
         textareaRef.current.focus();
       }
     }
-  }, [input, loading, currentConv, conversations, messages, financialContext, persistConversations]);
+  }, [input, loading, currentConv, conversations, messages, roadieContext, persistConversations]);
+
+  // Pergunta feita pela gaveta do Roadie (/roadie?q=...): envia sozinha quando os dados chegarem.
+  const qSent = useRef(false);
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (!q || qSent.current || eventsLoading || clientsLoading) return;
+    qSent.current = true;
+    setSearchParams({}, { replace: true });
+    handleSend(q);
+  }, [searchParams, eventsLoading, clientsLoading, handleSend, setSearchParams]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -312,10 +315,10 @@ function AIMentorSession({ userId }) {
           className="px-4 pt-4 pb-3 border-b border-[#222222] flex-shrink-0"
         >
           <div className="flex items-center gap-3 max-w-2xl xl:max-w-6xl mx-auto w-full">
-            <div className="w-12 h-12 rounded-[12px] bg-[#ffd400] text-[#0a0a0a] flex items-center justify-center font-poster text-[26px] shrink-0">M</div>
+            <RoadieAvatar size={48} className="shrink-0" />
             <div className="min-w-0">
-              <h1 className="font-poster text-[34px] leading-none uppercase tracking-wide">Mentor</h1>
-              <p className="font-tag text-[10px] text-[#a8a8a8] truncate">seu parceiro de estrada · olha seus números todo dia</p>
+              <h1 className="font-poster text-[34px] leading-none uppercase tracking-wide">Roadie</h1>
+              <p className="font-tag text-[10px] text-[#a8a8a8] truncate">cuida dos seus bastidores · trabalhos, clientes e dinheiro</p>
             </div>
           </div>
           <p className="font-tag text-[11px] tracking-[1px] text-[#ffd400] uppercase mt-3 max-w-2xl xl:max-w-6xl mx-auto w-full">
@@ -394,8 +397,15 @@ function AIMentorSession({ userId }) {
                   {CATEGORY_HINTS[profile?.category] ?? DEFAULT_HINT}
                 </p>
               </div>
-              <p className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">Pergunte ao mentor</p>
-              <SmartSuggestions userData={financialContext} onSuggestionClick={(s) => handleSend(s)} />
+              <p className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">Pergunte ao Roadie</p>
+              <div className="flex flex-wrap gap-2" data-testid="roadie-atalhos">
+                {ROADIE_ATALHOS.map((a) => (
+                  <button key={a} type="button" onClick={() => handleSend(a)}
+                    className="min-h-[44px] px-4 rounded-full border border-[#333] bg-[#161616] text-white text-[13px] font-bold active:scale-95 transition-transform">
+                    {a}
+                  </button>
+                ))}
+              </div>
             </motion.div>
           ) : (
             <div className="space-y-2 max-w-2xl xl:max-w-6xl mx-auto w-full">
@@ -446,7 +456,7 @@ function AIMentorSession({ userId }) {
           {/* Atalho de teclado só faz sentido no computador */}
           <p className="text-[9px] text-[#555555] font-tag text-center mt-1.5">
             <span className="hidden sm:inline">Enter para enviar · Shift+Enter para nova linha · </span>
-            Seus números do mês vão junto na pergunta
+            O Roadie conhece seus trabalhos, clientes e dinheiro
           </p>
         </div>
       </div>
