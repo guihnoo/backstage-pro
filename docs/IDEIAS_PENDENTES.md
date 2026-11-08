@@ -158,6 +158,13 @@
 | 117 | **Atualização do app instalado** (checagem própria, botão no Perfil, não recarregar digitando) | 2026-10-22 | 🟡 Pronto na branch `feat/foto-perfil-pwa`; falta publicar e testar no iPhone real |
 | 118 | **Nova logo** e ícone novo do app instalado (PWA), com aviso para quem usa iPhone apagar e readicionar o ícone | 2026-10-22 | ✅ Logo escolhida em 23/10: **Credencial horizontal**. Kit v2, abertura animada e aviso do iPhone prontos na branch `feat/logo-motion` (não publicado). Faltam: teste Android/iPhone real, PDFs e página pública, logo do Google |
 | 119 | **Dar vida ao app**: animações e interatividade leves (abertura animada, salvar com check, números que sobem, confete, listas suaves). Regras em `docs/PLANO_VIDA_E_ANIMACAO.md` | 2026-10-22 | 🔄 Abertura animada feita (credencial balançando, 23/10). Faltam salvar com check, números que sobem, anéis/confete, listas, aba |
+| 120 | **A receber não zerar na virada do mês** | 2026-11-07 | ✅ Pronto na branch `feat/financeiro-calendario-v2` (não publicado) |
+| 121 | **Nota fiscal**: reconhecer a empresa com nome diferente (CNPJ/razão social) e escolher valor da nota ou do app | 2026-11-07 | ✅ Pronto na branch (não publicado) |
+| 122 | **Hora extra num dia, dobra/meio cachê em outro** no mesmo trabalho | 2026-11-07 | ✅ Escolha por dia ligada na branch (não publicado) |
+| 123 | **Relatório só de horas** (sem valores) para o cliente | 2026-11-07 | ✅ Pronto na branch (não publicado) |
+| 124 | Avisos de pagamento pendente a partir de 10 dias após o fim | 2026-11-07 | ✅ Regra no ar desde 30/10; conserto dos "avisos desligados sozinhos" na branch |
+| 125 | Calendário: registrar horas no dia tocado e salvar | 2026-11-07 | ✅ Corrigido na branch (não publicado) |
+| — | Pagamento parcial | 2026-11-07 | ❌ Guih: pagamento é sempre único — não sugerir |
 | 114 | Equipe: convidar colegas para o mesmo show | 2026-10-22 | ❌ Guih decidiu que o app **não** terá isso (22/10) — não sugerir de novo |
 
 ---
@@ -175,7 +182,7 @@
 - [x] Separar recebido de eventos do próprio mês e de eventos de outros meses.
 - [x] Priorizar o pagamento final confirmado e manter o cálculo anterior visível para comparação.
 - [x] Separar pagamentos sem valor final dos totais confirmados, sem preencher dados automaticamente.
-- [ ] Publicar esta rodada e validar com os dados da conta.
+- [x] Publicar esta rodada e validar com os dados da conta. (PR #2, 30/10)
 - [ ] Usuário conferir e informar valores faltantes no histórico.
 
 
@@ -183,6 +190,6 @@
 - [x] Regra escolhida pelo usuário: data estimada no décimo dia após encerramento.
 - [x] Backup financeiro, atualização transacional e reversão delimitados preparados nos artefatos privados.
 - [x] Identificação de datas estimadas, avisos do app e código de push preparados localmente.
-- [ ] Autorização explícita da migração047 exigida pela revisão automática.
-- [ ] Aplicar e conferir as seis datas após a autorização da etapa anterior.
-- [ ] Publicar e validar app/Edge; avisos ainda não ativos com a nova regra.
+- [x] Autorização explícita da migração047 exigida pela revisão automática.
+- [x] Aplicar e conferir as seis datas após a autorização da etapa anterior.
+- [x] Publicar e validar app/Edge (push v7). Avisos paravam porque a conta ficava com push desligado — corrigido em 07/11 (branch).

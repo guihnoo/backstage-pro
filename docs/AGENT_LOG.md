@@ -3185,3 +3185,11 @@ Registro cronológico de tarefas executadas por agentes.
 - Nenhum teste alterou dados de conta real. Anexos privados e tratamento da revisão antiga do GitHub continuam pendentes; plano e evidências permanecem nos artefatos privados, sem informações financeiras de usuários no repositório.
 - Antes de publicar a correção offline, validar repetição/deduplicação das tarefas antigas reconhecidas pela migração. Restauração completa e demais inconsistências financeiras continuam em lotes seguintes.
 - Backup automático deve respeitar a pausa existente em .cursor/PAUSE_AUTO_GIT.
+
+### 2026-11-07 — Agenda, A receber, escolha por dia, nota fiscal, relatório de horas, avisos (Claude Code, branch feat/financeiro-calendario-v2)
+- **Pedido**: mês do Dinheiro zerado na virada; NF com nome/valor diferente; hora extra e dobra em dias diferentes; avisos a partir de 10 dias; calendário abrindo no dia de hoje e sem salvar; relatório só de horas para o cliente.
+- **Causas**: campo de data com max=hoje (Salvar barrado em silêncio); new Date() como dependência reiniciava o formulário; atalho do celular ignorava o dia tocado; PushNotificationSettings desligava push_enabled da conta ao abrir o Perfil num aparelho sem inscrição; client.cnpj inexistente na conferência da NF; fila offline v1 nunca enviada.
+- **Commits**: 486a67d (lote 31/10 Codex) + agenda/horas, avisos, A receber, escolha por dia, relatório de horas, nota fiscal, fila offline v1, docs.
+- **Banco**: só leitura (contagens e esquema). Nenhuma gravação, migração ou função publicada.
+- **Testes**: unit 475/475; E2E 144 ok, 2 falhas pré-existentes (conferido na versão anterior em worktree temporário); build ok; PDF do relatório de horas aberto e conferido (sem valores).
+- **Deploy**: nenhum — aguardando autorização. Só app (push para main).
