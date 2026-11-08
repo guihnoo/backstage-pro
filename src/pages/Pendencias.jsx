@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Loader2, ChevronLeft, CircleDollarSign, Clock, FileText, CalendarCheck, LogOut, Receipt } from 'lucide-react';
+import { Check, Loader2, ChevronLeft, CircleDollarSign, Clock, LogOut, Receipt } from 'lucide-react';
 import { useEvents } from '@/lib/useEvents';
 import { useClients } from '@/lib/useClients';
 import { useDailyWork } from '@/lib/useDailyWork';
@@ -16,13 +16,12 @@ import { haptics } from '@/lib/haptics';
 import { confetti } from '@/lib/celebrate';
 import appToast from '@/lib/appToast';
 
+// Lista simples (08/11, pedido do Guih: "informação em excesso"): só 4 perguntas, e só aparecem as que têm item.
 const GRUPOS = [
-  { key: 'receber', label: 'A receber', icon: CircleDollarSign, acao: 'Dar baixa', vazio: 'Tudo recebido. Nenhum trabalho esperando pagamento.' },
-  { key: 'pagosSemValor', label: 'Pago sem valor', icon: Receipt, acao: 'Confirmar valores', vazio: 'Todos os pagamentos têm o valor recebido.' },
-  { key: 'naoRealizados', label: 'Não fechados', icon: CalendarCheck, acao: 'Marcar como realizados', vazio: 'Todos os trabalhos que passaram estão fechados.' },
-  { key: 'semHoras', label: 'Sem horas', icon: Clock, acao: 'Lançar 12 h nos dias que faltam', vazio: 'Todas as horas registradas.' },
-  { key: 'saidaAberta', label: 'Saída aberta', icon: LogOut, acao: null, vazio: 'Nenhuma saída esquecida.' },
-  { key: 'semNota', label: 'Sem nota', icon: FileText, acao: 'Já enviei a nota', vazio: 'Todas as notas registradas.' },
+  { key: 'receber', label: 'Recebi?', icon: CircleDollarSign, acao: 'Já recebi', dica: 'Marque o que já caiu na conta. Confira o valor e a data.', vazio: 'Tudo recebido.' },
+  { key: 'pagosSemValor', label: 'Falta o valor', icon: Receipt, acao: 'Salvar valores', dica: 'Digite o valor de cada trabalho.', vazio: 'Todos os trabalhos têm valor.' },
+  { key: 'semHoras', label: 'Horas', icon: Clock, acao: 'Lançar 12 h', dica: 'Dias sem horas registradas. Toque no trabalho para lançar o horário certo.', vazio: 'Todas as horas registradas.' },
+  { key: 'saidaAberta', label: 'Saída', icon: LogOut, acao: null, dica: 'Você entrou e não registrou a saída.', vazio: 'Nenhuma saída esquecida.' },
 ];
 
 const br = (iso) => (iso ? iso.split('-').reverse().join('/') : '');
@@ -54,10 +53,13 @@ export default function Pendencias() {
   const [mesmaData, setMesmaData] = useState('');
   const [busy, setBusy] = useState(false);
   const [saidas, setSaidas] = useState({});
+  // Barra "X de Y resolvidos": guarda o maior total visto nesta visita.
+  const [inicio, setInicio] = useState(0);
+  useEffect(() => { if (!loading) setInicio((v) => Math.max(v, pend.total)); }, [loading, pend.total]);
   useEffect(() => { setSel(new Set()); setMesmaData(''); }, [tab]);
 
   const idOf = (it) => (tab === 'saidaAberta' ? it.work.id : it.event.id);
-  const valorDe = (it) => edits[it.event.id]?.valor ?? String(it.valorPrevisto ?? 0);
+  const valorDe = (it) => edits[it.event.id]?.valor ?? (Number(it.valorPrevisto) > 0 ? String(it.valorPrevisto) : '');
   const dataDe = (it) => mesmaData || edits[it.event.id]?.data || it.dataSugerida;
   const estimadaDe = (it) => !mesmaData && !edits[it.event.id]?.data && it.dataEstimada;
   const setEdit = (id, patch) => setEdits((p) => ({ ...p, [id]: { ...p[id], ...patch } }));
@@ -80,7 +82,9 @@ export default function Pendencias() {
         } else if (tab === 'pagosSemValor') {
           const v = Math.round(Number(String(valorDe(it)).replace(',', '.')) * 100) / 100;
           if (!Number.isFinite(v) || v < 0) throw new Error('valor inválido');
-          await updateEvent(it.event.id, { paid_amount: v });
+          if (!(v > 0)) throw new Error('digite o valor');
+          // Pago: o que entrou. Ainda não pago: o valor do trabalho (aí ele vai para "Recebi?").
+          await updateEvent(it.event.id, it.pago ? { paid_amount: v } : { estimated_revenue: v });
         } else if (tab === 'naoRealizados') {
           await updateEvent(it.event.id, { status: 'completed' });
         } else if (tab === 'semHoras') {
@@ -136,10 +140,18 @@ export default function Pendencias() {
           {loading ? '…' : pend.total}
         </motion.span>
       </div>
-      <p className="text-sm text-[#a8a8a8] mt-1">Selecione vários e resolva de uma vez. O que sobrar é o que ainda falta.</p>
+      {inicio > 0 && (
+        <div className="mt-3" data-testid="pendencias-progresso">
+          <div className="flex justify-between text-[12px] text-[#a8a8a8]"><span>{inicio - pend.total} de {inicio} resolvidos</span></div>
+          <div className="h-2 rounded-full bg-[#222] overflow-hidden mt-1">
+            <motion.div className="h-full bg-[#ffd400] rounded-full" initial={false} animate={{ width: `${((inicio - pend.total) / inicio) * 100}%` }} transition={{ type: 'spring', stiffness: 120, damping: 20 }} />
+          </div>
+        </div>
+      )}
+      <p className="text-sm text-[#c8c8c8] mt-3">{grupo.dica}</p>
 
       <div className="flex gap-2 overflow-x-auto [scrollbar-width:none] mt-4 -mx-4 px-4 pb-1" role="tablist" aria-label="Tipos de pendência">
-        {GRUPOS.map((g) => {
+        {GRUPOS.filter((g) => pend[g.key].length || g.key === tab).map((g) => {
           const n = pend[g.key].length;
           const active = g.key === tab;
           const Icon = g.icon;
@@ -160,7 +172,7 @@ export default function Pendencias() {
             <input type="checkbox" checked={allSelected} onChange={toggleAll} className="w-5 h-5 accent-[#ffd400]" aria-label="Selecionar todos" />
             Selecionar todos ({items.length})
           </label>
-          {tab === 'receber' && (
+          {tab === 'receber' && items.length > 1 && (
             <label className="flex items-center gap-2 text-[12px] text-[#a8a8a8]">
               Mesma data
               <input type="date" value={mesmaData} max={today} onChange={(e) => setMesmaData(e.target.value)}
@@ -204,7 +216,6 @@ export default function Pendencias() {
                   </button>
                   {tab === 'receber' && (
                     <>
-                      <p className={`font-tag text-[11px] mt-1 ${it.diasDesdeFim >= 30 ? 'text-[#ff2e88]' : 'text-[#a8a8a8]'}`}>Terminou há {it.diasDesdeFim} dias</p>
                       <div className="grid grid-cols-2 gap-2 mt-2">
                         <label className="text-[11px] text-[#a8a8a8]">Valor recebido
                           <input inputMode="decimal" value={isVisible ? valorDe(it) : '•••••'} disabled={!isVisible}
@@ -220,15 +231,13 @@ export default function Pendencias() {
                     </>
                   )}
                   {tab === 'pagosSemValor' && (
-                    <label className="block text-[11px] text-[#a8a8a8] mt-2">Quanto entrou (sugestão: valor do trabalho)
+                    <label className="block text-[11px] text-[#a8a8a8] mt-2">{it.pago ? 'Quanto entrou' : 'Valor do trabalho'}
                       <input inputMode="decimal" value={isVisible ? valorDe(it) : '•••••'} disabled={!isVisible}
                         onChange={(e) => setEdit(it.event.id, { valor: e.target.value })}
                         className="mt-0.5 w-full h-10 rounded-lg bg-[#0a0a0a] border border-[#2a2a2a] px-2 text-white text-[15px] font-bold" />
                     </label>
                   )}
-                  {tab === 'naoRealizados' && <p className="text-[12px] text-[#a8a8a8] mt-1">Ainda como “{it.event.status === 'pending' ? 'pendente' : 'confirmado'}” · {money(it.valorPrevisto)}</p>}
                   {tab === 'semHoras' && <p className="text-[12px] text-[#ff2e88] mt-1">Faltam: {it.dias.map(br).join(', ')}</p>}
-                  {tab === 'semNota' && <p className="text-[12px] text-[#a8a8a8] mt-1">{money(it.valorPrevisto)} · sem nota registrada</p>}
                   {tab === 'saidaAberta' && (
                     <div className="mt-2">
                       <p className="text-[12px] text-[#ff2e88]">Entrada às {String(it.work.entry_time).slice(0, 5)} de {br(it.dia)} · {it.horasDesdeEntrada} h sem saída</p>

@@ -26,18 +26,18 @@ test('Início mostra pendências e a tela dá baixa em vários de uma vez', asyn
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   const banner = page.getByTestId('pendencias-banner');
   await expect(banner).toBeVisible({ timeout: 60_000 });
-  await expect(banner).toContainText('para dar baixa');
+  await expect(banner).toContainText('para confirmar se recebeu');
   await banner.click();
 
   await expect(page.getByTestId('pendencias')).toBeVisible({ timeout: 15_000 });
-  await page.getByRole('tab', { name: /A receber/ }).click();
+  await page.getByRole('tab', { name: /Recebi?/ }).click();
   const itens = page.getByTestId('pendencia-item');
   await expect(itens).toHaveCount(2);
   await expect(itens.first()).toContainText('Feira antiga');
   await expect(itens.first()).toContainText('(estimada)');
 
   await page.getByRole('checkbox', { name: 'Selecionar todos' }).check();
-  await page.getByRole('button', { name: /Dar baixa \(2\)/ }).click();
+  await page.getByRole('button', { name: /Já recebi \(2\)/ }).click();
   await expect.poll(() => baixas.length, { timeout: 15_000 }).toBe(2);
   const antiga = baixas.find((b) => b.paid_date === localISO(-30));
   expect(antiga).toMatchObject({ status: 'completed', paid_date_meta: { source: 'estimated' } });
