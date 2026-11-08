@@ -530,10 +530,11 @@ export default function EventDetailModal({
     }
   };
 
-  const generateClosingPdfBlob = async () => {
+  const generateClosingPdfBlob = async ({ hideValues = false } = {}) => {
     const { pdf } = await import('@react-pdf/renderer');
     const { EventPDFDocument } = await import('@/lib/EventPDFDocument');
-    const pixKey = userSettings?.pix_key || null;
+    // Relatório só de horas: sem PIX, sem valores, sem comprovantes de despesa.
+    const pixKey = hideValues ? null : (userSettings?.pix_key || null);
     const providerName = userSettings?.report_full_name || profile?.name || profile?.full_name || 'Prestador';
     let pixQrDataUrl = '';
     if (pixKey) {
@@ -561,7 +562,7 @@ export default function EventDetailModal({
       email: profile?.email || user?.email || '',
     };
     const enrichedExpenses = await Promise.all(
-      (eventExpenses || []).map(async (exp) => {
+      (hideValues ? [] : (eventExpenses || [])).map(async (exp) => {
         if (!exp.is_reimbursable || !exp.receipt_url) return exp;
         if (String(exp.receipt_url).startsWith('data:image/')) {
           return { ...exp, receipt_data_url: exp.receipt_url };
@@ -590,12 +591,42 @@ export default function EventDetailModal({
         expenses={enrichedExpenses}
         profile={enrichedProfile}
         reportSettings={reportSettings}
+        hideValues={hideValues}
       />
     ).toBlob();
     const clientSlug = (client?.name || event?.title || 'cliente').replace(/\s+/g, '_').substring(0, 20);
     const dateSlug = event?.start_date ? event.start_date.replace(/-/g, '') : format(new Date(), 'yyyyMMdd');
-    const filename = `Fechamento_${clientSlug}_${dateSlug}.pdf`;
+    const filename = `${hideValues ? 'Horas' : 'Fechamento'}_${clientSlug}_${dateSlug}.pdf`;
     return { blob, filename };
+  };
+
+  // Relatório só com as horas, para mandar ao cliente sem mostrar valores.
+  const [generatingHours, setGeneratingHours] = useState(false);
+  const handleHoursReport = async () => {
+    if (generatingHours) return;
+    setGeneratingHours(true);
+    try {
+      const { blob, filename } = await generateClosingPdfBlob({ hideValues: true });
+      const file = new File([blob], filename, { type: 'application/pdf' });
+      if (navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: `Relatório de horas — ${event?.title || client?.name || 'Trabalho'}` });
+          return;
+        } catch (err) {
+          if (err?.name === 'AbortError') return;
+        }
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+      appToast.success('Relatório de horas gerado!', { description: 'Sem nenhum valor — pode mandar para o cliente.' });
+    } catch (err) {
+      console.error('Erro ao gerar relatório de horas:', err);
+      appToast.error('Erro ao gerar o relatório de horas', { description: err.message });
+    } finally {
+      setGeneratingHours(false);
+    }
   };
 
   const handleDownloadPDF = async () => {
@@ -1286,6 +1317,22 @@ export default function EventDetailModal({
 
             {/* ── TRABALHO ── */}
             <TabsContent value="trabalho" className="mt-0 pt-4 space-y-4 pb-6 data-[state=inactive]:hidden">
+              {eventWork.length > 0 && (
+                <Button
+                  type="button"
+                  onClick={handleHoursReport}
+                  disabled={generatingHours}
+                  variant="outline"
+                  data-testid="hours-report-button"
+                  className="w-full h-auto min-h-[48px] py-2 justify-start whitespace-normal text-left rounded-[12px] bg-[#0a0a0a] border border-[#222222] text-white hover:bg-[#161616] font-bold"
+                >
+                  {generatingHours ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
+                  <span>
+                    Relatório de horas para o cliente
+                    <span className="block text-[11px] font-normal text-[#a8a8a8]">PDF sem nenhum valor: dias, entrada, saída e horas</span>
+                  </span>
+                </Button>
+              )}
 
               {/* Financeiro */}
               <Card className="rounded-2xl bg-[#161616] border-[#222222] shadow-none">
@@ -1740,6 +1787,19 @@ export default function EventDetailModal({
                   >
                     {generatingPDF ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
                     Baixar fechamento em PDF
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleHoursReport}
+                    disabled={generatingHours}
+                    variant="outline"
+                    className="w-full h-auto min-h-[52px] py-2.5 justify-start whitespace-normal text-left rounded-[12px] bg-[#0a0a0a] border border-[#222222] text-white hover:bg-[#161616] font-bold"
+                  >
+                    {generatingHours ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Clock className="w-4 h-4 mr-2" />}
+                    <span>
+                      Relatório só de horas (sem valores)
+                      <span className="block text-[11px] font-normal text-[#a8a8a8]">Para mandar ao cliente: dias, entrada, saída e horas</span>
+                    </span>
                   </Button>
                   <Button
                     onClick={handleSharePDF}

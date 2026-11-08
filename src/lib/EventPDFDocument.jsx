@@ -264,6 +264,50 @@ function DailyTable({ rows, event }) {
   );
 }
 
+// ── Relatório só de horas (sem nenhum valor em dinheiro) ─────────────────────
+
+const REGIME_LABEL = { meia: 'Meio cachê', cheia: 'Cachê cheio', dobra: 'Dobra' };
+const COL_HORAS = [
+  { label: 'Data', flex: 0.6 },
+  { label: 'Local', flex: 1.2 },
+  { label: 'Entrada / Saída', flex: 1.4 },
+  { label: 'Total Horas', flex: 0.8 },
+  { label: 'H.E.', flex: 0.6 },
+  { label: 'Diária', flex: 0.9 },
+];
+
+export function HoursOnlyTable({ rows, event }) {
+  const totalFlex = COL_HORAS.reduce((acc, c) => acc + c.flex, 0);
+  return (
+    <View>
+      <View style={s.tHeader}>
+        {COL_HORAS.map((c) => (
+          <View key={c.label} style={{ flex: c.flex / totalFlex }}><Text style={s.tHCell}>{c.label}</Text></View>
+        ))}
+      </View>
+      {rows.map((r, i) => {
+        const w = r.work;
+        let schedule;
+        if (!w) schedule = 'Sem horas lançadas';
+        else if (!w.entry_time && !w.exit_time) schedule = 'Deslocamento / Viagem';
+        else schedule = `${w.entry_time || ''} às ${w.exit_time || ''}${r.status === 'estimado' ? ' (12 h automáticas)' : ''}`;
+        const local = w?.notes && r.status !== 'estimado' ? String(w.notes).substring(0, 26) : (event?.location || '-');
+        const rowStyle = [s.tRow, i % 2 === 1 ? { backgroundColor: C.rowAlt } : {}];
+        return (
+          <View key={r.date || i} style={rowStyle} wrap={false}>
+            <View style={{ flex: COL_HORAS[0].flex / totalFlex }}><Text style={s.tCell}>{fmtShortDate(r.date)}</Text></View>
+            <View style={{ flex: COL_HORAS[1].flex / totalFlex }}><Text style={s.tCell}>{local}</Text></View>
+            <View style={{ flex: COL_HORAS[2].flex / totalFlex }}><Text style={s.tCellMuted}>{schedule}</Text></View>
+            <View style={{ flex: COL_HORAS[3].flex / totalFlex }}><Text style={{ ...s.tCell, fontFamily: 'Helvetica-Bold' }}>{r.totalHours ? `${r.totalHours}h` : '-'}</Text></View>
+            <View style={{ flex: COL_HORAS[4].flex / totalFlex }}><Text style={s.tCell}>{r.overtimeHours ? `${r.overtimeHours}h` : '-'}</Text></View>
+            <View style={{ flex: COL_HORAS[5].flex / totalFlex }}><Text style={s.tCellMuted}>{REGIME_LABEL[w?.regime] || (w ? 'Diária' : '-')}</Text></View>
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
 // ── Seção 2 — Horas Extras ────────────────────────────────────────────────────
 
 const COL2 = [
@@ -374,7 +418,7 @@ function ReimbursementTable({ expenses }) {
 
 // ── Document ──────────────────────────────────────────────────────────────────
 
-export function EventPDFDocument({ event, client, work = [], expenses = [], profile = {}, reportSettings = {} }) {
+export function EventPDFDocument({ event, client, work = [], expenses = [], profile = {}, reportSettings = {}, hideValues = false }) {
   // Dados completos do prestador
   const prestadorName = reportSettings.report_full_name || profile.name || profile.full_name || 'Prestador';
   const categoryLabel = profile.category_label || (profile.category ? getCategoryLabel(profile.category) : '');
@@ -387,7 +431,7 @@ export function EventPDFDocument({ event, client, work = [], expenses = [], prof
   const prestadorPhone = reportSettings.phone || profile.phone || '';
   const prestadorEmail = reportSettings.email || profile.email || '';
   const prestadorDoc = reportSettings.cpf_cnpj || profile.cnpj || profile.cpf_cnpj || event?.nfe_analise?.prestador_cnpj || '';
-  const pixKey = reportSettings.pix_key || profile.pix_key || '';
+  const pixKey = hideValues ? '' : (reportSettings.pix_key || profile.pix_key || '');
   const pixKeyType = reportSettings.pix_key_type || profile.pix_key_type || 'Chave PIX';
 
   // Dados completos do evento e contratante
@@ -444,8 +488,8 @@ export function EventPDFDocument({ event, client, work = [], expenses = [], prof
       })
     : '';
 
-  const hasHE = subtotalHE > 0;
-  const hasReembolsos = reimbursable.length > 0;
+  const hasHE = subtotalHE > 0 || totalOT > 0;
+  const hasReembolsos = !hideValues && reimbursable.length > 0;
 
   const diariasLabel = travelDays > 0
     ? `${workDays} ${workDays === 1 ? 'dia' : 'dias'} + ${travelDays} ${travelDays === 1 ? 'Viagem' : 'Viagens'}`
@@ -463,7 +507,7 @@ export function EventPDFDocument({ event, client, work = [], expenses = [], prof
             {specialties ? <Text style={s.headerSubtitle}>{specialties}</Text> : null}
           </View>
           <View style={s.headerRight}>
-            <Text style={s.headerTitle}>FECHAMENTO DE SERVIÇOS</Text>
+            <Text style={s.headerTitle}>{hideValues ? 'RELATÓRIO DE HORAS' : 'FECHAMENTO DE SERVIÇOS'}</Text>
             {periodo ? <Text style={s.headerMeta}>Período do Job: {periodo}</Text> : null}
             <Text style={s.headerMeta}>Data de Emissão: {emissao}</Text>
             {nfeNumber ? <Text style={s.headerMeta}>NF-e / NFS-e Nº: {nfeNumber}</Text> : null}
@@ -488,8 +532,8 @@ export function EventPDFDocument({ event, client, work = [], expenses = [], prof
             {clientDoc ? <Text style={s.infoDetail}>CNPJ/CPF: {clientDoc}</Text> : null}
             {clientContact ? <Text style={s.infoDetail}>Contato: {clientContact}</Text> : null}
             {location ? <Text style={s.infoDetail}>Local: {location}</Text> : null}
-            {dueDate && !isPaid ? <Text style={s.infoDetail}>Vencimento acordado: {dueDate}</Text> : null}
-            {isPaid ? (
+            {dueDate && !isPaid && !hideValues ? <Text style={s.infoDetail}>Vencimento acordado: {dueDate}</Text> : null}
+            {isPaid && !hideValues ? (
               <Text style={{ ...s.infoDetail, color: C.pixText, fontFamily: 'Helvetica-Bold' }}>
                 Status: PAGO EM CONTA ({fmt(paidAmountVal)}{paidDate ? ` em ${paidDate}` : ''})
               </Text>
@@ -501,12 +545,12 @@ export function EventPDFDocument({ event, client, work = [], expenses = [], prof
         {closing.rows.length > 0 && (
           <View>
             <SectionTitle>1. CONTROLE DE DIÁRIAS E HORAS TRABALHADAS</SectionTitle>
-            <DailyTable rows={closing.rows} event={event} />
+            {hideValues ? <HoursOnlyTable rows={closing.rows} event={event} /> : <DailyTable rows={closing.rows} event={event} />}
           </View>
         )}
 
         {/* ── Seção 2 ───────────────────────────────────────────────────── */}
-        {hasHE && (
+        {hasHE && !hideValues && (
           <View>
             <SectionTitle>2. APURAÇÃO DE HORAS EXTRAS (H.E.)</SectionTitle>
             <OvertimeTable closing={closing} />
@@ -532,6 +576,26 @@ export function EventPDFDocument({ event, client, work = [], expenses = [], prof
         ) : null}
 
         {/* ── Summary ───────────────────────────────────────────────────── */}
+        {hideValues ? (
+          <View style={s.summaryWrap} wrap={false}>
+            <View style={s.summaryBox}>
+              <View style={s.summaryRow}>
+                <Text style={s.summaryLabel}>Dias trabalhados:</Text>
+                <Text style={s.summaryVal}>{diariasLabel}</Text>
+              </View>
+              {totalOT > 0 && (
+                <View style={s.summaryRow}>
+                  <Text style={s.summaryLabel}>Horas extras (acima de 12 h/dia):</Text>
+                  <Text style={s.summaryVal}>{String(totalOT).replace('.', ',')}h</Text>
+                </View>
+              )}
+              <View style={s.totalRow}>
+                <Text style={s.totalLabel}>TOTAL DE HORAS:</Text>
+                <Text style={s.totalVal}>{String(closing.totalHoras).replace('.', ',')}h</Text>
+              </View>
+            </View>
+          </View>
+        ) : (
         <View style={s.summaryWrap} wrap={false}>
           <View style={s.summaryBox}>
             {closing.rows.length > 0 && (
@@ -558,6 +622,7 @@ export function EventPDFDocument({ event, client, work = [], expenses = [], prof
             </View>
           </View>
         </View>
+        )}
 
         {/* ── NF-e / Dados Fiscais ──────────────────────────────────────── */}
         {hasNFe ? (
@@ -622,6 +687,7 @@ export function EventPDFDocument({ event, client, work = [], expenses = [], prof
 
         {/* ── Anexo de Comprovantes de Reembolso ───────────────────────── */}
         {(() => {
+          if (hideValues) return null;
           const withReceipts = reimbursable.filter((e) => e.receipt_data_url || (typeof e.receipt_url === 'string' && e.receipt_url.startsWith('data:image/')));
           if (withReceipts.length === 0) return null;
           return (
