@@ -15,10 +15,11 @@ import { getClientDisplayName } from '@/lib/eventDisplay';
 import { haptics } from '@/lib/haptics';
 import { confetti } from '@/lib/celebrate';
 import appToast from '@/lib/appToast';
+import SwipeRow from '@/components/layout/SwipeRow';
 
 // Lista simples (08/11, pedido do Guih: "informação em excesso"): só 4 perguntas, e só aparecem as que têm item.
 const GRUPOS = [
-  { key: 'receber', label: 'Recebi?', icon: CircleDollarSign, acao: 'Já recebi', dica: 'Marque o que já caiu na conta. Confira o valor e a data.', vazio: 'Tudo recebido.' },
+  { key: 'receber', label: 'Recebi?', icon: CircleDollarSign, acao: 'Já recebi', dica: 'Marque o que já caiu na conta (ou deslize para a direita). Confira o valor e a data.', vazio: 'Tudo recebido.' },
   { key: 'pagosSemValor', label: 'Falta o valor', icon: Receipt, acao: 'Salvar valores', dica: 'Digite o valor de cada trabalho.', vazio: 'Todos os trabalhos têm valor.' },
   { key: 'semHoras', label: 'Horas', icon: Clock, acao: 'Lançar 12 h', dica: 'Dias sem horas registradas. Toque no trabalho para lançar o horário certo.', vazio: 'Todas as horas registradas.' },
   { key: 'saidaAberta', label: 'Saída', icon: LogOut, acao: null, dica: 'Você entrou e não registrou a saída.', vazio: 'Nenhuma saída esquecida.' },
@@ -70,12 +71,13 @@ export default function Pendencias() {
   const selecionados = items.filter((it) => sel.has(idOf(it)));
   const totalSel = selecionados.reduce((s, it) => s + (Number(String(valorDe(it)).replace(',', '.')) || 0), 0);
 
-  async function executar() {
-    if (!selecionados.length || busy) return;
+  // lista: os marcados, ou um trabalho só (deslizar para a direita, lote 3).
+  async function executar(lista = selecionados) {
+    if (!lista.length || busy) return;
     setBusy(true);
     let ok = 0;
     const falhas = [];
-    for (const it of selecionados) {
+    for (const it of lista) {
       try {
         if (tab === 'receber') {
           await updateEvent(it.event.id, buildBaixaUpdate({ valor: String(valorDe(it)).replace(',', '.'), data: dataDe(it), estimada: estimadaDe(it) }));
@@ -104,7 +106,7 @@ export default function Pendencias() {
     refetchEvents?.();
     if (ok) {
       haptics.success();
-      if (tab === 'receber' || ok === selecionados.length) confetti();
+      if (tab === 'receber' || ok === lista.length) confetti();
       appToast.success(`${ok} ${ok === 1 ? 'trabalho resolvido' : 'trabalhos resolvidos'}`);
     }
     if (falhas.length) appToast.error(`Não deu certo em ${falhas.length}`, { description: falhas.slice(0, 3).join(' · ') });
@@ -129,7 +131,7 @@ export default function Pendencias() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 pt-4 pb-40 text-white" data-testid="pendencias">
-      <button type="button" onClick={() => navigate(-1)} className="flex items-center gap-1 text-[#a8a8a8] text-sm mb-2">
+      <button type="button" onClick={() => navigate(-1)} className="flex items-center gap-1 min-h-[44px] -ml-1 pr-3 text-[#a8a8a8] text-sm mb-1">
         <ChevronLeft className="w-4 h-4" /> Voltar
       </button>
       <p className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">Deixe tudo em dia</p>
@@ -158,7 +160,7 @@ export default function Pendencias() {
           return (
             <button key={g.key} type="button" role="tab" aria-selected={active}
               onClick={() => setParams({ grupo: g.key }, { replace: true })}
-              className={`shrink-0 h-10 px-3.5 rounded-full flex items-center gap-1.5 text-[13px] font-extrabold border transition-colors ${active ? 'bg-[#ffd400] text-[#0a0a0a] border-[#ffd400]' : 'bg-[#161616] text-[#c8c8c8] border-[#2a2a2a]'}`}>
+              className={`shrink-0 h-11 px-3.5 rounded-full flex items-center gap-1.5 text-[13px] font-extrabold border transition-colors ${active ? 'bg-[#ffd400] text-[#0a0a0a] border-[#ffd400]' : 'bg-[#161616] text-[#c8c8c8] border-[#2a2a2a]'}`}>
               <Icon className="w-4 h-4" />{g.label}
               <span className={`min-w-5 h-5 px-1 rounded-full text-[11px] flex items-center justify-center ${n ? (active ? 'bg-[#0a0a0a] text-[#ffd400]' : 'bg-[#ff2e88] text-white') : 'bg-transparent opacity-50'}`}>{n}</span>
             </button>
@@ -201,12 +203,14 @@ export default function Pendencias() {
             const checked = sel.has(id);
             const cliente = getClientDisplayName(it.client) || 'Sem cliente';
             return (
-              <motion.section key={id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, x: 60, transition: { duration: 0.25 } }}
+              <motion.div key={id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: 60, transition: { duration: 0.25 } }}>
+              <SwipeRow rounded="rounded-2xl" onSwipeRight={tab === 'receber' && isVisible ? () => executar([it]) : undefined} rightLabel="Recebi ✓">
+              <section
                 className={`rounded-2xl border p-3.5 flex gap-3 transition-colors ${checked ? 'bg-[#1d1a08] border-[#ffd400]' : 'bg-[#161616] border-[#222222]'}`}
                 data-testid="pendencia-item">
                 {grupo.acao && (
-                  <input type="checkbox" checked={checked} onChange={() => toggle(id)} className="w-5 h-5 mt-1 accent-[#ffd400] shrink-0"
+                  <input type="checkbox" checked={checked} onChange={() => toggle(id)} className="w-6 h-6 mt-0.5 accent-[#ffd400] shrink-0"
                     aria-label={`Selecionar ${it.event.title || 'trabalho'}`} />
                 )}
                 <div className="min-w-0 flex-1">
@@ -220,12 +224,12 @@ export default function Pendencias() {
                         <label className="text-[11px] text-[#a8a8a8]">Valor recebido
                           <input inputMode="decimal" value={isVisible ? valorDe(it) : '•••••'} disabled={!isVisible}
                             onChange={(e) => setEdit(it.event.id, { valor: e.target.value })}
-                            className="mt-0.5 w-full h-10 rounded-lg bg-[#0a0a0a] border border-[#2a2a2a] px-2 text-white text-[15px] font-bold" />
+                            className="mt-0.5 w-full h-11 rounded-lg bg-[#0a0a0a] border border-[#2a2a2a] px-2 text-white text-[15px] font-bold" />
                         </label>
                         <label className="text-[11px] text-[#a8a8a8]">Data {estimadaDe(it) ? '(estimada)' : ''}
                           <input type="date" value={dataDe(it)} max={today} disabled={Boolean(mesmaData)}
                             onChange={(e) => setEdit(it.event.id, { data: e.target.value })}
-                            className="mt-0.5 w-full h-10 rounded-lg bg-[#0a0a0a] border border-[#2a2a2a] px-2 text-white text-[13px]" />
+                            className="mt-0.5 w-full h-11 rounded-lg bg-[#0a0a0a] border border-[#2a2a2a] px-2 text-white text-[13px]" />
                         </label>
                       </div>
                     </>
@@ -234,7 +238,7 @@ export default function Pendencias() {
                     <label className="block text-[11px] text-[#a8a8a8] mt-2">{it.pago ? 'Quanto entrou' : 'Valor do trabalho'}
                       <input inputMode="decimal" value={isVisible ? valorDe(it) : '•••••'} disabled={!isVisible}
                         onChange={(e) => setEdit(it.event.id, { valor: e.target.value })}
-                        className="mt-0.5 w-full h-10 rounded-lg bg-[#0a0a0a] border border-[#2a2a2a] px-2 text-white text-[15px] font-bold" />
+                        className="mt-0.5 w-full h-11 rounded-lg bg-[#0a0a0a] border border-[#2a2a2a] px-2 text-white text-[15px] font-bold" />
                     </label>
                   )}
                   {tab === 'semHoras' && <p className="text-[12px] text-[#ff2e88] mt-1">Faltam: {it.dias.map(br).join(', ')}</p>}
@@ -243,9 +247,9 @@ export default function Pendencias() {
                       <p className="text-[12px] text-[#ff2e88]">Entrada às {String(it.work.entry_time).slice(0, 5)} de {br(it.dia)} · {it.horasDesdeEntrada} h sem saída</p>
                       <div className="flex gap-2 mt-2">
                         <input type="time" value={saidas[it.work.id] || ''} onChange={(e) => setSaidas((p) => ({ ...p, [it.work.id]: e.target.value }))}
-                          className="h-10 rounded-lg bg-[#0a0a0a] border border-[#2a2a2a] px-2 text-white" aria-label="Horário de saída" />
+                          className="h-11 rounded-lg bg-[#0a0a0a] border border-[#2a2a2a] px-2 text-white" aria-label="Horário de saída" />
                         <button type="button" onClick={() => registrarSaida(it)}
-                          className="flex-1 h-10 rounded-full bg-[#ffd400] text-[#0a0a0a] font-extrabold text-[13px]">
+                          className="flex-1 h-11 rounded-full bg-[#ffd400] text-[#0a0a0a] font-extrabold text-[13px]">
                           {saidas[it.work.id] ? `Saída às ${saidas[it.work.id]}` : 'Saída agora'}
                         </button>
                       </div>
@@ -255,7 +259,9 @@ export default function Pendencias() {
                 {(tab === 'naoRealizados' || tab === 'semNota') && (
                   <span className="font-poster text-[16px] text-white shrink-0">{money(it.valorPrevisto)}</span>
                 )}
-              </motion.section>
+              </section>
+              </SwipeRow>
+              </motion.div>
             );
           })}
         </AnimatePresence>
@@ -266,7 +272,7 @@ export default function Pendencias() {
           <motion.div initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 100, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 320, damping: 30 }}
             className="fixed left-0 right-0 bottom-[84px] z-[35] px-4">
-            <button type="button" onClick={executar} disabled={busy}
+            <button type="button" onClick={() => executar()} disabled={busy}
               className="w-full max-w-2xl mx-auto h-14 rounded-full bg-[#ffd400] text-[#0a0a0a] font-poster text-[18px] uppercase shadow-[0_8px_30px_rgba(255,212,0,0.25)] flex items-center justify-center gap-2 disabled:opacity-60">
               {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" strokeWidth={3} />}
               {grupo.acao} ({selecionados.length})

@@ -142,6 +142,7 @@ export default function ExpensesPage() {
                             setShowForm(true);
                         }}
                         onEditExpense={handleEdit}
+                        onDeleteExpense={(exp) => setConfirmDelete(exp.id)}
                     />
                 </div>
             </div>

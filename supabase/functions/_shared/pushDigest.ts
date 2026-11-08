@@ -140,8 +140,8 @@ export function buildPushDigest({
   today?: Date;
   prefs?: { push_events?: boolean; push_payments?: boolean; push_goals?: boolean };
   work?: WorkRow[];
-  /** 'digest' = 8h/18h (tudo); 'exit' = rodada de hora em hora, só a saída esquecida. */
-  mode?: 'digest' | 'exit';
+  /** 'digest' = 18h (tudo); 'brief' = 8h, a Escala do dia (um aviso só); 'exit' = de hora em hora, só a saída. */
+  mode?: 'digest' | 'exit' | 'brief';
 }): PushPayload[] {
   if (!Number.isFinite(today.getTime())) return [];
   const todayStr = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(today);
@@ -150,6 +150,7 @@ export function buildPushDigest({
   const clientById = new Map(clients.map((c) => [c.id, c]));
   const eventById = new Map(events.map((e) => [e.id, e]));
   const out: PushPayload[] = [];
+  let paymentTotal = 0;
 
   // Saída esquecida (CHEGUEI sem BATER SAÍDA): 12 h depois da entrada e a cada 3 h até registrar.
   if (prefs.push_events !== false) {
@@ -241,6 +242,7 @@ export function buildPushDigest({
     const paymentTiming = prefs.push_payments !== false ? getPushPaymentReminderTiming(ev, todayStr) : null;
     if (paymentTiming) {
       const amount = getEventAmount(ev);
+      paymentTotal += amount;
       const dueMessage = paymentTiming.isOverdue
         ? `Vencimento ultrapassado há ${paymentTiming.daysOverdue} dias.`
         : paymentTiming.dueDate
@@ -273,7 +275,36 @@ export function buildPushDigest({
   }
 
   const order = { urgent: 0, high: 1, medium: 2 };
+  if (mode === 'brief') return buildEscalaDoDia(out, paymentTotal, todayStr);
   return out
     .sort((a, b) => order[a.priority] - order[b.priority])
     .slice(0, 4);
+}
+
+/**
+ * Roadie fase 3 (08/11): "Escala do dia" — às 8h, um aviso só com o que importa hoje
+ * (trabalho de hoje, amanhã, horas e pagamentos). A saída esquecida continua separada e urgente.
+ */
+export function buildEscalaDoDia(items: PushPayload[], paymentTotal: number, todayStr: string): PushPayload[] {
+  const exits = items.filter((p) => p.type === 'exit_reminder').slice(0, 2);
+  const hoje = items.filter((p) => p.type === 'today_event').map((p) => p.body.replace(/\.$/, ''));
+  const amanha = items.filter((p) => p.type === 'event_reminder').length;
+  const horas = items.filter((p) => p.type === 'hours_reminder').length;
+  const pagamentos = items.filter((p) => p.type === 'payment_reminder').length;
+  const partes: string[] = [];
+  if (hoje.length) partes.push(`Hoje: ${hoje.slice(0, 2).join(' · ')}${hoje.length > 2 ? ` +${hoje.length - 2}` : ''}.`);
+  else partes.push('Hoje: dia livre.');
+  if (amanha) partes.push(`Amanhã: ${amanha} trabalho${amanha > 1 ? 's' : ''}.`);
+  if (horas) partes.push(`${horas} trabalho${horas > 1 ? 's' : ''} sem horas.`);
+  if (pagamentos) partes.push(`${pagamentos} para receber (${formatBRL(paymentTotal)}).`);
+  if (!hoje.length && !amanha && !horas && !pagamentos) return exits;
+  const url = horas || pagamentos ? '/pendencias' : '/';
+  return [...exits, {
+    key: `escala:${todayStr}`,
+    type: 'daily_brief',
+    priority: 'high',
+    title: hoje.length ? 'Escala do dia 🎛️' : 'Escala do dia',
+    body: partes.join(' '),
+    url,
+  }];
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '@/lib/authContext';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { hardNavigate } from '@/lib/hardNavigate';
@@ -9,7 +10,7 @@ import { ratesListToMap, ratesMapToList, normalizeRoleRates } from '@/lib/roleRa
 import KitEditor from '@/components/profile/KitEditor';
 import {
   User, Phone, MapPin, Mail, LogOut, Save, Loader2, CheckCircle, Eye, EyeOff, Download,
-  DollarSign, Target, Calendar, Camera, MessageCircle, Inbox, Building2, ChevronRight, Compass, BookOpen, Trash2,
+  DollarSign, Target, Calendar, Camera, MessageCircle, Inbox, Building2, ChevronRight, ChevronDown, Compass, BookOpen, Trash2,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import FeedbackModal from '@/components/feedback/FeedbackModal';
@@ -34,6 +35,33 @@ import { isDoneEvent } from '@/lib/eventFinance';
 import DeleteAccountDialog from '@/components/profile/DeleteAccountDialog';
 
 const PIX_TYPES = ['CPF', 'CNPJ', 'E-mail', 'Telefone', 'Chave aleatória'];
+
+const ABERTAS_KEY = 'bp_perfil_abertas';
+function loadAbertas() {
+  try { return JSON.parse(localStorage.getItem(ABERTAS_KEY) || '{}') || {}; } catch { return {}; }
+}
+
+/** Seção do Perfil que abre e fecha; o título mostra o resumo do que está salvo. */
+function Fold({ id, sectionId, title, summary, open, onToggle, children }) {
+  return (
+    <section id={sectionId} className="rounded-2xl bg-[#161616] border border-[#222222] scroll-mt-20" data-testid={`perfil-secao-${id}`}>
+      <button type="button" onClick={() => onToggle(id)} aria-expanded={Boolean(open)} className="w-full min-h-[56px] flex items-center gap-3 p-4 text-left">
+        <span className="min-w-0 flex-1">
+          <h2 className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">{title}</h2>
+          {!open && summary ? <span className="block text-[14px] font-bold text-white truncate mt-0.5">{summary}</span> : null}
+        </span>
+        <ChevronDown className={`w-5 h-5 text-[#a8a8a8] shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.22 }} className="overflow-hidden">
+            <div className="px-4 pb-4 space-y-3">{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </section>
+  );
+}
 
 function profileToForm(profile) {
   return {
@@ -126,6 +154,9 @@ export default function ProfileSimple() {
   const [checkingUpdate, setCheckingUpdate] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [pixForm, setPixForm] = useState(() => settingsToPix(null));
+  // Lote 3: seções recolhíveis (lembra o que o usuário deixou aberto neste aparelho).
+  const [abertas, setAbertas] = useState(loadAbertas);
+  const alternar = (id) => setAbertas((a) => { const n = { ...a, [id]: !a[id] }; try { localStorage.setItem(ABERTAS_KEY, JSON.stringify(n)); } catch { /* sem storage */ } return n; });
   const owner = isAppOwner(user, profile);
   const { newCount: ownerNewFeedbacks } = useOwnerFeedbacks(owner);
 
@@ -301,13 +332,15 @@ export default function ProfileSimple() {
           </div>
           <button
             type="button"
-            onClick={() => document.getElementById('perfil-dados')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            onClick={() => { setAbertas((a) => ({ ...a, dados: true })); setTimeout(() => document.getElementById('perfil-dados')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60); }}
             className="w-full h-11 mt-3 rounded-full bg-[#0a0a0a] text-white text-sm font-extrabold active:scale-[0.98]"
           >
             Editar perfil e foto
           </button>
           <p className="font-tag text-[10px] mt-2 truncate opacity-70">{user?.email}</p>
         </section>
+
+        <PushNotificationSettings variant="banner" />
 
         {/* Funcao e cache padrao */}
         <section className="rounded-2xl bg-[#161616] border border-[#222222] p-4 space-y-3">
@@ -385,7 +418,7 @@ export default function ProfileSimple() {
                   key={cat.id}
                   type="button"
                   onClick={() => setRates((r) => ({ ...r, [cat.id]: '' }))}
-                  className="h-8 px-3 rounded-full bg-transparent border border-dashed border-[#444444] text-xs font-bold text-[#c8c8c8]"
+                  className="h-11 px-3.5 rounded-full bg-transparent border border-dashed border-[#444444] text-xs font-bold text-[#c8c8c8]"
                 >
                   + {cat.label}
                 </button>
@@ -408,8 +441,7 @@ export default function ProfileSimple() {
         </section>
 
         {/* Como registra o trabalho (ideia #107) */}
-        <section className="rounded-2xl bg-[#161616] border border-[#222222] p-4 space-y-3">
-          <h2 className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">Como você registra o trabalho</h2>
+        <Fold id="registro" title="Como você registra o trabalho" summary={(WORK_LOG_MODES.find((m) => m.id === form.work_log_mode) || WORK_LOG_MODES[0]).label} open={abertas.registro} onToggle={alternar}>
           <div className="grid grid-cols-1 gap-2">
             {WORK_LOG_MODES.map((m) => {
               const active = form.work_log_mode === m.id;
@@ -430,7 +462,7 @@ export default function ProfileSimple() {
             })}
           </div>
           <p className="text-[11px] text-[#888888]">Vale para todos os trabalhos; dá para mudar só um no Novo trabalho › Mais detalhes.</p>
-        </section>
+        </Fold>
 
         {/* Meu kit de equipamento (ideia #113) */}
         <KitEditor
@@ -442,8 +474,7 @@ export default function ProfileSimple() {
         />
 
         {/* Dados pessoais */}
-        <section id="perfil-dados" className="rounded-2xl bg-[#161616] border border-[#222222] p-4 space-y-3 scroll-mt-20">
-          <h2 className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">Meus dados</h2>
+        <Fold id="dados" sectionId="perfil-dados" title="Meus dados" summary={[form.name, form.city].filter(Boolean).join(' · ') || 'Nome, telefone e cidade'} open={abertas.dados} onToggle={alternar}>
           {[
             { key: 'name', label: 'Nome completo', icon: User, placeholder: 'Seu nome' },
             { key: 'phone', label: 'Telefone / WhatsApp', icon: Phone, placeholder: '(11) 99999-9999', type: 'tel' },
@@ -473,12 +504,11 @@ export default function ProfileSimple() {
               <input id="profile-email" value={user?.email || ''} disabled className={`${fieldCls} text-[#888888] cursor-not-allowed`} />
             </div>
           </div>
-        </section>
+        </Fold>
 
         {/* Recebimento e fechamento (PIX + PDF) */}
-        <section className="rounded-2xl bg-[#161616] border border-[#222222] p-4 space-y-3">
+        <Fold id="pix" title="Recebimento e fechamento" summary={pixForm.pix_key ? `PIX cadastrado${pixForm.pix_key_type ? ` (${pixForm.pix_key_type})` : ''}` : 'PIX não cadastrado'} open={abertas.pix} onToggle={alternar}>
           <div>
-            <h2 className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">Recebimento e fechamento</h2>
             <p className="text-xs text-[#888888] mt-1">Vai na cobrança pelo WhatsApp, no PIX copia e cola e no PDF de fechamento.</p>
           </div>
           <div>
@@ -547,11 +577,10 @@ export default function ProfileSimple() {
               className={`${fieldCls} pl-4`}
             />
           </div>
-        </section>
+        </Fold>
 
         {/* Meta do mes */}
-        <section className="rounded-2xl bg-[#161616] border border-[#222222] p-4 space-y-3">
-          <h2 className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">Minha meta do mês</h2>
+        <Fold id="meta" title="Minha meta do mês" summary={`${form.monthly_goal_events || '—'} diárias · R$ ${Number(form.monthly_goal_revenue || 0).toLocaleString('pt-BR')}`} open={abertas.meta} onToggle={alternar}>
           <div className="grid grid-cols-2 gap-2">
             {[
               { key: 'monthly_goal_events', label: 'Diárias', placeholder: '12', icon: Calendar },
@@ -575,7 +604,7 @@ export default function ProfileSimple() {
             ))}
           </div>
           <p className="text-[11px] text-[#888888]">Diária = dia trabalhado (dois clientes no mesmo dia contam um).</p>
-        </section>
+        </Fold>
 
         {/* Salvar unico (dados, funcao, metas e PIX): barra presa em cima do menu, so com alteracao.
             Fica no body para o "fixed" nao depender das animacoes da pagina. */}

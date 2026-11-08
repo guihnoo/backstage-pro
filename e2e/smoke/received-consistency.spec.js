@@ -17,6 +17,6 @@ test('recebido do mês é o mesmo em Home, Relatórios e Metas', async ({ page }
 
   await page.goto('/goals', { waitUntil: 'domcontentloaded' });
   await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 20_000 });
-  await expect(page.getByRole('heading', { name: 'Histórico Recente' })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole('heading', { name: 'Últimos 12 meses' })).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText(/1\.800/).first()).toBeVisible();
 });

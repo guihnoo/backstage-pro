@@ -15,5 +15,7 @@ test('perfil carrega com secoes editaveis', async ({ page }) => {
   await expect(page.getByText('Meu kit de equipamento')).toBeVisible(); // ideia #113
   await expect(page.getByRole('heading', { name: 'Meus dados' })).toBeVisible();
   await expect(page.getByText('Minha meta do mês')).toBeVisible();
+  // Lote 3: seções recolhíveis — abre a meta para ver o campo.
+  await page.getByRole('button', { name: /Minha meta do mês/ }).click();
   await expect(page.getByLabel('Diárias')).toBeVisible();
 });

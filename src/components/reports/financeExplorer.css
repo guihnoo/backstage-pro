@@ -55,8 +55,38 @@
 .finance-explorer .filters.chips::-webkit-scrollbar{display:none}
 .finance-explorer .filters.chips .action{flex:0 0 auto;min-height:36px;padding:8px 14px;border-radius:999px;background:#161616;border-color:#2a2a2a;font-weight:800;font-size:12px}
 .finance-explorer .filters.chips .action[aria-pressed=true]{background:#ffd400;color:#0a0a0a;border-color:#ffd400}
+.finance-explorer .filters.chips .action{min-height:44px}
+.finance-explorer .fm-chip-sep{flex:0 0 1px;align-self:stretch;background:#2a2a2a;margin:6px 2px}
+/* Comparações (lote 3): duelo lado a lado, mês anterior x mês atual */
+.finance-explorer .fm-duel{position:relative;display:grid;grid-template-columns:1fr 1fr 0.9fr;align-items:end;gap:12px;width:100%;height:220px;padding:16px;border:1px solid #222;border-radius:22px;background:#121212;color:#fff;text-align:center;margin-bottom:16px}
+.finance-explorer .fm-duel-col{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:6px;min-width:0}
+.finance-explorer .fm-duel-col strong{font-family:'Anton',Impact,sans-serif;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.finance-explorer .fm-duel-col small{font-family:'Space Mono',ui-monospace,monospace;font-size:10px;text-transform:uppercase;color:#a8a8a8}
+.finance-explorer .fm-duel-bar{display:block;width:100%;max-width:72px;border-radius:12px 12px 4px 4px;background:#3a3a3a;animation:fmGrow .7s cubic-bezier(.16,1,.3,1) both;transform-origin:bottom}
+.finance-explorer .fm-duel-col.now .fm-duel-bar{background:#ffd400}
+.finance-explorer .fm-duel-col.now strong{color:#ffd400}
+.finance-explorer .fm-duel-delta{align-self:center;display:flex;flex-direction:column;gap:2px;border-radius:16px;background:rgba(255,212,0,.1);padding:10px 6px;color:#ffd400}
+.finance-explorer .fm-duel-delta span{font-weight:900;font-size:13px}
+.finance-explorer .fm-duel-delta small{font-family:'Space Mono',ui-monospace,monospace;font-size:11px}
+.finance-explorer .fm-duel-delta.bad{background:rgba(255,46,136,.12);color:#ff2e88}
+@keyframes fmGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@media (prefers-reduced-motion:reduce){.finance-explorer .fm-duel-bar{animation:none}}
 .finance-explorer .fm-company{position:relative}
 .finance-explorer .fm-company .card{width:100%;padding-bottom:26px}
 .finance-explorer .fm-company-bar{position:absolute;left:18px;right:18px;bottom:12px;height:5px;border-radius:999px;background:#262626;overflow:hidden}
 .finance-explorer .fm-company-bar>span{display:block;height:100%;border-radius:999px;background:#ffd400;transition:width .6s cubic-bezier(.16,1,.3,1)}
 .finance-explorer .fm-company .pink-card~.fm-company-bar>span{background:#ff2e88}
+
+/* Fiscal e Análise (lote 3) */
+.fm-kpis.two{grid-template-columns:1fr 1fr}
+.fm-kpis.two .fm-kpi:first-child{grid-column:auto}
+.fm-fiscal{display:flex;align-items:center;gap:16px;border:1px solid #222;background:#121212;border-radius:22px;padding:16px;color:#fff}
+.fm-ring{position:relative;width:120px;height:120px;flex:0 0 120px}
+.fm-ring span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Anton',Impact,sans-serif;font-size:26px}
+.fm-ring-fill{transition:stroke-dashoffset 1s cubic-bezier(.16,1,.3,1)}
+.fm-grow-x{transition:width .7s cubic-bezier(.16,1,.3,1)}
+@media (max-width:360px){.fm-fiscal{flex-direction:column;align-items:flex-start}}
+.finance-explorer .fm-duel{grid-template-columns:1fr 1fr 1fr;height:230px;padding:14px 12px}
+.finance-explorer .fm-duel-delta{min-width:0;padding:10px 4px}
+.finance-explorer .fm-duel-delta span{font-size:12px;line-height:1.25;overflow-wrap:anywhere}
+.finance-explorer .fm-duel-col strong{font-size:15px}

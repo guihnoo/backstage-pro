@@ -181,4 +181,14 @@ describe('lembretes que repetem até resolver (08/11)', () => {
     const comNota = buildPushDigest({ ...base, events: [{ ...ev, nfe_numero: '9' }], work, today: new Date('2026-11-08T12:00:00Z') });
     expect(comNota.find((p) => p.type === 'nf_reminder')).toBeUndefined();
   });
+  it('às 8h manda um aviso só: a Escala do dia', () => {
+    const hoje = event({ id: 'show', title: 'Show Allianz', start_date: '2026-11-08', end_date: '2026-11-08', payment_status: 'unpaid' });
+    const devendo = event({ id: 'old', start_date: '2026-10-20', end_date: '2026-10-20', estimated_revenue: 700, daily_cache_value: 700 });
+    const out = buildPushDigest({ ...base, events: [hoje, devendo], work: [], today: new Date('2026-11-08T11:00:00Z'), mode: 'brief' });
+    expect(out).toHaveLength(1);
+    expect(out[0]).toMatchObject({ key: 'escala:2026-11-08', type: 'daily_brief' });
+    expect(out[0].body).toContain('Hoje: Show Allianz');
+    expect(out[0].body).toContain('para receber');
+    expect(buildPushDigest({ ...base, events: [], work: [], today: new Date('2026-11-08T11:00:00Z'), mode: 'brief' })).toEqual([]);
+  });
 });

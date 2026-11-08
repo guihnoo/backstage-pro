@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
+import AnimatedStatValue from '@/components/home/AnimatedStatValue';
 import { differenceInDays, parseISO, format, isValid, addWeeks, addMonths, addDays, startOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -662,10 +663,10 @@ export default function EventForm({
                 Dias · <span className="text-[#ffd400]">{rangeLabel}</span>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <button type="button" aria-label="Duas semanas antes" onClick={() => setStripOffset((o) => o - 1)} className="h-8 w-8 rounded-full bg-[#1a1a1a] text-white flex items-center justify-center">
+                <button type="button" aria-label="Duas semanas antes" onClick={() => setStripOffset((o) => o - 1)} className="h-11 w-11 rounded-full bg-[#1a1a1a] text-white flex items-center justify-center">
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                <button type="button" aria-label="Duas semanas depois" onClick={() => setStripOffset((o) => o + 1)} className="h-8 w-8 rounded-full bg-[#1a1a1a] text-white flex items-center justify-center">
+                <button type="button" aria-label="Duas semanas depois" onClick={() => setStripOffset((o) => o + 1)} className="h-11 w-11 rounded-full bg-[#1a1a1a] text-white flex items-center justify-center">
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
@@ -982,15 +983,20 @@ export default function EventForm({
 
           {/* Rodape: quanto vai render + salvar */}
           <div className="flex items-center gap-3 px-[18px] pt-2.5 pb-4 border-t border-[#222222] flex-shrink-0 pb-safe">
-            <div className="min-w-0 flex-1">
+            {/* Lote 3: "Vai render" só aparece com os dias escolhidos, e o número sobe animado. */}
+            <div className="min-w-0 flex-1" data-testid="vai-render">
+              {formData.start_date ? (<>
               <div className="font-tag text-[10px] text-[#a8a8a8]">VAI RENDER</div>
               <div className="font-poster text-[26px] leading-none text-white truncate">
-                {isVisible ? formatCurrency(eventSummary?.total || 0) : '•••••'}
+                {isVisible ? <AnimatedStatValue value={eventSummary?.total || 0} format={formatCurrency} /> : '•••••'}
               </div>
               {eventSummary && (
                 <div className="font-tag text-[9px] text-[#888888] mt-0.5 truncate">
                   {eventSummary.days} {eventSummary.days === 1 ? 'dia' : 'dias'} × {isVisible ? formatCurrency(moneyNum(formData.daily_cache_value)) : '•••'}
                 </div>
+              )}
+              </>) : (
+                <div className="font-tag text-[11px] text-[#8a8a8a] leading-snug">Escolha os dias para ver quanto vai render</div>
               )}
             </div>
             <button

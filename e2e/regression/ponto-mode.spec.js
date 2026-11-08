@@ -16,6 +16,7 @@ test.describe('modo só entrada e saída', () => {
     });
 
     await page.goto('/profile', { waitUntil: 'domcontentloaded' });
+    await page.getByRole('button', { name: /Como você registra o trabalho/ }).click({ timeout: 60_000 });
     const opcao = page.getByRole('button', { name: /só entrada e saída/i });
     await expect(opcao).toBeVisible({ timeout: 60_000 });
     await expect(page.getByRole('button', { name: /ficha completa/i })).toHaveAttribute('aria-pressed', 'true');

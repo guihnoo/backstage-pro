@@ -21,7 +21,7 @@ test('metas não conta como depósito pago sem valor final', async ({ page }) =>
 
   await expect(page.getByText(/m[eê]s(es)?\s+seguidos?\s+batendo a meta/i)).toHaveCount(0);
   await expect(page.getByText(/shows? para a meta de faturamento/i)).toHaveCount(0);
-  await expect(page.getByRole('heading', { name: 'Histórico Recente' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Últimos 12 meses' })).toHaveCount(0);
   await expect(page.getByText('R$ 0,00', { exact: true }).first()).toBeVisible();
   await expect(page.getByText('Faltam R$ 10.000,00 para a meta de receita')).toBeVisible();
 });

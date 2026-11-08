@@ -317,10 +317,21 @@ export default function CalendarPage() {
     const params = new URLSearchParams(location.search);
     const clientId = params.get('client_id');
     const action = params.get('action');
-    const key = action + ':' + clientId;
-    if (action === 'new-event' && clientId && processedActionRef.current !== key) {
+    // Roadie fase 2: "novo trabalho" chega com título, datas e cachê para o usuário revisar e salvar.
+    const titulo = params.get('titulo');
+    const inicio = params.get('inicio');
+    const fim = params.get('fim');
+    const cache = params.get('cache');
+    const key = [action, clientId, titulo, inicio, fim, cache].join(':');
+    if (action === 'new-event' && (clientId || titulo || inicio || cache) && processedActionRef.current !== key) {
       processedActionRef.current = key;
-      setPrefillEventData((prev) => ({ ...(prev || {}), client_id: clientId }));
+      setPrefillEventData((prev) => ({
+        ...(prev || {}),
+        ...(clientId ? { client_id: clientId } : {}),
+        ...(titulo ? { title: titulo } : {}),
+        ...(inicio ? { start_date: inicio, end_date: fim || inicio } : {}),
+        ...(cache ? { daily_cache_value: cache } : {}),
+      }));
       // Não chamar navigate/replaceState — qualquer mudança de location aciona AnimatePresence
       // e trava motion.div em opacity:0. processedActionRef evita re-processamento.
     }
@@ -1183,7 +1194,7 @@ export default function CalendarPage() {
               type="button"
               aria-pressed={statusFilter === key}
               onClick={() => setStatusFilter(key)}
-              className={`shrink-0 h-9 flex items-center gap-1.5 px-3.5 rounded-full text-xs font-extrabold transition-colors border ${
+              className={`shrink-0 h-11 flex items-center gap-1.5 px-3.5 rounded-full text-xs font-extrabold transition-colors border ${
                 statusFilter === key
                   ? 'bg-[#ffd400] border-[#ffd400] text-[#0a0a0a]'
                   : 'bg-[#161616] border-[#2a2a2a] text-[#a8a8a8] hover:text-white'

@@ -30,6 +30,14 @@ const ROTAS = `
 - /goals — Metas
 - /clients — Clientes`;
 
+/** Ações que o app executa depois do "Confirmar" do usuário (fase 2). */
+const ACOES = `
+- /acao/baixa?event=ID — dar baixa num trabalho de a_receber (opcional &valor=700&data=AAAA-MM-DD só se o usuário disser)
+- /acao/horas?event=ID&dia=AAAA-MM-DD&entrada=HH:MM&saida=HH:MM — registrar horas de um dia de falta_horas (só com os horários que o usuário disse)
+- /acao/saida?work=WORK_ID&saida=HH:MM — fechar uma saida_aberta (só com o horário que o usuário disse)
+- /acao/cobrar?event=ID — abrir a cobrança no WhatsApp
+- /acao/novo?titulo=...&inicio=AAAA-MM-DD&fim=AAAA-MM-DD&cliente=CLIENTE_ID&cache=800 — abrir o formulário de novo trabalho preenchido (use o id de clientes)`;
+
 function systemPrompt(ctx: Ctx) {
   return `Você é o ROADIE, o assistente do Backstage Pro — o app de técnicos de eventos (som, luz, vídeo, DJ, produção) que trabalham por diária.
 Personalidade: parceiro de bastidor, direto, prático, gente boa. Fala como alguém da equipe técnica, sem formalidade e sem enrolação.
@@ -40,7 +48,9 @@ REGRAS
 - Valores em reais no formato R$ 1.234,56. Datas no formato 24/10.
 - Sempre que existir uma ação no app, termine com 1 ou 2 botões em markdown, só destas rotas:${ROTAS}
   Exemplo: [Dar baixa](/pendencias?grupo=receber)
-- Você não grava nada sozinho: prepare e deixe o usuário confirmar no app.
+- Você não grava nada sozinho: prepare e o usuário confirma no app. Para AGIR, use estes botões (o app mostra o resumo e pede "Confirmar"):${ACOES}
+  Ex.: "já recebi da Ana" → [Dar baixa: Show Allianz](/acao/baixa?event=ID). "trabalhei ontem das 8 às 20" → [Registrar 8h–20h](/acao/horas?event=ID&dia=...&entrada=08:00&saida=20:00).
+  Use SÓ ids que estão no CONTEXTO. Se faltar dado (qual trabalho, horário), pergunte em 1 linha em vez de chutar. Um botão por trabalho.
 - "Quem me deve": use a_receber (cliente, trabalho, valor, dias desde o fim). "Paga mais rápido": prazo_medio_pagamento_dias em clientes (menor = mais rápido; null = sem dado confiável).
 - "Quanto cobrar": compare media_por_trabalho dos clientes e o cache_dia dos próximos trabalhos; sugira um valor e explique em 1 linha.
 - Se houver pendências (saída aberta, horas, valores), mencione a mais urgente no fim, em 1 linha.
@@ -57,7 +67,8 @@ function localAnswer(question: string, ctx: Ctx): string {
   if (/dev|receber|pag/.test(q)) {
     if (!receber.length) return 'Ninguém te deve agora. 🙌';
     const linhas = receber.slice(0, 5).map((r) => `• ${r.cliente} — ${r.trabalho}: ${brl(r.valor)} (${r.dias_desde_fim} dias)`).join('\n');
-    return `Falta receber ${brl(ctx.a_receber_total)}:\n${linhas}\n\n[Dar baixa](/pendencias?grupo=receber)`;
+    const botoes = receber.slice(0, 3).map((r) => `[Já recebi: ${r.trabalho}](/acao/baixa?event=${r.id})`).join('\n\n');
+    return `Falta receber ${brl(ctx.a_receber_total)}:\n${linhas}\n\n${botoes}\n\n[Ver todos](/pendencias?grupo=receber)`;
   }
   if (/m[eê]s|ganhei|fatur|entrou/.test(q)) {
     return `Neste mês entrou ${brl(mes.entrou)}, faturou ${brl(mes.faturado)} e gastou ${brl(mes.despesas)}. Horas: ${mes.horas ?? 0} h.\n\n[Ver Dinheiro](/reports)`;

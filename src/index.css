@@ -416,3 +416,19 @@ body:has([role="alertdialog"][data-state="open"]) [data-app-scroll] {
 .font-poster.overflow-hidden {
   line-height: 1.2;
 }
+
+/* Lote 3 (08/11): no celular, todo controle pequeno ganha área de toque de ~44 px sem mudar o
+   desenho (pseudo-elemento invisível). :where() = especificidade zero, não briga com classes. */
+@media (pointer: coarse) {
+  :where(button, a[href], [role="button"], [role="tab"]) { touch-action: manipulation; }
+  :where(button, [role="button"], [role="tab"]):not(:where(.absolute, .fixed, .sticky)) { position: relative; }
+  :where(button, [role="button"], [role="tab"])::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+}

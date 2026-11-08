@@ -3253,3 +3253,11 @@ Registro cronológico de tarefas executadas por agentes.
 - **Supabase**: ai-chat v18 (verify_jwt mantido; sem login responde 401).
 - **App**: PR #10 mesclado (main `632e9f7`), Vercel produção `index-BO3bkKJ7.js`.
 - **Testes em produção**: roadie.spec.js 2/2.
+
+### 2026-11-08 — Roadie fases 2–3 + design lote 3 (Claude Code, branch feat/roadie-fase2-3-design3)
+- **Pedido**: "faça os 3 lotes" (Roadie fase 2, fase 3 e design lote 3).
+- **Arquivos novos**: src/lib/roadie/actions.js (+test), src/lib/roadie/escala.js (+test), src/components/roadie/RoadieActionCard.jsx, roadieActionsContext.js, src/components/home/EscalaDoDia.jsx, src/components/layout/SwipeRow.jsx, supabase/migrations/049_push_escala_do_dia.sql, e2e/regression/roadie-acoes.spec.js.
+- **Alterados**: AI_Mentor, MessageBubble, Calendar (prefill do novo trabalho), roadie/context, ai-chat, pushDigest.ts + send-push-digest (mode brief), Home, AllAccessDinheiro + FinanceLegacyPanels + financeExplorer.css, EventForm, Goals, ProfileSimple, PushNotificationSettings (variant banner), AllAccessDespesas + Expenses, Clients, Pendencias, CalendarPageHeader, index.css; testes de Perfil/Metas ajustados às seções recolhíveis e ao gráfico de 12 meses.
+- **Build**: ok. **Unit** 497/497. **E2E** 156 ok, 1 pulado.
+- **Deploy**: pendente de ok (app + ai-chat + send-push-digest + migração 049).
+
