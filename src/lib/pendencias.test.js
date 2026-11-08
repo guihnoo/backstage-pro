@@ -51,3 +51,20 @@ describe('dar baixa', () => {
     expect(() => buildBaixaUpdate({ valor: 'x', data: today })).toThrow();
   });
 });
+
+describe('lista simples (08/11)', () => {
+  it('trabalho sem cachê vai para "Falta o valor", não para dar baixa; horas só dos últimos 45 dias', () => {
+    const p = buildPendencias({
+      today, clients,
+      events: [
+        ev('semCache', '2026-10-20', '2026-10-20', { daily_cache_value: 0 }),
+        ev('antigo', '2026-05-01', '2026-05-01', { payment_status: 'paid', paid_amount: 900 }),
+      ],
+      dailyWork: [],
+    });
+    expect(p.receber).toEqual([]);
+    expect(p.pagosSemValor.map((r) => [r.event.id, r.pago])).toEqual([['semCache', false]]);
+    expect(p.semHoras.map((r) => r.event.id)).toEqual(['semCache']);
+    expect(p.total).toBe(2);
+  });
+});

@@ -208,27 +208,6 @@ export function buildPushDigest({
     }
   }
 
-  // Nota fiscal: um resumo por dia dos trabalhos de empresa já feitos sem nota.
-  if (prefs.push_payments !== false) {
-    const semNota = events.filter((ev) => {
-      if (['cancelled', 'cancelado'].includes(ev.status || '')) return false;
-      const endStr = dateKey(ev.end_date) || dateKey(ev.start_date);
-      const client = ev.client_id ? clientById.get(ev.client_id) : null;
-      return Boolean(endStr && endStr < todayStr && client && client.client_type !== 'pessoa'
-        && !(ev.nfe_numero || ev.nf_number || ev.nfe_arquivo_url || ev.nf_issued_at));
-    }).length;
-    if (semNota) {
-      out.push({
-        key: 'nf:resumo',
-        type: 'nf_reminder',
-        priority: 'medium',
-        title: 'Notas fiscais pendentes',
-        body: `${semNota} trabalho${semNota > 1 ? 's' : ''} sem nota registrada. Marque as já enviadas.`,
-        url: '/pendencias?grupo=semNota',
-      });
-    }
-  }
-
   for (const ev of events) {
     if (['cancelled', 'cancelado'].includes(ev.status || '')) continue;
     const startStr = dateKey(missing(ev.start_date) ? ev.event_date : ev.start_date);

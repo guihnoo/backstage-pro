@@ -1,3 +1,4 @@
+import { confetti } from '@/lib/celebrate';
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -77,6 +78,7 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
       });
 
       appToast.success('Pagamento confirmado com sucesso!');
+      confetti();
       onSuccess?.();
       onClose?.();
     } catch (error) {

@@ -172,12 +172,12 @@ describe('lembretes que repetem até resolver (08/11)', () => {
     expect(soSaida.map((p) => p.type)).toEqual(['exit_reminder']);
     expect(soSaida[0].url).toBe('/pendencias?grupo=saidaAberta');
   });
-  it('horas que faltam todo dia até registrar, nota fiscal em resumo', () => {
+  it('horas que faltam todo dia até registrar; nota fiscal não vira aviso', () => {
     const ev = event({ id: 'feira', start_date: '2026-11-01', end_date: '2026-11-02', payment_status: 'paid' });
     const work = [{ id: 'w', event_id: 'feira', work_date: '2026-11-01', entry_time: '08:00', exit_time: '20:00' }];
     const out = buildPushDigest({ ...base, events: [ev], work, today: new Date('2026-11-08T12:00:00Z') });
     expect(out.find((p) => p.type === 'hours_reminder')).toMatchObject({ key: 'hours:feira', body: expect.stringContaining('1 dia sem horas') });
-    expect(out.find((p) => p.type === 'nf_reminder')).toMatchObject({ key: 'nf:resumo', url: '/pendencias?grupo=semNota' });
+    expect(out.find((p) => p.type === 'nf_reminder')).toBeUndefined();
     const comNota = buildPushDigest({ ...base, events: [{ ...ev, nfe_numero: '9' }], work, today: new Date('2026-11-08T12:00:00Z') });
     expect(comNota.find((p) => p.type === 'nf_reminder')).toBeUndefined();
   });

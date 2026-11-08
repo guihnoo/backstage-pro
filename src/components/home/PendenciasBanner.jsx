@@ -8,10 +8,8 @@ import { todayLocalISO } from '@/components/utils/dateUtils';
 const ORDEM = [
   ['saidaAberta', (n) => `${n} saída${n > 1 ? 's' : ''} sem registro`],
   ['semHoras', (n) => `${n} trabalho${n > 1 ? 's' : ''} sem horas`],
-  ['receber', (n) => `${n} para dar baixa`],
-  ['pagosSemValor', (n) => `${n} pago${n > 1 ? 's' : ''} sem valor`],
-  ['semNota', (n) => `${n} sem nota`],
-  ['naoRealizados', (n) => `${n} para fechar`],
+  ['receber', (n) => `${n} para confirmar se recebeu`],
+  ['pagosSemValor', (n) => `${n} sem valor`],
 ];
 
 /** Faixa do Início: o que falta para o financeiro ficar real. Some quando está tudo em dia. */

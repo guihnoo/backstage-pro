@@ -3226,3 +3226,11 @@ Registro cronológico de tarefas executadas por agentes.
 - **Novo**: FinanceMonthHero (ingresso amarelo com número que sobe em 0,6 s, seta vs mês anterior, barras animadas dos últimos 6 meses; A receber/Faturamento/Despesas em cartões); CSS com Anton/Space Mono, cantos 18 px; caixa/em andamento/próximos lado a lado; "Variação do recebido" → "Variação até hoje".
 - **Testes**: unit 481/481; E2E Dinheiro 14/14 (+15/15 antes do ajuste). Respeita "reduzir movimento".
 - **Deploy**: nenhum.
+
+### 2026-11-08 — Fechamento dos trabalhos até 31/10 na conta do Guih + Pendências simples + design lote 1 (Claude Code)
+- **Pedido**: "pode fechar os eventos de outubro para trás que já foram realizados e pagos… somente corrigir eventos que estão sem valores"; "está complicado demais… informação em excesso".
+- **Dados (produção, conta do Guih, autorizado na conversa)**: 33 trabalhos até 31/10 → todos `completed`; 3 não pagos → pagos (valor do app, data fim+10 estimada; o de 31/10 com hoje, para não ficar no futuro); 17 pagos sem valor → `paid_amount` = valor calculado pelo app (`paid_date_meta.amount_source='estimated_from_app'`, `via='fechamento_ate_out_2026'`). 4 seguem sem valor (sem cachê cadastrado): PAED 05/05, GS eventos 17/05, R1 07/05, R1 27/05. Cada UPDATE com trava no estado anterior; retrato de antes guardado fora do repo. Conferido depois: 33 concluídos, 0 não pagos, 4 sem valor.
+- **Pendências simples**: 4 perguntas (Recebi?, Falta o valor, Horas, Saída), só aparecem as que têm item; frase de uma linha; barra "X de Y resolvidos"; "Falta o valor" inclui trabalho sem cachê; horas só dos últimos 45 dias; "sem nota" e "não fechados" saíram (também do sininho e do push).
+- **Design lote 1**: ✓ animado + vibração em todo aviso de gravação (appToast → FeedbackLayer); números em 0,6 s (AnimatedStatValue); confete ao confirmar recebimento e ao dar baixa; telas vazias com a credencial.
+- **Testes**: unit 482/482; E2E completo 145 ok (1 falha + 2 instáveis por carga, passam sozinhos).
+- **Deploy**: pendente de ok (app + send-push-digest v9 sem o aviso de nota).

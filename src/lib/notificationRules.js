@@ -99,14 +99,6 @@ export function buildUserNotifications({
         action_url: '/pendencias?grupo=semHoras', event_ref: it.event, created_date: todayStr,
       });
     }
-    if (pend.semNota.length) {
-      notes.push({
-        id: `nf:${todayStr}`, type: 'nf_reminder', priority: 'medium',
-        title: `${pend.semNota.length} trabalho${pend.semNota.length > 1 ? 's' : ''} sem nota fiscal`,
-        message: 'Registre ou marque as notas já enviadas.',
-        action_url: '/pendencias?grupo=semNota', created_date: todayStr,
-      });
-    }
   }
 
   const metaDiarias = Number(profile?.monthly_goal_events) || 10;

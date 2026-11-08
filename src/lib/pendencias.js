@@ -15,6 +15,8 @@ import { parseTimeToMinutes } from './workDay';
 
 export const DIAS_ESTIMATIVA_RECEBIMENTO = 10;
 export const HORAS_ATE_LEMBRAR_SAIDA = 12;
+/** Horas que faltam: só trabalhos que terminaram nos últimos 45 dias (igual ao aviso do celular). */
+export const HORAS_JANELA_DIAS = 45;
 
 const DAY_MS = 86400000;
 
@@ -76,23 +78,29 @@ export function buildPendencias({ events = [], dailyWork = [], clients = [], tod
     const valorPrevisto = calculateEventReceivableAmount(event, work);
     const base = { event, client: clientById.get(event.client_id) || null, start: range.start, end: range.end, valorPrevisto };
 
-    if (ended && !paid) {
+    const semValorRecebido = paid && (event.paid_amount === null || event.paid_amount === undefined || event.paid_amount === '');
+    const semValorNenhum = !(valorPrevisto > 0);
+    // "Falta o valor": pago sem o valor recebido, ou trabalho já feito sem nenhum cachê cadastrado.
+    if (semValorRecebido || (ended && !paid && semValorNenhum)) {
+      out.pagosSemValor.push({ ...base, pago: paid });
+    } else if (ended && !paid) {
       const sug = suggestedPaidDate(range.end, today);
       out.receber.push({ ...base, diasDesdeFim: daysBetween(today, range.end), dataSugerida: sug.date, dataEstimada: sug.estimated });
     }
-    if (paid && (event.paid_amount === null || event.paid_amount === undefined || event.paid_amount === '')) {
-      out.pagosSemValor.push(base);
-    }
+    // Lista simples (08/11): "não fechados" e "sem nota" saíram das pendências — o app já trata o
+    // trabalho que passou pela data, e a nota fica no Dinheiro › Fiscal. Ficam só para quem consulta.
     if (ended && ['confirmed', 'pending', 'scheduled', 'in_progress'].includes(event.status)) {
       out.naoRealizados.push(base);
     }
-    // Dias já passados (até ontem) sem registro de horas. O dia de hoje ainda está acontecendo.
-    const registered = new Set(work.map(workDay).filter(Boolean));
-    const faltando = eventDays(range).filter((d) => d < today && !registered.has(d));
-    if (faltando.length) out.semHoras.push({ ...base, dias: faltando });
-
     const client = base.client;
     if (ended && !hasInvoice(event) && client && client.client_type !== 'pessoa') out.semNota.push(base);
+
+    // Dias já passados (até ontem) sem horas, só de trabalhos recentes (mesma janela do aviso).
+    if (range.end >= addDaysISO(today, -HORAS_JANELA_DIAS)) {
+      const registered = new Set(work.map(workDay).filter(Boolean));
+      const faltando = eventDays(range).filter((d) => d < today && !registered.has(d));
+      if (faltando.length) out.semHoras.push({ ...base, dias: faltando });
+    }
 
     for (const w of work) {
       if (!w.entry_time || w.exit_time) continue;
@@ -107,8 +115,7 @@ export function buildPendencias({ events = [], dailyWork = [], clients = [], tod
 
   out.receber.sort((a, b) => a.end.localeCompare(b.end));
   out.semHoras.sort((a, b) => a.end.localeCompare(b.end));
-  out.total = out.receber.length + out.pagosSemValor.length + out.naoRealizados.length
-    + out.semHoras.length + out.saidaAberta.length + out.semNota.length;
+  out.total = out.receber.length + out.pagosSemValor.length + out.semHoras.length + out.saidaAberta.length;
   return out;
 }
 
