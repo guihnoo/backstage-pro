@@ -14,7 +14,7 @@ import {
 
 const PREF_ITEMS = [
   { key: 'push_events', label: 'Shows', hint: 'Hoje e amanhã' },
-  { key: 'push_payments', label: 'Pagamentos', hint: 'Atrasados' },
+  { key: 'push_payments', label: 'Pagamentos', hint: '10 dias após o fim' },
   { key: 'push_goals', label: 'Metas', hint: 'Quase na meta do mês' },
 ];
 
@@ -27,6 +27,8 @@ export default function PushNotificationSettings() {
     push_goals: false,
   });
   const [loading, setLoading] = useState(true);
+  // Avisos ligados na conta, mas este aparelho ainda não inscrito: quantos outros recebem.
+  const [otherDevices, setOtherDevices] = useState(0);
   const [busy, setBusy] = useState(false);
   const [testing, setTesting] = useState(false);
   const supported = isPushSupported();
@@ -57,16 +59,11 @@ export default function PushNotificationSettings() {
                 .from('push_subscriptions')
                 .select('*', { count: 'exact', head: true })
                 .eq('user_id', user.id);
+              // Este aparelho sem inscrição NÃO desliga a conta: os outros aparelhos
+              // continuam recebendo (07/11 — reinstalar o ícone desligava os avisos de todos).
               if (!sub || (count ?? 0) === 0) {
                 pushEnabled = false;
-                await supabase.from('user_settings').upsert(
-                  {
-                    user_id: user.id,
-                    push_enabled: false,
-                    updated_at: new Date().toISOString(),
-                  },
-                  { onConflict: 'user_id' }
-                );
+                if (!cancelled) setOtherDevices(count ?? 0);
               }
             } catch {
               /* usuário reativa no perfil */
@@ -138,8 +135,21 @@ export default function PushNotificationSettings() {
     setBusy(true);
     try {
       await unsubscribeFromPush(user.id);
-      await persistPrefs({ push_enabled: false });
-      appToast.info('Notificações desativadas');
+      // Só desliga a conta quando nenhum outro aparelho continua inscrito.
+      const { count } = await supabase
+        .from('push_subscriptions')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+      if ((count ?? 0) === 0) {
+        await persistPrefs({ push_enabled: false });
+        appToast.info('Avisos desativados');
+      } else {
+        setPrefs((p) => ({ ...p, push_enabled: false }));
+        setOtherDevices(count);
+        appToast.info('Avisos desativados neste aparelho', {
+          description: `Continuam chegando em ${count} outro(s) aparelho(s).`,
+        });
+      }
     } catch (err) {
       appToast.error('Erro ao desativar', { description: err.message });
     } finally {
@@ -196,7 +206,7 @@ export default function PushNotificationSettings() {
         <div className="min-w-0">
           <h2 className="font-tag text-[11px] tracking-[2px] text-[#a8a8a8] uppercase">Avisos no celular</h2>
           <p className="text-xs text-[#a8a8a8] mt-1 leading-relaxed">
-            Shows de hoje/amanhã e pagamentos atrasados — 8h e 18h (horário de Brasília).
+            Shows de hoje/amanhã e pagamentos pendentes a partir de 10 dias depois do fim do trabalho — 8h e 18h (horário de Brasília).
           </p>
         </div>
       </div>
@@ -241,7 +251,14 @@ export default function PushNotificationSettings() {
           ) : (
             <BellOff className="w-4 h-4 text-[#888888]" />
           )}
-          <span>{loading ? 'Carregando...' : enabled ? 'Ativado' : 'Desativado'}</span>
+          <span>
+            {loading ? 'Carregando...' : enabled ? 'Ativado neste aparelho' : 'Desativado neste aparelho'}
+            {!loading && !enabled && otherDevices > 0 && (
+              <span className="block text-[11px] text-[#a8a8a8]">
+                Chegando em {otherDevices} outro(s) aparelho(s). Toque em Ativar para receber aqui também.
+              </span>
+            )}
+          </span>
         </div>
 
         <button
