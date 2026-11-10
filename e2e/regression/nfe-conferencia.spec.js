@@ -49,3 +49,33 @@ test('nota com nome e valor diferentes: guardar CNPJ e usar o valor da nota', as
   await expect(conf).toContainText('Empresa confere pelo CNPJ');
   await expect(conf).toContainText('Nota conferida');
 });
+
+// 10/11: a baixa travava — a janela apagava o valor digitado a cada recarga do trabalho.
+test('confirmar recebimento com o valor da nota grava a baixa', async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await seedAuth(page);
+  const seed = seedComNota();
+  seed.events.find((e) => e.id === FAKE_IDS.showPago).nfe_analise.escolha_valor = 'nota';
+  await installFakeDb(page, seed);
+  const patches = [];
+  page.on('request', (r) => {
+    if (r.method() === 'PATCH' && /\/rest\/v1\/events/.test(r.url())) patches.push(r.postDataJSON());
+  });
+
+  await page.goto(`/calendar?event=${FAKE_IDS.showPago}`, { waitUntil: 'domcontentloaded' });
+  await page.getByRole('button', { name: 'Confirmar Recebimento', exact: true }).first().click({ timeout: 60_000 });
+  const pay = page.getByRole('dialog', { name: 'Confirmar Recebimento' });
+  await expect(pay).toBeVisible();
+  const atalhos = pay.getByTestId('pagamento-atalhos');
+  await expect(atalhos).toContainText('Valor da nota');
+  await expect(atalhos).toContainText('Valor do app');
+  await atalhos.getByRole('button', { name: /Valor da nota/ }).click();
+  await expect(pay.getByLabel('Valor Real Recebido em Conta (R$)')).toHaveValue('1234,56');
+  await pay.getByRole('button', { name: 'Recebi hoje', exact: true }).click();
+  const ack = pay.getByRole('checkbox');
+  if (await ack.count()) await ack.check();
+  await pay.getByRole('button', { name: 'Confirmar Pagamento', exact: true }).click();
+  await expect.poll(() => patches.find((b) => b?.payment_status === 'paid'), { timeout: 10_000 })
+    .toMatchObject({ payment_status: 'paid', paid_amount: 1234.56 });
+});

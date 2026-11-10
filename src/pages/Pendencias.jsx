@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/authContext';
 import { useFinancialVisibility } from '@/components/context/FinancialVisibilityContext';
 import { todayLocalISO } from '@/components/utils/dateUtils';
 import { buildPendencias, buildBaixaUpdate } from '@/lib/pendencias';
+import { parseBRL } from '@/lib/money';
 import { applyAuto12Hours } from '@/lib/applyAuto12Hours';
 import { computeWorkDay, defaultDayChoice } from '@/lib/workDay';
 import { getClientDisplayName } from '@/lib/eventDisplay';
@@ -69,7 +70,7 @@ export default function Pendencias() {
   const allSelected = items.length > 0 && items.every((it) => sel.has(idOf(it)));
   const toggleAll = () => setSel(allSelected ? new Set() : new Set(items.map(idOf)));
   const selecionados = items.filter((it) => sel.has(idOf(it)));
-  const totalSel = selecionados.reduce((s, it) => s + (Number(String(valorDe(it)).replace(',', '.')) || 0), 0);
+  const totalSel = selecionados.reduce((s, it) => s + (parseBRL(valorDe(it)) || 0), 0);
 
   // lista: os marcados, ou um trabalho só (deslizar para a direita, lote 3).
   async function executar(lista = selecionados) {
@@ -80,9 +81,9 @@ export default function Pendencias() {
     for (const it of lista) {
       try {
         if (tab === 'receber') {
-          await updateEvent(it.event.id, buildBaixaUpdate({ valor: String(valorDe(it)).replace(',', '.'), data: dataDe(it), estimada: estimadaDe(it) }));
+          await updateEvent(it.event.id, buildBaixaUpdate({ valor: valorDe(it), data: dataDe(it), estimada: estimadaDe(it) }));
         } else if (tab === 'pagosSemValor') {
-          const v = Math.round(Number(String(valorDe(it)).replace(',', '.')) * 100) / 100;
+          const v = Math.round(parseBRL(valorDe(it)) * 100) / 100;
           if (!Number.isFinite(v) || v < 0) throw new Error('valor inválido');
           if (!(v > 0)) throw new Error('digite o valor');
           // Pago: o que entrou. Ainda não pago: o valor do trabalho (aí ele vai para "Recebi?").
