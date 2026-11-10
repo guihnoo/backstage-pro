@@ -50,6 +50,13 @@ describe('dar baixa', () => {
     });
     expect(() => buildBaixaUpdate({ valor: 'x', data: today })).toThrow();
   });
+
+  it('dar baixa entende o valor do jeito brasileiro (milhar e vírgula)', () => {
+    expect(buildBaixaUpdate({ valor: '3.817,00', data: today }).paid_amount).toBe(3817);
+    expect(buildBaixaUpdate({ valor: '3.817', data: today }).paid_amount).toBe(3817);
+    expect(buildBaixaUpdate({ valor: '3817,5', data: today }).paid_amount).toBe(3817.5);
+    expect(buildBaixaUpdate({ valor: 700, data: today }).paid_amount).toBe(700);
+  });
 });
 
 describe('lista simples (08/11)', () => {

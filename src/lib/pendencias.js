@@ -10,6 +10,7 @@
  *  - saidaAberta: entrou (CHEGUEI) e não registrou a saída;
  *  - semNota: trabalho de empresa, já feito, sem nota fiscal registrada.
  */
+import { parseBRL } from './money';
 import { calculateEventReceivableAmount, isCancelledEvent } from './eventFinance';
 import { parseTimeToMinutes } from './workDay';
 
@@ -121,7 +122,8 @@ export function buildPendencias({ events = [], dailyWork = [], clients = [], tod
 
 /** Atualização de "dar baixa": mesma forma do buildMarkPaidUpdate, com a origem da data. */
 export function buildBaixaUpdate({ valor, data, estimada }) {
-  const amount = Math.round(Number(valor) * 100) / 100;
+  // Aceita 3.817,00 / 3817,5 / 3.817 / 3817.5 (antes "3.817,00" falhava e "3.817" virava R$ 3,82).
+  const amount = Math.round(parseBRL(valor) * 100) / 100;
   if (!Number.isFinite(amount) || amount < 0) throw new RangeError('Informe o valor recebido.');
   if (!dateKey(data)) throw new RangeError('Informe a data do recebimento.');
   return {

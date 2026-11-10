@@ -1,14 +1,10 @@
 import { confetti } from '@/lib/celebrate';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, DollarSign, CheckCircle } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { DollarSign, CheckCircle } from 'lucide-react';
 import appToast from '@/lib/appToast';
 import { useEvents } from '@/lib/useEvents';
 import { buildMarkPaidUpdate } from '@/lib/financeMetrics';
@@ -16,6 +12,10 @@ import EventHeading from '@/components/events/EventHeading';
 import { getEventHoursStatus, calculateEventReceivableAmount } from '@/lib/eventFinance';
 import { buildHoursGateMessage, shouldBlockPayment } from '@/lib/hoursGate';
 import { parseBRL } from '@/lib/money';
+import { todayLocalISO } from '@/components/utils/dateUtils';
+
+const formatCurrency = (v) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const toInput = (v) => Number(v).toFixed(2).replace('.', ',');
 
 const PAYMENT_METHODS = [
   { value: 'pix', label: 'PIX' },
@@ -28,12 +28,14 @@ const PAYMENT_METHODS = [
 export default function PaymentConfirmModal({ event, client, dailyWork = [], isOpen, onClose, onSuccess }) {
   const { update: updateEvent } = useEvents();
   const [paidAmount, setPaidAmount] = useState('');
-  const [paidDate, setPaidDate] = useState(undefined);
+  const [paidDate, setPaidDate] = useState(''); // yyyy-MM-dd
   const [paymentMethod, setPaymentMethod] = useState('pix');
   const [loading, setLoading] = useState(false);
   const [ackMissingHours, setAckMissingHours] = useState(false);
 
-  const estimatedValue = event ? calculateEventReceivableAmount(event, dailyWork) : 0;
+  // Atalhos do valor: o da nota (lida pela IA) e o calculado no app (sem a escolha da nota).
+  const notaValue = Number(event?.nfe_analise?.nfe_valor) > 0 ? Math.round(Number(event.nfe_analise.nfe_valor) * 100) / 100 : null;
+  const appValue = event ? calculateEventReceivableAmount({ ...event, nfe_analise: null }, dailyWork) : 0;
   // events.payment_method nasce na migration 034; sem a coluna o PostgREST rejeita o update inteiro
   const canStoreMethod = Boolean(event) && 'payment_method' in event;
 
@@ -42,14 +44,19 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
   const hoursMessage = buildHoursGateMessage(hoursStatus);
   const blockedByHours = shouldBlockPayment(hoursStatus) && !ackMissingHours;
 
+  // Limpa só quando a janela ABRE (ou troca de trabalho). Antes limpava a cada recarga do
+  // trabalho (ex.: sincronização com o Google logo após salvar) e apagava o valor digitado,
+  // deixando o "Confirmar Pagamento" travado.
+  const openedFor = useRef(null);
   useEffect(() => {
-    if (event && isOpen) {
-      setPaidAmount('');
-      setPaidDate(undefined);
-      setPaymentMethod(event.payment_method || 'pix');
-      setAckMissingHours(false);
-    }
-  }, [event, isOpen, estimatedValue]);
+    if (!isOpen) { openedFor.current = null; return; }
+    if (!event || openedFor.current === event.id) return;
+    openedFor.current = event.id;
+    setPaidAmount('');
+    setPaidDate('');
+    setPaymentMethod(event.payment_method || 'pix');
+    setAckMissingHours(false);
+  }, [event, isOpen]);
 
   const handleConfirm = async () => {
     if (blockedByHours) {
@@ -63,14 +70,14 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
       return;
     }
 
-    if (!paidDate || format(paidDate,'yyyy-MM-dd') > format(new Date(),'yyyy-MM-dd')) {
+    if (!paidDate || paidDate > todayLocalISO()) {
       appToast.error('Selecione o dia em que o dinheiro entrou na sua conta.'); return;
     }
     setLoading(true);
     try {
       const updatePayload = buildMarkPaidUpdate(event, dailyWork, {
         paidAmount: parsedAmount,
-        paidDate: format(paidDate, 'yyyy-MM-dd'),
+        paidDate,
       });
       await updateEvent(event.id, {
         ...updatePayload,
@@ -83,7 +90,7 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
       onClose?.();
     } catch (error) {
       console.error('Erro ao confirmar pagamento:', error);
-      appToast.error('Erro ao confirmar pagamento. Tente novamente.');
+      appToast.error('Erro ao confirmar pagamento.', { description: error?.message || 'Tente novamente.' });
     } finally {
       setLoading(false);
     }
@@ -115,12 +122,12 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
             }`}>
               <p>{hoursMessage}</p>
               {shouldBlockPayment(hoursStatus) && (
-                <label className="flex items-center gap-2 text-[#ffd400]">
+                <label className="flex items-center gap-2 min-h-[44px] text-[#ffd400]">
                   <input
                     type="checkbox"
                     checked={ackMissingHours}
                     onChange={(e) => setAckMissingHours(e.target.checked)}
-                    className="w-4 h-4"
+                    className="w-6 h-6"
                   />
                   Cobrar assim mesmo
                 </label>
@@ -148,6 +155,22 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
                 placeholder="0,00"
               />
             </div>
+            <div className="grid grid-cols-2 gap-2" data-testid="pagamento-atalhos">
+              {notaValue != null && (
+                <button type="button" onClick={() => setPaidAmount(toInput(notaValue))}
+                  className="min-h-[44px] rounded-lg border border-[#333333] bg-[#161616] px-2 py-1.5 text-left active:bg-[#222]">
+                  <span className="block text-[11px] text-[#a8a8a8]">Valor da nota</span>
+                  <span className="block text-sm font-bold text-white">{formatCurrency(notaValue)}</span>
+                </button>
+              )}
+              {appValue > 0 && (
+                <button type="button" onClick={() => setPaidAmount(toInput(appValue))}
+                  className="min-h-[44px] rounded-lg border border-[#333333] bg-[#161616] px-2 py-1.5 text-left active:bg-[#222]">
+                  <span className="block text-[11px] text-[#a8a8a8]">Valor do app</span>
+                  <span className="block text-sm font-bold text-white">{formatCurrency(appValue)}</span>
+                </button>
+              )}
+            </div>
           </div>
 
           {canStoreMethod && (
@@ -173,28 +196,22 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
           )}
 
           <div className="space-y-2">
-            <Label>Data do Recebimento</Label><p className="text-xs text-[#a8a8a8]">Escolha o dia do depósito, mesmo que esteja registrando depois.</p><button type="button" className="text-xs font-bold text-[#ffd400]" onClick={()=>setPaidDate(new Date())}>Recebi hoje</button>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal bg-[#1f1f1f] border-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {paidDate ? format(paidDate, 'PPP', { locale: ptBR }) : 'Selecione a data'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-[#1f1f1f] border-[#2a2a2a]">
-                <Calendar
-                  mode="single"
-                  disabled={{ after: new Date() }}
-                  selected={paidDate}
-                  onSelect={(date) => date && setPaidDate(date)}
-                  locale={ptBR}
-                  className="text-white"
-                />
-              </PopoverContent>
-            </Popover>
+            <Label htmlFor="paid_date">Data do Recebimento</Label>
+            <p className="text-xs text-[#a8a8a8]">Escolha o dia do depósito, mesmo que esteja registrando depois.</p>
+            <div className="flex gap-2">
+              <Input
+                id="paid_date"
+                type="date"
+                max={todayLocalISO()}
+                value={paidDate}
+                onChange={(e) => setPaidDate(e.target.value)}
+                className="flex-1 min-w-0 h-11 [color-scheme:dark]"
+              />
+              <button type="button" onClick={() => setPaidDate(todayLocalISO())}
+                className={`h-11 shrink-0 px-3.5 rounded-lg text-xs font-extrabold border ${paidDate === todayLocalISO() ? 'bg-[#ffd400] border-[#ffd400] text-[#0a0a0a]' : 'border-[#ffd400]/50 text-[#ffd400]'}`}>
+                Recebi hoje
+              </button>
+            </div>
           </div>
         </div>
 
@@ -209,7 +226,7 @@ export default function PaymentConfirmModal({ event, client, dailyWork = [], isO
           </Button>
           <Button
             onClick={handleConfirm}
-            disabled={loading || blockedByHours || !paidAmount.trim() || !paidDate}
+            disabled={loading || blockedByHours || !String(paidAmount).trim() || !paidDate}
           >
             {loading ? 'Confirmando...' : 'Confirmar Pagamento'}
           </Button>
