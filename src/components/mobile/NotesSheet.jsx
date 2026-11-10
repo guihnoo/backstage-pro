@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { X, FileText, Save } from 'lucide-react';
 import { useAppScrollLock } from '@/lib/useAppScrollLock';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
+import { useSeedOnOpen } from '@/lib/formSeed';
 
 export default function NotesSheet({ 
   event,
@@ -19,11 +20,10 @@ export default function NotesSheet({
   const { primaryHex } = useCategoryTheme();
   useAppScrollLock(isOpen);
 
-  useEffect(() => {
-    if (event) {
-      setNotes(event.observacoes_md || '');
-    }
-  }, [event]);
+  // Só ao abrir: recarregar o trabalho não apaga a anotação que está sendo escrita.
+  useSeedOnOpen(isOpen && event ? event.id || 'sem-id' : null, () => {
+    setNotes(event.observacoes_md || '');
+  });
 
   useEffect(() => {
     if (!isOpen) return;

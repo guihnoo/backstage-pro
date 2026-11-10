@@ -260,6 +260,9 @@
 | Gravar direto com `supabase.from('daily_work')` fora do `useDailyWork` (CHEGUEI gravava só `date`; `work_date` é obrigatória → "Não foi possível registrar a entrada") | ✅ Corrigido | 2026-10-22 — horas/turno sempre pelo `useDailyWork` (offline) / `mapPayloadToDb`; migração 045 preenche uma data com a outra no banco |
 | Banco falso dos E2E aceitava qualquer coluna (bug de gravação passava nos testes) | ✅ Corrigido | 2026-10-22 — `e2e/helpers/test.js` + `dbSchema.js`: todo POST/PATCH é conferido contra as colunas reais; **importar `test` de `../helpers/test.js`**, nunca de `@playwright/test`; atualizar `dbSchema.js` a cada migração que mexa em coluna |
 | Prop com nome que o componente não lê (`prefillClient` no `EventForm` → "Novo job" do cliente sem cliente) | ✅ Corrigido | 2026-10-22 — conferir o nome da prop na assinatura do componente; objeto de `prefillData` sempre em `useMemo` (o formulário recomeça quando ele muda) |
+| Formulário reabastecido por `useEffect([event, profile, ...])` apagava o que a pessoa digitava quando os dados recarregavam (baixa de recebimento não gravava) | ✅ Corrigido | 2026-11-10 — usar `useSeedOnOpen(chave, preencher)` ou `mergeFresh` de `lib/formSeed.js`; nunca repreencher form por mudança de objeto |
+| Dinheiro com `Number(...)`/`parseFloat` ou `type="number"` ("1.200" virava 1,2; no iPhone a vírgula zerava o campo) | ✅ Corrigido | 2026-11-10 — sempre `parseBRL` de `lib/money.js` e input `type="text" inputMode="decimal"` |
+| Reação a 401 que desloga sem conferir o motivo (nos E2E derrubou 49 testes) | ✅ Corrigido | 2026-11-10 — só "JWT expired" dispara renovação; sai do aparelho só se o servidor recusar (4xx não temporário) |
 
 ---
 
