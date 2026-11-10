@@ -4,7 +4,7 @@
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
 **Última atualização:** 2026-11-07 (agenda/horas, A receber acumulado, escolha por dia, nota fiscal, relatório de horas, avisos — **publicado** f0d61b4 em 07/11; Claude Code)  
-**Pendente de deploy:** nada. Roadie fases 2–3 + design lote 3 publicados em 08/11 (PR #11 `a25a288`, `index-BF_j3hGK.js`, ai-chat v19, send-push-digest v10, migração 049). Roadie fase 1: PR #10.
+**Pendente de deploy:** nada. Correção da baixa (confirmar recebimento) publicada em 10/11 (PR #13 `bdd525f`, `index-DoC5KKj5.js`). Roadie fases 2–3 + design lote 3 publicados em 08/11 (PR #11 `a25a288`, `index-BF_j3hGK.js`, ai-chat v19, send-push-digest v10, migração 049). Roadie fase 1: PR #10.
 **Pasta local:** `C:\dev\backstage-pro` (desde 2026-10-09; a cópia antiga em `OneDrive\Documentos\backstage-pro` não é mais a pasta de trabalho)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-10-22 — revisão das telas + CHEGUEI + destinos (`03ee64a`, push de `review/telas-fase1` para `main`; bundle `index-BAYKE3jv.js`). Antes: 2026-10-22 barra SALVAR do Perfil (`b849156`)  
@@ -192,6 +192,12 @@ Os escopos de agenda são "sensíveis": com o app em **Testing**, só entra quem
 ---
 
 ## Changelog
+
+### 2026-11-10 — Correção urgente: confirmar recebimento (Claude Code — **publicado** 10/11, PR #13)
+- `PaymentConfirmModal`: valor e data eram limpos a cada recarga do trabalho (o objeto `event` mudava após salvar/sincronizar com o Google) e o "Confirmar Pagamento" ficava travado. Agora limpa só ao abrir ou trocar de trabalho.
+- Atalhos "Valor da nota" (`nfe_analise.nfe_valor`) e "Valor do app" (cálculo sem a escolha da nota); data com campo nativo + "Recebi hoje".
+- Pendências/`buildBaixaUpdate`: valor com `parseBRL` ("3.817,00" falhava; "3.817" virava R$ 3,82).
+- Testes: E2E novo em `nfe-conferencia.spec.js`; unit em `pendencias.test.js` (498/498).
 
 ### 2026-11-08 — Roadie fases 2 e 3 + design lote 3 (Claude Code — **publicado** 08/11, PR #11)
 - **Roadie fase 2 (ações com confirmação)**: `src/lib/roadie/actions.js` lê links `/acao/baixa|horas|saida|cobrar|novo`, confere com os dados reais e monta a gravação; `RoadieActionCard` mostra o resumo e só grava no "Confirmar" (baixa com confete, horas/saída pela regra de `computeWorkDay`, cobrança abre o WhatsApp, novo trabalho abre o formulário preenchido — Agenda aceita `titulo/inicio/fim/cache`). Contexto manda ids (clientes, horas, saída). `ai-chat`: lista de ações + respostas locais com botão "Já recebi". MessageBubble com componentes estáveis (antes remontava e perdia o "Feito").

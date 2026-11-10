@@ -3266,3 +3266,10 @@ Registro cronológico de tarefas executadas por agentes.
 - **Supabase**: ai-chat v19 (ações; sem login 401), send-push-digest v10 (mode brief; sem chave 401), migração 049 aplicada (cron da manhã com {"mode":"brief"}, conferido).
 - **App**: PR #11 mesclado (main a25a288), Vercel produção index-BF_j3hGK.js.
 - **Testes em produção**: roadie, roadie-acoes, pendencias, profile-navigation, finance-dashboard — 21 ok + 1 instável na 1ª rodada (cache do bundle novo); roadie-acoes repetido 5/5.
+
+### 2026-11-10 — Correção urgente da baixa (Claude Code)
+- **Pedido**: "não estou conseguindo confirmar o recebimento ... ao inserir o valor ele não dá baixa"; depois "ok pode publicar".
+- **Causa**: janela de recebimento limpava o valor a cada recarga do trabalho; Pendências lia "3.817,00" errado.
+- **Arquivos**: PaymentConfirmModal.jsx, lib/pendencias.js (+test), pages/Pendencias.jsx, e2e/regression/nfe-conferencia.spec.js.
+- **Build**: ok. Unit 498/498; E2E local 22 ok.
+- **Deploy**: PR #13 mesclado (main bdd525f), Vercel index-DoC5KKj5.js; atalho "Valor da nota" conferido no bundle; E2E em produção nfe-conferencia + pendencias ok (pendencias instável na 1ª tentativa).
