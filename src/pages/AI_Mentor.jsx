@@ -266,7 +266,7 @@ function AIMentorSession({ userId }) {
       window.speechSynthesis?.cancel();
       recognition.start();
       setIsListening(true);
-      setVoiceStatus('Ouvindo… fale sua pergunta em português.');
+      setVoiceStatus('Ouvindo… o navegador pode processar sua voz online. Revise antes de enviar.');
     } catch {
       recognitionRef.current = null;
       setIsListening(false);
@@ -306,6 +306,7 @@ function AIMentorSession({ userId }) {
   }, [conversations, persistConversations, stopDictation]);
 
   const handleDeleteConv = useCallback((id) => {
+    if (currentConv?.id === id) { stopDictation(); setVoiceStatus(''); }
     const updated = conversations.filter(c => c.id !== id);
     persistConversations(updated);
     if (currentConv?.id === id) {
@@ -313,7 +314,7 @@ function AIMentorSession({ userId }) {
       setMessages([]);
     }
     appToast.success('Conversa excluída');
-  }, [conversations, currentConv, persistConversations]);
+  }, [conversations, currentConv, persistConversations, stopDictation]);
 
   const handleSend = useCallback(async (overrideMsg) => {
     const text = (overrideMsg ?? input).trim();
@@ -396,7 +397,7 @@ function AIMentorSession({ userId }) {
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      if (!isListening) handleSend();
     }
   };
 
@@ -464,7 +465,7 @@ function AIMentorSession({ userId }) {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setHistoryOpen(true)}
+              onClick={() => { stopDictation(); setHistoryOpen(true); }}
               className="w-11 h-11 text-[#888888] hover:text-white relative"
               title="Histórico"
               aria-label="Histórico de conversas"
@@ -566,9 +567,11 @@ function AIMentorSession({ userId }) {
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
             </Button>
           </div>
-          <p aria-live="polite" data-testid="roadie-voz-status" className="text-[11px] text-[#a8a8a8] text-center mt-2">
-            {dictationSupported ? voiceStatus : 'Seu navegador não oferece ditado aqui. Use o microfone do teclado ou digite.'}
-          </p>
+          {(!dictationSupported || voiceStatus) && (
+            <p aria-live="polite" data-testid="roadie-voz-status" className="text-[11px] text-[#a8a8a8] text-center mt-2">
+              {dictationSupported ? voiceStatus : 'Seu navegador não oferece ditado aqui. Use o microfone do teclado ou digite.'}
+            </p>
+          )}
           {/* Atalho de teclado só faz sentido no computador */}
           <p className="text-[9px] text-[#555555] font-tag text-center mt-1.5">
             <span className="hidden sm:inline">Enter para enviar · Shift+Enter para nova linha · </span>
