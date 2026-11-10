@@ -196,4 +196,4 @@
 - [x] Roadie fase 2: ações na conversa com confirmação (baixa, horas, saída, cobrar, novo trabalho) — publicado 08/11 (PR #11).
 - [x] Roadie fase 3: Escala do dia no Início e aviso único das 8h — publicado 08/11 (PR #11).
 - [x] Design lote 3 (Comparações, Fiscal/Análise, Vai render, Metas 12 meses, Perfil recolhível + aviso, Despesas, Clientes, deslizar nas Pendências, toque 44 px) — publicado 08/11 (PR #11).
-- [ ] Roadie fase 4: voz.
+- [ ] Roadie fase 4: voz — primeira implementação em `feat/roadie-voz-fase4-draft`: ditado pt-BR com revisão manual antes de enviar, leitura de resposta reaproveitada, testes de sessão/erro/privacidade. **Não publicado**; faltam execução de testes e validação real em iPhone/Safari e Android/Chrome.
