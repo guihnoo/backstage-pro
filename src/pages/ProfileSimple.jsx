@@ -81,8 +81,21 @@ function profileToForm(profile) {
 }
 
 // Campo digitado vira texto ("12") e o gravado pode ser número (12): compara como texto
+const MONEY_FIELDS = new Set(['daily_rate', 'monthly_goal_revenue']);
+
 function sameFields(a, b) {
-  return Object.keys(b).every((k) => String(a[k] ?? '').trim() === String(b[k] ?? '').trim());
+  return Object.keys(b).every((k) => {
+    if (MONEY_FIELDS.has(k)) {
+      // "850,50" digitado e 850.5 gravado são o mesmo valor.
+      const x = String(a[k] ?? '').trim();
+      const y = String(b[k] ?? '').trim();
+      if (x === y) return true;
+      const nx = parseBRL(x);
+      const ny = parseBRL(y);
+      return Number.isFinite(nx) && Number.isFinite(ny) && nx === ny;
+    }
+    return String(a[k] ?? '').trim() === String(b[k] ?? '').trim();
+  });
 }
 
 function settingsToPix(settings) {
@@ -215,6 +228,12 @@ export default function ProfileSimple() {
   const handleSave = async () => {
     setSaving(true);
     let perfilOk = false;
+    // O que vai ser gravado vira a nova base: quando o perfil recarregar, os campos iguais ao
+    // enviado recebem o valor do servidor; o que for digitado durante o envio continua.
+    const antes = { form: baseForm.current, rates: baseRates.current, pix: basePix.current };
+    baseForm.current = form;
+    baseRates.current = rates;
+    basePix.current = pixForm;
     try {
       await updateProfile({
         ...form,
@@ -246,6 +265,8 @@ export default function ProfileSimple() {
       setTimeout(() => setSaved(false), 2500);
     } catch (err) {
       console.error('Erro ao salvar:', err);
+      if (!perfilOk) { baseForm.current = antes.form; baseRates.current = antes.rates; }
+      basePix.current = antes.pix;
       appToast.error(perfilOk ? 'Perfil salvo, mas o PIX nao foi salvo.' : 'Erro ao salvar perfil.', { description: err?.message });
     } finally {
       setSaving(false);
@@ -598,7 +619,7 @@ export default function ProfileSimple() {
         </Fold>
 
         {/* Meta do mes */}
-        <Fold id="meta" title="Minha meta do mês" summary={`${form.monthly_goal_events || '—'} diárias · R$ ${Number(form.monthly_goal_revenue || 0).toLocaleString('pt-BR')}`} open={abertas.meta} onToggle={alternar}>
+        <Fold id="meta" title="Minha meta do mês" summary={`${form.monthly_goal_events || '—'} diárias · R$ ${(parseBRL(form.monthly_goal_revenue || 0) || 0).toLocaleString('pt-BR')}`} open={abertas.meta} onToggle={alternar}>
           <div className="grid grid-cols-2 gap-2">
             {[
               { key: 'monthly_goal_events', label: 'Diárias', placeholder: '12', icon: Calendar },
