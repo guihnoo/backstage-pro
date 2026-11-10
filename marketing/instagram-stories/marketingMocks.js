@@ -11,7 +11,7 @@ function iso(offsetDays = 0) {
   return d.toISOString().split('T')[0];
 }
 
-function monthStart() {
+function _monthStart() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
 }

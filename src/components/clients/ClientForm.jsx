@@ -1,6 +1,5 @@
 import {
   useState,
-  useEffect,
   useRef
 } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
@@ -12,6 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Building2, User, DollarSign, X, AlertCircle, Phone, Mail, FileText, Camera, ImagePlus } from 'lucide-react';
 import appToast from '@/lib/appToast';
 import { parseBRL, toBRLInput } from '@/lib/money';
+import { useSeedOnOpen } from '@/lib/formSeed';
 import { MEAL_POLICY_LABELS } from '@/lib/mealPolicy';
 
 import { useAuth } from '@/lib/authContext';
@@ -66,7 +66,8 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
     brand_color: DEFAULT_CLIENT_COLOR,
   });
 
-  useEffect(() => {
+  // Preenche uma vez por cliente (antes: recarga da lista de clientes apagava a edição).
+  useSeedOnOpen(client?.id || 'novo', () => {
     if (client) {
       // A razão social é guardada como 1ª linha das observações ("Razão Social: ...").
       // Ao editar, ela volta para o campo próprio e sai do texto das observações.
@@ -112,7 +113,7 @@ export default function ClientForm({ client, onSuccess, onCancel }) {
     }
     setErrors({});
     setTouched({});
-  }, [client]);
+  });
 
   const validateField = (name, value) => {
     const newErrors = { ...errors };

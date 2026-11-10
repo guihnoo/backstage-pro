@@ -11,6 +11,7 @@ import { format, parseISO } from 'date-fns';
 import { isCancelledEvent } from '@/lib/eventFinance';
 import appToast from '@/lib/appToast';
 import { parseBRL, toBRLInput } from '@/lib/money';
+import { useSeedOnOpen } from '@/lib/formSeed';
 
 import { normalizeDateString } from '@/components/utils/dateUtils';
 import { useExpenses } from '@/lib/useExpenses';
@@ -112,9 +113,9 @@ export default function ExpenseForm({
       .sort((a, b) => String(b.start_date || '').localeCompare(String(a.start_date || '')));
   }, [events, expense?.event_id, initialEvent]);
 
-  useEffect(() => {
-    if (!open) return;
-
+  // Preenche só ao abrir (antes: cada recarga da despesa/lista apagava o que foi digitado).
+  const seedKey = open ? `${expense?.id || 'nova'}|${initialEvent || ''}|${JSON.stringify(prefillData || null)}` : null;
+  useSeedOnOpen(seedKey, () => {
     const seed = expense || prefillData || {};
     const km = seed.category === KM_CATEGORY ? mileageFromExpense(seed) : null;
 
@@ -135,7 +136,7 @@ export default function ExpenseForm({
       km_rate: km ? toBRLInput(km.rate) : '',
       round_trip: km ? km.roundTrip : true,
     });
-  }, [open, expense, prefillData, initialEvent]);
+  });
 
   // Quilometragem: o valor da despesa sai de km × valor por km.
   const isKm = formData.category === KM_CATEGORY;

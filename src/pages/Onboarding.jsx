@@ -11,6 +11,7 @@ import CategoryPicker from '@/components/auth/CategoryPicker';
 import SpecialtyPicker from '@/components/auth/SpecialtyPicker';
 import { getCategoryConfig } from '@/lib/categoryConfig';
 import { LOOP, loopAnim } from '@/lib/liteMotion';
+import { parseBRL } from '@/lib/money';
 
 const CTA_CLASS =
   'w-full h-14 rounded-[28px] border-0 bg-[#ffd400] hover:bg-[#ffd400] text-[#0a0a0a] font-poster text-[22px] tracking-[2px] uppercase disabled:opacity-50';
@@ -22,7 +23,7 @@ const INPUT_CLASS =
 function toNumber(value, fallback) {
   const text = String(value ?? '').trim();
   if (!text) return fallback;
-  const n = Number(text.includes(',') ? text.replace(/\./g, '').replace(',', '.') : text);
+  const n = parseBRL(text); // "1.200" = mil e duzentos (antes virava 1,2)
   return Number.isFinite(n) ? n : fallback;
 }
 
@@ -324,7 +325,7 @@ export default function Onboarding() {
                     </p>
                     <Input
                       id="ob-daily-rate"
-                      type="number"
+                      type="text" inputMode="decimal"
                       min="0"
                       step="50"
                       value={dailyRate}
@@ -352,7 +353,7 @@ export default function Onboarding() {
                     <label htmlFor="ob-goal-revenue" className={LABEL_CLASS}>Meta de faturamento/mês (R$)</label>
                     <Input
                       id="ob-goal-revenue"
-                      type="number"
+                      type="text" inputMode="decimal"
                       min="0"
                       step="100"
                       value={monthlyGoalRevenue}

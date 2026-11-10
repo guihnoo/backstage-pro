@@ -3273,3 +3273,10 @@ Registro cronológico de tarefas executadas por agentes.
 - **Arquivos**: PaymentConfirmModal.jsx, lib/pendencias.js (+test), pages/Pendencias.jsx, e2e/regression/nfe-conferencia.spec.js.
 - **Build**: ok. Unit 498/498; E2E local 22 ok.
 - **Deploy**: PR #13 mesclado (main bdd525f), Vercel index-DoC5KKj5.js; atalho "Valor da nota" conferido no bundle; E2E em produção nfe-conferencia + pendencias ok (pendencias instável na 1ª tentativa).
+
+### 2026-11-10 — Auditoria completa do app (Claude Code)
+- **Pedido**: "quero uma análise completa para que não tenha nenhum erro igual ou outros bugs no app. check cada função cada página item a item."
+- **Achados e correções**: formulários que apagavam o digitado ao recarregar (EventForm, ExpenseForm, ClientForm, NotesSheet, Perfil → lib/formSeed.js); valores em R$ lidos errado (Perfil, Metas, Onboarding, CacheCalculator, ReceiptAnalyzer, roleRates, Roadie → parseBRL + teclado decimal); coluna paid fora de sincronia (financeMetrics); sessão vencida em loop (supabase.js, com saída só quando o servidor recusa). Lint: e2e com globals de node; marketingMocks var sem uso; Goals useMemo.
+- **Servidor**: logs 24 h sem gravação recusada; advisors de segurança ok; desempenho anotado no backlog.
+- **Build**: ok. Unit 501/501. Lint limpo. E2E completo rodado (1ª rodada achou deslogamento indevido da proteção de sessão → corrigido).
+- **Deploy**: não. Aguardando ok do usuário.

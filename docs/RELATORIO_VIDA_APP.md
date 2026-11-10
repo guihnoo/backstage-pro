@@ -4,7 +4,7 @@
 > **Atualize este arquivo a cada sessão significativa** (feature, fix, deploy, decisão de arquitetura).
 
 **Última atualização:** 2026-11-07 (agenda/horas, A receber acumulado, escolha por dia, nota fiscal, relatório de horas, avisos — **publicado** f0d61b4 em 07/11; Claude Code)  
-**Pendente de deploy:** nada. Correção da baixa (confirmar recebimento) publicada em 10/11 (PR #13 `bdd525f`, `index-DoC5KKj5.js`). Roadie fases 2–3 + design lote 3 publicados em 08/11 (PR #11 `a25a288`, `index-BF_j3hGK.js`, ai-chat v19, send-push-digest v10, migração 049). Roadie fase 1: PR #10.
+**Pendente de deploy:** auditoria completa de 10/11 (formulários que apagavam o digitado, valores em R$, sessão vencida). Correção da baixa (confirmar recebimento) publicada em 10/11 (PR #13 `bdd525f`, `index-DoC5KKj5.js`). Roadie fases 2–3 + design lote 3 publicados em 08/11 (PR #11 `a25a288`, `index-BF_j3hGK.js`, ai-chat v19, send-push-digest v10, migração 049). Roadie fase 1: PR #10.
 **Pasta local:** `C:\dev\backstage-pro` (desde 2026-10-09; a cópia antiga em `OneDrive\Documentos\backstage-pro` não é mais a pasta de trabalho)  
 **Produção:** https://backstage-pro-beta.vercel.app  
 **Último deploy:** 2026-10-22 — revisão das telas + CHEGUEI + destinos (`03ee64a`, push de `review/telas-fase1` para `main`; bundle `index-BAYKE3jv.js`). Antes: 2026-10-22 barra SALVAR do Perfil (`b849156`)  
@@ -192,6 +192,14 @@ Os escopos de agenda são "sensíveis": com o app em **Testing**, só entra quem
 ---
 
 ## Changelog
+
+### 2026-11-10 — Auditoria completa: formulários, valores em R$ e sessão (Claude Code — **local, aguardando ok para publicar**)
+- **Mesma família do bug da baixa**: formulários que se "repreenchiam" quando os dados recarregavam (Google, tempo real) e apagavam o que a pessoa digitava. Novo `lib/formSeed.js` (`useSeedOnOpen` preenche só ao abrir/trocar de item; `mergeFresh` atualiza só os campos não mexidos). Aplicado em EventForm, ExpenseForm, ClientForm, NotesSheet e Perfil.
+- **Valores em R$**: `parseBRL` em Perfil (diária, meta), Metas, Onboarding, Calculadora de cachê, Leitor de recibo, cachês por função (`roleRates`) e ações do Roadie. Campos de dinheiro passaram de `type="number"` (no iPhone a vírgula zerava o campo) para texto com teclado decimal. "1.200" virava R$ 1,20.
+- **Coluna antiga `paid`**: marcar/desmarcar pago agora acompanha `payment_status` (39 trabalhos estavam pagos com paid=false; o app não lê essa coluna).
+- **Sessão vencida** (`lib/supabase.js`): ao receber "JWT expired" tenta renovar uma vez; sai do aparelho só se o servidor recusar a renovação (sem rede mantém o login).
+- **Banco/servidor**: 24 h de logs sem gravação recusada; segurança ok; avisos de desempenho (RLS initplan, 3 FKs sem índice) ficam para quando houver mais usuários.
+- Testes: unit 501/501 (+`formSeed.test.js`), lint limpo, E2E completo.
 
 ### 2026-11-10 — Correção urgente: confirmar recebimento (Claude Code — **publicado** 10/11, PR #13)
 - `PaymentConfirmModal`: valor e data eram limpos a cada recarga do trabalho (o objeto `event` mudava após salvar/sincronizar com o Google) e o "Confirmar Pagamento" ficava travado. Agora limpa só ao abrir ou trocar de trabalho.
@@ -854,6 +862,9 @@ Padrão do protótipo ("Modal · Novo trabalho") aplicado **nos componentes base
 3. OAuth Google — checklist E2E manual (validar com sua conta real)
 4. ~~Deploy sessão 11~~ — ✅ `0b666c7` em prod
 5. Testar `CompanySearchInput` aba CNPJ com `42.993.331/0001-10` (Amarrok)
+6. (2026-11-10) Banco: acertar `events.paid` nos 39 trabalhos antigos (pago com paid=false) — pedir ok antes
+7. (2026-11-10) Desempenho do banco: políticas RLS com `(select auth.uid())`, índices em `closing_shares.event_id`, `companies.created_by`, `feedback.user_id`; proteção de senha vazada no Auth
+8. (2026-11-10) Aviso no EventForm quando a data do trabalho muda e já há horas registradas em outro dia
 - ~~(2026-10-09) Aplicar migration 034 em produção~~ — ✅ aplicada (034–044 no ar)
 - ~~(2026-10-09) Datas "hoje" em UTC~~ — ✅ conferido em 22/10: nenhum `new Date().toISOString()` de "hoje" sobrou; 29 arquivos usam `todayLocalISO()`
 - (2026-10-09) Repositório GitHub está **público** e recebe o backup automático — decidir se fica privado

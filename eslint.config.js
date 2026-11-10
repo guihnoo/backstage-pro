@@ -61,7 +61,7 @@ export default [
     },
   },
   {
-    files: ['playwright.config.js', 'playwright.prod.config.js', 'vite.config.js', 'tailwind.config.js'],
+    files: ['playwright.config.js', 'playwright.prod.config.js', 'vite.config.js', 'tailwind.config.js', 'e2e/**/*.js'],
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },
     },

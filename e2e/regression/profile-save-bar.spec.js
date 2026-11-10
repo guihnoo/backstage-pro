@@ -38,3 +38,23 @@ test('perfil: barra de salvar só aparece com alteração e fica presa ao rolar'
   await goal.fill(original);
   await expect(bar).toHaveCount(0);
 });
+
+// Revisão do PR #14: depois de salvar "1.200,50" a barra ficava aberta ("1.200,50" ≠ 1200.5).
+test('perfil: salvar valor em R$ com vírgula fecha a barra', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await seedAuth(page);
+  await page.goto('/profile', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByText('Carregando...')).toBeHidden({ timeout: 15_000 });
+
+  const bar = page.getByRole('region', { name: 'Salvar alterações do perfil' });
+  await page.getByRole('button', { name: /Minha meta do mês/ }).click({ timeout: 15_000 });
+  const revenue = page.getByLabel('Faturamento (R$)');
+  await expect(revenue).toBeVisible({ timeout: 10_000 });
+
+  const salvo = page.waitForRequest((r) => r.url().includes('/rest/v1/profiles') && ['PATCH', 'POST'].includes(r.method()));
+  await revenue.fill('1.200,50');
+  await bar.getByRole('button', { name: /salvar alterações/i }).click();
+  const req = await salvo;
+  expect(req.postDataJSON().monthly_goal_revenue).toBe(1200.5);
+  await expect(bar).toHaveCount(0, { timeout: 10_000 });
+});
