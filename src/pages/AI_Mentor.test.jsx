@@ -62,3 +62,69 @@ describe('Mentor ao trocar de conta com a tela aberta', () => {
     expect(localStorage.getItem('backstage_ai_conversations')).toContain('texto legado');
   });
 });
+
+describe('Roadie fase 4 — ditado com confirmação de envio', () => {
+  let recognition;
+
+  beforeEach(() => {
+    window.webkitSpeechRecognition = class FakeRecognition {
+      constructor() { recognition = this; }
+      start = vi.fn();
+      abort = vi.fn();
+    };
+  });
+
+  afterEach(() => {
+    delete window.webkitSpeechRecognition;
+  });
+
+  it('transcreve em pt-BR sem enviar automaticamente e permite revisar', () => {
+    render(<AIMentorPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'Ditado por voz' }));
+    expect(recognition.lang).toBe('pt-BR');
+    expect(recognition.interimResults).toBe(false);
+    expect(recognition.start).toHaveBeenCalledTimes(1);
+    act(() => {
+      recognition.onresult({ results: [[{ transcript: 'Quem me deve?' }]] });
+      recognition.onend();
+    });
+    expect(screen.getByPlaceholderText('Pergunte qualquer coisa…').value).toBe('Quem me deve?');
+    expect(screen.getByText('Texto reconhecido. Revise e toque em Enviar.')).not.toBeNull();
+    expect(invoke).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar pergunta' }));
+    expect(invoke).toHaveBeenCalledTimes(1);
+  });
+
+  it('não envia quando o microfone falha ou o acesso é negado', () => {
+    render(<AIMentorPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'Ditado por voz' }));
+    act(() => {
+      recognition.onerror({ error: 'not-allowed' });
+      recognition.onend();
+    });
+    expect(screen.getByText('Permita o acesso ao microfone nas configurações do navegador.')).not.toBeNull();
+    expect(screen.getByPlaceholderText('Pergunte qualquer coisa…').value).toBe('');
+    expect(invoke).not.toHaveBeenCalled();
+  });
+
+  it('parar o ditado descarta a sessão sem gravar ou enviar', () => {
+    render(<AIMentorPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'Ditado por voz' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Parar ditado' }));
+    expect(recognition.abort).toHaveBeenCalledTimes(1);
+    expect(recognition.onresult).toBeNull();
+    expect(invoke).not.toHaveBeenCalled();
+  });
+
+  it('trocar de conta encerra o microfone e isola a transcrição', () => {
+    const { rerender } = render(<AIMentorPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'Ditado por voz' }));
+    const antiga = recognition;
+    account.id = 'B';
+    rerender(<AIMentorPage />);
+    expect(antiga.abort).toHaveBeenCalledTimes(1);
+    expect(antiga.onresult).toBeNull();
+    expect(screen.getByPlaceholderText('Pergunte qualquer coisa…').value).toBe('');
+    expect(invoke).not.toHaveBeenCalled();
+  });
+});

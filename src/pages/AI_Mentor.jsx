@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Sparkles, Loader2, Send, Volume2, VolumeX, History, Plus, MessageSquare, Trash2 } from 'lucide-react';
+import { Sparkles, Loader2, Send, Mic, MicOff, Volume2, VolumeX, History, Plus, MessageSquare, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
 import { useStats } from '@/lib/useBackstageData';
 import { useClients } from '@/lib/useClients';
@@ -154,13 +154,28 @@ function AIMentorSession({ userId }) {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [voiceStatus, setVoiceStatus] = useState('');
   const [historyOpen, setHistoryOpen] = useState(false);
+  const dictationSupported = useMemo(
+    () => typeof window !== 'undefined' && Boolean(window.SpeechRecognition || window.webkitSpeechRecognition),
+    [],
+  );
 
   const activeRef = useRef(true);
+  const recognitionRef = useRef(null);
   useEffect(() => {
     activeRef.current = true;
     return () => {
       activeRef.current = false;
+      const recognition = recognitionRef.current;
+      if (recognition) {
+        recognition.onresult = null;
+        recognition.onerror = null;
+        recognition.onend = null;
+        recognition.abort?.();
+        recognitionRef.current = null;
+      }
       window.speechSynthesis?.cancel();
     };
   }, []);
@@ -176,7 +191,10 @@ function AIMentorSession({ userId }) {
     const last = messages[messages.length - 1];
     if (last?.role === 'assistant') {
       window.speechSynthesis.cancel();
-      const utt = new SpeechSynthesisUtterance(last.content);
+      const spoken = String(last.content || '')
+         .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+         .replace(/[*_`#]/g, '');
+       const utt = new SpeechSynthesisUtterance(spoken);
       utt.lang = 'pt-BR';
       const ptVoice = window.speechSynthesis.getVoices().find(v => v.lang.startsWith('pt'));
       if (ptVoice) utt.voice = ptVoice;
@@ -192,6 +210,70 @@ function AIMentorSession({ userId }) {
     });
   }, []);
 
+  // Roadie fase 4: ditado do navegador. A transcrição NUNCA envia automaticamente.
+  const stopDictation = useCallback(() => {
+    const recognition = recognitionRef.current;
+    if (!recognition) return;
+    recognition.onresult = null;
+    recognition.onerror = null;
+    recognition.onend = null;
+    recognitionRef.current = null;
+    recognition.abort?.();
+    if (activeRef.current) setIsListening(false);
+  }, []);
+
+  const toggleDictation = useCallback(() => {
+    if (recognitionRef.current) {
+      stopDictation();
+      setVoiceStatus('Ditado interrompido.');
+      return;
+    }
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Recognition) {
+      setVoiceStatus('Ditado indisponível neste navegador. Use o teclado do celular.');
+      return;
+    }
+    const recognition = new Recognition();
+    recognition.lang = 'pt-BR';
+    recognition.interimResults = false;
+    recognition.continuous = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event) => {
+      if (!activeRef.current || recognitionRef.current !== recognition) return;
+      const transcript = Array.from(event.results || [])
+        .map((result) => result?.[0]?.transcript || '').join(' ').trim();
+      if (!transcript) return;
+      setInput((previous) => [previous.trim(), transcript].filter(Boolean).join(' '));
+      setVoiceStatus('Texto reconhecido. Revise e toque em Enviar.');
+    };
+    recognition.onerror = (event) => {
+      if (!activeRef.current || recognitionRef.current !== recognition) return;
+      const error = event?.error;
+      const message = error === 'not-allowed' || error === 'service-not-allowed'
+        ? 'Permita o acesso ao microfone nas configurações do navegador.'
+        : error === 'no-speech'
+          ? 'Não ouvi nenhuma fala. Toque no microfone para tentar de novo.'
+          : 'Não consegui reconhecer a fala. Você pode digitar sua pergunta.';
+      setVoiceStatus(message);
+    };
+    recognition.onend = () => {
+      if (recognitionRef.current !== recognition) return;
+      recognitionRef.current = null;
+      if (activeRef.current) setIsListening(false);
+    };
+    recognitionRef.current = recognition;
+    try {
+      window.speechSynthesis?.cancel();
+      recognition.start();
+      setIsListening(true);
+      setVoiceStatus('Ouvindo… o navegador pode processar sua voz online. Revise antes de enviar.');
+    } catch {
+      recognitionRef.current = null;
+      setIsListening(false);
+      setVoiceStatus('Não foi possível iniciar o microfone. Use o teclado.');
+    }
+  }, [stopDictation]);
+
 
 
   const persistConversations = useCallback((convs) => {
@@ -205,21 +287,26 @@ function AIMentorSession({ userId }) {
   }, [userId]);
 
   const handleSelectConv = useCallback((conv) => {
+    stopDictation();
+    setVoiceStatus('');
     setCurrentConv(conv);
     setMessages(conv.messages || []);
     setHistoryOpen(false);
-  }, []);
+  }, [stopDictation]);
 
   const handleNewConv = useCallback(() => {
+    stopDictation();
+    setVoiceStatus('');
     const conv = newConversation();
     persistConversations([conv, ...conversations]);
     setCurrentConv(conv);
     setMessages([]);
     setHistoryOpen(false);
     appToast.success('Nova conversa iniciada');
-  }, [conversations, persistConversations]);
+  }, [conversations, persistConversations, stopDictation]);
 
   const handleDeleteConv = useCallback((id) => {
+    if (currentConv?.id === id) { stopDictation(); setVoiceStatus(''); }
     const updated = conversations.filter(c => c.id !== id);
     persistConversations(updated);
     if (currentConv?.id === id) {
@@ -227,7 +314,7 @@ function AIMentorSession({ userId }) {
       setMessages([]);
     }
     appToast.success('Conversa excluída');
-  }, [conversations, currentConv, persistConversations]);
+  }, [conversations, currentConv, persistConversations, stopDictation]);
 
   const handleSend = useCallback(async (overrideMsg) => {
     const text = (overrideMsg ?? input).trim();
@@ -310,7 +397,7 @@ function AIMentorSession({ userId }) {
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      if (!isListening) handleSend();
     }
   };
 
@@ -378,7 +465,7 @@ function AIMentorSession({ userId }) {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setHistoryOpen(true)}
+              onClick={() => { stopDictation(); setHistoryOpen(true); }}
               className="w-11 h-11 text-[#888888] hover:text-white relative"
               title="Histórico"
               aria-label="Histórico de conversas"
@@ -459,14 +546,32 @@ function AIMentorSession({ userId }) {
               className="flex-1 bg-[#161616] border border-[#333333] rounded-[24px] px-4 py-3 text-white text-base placeholder:text-[#666666] focus:outline-none focus:border-[#ffd400] resize-none min-h-[48px] max-h-[120px] overflow-y-auto transition-colors"
             />
             <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={toggleDictation}
+              disabled={loading || !dictationSupported}
+              aria-label={isListening ? 'Parar ditado' : 'Ditado por voz'}
+              aria-pressed={isListening}
+              title={dictationSupported ? (isListening ? 'Parar gravação' : 'Falar com o Roadie') : 'Ditado indisponível neste navegador'}
+              className={isListening ? 'h-12 w-12 flex-shrink-0 text-[#ff2e88]' : 'h-12 w-12 flex-shrink-0 text-[#ffd400]'}
+            >
+              {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+            </Button>
+            <Button
               onClick={() => handleSend()}
-              disabled={loading || !input.trim()}
+              disabled={loading || isListening || !input.trim()}
               aria-label="Enviar pergunta"
               className="h-12 w-12 flex-shrink-0 p-0"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
             </Button>
           </div>
+          {(!dictationSupported || voiceStatus) && (
+            <p aria-live="polite" data-testid="roadie-voz-status" className="text-[11px] text-[#a8a8a8] text-center mt-2">
+              {dictationSupported ? voiceStatus : 'Seu navegador não oferece ditado aqui. Use o microfone do teclado ou digite.'}
+            </p>
+          )}
           {/* Atalho de teclado só faz sentido no computador */}
           <p className="text-[9px] text-[#555555] font-tag text-center mt-1.5">
             <span className="hidden sm:inline">Enter para enviar · Shift+Enter para nova linha · </span>
