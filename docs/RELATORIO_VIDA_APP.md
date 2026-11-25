@@ -193,6 +193,14 @@ Os escopos de agenda são "sensíveis": com o app em **Testing**, só entra quem
 
 ## Changelog
 
+### 2026-11-24 — Despesas: quem paga, recibo lido pela IA e relatório (Claude Code — branch `feat/despesas-quem-paga`, **publicado no GitHub, PR não aberto/mergeado, deploy na Vercel pendente**)
+- **Quem paga** em cada despesa: cliente reembolsa (entra no valor a receber) · cliente paga na hora (não entra) · eu pago (não entra). Relatório PDF e WhatsApp marcam as que não entram para o cliente.
+- **Recibo**: a IA lê local, valor, data, itens e forma de pagamento; o form mostra o que foi lido para conferência. Edge function `analyze-receipt` **v5 publicada** (`verify_jwt` ativo).
+- **Migração `050_expenses_paid_by`**: **aplicada no Supabase** (projeto `backstage-pro`); backfill: 5 reembolsáveis → `client_reimburses`, 5 → `self`.
+- **Scroll do formulário de despesa travado**: `DialogContent` com `h-[95dvh]` (mesma causa do EventForm).
+- **Falta**: build/testes no PC; teste manual no app; merge na `main` e deploy na Vercel (só com pedido explícito). A IA ainda não pergunta quando está em dúvida sobre a categoria.
+- **Atenção**: até o deploy do front, despesas reembolsáveis criadas pelo app antigo ficam com `paid_by = self` (efeito só visual; o valor a receber usa `is_reimbursable`).
+
 ### 2026-11-10 — Auditoria completa: formulários, valores em R$ e sessão (Claude Code — **local, aguardando ok para publicar**)
 - **Mesma família do bug da baixa**: formulários que se "repreenchiam" quando os dados recarregavam (Google, tempo real) e apagavam o que a pessoa digitava. Novo `lib/formSeed.js` (`useSeedOnOpen` preenche só ao abrir/trocar de item; `mergeFresh` atualiza só os campos não mexidos). Aplicado em EventForm, ExpenseForm, ClientForm, NotesSheet e Perfil.
 - **Valores em R$**: `parseBRL` em Perfil (diária, meta), Metas, Onboarding, Calculadora de cachê, Leitor de recibo, cachês por função (`roleRates`) e ações do Roadie. Campos de dinheiro passaram de `type="number"` (no iPhone a vírgula zerava o campo) para texto com teclado decimal. "1.200" virava R$ 1,20.

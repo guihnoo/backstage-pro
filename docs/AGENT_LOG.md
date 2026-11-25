@@ -3292,3 +3292,9 @@ Registro cronológico de tarefas executadas por agentes.
 - **Relatório (PDF e WhatsApp)**: seção de despesas lista todas as despesas, marca as que não entram para o cliente e mostra total e valor a receber; comprovantes saem para todas as despesas.
 - **Lista do evento**: badges "eu pago" / "cliente pagou na hora".
 - **Pendente**: build e testes no PC (Linux não carrega o rollup da node_modules do Windows). Teste manual no app antes do merge.
+
+### 2026-11-25 — Despesas: publicação e banco (Claude Code — branch `feat/despesas-quem-paga`)
+- **Push** do branch `feat/despesas-quem-paga` (base `fix/auditoria-completa` `268c82e`, porque a feature usa `useSeedOnOpen`). Commit `2b80aa1`. PR ainda não aberto.
+- **Supabase** (`backstage-pro`): migração `expenses_paid_by` aplicada (10 despesas com backfill correto); `analyze-receipt` v5 deployada com `verify_jwt` true.
+- **Build/testes**: não rodados (node_modules instalada no Windows; Linux sem rollup). Rodar no PC antes do merge.
+- **Deploy na Vercel e merge na `main`**: pendentes de pedido explícito.
