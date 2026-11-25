@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Camera, ImagePlus, Loader2, RefreshCw, Sparkles, Trash2 } from 'lucide-react';
+import { Camera, ImagePlus, Loader2, Sparkles, Trash2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { isCancelledEvent } from '@/lib/eventFinance';
 import appToast from '@/lib/appToast';
@@ -66,6 +66,12 @@ const PAYMENT_METHODS = [
   { value: 'outros', label: 'Outros' },
 ];
 
+const PAID_BY_OPTIONS = [
+  { value: 'client_reimburses', label: 'Cliente reembolsa', hint: 'Entra no valor a receber' },
+  { value: 'client_paid', label: 'Cliente paga na hora', hint: 'Não entra no valor a receber' },
+  { value: 'self', label: 'Eu pago', hint: 'Custo meu, não entra para o cliente' },
+];
+
 const defaultState = {
   event_id: '',
   title: '',
@@ -77,6 +83,7 @@ const defaultState = {
   notes: '',
   receipt_url: '',
   is_reimbursable: false,
+  paid_by: 'self',
   reimbursed: false,
   // Quilometragem (ideia #112)
   km: '',
@@ -102,6 +109,7 @@ export default function ExpenseForm({
   const [uploadingReceipt, setUploadingReceipt] = useState(false);
   const [analyzingReceipt, setAnalyzingReceipt] = useState(false);
   const [formData, setFormData] = useState(defaultState);
+  const [receiptInfo, setReceiptInfo] = useState(null);
 
   const initialEvent = useMemo(() => prefillEventId || initialEventId || '', [prefillEventId, initialEventId]);
 
@@ -118,6 +126,7 @@ export default function ExpenseForm({
   useSeedOnOpen(seedKey, () => {
     const seed = expense || prefillData || {};
     const km = seed.category === KM_CATEGORY ? mileageFromExpense(seed) : null;
+    const paidBy = seed.paid_by || ((seed.is_reimbursable ?? Boolean(initialEvent)) ? 'client_reimburses' : 'self');
 
     setFormData({
       ...defaultState,
@@ -130,7 +139,8 @@ export default function ExpenseForm({
       description: seed.description || '',
       notes: seed.notes || '',
       receipt_url: seed.receipt_url || '',
-      is_reimbursable: seed.is_reimbursable ?? Boolean(initialEvent),
+      is_reimbursable: paidBy === 'client_reimburses',
+      paid_by: paidBy,
       reimbursed: Boolean(seed.reimbursed),
       km: km ? String(km.km).replace('.', ',') : '',
       km_rate: km ? toBRLInput(km.rate) : '',
@@ -175,13 +185,15 @@ export default function ExpenseForm({
     setField('receipt_url', savedUrl);
     appToast.success('Comprovante anexado!');
 
-    if (savedUrl.startsWith('http') && (!formData.title || !formData.amount)) {
+    if (savedUrl.startsWith('http')) {
       setAnalyzingReceipt(true);
       try {
         const extracted = await analyzeReceipt(savedUrl);
+        setReceiptInfo(extracted);
         setFormData((prev) => ({
           ...prev,
           title: prev.title || extracted.title || '',
+          description: prev.description || extracted.items || '',
           amount: prev.amount || (extracted.amount > 0 ? toBRLInput(extracted.amount) : ''),
           date: extracted.date || prev.date,
           category: extracted.category || prev.category,
@@ -225,8 +237,9 @@ export default function ExpenseForm({
         // km só vai quando a despesa é (ou era) de quilometragem (migration 046)
         ...(isKm ? { distance_km: mileage.totalKm } : expense?.distance_km != null ? { distance_km: null } : {}),
         receipt_url: formData.receipt_url || null,
-        is_reimbursable: formData.is_reimbursable,
-        reimbursed: formData.is_reimbursable ? formData.reimbursed : false,
+        paid_by: formData.paid_by,
+        is_reimbursable: formData.paid_by === 'client_reimburses',
+        reimbursed: formData.paid_by === 'client_reimburses' ? formData.reimbursed : false,
       };
 
       // Lembra o valor por km do técnico para a próxima vez
@@ -255,7 +268,7 @@ export default function ExpenseForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl p-0 flex flex-col overflow-hidden max-h-[90dvh]">
+      <DialogContent className="sm:max-w-2xl p-0 flex flex-col overflow-hidden h-[95dvh] max-h-[95dvh]">
         <DialogHeader className="px-4 pt-4 pb-3 sm:px-6 sm:pt-5 border-b border-[#2a2a2a] flex-shrink-0 pr-14">
           <DialogTitle>{expense?.id ? 'Editar Despesa' : 'Nova Despesa'}</DialogTitle>
         </DialogHeader>
@@ -361,24 +374,29 @@ export default function ExpenseForm({
                 </Select>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setField('is_reimbursable', !formData.is_reimbursable)}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
-                  formData.is_reimbursable
-                    ? 'bg-[#ffd400]/15 border-[#ffd400]/40 text-[#ffd400]'
-                    : 'bg-[#1f1f1f] border-[#2a2a2a] text-[#a8a8a8] hover:border-[#2a2a2a]'
-                }`}
-              >
-                <div className={`w-9 h-5 rounded-full flex-shrink-0 relative transition-colors ${formData.is_reimbursable ? 'bg-[#ffd400]' : 'bg-[#333333]'}`}>
-                  <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${formData.is_reimbursable ? 'left-4' : 'left-0.5'}`} />
+              <div className="space-y-2">
+                <Label>Quem paga</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2" role="radiogroup" aria-label="Quem paga esta despesa">
+                  {PAID_BY_OPTIONS.map((opt) => {
+                    const active = formData.paid_by === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        role="radio"
+                        aria-checked={active}
+                        onClick={() => setFormData((prev) => ({ ...prev, paid_by: opt.value, is_reimbursable: opt.value === 'client_reimburses' }))}
+                        className={`min-h-11 rounded-xl border p-2.5 text-left transition-all ${
+                          active ? 'bg-[#ffd400]/15 border-[#ffd400]/40 text-[#ffd400]' : 'bg-[#1f1f1f] border-[#2a2a2a] text-[#a8a8a8]'
+                        }`}
+                      >
+                        <p className="text-sm font-medium">{opt.label}</p>
+                        <p className="text-[11px] opacity-70">{opt.hint}</p>
+                      </button>
+                    );
+                  })}
                 </div>
-                <div>
-                  <p className="text-sm font-medium">Reembolsável pelo contratante</p>
-                  <p className="text-xs opacity-70">Será incluído no PDF de Fechamento e na cobrança via WhatsApp</p>
-                </div>
-                <RefreshCw className={`w-4 h-4 ml-auto flex-shrink-0 ${formData.is_reimbursable ? 'text-[#ffd400]' : 'text-[#666666]'}`} />
-              </button>
+              </div>
 
               {formData.is_reimbursable && (
                 <button
@@ -433,7 +451,7 @@ export default function ExpenseForm({
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => setField('receipt_url', '')}
+                      onClick={() => { setField('receipt_url', ''); setReceiptInfo(null); }}
                       className="text-[#ff2e88] hover:text-[#ff2e88] hover:bg-[#ff2e88]/10 h-8 px-2"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -471,6 +489,18 @@ export default function ExpenseForm({
                   </div>
                 )}
               </div>
+
+              {receiptInfo && (
+                <div className="rounded-lg border border-[#2a2a2a] bg-[#161616] p-2.5 space-y-1 text-[11px] text-[#c8c8c8]" data-testid="receipt-info">
+                  <p className="text-[10px] uppercase tracking-wider text-[#888888]">Lido do recibo (confira antes de salvar)</p>
+                  {receiptInfo.title && <p><span className="text-[#888888]">Local:</span> {receiptInfo.title}</p>}
+                  {receiptInfo.location && <p><span className="text-[#888888]">Cidade/endereço:</span> {receiptInfo.location}</p>}
+                  {receiptInfo.amount > 0 && <p><span className="text-[#888888]">Valor:</span> R$ {toBRLInput(receiptInfo.amount)}</p>}
+                  {receiptInfo.date && <p><span className="text-[#888888]">Data:</span> {receiptInfo.date}</p>}
+                  {receiptInfo.payment_method && <p><span className="text-[#888888]">Pagamento:</span> {receiptInfo.payment_method}</p>}
+                  {receiptInfo.items && <p><span className="text-[#888888]">Itens:</span> {receiptInfo.items}</p>}
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="exp-description">Descrição</Label>

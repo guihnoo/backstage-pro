@@ -572,7 +572,7 @@ export default function EventDetailModal({
     };
     const enrichedExpenses = await Promise.all(
       (hideValues ? [] : (eventExpenses || [])).map(async (exp) => {
-        if (!exp.is_reimbursable || !exp.receipt_url) return exp;
+        if (!exp.receipt_url) return exp;
         if (String(exp.receipt_url).startsWith('data:image/')) {
           return { ...exp, receipt_data_url: exp.receipt_url };
         }
@@ -1707,6 +1707,12 @@ export default function EventDetailModal({
                                 <span className="text-[10px] text-[#ffd400] flex items-center gap-0.5">
                                   <AlertTriangle className="w-2.5 h-2.5" />reembolsável
                                 </span>
+                              )}
+                              {exp.paid_by === 'client_paid' && (
+                                <span className="text-[10px] text-[#a8a8a8]">· cliente pagou na hora</span>
+                              )}
+                              {(exp.paid_by === 'self' || (!exp.paid_by && !exp.is_reimbursable)) && (
+                                <span className="text-[10px] text-[#a8a8a8]">· eu pago</span>
                               )}
                               {exp.reimbursed && (
                                 <span className="text-[10px] text-[#ffd400] flex items-center gap-0.5">

@@ -3280,3 +3280,15 @@ Registro cronológico de tarefas executadas por agentes.
 - **Servidor**: logs 24 h sem gravação recusada; advisors de segurança ok; desempenho anotado no backlog.
 - **Build**: ok. Unit 501/501. Lint limpo. E2E completo rodado (1ª rodada achou deslogamento indevido da proteção de sessão → corrigido).
 - **Deploy**: não. Aguardando ok do usuário.
+
+### 2026-11-24 — Tela travada no formulário de despesa (Claude Code — branch `fix/auditoria-completa`, **não publicado**)
+- **Causa**: `ExpenseForm` usava `max-h-[90dvh]` sem altura explícita no `DialogContent`; o `flex-1` do formulário não tinha referência de altura e o `ScrollArea fill` não rolava. Mesmo bug já corrigido no `EventForm` (sessão 21).
+- **Correção**: `DialogContent` com `h-[95dvh] max-h-[95dvh]` (`src/components/expenses/ExpenseForm.jsx`, 1 linha).
+- **Pendente**: testar no celular/PWA antes de publicar; sem commit e sem push (aguardando aprovação).
+
+### 2026-11-24 — Despesas: quem paga + recibo lido pela IA + relatório (Claude Code — branch `feat/despesas-quem-paga`, **commit local, não publicado no app**)
+- **Quem paga** (3 opções em cada despesa): `client_reimburses` (entra no valor a receber), `client_paid` (cliente pagou na hora, não entra), `self` (eu pago, não entra). Migração `050_expenses_paid_by.sql` (**não aplicada no Supabase**; precisa de aprovação). Enquanto não aplicar, o insert de despesa falha: aplicar a migração antes do deploy.
+- **Recibo lido pela IA**: edge function `analyze-receipt` devolve também local, itens e forma de pagamento; o form mostra o que foi lido para conferência. Função **não redeployada** (precisa de aprovação).
+- **Relatório (PDF e WhatsApp)**: seção de despesas lista todas as despesas, marca as que não entram para o cliente e mostra total e valor a receber; comprovantes saem para todas as despesas.
+- **Lista do evento**: badges "eu pago" / "cliente pagou na hora".
+- **Pendente**: build e testes no PC (Linux não carrega o rollup da node_modules do Windows). Teste manual no app antes do merge.
