@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { parseBRL } from '@/lib/money';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -82,7 +83,7 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
     onExtract({
       ...data,
       receipt_url: fileUrl || "",
-      amount: data.amount ? Number(data.amount) : 0,
+      amount: Number.isFinite(parseBRL(data.amount)) ? parseBRL(data.amount) : 0,
     });
     setPreviewUrl((prev) => { if (prev) URL.revokeObjectURL(prev); return ""; });
     setFileUrl("");
@@ -155,7 +156,7 @@ export default function ReceiptAnalyzer({ open, onOpenChange, onExtract }) {
                 <Label htmlFor="ra-amount">Valor</Label>
                 <Input
                   id="ra-amount"
-                  type="number"
+                  type="text" inputMode="decimal"
                   step="0.01"
                   value={data.amount}
                   onChange={(e) => setData({ ...data, amount: e.target.value })}

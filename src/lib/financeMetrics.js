@@ -186,12 +186,15 @@ export function buildMarkPaidUpdate(event, _dailyWorkForEvent = [], { paidAmount
   if (!date || date > todayLocalISO()) throw new RangeError('Informe a data real do recebimento, até hoje.');
   return {
     payment_status: 'paid', paid_date: date, paid_amount: roundMoney(amount),
+    // Coluna antiga `paid` igual ao status (39 trabalhos estavam pagos com paid=false).
+    ...(event && 'paid' in event ? { paid: true } : {}),
     ...(event && 'paid_date_meta' in event ? {paid_date_meta:{source:'user_confirmed'}} : {}),
   };
 }
 
 export function buildMarkUnpaidUpdate(event) {
   return { payment_status: 'unpaid', paid_date: null, paid_amount: null,
+    ...(event && 'paid' in event ? { paid: false } : {}),
     ...(event && 'paid_date_meta' in event ? {paid_date_meta:null} : {}),
   };
 }

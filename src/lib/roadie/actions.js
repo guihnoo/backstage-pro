@@ -11,6 +11,7 @@
  *  - novo?titulo=&inicio=&fim=&cliente=ID&cache=            → abrir o formulário já preenchido
  */
 import { buildBaixaUpdate, suggestedPaidDate } from '../pendencias';
+import { parseBRL } from '../money';
 import { calculateEventReceivableAmount, isCancelledEvent } from '../eventFinance';
 import { computeWorkDay, defaultDayChoice, REGIME_POR_DIA_ATIVO, parseTimeToMinutes } from '../workDay';
 
@@ -54,7 +55,7 @@ export function describeRoadieAction(acao, { events = [], clients = [], dailyWor
     if (evento.payment_status === 'paid') return falha(`${evento.title} já está como pago.`);
     const fim = day(evento.end_date) || day(evento.start_date);
     const previsto = calculateEventReceivableAmount(evento, workDe(evento.id));
-    const valor = params.valor != null && params.valor !== '' ? Number(String(params.valor).replace(',', '.')) : previsto;
+    const valor = params.valor != null && params.valor !== '' ? parseBRL(params.valor) : previsto;
     if (!(valor > 0)) return falha(`${evento.title} está sem valor. Preencha o cachê antes de dar baixa.`);
     const sug = fim ? suggestedPaidDate(fim, today) : { date: today, estimated: false };
     const data = ISO.test(params.data || '') && params.data <= today ? params.data : sug.date;
@@ -151,7 +152,7 @@ export function describeRoadieAction(acao, { events = [], clients = [], dailyWor
     const inicio = ISO.test(params.inicio || '') ? params.inicio : null;
     const fim = ISO.test(params.fim || '') && inicio && params.fim >= inicio ? params.fim : inicio;
     const c = params.cliente ? cliente(params.cliente) : null;
-    const cache = Number(String(params.cache || '').replace(',', '.'));
+    const cache = parseBRL(params.cache || '');
     const prefill = {
       title: (params.titulo || '').slice(0, 120),
       ...(inicio ? { start_date: inicio, end_date: fim } : {}),

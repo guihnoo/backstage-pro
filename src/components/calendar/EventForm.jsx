@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import AnimatedStatValue from '@/components/home/AnimatedStatValue';
 import { differenceInDays, parseISO, format, isValid, addWeeks, addMonths, addDays, startOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -30,6 +30,7 @@ import EventLocationSection from '@/components/events/EventLocationSection';
 import GoogleBusyWarning from './GoogleBusyWarning';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
 import { parseBRL } from '@/lib/money';
+import { useSeedOnOpen } from '@/lib/formSeed';
 import { MEAL_POLICY_LABELS } from '@/lib/mealPolicy';
 
 // Dinheiro digitado (1.200,50 / 1200.5); invalido vira 0, nunca NaN.
@@ -99,9 +100,10 @@ export default function EventForm({
   // Formulário antes de colar a mensagem (para "Desfazer")
   const [beforePaste, setBeforePaste] = useState(null);
 
-  useEffect(() => {
-    if (!isOpen) return;
-
+  // Preenche só ao abrir (ou trocar de trabalho/pré-preenchimento). Antes re-preenchia a cada
+  // recarga da lista de clientes/trabalho e apagava o que o usuário estava digitando.
+  const seedKey = isOpen ? `${event?.id || 'novo'}|${JSON.stringify(prefillData || initialData || null)}` : null;
+  useSeedOnOpen(seedKey, () => {
     const seed = event || prefillData || initialData || {};
     const isEditing = Boolean(event?.id);
     const defaultDailyRate = !isEditing && Number(profile?.daily_rate) > 0 ? String(profile.daily_rate) : '';
@@ -141,8 +143,7 @@ export default function EventForm({
     setShowDateInputs(false);
     // Editando com algo preenchido nos detalhes: abre "Mais detalhes" para nao esconder o que existe.
     setShowMore(Boolean(isEditing && (seed.payment_due_date || seed.nf_number || seed.nfe_numero || seed.observacoes_md)));
-    if (!isOpen) setExtraClients([]);
-  }, [isOpen, event, prefillData, initialData, profile?.daily_rate, clients, theme.primaryHex]);
+  });
 
   const setField = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));

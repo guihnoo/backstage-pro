@@ -217,7 +217,11 @@ export function buildEventReport({
 
     for (const exp of expenses) {
       const cat = categoryLabels[exp.category] || exp.category || 'Outros';
-      const reimb = exp.is_reimbursable ? ' ✅ reembolsável' : '';
+      const reimb = exp.is_reimbursable
+        ? ' ✅ reembolsável'
+        : exp.paid_by === 'client_paid'
+          ? ' (cliente pagou na hora, não entra no valor)'
+          : ' (eu paguei, não entra para o cliente)';
       lines.push(`• ${exp.title || cat} — ${formatBRL(exp.amount)}${reimb}`);
     }
 

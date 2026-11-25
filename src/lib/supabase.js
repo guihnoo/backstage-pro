@@ -45,9 +45,44 @@ function fetchWithTimeout(input, init) {
   return fetch(input, { ...init, signal: controller.signal }).finally(() => clearTimeout(timer));
 }
 
+// Sessão vencida (10/11): um computador ficou a madrugada com o login vencido e o app seguiu
+// pedindo dados (centenas de 401, telas vazias). Ao ver "JWT expired" tenta renovar uma vez;
+// se não der, sai neste aparelho e a tela de login aparece.
+let recovering = null;
+function recoverExpiredSession() {
+  if (recovering) return recovering;
+  recovering = (async () => {
+    try {
+      const { error } = await supabase.auth.refreshSession();
+      // Só sai quando o servidor recusou a renovação (sem rede ou erro temporário: mantém o login).
+      const recusado = error && !String(error.name || '').includes('Retryable') && error.status >= 400 && error.status < 500;
+      if (recusado && navigator.onLine !== false) await supabase.auth.signOut({ scope: 'local' });
+    } catch {
+      /* sem rede: tenta de novo no próximo 401 */
+    } finally {
+      setTimeout(() => { recovering = null; }, 30_000);
+    }
+  })();
+  return recovering;
+}
+
+async function watchExpired(responsePromise, input) {
+  const res = await responsePromise;
+  try {
+    const url = typeof input === 'string' ? input : input?.url || '';
+    if (res.status === 401 && /\/rest\/v1\/[a-z_]/.test(url)) {
+      const body = await res.clone().text();
+      if (/JWT expired/i.test(body)) recoverExpiredSession();
+    }
+  } catch {
+    /* só observação */
+  }
+  return res;
+}
+
 function latin1SafeFetch(input, init) {
-  if (!init?.headers) return fetchWithTimeout(input, init);
-  return fetchWithTimeout(input, { ...init, headers: sanitizeRequestHeaders(init.headers) });
+  if (!init?.headers) return watchExpired(fetchWithTimeout(input, init), input);
+  return watchExpired(fetchWithTimeout(input, { ...init, headers: sanitizeRequestHeaders(init.headers) }), input);
 }
 
 function loadSupabaseEnv(name) {

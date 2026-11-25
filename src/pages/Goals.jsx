@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
+import { parseBRL } from '@/lib/money';
 import { projectYearEnd } from '@/lib/yearProjection';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/authContext';
@@ -245,7 +246,7 @@ export default function Goals() {
   const userId = user?.id;
   const categoryId = profile?.category || 'lighting';
   // Visual All Access: amarelo e rosa no lugar das cores da categoria (o nome da funcao continua).
-  const config = { ...getCategoryConfig(categoryId), primaryHex: '#ffd400', accentHex: '#ff2e88' };
+  const config = useMemo(() => ({ ...getCategoryConfig(categoryId), primaryHex: '#ffd400', accentHex: '#ff2e88' }), [categoryId]);
   const [activeTab, setActiveTab] = useState('metas');
   const [celebrationBadge, setCelebrationBadge] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -272,7 +273,7 @@ export default function Goals() {
 
   const saveGoals = async () => {
     const events = parseInt(goalForm.events);
-    const revenue = parseFloat(goalForm.revenue);
+    const revenue = parseBRL(goalForm.revenue); // aceita 5.000 / 5000,50
     if (!events || events < 1 || !revenue || revenue < 0) {
       appToast.error('Preencha valores válidos para as metas.');
       return;
@@ -644,9 +645,9 @@ export default function Goals() {
                           <label htmlFor="goal-revenue" className="block text-xs text-[#a8a8a8] mb-1.5">Meta R$ / mês</label>
                           <Input
                             id="goal-revenue"
-                            type="number"
-                            min="0"
-                            step="100"
+                            type="text"
+                            inputMode="decimal"
+                            autoComplete="off"
                             value={goalForm.revenue}
                             onChange={e => setGoalForm(f => ({ ...f, revenue: e.target.value }))}
                           />

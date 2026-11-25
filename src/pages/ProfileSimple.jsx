@@ -1,4 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { mergeFresh } from '@/lib/formSeed';
+import { parseBRL } from '@/lib/money';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '@/lib/authContext';
@@ -79,8 +81,21 @@ function profileToForm(profile) {
 }
 
 // Campo digitado vira texto ("12") e o gravado pode ser número (12): compara como texto
+const MONEY_FIELDS = new Set(['daily_rate', 'monthly_goal_revenue']);
+
 function sameFields(a, b) {
-  return Object.keys(b).every((k) => String(a[k] ?? '').trim() === String(b[k] ?? '').trim());
+  return Object.keys(b).every((k) => {
+    if (MONEY_FIELDS.has(k)) {
+      // "850,50" digitado e 850.5 gravado são o mesmo valor.
+      const x = String(a[k] ?? '').trim();
+      const y = String(b[k] ?? '').trim();
+      if (x === y) return true;
+      const nx = parseBRL(x);
+      const ny = parseBRL(y);
+      return Number.isFinite(nx) && Number.isFinite(ny) && nx === ny;
+    }
+    return String(a[k] ?? '').trim() === String(b[k] ?? '').trim();
+  });
 }
 
 function settingsToPix(settings) {
@@ -160,15 +175,29 @@ export default function ProfileSimple() {
   const owner = isAppOwner(user, profile);
   const { newCount: ownerNewFeedbacks } = useOwnerFeedbacks(owner);
 
+  // Perfil recarregado (foto, avisos, outra aba): atualiza só o que o usuário NÃO mexeu.
+  // Antes cada recarga apagava o que estava sendo digitado (mesmo bug da baixa, 10/11).
+  const baseForm = useRef(null);
+  const baseRates = useRef(null);
+  const basePix = useRef(null);
   useEffect(() => {
-    if (profile) {
-      setForm(profileToForm(profile));
-      setRates(ratesListToMap(profile.role_rates));
-    }
+    if (!profile) return;
+    const nextForm = profileToForm(profile);
+    const nextRates = ratesListToMap(profile.role_rates);
+    const prevForm = baseForm.current;
+    const prevRates = baseRates.current;
+    baseForm.current = nextForm;
+    baseRates.current = nextRates;
+    setForm((cur) => mergeFresh(cur, prevForm, nextForm));
+    setRates((cur) => (prevRates && JSON.stringify(cur) !== JSON.stringify(prevRates) ? cur : nextRates));
   }, [profile]);
 
   useEffect(() => {
-    if (userSettings) setPixForm(settingsToPix(userSettings));
+    if (!userSettings) return;
+    const next = settingsToPix(userSettings);
+    const prev = basePix.current;
+    basePix.current = next;
+    setPixForm((cur) => mergeFresh(cur, prev, next));
   }, [userSettings]);
 
   // A barra de salvar só aparece quando algo mudou em relação ao que está gravado
@@ -199,12 +228,19 @@ export default function ProfileSimple() {
   const handleSave = async () => {
     setSaving(true);
     let perfilOk = false;
+    // O que vai ser gravado vira a nova base: quando o perfil recarregar, os campos iguais ao
+    // enviado recebem o valor do servidor; o que for digitado durante o envio continua.
+    const antes = { form: baseForm.current, rates: baseRates.current, pix: basePix.current };
+    baseForm.current = form;
+    baseRates.current = rates;
+    basePix.current = pixForm;
     try {
       await updateProfile({
         ...form,
         years_experience: form.years_experience !== '' ? Number(form.years_experience) : null,
-        daily_rate: form.daily_rate !== '' ? Number(form.daily_rate) : null,
-        monthly_goal_revenue: form.monthly_goal_revenue !== '' ? Number(form.monthly_goal_revenue) : null,
+        // Aceita 850,50 / 1.200 (antes o campo numérico do iPhone podia zerar com vírgula).
+        daily_rate: Number.isFinite(parseBRL(form.daily_rate)) ? parseBRL(form.daily_rate) : null,
+        monthly_goal_revenue: Number.isFinite(parseBRL(form.monthly_goal_revenue)) ? parseBRL(form.monthly_goal_revenue) : null,
         monthly_goal_events: form.monthly_goal_events !== '' ? Number(form.monthly_goal_events) : null,
         role_rates: ratesMapToList(rates, form.category),
       });
@@ -229,6 +265,8 @@ export default function ProfileSimple() {
       setTimeout(() => setSaved(false), 2500);
     } catch (err) {
       console.error('Erro ao salvar:', err);
+      if (!perfilOk) { baseForm.current = antes.form; baseRates.current = antes.rates; }
+      basePix.current = antes.pix;
       appToast.error(perfilOk ? 'Perfil salvo, mas o PIX nao foi salvo.' : 'Erro ao salvar perfil.', { description: err?.message });
     } finally {
       setSaving(false);
@@ -371,8 +409,9 @@ export default function ProfileSimple() {
               <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#666666]" />
               <input
                 id="goals-daily_rate"
-                type="number"
-                min="0"
+                type="text"
+                inputMode="decimal"
+                autoComplete="off"
                 value={form.daily_rate}
                 onChange={(e) => setForm((f) => ({ ...f, daily_rate: e.target.value }))}
                 placeholder="800"
@@ -580,7 +619,7 @@ export default function ProfileSimple() {
         </Fold>
 
         {/* Meta do mes */}
-        <Fold id="meta" title="Minha meta do mês" summary={`${form.monthly_goal_events || '—'} diárias · R$ ${Number(form.monthly_goal_revenue || 0).toLocaleString('pt-BR')}`} open={abertas.meta} onToggle={alternar}>
+        <Fold id="meta" title="Minha meta do mês" summary={`${form.monthly_goal_events || '—'} diárias · R$ ${(parseBRL(form.monthly_goal_revenue || 0) || 0).toLocaleString('pt-BR')}`} open={abertas.meta} onToggle={alternar}>
           <div className="grid grid-cols-2 gap-2">
             {[
               { key: 'monthly_goal_events', label: 'Diárias', placeholder: '12', icon: Calendar },
@@ -592,7 +631,8 @@ export default function ProfileSimple() {
                   <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#666666]" />
                   <input
                     id={`goals-${key}`}
-                    type="number"
+                    type={key === 'monthly_goal_revenue' ? 'text' : 'number'}
+                    inputMode={key === 'monthly_goal_revenue' ? 'decimal' : 'numeric'}
                     min="0"
                     value={form[key]}
                     onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}

@@ -3,6 +3,7 @@
 //         outras funções   = profiles.role_rates = [{ category, daily_rate }].
 // Trabalho: a função escolhida vai em events.category / events.category_label.
 import { CATEGORIES, resolveCategoryId } from '@/lib/categoryConfig';
+import { parseBRL } from '@/lib/money';
 
 export function categoryLabel(categoryId) {
   const id = resolveCategoryId(categoryId || '');
@@ -11,8 +12,8 @@ export function categoryLabel(categoryId) {
 
 function toRate(value) {
   if (value === '' || value === null || value === undefined) return NaN;
-  const s = String(value).trim();
-  const n = Number(s.includes(',') ? s.replace(/\./g, '').replace(',', '.') : s);
+  // parseBRL: "1.200" = mil e duzentos (antes virava R$ 1,20).
+  const n = parseBRL(value);
   return Number.isFinite(n) ? Math.round(n * 100) / 100 : NaN;
 }
 

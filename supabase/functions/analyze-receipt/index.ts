@@ -66,7 +66,10 @@ Retorne SOMENTE JSON válido (sem markdown) com os campos:
 - "amount": number (valor total em reais, sem símbolo, ex: 45.90)
 - "date": string (YYYY-MM-DD) ou null se não encontrar
 - "category": uma de: transporte, alimentacao, equipamento, hospedagem, combustivel, manutencao, outros
-- "notes": string (observações opcionais como número NF, máx 100 chars, ou "")`;
+- "notes": string (observações opcionais como número NF, máx 100 chars, ou "")
+- "location": string (cidade ou endereço impresso no recibo, máx 80 chars, ou "")
+- "items": string (itens comprados ou serviço, separados por vírgula, máx 160 chars, ou "")
+- "payment_method": string (forma de pagamento como aparece no recibo, ex: "PIX", "Cartão de débito", ou "")`;
 
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(geminiKey)}`;
     const geminiRes = await fetch(geminiUrl, {
@@ -80,7 +83,7 @@ Retorne SOMENTE JSON válido (sem markdown) com os campos:
           ],
         }],
         generationConfig: {
-          maxOutputTokens: 256,
+          maxOutputTokens: 512,
           temperature: 0.1,
           responseMimeType: 'application/json',
         },
@@ -108,6 +111,9 @@ Retorne SOMENTE JSON válido (sem markdown) com os campos:
       date: extracted.date && /^\d{4}-\d{2}-\d{2}$/.test(String(extracted.date)) ? String(extracted.date) : null,
       category: VALID_CATEGORIES.includes(String(extracted.category)) ? String(extracted.category) : 'outros',
       notes: String(extracted.notes || '').slice(0, 100),
+      location: String(extracted.location || '').slice(0, 80),
+      items: String(extracted.items || '').slice(0, 160),
+      payment_method: String(extracted.payment_method || '').slice(0, 40),
     };
 
     return new Response(JSON.stringify({ success: true, data: result }), {

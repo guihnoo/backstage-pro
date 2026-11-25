@@ -376,7 +376,7 @@ const CATEGORY_LABELS = {
 };
 
 function ReimbursementTable({ expenses }) {
-  const reimbursable = expenses.filter(e => e.is_reimbursable);
+  const reimbursable = expenses;
   if (reimbursable.length === 0) return null;
   const totalFlex = COL3.reduce((s, c) => s + c.flex, 0);
 
@@ -393,7 +393,12 @@ function ReimbursementTable({ expenses }) {
         const cat = CATEGORY_LABELS[exp.category] || (exp.category || 'Outros');
         const baseDesc = exp.notes || exp.title || exp.description || '-';
         const hasReceipt = Boolean(exp.receipt_data_url || exp.receipt_url);
-        const desc = hasReceipt ? `${baseDesc} (Comprovante anexo)` : baseDesc;
+        const who = exp.is_reimbursable
+          ? ''
+          : exp.paid_by === 'client_paid'
+            ? ' [Cliente pagou na hora: não entra no valor a receber]'
+            : ' [Eu paguei: não entra para o cliente]';
+        const desc = `${baseDesc}${hasReceipt ? ' (Comprovante anexo)' : ''}${who}`;
         const rowStyle = [s.tRow, i % 2 === 1 ? { backgroundColor: C.rowAlt } : {}];
         return (
           <View key={exp.id || i} style={rowStyle} wrap={false}>
@@ -412,6 +417,10 @@ function ReimbursementTable({ expenses }) {
           </View>
         );
       })}
+      <View style={{ marginTop: 6 }}>
+        <Text style={s.tCellMuted}>Total de despesas: {fmt(expenses.reduce((t, e) => t + (Number(e.amount) || 0), 0))}</Text>
+        <Text style={s.tCell}>Valor a receber (cliente reembolsa): {fmt(expenses.filter(e => e.is_reimbursable && !e.reimbursed).reduce((t, e) => t + (Number(e.amount) || 0), 0))}</Text>
+      </View>
     </View>
   );
 }
@@ -472,7 +481,6 @@ export function EventPDFDocument({ event, client, work = [], expenses = [], prof
   const subtotalDiarias = closing.totalDiarias + closing.totalAlimentacao;
   const totalOT = closing.totalHorasExtrasQtd;
   const subtotalHE = closing.totalHorasExtras;
-  const reimbursable = closing.reembolsaveis;
   const subtotalReembolsos = closing.totalReembolsos;
   const totalReceber = closing.total;
   const paidAmountVal = isPaid && Number(event?.paid_amount) > 0 ? Number(event.paid_amount) : totalReceber;
@@ -489,7 +497,7 @@ export function EventPDFDocument({ event, client, work = [], expenses = [], prof
     : '';
 
   const hasHE = subtotalHE > 0 || totalOT > 0;
-  const hasReembolsos = !hideValues && reimbursable.length > 0;
+  const hasReembolsos = expenses.length > 0;
 
   const diariasLabel = travelDays > 0
     ? `${workDays} ${workDays === 1 ? 'dia' : 'dias'} + ${travelDays} ${travelDays === 1 ? 'Viagem' : 'Viagens'}`
@@ -688,11 +696,11 @@ export function EventPDFDocument({ event, client, work = [], expenses = [], prof
         {/* ── Anexo de Comprovantes de Reembolso ───────────────────────── */}
         {(() => {
           if (hideValues) return null;
-          const withReceipts = reimbursable.filter((e) => e.receipt_data_url || (typeof e.receipt_url === 'string' && e.receipt_url.startsWith('data:image/')));
+          const withReceipts = expenses.filter((e) => e.receipt_data_url || (typeof e.receipt_url === 'string' && e.receipt_url.startsWith('data:image/')));
           if (withReceipts.length === 0) return null;
           return (
             <View style={{ marginTop: 14 }}>
-              <SectionTitle>Comprovantes de Despesas Reembolsáveis</SectionTitle>
+              <SectionTitle>Comprovantes de Despesas</SectionTitle>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
                 {withReceipts.map((exp, idx) => {
                   const imgSrc = exp.receipt_data_url || exp.receipt_url;

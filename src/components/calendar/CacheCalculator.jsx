@@ -6,6 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Calculator, Copy, CheckCircle2, Plus } from 'lucide-react';
 import appToast from '@/lib/appToast';
 import { useCategoryTheme } from '@/lib/useCategoryTheme';
+import { parseBRL } from '@/lib/money';
+
+// Dinheiro digitado (1.200,50 / 1200.5); inválido vira 0.
+const reais = (v) => { const n = parseBRL(v); return Number.isFinite(n) ? n : 0; };
 
 const MODELS = [
   { value: 'DIARIA', label: 'Diária simples' },
@@ -16,7 +20,7 @@ const MODELS = [
 
 function calcTotal(days, base, model, extraHours) {
   const d = Number(days) || 1;
-  const b = Number(base) || 0;
+  const b = reais(base);
   const h = Number(extraHours) || 0;
 
   if (model === 'DIARIA' || model === 'CACHE') {
@@ -51,7 +55,7 @@ export default function CacheCalculator({ open, onClose, onCreateEvent }) {
   const [copied, setCopied] = useState(false);
 
   const total = useMemo(
-    () => calcTotal(days, base, model, extraHours) + Number(extras || 0),
+    () => calcTotal(days, base, model, extraHours) + reais(extras),
     [days, base, model, extraHours, extras]
   );
 
@@ -61,7 +65,7 @@ export default function CacheCalculator({ open, onClose, onCreateEvent }) {
   );
 
   const handleCopy = () => {
-    const text = `Cachê: ${fmt(total)} (${days} dia${Number(days) > 1 ? 's' : ''} × ${fmt(Number(base) || 0)})`;
+    const text = `Cachê: ${fmt(total)} (${days} dia${Number(days) > 1 ? 's' : ''} × ${fmt(reais(base))})`;
     navigator.clipboard.writeText(text);
     appToast.success('Copiado!', { description: text });
     setCopied(true);
@@ -70,7 +74,7 @@ export default function CacheCalculator({ open, onClose, onCreateEvent }) {
 
   const handleCreate = () => {
     onCreateEvent?.({
-      daily_cache_value: Number(base) || 0,
+      daily_cache_value: reais(base),
       payment_model: model,
     });
     onClose();
@@ -92,7 +96,7 @@ export default function CacheCalculator({ open, onClose, onCreateEvent }) {
               <Label htmlFor="calc-base">Cachê base (R$/dia)</Label>
               <Input
                 id="calc-base"
-                type="number"
+                type="text" inputMode="decimal"
                 min="0"
                 placeholder="1500"
                 value={base}
@@ -149,7 +153,7 @@ export default function CacheCalculator({ open, onClose, onCreateEvent }) {
             <Label htmlFor="calc-extras">Extras (hospedagem, alimentação…)</Label>
             <Input
               id="calc-extras"
-              type="number"
+              type="text" inputMode="decimal"
               min="0"
               placeholder="0"
               value={extras}

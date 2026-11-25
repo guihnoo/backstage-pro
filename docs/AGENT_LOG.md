@@ -3273,3 +3273,28 @@ Registro cronológico de tarefas executadas por agentes.
 - **Arquivos**: PaymentConfirmModal.jsx, lib/pendencias.js (+test), pages/Pendencias.jsx, e2e/regression/nfe-conferencia.spec.js.
 - **Build**: ok. Unit 498/498; E2E local 22 ok.
 - **Deploy**: PR #13 mesclado (main bdd525f), Vercel index-DoC5KKj5.js; atalho "Valor da nota" conferido no bundle; E2E em produção nfe-conferencia + pendencias ok (pendencias instável na 1ª tentativa).
+
+### 2026-11-10 — Auditoria completa do app (Claude Code)
+- **Pedido**: "quero uma análise completa para que não tenha nenhum erro igual ou outros bugs no app. check cada função cada página item a item."
+- **Achados e correções**: formulários que apagavam o digitado ao recarregar (EventForm, ExpenseForm, ClientForm, NotesSheet, Perfil → lib/formSeed.js); valores em R$ lidos errado (Perfil, Metas, Onboarding, CacheCalculator, ReceiptAnalyzer, roleRates, Roadie → parseBRL + teclado decimal); coluna paid fora de sincronia (financeMetrics); sessão vencida em loop (supabase.js, com saída só quando o servidor recusa). Lint: e2e com globals de node; marketingMocks var sem uso; Goals useMemo.
+- **Servidor**: logs 24 h sem gravação recusada; advisors de segurança ok; desempenho anotado no backlog.
+- **Build**: ok. Unit 501/501. Lint limpo. E2E completo rodado (1ª rodada achou deslogamento indevido da proteção de sessão → corrigido).
+- **Deploy**: não. Aguardando ok do usuário.
+
+### 2026-11-24 — Tela travada no formulário de despesa (Claude Code — branch `fix/auditoria-completa`, **não publicado**)
+- **Causa**: `ExpenseForm` usava `max-h-[90dvh]` sem altura explícita no `DialogContent`; o `flex-1` do formulário não tinha referência de altura e o `ScrollArea fill` não rolava. Mesmo bug já corrigido no `EventForm` (sessão 21).
+- **Correção**: `DialogContent` com `h-[95dvh] max-h-[95dvh]` (`src/components/expenses/ExpenseForm.jsx`, 1 linha).
+- **Pendente**: testar no celular/PWA antes de publicar; sem commit e sem push (aguardando aprovação).
+
+### 2026-11-24 — Despesas: quem paga + recibo lido pela IA + relatório (Claude Code — branch `feat/despesas-quem-paga`, **commit local, não publicado no app**)
+- **Quem paga** (3 opções em cada despesa): `client_reimburses` (entra no valor a receber), `client_paid` (cliente pagou na hora, não entra), `self` (eu pago, não entra). Migração `050_expenses_paid_by.sql` (**não aplicada no Supabase**; precisa de aprovação). Enquanto não aplicar, o insert de despesa falha: aplicar a migração antes do deploy.
+- **Recibo lido pela IA**: edge function `analyze-receipt` devolve também local, itens e forma de pagamento; o form mostra o que foi lido para conferência. Função **não redeployada** (precisa de aprovação).
+- **Relatório (PDF e WhatsApp)**: seção de despesas lista todas as despesas, marca as que não entram para o cliente e mostra total e valor a receber; comprovantes saem para todas as despesas.
+- **Lista do evento**: badges "eu pago" / "cliente pagou na hora".
+- **Pendente**: build e testes no PC (Linux não carrega o rollup da node_modules do Windows). Teste manual no app antes do merge.
+
+### 2026-11-25 — Despesas: publicação e banco (Claude Code — branch `feat/despesas-quem-paga`)
+- **Push** do branch `feat/despesas-quem-paga` (base `fix/auditoria-completa` `268c82e`, porque a feature usa `useSeedOnOpen`). Commit `2b80aa1`. PR ainda não aberto.
+- **Supabase** (`backstage-pro`): migração `expenses_paid_by` aplicada (10 despesas com backfill correto); `analyze-receipt` v5 deployada com `verify_jwt` true.
+- **Build/testes**: não rodados (node_modules instalada no Windows; Linux sem rollup). Rodar no PC antes do merge.
+- **Deploy na Vercel e merge na `main`**: pendentes de pedido explícito.
