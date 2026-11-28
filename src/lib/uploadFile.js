@@ -14,7 +14,7 @@ function buildObjectPath(userId, folder, file) {
  * Contrato compatível com o legado Base44: { file } → { file_url }
  */
 /**
- * Reduz foto (lado maior até 1600 px, JPEG 80%) para caber no limite do Storage.
+ * Reduz foto de comprovante (lado maior até 1600 px, JPEG 80%) para caber no limite do Storage.
  * Fotos de celular costumam passar de 5 MB; sem isso o envio falhava e a leitura da IA era pulada.
  * Se o navegador não conseguir decodificar o arquivo (ex.: HEIC), devolve o original.
  */
@@ -47,7 +47,9 @@ export async function uploadUserFile(original, { folder = 'uploads' } = {}) {
     throw new Error('Envie uma foto ou PDF (JPG, PNG, WebP, HEIC ou PDF).');
   }
 
-  const file = isPdf ? original : await compressImageForUpload(original);
+  // Só comprovantes são reduzidos: logos e outras imagens seguem como foram enviadas (preserva transparência).
+  const shouldCompress = folder === 'receipts' && !isPdf;
+  const file = shouldCompress ? await compressImageForUpload(original) : original;
 
   if (file.size > MAX_BYTES) {
     throw new Error('Arquivo muito grande mesmo reduzido (máximo 5 MB). Tente outra foto ou um print.');
