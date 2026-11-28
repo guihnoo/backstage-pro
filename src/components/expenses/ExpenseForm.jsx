@@ -170,8 +170,12 @@ export default function ExpenseForm({
     try {
       const res = await UploadFile({ file, folder: 'receipts' });
       savedUrl = res?.file_url || '';
-    } catch {
-      // Fallback local para imagem comprimida em Data URL (funciona offline e no PDF)
+    } catch (uploadError) {
+      // Sem URL pública a leitura automática da IA não roda: avisa o motivo.
+      appToast.error(uploadError?.message || 'Não foi possível enviar o comprovante.', {
+        description: 'Você pode preencher os dados à mão.',
+      });
+      // Fallback local para imagem comprimida em Data URL (funciona offline)
       try {
         savedUrl = await fileToCompressedDataUrl(file);
       } catch {
